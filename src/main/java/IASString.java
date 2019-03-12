@@ -343,10 +343,18 @@ public class IASString {
     public static String format(String format, Object... args) {
         return String.format(format, args);
     }
+    //TODO: sound?
+    public static String format(IASString format, Object... args) {
+        return String.format(format.str, args);
+    }
 
     //TODO: sound?
     public static String format(Locale l, String format, Object... args) {
         return String.format(l, format, args);
+    }
+    //TODO: sound?
+    public static String format(Locale l, IASString format, Object... args) {
+        return String.format(l, format.str, args);
     }
 
     public static String valueOf(Object obj) {
