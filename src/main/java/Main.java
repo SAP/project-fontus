@@ -3,10 +3,7 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.util.CheckClassAdapter;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 
 
 public class Main {
@@ -18,20 +15,21 @@ public class Main {
         String fnameOut = "TestString.class";
         String fname = "TestString.class";
         File file = new File(path+fname);
-        FileInputStream fs = new FileInputStream(file);
+        try(FileInputStream fs = new FileInputStream(file)) {
 
-        ClassReader cr = new ClassReader(fs);
-        ClassWriter writer = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
-        //ClassVisitor cca = new CheckClassAdapter(writer);
-        ClassPrinter cp = new ClassPrinter(writer);
+            ClassReader cr = new ClassReader(fs);
+            ClassWriter writer = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
+            //ClassVisitor cca = new CheckClassAdapter(writer);
+            //ClassPrinter cp = new ClassPrinter(writer);
 
-        MethodReplacer r = new MethodReplacer(cp, "getValue", "()I");
-        NumberReplacer nr = new NumberReplacer(r);
-        StringMethodRewriter smr = new StringMethodRewriter(nr);
-        cr.accept(smr, 0);
-        File fileOut = new File(path+"temp/"+fnameOut);
-        try(FileOutputStream fsOut = new FileOutputStream(fileOut)) {
-            fsOut.write(writer.toByteArray());
+            //MethodReplacer r = new MethodReplacer(cp, "getValue", "()I");
+            //NumberReplacer nr = new NumberReplacer(r);
+            StringMethodRewriter smr = new StringMethodRewriter(writer);
+            cr.accept(smr, 0);
+            File fileOut = new File(path + "temp/" + fnameOut);
+            try (FileOutputStream fsOut = new FileOutputStream(fileOut)) {
+                fsOut.write(writer.toByteArray());
+            }
         }
     }
 }
