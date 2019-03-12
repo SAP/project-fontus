@@ -100,7 +100,7 @@ public class StringRewriterVisitor extends MethodVisitor {
         Matcher descMatcher = Constants.strPattern.matcher(descriptor);
 
         if("java/lang/String".equals(owner)) {
-            String newOwner = Constants.TStringDesc;
+            String newOwner = Constants.TString;
             String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
             logger.info("Rewriting String invoke [{}] {}:{} ({})", opcodeToString(opcode), owner, name, newDescriptor);
             super.visitMethodInsn(opcode, newOwner, name, newDescriptor, isInterface);
