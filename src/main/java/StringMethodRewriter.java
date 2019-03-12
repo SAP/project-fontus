@@ -15,14 +15,14 @@ public class StringMethodRewriter extends ClassVisitor {
 
     private final Collection<BlackListEntry> blacklist = new ArrayList<>();
     private static final String mainDescriptor = "([Ljava/lang/String;)V";
-    private static final String newMainDescriptor = "(["+ Constants.TStringDesc +";)V";
+    private static final String newMainDescriptor = "("+ Constants.TStringArrayDesc +")V";
 
     private String owner;
 
     StringMethodRewriter(ClassVisitor cv) {
         super(ASM7, cv);
 
-        this.blacklist.add(new BlackListEntry("main", mainDescriptor, ACC_PUBLIC + ACC_STATIC));
+        this.blacklist.add(new BlackListEntry("main", mainDescriptor, ACC_PUBLIC | ACC_STATIC));
     }
 
     @Override
@@ -109,7 +109,7 @@ public class StringMethodRewriter extends ClassVisitor {
         Matcher descMatcher = Constants.strPattern.matcher(descriptor);
         MethodVisitor mv;
         // Create a new main method, wrapping the regular one and translating all Strings to IASStrings
-        if(access == 0x0009 && name.equals("main") && descriptor.equals(mainDescriptor)) {
+        if(access == (ACC_PUBLIC | ACC_STATIC) && name.equals("main") && descriptor.equals(mainDescriptor)) {
             logger.info("Creating proxy main method");
             MethodVisitor v = super.visitMethod(ACC_PUBLIC | ACC_STATIC, "main", mainDescriptor, null, null);
             this.createMainWrapperMethod(v);
