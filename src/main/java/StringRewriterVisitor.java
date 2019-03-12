@@ -1,16 +1,18 @@
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
 
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 
 import org.objectweb.asm.Opcodes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.objectweb.asm.Opcodes.*;
 
 public class StringRewriterVisitor extends MethodVisitor {
-    private static final Logger LOGGER = Logger.getLogger(StringRewriterVisitor.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final HashMap<ProxiedFunctionEntry, Runnable> methodProxies;
     private final HashMap<ProxiedDynamicFunctionEntry, Runnable> dynProxies;
@@ -47,7 +49,7 @@ public class StringRewriterVisitor extends MethodVisitor {
     private boolean tryToApplyDynProxyCall(String name, String descriptor) {
         ProxiedDynamicFunctionEntry pdfe = new ProxiedDynamicFunctionEntry(name, descriptor);
         if(this.dynProxies.containsKey(pdfe)) {
-            LOGGER.info(String.format("Proxying dynamic call to %s (%s)", name, descriptor));
+            logger.info("Proxying dynamic call to {} ({})", name, descriptor);
             Runnable pf = this.dynProxies.get(pdfe);
             pf.run();
             return true;
@@ -58,7 +60,7 @@ public class StringRewriterVisitor extends MethodVisitor {
         private boolean tryToApplyProxyCall(String owner, String name, String descriptor) {
         ProxiedFunctionEntry pfe = new ProxiedFunctionEntry(owner, name, descriptor);
         if(this.methodProxies.containsKey(pfe)) {
-            LOGGER.info(String.format("Proxying call to %s:%s (%s)", owner, name, descriptor));
+            logger.info("Proxying call to {}:{} ({})", owner, name, descriptor);
             Runnable pf = this.methodProxies.get(pfe);
             pf.run();
             return true;
@@ -92,11 +94,11 @@ public class StringRewriterVisitor extends MethodVisitor {
 
         Matcher descMatcher = Constants.strPattern.matcher(descriptor);
         if(descMatcher.find() && !skipInvoke) {
-            LOGGER.info(String.format("Rewriting invoke [%s] %s:%s (%s)", opcodeToString(opcode), owner, name, descriptor));
+            logger.info("Rewriting invoke [{}] {}:{} ({})", opcodeToString(opcode), owner, name, descriptor);
             String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
             super.visitMethodInsn(opcode, owner, name, newDescriptor, isInterface);
         } else {
-            LOGGER.info(String.format("Skipping invoke [%s] %s:%s (%s)", opcodeToString(opcode), owner, name, descriptor));
+            logger.info("Skipping invoke [{}] {}:{} ({})", opcodeToString(opcode), owner, name, descriptor);
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
         }
     }
@@ -124,7 +126,7 @@ public class StringRewriterVisitor extends MethodVisitor {
 
         if(this.tryToApplyDynProxyCall(name, descriptor)) { return; }
 
-        LOGGER.info(String.format("invokeDynamic %s (%s)", name, descriptor));
+        logger.info("invokeDynamic {} ({})", name, descriptor);
         super.visitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
 
     }

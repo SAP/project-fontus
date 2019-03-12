@@ -1,17 +1,19 @@
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 
 
 import static org.objectweb.asm.Opcodes.*;
 
 public class StringMethodRewriter extends ClassVisitor {
-    private static final Logger LOGGER = Logger.getLogger(StringMethodRewriter.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Collection<BlackListEntry> blacklist = new ArrayList<>();
 
@@ -26,7 +28,7 @@ public class StringMethodRewriter extends ClassVisitor {
 
         Matcher descMatcher = Constants.strPattern.matcher(descriptor);
         if(descMatcher.find()) {
-            LOGGER.info(String.format("Replacing field %d:%s (%s)", access, name, descriptor));
+            logger.info("Replacing field {}:{} ({})", access, name, descriptor);
             String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
             return super.visitField(access, name, newDescriptor, signature, value);
         } else {
@@ -46,7 +48,7 @@ public class StringMethodRewriter extends ClassVisitor {
         MethodVisitor mv;
 
         if (!this.blacklist.contains(new BlackListEntry(name, descriptor, access)) && descMatcher.find()) {
-            LOGGER.info(String.format("Rewriting method signature %s (%s)", name, descriptor));
+            logger.info("Rewriting method signature {} ({})", name, descriptor);
             String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
             mv = super.visitMethod(access, name, newDescriptor, signature, exceptions);
         } else {
