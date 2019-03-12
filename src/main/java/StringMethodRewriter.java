@@ -4,19 +4,20 @@ import org.objectweb.asm.MethodVisitor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
-import static org.objectweb.asm.Opcodes.ASM7;
+
+import static org.objectweb.asm.Opcodes.*;
 
 public class StringMethodRewriter extends ClassVisitor {
+    private static final Logger LOGGER = Logger.getLogger(StringMethodRewriter.class.getName());
 
     private final Collection<BlackListEntry> blacklist = new ArrayList<>();
 
     StringMethodRewriter(ClassVisitor cv) {
         super(ASM7, cv);
-        this.blacklist.add(new BlackListEntry("main", "([Ljava/lang/String;)V", 0x0009));
+        this.blacklist.add(new BlackListEntry("main", "([Ljava/lang/String;)V", ACC_PUBLIC + ACC_STATIC));
     }
 
     @Override
@@ -25,6 +26,7 @@ public class StringMethodRewriter extends ClassVisitor {
 
         Matcher descMatcher = Constants.strPattern.matcher(descriptor);
         if(descMatcher.find()) {
+            LOGGER.info(String.format("Replacing field %d:%s (%s)", access, name, descriptor));
             String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
             return super.visitField(access, name, newDescriptor, signature, value);
         } else {
@@ -39,10 +41,12 @@ public class StringMethodRewriter extends ClassVisitor {
             final String descriptor,
             final String signature,
             final String[] exceptions) {
+
         Matcher descMatcher = Constants.strPattern.matcher(descriptor);
         MethodVisitor mv;
+
         if (!this.blacklist.contains(new BlackListEntry(name, descriptor, access)) && descMatcher.find()) {
-            System.out.println("Replacing " + name + "(" + descriptor + ")");
+            LOGGER.info(String.format("Replacing %s (%s)", name, descriptor));
             String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
             mv = super.visitMethod(access, name, newDescriptor, signature, exceptions);
         } else {
@@ -50,5 +54,4 @@ public class StringMethodRewriter extends ClassVisitor {
         }
         return new StringRewriterVisitor(mv);
     }
-
 }

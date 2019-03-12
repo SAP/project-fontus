@@ -5,7 +5,7 @@ public class BlackListEntry {
     private final String descriptor;
     private final int access;
 
-    public BlackListEntry(String name, String descriptor, int access) {
+    BlackListEntry(String name, String descriptor, int access) {
         this.name = name;
         this.descriptor = descriptor;
         this.access = access;

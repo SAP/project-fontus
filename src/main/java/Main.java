@@ -15,8 +15,8 @@ public class Main {
         String fnameOut = "TestString.class";
         String fname = "TestString.class";
         File file = new File(path+fname);
-        try(FileInputStream fs = new FileInputStream(file)) {
-
+        File fileOut = new File(path + "temp/" + fnameOut);
+        try(FileInputStream fs = new FileInputStream(file); FileOutputStream fsOut = new FileOutputStream(fileOut)) {
             ClassReader cr = new ClassReader(fs);
             ClassWriter writer = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
             //ClassVisitor cca = new CheckClassAdapter(writer);
@@ -26,10 +26,7 @@ public class Main {
             //NumberReplacer nr = new NumberReplacer(r);
             StringMethodRewriter smr = new StringMethodRewriter(writer);
             cr.accept(smr, 0);
-            File fileOut = new File(path + "temp/" + fnameOut);
-            try (FileOutputStream fsOut = new FileOutputStream(fileOut)) {
-                fsOut.write(writer.toByteArray());
-            }
+            fsOut.write(writer.toByteArray());
         }
     }
 }
