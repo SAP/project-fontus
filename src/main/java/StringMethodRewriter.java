@@ -46,7 +46,7 @@ public class StringMethodRewriter extends ClassVisitor {
         MethodVisitor mv;
 
         if (!this.blacklist.contains(new BlackListEntry(name, descriptor, access)) && descMatcher.find()) {
-            LOGGER.info(String.format("Replacing %s (%s)", name, descriptor));
+            LOGGER.info(String.format("Rewriting method signature %s (%s)", name, descriptor));
             String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
             mv = super.visitMethod(access, name, newDescriptor, signature, exceptions);
         } else {

@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 
 import org.objectweb.asm.Opcodes;
 
-import static org.objectweb.asm.Opcodes.ASM7;
+import static org.objectweb.asm.Opcodes.*;
 
 public class StringRewriterVisitor extends MethodVisitor {
     private static final Logger LOGGER = Logger.getLogger(StringRewriterVisitor.class.getName());
@@ -66,6 +66,16 @@ public class StringRewriterVisitor extends MethodVisitor {
         return false;
     }
 
+    private static String opcodeToString(int opcode) {
+        switch(opcode) {
+            case INVOKEVIRTUAL: return "v";
+            case INVOKEDYNAMIC: return "d";
+            case INVOKESTATIC: return "s";
+            case INVOKEINTERFACE: return "i";
+            case INVOKESPECIAL: return "sp";
+            default: return "unknown";
+        }
+    }
     @Override
     public void visitMethodInsn(
             final int opcode,
@@ -82,11 +92,11 @@ public class StringRewriterVisitor extends MethodVisitor {
 
         Matcher descMatcher = Constants.strPattern.matcher(descriptor);
         if(descMatcher.find() && !skipInvoke) {
-            LOGGER.info(String.format("Rewriting invoke %d %s:%s (%s)", opcode, owner, name, descriptor));
+            LOGGER.info(String.format("Rewriting invoke [%s] %s:%s (%s)", opcodeToString(opcode), owner, name, descriptor));
             String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
             super.visitMethodInsn(opcode, owner, name, newDescriptor, isInterface);
         } else {
-            LOGGER.info(String.format("Skipping invoke %d %s:%s (%s)", opcode, owner, name, descriptor));
+            LOGGER.info(String.format("Skipping invoke [%s] %s:%s (%s)", opcodeToString(opcode), owner, name, descriptor));
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
         }
     }
