@@ -28,6 +28,15 @@ public class StringRewriterVisitor extends MethodVisitor {
     private void fillProxies() {
         this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(LIASString;LIASString;)LIASString;", false));
+        this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;I)Ljava/lang/String;"),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(LIASString;I)LIASString;", false));
+        this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;J)Ljava/lang/String;"),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(LIASString;J)LIASString;", false));
+        this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;D)Ljava/lang/String;"),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(LIASString;D)LIASString;", false));
+        this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;F)Ljava/lang/String;"),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(LIASString;F)LIASString;", false));
+
         this.methodProxies.put(
                 new ProxiedFunctionEntry("java/io/PrintStream", "println", "(Ljava/lang/String;)V"),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, "PrintStreamProxies", "println", "(Ljava/io/PrintStream;LIASString;)V", false));
@@ -88,11 +97,18 @@ public class StringRewriterVisitor extends MethodVisitor {
         // If a method has a defined proxy, apply it right away
         if(this.tryToApplyProxyCall(owner, name, descriptor)) { return; }
 
+        Matcher descMatcher = Constants.strPattern.matcher(descriptor);
+
+        if("java/lang/String".equals(owner)) {
+            String newOwner = Constants.TStringDesc;
+            String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
+            logger.info("Rewriting String invoke [{}] {}:{} ({})", opcodeToString(opcode), owner, name, newDescriptor);
+            super.visitMethodInsn(opcode, newOwner, name, newDescriptor, isInterface);
+            return;
+        }
 
         // Don't rewrite Java standard library functions or IASString functions
         boolean skipInvoke = owner.contains("java") || owner.contains(Constants.TString);
-
-        Matcher descMatcher = Constants.strPattern.matcher(descriptor);
         if(descMatcher.find() && !skipInvoke) {
             logger.info("Rewriting invoke [{}] {}:{} ({})", opcodeToString(opcode), owner, name, descriptor);
             String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);

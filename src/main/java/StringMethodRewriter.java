@@ -36,7 +36,7 @@ public class StringMethodRewriter extends ClassVisitor {
         }
     }
 
-        @Override
+    @Override
     public MethodVisitor visitMethod(
             final int access,
             final String name,
