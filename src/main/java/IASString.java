@@ -217,7 +217,7 @@ public class IASString {
     }
 
     public CharSequence subSequence(int beginIndex, int endIndex) {
-        return this.subSequence(beginIndex, endIndex);
+        return this.str.subSequence(beginIndex, endIndex);
     }
 
     //TODO: returns, takes string
