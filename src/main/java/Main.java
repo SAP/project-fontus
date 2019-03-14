@@ -60,7 +60,7 @@ public class Main implements Callable<Void> {
             ClassReader cr = new ClassReader(fi);
             ClassWriter writer = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
             //ClassVisitor cca = new CheckClassAdapter(writer);
-            StringMethodRewriter smr = new StringMethodRewriter(writer);
+            ClassTaintingVisitor smr = new ClassTaintingVisitor(writer);
             cr.accept(smr, 0);
             logger.info("Writing transformed class file to: {}", this.outputFile.getAbsolutePath());
             fo.write(writer.toByteArray());

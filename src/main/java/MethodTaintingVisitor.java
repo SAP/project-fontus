@@ -11,13 +11,13 @@ import org.slf4j.LoggerFactory;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class StringRewriterVisitor extends MethodVisitor {
+public class MethodTaintingVisitor extends MethodVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final HashMap<ProxiedFunctionEntry, Runnable> methodProxies;
     private final HashMap<ProxiedDynamicFunctionEntry, Runnable> dynProxies;
 
-    StringRewriterVisitor(MethodVisitor methodVisitor) {
+    MethodTaintingVisitor(MethodVisitor methodVisitor) {
         super(ASM7, methodVisitor);
         this.methodProxies = new HashMap<>();
         this.dynProxies = new HashMap<>();

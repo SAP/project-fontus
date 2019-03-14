@@ -10,7 +10,7 @@ import java.util.regex.Matcher;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class StringMethodRewriter extends ClassVisitor {
+public class ClassTaintingVisitor extends ClassVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Collection<BlackListEntry> blacklist = new ArrayList<>();
@@ -19,7 +19,7 @@ public class StringMethodRewriter extends ClassVisitor {
 
     private String owner;
 
-    StringMethodRewriter(ClassVisitor cv) {
+    ClassTaintingVisitor(ClassVisitor cv) {
         super(ASM7, cv);
 
         this.blacklist.add(new BlackListEntry("main", mainDescriptor, ACC_PUBLIC | ACC_STATIC));
@@ -122,6 +122,6 @@ public class StringMethodRewriter extends ClassVisitor {
         } else {
             mv = super.visitMethod(access, name, descriptor, signature, exceptions);
         }
-        return new StringRewriterVisitor(mv);
+        return new MethodTaintingVisitor(mv);
     }
 }
