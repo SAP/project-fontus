@@ -9,7 +9,6 @@ import org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.objectweb.asm.Opcodes.*;
 
 public class MethodTaintingVisitor extends MethodVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -18,7 +17,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
     private final HashMap<ProxiedDynamicFunctionEntry, Runnable> dynProxies;
 
     MethodTaintingVisitor(MethodVisitor methodVisitor) {
-        super(ASM7, methodVisitor);
+        super(Opcodes.ASM7, methodVisitor);
         this.methodProxies = new HashMap<>();
         this.dynProxies = new HashMap<>();
 
@@ -38,8 +37,17 @@ public class MethodTaintingVisitor extends MethodVisitor {
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(LIASString;F)LIASString;", false));
 
         this.methodProxies.put(
+          new ProxiedFunctionEntry("java/lang/Integer", "parseInt", "(Ljava/lang/String;)I"),
+                () -> {
+              super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, "getString", "()Ljava/lang/String;", false);
+              super.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "parseInt", "(Ljava/lang/String;)I", false);
+
+          }
+        );
+        this.methodProxies.put(
                 new ProxiedFunctionEntry("java/io/PrintStream", "println", "(Ljava/lang/String;)V"),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, "PrintStreamProxies", "println", "(Ljava/io/PrintStream;LIASString;)V", false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, "PrintStreamProxies", "println", "(Ljava/io/PrintStream;LIASString;)V", false)
+        );
     }
 
     @Override
@@ -79,11 +87,11 @@ public class MethodTaintingVisitor extends MethodVisitor {
 
     private static String opcodeToString(int opcode) {
         switch(opcode) {
-            case INVOKEVIRTUAL: return "v";
-            case INVOKEDYNAMIC: return "d";
-            case INVOKESTATIC: return "s";
-            case INVOKEINTERFACE: return "i";
-            case INVOKESPECIAL: return "sp";
+            case Opcodes.INVOKEVIRTUAL: return "v";
+            case Opcodes.INVOKEDYNAMIC: return "d";
+            case Opcodes.INVOKESTATIC: return "s";
+            case Opcodes.INVOKEINTERFACE: return "i";
+            case Opcodes.INVOKESPECIAL: return "sp";
             default: return "unknown";
         }
     }
