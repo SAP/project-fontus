@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.concurrent.Callable;
 
-@CommandLine.Command(description = "Replaces all String instances with taintable Strings.",
+@CommandLine.Command(description = "Replaces all String instances with taint-aware Strings.",
          name = "asm_taint", mixinStandardHelpOptions = true, version = "asm_taint 0.0.1")
 public class Main implements Callable<Void> {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

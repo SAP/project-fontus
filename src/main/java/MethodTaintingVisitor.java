@@ -15,13 +15,15 @@ public class MethodTaintingVisitor extends MethodVisitor {
 
     private final HashMap<ProxiedFunctionEntry, Runnable> methodProxies;
     private final HashMap<ProxiedDynamicFunctionEntry, Runnable> dynProxies;
+    private final HashMap<String, String> stringBuilderMethodsToRename;
 
     MethodTaintingVisitor(MethodVisitor methodVisitor) {
         super(Opcodes.ASM7, methodVisitor);
         this.methodProxies = new HashMap<>();
         this.dynProxies = new HashMap<>();
-
+        this.stringBuilderMethodsToRename = new HashMap<>();
         this.fillProxies();
+        this.fillMethodsToRename();
     }
 
     private static String opcodeToString(int opcode) {
@@ -41,7 +43,19 @@ public class MethodTaintingVisitor extends MethodVisitor {
         }
     }
 
+    /**
+     *  Initializes the methods that shall be renamed map.
+     */
+    private void fillMethodsToRename() {
+        // TODO: make dynamic!
+        this.stringBuilderMethodsToRename.put("toString", "toIASString");
+    }
+
+    /**
+     *  Initializes the method proxy maps.
+     */
     private void fillProxies() {
+        // TODO: make dynamic!
         this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(LIASString;LIASString;)LIASString;", false));
         this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;I)Ljava/lang/String;"),
@@ -69,26 +83,6 @@ public class MethodTaintingVisitor extends MethodVisitor {
         );
     }
 
-    @Override
-    public void visitFieldInsn(
-            final int opcode, final String owner, final String name, final String descriptor) {
-        Matcher descMatcher = Constants.strPattern.matcher(descriptor);
-        if (descMatcher.find()) {
-            String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
-            super.visitFieldInsn(opcode, owner, name, newDescriptor);
-            return;
-        }
-
-        Matcher sbDescMatcher = Constants.strBuilderPattern.matcher(descriptor);
-        if (sbDescMatcher.find()) {
-            String newDescriptor = sbDescMatcher.replaceAll(Constants.TStringBuilderDesc);
-            super.visitFieldInsn(opcode, owner, name, newDescriptor);
-            return;
-        }
-
-        super.visitFieldInsn(opcode, owner, name, descriptor);
-    }
-
     private boolean tryToApplyDynProxyCall(String name, String descriptor) {
         ProxiedDynamicFunctionEntry pdfe = new ProxiedDynamicFunctionEntry(name, descriptor);
         if (this.dynProxies.containsKey(pdfe)) {
@@ -111,6 +105,63 @@ public class MethodTaintingVisitor extends MethodVisitor {
         return false;
     }
 
+    /**
+     * Visit a method belonging to java/lang/String
+     */
+    private void visitStringMethod(final int opcode,
+                                   final String owner,
+                                   final String name,
+                                   final String descriptor,
+                                   final boolean isInterface) {
+        Matcher stringDescMatcher = Constants.strPattern.matcher(descriptor);
+        String newOwner = Constants.TString;
+        String newDescriptor = stringDescMatcher.replaceAll(Constants.TStringDesc);
+        logger.info("Rewriting String invoke [{}] {}:{}{} to {}:{}{}", opcodeToString(opcode), owner, name, descriptor, newOwner, name, newDescriptor);
+        super.visitMethodInsn(opcode, newOwner, name, newDescriptor, isInterface);
+    }
+
+    /**
+     * Visit a method belonging to java/lang/StringBuilder
+     */
+    private void visitStringBuilderMethod(final int opcode,
+                                          final String owner,
+                                          final String name,
+                                          final String descriptor,
+                                          final boolean isInterface) {
+        Matcher sbDescMatcher = Constants.strBuilderPattern.matcher(descriptor);
+        String newOwner = Constants.TStringBuilder;
+        String newDescriptor = sbDescMatcher.replaceAll(Constants.TStringBuilderDesc);
+        // Replace all instances of java/lang/String
+        Matcher newDescriptorMatcher = Constants.strPattern.matcher(newDescriptor);
+        String finalDescriptor = newDescriptorMatcher.replaceAll(Constants.TStringDesc);
+        String newName = this.stringBuilderMethodsToRename.getOrDefault(name, name);
+
+        logger.info("Rewriting StringBuilder invoke [{}] {}:{}{} to {}:{}{}", opcodeToString(opcode), owner, name, descriptor, newOwner, newName, finalDescriptor);
+        super.visitMethodInsn(opcode, newOwner, newName, finalDescriptor, isInterface);
+    }
+
+    @Override
+    public void visitFieldInsn(
+            final int opcode, final String owner, final String name, final String descriptor) {
+        Matcher descMatcher = Constants.strPattern.matcher(descriptor);
+        if (descMatcher.find()) {
+            String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
+            super.visitFieldInsn(opcode, owner, name, newDescriptor);
+            return;
+        }
+
+        Matcher sbDescMatcher = Constants.strBuilderPattern.matcher(descriptor);
+        if (sbDescMatcher.find()) {
+            String newDescriptor = sbDescMatcher.replaceAll(Constants.TStringBuilderDesc);
+            super.visitFieldInsn(opcode, owner, name, newDescriptor);
+            return;
+        }
+
+        super.visitFieldInsn(opcode, owner, name, descriptor);
+    }
+
+
+
     @Override
     public void visitMethodInsn(
             final int opcode,
@@ -122,39 +173,32 @@ public class MethodTaintingVisitor extends MethodVisitor {
         if (this.tryToApplyProxyCall(owner, name, descriptor)) {
             return;
         }
-        Matcher stringDescMatcher = Constants.strPattern.matcher(descriptor);
+
+        // Method belongs to type java/lang/String -> rewrite
         if (Constants.String.equals(owner)) {
-            String newOwner = Constants.TString;
-            String newDescriptor = stringDescMatcher.replaceAll(Constants.TStringDesc);
-            logger.info("Rewriting String invoke [{}] {}:{} ({})", opcodeToString(opcode), owner, name, newDescriptor);
-            super.visitMethodInsn(opcode, newOwner, name, newDescriptor, isInterface);
+            this.visitStringMethod(opcode, owner, name, descriptor, isInterface);
             return;
         }
 
-        Matcher stringBuilderdescMatcher = Constants.strBuilderPattern.matcher(descriptor);
+        // Method belongs to type java/lang/StringBuilder -> rewrite
         if (Constants.StringBuilder.equals(owner)) {
-            String newOwner = Constants.TStringBuilder;
-            String newDescriptor = stringBuilderdescMatcher.replaceAll(Constants.TStringBuilderDesc);
-            Matcher sbNewDescriptorMatcher = Constants.strPattern.matcher(newDescriptor);
-            newDescriptor = sbNewDescriptorMatcher.replaceAll(Constants.TStringDesc);
-            String newName = name;
-            if ("toString".equals(name)) {
-                newName = "toIASString";
-            }
-            logger.info("Rewriting StringBuilder invoke [{}] {}:{} ({})", opcodeToString(opcode), owner, newName, newDescriptor);
-            super.visitMethodInsn(opcode, newOwner, newName, newDescriptor, isInterface);
+            this.visitStringBuilderMethod(opcode, owner, name, descriptor, isInterface);
             return;
         }
 
         // Don't rewrite Java standard library functions or IASString functions
-        boolean skipInvoke = owner.contains("java") || owner.contains(Constants.TString);
+        boolean skipInvoke = owner.contains("java") || owner.contains(Constants.TString) || owner.contains(Constants.TStringBuilder);
+
+        Matcher stringBuilderdescMatcher = Constants.strBuilderPattern.matcher(descriptor);
+        Matcher stringDescMatcher = Constants.strPattern.matcher(descriptor);
+        // TODO: case when both find()s are true?
         if (stringDescMatcher.find() && !skipInvoke) {
             String newDescriptor = stringDescMatcher.replaceAll(Constants.TStringDesc);
-            logger.info("Rewriting invoke containing String [{}] {}:{} ({})", opcodeToString(opcode), owner, name, descriptor);
+            logger.info("Rewriting invoke containing String [{}] {}:{}{} to {}:{}{}", opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
             super.visitMethodInsn(opcode, owner, name, newDescriptor, isInterface);
         } else if (stringBuilderdescMatcher.find() && !skipInvoke) {
-            logger.info("Rewriting invoke containing StringBuilder [{}] {}:{} ({})", opcodeToString(opcode), owner, name, descriptor);
             String newDescriptor = stringBuilderdescMatcher.replaceAll(Constants.TStringBuilderDesc);
+            logger.info("Rewriting invoke containing StringBuilder [{}] {}:{}{} to {}:{}{}", opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
             super.visitMethodInsn(opcode, owner, name, newDescriptor, isInterface);
         } else {
             logger.info("Skipping invoke [{}] {}:{} ({})", opcodeToString(opcode), owner, name, descriptor);
@@ -164,8 +208,9 @@ public class MethodTaintingVisitor extends MethodVisitor {
 
     @Override
     public void visitLdcInsn(final Object value) {
-        // When loading a constant, make a taintable string out of a string constant.
+        // When loading a constant, make a taint-aware string out of a string constant.
         if (value instanceof String) {
+            logger.info("Rewriting String LDC to IASString LDC instruction");
             this.visitTypeInsn(Opcodes.NEW, Constants.TString);
             this.visitInsn(Opcodes.DUP);
             super.visitLdcInsn(value);
@@ -175,6 +220,9 @@ public class MethodTaintingVisitor extends MethodVisitor {
         }
     }
 
+    /**
+     * We want to override some instantiations of classes with our own types
+     */
     @Override
     public void visitTypeInsn(final int opcode, final String type) {
         logger.info("Visiting type [{}] instruction: {}", type, opcode);
