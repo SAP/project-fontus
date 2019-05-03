@@ -72,8 +72,8 @@ public class IASString {
         this.str = new String(buffer);
     }
 
-    public IASString(StringBuilder builder) {
-        this.str = new String(builder);
+    public IASString(IASStringBuilder builder) {
+        this.str = builder.toString();
     }
 
     public int length() {
@@ -112,8 +112,8 @@ public class IASString {
         this.str.getBytes(srcBegin, srcEnd, dst, dstBegin);
     }
 
-    public byte[] getBytes(String charsetName) throws UnsupportedEncodingException {
-        return this.str.getBytes(charsetName);
+    public byte[] getBytes(IASString charsetName) throws UnsupportedEncodingException {
+        return this.str.getBytes(charsetName.str);
     }
 
     public byte[] getBytes(Charset charset) {
@@ -137,36 +137,36 @@ public class IASString {
         return this.str.contentEquals(cs);
     }
 
-    public boolean equalsIgnoreCase(String anotherString) {
-        return this.str.equalsIgnoreCase(anotherString);
+    public boolean equalsIgnoreCase(IASString anotherString) {
+        return this.str.equalsIgnoreCase(anotherString.str);
     }
 
-    public int compareTo(String anotherString) {
-        return this.str.compareTo(anotherString);
+    public int compareTo(IASString anotherString) {
+        return this.str.compareTo(anotherString.str);
     }
 
-    public int compareToIgnoreCase(String str) {
-        return this.str.compareToIgnoreCase(str);
+    public int compareToIgnoreCase(IASString str) {
+        return this.str.compareToIgnoreCase(str.str);
     }
 
-    public boolean regionMatches(int toffset, String other, int ooffset, int len) {
-        return this.str.regionMatches(toffset, other, ooffset, len);
+    public boolean regionMatches(int toffset, IASString other, int ooffset, int len) {
+        return this.str.regionMatches(toffset, other.str, ooffset, len);
     }
 
-    public boolean regionMatches(boolean ignoreCase, int toffset, String other, int ooffset, int len) {
-        return this.str.regionMatches(ignoreCase, toffset, other, ooffset, len);
+    public boolean regionMatches(boolean ignoreCase, int toffset, IASString other, int ooffset, int len) {
+        return this.str.regionMatches(ignoreCase, toffset, other.str, ooffset, len);
     }
 
-    public boolean startsWith(String prefix, int toffset) {
-        return this.str.startsWith(prefix, toffset);
+    public boolean startsWith(IASString prefix, int toffset) {
+        return this.str.startsWith(prefix.str, toffset);
     }
 
-    public boolean startsWith(String prefix) {
-        return this.str.startsWith(prefix);
+    public boolean startsWith(IASString prefix) {
+        return this.str.startsWith(prefix.str);
     }
 
-    public boolean endsWith(String suffix) {
-        return this.str.endsWith(suffix);
+    public boolean endsWith(IASString suffix) {
+        return this.str.endsWith(suffix.str);
     }
 
     //TODO: sound?
@@ -190,114 +190,109 @@ public class IASString {
         return this.str.lastIndexOf(ch, fromIndex);
     }
 
-    public int indexOf(String str) {
-        return this.str.indexOf(str);
+    public int indexOf(IASString str) {
+        return this.str.indexOf(str.str);
     }
 
-    public int indexOf(String str, int fromIndex) {
-        return this.str.indexOf(str, fromIndex);
+    public int indexOf(IASString str, int fromIndex) {
+        return this.str.indexOf(str.str, fromIndex);
     }
 
-    public int lastIndexOf(String str) {
-        return this.str.lastIndexOf(str);
+    public int lastIndexOf(IASString str) {
+        return this.str.lastIndexOf(str.str);
     }
 
-    public int lastIndexOf(String str, int fromIndex) {
-        return this.str.lastIndexOf(str, fromIndex);
+    public int lastIndexOf(IASString str, int fromIndex) {
+        return this.str.lastIndexOf(str.str, fromIndex);
     }
 
-    //TODO: returns string
-    public String substring(int beginIndex) {
-        return this.str.substring(beginIndex);
+    public IASString substring(int beginIndex) {
+        return new IASString(this.str.substring(beginIndex));
     }
 
-    //TODO: returns string
-    public String substring(int beginIndex, int endIndex) {
-        return this.str.substring(beginIndex, endIndex);
+    public IASString substring(int beginIndex, int endIndex) {
+        return new IASString(this.str.substring(beginIndex, endIndex));
     }
 
     public CharSequence subSequence(int beginIndex, int endIndex) {
         return this.str.subSequence(beginIndex, endIndex);
     }
 
-    //TODO: returns, takes string
-    public String concat(String str) {
-        return this.str.concat(str);
+    public IASString concat(IASString str) {
+        return new IASString(this.str.concat(str.str));
     }
 
-    //TODO: returns string
-    public String replace(char oldChar, char newChar) {
-        return this.str.replace(oldChar, newChar);
+    public IASString replace(char oldChar, char newChar) {
+        return new IASString(this.str.replace(oldChar, newChar));
     }
 
-    //TODO: takes string
-    public boolean matches(String regex) {
-        return this.str.matches(regex);
+    public boolean matches(IASString regex) {
+        return this.str.matches(regex.str);
     }
 
     public boolean contains(CharSequence s) {
         return this.str.contains(s);
     }
 
-    //TODO: returns, takes string
-    public String replaceFirst(String regex, String replacement) {
-        return this.str.replaceFirst(regex, replacement);
+    public IASString replaceFirst(IASString regex, IASString replacement) {
+        return new IASString(this.str.replaceFirst(regex.str, replacement.str));
     }
 
-    //TODO: returns, takes string
-    public String replaceAll(String regex, String replacement) {
-        return this.str.replaceAll(regex, replacement);
+    public IASString replaceAll(IASString regex, IASString replacement) {
+        return new IASString(this.str.replaceAll(regex.str, replacement.str));
     }
 
-    //TODO: returns string
-    public String replace(CharSequence target, CharSequence replacement) {
-        return this.str.replace(target, replacement);
+    public IASString replace(CharSequence target, CharSequence replacement) {
+        return new IASString(this.str.replace(target, replacement));
     }
 
-    //TODO: returns, takes string
-    public String[] split(String regex, int limit) {
-        return this.str.split(regex, limit);
+    public IASString[] split(IASString regex, int limit) {
+        String[] split = this.str.split(regex.str, limit);
+        IASString[] splitted = new IASString[split.length];
+        for(int i=0;i<split.length;i++) {
+            splitted[i] = new IASString(split[i]);
+        }
+        return splitted;
     }
 
-    //TODO: returns, takes string
-    public String[] split(String regex) {
-        return this.str.split(regex);
+    public IASString[] split(IASString regex) {
+
+        String[] split = this.str.split(regex.str);
+        IASString[] splitted = new IASString[split.length];
+        for(int i=0;i<split.length;i++) {
+            splitted[i] = new IASString(split[i]);
+        }
+        return splitted;
     }
 
-    //TODO: returns, takes string
-    public static String join(CharSequence delimiter, CharSequence... elements) {
-        return String.join(delimiter, elements);
+    public static IASString join(CharSequence delimiter, CharSequence... elements) {
+        return new IASString(String.join(delimiter, elements));
     }
 
 
-    //TODO: returns, takes string
-    public static String join(CharSequence delimiter,
+    public static IASString join(CharSequence delimiter,
             Iterable<? extends CharSequence> elements) {
-        return String.join(delimiter, elements);
+        return new IASString(String.join(delimiter, elements));
     }
 
-    //TODO: returns, takes string
-    public String toLowerCase(Locale locale) {
-        return this.str.toLowerCase(locale);
+    public IASString toLowerCase(Locale locale) {
+        return new IASString(this.str.toLowerCase(locale));
     }
 
-    //TODO: returns, takes string
-    public String toLowerCase() {
-        return this.str.toLowerCase();
+    public IASString toLowerCase() {
+        return new IASString(this.str.toLowerCase());
     }
 
-    //TODO: returns, takes string
-    public String toUpperCase(Locale locale) {
-        return this.str.toUpperCase(locale);
+    public IASString toUpperCase(Locale locale) {
+        return new IASString(this.str.toUpperCase(locale));
     }
 
-    //TODO: returns, takes string
-    public String toUpperCase() {
-        return this.str.toUpperCase();
+    public IASString toUpperCase() {
+        return new IASString(this.str.toUpperCase());
     }
 
-    public String trim() {
-        return this.str.trim();
+    public IASString trim() {
+        return new IASString(this.str.trim());
     }
 
     /* JDK 11
@@ -339,65 +334,59 @@ public class IASString {
         return this.str.toCharArray();
     }
 
-    //TODO: sound?
-    public static String format(String format, Object... args) {
-        return String.format(format, args);
-    }
-    //TODO: sound?
-    public static String format(IASString format, Object... args) {
-        return String.format(format.str, args);
-    }
 
     //TODO: sound?
-    public static String format(Locale l, String format, Object... args) {
-        return String.format(l, format, args);
+    public static IASString format(IASString format, Object... args) {
+        return new IASString(String.format(format.str, args));
     }
+
+
     //TODO: sound?
-    public static String format(Locale l, IASString format, Object... args) {
-        return String.format(l, format.str, args);
+    public static IASString format(Locale l, IASString format, Object... args) {
+        return new IASString(String.format(l, format.str, args));
     }
 
-    public static String valueOf(Object obj) {
-        return String.valueOf(obj);
+    public static IASString valueOf(Object obj) {
+        return new IASString(String.valueOf(obj));
     }
 
-    public static String valueOf(char data[]) {
-        return String.valueOf(data);
+    public static IASString valueOf(char data[]) {
+        return new IASString(String.valueOf(data));
     }
 
-    public static String valueOf(char data[], int offset, int count) {
-        return String.valueOf(data, offset, count);
+    public static IASString valueOf(char data[], int offset, int count) {
+        return new IASString(String.valueOf(data, offset, count));
     }
 
-    public static String copyValueOf(char data[], int offset, int count) {
-        return String.copyValueOf(data, offset, count);
+    public static IASString copyValueOf(char data[], int offset, int count) {
+        return new IASString(String.copyValueOf(data, offset, count));
     }
 
-    public static String copyValueOf(char data[]) {
-        return String.copyValueOf(data);
+    public static IASString copyValueOf(char data[]) {
+        return new IASString(String.copyValueOf(data));
     }
 
-    public static String valueOf(boolean b) {
-        return String.valueOf(b);
+    public static IASString valueOf(boolean b) {
+        return new IASString(String.valueOf(b));
     }
 
-    public static String valueOf(char c) {
-        return String.valueOf(c);
+    public static IASString valueOf(char c) {
+        return new IASString(String.valueOf(c));
     }
 
-    public static String valueOf(int i) {
-        return String.valueOf(i);
+    public static IASString valueOf(int i) {
+        return new IASString(String.valueOf(i));
     }
 
-    public static String valueOf(long l) {
-        return String.valueOf(l);
+    public static IASString valueOf(long l) {
+        return new IASString(String.valueOf(l));
     }
 
-    public static String valueOf(float f) {
-        return String.valueOf(f);
+    public static IASString valueOf(float f) {
+        return new IASString(String.valueOf(f));
     }
-    public static String valueOf(double d) {
-        return String.valueOf(d);
+    public static IASString valueOf(double d) {
+        return new IASString(String.valueOf(d));
     }
 
     //TODO: sound?

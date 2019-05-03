@@ -26,22 +26,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
         this.fillMethodsToRename();
     }
 
-    private static String opcodeToString(int opcode) {
-        switch (opcode) {
-            case Opcodes.INVOKEVIRTUAL:
-                return "v";
-            case Opcodes.INVOKEDYNAMIC:
-                return "d";
-            case Opcodes.INVOKESTATIC:
-                return "s";
-            case Opcodes.INVOKEINTERFACE:
-                return "i";
-            case Opcodes.INVOKESPECIAL:
-                return "sp";
-            default:
-                return "unknown";
-        }
-    }
+
 
     /**
      *  Initializes the methods that shall be renamed map.
@@ -116,7 +101,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
         Matcher stringDescMatcher = Constants.strPattern.matcher(descriptor);
         String newOwner = Constants.TString;
         String newDescriptor = stringDescMatcher.replaceAll(Constants.TStringDesc);
-        logger.info("Rewriting String invoke [{}] {}:{}{} to {}:{}{}", opcodeToString(opcode), owner, name, descriptor, newOwner, name, newDescriptor);
+        logger.info("Rewriting String invoke [{}] {}:{}{} to {}:{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, name, newDescriptor);
         super.visitMethodInsn(opcode, newOwner, name, newDescriptor, isInterface);
     }
 
@@ -136,7 +121,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
         String finalDescriptor = newDescriptorMatcher.replaceAll(Constants.TStringDesc);
         String newName = this.stringBuilderMethodsToRename.getOrDefault(name, name);
 
-        logger.info("Rewriting StringBuilder invoke [{}] {}:{}{} to {}:{}{}", opcodeToString(opcode), owner, name, descriptor, newOwner, newName, finalDescriptor);
+        logger.info("Rewriting StringBuilder invoke [{}] {}:{}{} to {}:{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, finalDescriptor);
         super.visitMethodInsn(opcode, newOwner, newName, finalDescriptor, isInterface);
     }
 
@@ -194,14 +179,14 @@ public class MethodTaintingVisitor extends MethodVisitor {
         // TODO: case when both find()s are true?
         if (stringDescMatcher.find() && !skipInvoke) {
             String newDescriptor = stringDescMatcher.replaceAll(Constants.TStringDesc);
-            logger.info("Rewriting invoke containing String [{}] {}:{}{} to {}:{}{}", opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
+            logger.info("Rewriting invoke containing String [{}] {}:{}{} to {}:{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
             super.visitMethodInsn(opcode, owner, name, newDescriptor, isInterface);
         } else if (stringBuilderdescMatcher.find() && !skipInvoke) {
             String newDescriptor = stringBuilderdescMatcher.replaceAll(Constants.TStringBuilderDesc);
-            logger.info("Rewriting invoke containing StringBuilder [{}] {}:{}{} to {}:{}{}", opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
+            logger.info("Rewriting invoke containing StringBuilder [{}] {}:{}{} to {}:{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
             super.visitMethodInsn(opcode, owner, name, newDescriptor, isInterface);
         } else {
-            logger.info("Skipping invoke [{}] {}:{} ({})", opcodeToString(opcode), owner, name, descriptor);
+            logger.info("Skipping invoke [{}] {}:{} ({})", Utils.opcodeToString(opcode), owner, name, descriptor);
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
         }
     }
