@@ -46,8 +46,10 @@ public class MethodTaintingVisitor extends MethodVisitor {
         );
         this.methodProxies.put(
                 new ProxiedFunctionEntry("java/io/PrintStream", "println", "(Ljava/lang/String;)V"),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, "PrintStreamProxies", "println", "(Ljava/io/PrintStream;LIASString;)V", false)
-        );
+                () -> {
+                        super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, "getString", "()Ljava/lang/String;", false);
+                        super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false);
+                });
     }
 
     @Override
