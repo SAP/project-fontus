@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.regex.Matcher;
 
 
-import static org.objectweb.asm.Opcodes.*;
 
 public class ClassTaintingVisitor extends ClassVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -20,9 +19,9 @@ public class ClassTaintingVisitor extends ClassVisitor {
     private String owner;
 
     ClassTaintingVisitor(ClassVisitor cv) {
-        super(ASM7, cv);
+        super(Opcodes.ASM7, cv);
 
-        this.blacklist.add(new BlackListEntry("main", mainDescriptor, ACC_PUBLIC | ACC_STATIC));
+        this.blacklist.add(new BlackListEntry("main", mainDescriptor, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
     }
 
     @Override
@@ -56,44 +55,44 @@ public class ClassTaintingVisitor extends ClassVisitor {
         mv.visitCode();
         Label label0 = new Label();
         mv.visitLabel(label0);
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitInsn(ARRAYLENGTH);
-        mv.visitTypeInsn(ANEWARRAY, Constants.TString);
-        mv.visitVarInsn(ASTORE, 1);
+        mv.visitVarInsn(Opcodes.ALOAD, 0);
+        mv.visitInsn(Opcodes.ARRAYLENGTH);
+        mv.visitTypeInsn(Opcodes.ANEWARRAY, Constants.TString);
+        mv.visitVarInsn(Opcodes.ASTORE, 1);
         Label label1 = new Label();
         mv.visitLabel(label1);
-        mv.visitInsn(ICONST_0);
-        mv.visitVarInsn(ISTORE, 2);
+        mv.visitInsn(Opcodes.ICONST_0);
+        mv.visitVarInsn(Opcodes.ISTORE, 2);
         Label label2 = new Label();
         mv.visitLabel(label2);
         mv.visitFrame(Opcodes.F_APPEND,2, new Object[] {Constants.TStringArrayDesc, Opcodes.INTEGER}, 0, null);
-        mv.visitVarInsn(ILOAD, 2);
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitInsn(ARRAYLENGTH);
+        mv.visitVarInsn(Opcodes.ILOAD, 2);
+        mv.visitVarInsn(Opcodes.ALOAD, 1);
+        mv.visitInsn(Opcodes.ARRAYLENGTH);
         Label label3 = new Label();
-        mv.visitJumpInsn(IF_ICMPGE, label3);
+        mv.visitJumpInsn(Opcodes.IF_ICMPGE, label3);
         Label label4 = new Label();
         mv.visitLabel(label4);
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitVarInsn(ILOAD, 2);
-        mv.visitTypeInsn(NEW, Constants.TString);
-        mv.visitInsn(DUP);
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitVarInsn(ILOAD, 2);
-        mv.visitInsn(AALOAD);
-        mv.visitMethodInsn(INVOKESPECIAL, Constants.TString, "<init>", "(Ljava/lang/String;)V", false);
-        mv.visitInsn(AASTORE);
+        mv.visitVarInsn(Opcodes.ALOAD, 1);
+        mv.visitVarInsn(Opcodes.ILOAD, 2);
+        mv.visitTypeInsn(Opcodes.NEW, Constants.TString);
+        mv.visitInsn(Opcodes.DUP);
+        mv.visitVarInsn(Opcodes.ALOAD, 0);
+        mv.visitVarInsn(Opcodes.ILOAD, 2);
+        mv.visitInsn(Opcodes.AALOAD);
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TString, Constants.Init, "(Ljava/lang/String;)V", false);
+        mv.visitInsn(Opcodes.AASTORE);
         Label label5 = new Label();
         mv.visitLabel(label5);
         mv.visitIincInsn(2, 1);
-        mv.visitJumpInsn(GOTO, label2);
+        mv.visitJumpInsn(Opcodes.GOTO, label2);
         mv.visitLabel(label3);
         mv.visitFrame(Opcodes.F_CHOP,1, null, 0, null);
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitMethodInsn(INVOKESTATIC, this.owner, "$main", newMainDescriptor, false);
+        mv.visitVarInsn(Opcodes.ALOAD, 1);
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.owner, Constants.MainWrapper, newMainDescriptor, false);
         Label label6 = new Label();
         mv.visitLabel(label6);
-        mv.visitInsn(RETURN);
+        mv.visitInsn(Opcodes.RETURN);
         mv.visitMaxs(6, 3);
         mv.visitEnd();
     }
@@ -109,12 +108,12 @@ public class ClassTaintingVisitor extends ClassVisitor {
         Matcher descMatcher = Constants.strPattern.matcher(descriptor);
         MethodVisitor mv;
         // Create a new main method, wrapping the regular one and translating all Strings to IASStrings
-        if(access == (ACC_PUBLIC | ACC_STATIC) && name.equals("main") && descriptor.equals(mainDescriptor)) {
+        if(access == (Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC) && "main".equals(name) && descriptor.equals(mainDescriptor)) {
             logger.info("Creating proxy main method");
-            MethodVisitor v = super.visitMethod(ACC_PUBLIC | ACC_STATIC, "main", mainDescriptor, null, null);
+            MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "main", mainDescriptor, null, null);
             this.createMainWrapperMethod(v);
             logger.info("Processing renamed main method.");
-            mv = super.visitMethod(access, "$main", newMainDescriptor, signature, exceptions);
+            mv = super.visitMethod(access, Constants.MainWrapper, newMainDescriptor, signature, exceptions);
         } else if (!this.blacklist.contains(new BlackListEntry(name, descriptor, access)) && descMatcher.find()) {
             logger.info("Rewriting method signature {} ({})", name, descriptor);
             String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);

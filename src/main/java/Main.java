@@ -34,7 +34,7 @@ public class Main implements Callable<Void> {
     private boolean checkRequirements() {
         File outDir = new File(this.outputFile.getParent());
         if(!outDir.isDirectory()) { return false; }
-        String[] requiredFilenames = { "IASString.class", "PrintStreamProxies.class"};
+        String[] requiredFilenames = { "IASString.class", "IASStringBuilder.class"};
         for(String required : requiredFilenames) {
             File requiredFile = new File(outDir, required);
             if(requiredFile.exists() && requiredFile.isFile()) {
