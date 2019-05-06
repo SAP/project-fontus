@@ -125,8 +125,9 @@ public class IASString {
     }
 
     public boolean equals(Object anObject) {
-        //TODO: fixme
-        return this.str.equals(anObject);
+        if(!(anObject instanceof IASString)) return false;
+        IASString other = (IASString) anObject;
+        return this.str.equals(other.str);
     }
 
     public boolean contentEquals(StringBuffer sb) {
