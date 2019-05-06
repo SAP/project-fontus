@@ -19,9 +19,31 @@ import java.util.stream.StreamSupport;
 
 public class IASString {
     private String str;
+    private boolean tainted;
 
     public IASString(String s) {
         this.str = s;
+        this.tainted = false;
+    }
+
+    private IASString(String s, boolean tainted) {
+        this.str = s;
+        this.tainted = tainted;
+    }
+
+    public static IASString tainted(String str) {
+        return new IASString(str, true);
+    }
+
+    public boolean isTainted() {
+        return this.tainted;
+    }
+
+    public void abortIfTainted() {
+        if(this.tainted) {
+            System.err.printf("String %s is tainted!\nAborting..!\n", this.str);
+            System.exit(1);
+        }
     }
 
     public IASString(char value[]) {

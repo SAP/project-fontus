@@ -2,10 +2,7 @@ import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
 
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 
 import org.objectweb.asm.Opcodes;
@@ -19,16 +16,29 @@ public class MethodTaintingVisitor extends MethodVisitor {
     private final HashMap<ProxiedFunctionEntry, Runnable> methodProxies;
     private final HashMap<ProxiedDynamicFunctionEntry, Runnable> dynProxies;
     private final HashMap<String, String> stringBuilderMethodsToRename;
+    private final List<ProxiedFunctionEntry> sources;
+    private final List<ProxiedFunctionEntry> sinks;
 
     MethodTaintingVisitor(MethodVisitor methodVisitor) {
         super(Opcodes.ASM7, methodVisitor);
         this.methodProxies = new HashMap<>();
         this.dynProxies = new HashMap<>();
         this.stringBuilderMethodsToRename = new HashMap<>();
+        this.sources = new ArrayList<>();
+        this.sinks = new ArrayList<>();
+
         this.fillProxies();
         this.fillMethodsToRename();
+        this.fillSources();
+        this.fillSinks();
+    }
+    private void fillSinks() {
+        this.sinks.add(new ProxiedFunctionEntry("java/io/PrintStream", "println", "(Ljava/lang/String;)V"));
     }
 
+    private void fillSources() {
+        this.sources.add(new ProxiedFunctionEntry("java/util/Scanner", "next", "()Ljava/lang/String;"));
+    }
     /**
      *  Initializes the methods that shall be renamed map.
      */
@@ -53,7 +63,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
         this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;F)Ljava/lang/String;"),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(LIASString;F)LIASString;", false));
 
-        List<Map.Entry<String, String>> numberTypes = new ArrayList<>();
+        Collection<Map.Entry<String, String>> numberTypes = new ArrayList<>();
         numberTypes.add(Map.entry("Byte", "B"));
         numberTypes.add(Map.entry("Short", "S"));
         numberTypes.add(Map.entry("Integer", "I"));
@@ -106,14 +116,21 @@ public class MethodTaintingVisitor extends MethodVisitor {
                     }
             );
         }
-
         this.methodProxies.put(
+                new ProxiedFunctionEntry("java/util/Scanner", "<init>", "(Ljava/lang/String;)V"),
+                () -> {
+                    logger.info("Augmenting call to java/util/Scanner.<init>(Ljava/lang/String;)V");
+                    super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.TStringToStringDesc, false);
+                    super.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/util/Scanner", "<init>", "(Ljava/lang/String;)V" , false);
+                }
+        );
+        /*this.methodProxies.put(
                 new ProxiedFunctionEntry("java/io/PrintStream", "println", "(Ljava/lang/String;)V"),
                 () -> {
                     super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.TStringToStringDesc, false);
                     super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false);
                 }
-        );
+        );*/
     }
 
     /**
@@ -183,6 +200,37 @@ public class MethodTaintingVisitor extends MethodVisitor {
         logger.info("Rewriting String invoke [{}] {}:{}{} to {}:{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, name, newDescriptor);
         super.visitMethodInsn(opcode, newOwner, name, newDescriptor, isInterface);
     }
+    private boolean isHandledAsSink(final int opcode,
+                                          final String owner,
+                                          final String name,
+                                          final String descriptor,
+                                          final boolean isInterface) {
+        ProxiedFunctionEntry pfe = new ProxiedFunctionEntry(owner, name, descriptor);
+        if(this.sinks.contains(pfe)) {
+            logger.info("{}.{}{} is a sinks, so calling the check taint function before passing the value!", owner, name, descriptor);
+            super.visitInsn(Opcodes.DUP);
+            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, "abortIfTainted", "()V", false);
+            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.TStringToStringDesc, false);
+            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, owner, name, descriptor, isInterface);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean shouldStringBeTainted(final int opcode,
+                                       final String owner,
+                                       final String name,
+                                       final String descriptor,
+                                       final boolean isInterface) {
+        ProxiedFunctionEntry pfe = new ProxiedFunctionEntry(owner, name, descriptor);
+        if(this.sources.contains(pfe)) {
+            logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", owner, name, descriptor, Constants.TString);
+            super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "tainted", "(Ljava/lang/String;)LIASString;", false);
+            return true;
+        }
+        return false;
+    }
 
     /**
      * Visit a method belonging to java/lang/StringBuilder
@@ -234,6 +282,14 @@ public class MethodTaintingVisitor extends MethodVisitor {
             final String name,
             final String descriptor,
             final boolean isInterface) {
+
+        if(this.isHandledAsSink(opcode, owner, name, descriptor, isInterface)) {
+            return;
+        }
+
+        if(this.shouldStringBeTainted(opcode, owner, name, descriptor, isInterface)) {
+            return;
+        }
 
         // If a method has a defined proxy, apply it right away
         if (this.tryToApplyProxyCall(owner, name, descriptor)) {
