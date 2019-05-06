@@ -60,6 +60,28 @@ public class MethodTaintingVisitor extends MethodVisitor {
                 }
         );
         this.methodProxies.put(
+                new ProxiedFunctionEntry("java/lang/Integer", "toString", "()Ljava/lang/String;"),
+                () -> {
+                    super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Integer", "toString", "()Ljava/lang/String;", false);
+                    super.visitTypeInsn(Opcodes.NEW, Constants.TString);
+                    super.visitInsn(Opcodes.DUP);
+                    super.visitInsn(Opcodes.DUP2_X1);
+                    super.visitInsn(Opcodes.POP2);
+                    super.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TString, Constants.Init, "(Ljava/lang/String;)V", false);
+                }
+        );
+        this.methodProxies.put(
+                new ProxiedFunctionEntry("java/lang/Integer", "toString", "(I)Ljava/lang/String;"),
+                () -> {
+                    super.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "toString", "(I)Ljava/lang/String;", false);
+                    super.visitTypeInsn(Opcodes.NEW, Constants.TString);
+                    super.visitInsn(Opcodes.DUP);
+                    super.visitInsn(Opcodes.DUP2_X1);
+                    super.visitInsn(Opcodes.POP2);
+                    super.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TString, Constants.Init, "(Ljava/lang/String;)V", false);
+                }
+        );
+        this.methodProxies.put(
                 new ProxiedFunctionEntry("java/io/PrintStream", "println", "(Ljava/lang/String;)V"),
                 () -> {
                     super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, "getString", "()Ljava/lang/String;", false);
