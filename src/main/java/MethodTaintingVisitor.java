@@ -2,7 +2,10 @@ import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
 
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 
 import org.objectweb.asm.Opcodes;
@@ -50,21 +53,98 @@ public class MethodTaintingVisitor extends MethodVisitor {
         this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;F)Ljava/lang/String;"),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(LIASString;F)LIASString;", false));
 
-        this.methodProxies.put(
-                new ProxiedFunctionEntry("java/lang/Integer", "parseInt", "(Ljava/lang/String;)I"),
-                () -> {
-                    super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, "getString", "()Ljava/lang/String;", false);
-                    super.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "parseInt", "(Ljava/lang/String;)I", false);
-                }
-        );
+        List<Map.Entry<String, String>> numberTypes = new ArrayList<>();
+        numberTypes.add(Map.entry("Byte", "B"));
+        numberTypes.add(Map.entry("Short", "S"));
+        numberTypes.add(Map.entry("Integer", "I"));
+        numberTypes.add(Map.entry("Long", "J"));
+        numberTypes.add(Map.entry("Double", "D"));
+        numberTypes.add(Map.entry("Float", "F"));
+
+        for(Map.Entry<String, String> e : numberTypes) {
+          String owner = String.format("java/lang/%s", e.getKey());
+          // TODO: UGLY HACK
+          String parseName = String.format("parse%s", "Integer".equals(e.getKey()) ? "Int" : e.getKey());
+          String parseDescriptor = String.format("(Ljava/lang/String;)%s", e.getValue());
+
+          this.methodProxies.put(
+                  new ProxiedFunctionEntry(owner, parseName, parseDescriptor),
+                  () -> {
+                      logger.info("Augmenting call to {}.{}{}", owner, parseName, parseDescriptor);
+                      super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.TStringToStringDesc, false);
+                      super.visitMethodInsn(Opcodes.INVOKESTATIC, owner, parseName, parseDescriptor, false);
+                  }
+          );
+          String toHexStringName = "toHexString";
+          String toStringDesc = String.format("(%s)Ljava/lang/String;", e.getValue());
+            this.methodProxies.put(
+                    new ProxiedFunctionEntry(owner, toHexStringName, toStringDesc),
+                    () -> {
+                        logger.info("Augmenting call to {}.{}{}", owner, toHexStringName, toStringDesc);
+                        super.visitMethodInsn(Opcodes.INVOKESTATIC, owner, toHexStringName, toStringDesc, false);
+                        this.stringToTString();
+                    }
+            );
+
+            String toStringName = "toString";
+            this.methodProxies.put(
+                    new ProxiedFunctionEntry(owner, toStringName, toStringDesc),
+                    () -> {
+                        logger.info("Augmenting call to {}.{}{}", owner, toStringName, toStringDesc);
+                        super.visitMethodInsn(Opcodes.INVOKESTATIC, owner, toStringName, toStringDesc, false);
+                        this.stringToTString();
+                    }
+            );
+            String valueOfName = "valueOf";
+            String valueOfDesc = String.format("(Ljava/lang/String;)L%s;", owner);
+            this.methodProxies.put(
+                    new ProxiedFunctionEntry(owner, valueOfName, valueOfDesc),
+                    () -> {
+                        logger.info("Augmenting call to {}:{}{}", owner, valueOfName, valueOfDesc);
+                        super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.TStringToStringDesc, false);
+                        super.visitMethodInsn(Opcodes.INVOKESTATIC, owner, valueOfName, valueOfDesc, false);
+                    }
+            );
+        }
 
         this.methodProxies.put(
                 new ProxiedFunctionEntry("java/io/PrintStream", "println", "(Ljava/lang/String;)V"),
                 () -> {
-                    super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, "getString", "()Ljava/lang/String;", false);
+                    super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.TStringToStringDesc, false);
                     super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false);
                 }
         );
+    }
+
+    /**
+     * Converts a String that's top of the stack to an taint-aware String
+     * Precondition: String instance that's on top of the Stack!!
+     */
+    private void stringToTString() {
+        /*
+        Operand stack:
+        +-------+ new  +----------+ dup  +----------+ dup2_x1  +----------+  pop2  +----------+ ispecial  +----------+
+        |String +----->+IASString +----->+IASString +--------->+IASString +------->+String    +---------->+IASString |
+        +-------+      +----------+      +----------+          +----------+        +----------+ init      +----------+
+                       +----------+      +----------+          +----------+        +----------+
+                       |String    |      |IASString |          |IASString |        |IASString |
+                       +----------+      +----------+          +----------+        +----------+
+                                         +----------+          +----------+        +----------+
+                                         |String    |          |String    |        |IASString |
+                                         +----------+          +----------+        +----------+
+                                                               +----------+
+                                                               |IASString |
+                                                               +----------+
+                                                               +----------+
+                                                               |IASString |
+                                                               +----------+
+
+        */
+        super.visitTypeInsn(Opcodes.NEW, Constants.TString);
+        super.visitInsn(Opcodes.DUP);
+        super.visitInsn(Opcodes.DUP2_X1);
+        super.visitInsn(Opcodes.POP2);
+        super.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TString, Constants.Init, Constants.TStringInitUntaintedDesc, false);
     }
 
     private boolean tryToApplyDynProxyCall(String name, String descriptor) {
@@ -147,35 +227,6 @@ public class MethodTaintingVisitor extends MethodVisitor {
         super.visitFieldInsn(opcode, owner, name, descriptor);
     }
 
-    private void overwriteToString(final int opcode, final String owner, final String name, final String descriptor, final boolean isInterface) {
-        /*
-        Operand stack:
-        +-------+ new  +----------+ dup  +----------+ dup2_x1  +----------+  pop2  +----------+ ispecial  +----------+
-        |String +----->+IASString +----->+IASString +--------->+IASString +------->+String    +---------->+IASString |
-        +-------+      +----------+      +----------+          +----------+        +----------+ init      +----------+
-                       +----------+      +----------+          +----------+        +----------+
-                       |String    |      |IASString |          |IASString |        |IASString |
-                       +----------+      +----------+          +----------+        +----------+
-                                         +----------+          +----------+        +----------+
-                                         |String    |          |String    |        |IASString |
-                                         +----------+          +----------+        +----------+
-                                                               +----------+
-                                                               |IASString |
-                                                               +----------+
-                                                               +----------+
-                                                               |IASString |
-                                                               +----------+
-
-        */
-        super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
-        super.visitTypeInsn(Opcodes.NEW, Constants.TString);
-        super.visitInsn(Opcodes.DUP);
-        super.visitInsn(Opcodes.DUP2_X1);
-        super.visitInsn(Opcodes.POP2);
-        super.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TString, Constants.Init, Constants.TStringInitUntaintedDesc, false);
-    }
-
-
     @Override
     public void visitMethodInsn(
             final int opcode,
@@ -203,7 +254,8 @@ public class MethodTaintingVisitor extends MethodVisitor {
 
         // toString method
         if("toString".equals(name) && descriptor.endsWith(")Ljava/lang/String;")) {
-            this.overwriteToString(opcode, owner, name, descriptor, isInterface);
+            super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+            this.stringToTString();
             return;
         }
 

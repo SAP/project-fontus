@@ -48,6 +48,16 @@ final class Constants {
      * Descriptor of the untainted init/constructor method.
      */
     static final String TStringInitUntaintedDesc = "(Ljava/lang/String;)V";
+
+    /**
+     * Name of the method that converts taint-aware Strings to regular ones
+     */
+    static final String TStringToStringName = "getString";
+    /**
+     * Descriptor of the taint-aware to regular String conversion method
+     */
+    static final String TStringToStringDesc = "()Ljava/lang/String;";
+
     private Constants() {}
 
 }
