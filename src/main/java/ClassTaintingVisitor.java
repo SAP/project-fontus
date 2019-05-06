@@ -121,7 +121,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitVarInsn(Opcodes.ILOAD, 2);
         mv.visitInsn(Opcodes.AALOAD);
-        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TString, Constants.Init, "(Ljava/lang/String;)V", false);
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TString, Constants.Init, Constants.TStringInitUntaintedDesc, false);
         mv.visitInsn(Opcodes.AASTORE);
         Label label5 = new Label();
         mv.visitLabel(label5);

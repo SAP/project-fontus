@@ -26,8 +26,6 @@ public class MethodTaintingVisitor extends MethodVisitor {
         this.fillMethodsToRename();
     }
 
-
-
     /**
      *  Initializes the methods that shall be renamed map.
      */
@@ -59,28 +57,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
                     super.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "parseInt", "(Ljava/lang/String;)I", false);
                 }
         );
-        this.methodProxies.put(
-                new ProxiedFunctionEntry("java/lang/Integer", "toString", "()Ljava/lang/String;"),
-                () -> {
-                    super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Integer", "toString", "()Ljava/lang/String;", false);
-                    super.visitTypeInsn(Opcodes.NEW, Constants.TString);
-                    super.visitInsn(Opcodes.DUP);
-                    super.visitInsn(Opcodes.DUP2_X1);
-                    super.visitInsn(Opcodes.POP2);
-                    super.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TString, Constants.Init, "(Ljava/lang/String;)V", false);
-                }
-        );
-        this.methodProxies.put(
-                new ProxiedFunctionEntry("java/lang/Integer", "toString", "(I)Ljava/lang/String;"),
-                () -> {
-                    super.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "toString", "(I)Ljava/lang/String;", false);
-                    super.visitTypeInsn(Opcodes.NEW, Constants.TString);
-                    super.visitInsn(Opcodes.DUP);
-                    super.visitInsn(Opcodes.DUP2_X1);
-                    super.visitInsn(Opcodes.POP2);
-                    super.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TString, Constants.Init, "(Ljava/lang/String;)V", false);
-                }
-        );
+
         this.methodProxies.put(
                 new ProxiedFunctionEntry("java/io/PrintStream", "println", "(Ljava/lang/String;)V"),
                 () -> {
@@ -147,6 +124,9 @@ public class MethodTaintingVisitor extends MethodVisitor {
         super.visitMethodInsn(opcode, newOwner, newName, finalDescriptor, isInterface);
     }
 
+    /**
+     * Replace access to fields of type IASString/IASStringBuilder
+     */
     @Override
     public void visitFieldInsn(
             final int opcode, final String owner, final String name, final String descriptor) {
@@ -167,6 +147,33 @@ public class MethodTaintingVisitor extends MethodVisitor {
         super.visitFieldInsn(opcode, owner, name, descriptor);
     }
 
+    private void overwriteToString(final int opcode, final String owner, final String name, final String descriptor, final boolean isInterface) {
+        /*
+        Operand stack:
+        +-------+ new  +----------+ dup  +----------+ dup2_x1  +----------+  pop2  +----------+ ispecial  +----------+
+        |String +----->+IASString +----->+IASString +--------->+IASString +------->+String    +---------->+IASString |
+        +-------+      +----------+      +----------+          +----------+        +----------+ init      +----------+
+                       +----------+      +----------+          +----------+        +----------+
+                       |String    |      |IASString |          |IASString |        |IASString |
+                       +----------+      +----------+          +----------+        +----------+
+                                         +----------+          +----------+        +----------+
+                                         |String    |          |String    |        |IASString |
+                                         +----------+          +----------+        +----------+
+                                                               +----------+
+                                                               |IASString |
+                                                               +----------+
+                                                               +----------+
+                                                               |IASString |
+                                                               +----------+
+
+        */
+        super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+        super.visitTypeInsn(Opcodes.NEW, Constants.TString);
+        super.visitInsn(Opcodes.DUP);
+        super.visitInsn(Opcodes.DUP2_X1);
+        super.visitInsn(Opcodes.POP2);
+        super.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TString, Constants.Init, Constants.TStringInitUntaintedDesc, false);
+    }
 
 
     @Override
@@ -176,6 +183,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
             final String name,
             final String descriptor,
             final boolean isInterface) {
+
         // If a method has a defined proxy, apply it right away
         if (this.tryToApplyProxyCall(owner, name, descriptor)) {
             return;
@@ -193,7 +201,13 @@ public class MethodTaintingVisitor extends MethodVisitor {
             return;
         }
 
-        // Don't rewrite Java standard library functions or IASString functions
+        // toString method
+        if("toString".equals(name) && descriptor.endsWith(")Ljava/lang/String;")) {
+            this.overwriteToString(opcode, owner, name, descriptor, isInterface);
+            return;
+        }
+
+        // Don't rewrite Java standard library functions or IASString/IASStringBuilder functions
         boolean skipInvoke = owner.contains("java") || owner.contains(Constants.TString) || owner.contains(Constants.TStringBuilder);
 
         Matcher stringBuilderdescMatcher = Constants.strBuilderPattern.matcher(descriptor);
@@ -218,8 +232,9 @@ public class MethodTaintingVisitor extends MethodVisitor {
         // When loading a constant, make a taint-aware string out of a string constant.
         if (value instanceof String) {
             logger.info("Rewriting String LDC to IASString LDC instruction");
-            this.visitTypeInsn(Opcodes.NEW, Constants.TString);
-            this.visitInsn(Opcodes.DUP);
+            // call super here to not have the calls rewritten/recurse
+            super.visitTypeInsn(Opcodes.NEW, Constants.TString);
+            super.visitInsn(Opcodes.DUP);
             super.visitLdcInsn(value);
             super.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TString, Constants.Init, "(Ljava/lang/String;)V", false);
         } else {
