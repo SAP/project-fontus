@@ -3,21 +3,33 @@ import java.util.stream.IntStream;
 public class IASStringBuilder implements java.io.Serializable, /* Comparable<IASStringBuilder>, */ CharSequence {
 
     private final StringBuilder builder;
+    private boolean tainted;
 
+    public boolean isTainted() {
+        return this.tainted;
+    }
+
+    private void mergeTaint(IASString str) {
+        this.tainted |= str.isTainted();
+    }
     public IASStringBuilder() {
         this.builder = new StringBuilder();
+        this.tainted = false;
     }
 
     public IASStringBuilder(int capacity) {
         this.builder = new StringBuilder(capacity);
+        this.tainted = false;
     }
 
     public IASStringBuilder(IASString str) {
         this.builder = new StringBuilder(str.getString());
+        this.mergeTaint(str);
     }
 
     public IASStringBuilder(CharSequence seq) {
         this.builder = new StringBuilder(seq);
+        this.tainted = false;
     }
 
     public IASStringBuilder append(Object obj) {
@@ -27,6 +39,7 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
 
     public IASStringBuilder append(IASString str) {
         this.builder.append(str.getString());
+        this.mergeTaint(str);
         return this;
     }
 
@@ -184,7 +197,7 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
     }
 
     public IASString toIASString() {
-        return new IASString(this.builder.toString());
+        return new IASString(this.builder.toString(), this.tainted);
     }
 
     @Override

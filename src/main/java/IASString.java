@@ -26,7 +26,7 @@ public class IASString {
         this.tainted = false;
     }
 
-    private IASString(String s, boolean tainted) {
+    public IASString(String s, boolean tainted) {
         this.str = s;
         this.tainted = tainted;
     }
@@ -96,6 +96,7 @@ public class IASString {
 
     public IASString(IASStringBuilder builder) {
         this.str = builder.toString();
+        this.tainted = builder.isTainted();
     }
 
     public int length() {
@@ -230,11 +231,11 @@ public class IASString {
     }
 
     public IASString substring(int beginIndex) {
-        return new IASString(this.str.substring(beginIndex));
+        return new IASString(this.str.substring(beginIndex), this.tainted);
     }
 
     public IASString substring(int beginIndex, int endIndex) {
-        return new IASString(this.str.substring(beginIndex, endIndex));
+        return new IASString(this.str.substring(beginIndex, endIndex), this.tainted);
     }
 
     public CharSequence subSequence(int beginIndex, int endIndex) {
@@ -242,11 +243,11 @@ public class IASString {
     }
 
     public IASString concat(IASString str) {
-        return new IASString(this.str.concat(str.str));
+        return new IASString(this.str.concat(str.str), this.tainted);
     }
 
     public IASString replace(char oldChar, char newChar) {
-        return new IASString(this.str.replace(oldChar, newChar));
+        return new IASString(this.str.replace(oldChar, newChar), this.tainted);
     }
 
     public boolean matches(IASString regex) {
@@ -258,15 +259,15 @@ public class IASString {
     }
 
     public IASString replaceFirst(IASString regex, IASString replacement) {
-        return new IASString(this.str.replaceFirst(regex.str, replacement.str));
+        return new IASString(this.str.replaceFirst(regex.str, replacement.str), this.tainted);
     }
 
     public IASString replaceAll(IASString regex, IASString replacement) {
-        return new IASString(this.str.replaceAll(regex.str, replacement.str));
+        return new IASString(this.str.replaceAll(regex.str, replacement.str), this.tainted);
     }
 
     public IASString replace(CharSequence target, CharSequence replacement) {
-        return new IASString(this.str.replace(target, replacement));
+        return new IASString(this.str.replace(target, replacement), this.tainted);
     }
 
     public IASString[] split(IASString regex, int limit) {
@@ -299,23 +300,23 @@ public class IASString {
     }
 
     public IASString toLowerCase(Locale locale) {
-        return new IASString(this.str.toLowerCase(locale));
+        return new IASString(this.str.toLowerCase(locale), this.tainted);
     }
 
     public IASString toLowerCase() {
-        return new IASString(this.str.toLowerCase());
+        return new IASString(this.str.toLowerCase(), this.tainted);
     }
 
     public IASString toUpperCase(Locale locale) {
-        return new IASString(this.str.toUpperCase(locale));
+        return new IASString(this.str.toUpperCase(locale), this.tainted);
     }
 
     public IASString toUpperCase() {
-        return new IASString(this.str.toUpperCase());
+        return new IASString(this.str.toUpperCase(), this.tainted);
     }
 
     public IASString trim() {
-        return new IASString(this.str.trim());
+        return new IASString(this.str.trim(), this.tainted);
     }
 
     /* JDK 11
