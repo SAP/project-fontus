@@ -54,9 +54,9 @@ final class Constants {
      */
     static final String TStringToStringName = "getString";
     /**
-     * Descriptor of the taint-aware to regular String conversion method
+     * Descriptor of an object to regular String conversion method
      */
-    static final String TStringToStringDesc = "()Ljava/lang/String;";
+    static final String ToStringDesc = "()Ljava/lang/String;";
 
     private Constants() {}
 

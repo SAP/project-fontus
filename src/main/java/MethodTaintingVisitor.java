@@ -14,12 +14,34 @@ import org.slf4j.LoggerFactory;
 public class MethodTaintingVisitor extends MethodVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+    /**
+     * Some methods are not handled in a generic fashion, one can defined specialized proxies here
+     */
     private final HashMap<ProxiedFunctionEntry, Runnable> methodProxies;
+    /**
+     * Some dynamic method invocations can't be handled generically. Add proxy functions here.
+     */
     private final HashMap<ProxiedDynamicFunctionEntry, Runnable> dynProxies;
+    /**
+     * Some StringBuilder methods require special handling, performed by a 1 to 1 mapping.
+     */
     private final HashMap<String, String> stringBuilderMethodsToRename;
-    private final HashMap<String, MethodInvocation> rewriters;
+    /**
+     * String like classes, need special handling
+     */
+    private final HashMap<String, MethodInvocation> stringClasses;
+    /**
+     * Pattern to replacement for field types
+     */
     private final Collection<Map.Entry<Pattern, String>> fieldTypes;
+    /**
+     * All functions listed here return Strings that should be marked as tainted.
+     */
     private final List<ProxiedFunctionEntry> sources;
+    /**
+     * All functions listed here consume Strings that need to be checked first.
+     * TODO: Add handling of tainted values in some appropriate fashion.
+     */
     private final List<ProxiedFunctionEntry> sinks;
 
     MethodTaintingVisitor(MethodVisitor methodVisitor) {
@@ -29,7 +51,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
         this.stringBuilderMethodsToRename = new HashMap<>();
         this.sources = new ArrayList<>();
         this.sinks = new ArrayList<>();
-        this.rewriters = new HashMap<>();
+        this.stringClasses = new HashMap<>();
         this.fieldTypes = new ArrayList<>();
         this.fillProxies();
         this.fillMethodsToRename();
@@ -39,15 +61,22 @@ public class MethodTaintingVisitor extends MethodVisitor {
         this.fillFieldTypes();
     }
 
+    /**
+     * Initialize the field types needing special handling here.
+     */
     private void fillFieldTypes() {
         this.fieldTypes.add(Map.entry(Constants.strPattern, Constants.TStringDesc));
         this.fieldTypes.add(Map.entry(Constants.strBuilderPattern, Constants.TStringBuilderDesc));
     }
 
+    /**
+     * String like class names need special handling. Initialize the mapping here.
+     */
     private void rewriteOwnerMethods() {
-        this.rewriters.put(Constants.StringBuilder, this::visitStringBuilderMethod);
-        this.rewriters.put(Constants.String, this::visitStringMethod);
+        this.stringClasses.put(Constants.StringBuilder, this::visitStringBuilderMethod);
+        this.stringClasses.put(Constants.String, this::visitStringMethod);
     }
+
     /**
      * Calls to sinks, i.e., methods that always return String values.
      * Those shall be handled by marking the returned taint-aware String as tainted.
@@ -60,8 +89,8 @@ public class MethodTaintingVisitor extends MethodVisitor {
      * Calls to sources, i.e., methods that should not be called with Strings marked as tainted.
      */
     private void fillSources() {
-        this.sources.add(new ProxiedFunctionEntry("java/util/Scanner", "next", "()Ljava/lang/String;"));
-        this.sources.add(new ProxiedFunctionEntry("java/util/Scanner", "nextLine", "()Ljava/lang/String;"));
+        this.sources.add(new ProxiedFunctionEntry("java/util/Scanner", "next", Constants.ToStringDesc));
+        this.sources.add(new ProxiedFunctionEntry("java/util/Scanner", "nextLine", Constants.ToStringDesc));
 
     }
     /**
@@ -88,6 +117,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
         this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;F)Ljava/lang/String;"),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(LIASString;F)LIASString;", false));
 
+        // All the Wrapper classes have some common methods performing String conversions, add Proxies in a generic fashion.
         Collection<Map.Entry<String, String>> numberTypes = new ArrayList<>();
         numberTypes.add(Map.entry("Byte", "B"));
         numberTypes.add(Map.entry("Short", "S"));
@@ -106,7 +136,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
                   new ProxiedFunctionEntry(owner, parseName, parseDescriptor),
                   () -> {
                       logger.info("Augmenting call to {}.{}{}", owner, parseName, parseDescriptor);
-                      super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.TStringToStringDesc, false);
+                      super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
                       super.visitMethodInsn(Opcodes.INVOKESTATIC, owner, parseName, parseDescriptor, false);
                   }
           );
@@ -136,7 +166,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
                     new ProxiedFunctionEntry(owner, valueOfName, valueOfDesc),
                     () -> {
                         logger.info("Augmenting call to {}:{}{}", owner, valueOfName, valueOfDesc);
-                        super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.TStringToStringDesc, false);
+                        super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
                         super.visitMethodInsn(Opcodes.INVOKESTATIC, owner, valueOfName, valueOfDesc, false);
                     }
             );
@@ -145,7 +175,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
                 new ProxiedFunctionEntry("java/util/Scanner", Constants.Init, "(Ljava/lang/String;)V"),
                 () -> {
                     logger.info("Augmenting call to java/util/Scanner.<init>(Ljava/lang/String;)V");
-                    super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.TStringToStringDesc, false);
+                    super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
                     super.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/util/Scanner", Constants.Init, "(Ljava/lang/String;)V" , false);
                 }
         );
@@ -198,7 +228,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
             logger.info("{}.{}{} is a sinks, so calling the check taint function before passing the value!", owner, name, descriptor);
             super.visitInsn(Opcodes.DUP);
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, "abortIfTainted", "()V", false);
-            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.TStringToStringDesc, false);
+            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, owner, name, descriptor, isInterface);
             return true;
         }
@@ -263,8 +293,8 @@ public class MethodTaintingVisitor extends MethodVisitor {
         }
 
         // We have special methods to rewrite methods belonging to a specific owner, e.g. to String or StringBuilder
-        if(this.rewriters.containsKey(owner)) {
-            MethodInvocation mi = this.rewriters.get(owner);
+        if(this.stringClasses.containsKey(owner)) {
+            MethodInvocation mi = this.stringClasses.get(owner);
             mi.invoke(opcode, owner, name, descriptor, isInterface);
             return;
         }
@@ -284,14 +314,14 @@ public class MethodTaintingVisitor extends MethodVisitor {
         // TODO: case when both find()s are true?
         if (stringDescMatcher.find() && !skipInvoke) {
             String newDescriptor = stringDescMatcher.replaceAll(Constants.TStringDesc);
-            logger.info("Rewriting invoke containing String [{}] {}:{}{} to {}:{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
+            logger.info("Rewriting invoke containing String [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
             super.visitMethodInsn(opcode, owner, name, newDescriptor, isInterface);
         } else if (sbDescMatcher.find() && !skipInvoke) {
             String newDescriptor = sbDescMatcher.replaceAll(Constants.TStringBuilderDesc);
-            logger.info("Rewriting invoke containing StringBuilder [{}] {}:{}{} to {}:{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
+            logger.info("Rewriting invoke containing StringBuilder [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
             super.visitMethodInsn(opcode, owner, name, newDescriptor, isInterface);
         } else {
-            logger.info("Skipping invoke [{}] {}:{} ({})", Utils.opcodeToString(opcode), owner, name, descriptor);
+            logger.info("Skipping invoke [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor);
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
         }
     }
@@ -348,7 +378,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
             return;
         }
 
-        logger.info("invokeDynamic {} ({})", name, descriptor);
+        logger.info("invokeDynamic {}{}", name, descriptor);
         super.visitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
 
     }
@@ -364,7 +394,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
         Matcher stringDescMatcher = Constants.strPattern.matcher(descriptor);
         String newOwner = Constants.TString;
         String newDescriptor = stringDescMatcher.replaceAll(Constants.TStringDesc);
-        logger.info("Rewriting String invoke [{}] {}:{}{} to {}:{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, name, newDescriptor);
+        logger.info("Rewriting String invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, name, newDescriptor);
         super.visitMethodInsn(opcode, newOwner, name, newDescriptor, isInterface);
     }
 
@@ -384,7 +414,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
         String finalDescriptor = newDescriptorMatcher.replaceAll(Constants.TStringDesc);
         String newName = this.stringBuilderMethodsToRename.getOrDefault(name, name);
 
-        logger.info("Rewriting StringBuilder invoke [{}] {}:{}{} to {}:{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, finalDescriptor);
+        logger.info("Rewriting StringBuilder invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, finalDescriptor);
         super.visitMethodInsn(opcode, newOwner, newName, finalDescriptor, isInterface);
     }
 
@@ -394,7 +424,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
     private boolean shouldBeDynProxied(String name, String descriptor) {
         ProxiedDynamicFunctionEntry pdfe = new ProxiedDynamicFunctionEntry(name, descriptor);
         if (this.dynProxies.containsKey(pdfe)) {
-            logger.info("Proxying dynamic call to {} ({})", name, descriptor);
+            logger.info("Proxying dynamic call to {}{}", name, descriptor);
             Runnable pf = this.dynProxies.get(pdfe);
             pf.run();
             return true;
@@ -408,7 +438,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
     private boolean shouldBeProxied(String owner, String name, String descriptor) {
         ProxiedFunctionEntry pfe = new ProxiedFunctionEntry(owner, name, descriptor);
         if (this.methodProxies.containsKey(pfe)) {
-            logger.info("Proxying call to {}:{} ({})", owner, name, descriptor);
+            logger.info("Proxying call to {}.{}{}", owner, name, descriptor);
             Runnable pf = this.methodProxies.get(pfe);
             pf.run();
             return true;
