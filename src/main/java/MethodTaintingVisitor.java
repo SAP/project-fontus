@@ -17,7 +17,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
     /**
      * Some methods are not handled in a generic fashion, one can defined specialized proxies here
      */
-    private final HashMap<ProxiedFunctionEntry, Runnable> methodProxies;
+    private final HashMap<FunctionCall, Runnable> methodProxies;
     /**
      * Some dynamic method invocations can't be handled generically. Add proxy functions here.
      */
@@ -37,12 +37,12 @@ public class MethodTaintingVisitor extends MethodVisitor {
     /**
      * All functions listed here return Strings that should be marked as tainted.
      */
-    private final List<ProxiedFunctionEntry> sources;
+    private final List<FunctionCall> sources;
     /**
      * All functions listed here consume Strings that need to be checked first.
      * TODO: Add handling of tainted values in some appropriate fashion.
      */
-    private final List<ProxiedFunctionEntry> sinks;
+    private final List<FunctionCall> sinks;
 
     MethodTaintingVisitor(MethodVisitor methodVisitor) {
         super(Opcodes.ASM7, methodVisitor);
@@ -82,15 +82,15 @@ public class MethodTaintingVisitor extends MethodVisitor {
      * Those shall be handled by marking the returned taint-aware String as tainted.
      */
     private void fillSinks() {
-        this.sinks.add(new ProxiedFunctionEntry("java/io/PrintStream", "println", "(Ljava/lang/String;)V"));
+        this.sinks.add(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false));
     }
 
     /**
      * Calls to sources, i.e., methods that should not be called with Strings marked as tainted.
      */
     private void fillSources() {
-        this.sources.add(new ProxiedFunctionEntry("java/util/Scanner", "next", Constants.ToStringDesc));
-        this.sources.add(new ProxiedFunctionEntry("java/util/Scanner", "nextLine", Constants.ToStringDesc));
+        this.sources.add(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/util/Scanner", "next", Constants.ToStringDesc, false));
+        this.sources.add(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/util/Scanner", "nextLine", Constants.ToStringDesc, false));
 
     }
     /**
@@ -133,7 +133,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
           String parseDescriptor = String.format("(Ljava/lang/String;)%s", e.getValue());
 
           this.methodProxies.put(
-                  new ProxiedFunctionEntry(owner, parseName, parseDescriptor),
+                  new FunctionCall(Opcodes.INVOKESTATIC, owner, parseName, parseDescriptor, false),
                   () -> {
                       logger.info("Augmenting call to {}.{}{}", owner, parseName, parseDescriptor);
                       super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
@@ -143,7 +143,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
           String toHexStringName = "toHexString";
           String toStringDesc = String.format("(%s)Ljava/lang/String;", e.getValue());
             this.methodProxies.put(
-                    new ProxiedFunctionEntry(owner, toHexStringName, toStringDesc),
+                    new FunctionCall(Opcodes.INVOKESTATIC, owner, toHexStringName, toStringDesc, false),
                     () -> {
                         logger.info("Augmenting call to {}.{}{}", owner, toHexStringName, toStringDesc);
                         super.visitMethodInsn(Opcodes.INVOKESTATIC, owner, toHexStringName, toStringDesc, false);
@@ -153,7 +153,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
 
             String toStringName = "toString";
             this.methodProxies.put(
-                    new ProxiedFunctionEntry(owner, toStringName, toStringDesc),
+                    new FunctionCall(Opcodes.INVOKESTATIC, owner, toStringName, toStringDesc, false),
                     () -> {
                         logger.info("Augmenting call to {}.{}{}", owner, toStringName, toStringDesc);
                         super.visitMethodInsn(Opcodes.INVOKESTATIC, owner, toStringName, toStringDesc, false);
@@ -163,7 +163,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
             String valueOfName = "valueOf";
             String valueOfDesc = String.format("(Ljava/lang/String;)L%s;", owner);
             this.methodProxies.put(
-                    new ProxiedFunctionEntry(owner, valueOfName, valueOfDesc),
+                    new FunctionCall(Opcodes.INVOKESTATIC, owner, valueOfName, valueOfDesc, false),
                     () -> {
                         logger.info("Augmenting call to {}:{}{}", owner, valueOfName, valueOfDesc);
                         super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
@@ -172,7 +172,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
             );
         }
         this.methodProxies.put(
-                new ProxiedFunctionEntry("java/util/Scanner", Constants.Init, "(Ljava/lang/String;)V"),
+                new FunctionCall(Opcodes.INVOKESPECIAL, "java/util/Scanner", Constants.Init, "(Ljava/lang/String;)V", false),
                 () -> {
                     logger.info("Augmenting call to java/util/Scanner.<init>(Ljava/lang/String;)V");
                     super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
@@ -223,7 +223,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
                                final String name,
                                final String descriptor,
                                final boolean isInterface) {
-        ProxiedFunctionEntry pfe = new ProxiedFunctionEntry(owner, name, descriptor);
+        FunctionCall pfe = new FunctionCall(opcode, owner, name, descriptor, isInterface);
         if(this.sinks.contains(pfe)) {
             logger.info("{}.{}{} is a sinks, so calling the check taint function before passing the value!", owner, name, descriptor);
             super.visitInsn(Opcodes.DUP);
@@ -244,7 +244,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
                                  final String name,
                                  final String descriptor,
                                  final boolean isInterface) {
-        ProxiedFunctionEntry pfe = new ProxiedFunctionEntry(owner, name, descriptor);
+        FunctionCall pfe = new FunctionCall(opcode, owner, name, descriptor, isInterface);
         if(this.sources.contains(pfe)) {
             logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", owner, name, descriptor, Constants.TString);
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
@@ -288,7 +288,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
         }
 
         // If a method has a defined proxy, apply it right away
-        if (this.shouldBeProxied(owner, name, descriptor)) {
+        if (this.shouldBeProxied(opcode, owner, name, descriptor, isInterface)) {
             return;
         }
 
@@ -435,8 +435,8 @@ public class MethodTaintingVisitor extends MethodVisitor {
     /**
      * Is there a proxy defined? If so apply and return true.
      */
-    private boolean shouldBeProxied(String owner, String name, String descriptor) {
-        ProxiedFunctionEntry pfe = new ProxiedFunctionEntry(owner, name, descriptor);
+    private boolean shouldBeProxied(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+        FunctionCall pfe = new FunctionCall(opcode, owner, name, descriptor, isInterface);
         if (this.methodProxies.containsKey(pfe)) {
             logger.info("Proxying call to {}.{}{}", owner, name, descriptor);
             Runnable pf = this.methodProxies.get(pfe);
