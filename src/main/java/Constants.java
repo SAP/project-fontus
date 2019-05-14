@@ -1,3 +1,5 @@
+package de.tubs.cs.ias.asm_test;
+
 import java.util.regex.Pattern;
 
 final class Constants {
@@ -14,25 +16,29 @@ final class Constants {
     /**
      * The type of our taint-aware String
      */
-    static final String TString = "IASString";
+    static final String TPackage = "de/tubs/cs/ias/asm_test/";
+    /**
+     * The type of our taint-aware String
+     */
+    static final String TString = TPackage + "IASString";
     /**
      * The bytecode descriptor of our taint aware string
      */
-    static final String TStringDesc = "LIASString";
+    static final String TStringDesc = "L" + TString;
     /**
      * The bytecode descriptor of an array of our taint aware string
      */
-    static final String TStringArrayDesc = "[LIASString;";
+    static final String TStringArrayDesc = "[" + TStringDesc + ";";
 
     static final Pattern strBuilderPattern = Pattern.compile("Ljava/lang/StringBuilder\\b");
     /**
      * The type of our taint-aware StringBuilder
      */
-    static final String TStringBuilder = "IASStringBuilder";
+    static final String TStringBuilder = TPackage + "IASStringBuilder";
     /**
      * The bytecode descriptor of our taint aware StringBuilder
      */
-    static final String TStringBuilderDesc = "LIASStringBuilder";
+    static final String TStringBuilderDesc = "L" + TStringBuilder;
 
     /**
      * Constructor name

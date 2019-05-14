@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'maven-publish'
 }
 
 version '0.0.1-SNAPSHOT'
@@ -26,8 +27,22 @@ jar {
             if (!configurations.compile.isEmpty()) {
                 attributes(
                         'Class-Path': configurations.compile.collect{it.toURI().toString()}.join(' '),
-                        'Main-Class': 'Main')
+                        'Main-Class': 'de.tubs.cs.ias.asm_test.Main',
+			'Premain-Class': 'de.tubs.cs.ias.asm_test.TaintAgent')
             }
         }
     }
 }
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'de.tubs.cs.ias'
+            artifactId = 'asm_test'
+            version = '0.0.1-SNAPSHOT'
+
+	    from components.java
+        }
+    }
+}
+

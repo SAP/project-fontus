@@ -1,3 +1,5 @@
+package de.tubs.cs.ias.asm_test;
+
 import java.util.stream.IntStream;
 
 public class IASStringBuilder implements java.io.Serializable, /* Comparable<IASStringBuilder>, */ CharSequence {
