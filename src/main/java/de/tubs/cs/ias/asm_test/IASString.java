@@ -1,3 +1,5 @@
+package de.tubs.cs.ias.asm_test;
+
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -37,6 +39,10 @@ public class IASString {
 
     public boolean isTainted() {
         return this.tainted;
+    }
+
+    public void setTaint(Boolean b) {
+        this.tainted = b;
     }
 
     public void abortIfTainted() {
@@ -97,6 +103,11 @@ public class IASString {
     public IASString(IASStringBuilder builder) {
         this.str = builder.toString();
         this.tainted = builder.isTainted();
+    }
+
+    public IASString(IASString string) {
+        this.str = string.getString();
+        this.tainted = string.isTainted();
     }
 
     public int length() {

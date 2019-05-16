@@ -1,3 +1,5 @@
+package de.tubs.cs.ias.asm_test;
+
 import java.util.Objects;
 
 public class ProxiedDynamicFunctionEntry {

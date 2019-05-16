@@ -1,3 +1,5 @@
+package de.tubs.cs.ias.asm_test;
+
 import org.objectweb.asm.Opcodes;
 
 final class Utils {

@@ -1,3 +1,5 @@
+package de.tubs.cs.ias.asm_test;
+
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
 
@@ -21,7 +23,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
     /**
      * Some dynamic method invocations can't be handled generically. Add proxy functions here.
      */
-    private final HashMap<ProxiedDynamicFunctionEntry, Runnable> dynProxies;
+    private final HashMap<de.tubs.cs.ias.asm_test.ProxiedDynamicFunctionEntry, Runnable> dynProxies;
     /**
      * Some StringBuilder methods require special handling, performed by a 1 to 1 mapping.
      */
@@ -105,15 +107,15 @@ public class MethodTaintingVisitor extends MethodVisitor {
      */
     private void fillProxies() {
         this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(LIASString;LIASString;)LIASString;", false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(" + Constants.TStringDesc + ";" + Constants.TStringDesc + ";)" + Constants.TStringDesc + ";", false));
         this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;I)Ljava/lang/String;"),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(LIASString;I)LIASString;", false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(" + Constants.TStringDesc + ";I)" + Constants.TStringDesc + ";", false));
         this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;J)Ljava/lang/String;"),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(LIASString;J)LIASString;", false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(" + Constants.TStringDesc + ";J)" + Constants.TStringDesc + ";", false));
         this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;D)Ljava/lang/String;"),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(LIASString;D)LIASString;", false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(" + Constants.TStringDesc + ";D)" + Constants.TStringDesc + ";", false));
         this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;F)Ljava/lang/String;"),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(LIASString;F)LIASString;", false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(" + Constants.TStringDesc + ";F)" + Constants.TStringDesc + ";", false));
 
         // All the Wrapper classes have some common methods performing String conversions, add Proxies in a generic fashion.
         Collection<Map.Entry<String, String>> numberTypes = new ArrayList<>();
@@ -246,7 +248,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
         if(this.sources.contains(pfe)) {
             logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", owner, name, descriptor, Constants.TString);
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "tainted", "(Ljava/lang/String;)LIASString;", false);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "tainted", "(Ljava/lang/String;)" + Constants.TStringDesc + ";", false);
             return true;
         }
         return false;

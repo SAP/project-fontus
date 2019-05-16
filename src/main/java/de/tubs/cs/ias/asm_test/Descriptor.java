@@ -1,3 +1,5 @@
+package de.tubs.cs.ias.asm_test;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,7 +37,7 @@ class Descriptor {
     }
 
     @SuppressWarnings("OverloadedVarargsMethod")
-    Descriptor(String ...args) {
+    Descriptor(String... args) {
         List<String> arguments = Arrays.asList(args);
         int lastIndex = arguments.size() - 1;
         this.returnType = arguments.get(lastIndex);
