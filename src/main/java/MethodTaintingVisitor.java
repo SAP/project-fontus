@@ -40,7 +40,6 @@ public class MethodTaintingVisitor extends MethodVisitor {
     private final List<FunctionCall> sources;
     /**
      * All functions listed here consume Strings that need to be checked first.
-     * TODO: Add handling of tainted values in some appropriate fashion.
      */
     private final List<FunctionCall> sinks;
 
@@ -93,11 +92,11 @@ public class MethodTaintingVisitor extends MethodVisitor {
         this.sources.add(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/util/Scanner", "nextLine", Constants.ToStringDesc, false));
 
     }
+
     /**
      *  Initializes the methods that shall be renamed map.
      */
     private void fillMethodsToRename() {
-        // TODO: make dynamic!
         this.stringBuilderMethodsToRename.put("toString", "toIASString");
     }
 
@@ -105,7 +104,6 @@ public class MethodTaintingVisitor extends MethodVisitor {
      *  Initializes the method proxy maps.
      */
     private void fillProxies() {
-        // TODO: make dynamic!
         this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(LIASString;LIASString;)LIASString;", false));
         this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;I)Ljava/lang/String;"),
@@ -203,7 +201,6 @@ public class MethodTaintingVisitor extends MethodVisitor {
                                                                +----------+
                                                                |IASString |
                                                                +----------+
-
         */
         super.visitTypeInsn(Opcodes.NEW, Constants.TString);
         super.visitInsn(Opcodes.DUP);
@@ -226,6 +223,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
         FunctionCall pfe = new FunctionCall(opcode, owner, name, descriptor, isInterface);
         if(this.sinks.contains(pfe)) {
             logger.info("{}.{}{} is a sinks, so calling the check taint function before passing the value!", owner, name, descriptor);
+            // Call dup here to put the TString reference twice on the stack so the call can pop one without affecting further processing
             super.visitInsn(Opcodes.DUP);
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, "abortIfTainted", "()V", false);
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
@@ -330,7 +328,6 @@ public class MethodTaintingVisitor extends MethodVisitor {
      * The 'ldc' instruction loads a constant value out of the constant pool.
      *
      * It might load String values, so we have to transform them.
-     * TODO: Transforming compile time strings is not very nice from a Performance PoV, but unsure whether we can avoid it.
      */
     @Override
     public void visitLdcInsn(final Object value) {
@@ -412,6 +409,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
         // Replace all instances of java/lang/String
         Matcher newDescriptorMatcher = Constants.strPattern.matcher(newDescriptor);
         String finalDescriptor = newDescriptorMatcher.replaceAll(Constants.TStringDesc);
+        // Some methods names (e.g., toString) need to be replaced to not break things, look those up
         String newName = this.stringBuilderMethodsToRename.getOrDefault(name, name);
 
         logger.info("Rewriting StringBuilder invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, finalDescriptor);
