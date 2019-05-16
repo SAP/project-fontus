@@ -106,8 +106,8 @@ public class IASString {
     }
 
     public IASString(IASString string) {
-        this.str = string.getString();
-        this.tainted = string.isTainted();
+        this.str = string.str;
+        this.tainted = string.tainted;
     }
 
     public int length() {
@@ -254,7 +254,7 @@ public class IASString {
     }
 
     public IASString concat(IASString str) {
-        return new IASString(this.str.concat(str.str), this.tainted);
+        return new IASString(this.str.concat(str.str), this.tainted || str.tainted);
     }
 
     public IASString replace(char oldChar, char newChar) {
@@ -270,32 +270,47 @@ public class IASString {
     }
 
     public IASString replaceFirst(IASString regex, IASString replacement) {
-        return new IASString(this.str.replaceFirst(regex.str, replacement.str), this.tainted);
+        // TODO: this seems pretty expensive..
+        boolean taint = this.tainted;
+        Pattern p = Pattern.compile(regex.str);
+        Matcher m = p.matcher(this.str);
+        if(m.find()) {
+            taint |= replacement.tainted;
+        }
+        return new IASString(this.str.replaceFirst(regex.str, replacement.str), taint);
     }
 
     public IASString replaceAll(IASString regex, IASString replacement) {
-        return new IASString(this.str.replaceAll(regex.str, replacement.str), this.tainted);
+        // TODO: this seems pretty expensive..
+        boolean taint = this.tainted;
+        Pattern p = Pattern.compile(regex.str);
+        Matcher m = p.matcher(this.str);
+        if(m.find()) {
+            taint |= replacement.tainted;
+        }
+        return new IASString(this.str.replaceAll(regex.str, replacement.str), taint);
     }
 
     public IASString replace(CharSequence target, CharSequence replacement) {
         return new IASString(this.str.replace(target, replacement), this.tainted);
     }
 
+    // TODO: this propagates the taint for the whole string
     public IASString[] split(IASString regex, int limit) {
         String[] split = this.str.split(regex.str, limit);
         IASString[] splitted = new IASString[split.length];
         for(int i=0;i<split.length;i++) {
-            splitted[i] = new IASString(split[i]);
+            splitted[i] = new IASString(split[i], this.tainted);
         }
         return splitted;
     }
 
+    // TODO: this propagates the taint for the whole string
     public IASString[] split(IASString regex) {
-
         String[] split = this.str.split(regex.str);
         IASString[] splitted = new IASString[split.length];
         for(int i=0;i<split.length;i++) {
-            splitted[i] = new IASString(split[i]);
+            splitted[i] = new IASString(split[i], this.tainted);
         }
         return splitted;
     }
