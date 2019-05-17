@@ -28,6 +28,13 @@ test {
     }
 }
 
+task utilJar(type: Jar) {
+    from(sourceSets.main.output) {
+        include "**/asm_test/IASString*"
+    }
+    jar.baseName = "util"
+}
+
 jar {
     doFirst {
         manifest {
@@ -39,7 +46,9 @@ jar {
             }
         }
     }
+    dependsOn utilJar
 }
+
 
 publishing {
     publications {
