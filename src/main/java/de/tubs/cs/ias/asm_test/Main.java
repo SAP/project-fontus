@@ -34,6 +34,9 @@ public class Main implements Callable<Void> {
     @CommandLine.Option(names = {"-c", "--check"}, paramLabel = "Check Requirements", description = "Check whether the required class files are present.")
     private boolean checkRequirements;
 
+    @CommandLine.Option(names = {"-a", "--add"}, paramLabel = "Add taint-aware classes", description = "Adds the class files of our taint-aware data types to the instrumented .jar file.")
+    private boolean addTaintAwareClassFiles;
+
     private static final String TStringClassName = "de/tubs/cs/ias/asm_test/IASString.class";
     private static final String TStringBuilderClassName = "de/tubs/cs/ias/asm_test/IASStringBuilder.class";
 
@@ -103,21 +106,23 @@ public class Main implements Callable<Void> {
             FileOutputStream fos = new FileOutputStream(output);
             jos = new JarOutputStream(fos);
 
-            logger.info("Adding required class files to jar..");
+            if(this.addTaintAwareClassFiles) {
+                logger.info("Adding required class files to jar..");
 
-            List<JarEntry> entriesToAdd = getJarEntriesToCopy(currJar);
-            for (JarEntry je : entriesToAdd) {
-                if (ji.getJarEntry(je.getName()) != null) {
-                    logger.info("{} is already contained in jar, skipping..", je.getName());
-                    continue;
+                List<JarEntry> entriesToAdd = getJarEntriesToCopy(currJar);
+                for (JarEntry je : entriesToAdd) {
+                    if (ji.getJarEntry(je.getName()) != null) {
+                        logger.info("{} is already contained in jar, skipping..", je.getName());
+                        continue;
+                    }
+                    logger.info("Adding jar entry: {}", je.getName());
+                    InputStream currJarIn = currJar.getInputStream(je);
+                    JarEntry ne = new JarEntry(je.getName());
+                    jos.putNextEntry(ne);
+                    this.copySingleEntry(currJarIn, jos);
+                    currJarIn.close();
+                    jos.closeEntry();
                 }
-                logger.info("Adding jar entry: {}", je.getName());
-                InputStream currJarIn = currJar.getInputStream(je);
-                JarEntry ne = new JarEntry(je.getName());
-                jos.putNextEntry(ne);
-                this.copySingleEntry(currJarIn, jos);
-                currJarIn.close();
-                jos.closeEntry();
             }
 
             logger.info("Reading jar file from: {}", input.getAbsolutePath());
