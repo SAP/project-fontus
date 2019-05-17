@@ -32,7 +32,7 @@ task utilJar(type: Jar) {
     from(sourceSets.main.output) {
         include "**/asm_test/IASString*"
     }
-    jar.baseName = "util"
+    utilJar.baseName = "util"
 }
 
 jar {
@@ -42,7 +42,7 @@ jar {
                 attributes(
                         'Class-Path': configurations.compile.collect{it.toURI().toString()}.join(' '),
                         'Main-Class': 'de.tubs.cs.ias.asm_test.Main',
-			'Premain-Class': 'de.tubs.cs.ias.asm_test.TaintAgent')
+                        'Premain-Class': 'de.tubs.cs.ias.asm_test.TaintAgent')
             }
         }
     }
