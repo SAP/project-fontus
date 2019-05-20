@@ -71,23 +71,23 @@ public class MethodTaintingVisitor extends MethodVisitor {
      * See https://stackoverflow.com/questions/47674972/getting-the-number-of-local-variables-in-a-method
      * for keeping track of used locals..
      */
-    
+
     @Override
     public void visitFrame(
             int type, int numLocal, Object[] local, int numStack, Object[] stack) {
-        if(type != Opcodes.F_NEW)
+        if (type != Opcodes.F_NEW)
             throw new IllegalStateException("only expanded frames supported");
         int l = numLocal;
-        for(int ix = 0; ix < numLocal; ix++)
-            if(local[ix]==Opcodes.LONG || local[ix]==Opcodes.DOUBLE) l++;
-        if(l > this.used) this.used = l;
+        for (int ix = 0; ix < numLocal; ix++)
+            if (local[ix] == Opcodes.LONG || local[ix] == Opcodes.DOUBLE) l++;
+        if (l > this.used) this.used = l;
         super.visitFrame(type, numLocal, local, numStack, stack);
     }
 
     @Override
     public void visitVarInsn(int opcode, int var) {
-        int newMax = var+(opcode==Opcodes.LSTORE || opcode==Opcodes.DSTORE? 2: 1);
-        if(newMax > this.used) this.used = newMax;
+        int newMax = var + Utils.storeOpcodeSize(opcode);
+        if (newMax > this.used) this.used = newMax;
         super.visitVarInsn(opcode, var);
     }
 
@@ -371,75 +371,45 @@ public class MethodTaintingVisitor extends MethodVisitor {
         }
     }
 
-    private static int getStoreOpcode(String type) {
-        switch(type) {
-            case "Z": case "B": case "C": case "I": return Opcodes.ISTORE;
-            case "J": return Opcodes.LSTORE;
-            case "D": return Opcodes.DSTORE;
-            case "F": return Opcodes.FSTORE;
-            default: return Opcodes.ASTORE;
-        }
-    }
-
-    private static int getLoadOpcode(String type) {
-        switch(type) {
-            case "Z": case "B": case "C": case "I": return Opcodes.ILOAD;
-            case "J": return Opcodes.LLOAD;
-            case "D": return Opcodes.DLOAD;
-            case "F": return Opcodes.FLOAD;
-            default: return Opcodes.ALOAD;
-        }
-    }
-
     private void handleJdkMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
         Collection<String> parameters = desc.getParameters();
         Stack<Runnable> loadStack = new Stack<>();
         Stack<String> params = new Stack<>();
         params.addAll(parameters);
-        int numVars = (Type.getArgumentsAndReturnSizes(descriptor)>>2)-1;
+        int numVars = (Type.getArgumentsAndReturnSizes(descriptor) >> 2) - 1;
         this.usedAfterInjection = this.used + numVars;
         int n = this.used;
-        while(!params.empty()) {
+        while (!params.empty()) {
             String p = params.pop();
-            Type t = Type.getType(p);
-            //logger.info("Type: {}", t);
-            if((Constants.StringDesc).equals(p)) {
-                int finalN = n;
+            int storeOpcode = Utils.getStoreOpcode(p);
+            int loadOpcode = Utils.getLoadOpcode(p);
+
+            //logger.info("Type: {}", p);
+            if ((Constants.StringDesc).equals(p)) {
                 logger.info("Converting taint-aware String to String");
                 super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
-                super.visitVarInsn(Opcodes.ASTORE, finalN);
-                logger.info("Executing astore_{} for String", finalN);
-
-                loadStack.push(() -> {
-                    logger.info("Executing aload_{} for String", finalN);
-                    super.visitVarInsn(Opcodes.ALOAD, finalN);
-                });
-                n++;
-            } else {
-                int storeOpcode = getStoreOpcode(p);
-                int loadOpcode = getLoadOpcode(p);
-                int finalN = n;
-                //logger.info("Executing {}_{} for {}", storeOpcode, finalN, p);
-                super.visitVarInsn(storeOpcode, finalN);
-                loadStack.push(() -> {
-                    //logger.info("Executing load {}_{}", finalLoadOpcode, finalN);
-                    super.visitVarInsn(loadOpcode, finalN);
-
-                });
-
-                n = (storeOpcode == Opcodes.DSTORE || storeOpcode == Opcodes.LSTORE) ? n + 2 : n + 1;
             }
 
-        }
+            final int finalN = n;
+            super.visitVarInsn(storeOpcode, finalN);
+            logger.info("Executing {}_{} for {}", storeOpcode, finalN, p);
 
-        while(!loadStack.empty()) {
+            loadStack.push(() -> {
+                //logger.info("Executing load {}_{}", loadOpcode, finalN);
+                super.visitVarInsn(loadOpcode, finalN);
+            });
+            n += Utils.storeOpcodeSize(storeOpcode);
+        }
+        assert n == this.usedAfterInjection;
+        while (!loadStack.empty()) {
             Runnable l = loadStack.pop();
             l.run();
         }
+
         logger.info("invoking [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor);
         super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
-        if((Constants.StringDesc).equals(desc.getReturnType())) {
+        if ((Constants.StringDesc).equals(desc.getReturnType())) {
             this.stringToTString();
         }
     }
