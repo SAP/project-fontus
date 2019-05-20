@@ -83,6 +83,8 @@ public class ClassTaintingVisitor extends ClassVisitor {
 
         Matcher descMatcher = Constants.strPattern.matcher(descriptor);
         MethodVisitor mv;
+        int acc = access;
+        String desc = descriptor;
         // Create a new main method, wrapping the regular one and translating all Strings to IASStrings
         if(access == (Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC) && "main".equals(name) && descriptor.equals(mainDescriptor)) {
             logger.info("Creating proxy main method");
@@ -90,14 +92,16 @@ public class ClassTaintingVisitor extends ClassVisitor {
             this.createMainWrapperMethod(v);
             logger.info("Processing renamed main method.");
             mv = super.visitMethod(access, Constants.MainWrapper, newMainDescriptor, signature, exceptions);
+            desc = newMainDescriptor;
         } else if (!this.blacklist.contains(new BlackListEntry(name, descriptor, access)) && descMatcher.find()) {
             String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
             logger.info("Rewriting method signature {}{} to {}{}", name, descriptor, name, newDescriptor);
             mv = super.visitMethod(access, name, newDescriptor, signature, exceptions);
+            desc = newDescriptor;
         } else {
             mv = super.visitMethod(access, name, descriptor, signature, exceptions);
         }
-        return new MethodTaintingVisitor(mv);
+        return new MethodTaintingVisitor(acc, desc, mv);
     }
 
     /**

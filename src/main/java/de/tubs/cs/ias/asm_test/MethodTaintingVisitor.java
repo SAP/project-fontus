@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,9 +45,13 @@ public class MethodTaintingVisitor extends MethodVisitor {
      * All functions listed here consume Strings that need to be checked first.
      */
     private final List<FunctionCall> sinks;
+    private int used, usedAfterInjection;
 
-    MethodTaintingVisitor(MethodVisitor methodVisitor) {
+    MethodTaintingVisitor(int acc, String signature, MethodVisitor methodVisitor) {
         super(Opcodes.ASM7, methodVisitor);
+        this.used = Type.getArgumentsAndReturnSizes(signature)>>2;
+        if((acc&Opcodes.ACC_STATIC)!=0) this.used--; // no this
+
         this.methodProxies = new HashMap<>();
         this.dynProxies = new HashMap<>();
         this.stringBuilderMethodsToRename = new HashMap<>();
@@ -61,6 +66,36 @@ public class MethodTaintingVisitor extends MethodVisitor {
         this.rewriteOwnerMethods();
         this.fillFieldTypes();
     }
+
+    /**
+     * See https://stackoverflow.com/questions/47674972/getting-the-number-of-local-variables-in-a-method
+     * for keeping track of used locals..
+     */
+    
+    @Override
+    public void visitFrame(
+            int type, int numLocal, Object[] local, int numStack, Object[] stack) {
+        if(type != Opcodes.F_NEW)
+            throw new IllegalStateException("only expanded frames supported");
+        int l = numLocal;
+        for(int ix = 0; ix < numLocal; ix++)
+            if(local[ix]==Opcodes.LONG || local[ix]==Opcodes.DOUBLE) l++;
+        if(l > this.used) this.used = l;
+        super.visitFrame(type, numLocal, local, numStack, stack);
+    }
+
+    @Override
+    public void visitVarInsn(int opcode, int var) {
+        int newMax = var+(opcode==Opcodes.LSTORE || opcode==Opcodes.DSTORE? 2: 1);
+        if(newMax > this.used) this.used = newMax;
+        super.visitVarInsn(opcode, var);
+    }
+
+    @Override
+    public void visitMaxs(int maxStack, int maxLocals) {
+        super.visitMaxs(maxStack, Math.max(this.used, this.usedAfterInjection));
+    }
+
 
     /**
      * Initialize the field types needing special handling here.
@@ -299,6 +334,21 @@ public class MethodTaintingVisitor extends MethodVisitor {
             return;
         }
 
+        boolean jdkMethod = owner.contains("java");
+
+        // Don't rewrite IASString/IASStringBuilder functions
+        boolean skipInvoke = jdkMethod || owner.contains(Constants.TString) || owner.contains(Constants.TStringBuilder);
+
+        Matcher sbDescMatcher = Constants.strBuilderPattern.matcher(descriptor);
+        Matcher stringDescMatcher = Constants.strPattern.matcher(descriptor);
+
+        // JDK methods need special handling.
+        // If there isn't a proxy defined, we will just convert taint-aware Strings to regular ones before calling the function and vice versa for the return value.
+        if(jdkMethod && stringDescMatcher.find()) {
+            this.handleJdkMethod(opcode, owner, name, descriptor, isInterface);
+            return;
+        }
+
         // toString method, make a taint-aware String of the result
         if("toString".equals(name) && descriptor.endsWith(")Ljava/lang/String;")) {
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
@@ -306,11 +356,6 @@ public class MethodTaintingVisitor extends MethodVisitor {
             return;
         }
 
-        // Don't rewrite Java standard library functions or IASString/IASStringBuilder functions
-        boolean skipInvoke = owner.contains("java") || owner.contains(Constants.TString) || owner.contains(Constants.TStringBuilder);
-
-        Matcher sbDescMatcher = Constants.strBuilderPattern.matcher(descriptor);
-        Matcher stringDescMatcher = Constants.strPattern.matcher(descriptor);
         // TODO: case when both find()s are true?
         if (stringDescMatcher.find() && !skipInvoke) {
             String newDescriptor = stringDescMatcher.replaceAll(Constants.TStringDesc);
@@ -323,6 +368,79 @@ public class MethodTaintingVisitor extends MethodVisitor {
         } else {
             logger.info("Skipping invoke [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor);
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+        }
+    }
+
+    private static int getStoreOpcode(String type) {
+        switch(type) {
+            case "Z": case "B": case "C": case "I": return Opcodes.ISTORE;
+            case "J": return Opcodes.LSTORE;
+            case "D": return Opcodes.DSTORE;
+            case "F": return Opcodes.FSTORE;
+            default: return Opcodes.ASTORE;
+        }
+    }
+
+    private static int getLoadOpcode(String type) {
+        switch(type) {
+            case "Z": case "B": case "C": case "I": return Opcodes.ILOAD;
+            case "J": return Opcodes.LLOAD;
+            case "D": return Opcodes.DLOAD;
+            case "F": return Opcodes.FLOAD;
+            default: return Opcodes.ALOAD;
+        }
+    }
+
+    private void handleJdkMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+        Descriptor desc = Descriptor.parseDescriptor(descriptor);
+        Collection<String> parameters = desc.getParameters();
+        Stack<Runnable> loadStack = new Stack<>();
+        Stack<String> params = new Stack<>();
+        params.addAll(parameters);
+        int numVars = (Type.getArgumentsAndReturnSizes(descriptor)>>2)-1;
+        this.usedAfterInjection = this.used + numVars;
+        int n = this.used;
+        while(!params.empty()) {
+            String p = params.pop();
+            Type t = Type.getType(p);
+            //logger.info("Type: {}", t);
+            if((Constants.StringDesc).equals(p)) {
+                int finalN = n;
+                logger.info("Converting taint-aware String to String");
+                super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
+                super.visitVarInsn(Opcodes.ASTORE, finalN);
+                logger.info("Executing astore_{} for String", finalN);
+
+                loadStack.push(() -> {
+                    logger.info("Executing aload_{} for String", finalN);
+                    super.visitVarInsn(Opcodes.ALOAD, finalN);
+                });
+                n++;
+            } else {
+                int storeOpcode = getStoreOpcode(p);
+                int loadOpcode = getLoadOpcode(p);
+                int finalN = n;
+                //logger.info("Executing {}_{} for {}", storeOpcode, finalN, p);
+                super.visitVarInsn(storeOpcode, finalN);
+                loadStack.push(() -> {
+                    //logger.info("Executing load {}_{}", finalLoadOpcode, finalN);
+                    super.visitVarInsn(loadOpcode, finalN);
+
+                });
+
+                n = (storeOpcode == Opcodes.DSTORE || storeOpcode == Opcodes.LSTORE) ? n + 2 : n + 1;
+            }
+
+        }
+
+        while(!loadStack.empty()) {
+            Runnable l = loadStack.pop();
+            l.run();
+        }
+        logger.info("invoking [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor);
+        super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+        if((Constants.StringDesc).equals(desc.getReturnType())) {
+            this.stringToTString();
         }
     }
 

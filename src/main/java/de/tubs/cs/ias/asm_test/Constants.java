@@ -24,7 +24,9 @@ public final class Constants {
     /**
      * The bytecode descriptor of our taint aware string
      */
-    static final String TStringDesc = "L" + TString;
+    static final String TStringDesc = java.lang.String.format("L%s", TString);
+
+    static final String StringDesc = java.lang.String.format("L%s;", String);
     /**
      * The bytecode descriptor of an array of our taint aware string
      */

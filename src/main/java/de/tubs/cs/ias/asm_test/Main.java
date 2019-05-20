@@ -76,7 +76,7 @@ public class Main implements Callable<Void> {
         ClassWriter writer = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
         //ClassVisitor cca = new CheckClassAdapter(writer);
         ClassTaintingVisitor smr = new ClassTaintingVisitor(writer);
-        cr.accept(smr, 0);
+        cr.accept(smr, ClassReader.EXPAND_FRAMES);
         o.write(writer.toByteArray());
     }
 
