@@ -451,7 +451,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
             String formatString = (String) fmtStringObj;
             int parameterCount = desc.parameterCount();
             super.visitIntInsn(Opcodes.BIPUSH, parameterCount);
-            super.visitTypeInsn(Opcodes.ANEWARRAY, Constants.Object);
+            super.visitTypeInsn(Opcodes.ANEWARRAY, Constants.ObjectQN);
             int currRegister = this.used;
             super.visitVarInsn(Opcodes.ASTORE, currRegister);
             // newly created array is now stored in currRegister, concat operands on top

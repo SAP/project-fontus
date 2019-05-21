@@ -5,10 +5,10 @@ import java.util.regex.Pattern;
 public final class Constants {
     static final Pattern strPattern = Pattern.compile("Ljava/lang/String\\b");
 
-    static final String Object = "java/lang/Object";
+    static final String ObjectQN = "java/lang/Object";
 
 
-    static final String ObjectDesc = java.lang.String.format("L%s;", Object);
+    static final String ObjectDesc = java.lang.String.format("L%s;", ObjectQN);
     /**
      * The fully qualified name of the String class
      */
