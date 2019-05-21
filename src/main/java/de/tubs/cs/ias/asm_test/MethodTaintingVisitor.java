@@ -151,69 +151,6 @@ public class MethodTaintingVisitor extends MethodVisitor {
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(" + Constants.TStringDesc + ";D)" + Constants.TStringDesc + ";", false));
         this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;F)Ljava/lang/String;"),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(" + Constants.TStringDesc + ";F)" + Constants.TStringDesc + ";", false));
-
-        // All the Wrapper classes have some common methods performing String conversions, add Proxies in a generic fashion.
-        Collection<Map.Entry<String, String>> numberTypes = new ArrayList<>();
-        numberTypes.add(Map.entry("Byte", "B"));
-        numberTypes.add(Map.entry("Short", "S"));
-        numberTypes.add(Map.entry("Integer", "I"));
-        numberTypes.add(Map.entry("Long", "J"));
-        numberTypes.add(Map.entry("Double", "D"));
-        numberTypes.add(Map.entry("Float", "F"));
-
-        for(Map.Entry<String, String> e : numberTypes) {
-          String owner = String.format("java/lang/%s", e.getKey());
-          // TODO: UGLY HACK
-          String parseName = String.format("parse%s", "Integer".equals(e.getKey()) ? "Int" : e.getKey());
-          String parseDescriptor = String.format("(Ljava/lang/String;)%s", e.getValue());
-
-          this.methodProxies.put(
-                  new FunctionCall(Opcodes.INVOKESTATIC, owner, parseName, parseDescriptor, false),
-                  () -> {
-                      logger.info("Augmenting call to {}.{}{}", owner, parseName, parseDescriptor);
-                      super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
-                      super.visitMethodInsn(Opcodes.INVOKESTATIC, owner, parseName, parseDescriptor, false);
-                  }
-          );
-          String toHexStringName = "toHexString";
-          String toStringDesc = String.format("(%s)Ljava/lang/String;", e.getValue());
-            this.methodProxies.put(
-                    new FunctionCall(Opcodes.INVOKESTATIC, owner, toHexStringName, toStringDesc, false),
-                    () -> {
-                        logger.info("Augmenting call to {}.{}{}", owner, toHexStringName, toStringDesc);
-                        super.visitMethodInsn(Opcodes.INVOKESTATIC, owner, toHexStringName, toStringDesc, false);
-                        this.stringToTString();
-                    }
-            );
-
-            String toStringName = "toString";
-            this.methodProxies.put(
-                    new FunctionCall(Opcodes.INVOKESTATIC, owner, toStringName, toStringDesc, false),
-                    () -> {
-                        logger.info("Augmenting call to {}.{}{}", owner, toStringName, toStringDesc);
-                        super.visitMethodInsn(Opcodes.INVOKESTATIC, owner, toStringName, toStringDesc, false);
-                        this.stringToTString();
-                    }
-            );
-            String valueOfName = "valueOf";
-            String valueOfDesc = String.format("(Ljava/lang/String;)L%s;", owner);
-            this.methodProxies.put(
-                    new FunctionCall(Opcodes.INVOKESTATIC, owner, valueOfName, valueOfDesc, false),
-                    () -> {
-                        logger.info("Augmenting call to {}:{}{}", owner, valueOfName, valueOfDesc);
-                        super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
-                        super.visitMethodInsn(Opcodes.INVOKESTATIC, owner, valueOfName, valueOfDesc, false);
-                    }
-            );
-        }
-        this.methodProxies.put(
-                new FunctionCall(Opcodes.INVOKESPECIAL, "java/util/Scanner", Constants.Init, "(Ljava/lang/String;)V", false),
-                () -> {
-                    logger.info("Augmenting call to java/util/Scanner.<init>(Ljava/lang/String;)V");
-                    super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
-                    super.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/util/Scanner", Constants.Init, "(Ljava/lang/String;)V" , false);
-                }
-        );
     }
 
     /**
@@ -371,45 +308,71 @@ public class MethodTaintingVisitor extends MethodVisitor {
         }
     }
 
+    /**
+     * Checks whether the parameter list contains String like Parameters that need conversion before calling.
+     * @param desc The Method's descriptor
+     * @return Whether on of the parameters is a String like type
+     */
+    private static boolean hasStringLikeParameters(Descriptor desc) {
+        boolean hasTaintAwareParam = false;
+        for(String p: desc.getParameters()) {
+            if(p.equals(Constants.StringDesc)) {
+                hasTaintAwareParam = true;
+            }
+        }
+        return hasTaintAwareParam;
+    }
+
+    /**
+     * Does the method have a String-like return type?
+     */
+    private static boolean hasStringLikeReturnType(Descriptor desc) {
+        return Constants.StringDesc.equals(desc.getReturnType());
+
+    }
+
     private void handleJdkMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
-        Collection<String> parameters = desc.getParameters();
-        Stack<Runnable> loadStack = new Stack<>();
-        Stack<String> params = new Stack<>();
-        params.addAll(parameters);
-        int numVars = (Type.getArgumentsAndReturnSizes(descriptor) >> 2) - 1;
-        this.usedAfterInjection = this.used + numVars;
-        int n = this.used;
-        while (!params.empty()) {
-            String p = params.pop();
-            int storeOpcode = Utils.getStoreOpcode(p);
-            int loadOpcode = Utils.getLoadOpcode(p);
+        if(hasStringLikeParameters(desc)) {
+            // TODO: Add optimization that the upmost parameter on the stack does not need to be stored/loaded..
+            Collection<String> parameters = desc.getParameters();
+            Stack<Runnable> loadStack = new Stack<>();
+            Stack<String> params = new Stack<>();
+            params.addAll(parameters);
+            int numVars = (Type.getArgumentsAndReturnSizes(descriptor) >> 2) - 1;
+            this.usedAfterInjection = this.used + numVars;
+            int n = this.used;
+            while (!params.empty()) {
+                String p = params.pop();
+                int storeOpcode = Utils.getStoreOpcode(p);
+                int loadOpcode = Utils.getLoadOpcode(p);
 
-            //logger.info("Type: {}", p);
-            if ((Constants.StringDesc).equals(p)) {
-                logger.info("Converting taint-aware String to String");
-                super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
+                //logger.info("Type: {}", p);
+                if ((Constants.StringDesc).equals(p)) {
+                    logger.info("Converting taint-aware String to String");
+                    super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
+                }
+
+                final int finalN = n;
+                super.visitVarInsn(storeOpcode, finalN);
+                logger.info("Executing store: {}_{} for {}", storeOpcode, finalN, p);
+
+                loadStack.push(() -> {
+                    logger.info("Executing load {}_{} for {}", loadOpcode, finalN, p);
+                    super.visitVarInsn(loadOpcode, finalN);
+                });
+                n += Utils.storeOpcodeSize(storeOpcode);
             }
-
-            final int finalN = n;
-            super.visitVarInsn(storeOpcode, finalN);
-            logger.info("Executing {}_{} for {}", storeOpcode, finalN, p);
-
-            loadStack.push(() -> {
-                //logger.info("Executing load {}_{}", loadOpcode, finalN);
-                super.visitVarInsn(loadOpcode, finalN);
-            });
-            n += Utils.storeOpcodeSize(storeOpcode);
-        }
-        assert n == this.usedAfterInjection;
-        while (!loadStack.empty()) {
-            Runnable l = loadStack.pop();
-            l.run();
+            assert n == this.usedAfterInjection;
+            while (!loadStack.empty()) {
+                Runnable l = loadStack.pop();
+                l.run();
+            }
         }
 
         logger.info("invoking [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor);
         super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
-        if ((Constants.StringDesc).equals(desc.getReturnType())) {
+        if (hasStringLikeReturnType(desc)) {
             this.stringToTString();
         }
     }
