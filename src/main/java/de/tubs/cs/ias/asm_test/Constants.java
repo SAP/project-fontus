@@ -5,10 +5,14 @@ import java.util.regex.Pattern;
 public final class Constants {
     static final Pattern strPattern = Pattern.compile("Ljava/lang/String\\b");
 
+    static final String Object = "java/lang/Object";
+
+
+    static final String ObjectDesc = java.lang.String.format("L%s;", Object);
     /**
      * The fully qualified name of the String class
      */
-    static final String String = "java/lang/String";
+    static final String StringQN = "java/lang/String";
     /**
      * The fully qualified name of the StringBuilder class
      */
@@ -26,7 +30,7 @@ public final class Constants {
      */
     static final String TStringDesc = java.lang.String.format("L%s", TString);
 
-    static final String StringDesc = java.lang.String.format("L%s;", String);
+    static final String StringDesc = java.lang.String.format("L%s;", StringQN);
     /**
      * The bytecode descriptor of an array of our taint aware string
      */
@@ -65,6 +69,8 @@ public final class Constants {
      * Descriptor of an object to regular String conversion method
      */
     static final String ToStringDesc = "()Ljava/lang/String;";
+
+    static final String ConcatDesc = String.format("(%s[Ljava/lang/Object;)%s;", StringDesc, TStringDesc);
 
     private Constants() {}
 

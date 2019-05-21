@@ -110,7 +110,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
      */
     private void rewriteOwnerMethods() {
         this.stringClasses.put(Constants.StringBuilder, this::visitStringBuilderMethod);
-        this.stringClasses.put(Constants.String, this::visitStringMethod);
+        this.stringClasses.put(Constants.StringQN, this::visitStringMethod);
     }
 
     /**
@@ -140,18 +140,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
     /**
      *  Initializes the method proxy maps.
      */
-    private void fillProxies() {
-        this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(" + Constants.TStringDesc + ";" + Constants.TStringDesc + ";)" + Constants.TStringDesc + ";", false));
-        this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;I)Ljava/lang/String;"),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(" + Constants.TStringDesc + ";I)" + Constants.TStringDesc + ";", false));
-        this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;J)Ljava/lang/String;"),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(" + Constants.TStringDesc + ";J)" + Constants.TStringDesc + ";", false));
-        this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;D)Ljava/lang/String;"),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(" + Constants.TStringDesc + ";D)" + Constants.TStringDesc + ";", false));
-        this.dynProxies.put(new ProxiedDynamicFunctionEntry("makeConcatWithConstants", "(Ljava/lang/String;F)Ljava/lang/String;"),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", "(" + Constants.TStringDesc + ";F)" + Constants.TStringDesc + ";", false));
-    }
+    private void fillProxies() {}
 
     /**
      * Converts a String that's top of the stack to an taint-aware String
@@ -377,6 +366,11 @@ public class MethodTaintingVisitor extends MethodVisitor {
         }
     }
 
+    private int numberOfArguments(Descriptor desc) {
+        return desc.getParameters().size();
+    }
+
+
     /**
      * The 'ldc' instruction loads a constant value out of the constant pool.
      *
@@ -406,7 +400,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
             case Constants.StringBuilder:
                 super.visitTypeInsn(opcode, Constants.TStringBuilder);
                 break;
-            case Constants.String:
+            case Constants.StringQN:
                 super.visitTypeInsn(opcode, Constants.TString);
                 break;
             default:
@@ -414,6 +408,25 @@ public class MethodTaintingVisitor extends MethodVisitor {
         }
     }
 
+    private void invokeConversionFunction(String type) {
+        Map<String, String> types = new HashMap<>();
+        types.put("I", "Integer");
+        types.put("B", "Byte");
+        types.put("C", "Character");
+        types.put("D", "Double");
+        types.put("F", "Float");
+        types.put("J", "Long");
+        types.put("S", "Short");
+        types.put("Z", "Boolean");
+
+        // No primitive type, nop
+        if(!types.containsKey(type)) return;
+
+        String full = types.get(type);
+        String owner = String.format("java/lang/%s", full);
+        String desc = String.format("(%s)L%s;", type, owner);
+        super.visitMethodInsn(Opcodes.INVOKESTATIC, owner, "valueOf", desc, false);
+    }
     /**
      * We might have to proxy these as they do some fancy String concat optimization stuff.
      */
@@ -428,9 +441,51 @@ public class MethodTaintingVisitor extends MethodVisitor {
             return;
         }
 
+        if("makeConcatWithConstants".equals(name)) {
+            logger.info("Trying to rewrite invokeDynamic {}{} towards Concat!", name, descriptor);
+
+            Descriptor desc = Descriptor.parseDescriptor(descriptor);
+            assert bootstrapMethodArguments.length == 1;
+            Object fmtStringObj = bootstrapMethodArguments[0];
+            assert fmtStringObj instanceof String;
+            String formatString = (String) fmtStringObj;
+            int parameterCount = desc.parameterCount();
+            super.visitIntInsn(Opcodes.BIPUSH, parameterCount);
+            super.visitTypeInsn(Opcodes.ANEWARRAY, Constants.Object);
+            int currRegister = this.used;
+            super.visitVarInsn(Opcodes.ASTORE, currRegister);
+            // newly created array is now stored in currRegister, concat operands on top
+            Stack<String> parameters = desc.getParameterStack();
+            int paramIndex=0;
+            while(!parameters.empty()) {
+                String parameter = parameters.pop();
+                // Convert topmost value (if required)
+                this.invokeConversionFunction(parameter);
+                // put array back on top
+                super.visitVarInsn(Opcodes.ALOAD, currRegister);
+                // swap array and object to array
+                super.visitInsn(Opcodes.SWAP);
+                // TODO: optimize towards iconst for idx between 1..5
+                // push the index where the value shall be stored
+                super.visitIntInsn(Opcodes.BIPUSH, paramIndex);
+                // swap, this puts them into the order arrayref, index, value
+                super.visitInsn(Opcodes.SWAP);
+                // store the value into arrayref at index, next parameter is on top now (if there are any more)
+                super.visitInsn(Opcodes.AASTORE);
+                paramIndex++;
+            }
+
+            // Load the format String constant
+            super.visitLdcInsn(formatString);
+            // Load the param array
+            super.visitVarInsn(Opcodes.ALOAD, currRegister);
+            // Call our concat method
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", Constants.ConcatDesc, false);
+            return;
+        }
+
         logger.info("invokeDynamic {}{}", name, descriptor);
         super.visitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
-
     }
 
     /**

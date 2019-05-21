@@ -1,12 +1,6 @@
 package de.tubs.cs.ias.asm_test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Scanner;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -60,12 +54,21 @@ class Descriptor {
         return new Descriptor(replaced, ret);
     }
 
+    int parameterCount() {
+            return this.parameters.size();
+    }
 
-    public Collection<String> getParameters() {
+    Stack<String> getParameterStack() {
+        Stack<String> pStack = new Stack<>();
+        pStack.addAll(this.parameters);
+        return pStack;
+    }
+
+    Collection<String> getParameters() {
         return Collections.unmodifiableCollection(this.parameters);
     }
 
-    public String getReturnType() {
+    String getReturnType() {
         return this.returnType;
     }
 

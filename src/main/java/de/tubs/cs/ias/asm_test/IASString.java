@@ -20,6 +20,7 @@ import java.util.stream.StreamSupport;
 
 
 public class IASString {
+    private static final Pattern CONCAT_PLACEHOLDER = Pattern.compile("\u0001");
     private String str;
     private boolean tainted;
 
@@ -451,23 +452,19 @@ public class IASString {
     */
 
 
-    public static IASString concat(IASString lhs, IASString rhs) {
-        return new IASString(lhs.str + rhs.str);
-    }
+    public static IASString concat(String format, Object... args) {
+        String ret = format;
+        boolean taint = false;
+        for(Object a : args) {
+            if(a instanceof IASString) {
+                IASString strArg = (IASString) a;
+                taint |= strArg.tainted;
+            }
+            String arg = a.toString();
+            ret = CONCAT_PLACEHOLDER.matcher(ret).replaceFirst(arg);
+        }
+        return new IASString(ret, taint);
 
-    public static IASString concat(IASString lhs, int rhs) {
-        return new IASString(lhs.str + rhs);
-    }
-
-    public static IASString concat(IASString lhs, long rhs) {
-        return new IASString(lhs.str + rhs);
-    }
-
-    public static IASString concat(IASString lhs, float rhs) {
-        return new IASString(lhs.str + rhs);
-    }
-    public static IASString concat(IASString lhs, double rhs) {
-        return new IASString(lhs.str + rhs);
     }
 
     public String getString() {
