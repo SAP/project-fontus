@@ -1,0 +1,13 @@
+{
+  "tests": [
+    {
+      "name": "Cal",
+      "javac_version": 9,
+      "source": "Cal.java",
+      "expected_result" : {
+        "rv": 0,
+        "stdout": "expected/cal_stdout.txt"
+      }
+    }
+  ]
+}
