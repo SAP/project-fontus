@@ -33,6 +33,8 @@ public class ClassTaintingVisitor extends ClassVisitor {
 
     private void fillBlacklist() {
         this.blacklist.add(new BlackListEntry("main", mainDescriptor, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
+        this.blacklist.add(new BlackListEntry("toString", Constants.ToStringDesc, Opcodes.ACC_PUBLIC));
+
     }
 
     /**
@@ -101,7 +103,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
         } else {
             mv = super.visitMethod(access, name, descriptor, signature, exceptions);
         }
-        return new MethodTaintingVisitor(acc, desc, mv);
+        return new MethodTaintingVisitor(acc, name, desc, mv);
     }
 
     /**

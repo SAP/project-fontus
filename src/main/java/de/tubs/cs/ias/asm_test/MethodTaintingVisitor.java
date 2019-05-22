@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory;
 public class MethodTaintingVisitor extends MethodVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+    private final String name;
+    private final String desc;
     /**
      * Some methods are not handled in a generic fashion, one can defined specialized proxies here
      */
@@ -47,11 +49,12 @@ public class MethodTaintingVisitor extends MethodVisitor {
     private final List<FunctionCall> sinks;
     private int used, usedAfterInjection;
 
-    MethodTaintingVisitor(int acc, String signature, MethodVisitor methodVisitor) {
+    MethodTaintingVisitor(int acc, String name, String signature, MethodVisitor methodVisitor) {
         super(Opcodes.ASM7, methodVisitor);
         this.used = Type.getArgumentsAndReturnSizes(signature)>>2;
         if((acc&Opcodes.ACC_STATIC)!=0) this.used--; // no this
-
+        this.name = name;
+        this.desc = signature;
         this.methodProxies = new HashMap<>();
         this.dynProxies = new HashMap<>();
         this.stringBuilderMethodsToRename = new HashMap<>();
@@ -173,6 +176,15 @@ public class MethodTaintingVisitor extends MethodVisitor {
     }
 
 
+    @Override
+    public void visitInsn(int opcode) {
+        if(opcode == Opcodes.ARETURN && Constants.ToStringDesc.equals(this.desc) && "toString".equals(this.name)) {
+            super.visitInsn(Opcodes.DUP);
+            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, "abortIfTainted", "()V", false);
+            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
+        }
+        super.visitInsn(opcode);
+    }
 
     /**
      * If the method is in the list of sinks: call the taint check before call it. Return true in this case.
