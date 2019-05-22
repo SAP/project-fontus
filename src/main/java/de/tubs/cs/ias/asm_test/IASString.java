@@ -455,7 +455,8 @@ public class IASString {
     public static IASString concat(String format, Object... args) {
         String ret = format;
         boolean taint = false;
-        for(Object a : args) {
+        for(int i = args.length-1; i>=0; i--) {
+            Object a = args[i];
             if(a instanceof IASString) {
                 IASString strArg = (IASString) a;
                 taint |= strArg.tainted;
