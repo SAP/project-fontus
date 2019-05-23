@@ -2,12 +2,25 @@
   "tests": [
     {
       "name": "Cal",
-      "javac_version": 9,
       "source": "Cal.java",
-      "expected_result" : {
-        "rv": 0,
-        "stdout": "expected/cal_stdout.txt"
-      }
+      "arguments": ["nov", "2019"]
+    },
+    {
+      "name": "Command Line Argument Tests",
+      "source": "CommandLineArgumentTests.java",
+      "arguments": ["hallo", "welt!"]
+    },
+    {
+      "name": "Concat Tests",
+      "source": "ConcatTests.java"
+    },
+    {
+      "name": "Argument Tests",
+      "source": "ArgumentTests.java"
+    },
+    {
+      "name": "PropertyTest",
+      "source": "PropertyTest.java"
     }
   ]
 }
