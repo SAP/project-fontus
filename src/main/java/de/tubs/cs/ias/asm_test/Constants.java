@@ -7,6 +7,7 @@ public final class Constants {
 
     static final String ObjectQN = "java/lang/Object";
 
+    static final String ToString = "toString";
 
     static final String ObjectDesc = java.lang.String.format("L%s;", ObjectQN);
     /**
