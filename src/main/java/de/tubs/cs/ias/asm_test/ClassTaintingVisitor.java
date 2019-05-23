@@ -33,7 +33,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
 
     private void fillBlacklist() {
         this.blacklist.add(new BlackListEntry("main", mainDescriptor, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
-        this.blacklist.add(new BlackListEntry("toString", Constants.ToStringDesc, Opcodes.ACC_PUBLIC));
+        this.blacklist.add(new BlackListEntry(Constants.ToString, Constants.ToStringDesc, Opcodes.ACC_PUBLIC));
 
     }
 

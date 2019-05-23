@@ -47,7 +47,8 @@ public class MethodTaintingVisitor extends MethodVisitor {
      * All functions listed here consume Strings that need to be checked first.
      */
     private final List<FunctionCall> sinks;
-    private int used, usedAfterInjection;
+    private int used;
+    int usedAfterInjection;
 
     MethodTaintingVisitor(int acc, String name, String signature, MethodVisitor methodVisitor) {
         super(Opcodes.ASM7, methodVisitor);
@@ -137,7 +138,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
      *  Initializes the methods that shall be renamed map.
      */
     private void fillMethodsToRename() {
-        this.stringBuilderMethodsToRename.put("toString", "toIASString");
+        this.stringBuilderMethodsToRename.put(Constants.ToString, "toIASString");
     }
 
     /**
@@ -175,12 +176,18 @@ public class MethodTaintingVisitor extends MethodVisitor {
         super.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TString, Constants.Init, Constants.TStringInitUntaintedDesc, false);
     }
 
+    /**
+     * If a taint-aware string is on the top of the stack, we can call this function to add a check to handle tainted strings.
+     */
+    private void callCheckTaint() {
+        super.visitInsn(Opcodes.DUP);
+        super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, "abortIfTainted", "()V", false);
+    }
 
     @Override
     public void visitInsn(int opcode) {
-        if(opcode == Opcodes.ARETURN && Constants.ToStringDesc.equals(this.desc) && "toString".equals(this.name)) {
-            super.visitInsn(Opcodes.DUP);
-            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, "abortIfTainted", "()V", false);
+        if(opcode == Opcodes.ARETURN && Constants.ToStringDesc.equals(this.desc) && Constants.ToString.equals(this.name)) {
+            this.callCheckTaint();
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
         }
         super.visitInsn(opcode);
@@ -199,8 +206,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
         if(this.sinks.contains(pfe)) {
             logger.info("{}.{}{} is a sinks, so calling the check taint function before passing the value!", owner, name, descriptor);
             // Call dup here to put the TString reference twice on the stack so the call can pop one without affecting further processing
-            super.visitInsn(Opcodes.DUP);
-            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, "abortIfTainted", "()V", false);
+            this.callCheckTaint();
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, owner, name, descriptor, isInterface);
             return true;
@@ -288,7 +294,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
         }
 
         // toString method, make a taint-aware String of the result
-        if("toString".equals(name) && descriptor.endsWith(")Ljava/lang/String;")) {
+        if(Constants.ToString.equals(name) && descriptor.endsWith(")Ljava/lang/String;")) {
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
             this.stringToTString();
             return;
