@@ -280,6 +280,12 @@ public class MethodTaintingVisitor extends MethodVisitor {
 
         boolean jdkMethod = owner.contains("java");
 
+        // ToString wrapping
+        if(!jdkMethod && name.equals(Constants.ToString) && descriptor.equals(Constants.ToStringDesc)) {
+            super.visitMethodInsn(opcode, owner, Constants.ToStringInstrumented, Constants.ToStringInstrumentedDesc, isInterface);
+            return;
+        }
+
         // Don't rewrite IASString/IASStringBuilder functions
         boolean skipInvoke = jdkMethod || owner.contains(Constants.TString) || owner.contains(Constants.TStringBuilder);
 
@@ -294,7 +300,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
         }
 
         // toString method, make a taint-aware String of the result
-        if(Constants.ToString.equals(name) && descriptor.endsWith(")Ljava/lang/String;")) {
+        if(jdkMethod && Constants.ToString.equals(name) && descriptor.endsWith(")Ljava/lang/String;")) {
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
             this.stringToTString();
             return;

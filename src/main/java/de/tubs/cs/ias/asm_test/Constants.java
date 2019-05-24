@@ -9,6 +9,8 @@ public final class Constants {
 
     static final String ToString = "toString";
 
+
+
     static final String ObjectDesc = java.lang.String.format("L%s;", ObjectQN);
     /**
      * The fully qualified name of the String class
@@ -72,7 +74,8 @@ public final class Constants {
     static final String ToStringDesc = "()Ljava/lang/String;";
 
     static final String ConcatDesc = String.format("(%s[Ljava/lang/Object;)%s;", StringDesc, TStringDesc);
-
+    static final String ToStringInstrumented = "$toString";
+    static final String ToStringInstrumentedDesc = String.format("()%s;", TStringDesc);
     private Constants() {}
 
 }

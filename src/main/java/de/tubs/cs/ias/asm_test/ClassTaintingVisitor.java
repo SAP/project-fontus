@@ -75,6 +75,19 @@ public class ClassTaintingVisitor extends ClassVisitor {
         }
     }
 
+    private void generateToStringProxy(MethodVisitor mv) {
+        mv.visitCode();
+        mv.visitVarInsn(Opcodes.ALOAD, 0);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.owner, Constants.ToStringInstrumented, Constants.ToStringInstrumentedDesc, false);
+        mv.visitInsn(Opcodes.DUP);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, "abortIfTainted", "()V", false);
+        mv.visitInsn(Opcodes.DUP);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
+        mv.visitInsn(Opcodes.ARETURN);
+        mv.visitMaxs(6, 3);
+        mv.visitEnd();
+    }
+
     @Override
     public MethodVisitor visitMethod(
             final int access,
@@ -87,14 +100,23 @@ public class ClassTaintingVisitor extends ClassVisitor {
         MethodVisitor mv;
         int acc = access;
         String desc = descriptor;
+        String newName = name;
         // Create a new main method, wrapping the regular one and translating all Strings to IASStrings
         if(access == (Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC) && "main".equals(name) && descriptor.equals(mainDescriptor)) {
             logger.info("Creating proxy main method");
-            MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "main", mainDescriptor, null, null);
+            MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "main", mainDescriptor, signature, exceptions);
             this.createMainWrapperMethod(v);
             logger.info("Processing renamed main method.");
             mv = super.visitMethod(access, Constants.MainWrapper, newMainDescriptor, signature, exceptions);
+            newName = Constants.MainWrapper;
             desc = newMainDescriptor;
+        } else if (access == Opcodes.ACC_PUBLIC && Constants.ToString.equals(name) && Constants.ToStringDesc.equals(descriptor)) {
+            logger.info("Creating proxy toString method");
+            MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC, Constants.ToString, Constants.ToStringDesc, signature, exceptions);
+            this.generateToStringProxy(v);
+            newName = Constants.ToStringInstrumented;
+            desc = Constants.ToStringInstrumentedDesc;
+            mv = super.visitMethod(access, newName, desc, signature, exceptions);
         } else if (!this.blacklist.contains(new BlackListEntry(name, descriptor, access)) && descMatcher.find()) {
             String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
             logger.info("Rewriting method signature {}{} to {}{}", name, descriptor, name, newDescriptor);
@@ -103,7 +125,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
         } else {
             mv = super.visitMethod(access, name, descriptor, signature, exceptions);
         }
-        return new MethodTaintingVisitor(acc, name, desc, mv);
+        return new MethodTaintingVisitor(acc, newName, desc, mv);
     }
 
     /**
