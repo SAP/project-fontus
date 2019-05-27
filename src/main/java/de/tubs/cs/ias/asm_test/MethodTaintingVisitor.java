@@ -2,16 +2,15 @@ package de.tubs.cs.ias.asm_test;
 
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 public class MethodTaintingVisitor extends MethodVisitor {
@@ -39,16 +38,11 @@ public class MethodTaintingVisitor extends MethodVisitor {
      * Pattern to replacement for field types
      */
     private final Collection<Map.Entry<Pattern, String>> fieldTypes;
-    /**
-     * All functions listed here return Strings that should be marked as tainted.
-     */
-    private final List<FunctionCall> sources;
-    /**
-     * All functions listed here consume Strings that need to be checked first.
-     */
-    private final List<FunctionCall> sinks;
+
+    private final Configuration configuration = Configuration.instance;
+
     private int used;
-    int usedAfterInjection;
+    private int usedAfterInjection;
 
     MethodTaintingVisitor(int acc, String name, String signature, MethodVisitor methodVisitor) {
         super(Opcodes.ASM7, methodVisitor);
@@ -59,14 +53,11 @@ public class MethodTaintingVisitor extends MethodVisitor {
         this.methodProxies = new HashMap<>();
         this.dynProxies = new HashMap<>();
         this.stringBuilderMethodsToRename = new HashMap<>();
-        this.sources = new ArrayList<>();
-        this.sinks = new ArrayList<>();
+
         this.stringClasses = new HashMap<>();
         this.fieldTypes = new ArrayList<>();
         this.fillProxies();
         this.fillMethodsToRename();
-        this.fillSources();
-        this.fillSinks();
         this.rewriteOwnerMethods();
         this.fillFieldTypes();
     }
@@ -115,23 +106,6 @@ public class MethodTaintingVisitor extends MethodVisitor {
     private void rewriteOwnerMethods() {
         this.stringClasses.put(Constants.StringBuilder, this::visitStringBuilderMethod);
         this.stringClasses.put(Constants.StringQN, this::visitStringMethod);
-    }
-
-    /**
-     * Calls to sinks, i.e., methods that always return String values.
-     * Those shall be handled by marking the returned taint-aware String as tainted.
-     */
-    private void fillSinks() {
-        this.sinks.add(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false));
-    }
-
-    /**
-     * Calls to sources, i.e., methods that should not be called with Strings marked as tainted.
-     */
-    private void fillSources() {
-        this.sources.add(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/util/Scanner", "next", Constants.ToStringDesc, false));
-        this.sources.add(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/util/Scanner", "nextLine", Constants.ToStringDesc, false));
-
     }
 
     /**
@@ -203,7 +177,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
                                final String descriptor,
                                final boolean isInterface) {
         FunctionCall pfe = new FunctionCall(opcode, owner, name, descriptor, isInterface);
-        if(this.sinks.contains(pfe)) {
+        if(this.configuration.getSinks().contains(pfe)) {
             logger.info("{}.{}{} is a sinks, so calling the check taint function before passing the value!", owner, name, descriptor);
             // Call dup here to put the TString reference twice on the stack so the call can pop one without affecting further processing
             this.callCheckTaint();
@@ -224,7 +198,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
                                  final String descriptor,
                                  final boolean isInterface) {
         FunctionCall pfe = new FunctionCall(opcode, owner, name, descriptor, isInterface);
-        if(this.sources.contains(pfe)) {
+        if(this.configuration.getSources().contains(pfe)) {
             logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", owner, name, descriptor, Constants.TString);
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
             super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "tainted", "(Ljava/lang/String;)" + Constants.TStringDesc + ";", false);
