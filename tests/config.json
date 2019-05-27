@@ -1,5 +1,18 @@
 {
-  "tests": [
+  "jar_tests": [
+    {
+      "name": "Tic Tac Toe",
+      "jar_file": "tictactoe.jar",
+      "entry_point": "Main",
+      "input_file": "tictactoe.input"
+    },
+    {
+      "name": "Minesweeper",
+      "jar_file": "minesweeper.jar",
+      "input_file": "minesweeper.input"
+    }
+  ],
+  "single_file_tests": [
     {
       "name": "Cal",
       "source": "Cal.java",
