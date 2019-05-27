@@ -15,6 +15,8 @@ _cd_out () {
 
 JAR_FOLDERS=(
     tictactoe
+    minesweeper
+    binary_search_tree
 )
 
 main() {

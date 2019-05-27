@@ -10,6 +10,10 @@
       "name": "Minesweeper",
       "jar_file": "minesweeper.jar",
       "input_file": "minesweeper.input"
+    },
+    {
+      "name": "Binary Search Tree",
+      "jar_file": "bst.jar"
     }
   ],
   "single_file_tests": [
@@ -62,6 +66,10 @@
     {
       "name": "Character Set",
       "source": "CharSet.java"
+    },
+    {
+      "name": "Stack Overflow Test",
+      "source": "StackOverflow.java"
     }
   ]
 }
