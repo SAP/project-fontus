@@ -235,15 +235,16 @@ class TestResult:
         self._regular_result = value
 
     def __repr__(self):
-        return ('TestResult(test_case={self._test_case}, '
-                'regular_result={self._regular_result!r}, '
-                'instrumented_result={self._instrumented_result!r})').format(self=self)
+        return ('TestResult(\n\ttest_case={self._test_case}, '
+                '\n\tregular_result={self._regular_result!r}, '
+                '\n\tinstrumented_result={self._instrumented_result!r}\n)').format(self=self)
 
 
 class Configuration:
     def __init__(self, test_cases, jar_test_cases):
         self._test_cases = test_cases
         self._jar_test_cases = jar_test_cases
+        self._verbose = False
         self._version = "0.0.1-SNAPSHOT"
 
     @property
@@ -258,14 +259,23 @@ class Configuration:
     def version(self):
         return self._version
 
-    def __repr__(self):
-        return ('Configuration(version={self._version!r}, '
-                'test_cases={self._test_cases!r}, '
-                'jar_test_cases={self._jar_test_cases!r})').format(self=self)
-
     @version.setter
     def version(self, value):
         self._version = value
+
+    @property
+    def verbose(self):
+        return self._verbose
+
+    @verbose.setter
+    def verbose(self, value):
+        self._verbose = value
+
+    def __repr__(self):
+        return ('Configuration(version={self._version!r}, verbose={self._verbose!r}, '
+                'test_cases={self._test_cases!r}, '
+                'jar_test_cases={self._jar_test_cases!r})').format(self=self)
+
 
 
 def parse_config(config_path):
@@ -316,7 +326,6 @@ class TestRunResult:
             for failed_test in self._failed:
                 out = out + "\n" + '\t\t{}'.format(failed_test.test_case.name)
         return out
-
 
 
 class TestRunner:
@@ -450,6 +459,9 @@ class TestRunner:
                            test_result.instrumented_result
                            )
                       )
+            elif self._config.verbose:
+                print(test_result)
+
             test_results.append(test_result)
 
         for test in self._config.jar_test_cases:
@@ -465,6 +477,9 @@ class TestRunner:
                         test_result.instrumented_result
                     )
                 )
+            elif self._config.verbose:
+                print(test_result)
+
             test_results.append(test_result)
 
         return test_results
@@ -490,6 +505,7 @@ def main(args):
 
     config = parse_config(args.config)
     config.version = args.version
+    config.verbose = args.verbose
     # pprint.pprint(config)
     runner = TestRunner(config)
     result = runner.run_tests()
@@ -500,6 +516,7 @@ def main(args):
 if __name__ == "__main__":
     ARG_PARSER = argparse.ArgumentParser()
     ARG_PARSER.add_argument("--build-first", action="store_true")
+    ARG_PARSER.add_argument("--verbose", action="store_true")
     ARG_PARSER.add_argument("--version", default="0.0.1-SNAPSHOT")
     ARG_PARSER.add_argument("--config", default=CONFIG_FILE)
 
