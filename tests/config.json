@@ -1,0 +1,75 @@
+{
+  "jar_tests": [
+    {
+      "name": "Tic Tac Toe",
+      "jar_file": "tictactoe.jar",
+      "entry_point": "Main",
+      "input_file": "tictactoe.input"
+    },
+    {
+      "name": "Minesweeper",
+      "jar_file": "minesweeper.jar",
+      "input_file": "minesweeper.input"
+    },
+    {
+      "name": "Binary Search Tree",
+      "jar_file": "bst.jar"
+    }
+  ],
+  "single_file_tests": [
+    {
+      "name": "Cal",
+      "source": "Cal.java",
+      "arguments": ["nov", "2019"]
+    },
+    {
+      "name": "Command Line Argument Tests",
+      "source": "CommandLineArgumentTests.java",
+      "arguments": ["hallo", "welt!"]
+    },
+    {
+      "name": "Concat Tests",
+      "source": "ConcatTests.java"
+    },
+    {
+      "name": "Argument Tests",
+      "source": "ArgumentTests.java"
+    },
+    {
+      "name": "PropertyTest",
+      "source": "PropertyTest.java"
+    },
+    {
+      "name": "TestString",
+      "source": "TestString.java"
+    },
+    {
+      "name": "Quadratic Equation Solver",
+      "source": "QuadraticEquation.java"
+    },
+    {
+      "name": "Mid-Square PRNG",
+      "source": "MidSquare.java"
+    },
+    {
+      "name": "max of sigma(n) where n >= 100 && <= 999",
+      "source": "SigmaMax.java"
+    },
+    {
+      "name": "ISBN13 validation",
+      "source": "ISBN.java"
+    },
+    {
+      "name": "Happy Numbers in [5..30]",
+      "source": "HappyNumbers.java"
+    },
+    {
+      "name": "Character Set",
+      "source": "CharSet.java"
+    },
+    {
+      "name": "Stack Overflow Test",
+      "source": "StackOverflow.java"
+    }
+  ]
+}
