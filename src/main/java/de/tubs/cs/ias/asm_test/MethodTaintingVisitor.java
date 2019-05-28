@@ -37,7 +37,7 @@ class MethodTaintingVisitor extends MethodVisitor {
     /**
      * Pattern to replacement for field types
      */
-    private final Collection<Map.Entry<Pattern, String>> fieldTypes;
+    private final Collection<Tuple<Pattern, String>> fieldTypes;
 
     private final Configuration configuration = Configuration.instance;
 
@@ -96,8 +96,8 @@ class MethodTaintingVisitor extends MethodVisitor {
      * Initialize the field types needing special handling here.
      */
     private void fillFieldTypes() {
-        this.fieldTypes.add(Map.entry(Constants.strPattern, Constants.TStringDesc));
-        this.fieldTypes.add(Map.entry(Constants.strBuilderPattern, Constants.TStringBuilderDesc));
+        this.fieldTypes.add(Tuple.of(Constants.strPattern, Constants.TStringDesc));
+        this.fieldTypes.add(Tuple.of(Constants.strBuilderPattern, Constants.TStringBuilderDesc));
     }
 
     /**
@@ -213,11 +213,11 @@ class MethodTaintingVisitor extends MethodVisitor {
     @Override
     public void visitFieldInsn(final int opcode, final String owner, final String name, final String descriptor) {
 
-        for(Map.Entry<Pattern, String> e : this.fieldTypes) {
-            Pattern pattern = e.getKey();
+        for(Tuple<Pattern, String> e : this.fieldTypes) {
+            Pattern pattern = e.x;
             Matcher matcher = pattern.matcher(descriptor);
             if (matcher.find()) {
-                String newDescriptor = matcher.replaceAll(e.getValue());
+                String newDescriptor = matcher.replaceAll(e.y);
                 super.visitFieldInsn(opcode, owner, name, newDescriptor);
                 return;
             }
