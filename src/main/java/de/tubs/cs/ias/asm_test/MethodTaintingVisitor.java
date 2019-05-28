@@ -53,7 +53,6 @@ class MethodTaintingVisitor extends MethodVisitor {
         this.methodProxies = new HashMap<>();
         this.dynProxies = new HashMap<>();
         this.stringBuilderMethodsToRename = new HashMap<>();
-
         this.stringClasses = new HashMap<>();
         this.fieldTypes = new ArrayList<>();
         this.fillProxies();
@@ -420,6 +419,39 @@ class MethodTaintingVisitor extends MethodVisitor {
         String desc = String.format("(%s)L%s;", type, owner);
         super.visitMethodInsn(Opcodes.INVOKESTATIC, owner, "valueOf", desc, false);
     }
+
+    /**
+     * Pushes an integer onto the stack.
+     * Optimizes small integers towards their dedicated ICONST_n instructions to save space.
+     */
+    private void pushNumberOnTheStack(int num) {
+        switch (num) {
+            case -1:
+                super.visitInsn(Opcodes.ICONST_M1);
+                return;
+            case 0:
+                super.visitInsn(Opcodes.ICONST_0);
+                return;
+            case 1:
+                super.visitInsn(Opcodes.ICONST_1);
+                return;
+            case 2:
+                super.visitInsn(Opcodes.ICONST_2);
+                return;
+            case 3:
+                super.visitInsn(Opcodes.ICONST_3);
+                return;
+            case 4:
+                super.visitInsn(Opcodes.ICONST_4);
+                return;
+            case 5:
+                super.visitInsn(Opcodes.ICONST_5);
+                return;
+            default:
+                super.visitIntInsn(Opcodes.BIPUSH, num);
+        }
+    }
+
     /**
      * We might have to proxy these as they do some fancy String concat optimization stuff.
      */
@@ -443,7 +475,7 @@ class MethodTaintingVisitor extends MethodVisitor {
             assert fmtStringObj instanceof String;
             String formatString = (String) fmtStringObj;
             int parameterCount = desc.parameterCount();
-            super.visitIntInsn(Opcodes.BIPUSH, parameterCount);
+            this.pushNumberOnTheStack(parameterCount);
             super.visitTypeInsn(Opcodes.ANEWARRAY, Constants.ObjectQN);
             int currRegister = this.used;
             super.visitVarInsn(Opcodes.ASTORE, currRegister);
@@ -458,9 +490,9 @@ class MethodTaintingVisitor extends MethodVisitor {
                 super.visitVarInsn(Opcodes.ALOAD, currRegister);
                 // swap array and object to array
                 super.visitInsn(Opcodes.SWAP);
-                // TODO: optimize towards iconst for idx between 1..5
                 // push the index where the value shall be stored
-                super.visitIntInsn(Opcodes.BIPUSH, paramIndex);
+                this.pushNumberOnTheStack(paramIndex);
+                //super.visitIntInsn(Opcodes.BIPUSH, paramIndex);
                 // swap, this puts them into the order arrayref, index, value
                 super.visitInsn(Opcodes.SWAP);
                 // store the value into arrayref at index, next parameter is on top now (if there are any more)
