@@ -2,7 +2,7 @@ package de.tubs.cs.ias.asm_test;
 
 import java.util.Objects;
 
-public class BlackListEntry {
+class BlackListEntry {
     private final String name;
     private final String descriptor;
     private final int access;

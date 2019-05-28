@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.regex.Matcher;
 
 
-public class ClassTaintingVisitor extends ClassVisitor {
+class ClassTaintingVisitor extends ClassVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Collection<BlackListEntry> blacklist = new ArrayList<>();
@@ -98,7 +98,6 @@ public class ClassTaintingVisitor extends ClassVisitor {
 
         Matcher descMatcher = Constants.strPattern.matcher(descriptor);
         MethodVisitor mv;
-        int acc = access;
         String desc = descriptor;
         String newName = name;
         // Create a new main method, wrapping the regular one and translating all Strings to IASStrings
@@ -125,7 +124,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
         } else {
             mv = super.visitMethod(access, name, descriptor, signature, exceptions);
         }
-        return new MethodTaintingVisitor(acc, newName, desc, mv);
+        return new MethodTaintingVisitor(access, newName, desc, mv);
     }
 
     /**

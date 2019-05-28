@@ -55,10 +55,10 @@ public class FunctionCall {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
-        FunctionCall that = (FunctionCall) o;
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || this.getClass() != obj.getClass()) return false;
+        FunctionCall that = (FunctionCall) obj;
         return this.opcode == that.opcode &&
                 this.isInterface == that.isInterface &&
                 this.owner.equals(that.owner) &&

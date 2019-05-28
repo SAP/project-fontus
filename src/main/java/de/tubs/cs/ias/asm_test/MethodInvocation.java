@@ -1,7 +1,7 @@
 package de.tubs.cs.ias.asm_test;
 
 @FunctionalInterface
-public interface MethodInvocation {
+interface MethodInvocation {
     void invoke(final int opcode,
                 final String owner,
                 final String name,

@@ -19,6 +19,7 @@ import java.util.stream.StreamSupport;
 
 
 
+@SuppressWarnings("ALL")
 public class IASString {
     private static final Pattern CONCAT_PLACEHOLDER = Pattern.compile("\u0001");
     private String str;

@@ -2,7 +2,7 @@ package de.tubs.cs.ias.asm_test;
 
 import java.util.Objects;
 
-public class ProxiedDynamicFunctionEntry {
+class ProxiedDynamicFunctionEntry {
     private final String name;
     private final String descriptor;
 

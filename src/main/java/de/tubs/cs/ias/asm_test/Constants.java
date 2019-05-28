@@ -2,7 +2,7 @@ package de.tubs.cs.ias.asm_test;
 
 import java.util.regex.Pattern;
 
-public final class Constants {
+final class Constants {
     static final Pattern strPattern = Pattern.compile("Ljava/lang/String\\b");
 
     static final String ObjectQN = "java/lang/Object";

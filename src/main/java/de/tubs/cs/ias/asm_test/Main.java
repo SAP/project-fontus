@@ -9,6 +9,7 @@ import picocli.CommandLine;
 import java.io.*;
 
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -31,47 +32,16 @@ public class Main implements Callable<Void> {
     @CommandLine.Option(names = {"-o", "--out"}, required = true, paramLabel = "Output", description = "The output class/jar file")
     private File outputFile;
 
-    @CommandLine.Option(names = {"-c", "--check"}, paramLabel = "Check Requirements", description = "Check whether the required class files are present.")
-    private boolean checkRequirements;
-
     @CommandLine.Option(names = {"-a", "--add"}, paramLabel = "Add taint-aware classes", description = "Adds the class files of our taint-aware data types to the instrumented .jar file.")
     private boolean addTaintAwareClassFiles;
 
     private static final String TStringClassName = "de/tubs/cs/ias/asm_test/IASString.class";
     private static final String TStringBuilderClassName = "de/tubs/cs/ias/asm_test/IASStringBuilder.class";
-
+    private static final String classSuffix = ".class";
     private static final List<String> TStringTypesClassNames = Arrays.asList(TStringClassName, TStringBuilderClassName);
 
-    /**
-     * Checks whether all the supporting files are present in the output directory.
-     * TODO: fix this to load them properly.
-     *
-     * @return Whether we can proceed
-     */
-    private boolean checkRequirements() {
-        File outDir = new File(this.outputFile.getParent());
-        if (!outDir.isDirectory()) {
-            return false;
-        }
-        String[] requiredFilenames = {"IASString.class", "IASStringBuilder.class"};
-        File instrumentedDir = new File(outDir, Constants.TPackage);
-        if (!instrumentedDir.isDirectory()) {
-            return false;
-        }
-        for (String required : requiredFilenames) {
-            File requiredFile = new File(instrumentedDir, required);
-            if (requiredFile.exists() && requiredFile.isFile()) {
-                logger.info("Found required file {} at {}", required, requiredFile.getAbsoluteFile());
-            } else {
-                logger.error("Did not find required file {} at {}", required, requiredFile.getAbsoluteFile());
 
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private void instrumentClassStream(InputStream i, OutputStream o) throws IOException {
+    private static void instrumentClassStream(InputStream i, OutputStream o) throws IOException {
         ClassReader cr = new ClassReader(i);
         ClassWriter writer = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
         //ClassVisitor cca = new CheckClassAdapter(writer);
@@ -80,7 +50,7 @@ public class Main implements Callable<Void> {
         o.write(writer.toByteArray());
     }
 
-    private void copySingleEntry(InputStream i, OutputStream o) throws IOException {
+    private static void copySingleEntry(InputStream i, OutputStream o) throws IOException {
         int len = 0;
         byte[] buffer = new byte[1024];
 
@@ -89,11 +59,11 @@ public class Main implements Callable<Void> {
         }
     }
 
-    private void instrumentClassFile(File input, File output) throws IOException {
+    private static void instrumentClassFile(File input, File output) throws IOException {
         FileInputStream fi = new FileInputStream(input);
         FileOutputStream fo = new FileOutputStream(output);
         logger.info("Reading class file from: {}", input.getAbsolutePath());
-        this.instrumentClassStream(fi, fo);
+        instrumentClassStream(fi, fo);
         logger.info("Writing transformed class file to: {}", output.getAbsolutePath());
     }
 
@@ -107,22 +77,7 @@ public class Main implements Callable<Void> {
             jos = new JarOutputStream(fos);
 
             if(this.addTaintAwareClassFiles) {
-                logger.info("Adding required class files to jar..");
-
-                List<JarEntry> entriesToAdd = getJarEntriesToCopy(currJar);
-                for (JarEntry je : entriesToAdd) {
-                    if (ji.getJarEntry(je.getName()) != null) {
-                        logger.info("{} is already contained in jar, skipping..", je.getName());
-                        continue;
-                    }
-                    logger.info("Adding jar entry: {}", je.getName());
-                    InputStream currJarIn = currJar.getInputStream(je);
-                    JarEntry ne = new JarEntry(je.getName());
-                    jos.putNextEntry(ne);
-                    this.copySingleEntry(currJarIn, jos);
-                    currJarIn.close();
-                    jos.closeEntry();
-                }
+                copyTaintAwareClassFiles(jos, ji, currJar);
             }
 
             logger.info("Reading jar file from: {}", input.getAbsolutePath());
@@ -137,10 +92,10 @@ public class Main implements Callable<Void> {
                 jos.putNextEntry(jeo);
 
                 // Skip the taint aware string types so we don't mess them up by instrumenting them again!
-                if (jei.getName().endsWith(".class") && !TStringTypesClassNames.contains(jei.getName())) {
-                    this.instrumentClassStream(jeis, jos);
+                if (jei.getName().endsWith(classSuffix) && !TStringTypesClassNames.contains(jei.getName())) {
+                    instrumentClassStream(jeis, jos);
                 } else {
-                    this.copySingleEntry(jeis, jos);
+                    copySingleEntry(jeis, jos);
                 }
                 jeis.close();
                 jos.closeEntry();
@@ -152,15 +107,29 @@ public class Main implements Callable<Void> {
         logger.info("Writing transformed jar file to: {}", output.getAbsolutePath());
     }
 
+    private static void copyTaintAwareClassFiles(JarOutputStream jos, JarFile ji, JarFile currJar) throws IOException {
+        logger.info("Adding required class files to jar..");
+
+        List<JarEntry> entriesToAdd = getJarEntriesToCopy(currJar);
+        for (JarEntry je : entriesToAdd) {
+            if (ji.getJarEntry(je.getName()) != null) {
+                logger.info("{} is already contained in jar, skipping..", je.getName());
+                continue;
+            }
+            logger.info("Adding jar entry: {}", je.getName());
+            InputStream currJarIn = currJar.getInputStream(je);
+            JarEntry ne = new JarEntry(je.getName());
+            jos.putNextEntry(ne);
+            copySingleEntry(currJarIn, jos);
+            currJarIn.close();
+            jos.closeEntry();
+        }
+    }
+
     @Override
     public Void call() throws IOException {
-        if (this.checkRequirements && !this.checkRequirements()) {
-            logger.error("Required support files do not exist, can't proceed!");
-            return null;
-        }
-
-        if (this.inputFile.getName().endsWith(".class")) {
-            this.instrumentClassFile(this.inputFile, this.outputFile);
+        if (this.inputFile.getName().endsWith(classSuffix)) {
+            instrumentClassFile(this.inputFile, this.outputFile);
         } else if (this.inputFile.getName().endsWith(".jar")) {
             this.instrumentJarFile(this.inputFile, this.outputFile);
         } else {
@@ -171,7 +140,7 @@ public class Main implements Callable<Void> {
     }
 
     private static boolean isJarEntryToCopy(String name) {
-        String[] toCopy = { /* "de/", "de/tubs/", "de/tubs/cs/", "de/tubs/cs/ias/", "de/tubs/cs/ias/asm_test/", */ "de/tubs/cs/ias/asm_test/IASStringBuilder.class", "de/tubs/cs/ias/asm_test/IASString.class"};
+        String[] toCopy = {TStringBuilderClassName, TStringClassName};
         for (String e : toCopy) {
             if (e.equals(name)) return true;
         }
@@ -190,12 +159,12 @@ public class Main implements Callable<Void> {
         return entries;
     }
 
-    private static String getPathToCurrentJar() throws UnsupportedEncodingException {
+    private static String getPathToCurrentJar() {
         String path = Main.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        return URLDecoder.decode(path, "UTF-8");
+        return URLDecoder.decode(path, StandardCharsets.UTF_8);
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         CommandLine.call(new Main(), args);
     }
 }

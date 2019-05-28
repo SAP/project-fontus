@@ -42,8 +42,7 @@ class Descriptor {
         if(s.endsWith(from)) {
             int lIdx = s.lastIndexOf(from);
             assert lIdx != -1;
-            String ret = s.substring(0, lIdx) + to;
-            return ret;
+            return s.substring(0, lIdx) + to;
         }
         return s;
     }

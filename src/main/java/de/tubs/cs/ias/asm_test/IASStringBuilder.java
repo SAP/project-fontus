@@ -2,6 +2,7 @@ package de.tubs.cs.ias.asm_test;
 
 import java.util.stream.IntStream;
 
+@SuppressWarnings("ALL")
 public class IASStringBuilder implements java.io.Serializable, /* Comparable<IASStringBuilder>, */ CharSequence {
 
     private final StringBuilder builder;

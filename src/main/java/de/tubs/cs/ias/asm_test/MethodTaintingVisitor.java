@@ -13,11 +13,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-public class MethodTaintingVisitor extends MethodVisitor {
+class MethodTaintingVisitor extends MethodVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final String name;
-    private final String desc;
+    private final String methodDescriptor;
     /**
      * Some methods are not handled in a generic fashion, one can defined specialized proxies here
      */
@@ -44,12 +44,12 @@ public class MethodTaintingVisitor extends MethodVisitor {
     private int used;
     private int usedAfterInjection;
 
-    MethodTaintingVisitor(int acc, String name, String signature, MethodVisitor methodVisitor) {
+    MethodTaintingVisitor(int acc, String name, String methodDescriptor, MethodVisitor methodVisitor) {
         super(Opcodes.ASM7, methodVisitor);
-        this.used = Type.getArgumentsAndReturnSizes(signature)>>2;
+        this.used = Type.getArgumentsAndReturnSizes(methodDescriptor)>>2;
         if((acc&Opcodes.ACC_STATIC)!=0) this.used--; // no this
         this.name = name;
-        this.desc = signature;
+        this.methodDescriptor = methodDescriptor;
         this.methodProxies = new HashMap<>();
         this.dynProxies = new HashMap<>();
         this.stringBuilderMethodsToRename = new HashMap<>();
@@ -160,7 +160,7 @@ public class MethodTaintingVisitor extends MethodVisitor {
 
     @Override
     public void visitInsn(int opcode) {
-        if(opcode == Opcodes.ARETURN && Constants.ToStringDesc.equals(this.desc) && Constants.ToString.equals(this.name)) {
+        if(opcode == Opcodes.ARETURN && Constants.ToStringDesc.equals(this.methodDescriptor) && Constants.ToString.equals(this.name)) {
             this.callCheckTaint();
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
         }
@@ -363,11 +363,6 @@ public class MethodTaintingVisitor extends MethodVisitor {
             this.stringToTString();
         }
     }
-
-    private int numberOfArguments(Descriptor desc) {
-        return desc.getParameters().size();
-    }
-
 
     /**
      * The 'ldc' instruction loads a constant value out of the constant pool.
