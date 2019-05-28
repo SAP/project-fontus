@@ -159,9 +159,9 @@ public class Main implements Callable<Void> {
         return entries;
     }
 
-    private static String getPathToCurrentJar() {
+    private static String getPathToCurrentJar() throws UnsupportedEncodingException {
         String path = Main.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        return URLDecoder.decode(path, StandardCharsets.UTF_8);
+        return URLDecoder.decode(path, "UTF-8"); // Constant as the Enum requires JDK10 or above
     }
 
     public static void main(String[] args) {
