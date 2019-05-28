@@ -59,7 +59,7 @@ class Game {
             Coordinate coordinate = readCoordinate();
             successful = this.area.pickField(coordinate, this.currentPlayer);
             if (!successful) {
-                System.out.println("Feld bereits belegt oder ungültig, bitte erneut eingeben");
+                System.out.println("Feld bereits belegt oder ungueltig, bitte erneut eingeben");
             }
         }
     }
