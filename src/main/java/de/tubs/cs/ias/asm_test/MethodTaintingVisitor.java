@@ -273,11 +273,11 @@ class MethodTaintingVisitor extends MethodVisitor {
         }
 
         // toString method, make a taint-aware String of the result
-        if(jdkMethod && Constants.ToString.equals(name) && descriptor.endsWith(")Ljava/lang/String;")) {
+        /*if(jdkMethod && Constants.ToString.equals(name) && descriptor.endsWith(")Ljava/lang/String;")) {
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
             this.stringToTString();
             return;
-        }
+        }*/
 
         // TODO: case when both find()s are true?
         if (stringDescMatcher.find() && !skipInvoke) {
@@ -467,50 +467,53 @@ class MethodTaintingVisitor extends MethodVisitor {
         }
 
         if("makeConcatWithConstants".equals(name)) {
-            logger.info("Trying to rewrite invokeDynamic {}{} towards Concat!", name, descriptor);
-
-            Descriptor desc = Descriptor.parseDescriptor(descriptor);
-            assert bootstrapMethodArguments.length == 1;
-            Object fmtStringObj = bootstrapMethodArguments[0];
-            assert fmtStringObj instanceof String;
-            String formatString = (String) fmtStringObj;
-            int parameterCount = desc.parameterCount();
-            this.pushNumberOnTheStack(parameterCount);
-            super.visitTypeInsn(Opcodes.ANEWARRAY, Constants.ObjectQN);
-            int currRegister = this.used;
-            super.visitVarInsn(Opcodes.ASTORE, currRegister);
-            // newly created array is now stored in currRegister, concat operands on top
-            Stack<String> parameters = desc.getParameterStack();
-            int paramIndex=0;
-            while(!parameters.empty()) {
-                String parameter = parameters.pop();
-                // Convert topmost value (if required)
-                this.invokeConversionFunction(parameter);
-                // put array back on top
-                super.visitVarInsn(Opcodes.ALOAD, currRegister);
-                // swap array and object to array
-                super.visitInsn(Opcodes.SWAP);
-                // push the index where the value shall be stored
-                this.pushNumberOnTheStack(paramIndex);
-                //super.visitIntInsn(Opcodes.BIPUSH, paramIndex);
-                // swap, this puts them into the order arrayref, index, value
-                super.visitInsn(Opcodes.SWAP);
-                // store the value into arrayref at index, next parameter is on top now (if there are any more)
-                super.visitInsn(Opcodes.AASTORE);
-                paramIndex++;
-            }
-
-            // Load the format String constant
-            super.visitLdcInsn(formatString);
-            // Load the param array
-            super.visitVarInsn(Opcodes.ALOAD, currRegister);
-            // Call our concat method
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", Constants.ConcatDesc, false);
+            this.rewriteConcatWithConstants(name, descriptor, bootstrapMethodArguments);
             return;
         }
 
         logger.info("invokeDynamic {}{}", name, descriptor);
         super.visitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
+    }
+
+    private void rewriteConcatWithConstants(String name, String descriptor, Object[] bootstrapMethodArguments) {
+        logger.info("Trying to rewrite invokeDynamic {}{} towards Concat!", name, descriptor);
+
+        Descriptor desc = Descriptor.parseDescriptor(descriptor);
+        assert bootstrapMethodArguments.length == 1;
+        Object fmtStringObj = bootstrapMethodArguments[0];
+        assert fmtStringObj instanceof String;
+        String formatString = (String) fmtStringObj;
+        int parameterCount = desc.parameterCount();
+        this.pushNumberOnTheStack(parameterCount);
+        super.visitTypeInsn(Opcodes.ANEWARRAY, Constants.ObjectQN);
+        int currRegister = this.used;
+        super.visitVarInsn(Opcodes.ASTORE, currRegister);
+        // newly created array is now stored in currRegister, concat operands on top
+        Stack<String> parameters = desc.getParameterStack();
+        int paramIndex=0;
+        while(!parameters.empty()) {
+            String parameter = parameters.pop();
+            // Convert topmost value (if required)
+            this.invokeConversionFunction(parameter);
+            // put array back on top
+            super.visitVarInsn(Opcodes.ALOAD, currRegister);
+            // swap array and object to array
+            super.visitInsn(Opcodes.SWAP);
+            // push the index where the value shall be stored
+            this.pushNumberOnTheStack(paramIndex);
+            // swap, this puts them into the order arrayref, index, value
+            super.visitInsn(Opcodes.SWAP);
+            // store the value into arrayref at index, next parameter is on top now (if there are any more)
+            super.visitInsn(Opcodes.AASTORE);
+            paramIndex++;
+        }
+
+        // Load the format String constant
+        super.visitLdcInsn(formatString);
+        // Load the param array
+        super.visitVarInsn(Opcodes.ALOAD, currRegister);
+        // Call our concat method
+        super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TString, "concat", Constants.ConcatDesc, false);
     }
 
     /**
