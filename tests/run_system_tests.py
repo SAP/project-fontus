@@ -214,6 +214,10 @@ class TestResult:
         self._instrumented_result = instrumented_result
 
     @property
+    def test_case(self):
+        return self._test_case
+
+    @property
     def successful(self):
         return not (self._regular_result is None or self._instrumented_result is None) and \
                self._regular_result == self._instrumented_result
@@ -357,9 +361,8 @@ class TestRunner:
         return self._instrument_application(cwd, input_file, output_file)
 
     def _instrument_jar(self, cwd, name):
-        jar_name = '{}.jar'.format(name)
-        input_file = path.join(cwd, jar_name)
-        output_file = path.join(cwd, TMPDIR_OUTPUT_DIR_SUFFIX, jar_name)
+        input_file = path.join(cwd, name)
+        output_file = path.join(cwd, TMPDIR_OUTPUT_DIR_SUFFIX, name)
         return self._instrument_application(cwd, input_file, output_file)
 
     def _run_instrumented_jar_internal(self, cwd, name, entry_point, additional_arguments, input_file):
@@ -420,8 +423,10 @@ class TestRunner:
             test.arguments,
             test.input_file
         )
+
+        instrumented_cwd = path.join(base_dir, TMPDIR_OUTPUT_DIR_SUFFIX)
         instrumented_result = self._run_instrumented_jar(
-            base_dir,
+            instrumented_cwd,
             test.jar_file,
             test.entry_point,
             test.arguments,
@@ -440,8 +445,9 @@ class TestRunner:
             base_name,
             test.arguments
         )
+        instrumented_cwd = path.join(base_dir, TMPDIR_OUTPUT_DIR_SUFFIX)
         instrumented_result = self._run_instrumented_class_file(
-            base_dir,
+            instrumented_cwd,
             base_name,
             test.arguments
         )
