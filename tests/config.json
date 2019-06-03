@@ -70,6 +70,19 @@
     {
       "name": "Stack Overflow Test",
       "source": "StackOverflow.java"
+    },
+    {
+      "name": "String Field Test",
+      "source": "StringFieldTest.java"
+    },
+    {
+      "name": "StringBuilder Field Test",
+      "source": "StringBuilderFieldTest.java"
+    },
+    {
+      "name": "StringBuilder Local Variable Test",
+      "source": "StringBuilderLocalVariableTest.java"
     }
+
   ]
 }
