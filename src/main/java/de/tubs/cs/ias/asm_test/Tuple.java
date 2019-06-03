@@ -1,5 +1,7 @@
 package de.tubs.cs.ias.asm_test;
 
+import java.util.Objects;
+
 /**
  * Tuples..
  * Based on https://stackoverflow.com/a/12328838
@@ -15,23 +17,7 @@ public final class Tuple<X, Y> {
 
     @Override
     public String toString() {
-        return "(" + this.x + "," + this.y + ")";
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
-
-        if (!(obj instanceof Tuple)){
-            return false;
-        }
-
-        Tuple<X,Y> other = (Tuple<X,Y>) obj;
-
-        // this may cause NPE if nulls are valid values for x or y. The logic may be improved to handle nulls properly, if needed.
-        return other.x.equals(this.x) && other.y.equals(this.y);
+        return String.format("(%s,%s)", this.x, this.y);
     }
 
     static <T,U> Tuple<T,U> of(T x, U y) {
@@ -39,11 +25,16 @@ public final class Tuple<X, Y> {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || this.getClass() != o.getClass()) return false;
+        Tuple<?, ?> tuple = (Tuple<?, ?>) o;
+        return Objects.equals(this.x, tuple.x) &&
+                Objects.equals(this.y, tuple.y);
+    }
+
+    @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((this.x == null) ? 0 : this.x.hashCode());
-        result = prime * result + ((this.y == null) ? 0 : this.y.hashCode());
-        return result;
+        return Objects.hash(this.x, this.y);
     }
 }

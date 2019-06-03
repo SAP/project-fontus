@@ -75,14 +75,33 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
     }
 
+    /**
+     * Generate the body of the toString proxy method
+     *
+     * To not break OOP we can't change the Signature of the toString method inherited from Object.
+     * Our solution is thus to instrument the toString method and rename it to $toString with descriptor ()TString;
+     *
+     * To provide a working toString method (i.e., not break applications by having objects use the default toString method)
+     * the code generated here calls $toString, check whether it was tainted and returns the regular String.
+     *
+     * This loses the taint! Thus passing instrumented objects to JVM standard library functions which call toString need special handling.
+     * One solution is to write proxy methods that reassemble the taint information afterwards.
+     *
+     * TODO: The taint handling probably needs various levels of action when a tainted String is required.
+     * This function could just log that the taint is lost and thus notifies the developer that a proxy might be required.
+     * Maybe a whitelist where losing the taint is fine would be a good idea? Where the toString is called,
+     * can be detected by inspecting the call stack. This might be really slow however..
+     *
+     * @param mv The visitor, visiting the toString method.
+     */
     private void generateToStringProxy(MethodVisitor mv) {
         mv.visitCode();
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.owner, Constants.ToStringInstrumented, Constants.ToStringInstrumentedDesc, false);
         mv.visitInsn(Opcodes.DUP);
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, "abortIfTainted", "()V", false);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, "abortIfTainted", "()V", false);
         mv.visitInsn(Opcodes.DUP);
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TString, Constants.TStringToStringName, Constants.ToStringDesc, false);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
         mv.visitInsn(Opcodes.ARETURN);
         mv.visitMaxs(6, 3);
         mv.visitEnd();
@@ -140,7 +159,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitLabel(label0);
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitInsn(Opcodes.ARRAYLENGTH);
-        mv.visitTypeInsn(Opcodes.ANEWARRAY, Constants.TString);
+        mv.visitTypeInsn(Opcodes.ANEWARRAY, Constants.TStringQN);
         mv.visitVarInsn(Opcodes.ASTORE, 1);
         Label label1 = new Label();
         mv.visitLabel(label1);
@@ -158,12 +177,12 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitLabel(label4);
         mv.visitVarInsn(Opcodes.ALOAD, 1);
         mv.visitVarInsn(Opcodes.ILOAD, 2);
-        mv.visitTypeInsn(Opcodes.NEW, Constants.TString);
+        mv.visitTypeInsn(Opcodes.NEW, Constants.TStringQN);
         mv.visitInsn(Opcodes.DUP);
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitVarInsn(Opcodes.ILOAD, 2);
         mv.visitInsn(Opcodes.AALOAD);
-        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TString, Constants.Init, Constants.TStringInitUntaintedDesc, false);
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringQN, Constants.Init, Constants.TStringInitUntaintedDesc, false);
         mv.visitInsn(Opcodes.AASTORE);
         Label label5 = new Label();
         mv.visitLabel(label5);

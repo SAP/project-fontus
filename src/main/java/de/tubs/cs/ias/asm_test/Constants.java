@@ -19,7 +19,7 @@ final class Constants {
     /**
      * The fully qualified name of the StringBuilder class
      */
-    static final String StringBuilder = "java/lang/StringBuilder";
+    static final String StringBuilderQN = "java/lang/StringBuilder";
     /**
      * The type of our taint-aware String
      */
@@ -27,11 +27,11 @@ final class Constants {
     /**
      * The type of our taint-aware String
      */
-    static final String TString = TPackage + "IASString";
+    static final String TStringQN = TPackage + "IASString";
     /**
      * The bytecode descriptor of our taint aware string
      */
-    static final String TStringDesc = java.lang.String.format("L%s", TString);
+    static final String TStringDesc = java.lang.String.format("L%s", TStringQN);
 
     static final String StringDesc = java.lang.String.format("L%s;", StringQN);
     /**
@@ -43,11 +43,11 @@ final class Constants {
     /**
      * The type of our taint-aware StringBuilder
      */
-    static final String TStringBuilder = TPackage + "IASStringBuilder";
+    static final String TStringBuilderQN = TPackage + "IASStringBuilder";
     /**
      * The bytecode descriptor of our taint aware StringBuilder
      */
-    static final String TStringBuilderDesc = "L" + TStringBuilder;
+    static final String TStringBuilderDesc = String.format("L%s", TStringBuilderQN);
 
     /**
      * Constructor name

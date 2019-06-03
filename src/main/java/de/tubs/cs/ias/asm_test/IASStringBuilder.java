@@ -199,6 +199,11 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
         return this;
     }
 
+    @Override
+    public String toString() {
+        return this.builder.toString();
+    }
+
     public IASString toIASString() {
         return new IASString(this.builder.toString(), this.tainted);
     }
