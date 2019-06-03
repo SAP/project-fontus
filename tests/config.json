@@ -82,7 +82,14 @@
     {
       "name": "StringBuilder Local Variable Test",
       "source": "StringBuilderLocalVariableTest.java"
+    },
+    {
+      "name": "String Array Test",
+      "source": "StringArrayTest.java"
+    },
+    {
+      "name": "String Array Field Test",
+      "source": "StringArrayFieldTest.java"
     }
-
   ]
 }
