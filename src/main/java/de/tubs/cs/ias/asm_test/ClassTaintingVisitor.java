@@ -67,7 +67,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             logger.info("Replacing String field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
             return super.visitField(access, name, newDescriptor, signature, value);
         } else if(sbDescMatcher.find()) {
-            String newDescriptor = sbDescMatcher.replaceAll(Constants.TStringDesc);
+            String newDescriptor = sbDescMatcher.replaceAll(Constants.TStringBuilderDesc);
             logger.info("Replacing StringBuilder field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
             return super.visitField(access, name, newDescriptor, signature, value);
         } else {
