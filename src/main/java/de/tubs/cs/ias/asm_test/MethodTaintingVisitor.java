@@ -200,7 +200,7 @@ class MethodTaintingVisitor extends MethodVisitor {
         if(this.configuration.getSources().contains(pfe)) {
             logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", owner, name, descriptor, Constants.TStringQN);
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "tainted", "(Ljava/lang/String;)" + Constants.TStringDesc + ";", false);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "tainted", Constants.CreateTaintedStringDesc, false);
             return true;
         }
         return false;
