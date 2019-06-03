@@ -201,6 +201,7 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
 
     @Override
     public String toString() {
+        // TODO: how to deal with this getting called?
         return this.builder.toString();
     }
 
