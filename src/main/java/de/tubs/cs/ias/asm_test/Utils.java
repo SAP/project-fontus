@@ -78,6 +78,9 @@ final class Utils {
         String desc = h.getDesc();
         desc = Constants.strPattern.matcher(desc).replaceAll(Constants.TStringDesc);
         desc = Constants.strBuilderPattern.matcher(desc).replaceAll(Constants.TStringBuilderDesc);
-        return new Handle(h.getTag(), h.getOwner(), h.getName(), desc, h.isInterface());
+        String owner = h.getOwner();
+        owner = owner.replace(Constants.StringQN, Constants.TStringQN);
+        owner = owner.replace(Constants.StringBuilderQN, Constants.TStringBuilderQN);
+        return new Handle(h.getTag(), owner, h.getName(), desc, h.isInterface());
     }
 }

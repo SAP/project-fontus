@@ -94,6 +94,10 @@
     {
       "name": "Lambda Function Test",
       "source": "LambdaTest.java"
+    },
+    {
+      "name": "Method Reference Test (i.e, String::length)",
+      "source": "MethodReferenceTest.java"
     }
   ]
 }
