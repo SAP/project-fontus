@@ -453,6 +453,28 @@ class MethodTaintingVisitor extends MethodVisitor {
     }
 
     /**
+     * Translates the call to a lambda function
+     */
+    private void invokeVisitLambdaCall(final String name,
+                                       final String descriptor,
+                                       final Handle bootstrapMethodHandle,
+                                       final Object... bootstrapMethodArguments) {
+        Object[] bsArgs = new Object[bootstrapMethodArguments.length];
+        for (int i = 0; i < bootstrapMethodArguments.length; i++) {
+            Object arg = bootstrapMethodArguments[i];
+            if (arg instanceof Handle) {
+                Handle a = (Handle) arg;
+                bsArgs[i] = Utils.instrumentHandle(a);
+            } else if (arg instanceof Type) {
+                Type a = (Type) arg;
+                bsArgs[i] = Utils.instrumentType(a);
+            } else {
+                bsArgs[i] = arg;
+            }
+        }
+        super.visitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bsArgs);
+    }
+    /**
      * We might have to proxy these as they do some fancy String concat optimization stuff.
      */
     @Override
@@ -468,20 +490,7 @@ class MethodTaintingVisitor extends MethodVisitor {
 
         if("java/lang/invoke/LambdaMetafactory".equals(bootstrapMethodHandle.getOwner()) &&
                 "metafactory".equals(bootstrapMethodHandle.getName())) {
-            Object[] bsArgs = new Object[bootstrapMethodArguments.length];
-            for (int i = 0; i < bootstrapMethodArguments.length; i++) {
-                Object arg = bootstrapMethodArguments[i];
-                if (arg instanceof Handle) {
-                    Handle a = (Handle) arg;
-                    bsArgs[i] = Utils.instrumentHandle(a);
-                } else if (arg instanceof Type) {
-                    Type a = (Type) arg;
-                    bsArgs[i] = Utils.instrumentType(a);
-                } else {
-                    bsArgs[i] = arg;
-                }
-            }
-            super.visitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bsArgs);
+            this.invokeVisitLambdaCall(name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
             return;
         }
 
