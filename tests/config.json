@@ -90,6 +90,10 @@
     {
       "name": "String Array Field Test",
       "source": "StringArrayFieldTest.java"
+    },
+    {
+      "name": "Lambda Function Test",
+      "source": "LambdaTest.java"
     }
   ]
 }

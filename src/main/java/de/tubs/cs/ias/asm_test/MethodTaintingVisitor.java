@@ -466,6 +466,25 @@ class MethodTaintingVisitor extends MethodVisitor {
             return;
         }
 
+        if("java/lang/invoke/LambdaMetafactory".equals(bootstrapMethodHandle.getOwner()) &&
+                "metafactory".equals(bootstrapMethodHandle.getName())) {
+            Object[] bsArgs = new Object[bootstrapMethodArguments.length];
+            for (int i = 0; i < bootstrapMethodArguments.length; i++) {
+                Object arg = bootstrapMethodArguments[i];
+                if (arg instanceof Handle) {
+                    Handle a = (Handle) arg;
+                    bsArgs[i] = Utils.instrumentHandle(a);
+                } else if (arg instanceof Type) {
+                    Type a = (Type) arg;
+                    bsArgs[i] = Utils.instrumentType(a);
+                } else {
+                    bsArgs[i] = arg;
+                }
+            }
+            super.visitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bsArgs);
+            return;
+        }
+
         if("makeConcatWithConstants".equals(name)) {
             this.rewriteConcatWithConstants(name, descriptor, bootstrapMethodArguments);
             return;

@@ -46,6 +46,10 @@ final class Constants {
      */
     static final String StringDesc = java.lang.String.format("L%s;", StringQN);
     /**
+     * Descriptor of the java StringBuilder class
+     */
+    static final String StringBuilderDesc = java.lang.String.format("L%s;", StringBuilderQN);
+    /**
      * The bytecode descriptor of an array of our taint aware string
      */
     static final String TStringArrayDesc = "[" + TStringDesc + ";";

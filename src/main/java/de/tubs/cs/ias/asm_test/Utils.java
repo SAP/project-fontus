@@ -1,6 +1,8 @@
 package de.tubs.cs.ias.asm_test;
 
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 final class Utils {
 
@@ -62,4 +64,20 @@ final class Utils {
         }
     }
 
+    static Type instrumentType(Type t) {
+        String desc = t.getDescriptor();
+        Descriptor d = Descriptor.parseDescriptor(desc);
+        d = d.replaceType(Constants.StringDesc, String.format("%s;",Constants.TStringDesc)); //TODO: FIXME
+        d = d.replaceType(Constants.StringBuilderDesc, String.format("%s;",Constants.TStringBuilderDesc)); //TODO: FIXME
+        return Type.getType(d.toDescriptor());
+
+    }
+
+
+    static Handle instrumentHandle(Handle h) {
+        String desc = h.getDesc();
+        desc = Constants.strPattern.matcher(desc).replaceAll(Constants.TStringDesc);
+        desc = Constants.strBuilderPattern.matcher(desc).replaceAll(Constants.TStringBuilderDesc);
+        return new Handle(h.getTag(), h.getOwner(), h.getName(), desc, h.isInterface());
+    }
 }
