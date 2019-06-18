@@ -40,7 +40,7 @@ final class Constants {
     /**
      * The bytecode descriptor of our taint aware string
      */
-    static final String TStringDesc = java.lang.String.format("L%s", TStringQN);
+    static final String TStringDesc = java.lang.String.format("L%s;", TStringQN);
     /**
      * Descriptor of the java String class
      */
@@ -52,7 +52,7 @@ final class Constants {
     /**
      * The bytecode descriptor of an array of our taint aware string
      */
-    static final String TStringArrayDesc = "[" + TStringDesc + ";";
+    static final String TStringArrayDesc = "[" + TStringDesc;
     /**
      * The type of our taint-aware StringBuilder
      */
@@ -60,7 +60,7 @@ final class Constants {
     /**
      * The bytecode descriptor of our taint aware StringBuilder
      */
-    static final String TStringBuilderDesc = String.format("L%s", TStringBuilderQN);
+    static final String TStringBuilderDesc = String.format("L%s;", TStringBuilderQN);
 
     /**
      * Constructor name
@@ -93,26 +93,26 @@ final class Constants {
     /**
      * Descriptor of the concat method
      */
-    static final String ConcatDesc = String.format("(%s[Ljava/lang/Object;)%s;", StringDesc, TStringDesc);
+    static final String ConcatDesc = String.format("(%s[Ljava/lang/Object;)%s", StringDesc, TStringDesc);
 
     /**
      * Descriptor of the instrumented toString method.
      */
-    static final String ToStringInstrumentedDesc = String.format("()%s;", TStringDesc);
+    static final String ToStringInstrumentedDesc = String.format("()%s", TStringDesc);
 
     /**
      * Descriptor of the 'tainted' method that turns a regular String into a tainted one
      */
-    static final String CreateTaintedStringDesc = String.format("(Ljava/lang/String;)%s;", TStringDesc);
+    static final String CreateTaintedStringDesc = String.format("(Ljava/lang/String;)%s", TStringDesc);
 
     /**
      * Matches fully qualified String names
      */
-    static final Pattern strPattern = Pattern.compile("Ljava/lang/String\\b");
+    static final Pattern strPattern = Pattern.compile(StringDesc);
     /**
      * Matches fully qualified StringBuilder names
      */
-    static final Pattern strBuilderPattern = Pattern.compile("Ljava/lang/StringBuilder\\b");
+    static final Pattern strBuilderPattern = Pattern.compile(StringBuilderDesc);
 
     private Constants() {}
 

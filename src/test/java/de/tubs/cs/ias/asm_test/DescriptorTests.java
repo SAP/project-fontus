@@ -59,8 +59,8 @@ class DescriptorTests {
     }
 
     private static Stream<Arguments> provideDescriptorReplacementData() {
-        String tstringDesc = Constants.TStringDesc + ";"; // TODO: fix globally
-        String stringDesc = String.format("L%s;", Constants.StringQN); // TODO: fix globally
+        String tstringDesc = Constants.TStringDesc;
+        String stringDesc = Constants.StringDesc;
         return Stream.of(
                 Arguments.of(
                         new Descriptor("I",

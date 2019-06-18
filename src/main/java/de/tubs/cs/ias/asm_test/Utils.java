@@ -67,8 +67,8 @@ final class Utils {
     static Type instrumentType(Type t) {
         String desc = t.getDescriptor();
         Descriptor d = Descriptor.parseDescriptor(desc);
-        d = d.replaceType(Constants.StringDesc, String.format("%s;",Constants.TStringDesc)); //TODO: FIXME
-        d = d.replaceType(Constants.StringBuilderDesc, String.format("%s;",Constants.TStringBuilderDesc)); //TODO: FIXME
+        d = d.replaceType(Constants.StringDesc, Constants.TStringDesc);
+        d = d.replaceType(Constants.StringBuilderDesc, Constants.TStringBuilderDesc);
         return Type.getType(d.toDescriptor());
 
     }
