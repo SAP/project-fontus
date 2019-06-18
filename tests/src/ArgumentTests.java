@@ -5,7 +5,7 @@ class ArgumentTests {
 
     public static void main(String[] args) throws Exception {
 
-        File f = new File("/home/leen/.tig_history");
+        File f = new File("/etc/motd");
         Scanner sc = new Scanner(f, "UTF-8");
         String s = sc.findWithinHorizon(".", 2);
         System.out.println(s);
