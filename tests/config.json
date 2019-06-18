@@ -96,6 +96,10 @@
       "source": "LambdaTest.java"
     },
     {
+      "name": "Lambda Function with Attribute Access Test",
+      "source": "LambdaAttributeAccess.java"
+    },
+    {
       "name": "Method Reference Test (i.e, String::length)",
       "source": "MethodReferenceTest.java"
     }
