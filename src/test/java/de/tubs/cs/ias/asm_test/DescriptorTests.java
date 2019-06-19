@@ -14,7 +14,7 @@ class DescriptorTests {
     @Test
     void parseToString() {
         Descriptor d = new Descriptor("Ljava/lang/String;");
-        Descriptor pd = Descriptor.parseDescriptor("()Ljava/lang/String;");
+        Descriptor pd = Descriptor.parseDescriptor(Constants.ToStringDesc);
         assertEquals(d, pd, "toString should have no parameters and return Ljava/lang/String;");
     }
 
@@ -59,22 +59,20 @@ class DescriptorTests {
     }
 
     private static Stream<Arguments> provideDescriptorReplacementData() {
-        String tstringDesc = Constants.TStringDesc;
-        String stringDesc = Constants.StringDesc;
         return Stream.of(
                 Arguments.of(
                         new Descriptor("I",
-                                stringDesc,
+                                Constants.StringDesc,
                                 "[Ljava/lang/Object;",
                                 "F",
                                 "Ljava/util/function/Function;",
                                 "Ljava/lang/Float;",
                                 "Ljava/util/List;"
                         ),
-                        stringDesc,
-                        tstringDesc,
+                        Constants.StringDesc,
+                        Constants.TStringDesc,
                         new Descriptor("I",
-                                tstringDesc,
+                                Constants.TStringDesc,
                                 "[Ljava/lang/Object;",
                                 "F",
                                 "Ljava/util/function/Function;",
@@ -84,14 +82,14 @@ class DescriptorTests {
                 ),
                 Arguments.of(
                         new Descriptor("[Ljava/lang/Object;", "Ljava/util/List;"),
-                        stringDesc,
-                        tstringDesc,
+                        Constants.StringDesc,
+                        Constants.TStringDesc,
                         new Descriptor("[Ljava/lang/Object;", "Ljava/util/List;")),
                 Arguments.of(
                         new Descriptor("[Ljava/lang/String;", "V"),
-                        stringDesc,
-                        tstringDesc,
-                        new Descriptor("[" + tstringDesc, "V")
+                        Constants.StringDesc,
+                        Constants.TStringDesc,
+                        new Descriptor("[" + Constants.TStringDesc, "V")
                 )
         );
     }
