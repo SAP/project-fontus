@@ -120,6 +120,10 @@
       "name": "Main as a Varargs method Test",
       "source": "VarArgsMainTest.java",
       "arguments": ["hallo", "welt!"]
+    },
+    {
+      "name": "Static Inner Class Test",
+      "source": "StaticInnerClassTest.java"
     }
   ]
 }
