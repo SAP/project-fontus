@@ -355,10 +355,13 @@ class TestRunner:
         return run_command(cwd, arguments)
 
     def _instrument_class_file(self, cwd, name):
-        class_name = '{}.class'.format(name)
-        input_file = path.join(cwd, class_name)
-        output_file = path.join(cwd, TMPDIR_OUTPUT_DIR_SUFFIX, class_name)
-        return self._instrument_application(cwd, input_file, output_file)
+        classes = Path(cwd).glob('{}*.class'.format(name))
+        for cl in classes:
+            class_name = cl.name
+            print('\tInstrumenting: {}'.format(class_name))
+            input_file = path.join(cwd, class_name)
+            output_file = path.join(cwd, TMPDIR_OUTPUT_DIR_SUFFIX, class_name)
+            self._instrument_application(cwd, input_file, output_file)
 
     def _instrument_jar(self, cwd, name):
         input_file = path.join(cwd, name)
