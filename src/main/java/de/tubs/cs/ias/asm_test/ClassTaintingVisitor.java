@@ -120,7 +120,8 @@ class ClassTaintingVisitor extends ClassVisitor {
         String desc = descriptor;
         String newName = name;
         // Create a new main method, wrapping the regular one and translating all Strings to IASStrings
-        if(access == (Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC) && "main".equals(name) && descriptor.equals(mainDescriptor)) {
+        // TODO: acceptable for main is a parameter of String[] or String...! Those have different access bits set (i.e., the ACC_VARARGS bits are set too) -> Handle this nicer..
+        if(((access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC) && (access &  Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC && "main".equals(name) && descriptor.equals(mainDescriptor)) {
             logger.info("Creating proxy main method");
             MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "main", mainDescriptor, signature, exceptions);
             this.createMainWrapperMethod(v);
