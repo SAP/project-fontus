@@ -174,17 +174,17 @@ public class CharSet {
 
     public static void main(String[] args) {
         String str1 = "{2,a,b,x}";
-        String  x = str1.replaceAll("\{", "");
+        String  x = str1.replaceAll("\\{", "");
         x = x.replaceAll(",", "");
         x = x.replaceAll("}", "");
 
         String str2 = "{b,1,2,3,a}";
-        String  y = str2.replaceAll("\{", "");
+        String  y = str2.replaceAll("\\{", "");
         y = y.replaceAll(",", "");
         y = y.replaceAll("}", "");
 
         String str3 = "{0,1,A,3,a}";
-        String  z = str3.replaceAll("\{", "");
+        String  z = str3.replaceAll("\\{", "");
         z = z.replaceAll(",", "");
         z = z.replaceAll("}", "");
 
