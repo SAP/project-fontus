@@ -110,6 +110,11 @@
     {
       "name": "Anonymous Classes Test",
       "source": "AnonymousClasses.java"
+    },
+    {
+      "name": "Main as a Varargs method Test",
+      "source": "VarArgsMainTest.java",
+      "arguments": ["hallo", "welt!"]
     }
 
   ]
