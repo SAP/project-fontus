@@ -104,8 +104,13 @@
       "source": "MethodReferenceTest.java"
     },
     {
-      "name": "Inner Class Test",
-      "source": "InnerClassTest.java"
+      "name": "Inner Class Example Tests",
+      "source": "InnerClassExample.java"
+    },
+    {
+      "name": "Main as a Varargs method Test",
+      "source": "VarArgsMainTest.java",
+      "arguments": ["hallo", "welt!"]
     },
     {
       "name": "Anonymous Classes Test",
@@ -116,6 +121,5 @@
       "source": "VarArgsMainTest.java",
       "arguments": ["hallo", "welt!"]
     }
-
   ]
 }

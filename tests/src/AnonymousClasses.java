@@ -1,3 +1,4 @@
+// From https://docs.oracle.com/javase/tutorial/java/javaOO/anonymousclasses.html
 public class AnonymousClasses {
 
     interface HelloWorld {
