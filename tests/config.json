@@ -102,6 +102,10 @@
     {
       "name": "Method Reference Test (i.e, String::length)",
       "source": "MethodReferenceTest.java"
+    },
+    {
+      "name": "Inner Class Test",
+      "source": "InnerClassTest.java"
     }
   ]
 }
