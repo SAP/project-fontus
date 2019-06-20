@@ -25,6 +25,11 @@ public class IASString {
     private String str;
     private boolean tainted;
 
+    public IASString() {
+        this.str = "";
+        this.tainted = false;
+    }
+
     public IASString(String s) {
         this.str = s;
         this.tainted = false;
