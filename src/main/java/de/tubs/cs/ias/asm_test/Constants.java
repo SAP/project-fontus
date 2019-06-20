@@ -35,7 +35,7 @@ final class Constants {
     static final String ObjectDesc = java.lang.String.format("L%s;", ObjectQN);
 
 
-
+    static final String ReflectionProxiesQN = TPackage + "IASReflectionProxies";
 
     /**
      * The bytecode descriptor of our taint aware string

@@ -33,7 +33,7 @@ test {
 
 task utilJar(type: Jar) {
     from(sourceSets.main.output) {
-        include "**/asm_test/IASString*"
+        include "**/asm_test/IAS*"
     }
     utilJar.baseName = "util"
 }

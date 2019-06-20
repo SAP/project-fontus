@@ -117,7 +117,13 @@ class MethodTaintingVisitor extends MethodVisitor {
     /**
      *  Initializes the method proxy maps.
      */
-    private void fillProxies() {}
+    private void fillProxies() {
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;", false),
+                () -> {
+                    super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ReflectionProxiesQN, "classForName", String.format("(%s)Ljava/lang/Class;", Constants.TStringDesc), false);
+                });
+
+    }
 
     /**
      * Converts a String that's top of the stack to an taint-aware String

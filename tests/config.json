@@ -124,6 +124,19 @@
     {
       "name": "Static Inner Class Test",
       "source": "StaticInnerClassTest.java"
+    },
+    {
+      "name": "Reflection Test: forName -> happy path",
+      "source": "ReflectionTest1.java",
+      "arguments": ["java.lang.Integer"]
+    },
+    {
+      "name": "Reflection Test: creating an empty String",
+      "source": "ReflectionTest.java"
+    },
+    {
+      "name": "Reflection Test: creating a String with constant value via reflected constructor",
+      "source": "ReflectionTestConstructor.java"
     }
   ]
 }
