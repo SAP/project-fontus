@@ -251,7 +251,7 @@ class MethodTaintingVisitor extends MethodVisitor {
             return;
         }
 
-        boolean jdkMethod = owner.contains("java");
+        boolean jdkMethod = JdkClassesLookupTable.instance.isJdkClass(owner);
 
         // ToString wrapping
         if(!jdkMethod && name.equals(Constants.ToString) && descriptor.equals(Constants.ToStringDesc)) {
