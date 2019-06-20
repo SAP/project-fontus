@@ -131,6 +131,11 @@
       "arguments": ["java.lang.Integer"]
     },
     {
+      "name": "Reflection Test: forName alternate overload -> happy path",
+      "source": "ReflectionTest2.java",
+      "arguments": ["java.lang.Integer"]
+    },
+    {
       "name": "Reflection Test: creating an empty String",
       "source": "ReflectionTest.java"
     },
