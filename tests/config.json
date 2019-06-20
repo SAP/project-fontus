@@ -142,6 +142,10 @@
     {
       "name": "Reflection Test: creating a String with constant value via reflected constructor",
       "source": "ReflectionTestConstructor.java"
+    },
+    {
+      "name": "Reflection Test: Accessing a class via the String.class syntax",
+      "source": "ReflectionDirect.java"
     }
   ]
 }

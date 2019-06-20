@@ -383,6 +383,20 @@ class MethodTaintingVisitor extends MethodVisitor {
             super.visitInsn(Opcodes.DUP);
             super.visitLdcInsn(value);
             super.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringQN, Constants.Init, Constants.TStringInitUntaintedDesc, false);
+        } else if (value instanceof Type) {
+            Type type = (Type) value;
+            int sort = type.getSort();
+            if (sort == Type.OBJECT) {
+                if(type.getClassName().equals("java.lang.String")) {
+                    super.visitLdcInsn(Type.getObjectType(Constants.TStringQN));
+                    return;
+                } else if (type.getClassName().equals("java.lang.StringBuilder")) {
+                    super.visitLdcInsn(Type.getObjectType(Constants.TStringBuilderQN));
+                    return;
+                }
+                //TODO: handle Arrays etc..
+            }
+            super.visitLdcInsn(value);
         } else {
             super.visitLdcInsn(value);
         }
