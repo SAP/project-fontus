@@ -26,10 +26,10 @@ import java.util.concurrent.Callable;
 public class Main implements Callable<Void> {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    @CommandLine.Option(names = {"-f", "--file"}, required = true, paramLabel = "Input", description = "The input class/jar file")
+    @CommandLine.Option(names = {"-f", "--file"}, required = true, paramLabel = "Input", description = "The input class/jar file or directory")
     private File inputFile;
 
-    @CommandLine.Option(names = {"-o", "--out"}, required = true, paramLabel = "Output", description = "The output class/jar file")
+    @CommandLine.Option(names = {"-o", "--out"}, required = true, paramLabel = "Output", description = "The output class/jar file or directory")
     private File outputFile;
 
     @CommandLine.Option(names = {"-a", "--add"}, paramLabel = "Add taint-aware classes", description = "Adds the class files of our taint-aware data types to the instrumented .jar file.")
@@ -38,6 +38,7 @@ public class Main implements Callable<Void> {
     private static final String TStringClassName = "de/tubs/cs/ias/asm_test/IASString.class";
     private static final String TStringBuilderClassName = "de/tubs/cs/ias/asm_test/IASStringBuilder.class";
     private static final String classSuffix = ".class";
+    private static final String jarSuffix = ".jar";
     private static final List<String> TStringTypesClassNames = Arrays.asList(TStringClassName, TStringBuilderClassName);
 
 
@@ -126,16 +127,34 @@ public class Main implements Callable<Void> {
         }
     }
 
-    @Override
-    public Void call() throws IOException {
-        if (this.inputFile.getName().endsWith(classSuffix)) {
-            instrumentClassFile(this.inputFile, this.outputFile);
-        } else if (this.inputFile.getName().endsWith(".jar")) {
-            this.instrumentJarFile(this.inputFile, this.outputFile);
-        } else {
+    private void instrumentDirectory(File input, File output) throws IOException {
+	// Create the output directory
+	if (!output.mkdirs()) {
+	    logger.error("Error Creating output directory!");
+	    return;
+	}
+	for (File f : input.listFiles()) {
+	    File o = new File(output.getPath() + f.getName());
+	    // Recurse
+	    walkFileTree(f, o);
+	}
+    }
+
+    private void walkFileTree(File input, File output) throws IOException {
+        if (input.getName().endsWith(classSuffix)) {
+            instrumentClassFile(input, output);
+        } else if (input.getName().endsWith(jarSuffix)) {
+            this.instrumentJarFile(input, output);
+        } else if (input.isDirectory() && output.isDirectory()) {
+	    this.instrumentDirectory(input, output);
+	} else {
             logger.error("Input file name must have class or jar extension!");
         }
+    }
 
+    @Override
+    public Void call() throws IOException {
+	walkFileTree(this.inputFile, this.outputFile);
         return null;
     }
 
