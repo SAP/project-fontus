@@ -52,6 +52,15 @@ class ClassTaintingVisitor extends ClassVisitor {
         super.visit(version, access, name, signature, superName, interfaces);
     }
 
+    private void createStaticStringInitializer(MethodVisitor mv, String name, String descriptor, Object value) {
+        mv.visitCode();
+        mv.visitLdcInsn(value);
+        mv.visitFieldInsn(Opcodes.PUTSTATIC, this.owner, name, descriptor);
+        mv.visitInsn(Opcodes.RETURN);
+        mv.visitMaxs(1, 0);
+        mv.visitEnd();
+    }
+
     /**
      * Replaces String like attributes with their taint-aware counterparts.
      */
@@ -65,7 +74,12 @@ class ClassTaintingVisitor extends ClassVisitor {
         if(descMatcher.find()) {
             String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
             logger.info("Replacing String field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
-            return super.visitField(access, name, newDescriptor, signature, value);
+            FieldVisitor fv = super.visitField(access, name, newDescriptor, signature, null);
+            if(value != null) {
+                MethodVisitor mv = this.visitMethod(Opcodes.ACC_STATIC, Constants.ClInit, "()V", null, null);
+                this.createStaticStringInitializer(mv, name, descriptor,value);
+            }
+            return fv;
         } else if(sbDescMatcher.find()) {
             String newDescriptor = sbDescMatcher.replaceAll(Constants.TStringBuilderDesc);
             logger.info("Replacing StringBuilder field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);

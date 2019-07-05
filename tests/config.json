@@ -146,6 +146,10 @@
     {
       "name": "Reflection Test: Accessing a class via the String.class syntax",
       "source": "ReflectionDirect.java"
+    },
+    {
+      "name": "Static Final String instance variable",
+      "source": "TestStaticFinalString.java"
     }
   ]
 }
