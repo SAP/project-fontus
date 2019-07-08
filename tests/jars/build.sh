@@ -17,6 +17,7 @@ JAR_FOLDERS=(
     tictactoe
     minesweeper
     binary_search_tree
+    static_init_test
 )
 
 main() {

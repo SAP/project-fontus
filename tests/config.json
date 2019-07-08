@@ -14,7 +14,12 @@
     {
       "name": "Binary Search Tree",
       "jar_file": "bst.jar"
+    },
+    {
+      "name": "Static Final Initializer Tests",
+      "jar_file": "sit.jar"
     }
+
   ],
   "single_file_tests": [
     {
