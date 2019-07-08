@@ -118,6 +118,8 @@ final class Constants {
      * Matches fully qualified StringBuilder names
      */
     static final Pattern strBuilderPattern = Pattern.compile(StringBuilderDesc);
+    static final String ABORT_IF_TAINTED = "abortIfTainted";
+
 
     private Constants() {}
 

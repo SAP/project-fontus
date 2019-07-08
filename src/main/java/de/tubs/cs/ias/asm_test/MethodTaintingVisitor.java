@@ -160,7 +160,7 @@ class MethodTaintingVisitor extends MethodVisitor {
      */
     private void callCheckTaint() {
         super.visitInsn(Opcodes.DUP);
-        super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, "abortIfTainted", "()V", false);
+        super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.ABORT_IF_TAINTED, "()V", false);
     }
 
     @Override

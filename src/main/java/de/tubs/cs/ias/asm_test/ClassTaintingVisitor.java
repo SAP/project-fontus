@@ -20,6 +20,8 @@ class ClassTaintingVisitor extends ClassVisitor {
     private final Collection<BlackListEntry> blacklist = new ArrayList<>();
     private static final String mainDescriptor = "([Ljava/lang/String;)V";
     private static final String newMainDescriptor = "("+ Constants.TStringArrayDesc +")V";
+    private final Collection<Tuple<Tuple<String, String>, Object>> staticFinalFields;
+    private boolean wroteClInit = false;
 
     /**
      * The name of the class currently processed.
@@ -28,6 +30,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 
     ClassTaintingVisitor(ClassVisitor cv) {
         super(Opcodes.ASM7, cv);
+        this.staticFinalFields = new ArrayList<>();
         this.fillBlacklist();
     }
 
@@ -52,13 +55,13 @@ class ClassTaintingVisitor extends ClassVisitor {
         super.visit(version, access, name, signature, superName, interfaces);
     }
 
-    private void createStaticStringInitializer(MethodVisitor mv, String name, String descriptor, Object value) {
-        mv.visitCode();
-        mv.visitLdcInsn(value);
-        mv.visitFieldInsn(Opcodes.PUTSTATIC, this.owner, name, descriptor);
-        mv.visitInsn(Opcodes.RETURN);
-        mv.visitMaxs(1, 0);
-        mv.visitEnd();
+    private void writeToStaticInitializer(MethodVisitor mv) {
+        for (Tuple<Tuple<String, String>, Object> e : this.staticFinalFields) {
+            Object value = e.y;
+            Tuple<String, String> field = e.x;
+            mv.visitLdcInsn(value);
+            mv.visitFieldInsn(Opcodes.PUTSTATIC, this.owner, field.x, field.y);
+        }
     }
 
     /**
@@ -76,8 +79,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             logger.info("Replacing String field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
             FieldVisitor fv = super.visitField(access, name, newDescriptor, signature, null);
             if(value != null) {
-                MethodVisitor mv = this.visitMethod(Opcodes.ACC_STATIC, Constants.ClInit, "()V", null, null);
-                this.createStaticStringInitializer(mv, name, descriptor,value);
+                this.staticFinalFields.add(Tuple.of(Tuple.of(name, descriptor), value));;
             }
             return fv;
         } else if(sbDescMatcher.find()) {
@@ -113,7 +115,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.owner, Constants.ToStringInstrumented, Constants.ToStringInstrumentedDesc, false);
         mv.visitInsn(Opcodes.DUP);
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, "abortIfTainted", "()V", false);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.ABORT_IF_TAINTED, "()V", false);
         mv.visitInsn(Opcodes.DUP);
         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
         mv.visitInsn(Opcodes.ARETURN);
@@ -133,6 +135,13 @@ class ClassTaintingVisitor extends ClassVisitor {
         MethodVisitor mv;
         String desc = descriptor;
         String newName = name;
+        if(!this.wroteClInit && access == Opcodes.ACC_STATIC && Constants.ClInit.equals(name) && "()V".equals(desc)) {
+            logger.info("Augmenting static initializer");
+            MethodVisitor v = super.visitMethod(access, name, descriptor, signature, exceptions);
+            this.wroteClInit = true;
+            return new ClassInitializerAugmentingVisitor(access, name, descriptor, v, this.owner, this.staticFinalFields);
+        }
+
         // Create a new main method, wrapping the regular one and translating all Strings to IASStrings
         // TODO: acceptable for main is a parameter of String[] or String...! Those have different access bits set (i.e., the ACC_VARARGS bits are set too) -> Handle this nicer..
         if(((access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC) && (access &  Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC && "main".equals(name) && descriptor.equals(mainDescriptor)) {
@@ -159,6 +168,25 @@ class ClassTaintingVisitor extends ClassVisitor {
             mv = super.visitMethod(access, name, descriptor, signature, exceptions);
         }
         return new MethodTaintingVisitor(access, newName, desc, mv);
+    }
+
+
+    private void createStaticStringInitializer(MethodVisitor mv) {
+        mv.visitCode();
+        Utils.writeToStaticInitializer(mv, this.owner, this.staticFinalFields);
+        mv.visitInsn(Opcodes.RETURN);
+        mv.visitMaxs(1, 0);
+        mv.visitEnd();
+    }
+
+    @Override
+    public void visitEnd() {
+        if(!this.wroteClInit && !this.staticFinalFields.isEmpty()) {
+            this.wroteClInit = true;
+            MethodVisitor mv = this.visitMethod(Opcodes.ACC_STATIC, Constants.ClInit, "()V", null, null);
+            this.createStaticStringInitializer(mv);
+        }
+        super.visitEnd();
     }
 
     /**
