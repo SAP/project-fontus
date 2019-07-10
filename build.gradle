@@ -45,7 +45,11 @@ jar {
                 attributes(
                         'Class-Path': configurations.compile.collect{it.toURI().toString()}.join(' '),
                         'Main-Class': 'de.tubs.cs.ias.asm_test.Main',
-                        'Premain-Class': 'de.tubs.cs.ias.asm_test.TaintAgent')
+                        'Agent-Class': 'de.tubs.cs.ias.asm_test.agent.TaintAgent',
+                        'Can-Redefine-Classes': true,
+                        'Can-Retransform-Classes': true,
+                        'Premain-Class': 'de.tubs.cs.ias.asm_test.agent.TaintAgent'
+                )
             }
         }
     }

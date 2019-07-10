@@ -11,10 +11,10 @@ import java.lang.invoke.MethodHandles;
 
 import java.util.*;
 
-final class JdkClassesLookupTable {
+public final class JdkClassesLookupTable {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    static final JdkClassesLookupTable instance = initializeLookupTable("jdk8_classes.list"); // TODO: Make configurable
+    public static final JdkClassesLookupTable instance = initializeLookupTable("jdk8_classes.list"); // TODO: Make configurable
 
     private static JdkClassesLookupTable initializeLookupTable(String inputFile) {
         try (InputStream inputStream = JdkClassesLookupTable.class
@@ -41,7 +41,7 @@ final class JdkClassesLookupTable {
         this.jdkClasses.addAll(classes);
     }
 
-    boolean isJdkClass(String className) {
+    public boolean isJdkClass(String className) {
         //TODO: is the split on $ the optimal way to only get the prefix? This is supposed to catch inner classes too
         String[] parts = className.split("\\$");
         assert parts[0] != null;

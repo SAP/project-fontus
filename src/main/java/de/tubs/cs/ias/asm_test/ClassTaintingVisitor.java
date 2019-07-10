@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.regex.Matcher;
 
 
-class ClassTaintingVisitor extends ClassVisitor {
+public class ClassTaintingVisitor extends ClassVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Collection<BlackListEntry> blacklist = new ArrayList<>();
@@ -29,7 +29,7 @@ class ClassTaintingVisitor extends ClassVisitor {
      */
     private String owner;
 
-    ClassTaintingVisitor(ClassVisitor cv) {
+    public ClassTaintingVisitor(ClassVisitor cv) {
         super(Opcodes.ASM7, cv);
         this.staticFinalFields = new ArrayList<>();
         this.fillBlacklist();

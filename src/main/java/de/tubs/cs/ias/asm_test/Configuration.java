@@ -20,7 +20,7 @@ import java.lang.invoke.MethodHandles;
 public class Configuration {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    static final Configuration instance = readConfiguration();
+    public static final Configuration instance = readConfiguration();
 
     private static Configuration readConfiguration() {
         ObjectMapper objectMapper = new XmlMapper();

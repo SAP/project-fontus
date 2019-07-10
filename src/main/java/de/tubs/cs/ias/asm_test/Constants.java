@@ -2,11 +2,11 @@ package de.tubs.cs.ias.asm_test;
 
 import java.util.regex.Pattern;
 
-final class Constants {
+public final class Constants {
     /**
      * The package our taint-aware classes are in
      */
-    private static final String TPackage = "de/tubs/cs/ias/asm_test/";
+    public static final String TPackage = "de/tubs/cs/ias/asm_test/";
 
     /**
      * Fully qualified name of the java Object class.
