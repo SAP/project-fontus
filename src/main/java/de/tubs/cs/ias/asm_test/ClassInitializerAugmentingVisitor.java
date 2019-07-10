@@ -6,22 +6,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
 import java.util.Collection;
 
-public class ClassInitializerAugmentingVisitor extends MethodTaintingVisitor {
+public class ClassInitializerAugmentingVisitor extends MethodVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Collection<Tuple<Tuple<String, String>, Object>> staticFinalFields;
     private final String owner;
 
-    ClassInitializerAugmentingVisitor(int acc,
-                                      String name,
-                                      String methodDescriptor,
-                                      MethodVisitor methodVisitor,
+    ClassInitializerAugmentingVisitor(MethodVisitor methodVisitor,
                                       String owner,
                                       Collection<Tuple<Tuple<String, String>, Object>> staticFinalFields) {
-        super(acc, name, methodDescriptor, methodVisitor);
-        this.staticFinalFields = staticFinalFields;
+        super(Opcodes.ASM7, methodVisitor);
+        this.staticFinalFields = new ArrayList<>(staticFinalFields.size());
+        this.staticFinalFields.addAll(staticFinalFields);
         this.owner = owner;
     }
 
