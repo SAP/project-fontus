@@ -14,7 +14,12 @@
     {
       "name": "Binary Search Tree",
       "jar_file": "bst.jar"
+    },
+    {
+      "name": "Static Final Initializer Tests",
+      "jar_file": "sit.jar"
     }
+
   ],
   "single_file_tests": [
     {
@@ -146,6 +151,18 @@
     {
       "name": "Reflection Test: Accessing a class via the String.class syntax",
       "source": "ReflectionDirect.java"
+    },
+    {
+      "name": "Static Final String instance variable",
+      "source": "TestStaticFinalString.java"
+    },
+    {
+      "name": "Static Initializer Test",
+      "source": "StaticInitializerTest.java"
+    },
+    {
+      "name": "Multiple Static Initializer Tests",
+      "source": "MultipleStaticInitializers.java"
     }
   ]
 }

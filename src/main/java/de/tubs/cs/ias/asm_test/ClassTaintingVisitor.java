@@ -20,6 +20,9 @@ class ClassTaintingVisitor extends ClassVisitor {
     private final Collection<BlackListEntry> blacklist = new ArrayList<>();
     private static final String mainDescriptor = "([Ljava/lang/String;)V";
     private static final String newMainDescriptor = "("+ Constants.TStringArrayDesc +")V";
+    private final Collection<Tuple<Tuple<String, String>, Object>> staticFinalFields;
+    private boolean hasClInit = false;
+    private MethodVisitRecording recording;
 
     /**
      * The name of the class currently processed.
@@ -28,13 +31,13 @@ class ClassTaintingVisitor extends ClassVisitor {
 
     ClassTaintingVisitor(ClassVisitor cv) {
         super(Opcodes.ASM7, cv);
+        this.staticFinalFields = new ArrayList<>();
         this.fillBlacklist();
     }
 
     private void fillBlacklist() {
         this.blacklist.add(new BlackListEntry("main", mainDescriptor, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
         this.blacklist.add(new BlackListEntry(Constants.ToString, Constants.ToStringDesc, Opcodes.ACC_PUBLIC));
-
     }
 
     /**
@@ -53,6 +56,19 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     /**
+     * Writes all static final String field initializations into the static initializer
+     * @param mv The visitor creating the static initialization block
+     */
+    private void writeToStaticInitializer(MethodVisitor mv) {
+        for (Tuple<Tuple<String, String>, Object> e : this.staticFinalFields) {
+            Object value = e.y;
+            Tuple<String, String> field = e.x;
+            mv.visitLdcInsn(value);
+            mv.visitFieldInsn(Opcodes.PUTSTATIC, this.owner, field.x, field.y);
+        }
+    }
+
+    /**
      * Replaces String like attributes with their taint-aware counterparts.
      */
     @Override
@@ -65,7 +81,11 @@ class ClassTaintingVisitor extends ClassVisitor {
         if(descMatcher.find()) {
             String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
             logger.info("Replacing String field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
-            return super.visitField(access, name, newDescriptor, signature, value);
+            FieldVisitor fv = super.visitField(access, name, newDescriptor, signature, null);
+            if(value != null) {
+                this.staticFinalFields.add(Tuple.of(Tuple.of(name, descriptor), value));
+            }
+            return fv;
         } else if(sbDescMatcher.find()) {
             String newDescriptor = sbDescMatcher.replaceAll(Constants.TStringBuilderDesc);
             logger.info("Replacing StringBuilder field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
@@ -99,12 +119,19 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.owner, Constants.ToStringInstrumented, Constants.ToStringInstrumentedDesc, false);
         mv.visitInsn(Opcodes.DUP);
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, "abortIfTainted", "()V", false);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.ABORT_IF_TAINTED, "()V", false);
         mv.visitInsn(Opcodes.DUP);
         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
         mv.visitInsn(Opcodes.ARETURN);
         mv.visitMaxs(6, 3);
         mv.visitEnd();
+    }
+
+    /**
+     * Checks whether the method is the 'clinit' method.
+     */
+    private static boolean isClInit(int access, String name, String desc) {
+        return access == Opcodes.ACC_STATIC && Constants.ClInit.equals(name) && "()V".equals(desc);
     }
 
     @Override
@@ -119,9 +146,17 @@ class ClassTaintingVisitor extends ClassVisitor {
         MethodVisitor mv;
         String desc = descriptor;
         String newName = name;
+        if(this.recording == null && isClInit(access, name, desc) ) {
+            logger.info("Recording static initializer");
+            RecordingMethodVisitor rmv = new RecordingMethodVisitor();
+            this.recording = rmv.getRecording();
+            this.hasClInit = true;
+            return rmv;
+        }
+
         // Create a new main method, wrapping the regular one and translating all Strings to IASStrings
         // TODO: acceptable for main is a parameter of String[] or String...! Those have different access bits set (i.e., the ACC_VARARGS bits are set too) -> Handle this nicer..
-        if(((access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC) && (access &  Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC && "main".equals(name) && descriptor.equals(mainDescriptor)) {
+        if(((access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC) && (access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC && "main".equals(name) && descriptor.equals(mainDescriptor)) {
             logger.info("Creating proxy main method");
             MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "main", mainDescriptor, signature, exceptions);
             this.createMainWrapperMethod(v);
@@ -145,6 +180,35 @@ class ClassTaintingVisitor extends ClassVisitor {
             mv = super.visitMethod(access, name, descriptor, signature, exceptions);
         }
         return new MethodTaintingVisitor(access, newName, desc, mv);
+    }
+
+
+    /**
+     * Writes the code for a static initialization block.
+     * @param mv The MethodVisitor for the static initialization block. Should be a Taint-aware MethodVisitor!
+     */
+    private void createStaticStringInitializer(MethodVisitor mv) {
+        logger.info("Creating a static initializer to initialize all static final String fields");
+        mv.visitCode();
+        Utils.writeToStaticInitializer(mv, this.owner, this.staticFinalFields);
+        mv.visitInsn(Opcodes.RETURN);
+        mv.visitMaxs(1, 0);
+        mv.visitEnd();
+    }
+
+    @Override
+    public void visitEnd() {
+        if(!this.hasClInit && !this.staticFinalFields.isEmpty()) {
+            logger.info("Adding a new static initializer to initialize static final String fields");
+            MethodVisitor mv = this.visitMethod(Opcodes.ACC_STATIC, Constants.ClInit, "()V", null, null);
+            this.createStaticStringInitializer(mv);
+        } else if(this.hasClInit) {
+            logger.info("Replaying static initializer and augmenting it");
+            MethodVisitor mv = this.visitMethod(Opcodes.ACC_STATIC, Constants.ClInit, "()V", null, null);
+            ClassInitializerAugmentingVisitor augmentingVisitor = new ClassInitializerAugmentingVisitor(mv, this.owner, this.staticFinalFields);
+            this.recording.replay(augmentingVisitor);
+        }
+        super.visitEnd();
     }
 
     /**

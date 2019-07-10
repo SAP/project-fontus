@@ -1,10 +1,17 @@
 package de.tubs.cs.ias.asm_test;
 
 import org.objectweb.asm.Handle;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 final class Utils {
+
+    private static final Pattern STRING_QN_MATCHER = Pattern.compile(Constants.StringQN, Pattern.LITERAL);
+    private static final Pattern STRING_BUILDER_QN_MATCHER = Pattern.compile(Constants.StringBuilderQN, Pattern.LITERAL);
 
     private Utils() {}
 
@@ -79,8 +86,8 @@ final class Utils {
         desc = Constants.strPattern.matcher(desc).replaceAll(Constants.TStringDesc);
         desc = Constants.strBuilderPattern.matcher(desc).replaceAll(Constants.TStringBuilderDesc);
         String owner = h.getOwner();
-        owner = owner.replace(Constants.StringQN, Constants.TStringQN);
-        owner = owner.replace(Constants.StringBuilderQN, Constants.TStringBuilderQN);
+        owner = STRING_QN_MATCHER.matcher(owner).replaceAll(Matcher.quoteReplacement(Constants.TStringQN));
+        owner = STRING_BUILDER_QN_MATCHER.matcher(owner).replaceAll(Matcher.quoteReplacement(Constants.TStringBuilderQN));
         return new Handle(h.getTag(), owner, h.getName(), desc, h.isInterface());
     }
 
@@ -93,8 +100,18 @@ final class Utils {
             return className;
         }
     }
+
     // Duplication with IASReflectionProxies, but we don't want to add all that many class files to the utils jar..
     private static String fixup(String s) {
         return s.replace('/', '.');
+    }
+
+    static void writeToStaticInitializer(MethodVisitor mv, String owner, Iterable<Tuple<Tuple<String, String>, Object>> staticFields) {
+        for (Tuple<Tuple<String, String>, Object> e : staticFields) {
+            Object value = e.y;
+            Tuple<String, String> field = e.x;
+            mv.visitLdcInsn(value);
+            mv.visitFieldInsn(Opcodes.PUTSTATIC, owner, field.x, field.y);
+        }
     }
 }

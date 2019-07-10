@@ -7,19 +7,16 @@ import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 import java.io.*;
-
+import java.lang.invoke.MethodHandles;
 import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.jar.JarFile;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-
-import java.lang.invoke.MethodHandles;
 import java.util.concurrent.Callable;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.JarOutputStream;
 
 @CommandLine.Command(description = "Replaces all String instances with taint-aware Strings.",
         name = "asm_taint", mixinStandardHelpOptions = true, version = "asm_taint 0.0.1")
