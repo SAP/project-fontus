@@ -159,7 +159,10 @@
     {
       "name": "Static Initializer Test",
       "source": "StaticInitializerTest.java"
+    },
+    {
+      "name": "Multiple Static Initializer Tests",
+      "source": "MultipleStaticInitializers.java"
     }
-
   ]
 }
