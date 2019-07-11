@@ -18,20 +18,20 @@ public class QuadraticEquation {
         System.out.print("c = " + c + "\n");
         System.out.println();
         if (Math.abs(a) < eps) {
-            System.out.println("Unzulässiger Wert von a!");
+            System.out.println("invalid value of a!");
         } else {
             p  = b / a;
             q  = c / a;
             p2 = p / 2.0;
             d  = p2 * p2 - q;
             if (d < -eps) {
-                System.out.printf("Keine Lösung!%n");
+                System.out.printf("No solution!%n");
             } else if (Math.abs(d) < eps) {
-                System.out.printf("Einzige Lösung: %10.5f%n", -p2);
+                System.out.printf("Only solution: %10.5f%n", -p2);
             } else {
                 double w = Math.sqrt(d);
-                System.out.printf("1. Lösung: %10.5f%n", -p2 + w);
-                System.out.printf("2. Lösung: %10.5f%n", -p2 - w);
+                System.out.printf("1. solution: %10.5f%n", -p2 + w);
+                System.out.printf("2. solution: %10.5f%n", -p2 - w);
             }
         }
 

@@ -1,16 +1,5 @@
-/**
- * Die main-Methode dieser Klasse Führt die MidSquare-Methode für
- * die Zahlen from bis to aus.
- * Ausgabe: Eine Zahl, die die meisten Zufallszahlen erzeugt,
- * die Grenzen und die erzeugten Zufallszahlen.
- * @author Werner Struckmann 1234567 Gruppe 02a
- * @version 1.0 vom 17. Oktober 1700
- */
 public class MidSquare {
 
-    /**
-      * @param args wird nicht benutzt.
-      */
     public static void main(String[] args) {
 
         int grenze = 9000;
@@ -18,9 +7,8 @@ public class MidSquare {
         int[]    a = new int[grenze];
         int from = 1000;
         int to = 9999;
-        int welche = 0; // Eine Zahl, die die max. Anzahl erzeugt
-        int anzahl = 1; // Anzahl der Zahlen, die die max. Anzahl erzeugen.
-        // Anfangszahl zählt als Zufallszahl mit, optional.
+        int welche = 0;
+        int anzahl = 1;
 
         for (int i = from; i <= to; i++) {
             int zahl = i;

@@ -1,8 +1,5 @@
 import java.util.Scanner;
 
-/**
- * Berechnet alle fröhlichen Zahlen in einem Intervall.
- */
 public class HappyNumbers {
 
     public static void main(String[] args) {
