@@ -163,6 +163,10 @@
     {
       "name": "Multiple Static Initializer Tests",
       "source": "MultipleStaticInitializers.java"
+    },
+    {
+      "name": "String Switch Test",
+      "source": "StringSwitchTest.java"
     }
   ]
 }
