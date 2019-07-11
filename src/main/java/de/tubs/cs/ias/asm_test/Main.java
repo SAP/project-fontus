@@ -126,12 +126,14 @@ public class Main implements Callable<Void> {
 
     private void instrumentDirectory(File input, File output) throws IOException {
 	// Create the output directory
-	if (!output.mkdirs()) {
-	    logger.error("Error Creating output directory!");
-	    return;
+	if (!output.isDirectory()) {
+	    if (!output.mkdirs()) {
+		logger.error("Error Creating output directory!");
+		return;
+	    }
 	}
 	for (File f : input.listFiles()) {
-	    File o = new File(output.getPath() + f.getName());
+	    File o = new File(output.getPath() + File.separator + f.getName());
 	    // Recurse
 	    walkFileTree(f, o);
 	}
@@ -142,7 +144,7 @@ public class Main implements Callable<Void> {
             instrumentClassFile(input, output);
         } else if (input.getName().endsWith(jarSuffix)) {
             this.instrumentJarFile(input, output);
-        } else if (input.isDirectory() && output.isDirectory()) {
+        } else if (input.isDirectory()) {
 	    this.instrumentDirectory(input, output);
 	} else {
             logger.error("Input file name must have class or jar extension!");
