@@ -412,7 +412,7 @@ class TestRunner:
 
     @staticmethod
     def _compile_source_file(cwd, source):
-        arguments = ["javac", source]
+        arguments = ["javac", "-encoding", "UTF-8", source]
         exec_result = run_command(cwd, arguments)
         return exec_result.return_value == 0
 

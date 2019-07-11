@@ -1,10 +1,20 @@
+/**
+ * Menge von char Elementen.
+ */
 public class CharSet {
 
     private char[] set;
     private int    size;
 
+    /**
+     * Initialisiert eine leere Menge.
+     */
     public CharSet() { }
 
+    /**
+     * Initialisiert eine initial gefüllte Menge.
+     * @param set Der initiale Inhalt der neuen Menge.
+     */
     public CharSet(char[] set) {
         if (!check1(set)) {
             System.out.println("Mehrfaches Element!         ");
@@ -16,14 +26,26 @@ public class CharSet {
         this.set = set;
     }
 
+    /**
+     * Gibt den Inhalt der Menge zurück.
+     * @return Die Buchstaben die in der Menge gespeichert sind.
+     */
     public char[] getSet()         {
         return set;
     }
 
+    /**
+     * Gibt die Anzahl der Elemente der Menge zurück.
+     * @return Wie viele Elemente sind in der Menge gespeichert?
+     */
     public int    getSize()        {
         return size;
     }
 
+    /**
+     * Setzt den Inhalt der Menge auf die übergebenen Werte.
+     * @param a Der neue Inhalt der Menge.
+     */
     public void   setSet(char[] a) {
         set = a;
     }
@@ -58,6 +80,11 @@ public class CharSet {
         return false;
     }
 
+    /**
+     * Bildet den Durchschnitt zwischen zwei Mengen.
+     * @param c Die Menge mit der der Durchschnitt gebildet werden soll.
+     * @return Der Durchschnitt von this und c.
+     */
     public CharSet durchschnitt(CharSet c) {
         int size = 0;
         CharSet d = new CharSet(c.getSet());
@@ -80,6 +107,11 @@ public class CharSet {
         return new CharSet(s);
     }
 
+    /**
+     * Bildet die Vereinigung zwischen zwei Mengen.
+     * @param c Die Menge mit der die Vereinigung gebildet werden soll.
+     * @return Die Vereinigung von this und c.
+     */
     public CharSet vereinigung(CharSet c) {
         int size = set.length;
         CharSet d = new CharSet(c.getSet());
@@ -185,5 +217,7 @@ public class CharSet {
         System.out.println("Erwartet: true.  " + "    Equals:  " + t.equals(k));
         System.out.println("Erwartet: false. " + "    Equals:  " + t.equals(l));
         System.out.println();
+
     }
+
 }
