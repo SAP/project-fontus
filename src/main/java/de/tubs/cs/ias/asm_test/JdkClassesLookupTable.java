@@ -14,7 +14,7 @@ import java.util.*;
 final class JdkClassesLookupTable {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    static final JdkClassesLookupTable instance = initializeLookupTable("jdk8_classes.list"); // TODO: Make configurable
+    static final JdkClassesLookupTable instance = initializeLookupTable("openjdk8_classes.list"); // TODO: Make configurable
 
     private static JdkClassesLookupTable initializeLookupTable(String inputFile) {
         try (InputStream inputStream = JdkClassesLookupTable.class
