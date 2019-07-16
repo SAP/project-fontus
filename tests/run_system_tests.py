@@ -70,7 +70,7 @@ def check_output_files_existence(version):
 
 
 def compile_project():
-    compile_result = subprocess.run(["gradle", "jar"],
+    compile_result = subprocess.run(["./gradlew", "jar"],
                                     universal_newlines=True,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE,
