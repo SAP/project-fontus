@@ -183,7 +183,7 @@ class MethodTaintingVisitor extends MethodVisitor {
                                final boolean isInterface) {
         FunctionCall pfe = new FunctionCall(opcode, owner, name, descriptor, isInterface);
         if(this.configuration.getSinks().contains(pfe)) {
-            logger.info("{}.{}{} is a sinks, so calling the check taint function before passing the value!", owner, name, descriptor);
+            logger.info("{}.{}{} is a sink, so calling the check taint function before passing the value!", owner, name, descriptor);
             // Call dup here to put the TString reference twice on the stack so the call can pop one without affecting further processing
             this.callCheckTaint();
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
@@ -325,48 +325,71 @@ class MethodTaintingVisitor extends MethodVisitor {
 
     private void handleJdkMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
-        if(hasStringLikeParameters(desc)) {
-            // TODO: Add optimization that the upmost parameter on the stack does not need to be stored/loaded..
-            Collection<String> parameters = desc.getParameters();
-            Stack<Runnable> loadStack = new Stack<>();
-            Stack<String> params = new Stack<>();
-            params.addAll(parameters);
-            int numVars = (Type.getArgumentsAndReturnSizes(descriptor) >> 2) - 1;
-            this.usedAfterInjection = this.used + numVars;
-            int n = this.used;
-            while (!params.empty()) {
-                String p = params.pop();
-                int storeOpcode = Utils.getStoreOpcode(p);
-                int loadOpcode = Utils.getLoadOpcode(p);
-
-                //logger.info("Type: {}", p);
-                if ((Constants.StringDesc).equals(p)) {
-                    logger.info("Converting taint-aware String to String");
-                    super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
-                }
-
-                final int finalN = n;
-                super.visitVarInsn(storeOpcode, finalN);
-                logger.info("Executing store: {}_{} for {}", storeOpcode, finalN, p);
-
-                loadStack.push(() -> {
-                    logger.info("Executing load {}_{} for {}", loadOpcode, finalN, p);
-                    super.visitVarInsn(loadOpcode, finalN);
-                });
-                n += Utils.storeOpcodeSize(storeOpcode);
-            }
-            assert n == this.usedAfterInjection;
-            while (!loadStack.empty()) {
-                Runnable l = loadStack.pop();
-                l.run();
-            }
+        switch(desc.parameterCount()) {
+            case 0:
+                break;
+            case 1:
+                this.handleSingleParameterJdkMethod(desc);
+                break;
+            default:
+                this.handleMultiParameterJdkMethod(descriptor, desc);
+                break;
         }
-
-        logger.info("invoking [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor);
+        logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor);
         super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
         if (hasStringLikeReturnType(desc)) {
             this.stringToTString();
         }
+    }
+
+    private void handleSingleParameterJdkMethod(Descriptor desc) {
+        if(!hasStringLikeParameters(desc)) return;
+
+        String param = desc.getParameterStack().pop();
+        if ((Constants.StringDesc).equals(param)) {
+            logger.info("Converting taint-aware String to String in single param method invocation");
+            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
+        }
+    }
+
+    private void handleMultiParameterJdkMethod(String descriptor, Descriptor desc) {
+        if(!hasStringLikeParameters(desc)) return;
+
+        // TODO: Add optimization that the upmost parameter on the stack does not need to be stored/loaded..
+        Collection<String> parameters = desc.getParameters();
+        Stack<Runnable> loadStack = new Stack<>();
+        Stack<String> params = new Stack<>();
+        params.addAll(parameters);
+        int numVars = (Type.getArgumentsAndReturnSizes(descriptor) >> 2) - 1;
+        this.usedAfterInjection = this.used + numVars;
+        int n = this.used;
+        while (!params.empty()) {
+            String p = params.pop();
+            int storeOpcode = Utils.getStoreOpcode(p);
+            int loadOpcode = Utils.getLoadOpcode(p);
+
+            //logger.info("Type: {}", p);
+            if ((Constants.StringDesc).equals(p)) {
+                logger.info("Converting taint-aware String to String in multi param method invocation");
+                super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
+            }
+
+            final int finalN = n;
+            super.visitVarInsn(storeOpcode, finalN);
+            logger.info("Executing store: {}_{} for {}", storeOpcode, finalN, p);
+
+            loadStack.push(() -> {
+                logger.info("Executing load {}_{} for {}", loadOpcode, finalN, p);
+                super.visitVarInsn(loadOpcode, finalN);
+            });
+            n += Utils.storeOpcodeSize(storeOpcode);
+        }
+        assert n == this.usedAfterInjection;
+        while (!loadStack.empty()) {
+            Runnable l = loadStack.pop();
+            l.run();
+        }
+
     }
 
     /**
@@ -538,7 +561,7 @@ class MethodTaintingVisitor extends MethodVisitor {
         super.visitVarInsn(Opcodes.ASTORE, currRegister);
         // newly created array is now stored in currRegister, concat operands on top
         Stack<String> parameters = desc.getParameterStack();
-        int paramIndex=0;
+        int paramIndex = 0;
         while(!parameters.empty()) {
             String parameter = parameters.pop();
             // Convert topmost value (if required)

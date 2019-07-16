@@ -12,18 +12,22 @@ final class Constants {
      * Fully qualified name of the java Object class.
      */
     static final String ObjectQN = "java/lang/Object";
+
     /**
      * The fully qualified name of the String class
      */
     static final String StringQN = "java/lang/String";
+
     /**
      * The fully qualified name of the StringBuilder class
      */
     static final String StringBuilderQN = "java/lang/StringBuilder";
+
     /**
      * The fully qualified name type of our taint-aware String
      */
     static final String TStringQN = TPackage + "IASString";
+
     /**
      * Name of the toString method.
      */
@@ -34,29 +38,36 @@ final class Constants {
      */
     static final String ObjectDesc = java.lang.String.format("L%s;", ObjectQN);
 
-
+    /**
+     * The fully qualified name of the class containing the Reflection proxies.
+     */
     static final String ReflectionProxiesQN = TPackage + "IASReflectionProxies";
 
     /**
      * The bytecode descriptor of our taint aware string
      */
     static final String TStringDesc = java.lang.String.format("L%s;", TStringQN);
+
     /**
      * Descriptor of the java String class
      */
     static final String StringDesc = java.lang.String.format("L%s;", StringQN);
+
     /**
      * Descriptor of the java StringBuilder class
      */
     static final String StringBuilderDesc = java.lang.String.format("L%s;", StringBuilderQN);
+
     /**
      * The bytecode descriptor of an array of our taint aware string
      */
     static final String TStringArrayDesc = "[" + TStringDesc;
+
     /**
      * The type of our taint-aware StringBuilder
      */
     static final String TStringBuilderQN = TPackage + "IASStringBuilder";
+
     /**
      * The bytecode descriptor of our taint aware StringBuilder
      */
@@ -86,10 +97,12 @@ final class Constants {
      * Name of the method that converts taint-aware Strings to regular ones
      */
     static final String TStringToStringName = "getString";
+
     /**
      * Descriptor of an object to regular String conversion method
      */
     static final String ToStringDesc = "()Ljava/lang/String;";
+
     /**
      * Descriptor of the untainted init/constructor method.
      */
@@ -114,10 +127,15 @@ final class Constants {
      * Matches fully qualified String names
      */
     static final Pattern strPattern = Pattern.compile(StringDesc);
+
     /**
      * Matches fully qualified StringBuilder names
      */
     static final Pattern strBuilderPattern = Pattern.compile(StringBuilderDesc);
+
+    /**
+     * The Taint-aware String method to check and act on a potential taint
+     */
     static final String ABORT_IF_TAINTED = "abortIfTainted";
 
 

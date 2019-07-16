@@ -9,12 +9,14 @@ import java.util.Objects;
  */
 @XmlRootElement
 public class FunctionCall {
-    public FunctionCall() { this.opcode = -1;
-    this.owner = "";
-    this.name = "";
-    this.descriptor = "";
-    this.isInterface = false;
+    public FunctionCall() {
+        this.opcode = -1;
+        this.owner = "";
+        this.name = "";
+        this.descriptor = "";
+        this.isInterface = false;
     }
+
     @XmlElement
     private final int opcode;
     @XmlElement
