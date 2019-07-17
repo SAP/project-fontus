@@ -167,6 +167,7 @@ class MethodTaintingVisitor extends MethodVisitor {
 
     @Override
     public void visitInsn(int opcode) {
+        // If we are in a "toString" method, we have to insert a call to the taint-check before returning.
         if(opcode == Opcodes.ARETURN && Constants.ToStringDesc.equals(this.methodDescriptor) && Constants.ToString.equals(this.name)) {
             this.callCheckTaint();
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
@@ -280,13 +281,6 @@ class MethodTaintingVisitor extends MethodVisitor {
             return;
         }
 
-        // toString method, make a taint-aware String of the result
-        /*if(jdkMethod && Constants.ToString.equals(name) && descriptor.endsWith(")Ljava/lang/String;")) {
-            super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
-            this.stringToTString();
-            return;
-        }*/
-
         // TODO: case when both find()s are true?
         if (stringDescMatcher.find() && !skipInvoke) {
             String newDescriptor = stringDescMatcher.replaceAll(Constants.TStringDesc);
@@ -302,28 +296,8 @@ class MethodTaintingVisitor extends MethodVisitor {
         }
     }
 
-    /**
-     * Checks whether the parameter list contains String like Parameters that need conversion before calling.
-     * @param desc The Method's descriptor
-     * @return Whether on of the parameters is a String like type
-     */
-    private static boolean hasStringLikeParameters(Descriptor desc) {
-        boolean hasTaintAwareParam = false;
-        for(String p: desc.getParameters()) {
-            if(p.equals(Constants.StringDesc)) {
-                hasTaintAwareParam = true;
-            }
-        }
-        return hasTaintAwareParam;
-    }
 
-    /**
-     * Does the method have a String-like return type?
-     */
-    private static boolean hasStringLikeReturnType(Descriptor desc) {
-        return Constants.StringDesc.equals(desc.getReturnType());
 
-    }
 
     private void handleJdkMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
@@ -339,13 +313,13 @@ class MethodTaintingVisitor extends MethodVisitor {
         }
         logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor);
         super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
-        if (hasStringLikeReturnType(desc)) {
+        if (desc.hasStringLikeReturnType()) {
             this.stringToTString();
         }
     }
 
     private void handleSingleParameterJdkMethod(Descriptor desc) {
-        if(!hasStringLikeParameters(desc)) return;
+        if(!desc.hasStringLikeParameters()) return;
 
         String param = desc.getParameterStack().pop();
         if ((Constants.StringDesc).equals(param)) {
@@ -355,7 +329,7 @@ class MethodTaintingVisitor extends MethodVisitor {
     }
 
     private void handleMultiParameterJdkMethod(String descriptor, Descriptor desc) {
-        if(!hasStringLikeParameters(desc)) return;
+        if(!desc.hasStringLikeParameters()) return;
 
         // TODO: Add optimization that the upmost parameter on the stack does not need to be stored/loaded..
         Collection<String> parameters = desc.getParameters();
@@ -412,10 +386,10 @@ class MethodTaintingVisitor extends MethodVisitor {
             Type type = (Type) value;
             int sort = type.getSort();
             if (sort == Type.OBJECT) {
-                if(type.getClassName().equals("java.lang.String")) {
+                if("java.lang.String".equals(type.getClassName())) {
                     super.visitLdcInsn(Type.getObjectType(Constants.TStringQN));
                     return;
-                } else if (type.getClassName().equals("java.lang.StringBuilder")) {
+                } else if ("java.lang.StringBuilder".equals(type.getClassName())) {
                     super.visitLdcInsn(Type.getObjectType(Constants.TStringBuilderQN));
                     return;
                 }
