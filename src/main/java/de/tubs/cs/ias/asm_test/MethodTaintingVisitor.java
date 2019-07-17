@@ -15,6 +15,8 @@ import java.util.regex.Pattern;
 
 class MethodTaintingVisitor extends MethodVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Pattern STRING_BUILDER_QN_PATTERN = Pattern.compile(Constants.StringBuilderQN, Pattern.LITERAL);
+    private static final Pattern STRING_QN_PATTERN = Pattern.compile(Constants.StringQN, Pattern.LITERAL);
 
     private final String name;
     private final String methodDescriptor;
@@ -25,7 +27,7 @@ class MethodTaintingVisitor extends MethodVisitor {
     /**
      * Some dynamic method invocations can't be handled generically. Add proxy functions here.
      */
-    private final HashMap<de.tubs.cs.ias.asm_test.ProxiedDynamicFunctionEntry, Runnable> dynProxies;
+    private final HashMap<ProxiedDynamicFunctionEntry, Runnable> dynProxies;
     /**
      * Some StringBuilder methods require special handling, performed by a 1 to 1 mapping.
      */
@@ -431,16 +433,13 @@ class MethodTaintingVisitor extends MethodVisitor {
     @Override
     public void visitTypeInsn(final int opcode, final String type) {
         logger.info("Visiting type [{}] instruction: {}", type, opcode);
-        switch (type) {
-            case Constants.StringBuilderQN:
-                super.visitTypeInsn(opcode, Constants.TStringBuilderQN);
-                break;
-            case Constants.StringQN:
-                super.visitTypeInsn(opcode, Constants.TStringQN);
-                break;
-            default:
-                super.visitTypeInsn(opcode, type);
+        String newType = type;
+        if(type.contains(Constants.StringBuilderQN)) {
+            newType = STRING_BUILDER_QN_PATTERN.matcher(type).replaceAll(Matcher.quoteReplacement(Constants.TStringBuilderQN));
+        } else if (type.contains(Constants.StringQN)) {
+            newType = STRING_QN_PATTERN.matcher(type).replaceAll(Matcher.quoteReplacement(Constants.TStringQN));
         }
+        super.visitTypeInsn(opcode, newType);
     }
 
     private void invokeConversionFunction(String type) {

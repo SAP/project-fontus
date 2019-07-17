@@ -167,6 +167,10 @@
     {
       "name": "String Switch Test",
       "source": "StringSwitchTest.java"
+    },
+    {
+      "name": "checkcast/instanceof for String Arrays",
+      "source": "StrippedDownServletExample.java"
     }
   ]
 }
