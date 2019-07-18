@@ -32,6 +32,8 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
      * Some StringBuilder methods require special handling, performed by a 1 to 1 mapping.
      */
     private final HashMap<String, String> stringBuilderMethodsToRename;
+    private final HashMap<String, String> stringMethodsToRename;
+
     /**
      * String like classes, need special handling
      */
@@ -55,6 +57,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         this.methodProxies = new HashMap<>();
         this.dynProxies = new HashMap<>();
         this.stringBuilderMethodsToRename = new HashMap<>();
+        this.stringMethodsToRename = new HashMap<>();
         this.stringClasses = new HashMap<>();
         this.fieldTypes = new ArrayList<>();
         this.fillProxies();
@@ -114,6 +117,8 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
      */
     private void fillMethodsToRename() {
         this.stringBuilderMethodsToRename.put(Constants.ToString, "toIASString");
+        this.stringMethodsToRename.put(Constants.ToString, "toIASString");
+
     }
 
     /**
@@ -449,8 +454,10 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         Matcher stringDescMatcher = Constants.strPattern.matcher(descriptor);
         String newOwner = Constants.TStringQN;
         String newDescriptor = stringDescMatcher.replaceAll(Constants.TStringDesc);
-        logger.info("Rewriting String invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, name, newDescriptor);
-        super.visitMethodInsn(opcode, newOwner, name, newDescriptor, isInterface);
+        // TODO: this call is superfluous, TString.toTString is a NOP pretty much.. Maybe drop those calls?
+        String newName = this.stringMethodsToRename.getOrDefault(name, name);
+        logger.info("Rewriting String invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, newDescriptor);
+        super.visitMethodInsn(opcode, newOwner, newName, newDescriptor, isInterface);
     }
 
     /**

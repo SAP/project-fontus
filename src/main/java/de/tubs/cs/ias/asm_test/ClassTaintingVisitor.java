@@ -82,7 +82,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
             logger.info("Replacing String field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
             FieldVisitor fv = super.visitField(access, name, newDescriptor, signature, null);
-            if(value != null) {
+            if(value != null && access == (Opcodes.ACC_FINAL | Opcodes.ACC_STATIC)) {
                 this.staticFinalFields.add(Tuple.of(Tuple.of(name, descriptor), value));
             }
             return fv;
