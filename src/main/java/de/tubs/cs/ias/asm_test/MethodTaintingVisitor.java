@@ -127,49 +127,13 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
 
     }
 
-    /**
-     * Converts a String that's top of the stack to an taint-aware String
-     * Precondition: String instance that's on top of the Stack!!
-     */
-    private void stringToTString() {
-        /*
-        Operand stack:
-        +-------+ new  +----------+ dup  +----------+ dup2_x1  +----------+  pop2  +----------+ ispecial  +----------+
-        |String +----->+IASString +----->+IASString +--------->+IASString +------->+String    +---------->+IASString |
-        +-------+      +----------+      +----------+          +----------+        +----------+ init      +----------+
-                       +----------+      +----------+          +----------+        +----------+
-                       |String    |      |IASString |          |IASString |        |IASString |
-                       +----------+      +----------+          +----------+        +----------+
-                                         +----------+          +----------+        +----------+
-                                         |String    |          |String    |        |IASString |
-                                         +----------+          +----------+        +----------+
-                                                               +----------+
-                                                               |IASString |
-                                                               +----------+
-                                                               +----------+
-                                                               |IASString |
-                                                               +----------+
-        */
-        super.visitTypeInsn(Opcodes.NEW, Constants.TStringQN);
-        super.visitInsn(Opcodes.DUP);
-        super.visitInsn(Opcodes.DUP2_X1);
-        super.visitInsn(Opcodes.POP2);
-        super.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringQN, Constants.Init, Constants.TStringInitUntaintedDesc, false);
-    }
 
-    /**
-     * If a taint-aware string is on the top of the stack, we can call this function to add a check to handle tainted strings.
-     */
-    private void callCheckTaint() {
-        super.visitInsn(Opcodes.DUP);
-        super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.ABORT_IF_TAINTED, "()V", false);
-    }
 
     @Override
     public void visitInsn(int opcode) {
         // If we are in a "toString" method, we have to insert a call to the taint-check before returning.
         if(opcode == Opcodes.ARETURN && Constants.ToStringDesc.equals(this.methodDescriptor) && Constants.ToString.equals(this.name)) {
-            this.callCheckTaint();
+            MethodTaintingUtils.callCheckTaint(this.getParentVisitor());
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
         }
         super.visitInsn(opcode);
@@ -188,7 +152,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         if(this.configuration.getSinks().contains(pfe)) {
             logger.info("{}.{}{} is a sink, so calling the check taint function before passing the value!", owner, name, descriptor);
             // Call dup here to put the TString reference twice on the stack so the call can pop one without affecting further processing
-            this.callCheckTaint();
+            MethodTaintingUtils.callCheckTaint(this.getParentVisitor());
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, owner, name, descriptor, isInterface);
             return true;
@@ -305,7 +269,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             case 0:
                 break;
             case 1:
-                this.handleSingleParameterJdkMethod(desc);
+                MethodTaintingUtils.handleSingleParameterJdkMethod(this.getParentVisitor(), desc);
                 break;
             default:
                 this.handleMultiParameterJdkMethod(descriptor, desc);
@@ -314,19 +278,11 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor);
         super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
         if (desc.hasStringLikeReturnType()) {
-            this.stringToTString();
+            MethodTaintingUtils.stringToTString(this.getParentVisitor());
         }
     }
 
-    private void handleSingleParameterJdkMethod(Descriptor desc) {
-        if(!desc.hasStringLikeParameters()) return;
 
-        String param = desc.getParameterStack().pop();
-        if ((Constants.StringDesc).equals(param)) {
-            logger.info("Converting taint-aware String to String in single param method invocation");
-            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
-        }
-    }
 
     private void handleMultiParameterJdkMethod(String descriptor, Descriptor desc) {
         if(!desc.hasStringLikeParameters()) return;
@@ -365,7 +321,6 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             Runnable l = loadStack.pop();
             l.run();
         }
-
     }
 
     /**
@@ -377,11 +332,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     public void visitLdcInsn(final Object value) {
         // When loading a constant, make a taint-aware string out of a string constant.
         if (value instanceof String) {
-            logger.info("Rewriting String LDC to IASString LDC instruction");
-            super.visitTypeInsn(Opcodes.NEW, Constants.TStringQN);
-            super.visitInsn(Opcodes.DUP);
-            super.visitLdcInsn(value);
-            super.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringQN, Constants.Init, Constants.TStringInitUntaintedDesc, false);
+            MethodTaintingUtils.handleLdcString(this.getParentVisitor(), value);
         } else if (value instanceof Type) {
             Type type = (Type) value;
             int sort = type.getSort();
@@ -401,6 +352,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         }
     }
 
+
     /**
      * We want to override some instantiations of classes with our own types
      */
@@ -416,80 +368,6 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         super.visitTypeInsn(opcode, newType);
     }
 
-    private void invokeConversionFunction(String type) {
-        Map<String, String> types = new HashMap<>();
-        types.put("I", "Integer");
-        types.put("B", "Byte");
-        types.put("C", "Character");
-        types.put("D", "Double");
-        types.put("F", "Float");
-        types.put("J", "Long");
-        types.put("S", "Short");
-        types.put("Z", "Boolean");
-
-        // No primitive type, nop
-        if(!types.containsKey(type)) return;
-
-        String full = types.get(type);
-        String owner = String.format("java/lang/%s", full);
-        String desc = String.format("(%s)L%s;", type, owner);
-        super.visitMethodInsn(Opcodes.INVOKESTATIC, owner, "valueOf", desc, false);
-    }
-
-    /**
-     * Pushes an integer onto the stack.
-     * Optimizes small integers towards their dedicated ICONST_n instructions to save space.
-     */
-    private void pushNumberOnTheStack(int num) {
-        switch (num) {
-            case -1:
-                super.visitInsn(Opcodes.ICONST_M1);
-                return;
-            case 0:
-                super.visitInsn(Opcodes.ICONST_0);
-                return;
-            case 1:
-                super.visitInsn(Opcodes.ICONST_1);
-                return;
-            case 2:
-                super.visitInsn(Opcodes.ICONST_2);
-                return;
-            case 3:
-                super.visitInsn(Opcodes.ICONST_3);
-                return;
-            case 4:
-                super.visitInsn(Opcodes.ICONST_4);
-                return;
-            case 5:
-                super.visitInsn(Opcodes.ICONST_5);
-                return;
-            default:
-                super.visitIntInsn(Opcodes.BIPUSH, num);
-        }
-    }
-
-    /**
-     * Translates the call to a lambda function
-     */
-    private void invokeVisitLambdaCall(final String name,
-                                       final String descriptor,
-                                       final Handle bootstrapMethodHandle,
-                                       final Object... bootstrapMethodArguments) {
-        Object[] bsArgs = new Object[bootstrapMethodArguments.length];
-        for (int i = 0; i < bootstrapMethodArguments.length; i++) {
-            Object arg = bootstrapMethodArguments[i];
-            if (arg instanceof Handle) {
-                Handle a = (Handle) arg;
-                bsArgs[i] = Utils.instrumentHandle(a);
-            } else if (arg instanceof Type) {
-                Type a = (Type) arg;
-                bsArgs[i] = Utils.instrumentType(a);
-            } else {
-                bsArgs[i] = arg;
-            }
-        }
-        super.visitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bsArgs);
-    }
     /**
      * We might have to proxy these as they do some fancy String concat optimization stuff.
      */
@@ -506,7 +384,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
 
         if("java/lang/invoke/LambdaMetafactory".equals(bootstrapMethodHandle.getOwner()) &&
                 "metafactory".equals(bootstrapMethodHandle.getName())) {
-            this.invokeVisitLambdaCall(name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
+            MethodTaintingUtils.invokeVisitLambdaCall(this.getParentVisitor(), name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
             return;
         }
 
@@ -528,7 +406,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         assert fmtStringObj instanceof String;
         String formatString = (String) fmtStringObj;
         int parameterCount = desc.parameterCount();
-        this.pushNumberOnTheStack(parameterCount);
+        MethodTaintingUtils.pushNumberOnTheStack(this.getParentVisitor(), parameterCount);
         super.visitTypeInsn(Opcodes.ANEWARRAY, Constants.ObjectQN);
         int currRegister = this.used;
         super.visitVarInsn(Opcodes.ASTORE, currRegister);
@@ -538,13 +416,13 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         while(!parameters.empty()) {
             String parameter = parameters.pop();
             // Convert topmost value (if required)
-            this.invokeConversionFunction(parameter);
+            MethodTaintingUtils.invokeConversionFunction(this.getParentVisitor(), parameter);
             // put array back on top
             super.visitVarInsn(Opcodes.ALOAD, currRegister);
             // swap array and object to array
             super.visitInsn(Opcodes.SWAP);
             // push the index where the value shall be stored
-            this.pushNumberOnTheStack(paramIndex);
+            MethodTaintingUtils.pushNumberOnTheStack(this.getParentVisitor(), paramIndex);
             // swap, this puts them into the order arrayref, index, value
             super.visitInsn(Opcodes.SWAP);
             // store the value into arrayref at index, next parameter is on top now (if there are any more)
