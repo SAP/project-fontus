@@ -2,7 +2,7 @@
 
 main() {
   javac ./*.java
-  jar --create --file sit.jar --main-class Main ./*.class
+  jar cfe sit.jar Main ./*.class
   rm ./*.class
   cp sit.jar ..
 }

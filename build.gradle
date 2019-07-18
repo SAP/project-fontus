@@ -17,18 +17,30 @@ dependencies {
     compile 'org.ow2.asm:asm-analysis:7.0'
     compile 'org.ow2.asm:asm-util:7.0'
     compile 'info.picocli:picocli:3.9.5'
-    compile 'org.slf4j:slf4j-api:1.7.7'
-    compile 'org.slf4j:slf4j-jdk14:1.7.7'
+    compile 'org.slf4j:slf4j-api:1.7.25'
+    // compile 'org.slf4j:slf4j-jdk14:1.7.25'
     compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.9'
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
+    compile 'ch.qos.logback:logback-classic:1.2.3'
     testImplementation('org.junit.jupiter:junit-jupiter:5.4.2')
 }
 
 test {
     useJUnitPlatform()
     testLogging {
-        events "passed", "skipped", "failed"
+        events "skipped", "failed"
     }
+
+    afterSuite { desc, result ->
+        if (!desc.parent) {
+            println "\nTest result: ${result.resultType}"
+            println "Test summary: ${result.testCount} tests"
+            println "\t${result.successfulTestCount} succeeded\n" +
+                    "\t${result.failedTestCount} failed\n" +
+                    "\t${result.skippedTestCount} skipped"
+        }
+    }
+
 }
 
 task utilJar(type: Jar) {

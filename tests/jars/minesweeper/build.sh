@@ -2,7 +2,7 @@
 
 main() {
   javac ./*.java
-  jar --create --file minesweeper.jar --main-class Main ./*.class
+  jar cfe minesweeper.jar Main ./*.class
   rm ./*.class
   cp minesweeper.jar ..
 }

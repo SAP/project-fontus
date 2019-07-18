@@ -2,7 +2,7 @@
 
 main() {
   javac ./*.java
-  jar --create --file tictactoe.jar --main-class Main ./*.class
+  jar cfe tictactoe.jar Main ./*.class
   rm ./*.class
   cp tictactoe.jar ..
 }

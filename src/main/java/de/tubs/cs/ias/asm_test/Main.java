@@ -34,9 +34,11 @@ public class Main implements Callable<Void> {
 
     private static final String TStringClassName = "de/tubs/cs/ias/asm_test/IASString.class";
     private static final String TStringBuilderClassName = "de/tubs/cs/ias/asm_test/IASStringBuilder.class";
+    private static final String TReflectionProxies = "de/tubs/cs/ias/asm_test/IASReflectionProxies.class";
+
     private static final String classSuffix = ".class";
     private static final String jarSuffix = ".jar";
-    private static final List<String> TStringTypesClassNames = Arrays.asList(TStringClassName, TStringBuilderClassName);
+    private static final List<String> TStringTypesClassNames = Arrays.asList(TStringClassName, TStringBuilderClassName, TReflectionProxies);
 
 
     private static void instrumentClassStream(InputStream i, OutputStream o) throws IOException {
@@ -74,7 +76,7 @@ public class Main implements Callable<Void> {
             FileOutputStream fos = new FileOutputStream(output);
             jos = new JarOutputStream(fos);
 
-            if(this.addTaintAwareClassFiles) {
+            if (this.addTaintAwareClassFiles) {
                 copyTaintAwareClassFiles(jos, ji, currJar);
             }
 
@@ -125,18 +127,18 @@ public class Main implements Callable<Void> {
     }
 
     private void instrumentDirectory(File input, File output) throws IOException {
-	// Create the output directory
-	if (!output.isDirectory()) {
-	    if (!output.mkdirs()) {
-		logger.error("Error Creating output directory!");
-		return;
-	    }
-	}
-	for (File f : input.listFiles()) {
-	    File o = new File(output.getPath() + File.separator + f.getName());
-	    // Recurse
-	    walkFileTree(f, o);
-	}
+        // Create the output directory
+        if (!output.isDirectory()) {
+            if (!output.mkdirs()) {
+                logger.error("Error Creating output directory!");
+                return;
+            }
+        }
+        for (File f : input.listFiles()) {
+            File o = new File(output.getPath() + File.separator + f.getName());
+            // Recurse
+            this.walkFileTree(f, o);
+        }
     }
 
     private void walkFileTree(File input, File output) throws IOException {
@@ -145,15 +147,15 @@ public class Main implements Callable<Void> {
         } else if (input.getName().endsWith(jarSuffix)) {
             this.instrumentJarFile(input, output);
         } else if (input.isDirectory()) {
-	    this.instrumentDirectory(input, output);
-	} else {
+            this.instrumentDirectory(input, output);
+        } else {
             logger.error("Input file name must have class or jar extension!");
         }
     }
 
     @Override
     public Void call() throws IOException {
-	walkFileTree(this.inputFile, this.outputFile);
+        this.walkFileTree(this.inputFile, this.outputFile);
         return null;
     }
 

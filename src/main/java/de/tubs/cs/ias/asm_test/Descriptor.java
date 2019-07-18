@@ -96,6 +96,29 @@ class Descriptor {
         return Objects.hash(this.parameters, this.returnType);
     }
 
+    /**
+     * Does the descriptor have a String-like return type?
+     * TODO: Add other String types
+     */
+    boolean hasStringLikeReturnType() {
+        return Constants.StringDesc.equals(this.returnType);
+    }
+
+    /**
+     * Checks whether the parameter list contains String like Parameters that need conversion before calling.
+     * TODO: Add other String types
+     * @return Whether on of the parameters is a String like type
+     */
+    boolean hasStringLikeParameters() {
+        boolean hasTaintAwareParam = false;
+        for(String p: this.getParameters()) {
+            if(p.equals(Constants.StringDesc)) {
+                hasTaintAwareParam = true;
+            }
+        }
+        return hasTaintAwareParam;
+    }
+
     // TODO: maybe remove the ';'s?
     // TODO: throw exception on invalid descriptor
     // TODO: think of a nicer structure, this is really messy

@@ -70,7 +70,7 @@ def check_output_files_existence(version):
 
 
 def compile_project():
-    compile_result = subprocess.run(["gradle", "jar"],
+    compile_result = subprocess.run(["./gradlew", "jar"],
                                     universal_newlines=True,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE,
@@ -412,7 +412,7 @@ class TestRunner:
 
     @staticmethod
     def _compile_source_file(cwd, source):
-        arguments = ["javac", source]
+        arguments = ["javac", "-encoding", "UTF-8", source]
         exec_result = run_command(cwd, arguments)
         return exec_result.return_value == 0
 

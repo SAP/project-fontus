@@ -379,6 +379,10 @@ public class IASString {
         return this.str.toString();
     }
 
+    public IASString toIASString() {
+        return this;
+    }
+
     public IntStream chars() {
         return this.str.chars();
     }

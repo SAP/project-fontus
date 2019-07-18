@@ -161,12 +161,24 @@
       "source": "StaticInitializerTest.java"
     },
     {
+      "name": "Static Initializer Tests from Tom",
+      "source": "StaticInitializerTestsFromTom.java"
+    },
+    {
       "name": "Multiple Static Initializer Tests",
       "source": "MultipleStaticInitializers.java"
     },
     {
       "name": "String Switch Test",
       "source": "StringSwitchTest.java"
+    },
+    {
+      "name": "checkcast/instanceof for String Arrays",
+      "source": "StrippedDownServletExample.java"
+    },
+    {
+      "name": "String.toString test",
+      "source": "StringToStringTest.java"
     }
   ]
 }

@@ -15,6 +15,8 @@ import java.util.regex.Pattern;
 
 class MethodTaintingVisitor extends MethodVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Pattern STRING_BUILDER_QN_PATTERN = Pattern.compile(Constants.StringBuilderQN, Pattern.LITERAL);
+    private static final Pattern STRING_QN_PATTERN = Pattern.compile(Constants.StringQN, Pattern.LITERAL);
 
     private final String name;
     private final String methodDescriptor;
@@ -25,11 +27,13 @@ class MethodTaintingVisitor extends MethodVisitor {
     /**
      * Some dynamic method invocations can't be handled generically. Add proxy functions here.
      */
-    private final HashMap<de.tubs.cs.ias.asm_test.ProxiedDynamicFunctionEntry, Runnable> dynProxies;
+    private final HashMap<ProxiedDynamicFunctionEntry, Runnable> dynProxies;
     /**
      * Some StringBuilder methods require special handling, performed by a 1 to 1 mapping.
      */
     private final HashMap<String, String> stringBuilderMethodsToRename;
+    private final HashMap<String, String> stringMethodsToRename;
+
     /**
      * String like classes, need special handling
      */
@@ -53,6 +57,7 @@ class MethodTaintingVisitor extends MethodVisitor {
         this.methodProxies = new HashMap<>();
         this.dynProxies = new HashMap<>();
         this.stringBuilderMethodsToRename = new HashMap<>();
+        this.stringMethodsToRename = new HashMap<>();
         this.stringClasses = new HashMap<>();
         this.fieldTypes = new ArrayList<>();
         this.fillProxies();
@@ -112,6 +117,8 @@ class MethodTaintingVisitor extends MethodVisitor {
      */
     private void fillMethodsToRename() {
         this.stringBuilderMethodsToRename.put(Constants.ToString, "toIASString");
+        this.stringMethodsToRename.put(Constants.ToString, "toIASString");
+
     }
 
     /**
@@ -165,6 +172,7 @@ class MethodTaintingVisitor extends MethodVisitor {
 
     @Override
     public void visitInsn(int opcode) {
+        // If we are in a "toString" method, we have to insert a call to the taint-check before returning.
         if(opcode == Opcodes.ARETURN && Constants.ToStringDesc.equals(this.methodDescriptor) && Constants.ToString.equals(this.name)) {
             this.callCheckTaint();
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
@@ -183,7 +191,7 @@ class MethodTaintingVisitor extends MethodVisitor {
                                final boolean isInterface) {
         FunctionCall pfe = new FunctionCall(opcode, owner, name, descriptor, isInterface);
         if(this.configuration.getSinks().contains(pfe)) {
-            logger.info("{}.{}{} is a sinks, so calling the check taint function before passing the value!", owner, name, descriptor);
+            logger.info("{}.{}{} is a sink, so calling the check taint function before passing the value!", owner, name, descriptor);
             // Call dup here to put the TString reference twice on the stack so the call can pop one without affecting further processing
             this.callCheckTaint();
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
@@ -278,13 +286,6 @@ class MethodTaintingVisitor extends MethodVisitor {
             return;
         }
 
-        // toString method, make a taint-aware String of the result
-        /*if(jdkMethod && Constants.ToString.equals(name) && descriptor.endsWith(")Ljava/lang/String;")) {
-            super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
-            this.stringToTString();
-            return;
-        }*/
-
         // TODO: case when both find()s are true?
         if (stringDescMatcher.find() && !skipInvoke) {
             String newDescriptor = stringDescMatcher.replaceAll(Constants.TStringDesc);
@@ -300,73 +301,76 @@ class MethodTaintingVisitor extends MethodVisitor {
         }
     }
 
-    /**
-     * Checks whether the parameter list contains String like Parameters that need conversion before calling.
-     * @param desc The Method's descriptor
-     * @return Whether on of the parameters is a String like type
-     */
-    private static boolean hasStringLikeParameters(Descriptor desc) {
-        boolean hasTaintAwareParam = false;
-        for(String p: desc.getParameters()) {
-            if(p.equals(Constants.StringDesc)) {
-                hasTaintAwareParam = true;
-            }
-        }
-        return hasTaintAwareParam;
-    }
 
-    /**
-     * Does the method have a String-like return type?
-     */
-    private static boolean hasStringLikeReturnType(Descriptor desc) {
-        return Constants.StringDesc.equals(desc.getReturnType());
 
-    }
 
     private void handleJdkMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
-        if(hasStringLikeParameters(desc)) {
-            // TODO: Add optimization that the upmost parameter on the stack does not need to be stored/loaded..
-            Collection<String> parameters = desc.getParameters();
-            Stack<Runnable> loadStack = new Stack<>();
-            Stack<String> params = new Stack<>();
-            params.addAll(parameters);
-            int numVars = (Type.getArgumentsAndReturnSizes(descriptor) >> 2) - 1;
-            this.usedAfterInjection = this.used + numVars;
-            int n = this.used;
-            while (!params.empty()) {
-                String p = params.pop();
-                int storeOpcode = Utils.getStoreOpcode(p);
-                int loadOpcode = Utils.getLoadOpcode(p);
-
-                //logger.info("Type: {}", p);
-                if ((Constants.StringDesc).equals(p)) {
-                    logger.info("Converting taint-aware String to String");
-                    super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
-                }
-
-                final int finalN = n;
-                super.visitVarInsn(storeOpcode, finalN);
-                logger.info("Executing store: {}_{} for {}", storeOpcode, finalN, p);
-
-                loadStack.push(() -> {
-                    logger.info("Executing load {}_{} for {}", loadOpcode, finalN, p);
-                    super.visitVarInsn(loadOpcode, finalN);
-                });
-                n += Utils.storeOpcodeSize(storeOpcode);
-            }
-            assert n == this.usedAfterInjection;
-            while (!loadStack.empty()) {
-                Runnable l = loadStack.pop();
-                l.run();
-            }
+        switch(desc.parameterCount()) {
+            case 0:
+                break;
+            case 1:
+                this.handleSingleParameterJdkMethod(desc);
+                break;
+            default:
+                this.handleMultiParameterJdkMethod(descriptor, desc);
+                break;
         }
-
-        logger.info("invoking [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor);
+        logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor);
         super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
-        if (hasStringLikeReturnType(desc)) {
+        if (desc.hasStringLikeReturnType()) {
             this.stringToTString();
         }
+    }
+
+    private void handleSingleParameterJdkMethod(Descriptor desc) {
+        if(!desc.hasStringLikeParameters()) return;
+
+        String param = desc.getParameterStack().pop();
+        if ((Constants.StringDesc).equals(param)) {
+            logger.info("Converting taint-aware String to String in single param method invocation");
+            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
+        }
+    }
+
+    private void handleMultiParameterJdkMethod(String descriptor, Descriptor desc) {
+        if(!desc.hasStringLikeParameters()) return;
+
+        // TODO: Add optimization that the upmost parameter on the stack does not need to be stored/loaded..
+        Collection<String> parameters = desc.getParameters();
+        Stack<Runnable> loadStack = new Stack<>();
+        Stack<String> params = new Stack<>();
+        params.addAll(parameters);
+        int numVars = (Type.getArgumentsAndReturnSizes(descriptor) >> 2) - 1;
+        this.usedAfterInjection = this.used + numVars;
+        int n = this.used;
+        while (!params.empty()) {
+            String p = params.pop();
+            int storeOpcode = Utils.getStoreOpcode(p);
+            int loadOpcode = Utils.getLoadOpcode(p);
+
+            //logger.info("Type: {}", p);
+            if ((Constants.StringDesc).equals(p)) {
+                logger.info("Converting taint-aware String to String in multi param method invocation");
+                super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
+            }
+
+            final int finalN = n;
+            super.visitVarInsn(storeOpcode, finalN);
+            logger.info("Executing store: {}_{} for {}", storeOpcode, finalN, p);
+
+            loadStack.push(() -> {
+                logger.info("Executing load {}_{} for {}", loadOpcode, finalN, p);
+                super.visitVarInsn(loadOpcode, finalN);
+            });
+            n += Utils.storeOpcodeSize(storeOpcode);
+        }
+        assert n == this.usedAfterInjection;
+        while (!loadStack.empty()) {
+            Runnable l = loadStack.pop();
+            l.run();
+        }
+
     }
 
     /**
@@ -387,10 +391,10 @@ class MethodTaintingVisitor extends MethodVisitor {
             Type type = (Type) value;
             int sort = type.getSort();
             if (sort == Type.OBJECT) {
-                if(type.getClassName().equals("java.lang.String")) {
+                if("java.lang.String".equals(type.getClassName())) {
                     super.visitLdcInsn(Type.getObjectType(Constants.TStringQN));
                     return;
-                } else if (type.getClassName().equals("java.lang.StringBuilder")) {
+                } else if ("java.lang.StringBuilder".equals(type.getClassName())) {
                     super.visitLdcInsn(Type.getObjectType(Constants.TStringBuilderQN));
                     return;
                 }
@@ -408,16 +412,13 @@ class MethodTaintingVisitor extends MethodVisitor {
     @Override
     public void visitTypeInsn(final int opcode, final String type) {
         logger.info("Visiting type [{}] instruction: {}", type, opcode);
-        switch (type) {
-            case Constants.StringBuilderQN:
-                super.visitTypeInsn(opcode, Constants.TStringBuilderQN);
-                break;
-            case Constants.StringQN:
-                super.visitTypeInsn(opcode, Constants.TStringQN);
-                break;
-            default:
-                super.visitTypeInsn(opcode, type);
+        String newType = type;
+        if(type.contains(Constants.StringBuilderQN)) {
+            newType = STRING_BUILDER_QN_PATTERN.matcher(type).replaceAll(Matcher.quoteReplacement(Constants.TStringBuilderQN));
+        } else if (type.contains(Constants.StringQN)) {
+            newType = STRING_QN_PATTERN.matcher(type).replaceAll(Matcher.quoteReplacement(Constants.TStringQN));
         }
+        super.visitTypeInsn(opcode, newType);
     }
 
     private void invokeConversionFunction(String type) {
@@ -538,7 +539,7 @@ class MethodTaintingVisitor extends MethodVisitor {
         super.visitVarInsn(Opcodes.ASTORE, currRegister);
         // newly created array is now stored in currRegister, concat operands on top
         Stack<String> parameters = desc.getParameterStack();
-        int paramIndex=0;
+        int paramIndex = 0;
         while(!parameters.empty()) {
             String parameter = parameters.pop();
             // Convert topmost value (if required)
@@ -575,8 +576,10 @@ class MethodTaintingVisitor extends MethodVisitor {
         Matcher stringDescMatcher = Constants.strPattern.matcher(descriptor);
         String newOwner = Constants.TStringQN;
         String newDescriptor = stringDescMatcher.replaceAll(Constants.TStringDesc);
-        logger.info("Rewriting String invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, name, newDescriptor);
-        super.visitMethodInsn(opcode, newOwner, name, newDescriptor, isInterface);
+        // TODO: this call is superfluous, TString.toTString is a NOP pretty much.. Maybe drop those calls?
+        String newName = this.stringMethodsToRename.getOrDefault(name, name);
+        logger.info("Rewriting String invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, newDescriptor);
+        super.visitMethodInsn(opcode, newOwner, newName, newDescriptor, isInterface);
     }
 
     /**

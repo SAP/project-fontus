@@ -14,13 +14,20 @@ import java.util.*;
 public final class JdkClassesLookupTable {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    public static final JdkClassesLookupTable instance = initializeLookupTable("jdk8_classes.list"); // TODO: Make configurable
+    static final JdkClassesLookupTable instance = initializeLookupTable("openjdk8_classes.list"); // TODO: Make configurable
+
+    private static int getJvmVersion() {
+        String specVersion = System.getProperty("java.vm.specification.version");
+        return Integer.valueOf(specVersion);
+    }
+
 
     private static JdkClassesLookupTable initializeLookupTable(String inputFile) {
         try (InputStream inputStream = JdkClassesLookupTable.class
                 .getClassLoader().getResourceAsStream(inputFile);
              InputStreamReader isr = new InputStreamReader(inputStream, "UTF8");
-             BufferedReader br = new BufferedReader(isr)) {
+             BufferedReader br = new BufferedReader(isr)
+        ) {
             List<String> lines = new ArrayList<>();
             String line;
             while ((line = br.readLine()) != null) {
@@ -29,7 +36,7 @@ public final class JdkClassesLookupTable {
             return new JdkClassesLookupTable(lines);
 
         } catch (IOException e) { //TODO: Think about proper error handling
-            e.printStackTrace();
+            logger.error("Can't load the class list", e);
             return null;
         }
     }
