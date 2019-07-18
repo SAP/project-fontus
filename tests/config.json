@@ -175,6 +175,10 @@
     {
       "name": "checkcast/instanceof for String Arrays",
       "source": "StrippedDownServletExample.java"
+    },
+    {
+      "name": "String.toString test",
+      "source": "StringToStringTest.java"
     }
   ]
 }
