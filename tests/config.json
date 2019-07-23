@@ -179,6 +179,14 @@
     {
       "name": "String.toString test",
       "source": "StringToStringTest.java"
+    },
+    {
+      "name": "StringBuffer field",
+      "source": "StringBuilderFieldTest.java"
+    },
+    {
+      "name": "StringBuffer local var",
+      "source": "StringBufferLocalVarTest.java"
     }
   ]
 }

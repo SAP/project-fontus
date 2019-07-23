@@ -77,6 +77,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 
         Matcher descMatcher = Constants.strPattern.matcher(descriptor);
         Matcher sbDescMatcher = Constants.strBuilderPattern.matcher(descriptor);
+        Matcher sBufferDescMatcher = Constants.strBufferPattern.matcher(descriptor);
         // TODO: both? more? how to deuglify if the list grows
         if(descMatcher.find()) {
             String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
@@ -89,6 +90,10 @@ class ClassTaintingVisitor extends ClassVisitor {
         } else if(sbDescMatcher.find()) {
             String newDescriptor = sbDescMatcher.replaceAll(Constants.TStringBuilderDesc);
             logger.info("Replacing StringBuilder field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
+            return super.visitField(access, name, newDescriptor, signature, value);
+        }else if(sBufferDescMatcher.find()) {
+            String newDescriptor = sBufferDescMatcher.replaceAll(Constants.TStringBufferDesc);
+            logger.info("Replacing StringBuffer field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
             return super.visitField(access, name, newDescriptor, signature, value);
         } else {
             return super.visitField(access, name, descriptor, signature, value);
