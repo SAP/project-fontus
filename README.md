@@ -1,5 +1,7 @@
 # Realizing dataflow tainting via non-intrusive Java Bytecode instrumentation
 
+[![Build Status](http://boole.ips.cs.tu-bs.de/api/badges/david.klein/BytecodeTainter/status.svg)](http://boole.ips.cs.tu-bs.de/david.klein/BytecodeTainter)
+
 To see the bytecode for a class file, run ``javap -l -v -p -s TestString.class``
 
 ## Instrumentation
