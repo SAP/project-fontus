@@ -20,7 +20,7 @@ import java.util.stream.StreamSupport;
 
 
 @SuppressWarnings("ALL")
-public class IASString {
+public class IASString implements IASTaintAware {
     private static final Pattern CONCAT_PLACEHOLDER = Pattern.compile("\u0001");
     private String str;
     private boolean tainted;
@@ -44,12 +44,18 @@ public class IASString {
         return new IASString(str, true);
     }
 
+    @Override
     public boolean isTainted() {
         return this.tainted;
     }
 
-    public void setTaint(Boolean b) {
+    @Override
+    public void setTaint(boolean b) {
         this.tainted = b;
+    }
+
+    private void mergeTaint(IASTaintAware other) {
+        this.tainted |= other.isTainted();
     }
 
     public void abortIfTainted() {
