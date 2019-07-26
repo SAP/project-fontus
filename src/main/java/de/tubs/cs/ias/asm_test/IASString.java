@@ -20,7 +20,7 @@ import java.util.stream.StreamSupport;
 
 
 @SuppressWarnings("ALL")
-public class IASString {
+public class IASString implements CharSequence {
     private static final Pattern CONCAT_PLACEHOLDER = Pattern.compile("\u0001");
     private String str;
     private boolean tainted;

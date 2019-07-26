@@ -195,6 +195,10 @@
     {
       "name": "StringBuilder return",
       "source": "StringBuilderReturnTest.java"
+    },
+    {
+      "name": "Lambda Supplier Test",
+      "source": "LambdaSupplierTest.java"
     }
   ]
 }

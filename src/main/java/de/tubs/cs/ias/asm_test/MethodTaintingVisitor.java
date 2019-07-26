@@ -313,6 +313,15 @@ class MethodTaintingVisitor extends MethodVisitor {
         }
     }
 
+    private static String rewriteDescriptor(String desc) {
+        Matcher stringDescMatcher = Constants.strPattern.matcher(desc);
+        String newDescriptor = desc;
+        if(stringDescMatcher.find()) {
+            newDescriptor = stringDescMatcher.replaceAll(Constants.TStringDesc);
+        }
+        return newDescriptor;
+    }
+
     private void handleJdkMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
         switch(desc.parameterCount()) {
@@ -505,7 +514,8 @@ class MethodTaintingVisitor extends MethodVisitor {
                 bsArgs[i] = arg;
             }
         }
-        super.visitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bsArgs);
+        String desc = rewriteDescriptor(descriptor);
+        super.visitInvokeDynamicInsn(name, desc, bootstrapMethodHandle, bsArgs);
     }
     /**
      * We might have to proxy these as they do some fancy String concat optimization stuff.
