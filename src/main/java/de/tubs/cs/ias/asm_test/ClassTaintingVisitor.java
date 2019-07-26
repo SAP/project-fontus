@@ -147,6 +147,8 @@ class ClassTaintingVisitor extends ClassVisitor {
             final String signature,
             final String[] exceptions) {
 
+        Matcher builderDescMatcher = Constants.strBuilderPattern.matcher(descriptor);
+        Matcher bufferDescMatcher = Constants.strBufferPattern.matcher(descriptor);
         Matcher descMatcher = Constants.strPattern.matcher(descriptor);
         MethodVisitor mv;
         String desc = descriptor;
@@ -176,8 +178,12 @@ class ClassTaintingVisitor extends ClassVisitor {
             newName = Constants.ToStringInstrumented;
             desc = Constants.ToStringInstrumentedDesc;
             mv = super.visitMethod(access, newName, desc, signature, exceptions);
-        } else if (!this.blacklist.contains(new BlackListEntry(name, descriptor, access)) && descMatcher.find()) {
+        } else if (!this.blacklist.contains(new BlackListEntry(name, descriptor, access)) && (descMatcher.find() || bufferDescMatcher.find() || builderDescMatcher.find())) {
             String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
+            Matcher innerMatcher = Constants.strBufferPattern.matcher(newDescriptor);
+            newDescriptor = innerMatcher.replaceAll(Constants.TStringBufferDesc);
+            innerMatcher = Constants.strBuilderPattern.matcher(newDescriptor);
+            newDescriptor = innerMatcher.replaceAll(Constants.TStringBuilderDesc);
             logger.info("Rewriting method signature {}{} to {}{}", name, descriptor, name, newDescriptor);
             mv = super.visitMethod(access, name, newDescriptor, signature, exceptions);
             desc = newDescriptor;

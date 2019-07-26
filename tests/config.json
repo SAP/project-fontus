@@ -187,6 +187,14 @@
     {
       "name": "StringBuffer local var",
       "source": "StringBufferLocalVarTest.java"
+    },
+    {
+      "name": "StringBuffer return",
+      "source": "StringBufferReturnTest.java"
+    },
+    {
+      "name": "StringBuilder return",
+      "source": "StringBuilderReturnTest.java"
     }
   ]
 }
