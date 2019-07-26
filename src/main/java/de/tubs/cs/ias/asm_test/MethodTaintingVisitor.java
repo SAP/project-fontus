@@ -299,7 +299,7 @@ class MethodTaintingVisitor extends MethodVisitor {
             String newDescriptor = stringDescMatcher.replaceAll(Constants.TStringDesc);
             logger.info("Rewriting invoke containing String [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
             super.visitMethodInsn(opcode, owner, name, newDescriptor, isInterface);
-        } else if (sbDescMatcher.find() && !skipInvoke) {
+        } else if (stringBufferDescMatcher.find() && !skipInvoke) {
             String newDescriptor = stringBufferDescMatcher.replaceAll(Constants.TStringBufferDesc);
             logger.info("Rewriting invoke containing StringBuffer [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
             super.visitMethodInsn(opcode, owner, name, newDescriptor, isInterface);
