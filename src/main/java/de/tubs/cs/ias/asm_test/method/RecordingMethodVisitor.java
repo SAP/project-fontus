@@ -1,4 +1,4 @@
-package de.tubs.cs.ias.asm_test;
+package de.tubs.cs.ias.asm_test.method;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.*;
@@ -13,12 +13,12 @@ public class RecordingMethodVisitor extends MethodVisitor {
 
     private final MethodVisitRecording recording;
 
-    RecordingMethodVisitor() {
+    public RecordingMethodVisitor() {
         super(Opcodes.ASM7);
         this.recording = new MethodVisitRecording();
     }
 
-    MethodVisitRecording getRecording() {
+    public MethodVisitRecording getRecording() {
         return this.recording;
     }
 

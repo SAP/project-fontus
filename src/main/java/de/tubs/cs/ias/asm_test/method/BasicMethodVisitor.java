@@ -1,22 +1,22 @@
-package de.tubs.cs.ias.asm_test;
+package de.tubs.cs.ias.asm_test.method;
 
 
 import org.objectweb.asm.*;
 
-class BasicMethodVisitor extends MethodVisitor {
+public class BasicMethodVisitor extends MethodVisitor {
 
     private final MethodVisitor parent;
 
-    BasicMethodVisitor(int api, MethodVisitor methodVisitor) {
+    public BasicMethodVisitor(int api, MethodVisitor methodVisitor) {
         super(api, methodVisitor);
         this.parent = methodVisitor;
     }
 
-    MethodVisitor getParentVisitor() {
+    public MethodVisitor getParentVisitor() {
         return new ParentVisitor();
     }
 
-    MethodVisitor getParent() {
+    public MethodVisitor getParent() {
         return this.parent;
     }
 

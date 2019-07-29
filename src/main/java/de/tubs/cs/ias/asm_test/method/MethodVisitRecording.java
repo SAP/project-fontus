@@ -1,4 +1,4 @@
-package de.tubs.cs.ias.asm_test;
+package de.tubs.cs.ias.asm_test.method;
 
 import org.objectweb.asm.MethodVisitor;
 
@@ -11,17 +11,17 @@ import java.util.function.Consumer;
  * <p>
  * It can be replayed by calling replay with a MethodVisitor where the code should be moved to.
  */
-class MethodVisitRecording {
+public class MethodVisitRecording {
     private final Collection<Consumer<MethodVisitor>> recording;
 
-    MethodVisitRecording() {
+    public MethodVisitRecording() {
         this.recording = new ArrayList<>();
     }
 
     /**
      * Adds a visitXXX call to the recording
      */
-    void add(Consumer<MethodVisitor> c) {
+    public void add(Consumer<MethodVisitor> c) {
         this.recording.add(c);
     }
 
@@ -30,7 +30,7 @@ class MethodVisitRecording {
      *
      * @param mv The visitor onto which the recording shall be replayed
      */
-    void replay(MethodVisitor mv) {
+    public void replay(MethodVisitor mv) {
         for (Consumer<MethodVisitor> c : this.recording) {
             c.accept(mv);
         }
