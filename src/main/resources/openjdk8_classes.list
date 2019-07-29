@@ -17254,3 +17254,4 @@ javax/transaction/InvalidTransactionException
 javax/transaction/TransactionRolledbackException
 javax/management/remote/rmi/RMIConnectionImpl_Stub
 javax/management/remote/rmi/RMIServerImpl_Stub
+org/slf4j
