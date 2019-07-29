@@ -163,6 +163,7 @@ final class Constants {
     static final String ABORT_IF_TAINTED = "abortIfTainted";
 
 
-    private Constants() {}
+    private Constants() {
+    }
 
 }

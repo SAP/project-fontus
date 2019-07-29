@@ -18,7 +18,6 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 
-
 @SuppressWarnings("ALL")
 public class IASString implements CharSequence {
     private static final Pattern CONCAT_PLACEHOLDER = Pattern.compile("\u0001");
@@ -53,7 +52,7 @@ public class IASString implements CharSequence {
     }
 
     public void abortIfTainted() {
-        if(this.tainted) {
+        if (this.tainted) {
             System.err.printf("String %s is tainted!\nAborting..!\n", this.str);
             System.exit(1);
         }
@@ -62,6 +61,7 @@ public class IASString implements CharSequence {
     public IASString(char value[]) {
         this.str = new String(value);
     }
+
     public IASString(char value[], int offset, int count) {
         this.str = new String(value, offset, count);
     }
@@ -80,7 +80,7 @@ public class IASString implements CharSequence {
 
     public IASString(byte bytes[], int offset, int length, String charsetName)
             throws UnsupportedEncodingException {
-            this.str = new String(bytes, offset, length, charsetName);
+        this.str = new String(bytes, offset, length, charsetName);
     }
 
     public IASString(byte bytes[], int offset, int length, Charset charset) {
@@ -159,14 +159,14 @@ public class IASString implements CharSequence {
 
     public byte[] getBytes(Charset charset) {
         return this.str.getBytes(charset);
-     }
+    }
 
     public byte[] getBytes() {
         return this.str.getBytes();
     }
 
     public boolean equals(Object anObject) {
-        if(!(anObject instanceof IASString)) return false;
+        if (!(anObject instanceof IASString)) return false;
         IASString other = (IASString) anObject;
         return this.str.equals(other.str);
     }
@@ -281,7 +281,7 @@ public class IASString implements CharSequence {
         boolean taint = this.tainted;
         Pattern p = Pattern.compile(regex.str);
         Matcher m = p.matcher(this.str);
-        if(m.find()) {
+        if (m.find()) {
             taint |= replacement.tainted;
         }
         return new IASString(this.str.replaceFirst(regex.str, replacement.str), taint);
@@ -292,7 +292,7 @@ public class IASString implements CharSequence {
         boolean taint = this.tainted;
         Pattern p = Pattern.compile(regex.str);
         Matcher m = p.matcher(this.str);
-        if(m.find()) {
+        if (m.find()) {
             taint |= replacement.tainted;
         }
         return new IASString(this.str.replaceAll(regex.str, replacement.str), taint);
@@ -306,7 +306,7 @@ public class IASString implements CharSequence {
     public IASString[] split(IASString regex, int limit) {
         String[] split = this.str.split(regex.str, limit);
         IASString[] splitted = new IASString[split.length];
-        for(int i=0;i<split.length;i++) {
+        for (int i = 0; i < split.length; i++) {
             splitted[i] = new IASString(split[i], this.tainted);
         }
         return splitted;
@@ -316,7 +316,7 @@ public class IASString implements CharSequence {
     public IASString[] split(IASString regex) {
         String[] split = this.str.split(regex.str);
         IASString[] splitted = new IASString[split.length];
-        for(int i=0;i<split.length;i++) {
+        for (int i = 0; i < split.length; i++) {
             splitted[i] = new IASString(split[i], this.tainted);
         }
         return splitted;
@@ -328,7 +328,7 @@ public class IASString implements CharSequence {
 
 
     public static IASString join(CharSequence delimiter,
-            Iterable<? extends CharSequence> elements) {
+                                 Iterable<? extends CharSequence> elements) {
         return new IASString(String.join(delimiter, elements));
     }
 
@@ -446,6 +446,7 @@ public class IASString implements CharSequence {
     public static IASString valueOf(float f) {
         return new IASString(String.valueOf(f));
     }
+
     public static IASString valueOf(double d) {
         return new IASString(String.valueOf(d));
     }
@@ -465,9 +466,9 @@ public class IASString implements CharSequence {
     public static IASString concat(String format, Object... args) {
         String ret = format;
         boolean taint = false;
-        for(int i = args.length-1; i>=0; i--) {
+        for (int i = args.length - 1; i >= 0; i--) {
             Object a = args[i];
-            if(a instanceof IASString) {
+            if (a instanceof IASString) {
                 IASString strArg = (IASString) a;
                 taint |= strArg.tainted;
             }
@@ -484,7 +485,7 @@ public class IASString implements CharSequence {
 
     public static IASString[] convertStringArray(String[] arr) {
         IASString[] ret = new IASString[arr.length];
-        for(int i = 0; i < arr.length; i++) {
+        for (int i = 0; i < arr.length; i++) {
             String s = arr[i];
             IASString ts = new IASString(s);
             ret[i] = ts;
@@ -494,7 +495,7 @@ public class IASString implements CharSequence {
 
     public static String[] convertTaintAwareStringArray(IASString[] arr) {
         String[] ret = new String[arr.length];
-        for(int i = 0; i < arr.length; i++) {
+        for (int i = 0; i < arr.length; i++) {
             IASString s = arr[i];
             ret[i] = s.getString();
         }

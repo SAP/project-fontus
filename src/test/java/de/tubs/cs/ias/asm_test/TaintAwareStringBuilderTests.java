@@ -3,6 +3,7 @@ package de.tubs.cs.ias.asm_test;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 @SuppressWarnings("ALL")
 public class TaintAwareStringBuilderTests {
     @Test

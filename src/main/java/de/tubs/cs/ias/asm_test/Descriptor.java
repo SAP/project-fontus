@@ -39,7 +39,7 @@ class Descriptor {
     }
 
     private static String replaceSuffix(String s, String from, String to) {
-        if(s.endsWith(from)) {
+        if (s.endsWith(from)) {
             int lIdx = s.lastIndexOf(from);
             assert lIdx != -1;
             return s.substring(0, lIdx) + to;
@@ -54,7 +54,7 @@ class Descriptor {
     }
 
     int parameterCount() {
-            return this.parameters.size();
+        return this.parameters.size();
     }
 
     Stack<String> getParameterStack() {
@@ -111,12 +111,13 @@ class Descriptor {
     /**
      * Checks whether the parameter list contains String like Parameters that need conversion before calling.
      * TODO: Add other String types
+     *
      * @return Whether on of the parameters is a String like type
      */
     boolean hasStringLikeParameters() {
         boolean hasTaintAwareParam = false;
-        for(String p: this.getParameters()) {
-            if(p.equals(Constants.StringDesc)) {
+        for (String p : this.getParameters()) {
+            if (p.equals(Constants.StringDesc)) {
                 hasTaintAwareParam = true;
             }
         }

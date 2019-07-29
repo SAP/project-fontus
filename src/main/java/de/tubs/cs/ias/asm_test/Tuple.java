@@ -20,7 +20,7 @@ public final class Tuple<X, Y> {
         return String.format("(%s,%s)", this.x, this.y);
     }
 
-    static <T,U> Tuple<T,U> of(T x, U y) {
+    static <T, U> Tuple<T, U> of(T x, U y) {
         return new Tuple<>(x, y);
     }
 
