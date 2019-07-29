@@ -139,8 +139,6 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
 
     }
 
-
-
     @Override
     public void visitInsn(int opcode) {
         // If we are in a "toString" method, we have to insert a call to the taint-check before returning.

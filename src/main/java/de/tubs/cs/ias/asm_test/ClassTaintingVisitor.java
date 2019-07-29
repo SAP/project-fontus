@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.regex.Matcher;
 
 
@@ -23,6 +24,8 @@ class ClassTaintingVisitor extends ClassVisitor {
     private final Collection<Tuple<Tuple<String, String>, Object>> staticFinalFields;
     private boolean hasClInit = false;
     private MethodVisitRecording recording;
+    private final ClassVisitor visitor;
+    private final Collection<ClassInstrumentationStrategy> instrumentation = new ArrayList<>(4);
 
     /**
      * The name of the class currently processed.
@@ -31,8 +34,17 @@ class ClassTaintingVisitor extends ClassVisitor {
 
     ClassTaintingVisitor(ClassVisitor cv) {
         super(Opcodes.ASM7, cv);
+        this.visitor = cv;
         this.staticFinalFields = new ArrayList<>();
         this.fillBlacklist();
+        this.fillStrategies();
+    }
+
+    private void fillStrategies() {
+        this.instrumentation.add(new StringBufferClassInstrumentationStrategy(this.visitor));
+        this.instrumentation.add(new StringBuilderClassInstrumentationStrategy(this.visitor));
+        this.instrumentation.add(new StringClassInstrumentationStrategy(this.visitor));
+        this.instrumentation.add(new DefaultClassInstrumentationStrategy(this.visitor));
     }
 
     private void fillBlacklist() {
@@ -76,29 +88,17 @@ class ClassTaintingVisitor extends ClassVisitor {
     public FieldVisitor visitField(int access, String name, String descriptor,
                                    String signature, Object value) {
 
-        Matcher descMatcher = Constants.strPattern.matcher(descriptor);
-        Matcher sbDescMatcher = Constants.strBuilderPattern.matcher(descriptor);
-        Matcher sBufferDescMatcher = Constants.strBufferPattern.matcher(descriptor);
-        // TODO: both? more? how to deuglify if the list grows
-        if (descMatcher.find()) {
-            String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
-            logger.info("Replacing String field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
-            FieldVisitor fv = super.visitField(access, name, newDescriptor, signature, null);
-            if (value != null && access == (Opcodes.ACC_FINAL | Opcodes.ACC_STATIC)) {
-                this.staticFinalFields.add(Tuple.of(Tuple.of(name, descriptor), value));
+        FieldVisitor fv = null;
+        for (ClassInstrumentationStrategy is : this.instrumentation) {
+            Optional<FieldVisitor> ofv = is.instrumentFieldInstruction(
+                    access, name, descriptor, signature, value,
+                    (n, d, v) -> this.staticFinalFields.add(Tuple.of(Tuple.of(n, d), v))
+            );
+            if (ofv.isPresent()) {
+                fv = ofv.get();
             }
-            return fv;
-        } else if (sbDescMatcher.find()) {
-            String newDescriptor = sbDescMatcher.replaceAll(Constants.TStringBuilderDesc);
-            logger.info("Replacing StringBuilder field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
-            return super.visitField(access, name, newDescriptor, signature, value);
-        } else if (sBufferDescMatcher.find()) {
-            String newDescriptor = sBufferDescMatcher.replaceAll(Constants.TStringBufferDesc);
-            logger.info("Replacing StringBuffer field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
-            return super.visitField(access, name, newDescriptor, signature, value);
-        } else {
-            return super.visitField(access, name, descriptor, signature, value);
         }
+        return fv;
     }
 
     /**
@@ -147,10 +147,6 @@ class ClassTaintingVisitor extends ClassVisitor {
             final String descriptor,
             final String signature,
             final String[] exceptions) {
-
-        Matcher builderDescMatcher = Constants.strBuilderPattern.matcher(descriptor);
-        Matcher bufferDescMatcher = Constants.strBufferPattern.matcher(descriptor);
-        Matcher descMatcher = Constants.strPattern.matcher(descriptor);
         MethodVisitor mv;
         String desc = descriptor;
         String newName = name;
@@ -180,18 +176,20 @@ class ClassTaintingVisitor extends ClassVisitor {
             newName = Constants.ToStringInstrumented;
             desc = Constants.ToStringInstrumentedDesc;
             mv = super.visitMethod(access, newName, desc, signature, exceptions);
-        } else if (!this.blacklist.contains(new BlackListEntry(name, descriptor, access)) && (descMatcher.find() || bufferDescMatcher.find() || builderDescMatcher.find())) {
-            String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
-            Matcher innerMatcher = Constants.strBufferPattern.matcher(newDescriptor);
-            newDescriptor = innerMatcher.replaceAll(Constants.TStringBufferDesc);
-            innerMatcher = Constants.strBuilderPattern.matcher(newDescriptor);
-            newDescriptor = innerMatcher.replaceAll(Constants.TStringBuilderDesc);
-            logger.info("Rewriting method signature {}{} to {}{}", name, descriptor, name, newDescriptor);
-            mv = super.visitMethod(access, name, newDescriptor, signature, exceptions);
-            desc = newDescriptor;
-        } else {
+        } else if (this.blacklist.contains(new BlackListEntry(name, descriptor, access))) {
             mv = super.visitMethod(access, name, descriptor, signature, exceptions);
+        } else {
+            Descriptor d = Descriptor.parseDescriptor(descriptor);
+            for (ClassInstrumentationStrategy is : this.instrumentation) {
+                d = is.instrumentMethodInvocation(d);
+            }
+            desc = d.toDescriptor();
+            if (!desc.equals(descriptor)) {
+                logger.info("Rewriting method signature {}{} to {}{}", name, descriptor, name, desc);
+            }
+            mv = super.visitMethod(access, name, desc, signature, exceptions);
         }
+
         return new MethodTaintingVisitor(access, newName, desc, mv);
     }
 
