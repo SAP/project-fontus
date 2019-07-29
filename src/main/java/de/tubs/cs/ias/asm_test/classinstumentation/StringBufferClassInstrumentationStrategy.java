@@ -1,5 +1,8 @@
-package de.tubs.cs.ias.asm_test;
+package de.tubs.cs.ias.asm_test.classinstumentation;
 
+import de.tubs.cs.ias.asm_test.Constants;
+import de.tubs.cs.ias.asm_test.Descriptor;
+import de.tubs.cs.ias.asm_test.TriConsumer;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.slf4j.Logger;
@@ -16,7 +19,7 @@ public class StringBufferClassInstrumentationStrategy implements ClassInstrument
 
         private final ClassVisitor visitor;
 
-        StringBufferClassInstrumentationStrategy(ClassVisitor cv) {
+        public StringBufferClassInstrumentationStrategy(ClassVisitor cv) {
             this.visitor = cv;
         }
 

@@ -20,6 +20,20 @@ class DescriptorTests {
         assertEquals(d, pd, "toString should have no parameters and return Ljava/lang/String;");
     }
 
+    @Test
+    void parseCharArrayDescriptor() {
+        Descriptor d = new Descriptor("[C", "V");
+        Descriptor pd = Descriptor.parseDescriptor("([C)V");
+        assertEquals(d, pd, "Both descriptors should have one char array parameter and void return type.");
+    }
+
+    @Test
+    void parseArrayDescriptor() {
+        Descriptor d = new Descriptor("[Ljava/lang/String;", "[C");
+        Descriptor pd = Descriptor.parseDescriptor("([Ljava/lang/String;)[C");
+        assertEquals(d, pd, "Both descriptors should have one String array array parameter and a char array return type.");
+    }
+
     @ParameterizedTest(name = "(){0} = no parameters and {0} as return type.")
     @ValueSource(strings = {"Z", "B", "C", "S", "I", "F", "D", "J"})
     void parseNoParamReturnPrimitive(String primitive) {

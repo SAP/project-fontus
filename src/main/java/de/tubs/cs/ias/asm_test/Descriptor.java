@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-class Descriptor {
+public class Descriptor {
 
     private static final Pattern PRIMITIVE_DATA_TYPES = Pattern.compile("[ZBCSIFDJ]");
     private final Collection<String> parameters;
@@ -138,13 +138,14 @@ class Descriptor {
             String next = sc.next();
             StringBuilder buffer = new StringBuilder();
             boolean inType = false;
+            boolean inArray = false;
             while (!")".equals(next)) {
                 buffer.append(next);
                 Matcher primitivesMatcher = PRIMITIVE_DATA_TYPES.matcher(next);
                 if (!inType && primitivesMatcher.matches()) {
                     out.add(buffer.toString());
                     buffer = new StringBuilder();
-                } else {
+                } else if(!"[".equals(next)) {
                     inType = true;
                     if (";".equals(next)) {
                         out.add(buffer.toString());

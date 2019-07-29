@@ -1,5 +1,8 @@
-package de.tubs.cs.ias.asm_test;
+package de.tubs.cs.ias.asm_test.classinstumentation;
 
+import de.tubs.cs.ias.asm_test.Constants;
+import de.tubs.cs.ias.asm_test.Descriptor;
+import de.tubs.cs.ias.asm_test.TriConsumer;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Opcodes;
@@ -10,11 +13,11 @@ import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import java.util.regex.Matcher;
 
-class StringClassInstrumentationStrategy implements ClassInstrumentationStrategy{
+public class StringClassInstrumentationStrategy implements ClassInstrumentationStrategy{
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final ClassVisitor cv;
-    StringClassInstrumentationStrategy(ClassVisitor cv) {
+    public StringClassInstrumentationStrategy(ClassVisitor cv) {
         this.cv = cv;
     }
 
@@ -29,7 +32,7 @@ class StringClassInstrumentationStrategy implements ClassInstrumentationStrategy
             if (value != null && access == (Opcodes.ACC_FINAL | Opcodes.ACC_STATIC)) {
                 tc.apply(name, descriptor, value);
             }
-            return Optional.of(this.cv.visitField(access, name, newDescriptor, signature, value));
+            return Optional.of(this.cv.visitField(access, name, newDescriptor, signature, null));
         }
         return Optional.empty();
     }

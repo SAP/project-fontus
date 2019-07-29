@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.classinstumentation.*;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Label;
@@ -12,7 +13,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.regex.Matcher;
 
 
 class ClassTaintingVisitor extends ClassVisitor {

@@ -1,5 +1,7 @@
-package de.tubs.cs.ias.asm_test;
+package de.tubs.cs.ias.asm_test.classinstumentation;
 
+import de.tubs.cs.ias.asm_test.Descriptor;
+import de.tubs.cs.ias.asm_test.TriConsumer;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 
@@ -9,7 +11,7 @@ public class DefaultClassInstrumentationStrategy implements ClassInstrumentation
 
     private final ClassVisitor visitor;
 
-    DefaultClassInstrumentationStrategy(ClassVisitor cv) {
+    public DefaultClassInstrumentationStrategy(ClassVisitor cv) {
         this.visitor = cv;
     }
 
