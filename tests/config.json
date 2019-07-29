@@ -199,6 +199,11 @@
     {
       "name": "Lambda Supplier Test",
       "source": "LambdaSupplierTest.java"
+    },
+    {
+      "name": "JDK Method returning a String Array",
+      "source": "FileStringArrayReturnTest.java",
+      "arguments": ["/etc"]
     }
   ]
 }

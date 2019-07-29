@@ -338,6 +338,8 @@ class MethodTaintingVisitor extends MethodVisitor {
         super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
         if (desc.hasStringLikeReturnType()) {
             this.stringToTString();
+        } else if (desc.hasStringArrayReturnType()) {
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "convertStringArray", String.format("(%s)%s", Constants.StringArrayDesc, Constants.TStringArrayDesc), false);
         }
     }
 
@@ -368,6 +370,10 @@ class MethodTaintingVisitor extends MethodVisitor {
             int loadOpcode = Utils.getLoadOpcode(p);
 
             //logger.info("Type: {}", p);
+            if ((Constants.StringArrayDesc).equals(p)) {
+                logger.info("Converting taint-aware String-Array to String-Array in multi param method invocation");
+                super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "convertTaintAwareStringArray", String.format("(%s)%s", Constants.TStringArrayDesc, Constants.StringArrayDesc), false);
+            }
             if ((Constants.StringDesc).equals(p)) {
                 logger.info("Converting taint-aware String to String in multi param method invocation");
                 super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);

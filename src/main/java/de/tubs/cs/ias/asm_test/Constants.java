@@ -64,6 +64,11 @@ final class Constants {
     static final String StringDesc = java.lang.String.format("L%s;", StringQN);
 
     /**
+     * Descriptor of an array of regular Java Strings
+     */
+    static final String StringArrayDesc = String.format("[%s", StringDesc);
+
+    /**
      * Descriptor of the java StringBuilder class
      */
     static final String StringBuilderDesc = java.lang.String.format("L%s;", StringBuilderQN);

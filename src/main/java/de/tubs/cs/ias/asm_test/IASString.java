@@ -481,4 +481,23 @@ public class IASString implements CharSequence {
     public String getString() {
         return this.str;
     }
+
+    public static IASString[] convertStringArray(String[] arr) {
+        IASString[] ret = new IASString[arr.length];
+        for(int i = 0; i < arr.length; i++) {
+            String s = arr[i];
+            IASString ts = new IASString(s);
+            ret[i] = ts;
+        }
+        return ret;
+    }
+
+    public static String[] convertTaintAwareStringArray(IASString[] arr) {
+        String[] ret = new String[arr.length];
+        for(int i = 0; i < arr.length; i++) {
+            IASString s = arr[i];
+            ret[i] = s.getString();
+        }
+        return ret;
+    }
 }
