@@ -22,7 +22,7 @@ class ResourcePathsTest {
     }
 
     public Set<String> getResourcePaths(String path) {
-        String actualPath = (path.endsWith("/") ? path : path + "/");
+            String actualPath = (path.endsWith("/") ? path : path + "/");
         //try {
             File file = new File(actualPath);
             String[] fileList = file.list();
@@ -40,8 +40,16 @@ class ResourcePathsTest {
             //if (logger.isWarnEnabled()) {
             //	logger.warn("Could not get resource paths for " + resource, ex);
             //}
-            return null;
+            //return null;
         //}
     }
 
+    public static void main(String[] args) {
+        ResourcePathsTest rpts = new ResourcePathsTest();
+
+        Set<String> paths = rpts.getResourcePaths("/etc");
+        for(String path : paths) {
+            System.out.println(path);
+        }
+    }
 }
