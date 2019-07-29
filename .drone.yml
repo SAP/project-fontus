@@ -1,0 +1,23 @@
+kind: pipeline
+name: default
+
+steps:
+- name: unit_tests
+  image: openjdk:8
+  commands:
+  - ./gradlew -s check
+
+- name: system_tests
+  image: openjdk:8
+  commands:
+    - ./gradlew -s assemble
+    - ./gradlew -s jar
+    - ./gradlew -s check
+    - ./gradlew publishToMavenLocal
+    - cd tests
+    - chmod +x run_system_tests.py
+    - cd jars
+    - bash build.sh
+    - cd ..
+    - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get --yes install python3
+    - python3 ./run_system_tests.py --build-first

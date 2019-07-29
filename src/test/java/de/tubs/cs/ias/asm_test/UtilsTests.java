@@ -26,6 +26,6 @@ public class UtilsTests {
     public void testHandleReplacer() {
         Handle h = new Handle(Opcodes.H_INVOKESTATIC, "LambdaTest", "lambda$main$0", desc, false);
         Handle h2 = Utils.instrumentHandle(h);
-        assertEquals(expected, h2.getDesc(),"Descriptors shall be equal");
+        assertEquals(expected, h2.getDesc(), "Descriptors shall be equal");
     }
 }

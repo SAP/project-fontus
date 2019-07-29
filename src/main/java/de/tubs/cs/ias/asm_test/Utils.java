@@ -13,7 +13,8 @@ final class Utils {
     private static final Pattern STRING_QN_MATCHER = Pattern.compile(Constants.StringQN, Pattern.LITERAL);
     private static final Pattern STRING_BUILDER_QN_MATCHER = Pattern.compile(Constants.StringBuilderQN, Pattern.LITERAL);
 
-    private Utils() {}
+    private Utils() {
+    }
 
     static String opcodeToString(int opcode) {
         switch (opcode) {
@@ -34,21 +35,31 @@ final class Utils {
 
     /**
      * Returns the Opcode to store an instance of a value described by type.
+     *
      * @param type One of Z, B, C, I, J, D, F or a class type.
      * @return The store Opcode, e.g., ASTORE
      */
     static int getStoreOpcode(String type) {
-        switch(type) {
-            case "Z": case "B": case "C": case "I": return Opcodes.ISTORE;
-            case "J": return Opcodes.LSTORE;
-            case "D": return Opcodes.DSTORE;
-            case "F": return Opcodes.FSTORE;
-            default: return Opcodes.ASTORE;
+        switch (type) {
+            case "Z":
+            case "B":
+            case "C":
+            case "I":
+                return Opcodes.ISTORE;
+            case "J":
+                return Opcodes.LSTORE;
+            case "D":
+                return Opcodes.DSTORE;
+            case "F":
+                return Opcodes.FSTORE;
+            default:
+                return Opcodes.ASTORE;
         }
     }
 
     /**
      * How many local vars does the store operation described by opcode take up.
+     *
      * @param opcode An opcode describing a store operation, e.g., ASTORE
      * @return 1 for type 1 values, 2 for type 2 values.
      */
@@ -58,16 +69,25 @@ final class Utils {
 
     /**
      * Returns the Opcode to load an instance of a value described by type.
+     *
      * @param type One of Z, B, C, I, J, D, F or a class type.
      * @return The store Opcode, e.g., ALOAD
      */
     static int getLoadOpcode(String type) {
-        switch(type) {
-            case "Z": case "B": case "C": case "I": return Opcodes.ILOAD;
-            case "J": return Opcodes.LLOAD;
-            case "D": return Opcodes.DLOAD;
-            case "F": return Opcodes.FLOAD;
-            default: return Opcodes.ALOAD;
+        switch (type) {
+            case "Z":
+            case "B":
+            case "C":
+            case "I":
+                return Opcodes.ILOAD;
+            case "J":
+                return Opcodes.LLOAD;
+            case "D":
+                return Opcodes.DLOAD;
+            case "F":
+                return Opcodes.FLOAD;
+            default:
+                return Opcodes.ALOAD;
         }
     }
 
@@ -113,5 +133,14 @@ final class Utils {
             mv.visitLdcInsn(value);
             mv.visitFieldInsn(Opcodes.PUTSTATIC, owner, field.x, field.y);
         }
+    }
+
+    static String rewriteDescriptor(String desc) {
+        Matcher stringDescMatcher = Constants.strPattern.matcher(desc);
+        String newDescriptor = desc;
+        if (stringDescMatcher.find()) {
+            newDescriptor = stringDescMatcher.replaceAll(Constants.TStringDesc);
+        }
+        return newDescriptor;
     }
 }

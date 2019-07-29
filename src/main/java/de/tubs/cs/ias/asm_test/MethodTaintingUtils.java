@@ -131,7 +131,8 @@ class MethodTaintingUtils {
                 bsArgs[i] = arg;
             }
         }
-        mv.visitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bsArgs);
+        String desc = Utils.rewriteDescriptor(descriptor);
+        mv.visitInvokeDynamicInsn(name, desc, bootstrapMethodHandle, bsArgs);
     }
 
     /**
@@ -151,8 +152,6 @@ class MethodTaintingUtils {
 
     /**
      * One can load String constants directly from the constant pool via the LDC instruction.
-     *
-     *
      *
      * @param value The String value to load from the constant pool
      */

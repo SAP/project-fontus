@@ -24,9 +24,19 @@ final class Constants {
     static final String StringBuilderQN = "java/lang/StringBuilder";
 
     /**
+     * The fully qualified name of the StringBuffer class
+     */
+    static final String StringBufferQN = "java/lang/StringBuffer";
+
+    /**
      * The fully qualified name type of our taint-aware String
      */
     static final String TStringQN = TPackage + "IASString";
+
+    /**
+     * The fully qualified name type of our taint-aware StringBuffer
+     */
+    static final String TStringBufferQN = TPackage + "IASStringBuffer";
 
     /**
      * Name of the toString method.
@@ -54,10 +64,18 @@ final class Constants {
     static final String StringDesc = java.lang.String.format("L%s;", StringQN);
 
     /**
+     * Descriptor of an array of regular Java Strings
+     */
+    static final String StringArrayDesc = String.format("[%s", StringDesc);
+
+    /**
      * Descriptor of the java StringBuilder class
      */
     static final String StringBuilderDesc = java.lang.String.format("L%s;", StringBuilderQN);
-
+    /**
+     * Descriptor of the java StringBuffer class
+     */
+    static final String StringBufferDesc = java.lang.String.format("L%s;", StringBufferQN);
     /**
      * The bytecode descriptor of an array of our taint aware string
      */
@@ -72,7 +90,10 @@ final class Constants {
      * The bytecode descriptor of our taint aware StringBuilder
      */
     static final String TStringBuilderDesc = String.format("L%s;", TStringBuilderQN);
-
+    /**
+     * The bytecode descriptor of our taint aware StringBuffer
+     */
+    static final String TStringBufferDesc = String.format("L%s;", TStringBufferQN);
     /**
      * Constructor name
      */
@@ -132,13 +153,17 @@ final class Constants {
      * Matches fully qualified StringBuilder names
      */
     static final Pattern strBuilderPattern = Pattern.compile(StringBuilderDesc);
-
+    /**
+     * Matches fully qualified StringBuilder names
+     */
+    static final Pattern strBufferPattern = Pattern.compile(StringBufferDesc);
     /**
      * The Taint-aware String method to check and act on a potential taint
      */
     static final String ABORT_IF_TAINTED = "abortIfTainted";
 
 
-    private Constants() {}
+    private Constants() {
+    }
 
 }

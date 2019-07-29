@@ -18,7 +18,7 @@ public class Sources {
     private final List<FunctionCall> functions;
 
     @JsonCreator
-    public Sources(@JsonProperty("*")List<FunctionCall> functions) {
+    public Sources(@JsonProperty("*") List<FunctionCall> functions) {
         this.functions = functions;
     }
 

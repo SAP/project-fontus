@@ -22,6 +22,13 @@ CONFIG_FILE = path.join(TESTS_DIR, "config.json")
 TMPDIR_OUTPUT_DIR_SUFFIX = "instrumented"
 JAR_BASE_NAMES = ["asm_test", "util"]
 
+def check_rv(func):
+    def wrapper_check_rv(*args, **kwargs):
+        rv = func(*args, **kwargs)
+        if rv.return_value != 0:
+            pprint.pprint(rv)
+        return rv
+    return wrapper_check_rv
 
 def is_existing_file(file_path):
     if not file_path:
@@ -44,6 +51,7 @@ def copy_source_file(target_dir, source):
     copy_file(TESTS_SOURCE_DIR, target_dir, source)
 
 
+@check_rv
 def run_command(cwd, arguments, input_file=None):
     exec_result = subprocess.run(
         arguments,

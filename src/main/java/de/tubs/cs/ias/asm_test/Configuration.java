@@ -34,7 +34,7 @@ public class Configuration {
             logger.error("Malformed configuration resource file, aborting!");
             // TODO: ugly exception, find more fitting one!
             throw new IllegalStateException("Missing configuration file\nAborting!", e);
-        } catch (IOException  e) {
+        } catch (IOException e) {
             logger.error("Can't find the configuration resource file, aborting!");
             // TODO: ugly exception, find more fitting one!
             throw new IllegalStateException("Missing configuration file\nAborting!", e);
@@ -54,6 +54,7 @@ public class Configuration {
     Sinks getSinks() {
         return this.sinks;
     }
+
     /**
      * All functions listed here return Strings that should be marked as tainted.
      */

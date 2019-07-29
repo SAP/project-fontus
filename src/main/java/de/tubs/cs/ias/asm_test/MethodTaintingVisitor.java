@@ -17,6 +17,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final Pattern STRING_BUILDER_QN_PATTERN = Pattern.compile(Constants.StringBuilderQN, Pattern.LITERAL);
     private static final Pattern STRING_QN_PATTERN = Pattern.compile(Constants.StringQN, Pattern.LITERAL);
+    private static final Pattern STRING_BUFFER_QN_PATTERN = Pattern.compile(Constants.StringBufferQN, Pattern.LITERAL);
 
     private final String name;
     private final String methodDescriptor;
@@ -33,6 +34,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
      */
     private final HashMap<String, String> stringBuilderMethodsToRename;
     private final HashMap<String, String> stringMethodsToRename;
+    private final HashMap<String, String> stringBufferMethodsToRename;
 
     /**
      * String like classes, need special handling
@@ -50,14 +52,15 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
 
     MethodTaintingVisitor(int acc, String name, String methodDescriptor, MethodVisitor methodVisitor) {
         super(Opcodes.ASM7, methodVisitor);
-        this.used = Type.getArgumentsAndReturnSizes(methodDescriptor)>>2;
-        if((acc&Opcodes.ACC_STATIC)!=0) this.used--; // no this
+        this.used = Type.getArgumentsAndReturnSizes(methodDescriptor) >> 2;
+        if ((acc & Opcodes.ACC_STATIC) != 0) this.used--; // no this
         this.name = name;
         this.methodDescriptor = methodDescriptor;
         this.methodProxies = new HashMap<>();
         this.dynProxies = new HashMap<>();
         this.stringBuilderMethodsToRename = new HashMap<>();
         this.stringMethodsToRename = new HashMap<>();
+        this.stringBufferMethodsToRename = new HashMap<>();
         this.stringClasses = new HashMap<>();
         this.fieldTypes = new ArrayList<>();
         this.fillProxies();
@@ -102,6 +105,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     private void fillFieldTypes() {
         this.fieldTypes.add(Tuple.of(Constants.strPattern, Constants.TStringDesc));
         this.fieldTypes.add(Tuple.of(Constants.strBuilderPattern, Constants.TStringBuilderDesc));
+        this.fieldTypes.add(Tuple.of(Constants.strBufferPattern, Constants.TStringBufferDesc));
     }
 
     /**
@@ -109,20 +113,23 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
      */
     private void rewriteOwnerMethods() {
         this.stringClasses.put(Constants.StringBuilderQN, this::visitStringBuilderMethod);
+        this.stringClasses.put(Constants.StringBufferQN, this::visitStringBufferMethod);
         this.stringClasses.put(Constants.StringQN, this::visitStringMethod);
+
     }
 
     /**
-     *  Initializes the methods that shall be renamed map.
+     * Initializes the methods that shall be renamed map.
      */
     private void fillMethodsToRename() {
         this.stringBuilderMethodsToRename.put(Constants.ToString, "toIASString");
         this.stringMethodsToRename.put(Constants.ToString, "toIASString");
+        this.stringBufferMethodsToRename.put(Constants.ToString, "toIASString");
 
     }
 
     /**
-     *  Initializes the method proxy maps.
+     * Initializes the method proxy maps.
      */
     private void fillProxies() {
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;", false),
@@ -154,7 +161,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
                                final String descriptor,
                                final boolean isInterface) {
         FunctionCall pfe = new FunctionCall(opcode, owner, name, descriptor, isInterface);
-        if(this.configuration.getSinks().contains(pfe)) {
+        if (this.configuration.getSinks().contains(pfe)) {
             logger.info("{}.{}{} is a sink, so calling the check taint function before passing the value!", owner, name, descriptor);
             // Call dup here to put the TString reference twice on the stack so the call can pop one without affecting further processing
             MethodTaintingUtils.callCheckTaint(this.getParentVisitor());
@@ -175,7 +182,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
                                  final String descriptor,
                                  final boolean isInterface) {
         FunctionCall pfe = new FunctionCall(opcode, owner, name, descriptor, isInterface);
-        if(this.configuration.getSources().contains(pfe)) {
+        if (this.configuration.getSources().contains(pfe)) {
             logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", owner, name, descriptor, Constants.TStringQN);
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
             super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "tainted", Constants.CreateTaintedStringDesc, false);
@@ -190,7 +197,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     @Override
     public void visitFieldInsn(final int opcode, final String owner, final String name, final String descriptor) {
 
-        for(Tuple<Pattern, String> e : this.fieldTypes) {
+        for (Tuple<Pattern, String> e : this.fieldTypes) {
             Pattern pattern = e.x;
             Matcher matcher = pattern.matcher(descriptor);
             if (matcher.find()) {
@@ -213,7 +220,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             final String name,
             final String descriptor,
             final boolean isInterface) {
-        if(this.isSinkCall(opcode, owner, name, descriptor, isInterface) || this.isSourceCall(opcode, owner, name, descriptor, isInterface)) {
+        if (this.isSinkCall(opcode, owner, name, descriptor, isInterface) || this.isSourceCall(opcode, owner, name, descriptor, isInterface)) {
             return;
         }
 
@@ -223,7 +230,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         }
 
         // We have special methods to rewrite methods belonging to a specific owner, e.g. to String or StringBuilder
-        if(this.stringClasses.containsKey(owner)) {
+        if (this.stringClasses.containsKey(owner)) {
             MethodInvocation mi = this.stringClasses.get(owner);
             mi.invoke(opcode, owner, name, descriptor, isInterface);
             return;
@@ -232,7 +239,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         boolean jdkMethod = JdkClassesLookupTable.instance.isJdkClass(owner);
 
         // ToString wrapping
-        if(!jdkMethod && name.equals(Constants.ToString) && descriptor.equals(Constants.ToStringDesc)) {
+        if (!jdkMethod && name.equals(Constants.ToString) && descriptor.equals(Constants.ToStringDesc)) {
             super.visitMethodInsn(opcode, owner, Constants.ToStringInstrumented, Constants.ToStringInstrumentedDesc, isInterface);
             return;
         }
@@ -242,10 +249,11 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
 
         Matcher sbDescMatcher = Constants.strBuilderPattern.matcher(descriptor);
         Matcher stringDescMatcher = Constants.strPattern.matcher(descriptor);
+        Matcher stringBufferDescMatcher = Constants.strBufferPattern.matcher(descriptor);
 
         // JDK methods need special handling.
         // If there isn't a proxy defined, we will just convert taint-aware Strings to regular ones before calling the function and vice versa for the return value.
-        if(jdkMethod && stringDescMatcher.find()) {
+        if (jdkMethod && stringDescMatcher.find()) {
             this.handleJdkMethod(opcode, owner, name, descriptor, isInterface);
             return;
         }
@@ -254,6 +262,10 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         if (stringDescMatcher.find() && !skipInvoke) {
             String newDescriptor = stringDescMatcher.replaceAll(Constants.TStringDesc);
             logger.info("Rewriting invoke containing String [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
+            super.visitMethodInsn(opcode, owner, name, newDescriptor, isInterface);
+        } else if (stringBufferDescMatcher.find() && !skipInvoke) {
+            String newDescriptor = stringBufferDescMatcher.replaceAll(Constants.TStringBufferDesc);
+            logger.info("Rewriting invoke containing StringBuffer [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
             super.visitMethodInsn(opcode, owner, name, newDescriptor, isInterface);
         } else if (sbDescMatcher.find() && !skipInvoke) {
             String newDescriptor = sbDescMatcher.replaceAll(Constants.TStringBuilderDesc);
@@ -266,11 +278,9 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
 
-
-
     private void handleJdkMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
-        switch(desc.parameterCount()) {
+        switch (desc.parameterCount()) {
             case 0:
                 break;
             case 1:
@@ -284,13 +294,16 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
         if (desc.hasStringLikeReturnType()) {
             MethodTaintingUtils.stringToTString(this.getParentVisitor());
+            logger.info("Converting returned String of {}.{}{}", owner, name, descriptor);
+        } else if (desc.hasStringArrayReturnType()) {
+            logger.info("Converting returned String Array of {}.{}{}", owner, name, descriptor);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "convertStringArray", String.format("(%s)%s", Constants.StringArrayDesc, Constants.TStringArrayDesc), false);
         }
     }
 
 
-
     private void handleMultiParameterJdkMethod(String descriptor, Descriptor desc) {
-        if(!desc.hasStringLikeParameters()) return;
+        if (!desc.hasStringLikeParameters()) return;
 
         // TODO: Add optimization that the upmost parameter on the stack does not need to be stored/loaded..
         Collection<String> parameters = desc.getParameters();
@@ -306,6 +319,10 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             int loadOpcode = Utils.getLoadOpcode(p);
 
             //logger.info("Type: {}", p);
+            if ((Constants.StringArrayDesc).equals(p)) {
+                logger.info("Converting taint-aware String-Array to String-Array in multi param method invocation");
+                super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "convertTaintAwareStringArray", String.format("(%s)%s", Constants.TStringArrayDesc, Constants.StringArrayDesc), false);
+            }
             if ((Constants.StringDesc).equals(p)) {
                 logger.info("Converting taint-aware String to String in multi param method invocation");
                 super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
@@ -330,7 +347,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
 
     /**
      * The 'ldc' instruction loads a constant value out of the constant pool.
-     *
+     * <p>
      * It might load String values, so we have to transform them.
      */
     @Override
@@ -342,7 +359,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             Type type = (Type) value;
             int sort = type.getSort();
             if (sort == Type.OBJECT) {
-                if("java.lang.String".equals(type.getClassName())) {
+                if ("java.lang.String".equals(type.getClassName())) {
                     super.visitLdcInsn(Type.getObjectType(Constants.TStringQN));
                     return;
                 } else if ("java.lang.StringBuilder".equals(type.getClassName())) {
@@ -365,7 +382,10 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     public void visitTypeInsn(final int opcode, final String type) {
         logger.info("Visiting type [{}] instruction: {}", type, opcode);
         String newType = type;
-        if(type.contains(Constants.StringBuilderQN)) {
+        if (type.contains(Constants.StringBufferQN)) {
+            newType = STRING_BUFFER_QN_PATTERN.matcher(type).replaceAll(Matcher.quoteReplacement(Constants.TStringBufferQN));
+
+        } else if (type.contains(Constants.StringBuilderQN)) {
             newType = STRING_BUILDER_QN_PATTERN.matcher(type).replaceAll(Matcher.quoteReplacement(Constants.TStringBuilderQN));
         } else if (type.contains(Constants.StringQN)) {
             newType = STRING_QN_PATTERN.matcher(type).replaceAll(Matcher.quoteReplacement(Constants.TStringQN));
@@ -373,9 +393,6 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         super.visitTypeInsn(opcode, newType);
     }
 
-    /**
-     * We might have to proxy these as they do some fancy String concat optimization stuff.
-     */
     @Override
     public void visitInvokeDynamicInsn(
             final String name,
@@ -387,13 +404,13 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             return;
         }
 
-        if("java/lang/invoke/LambdaMetafactory".equals(bootstrapMethodHandle.getOwner()) &&
+        if ("java/lang/invoke/LambdaMetafactory".equals(bootstrapMethodHandle.getOwner()) &&
                 "metafactory".equals(bootstrapMethodHandle.getName())) {
             MethodTaintingUtils.invokeVisitLambdaCall(this.getParentVisitor(), name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
             return;
         }
 
-        if("makeConcatWithConstants".equals(name)) {
+        if ("makeConcatWithConstants".equals(name)) {
             this.rewriteConcatWithConstants(name, descriptor, bootstrapMethodArguments);
             return;
         }
@@ -418,7 +435,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         // newly created array is now stored in currRegister, concat operands on top
         Stack<String> parameters = desc.getParameterStack();
         int paramIndex = 0;
-        while(!parameters.empty()) {
+        while (!parameters.empty()) {
             String parameter = parameters.pop();
             // Convert topmost value (if required)
             MethodTaintingUtils.invokeConversionFunction(this.getParentVisitor(), parameter);
@@ -458,6 +475,27 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         String newName = this.stringMethodsToRename.getOrDefault(name, name);
         logger.info("Rewriting String invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, newDescriptor);
         super.visitMethodInsn(opcode, newOwner, newName, newDescriptor, isInterface);
+    }
+
+    /**
+     * Visit a method belonging to java/lang/StringBuffer
+     */
+    private void visitStringBufferMethod(final int opcode,
+                                         final String owner,
+                                         final String name,
+                                         final String descriptor,
+                                         final boolean isInterface) {
+        Matcher sbDescMatcher = Constants.strBufferPattern.matcher(descriptor);
+        String newOwner = Constants.TStringBufferQN;
+        String newDescriptor = sbDescMatcher.replaceAll(Constants.TStringBufferDesc);
+        // Replace all instances of java/lang/String
+        Matcher newDescriptorMatcher = Constants.strPattern.matcher(newDescriptor);
+        String finalDescriptor = newDescriptorMatcher.replaceAll(Constants.TStringDesc);
+        // Some methods names (e.g., toString) need to be replaced to not break things, look those up
+        String newName = this.stringBufferMethodsToRename.getOrDefault(name, name);
+
+        logger.info("Rewriting StringBuffer invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, finalDescriptor);
+        super.visitMethodInsn(opcode, newOwner, newName, finalDescriptor, isInterface);
     }
 
     /**

@@ -179,6 +179,37 @@
     {
       "name": "String.toString test",
       "source": "StringToStringTest.java"
+    },
+    {
+      "name": "StringBuffer field",
+      "source": "StringBuilderFieldTest.java"
+    },
+    {
+      "name": "StringBuffer local var",
+      "source": "StringBufferLocalVarTest.java"
+    },
+    {
+      "name": "StringBuffer return",
+      "source": "StringBufferReturnTest.java"
+    },
+    {
+      "name": "StringBuilder return",
+      "source": "StringBuilderReturnTest.java"
+    },
+    {
+      "name": "Lambda Supplier Test",
+      "source": "LambdaSupplierTest.java"
+    },
+    {
+      "name": "JDK Method returning a String Array",
+      "source": "FileStringArrayReturnTest.java",
+      "arguments": ["/etc"]
+    },
+    {
+      "name": "Test from MockServlet regarding String Array Issues",
+      "source": "ResourcePathsTest.java",
+      "arguments": ["/etc"]
     }
+
   ]
 }
