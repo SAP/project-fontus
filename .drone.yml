@@ -3,13 +3,15 @@ name: default
 
 steps:
 - name: unit_tests
-  image: openjdk:8
+  image: ubuntu:18.04
   commands:
-  - ./gradlew -s check
+    - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y python3 openjdk-11-jdk-headless
+    - ./gradlew -s check
 
 - name: system_tests
-  image: openjdk:8
+  image: ubuntu:18.04
   commands:
+    - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y python3 openjdk-11-jdk-headless
     - ./gradlew -s assemble
     - ./gradlew -s jar
     - ./gradlew -s check
@@ -19,5 +21,4 @@ steps:
     - cd jars
     - bash build.sh
     - cd ..
-    - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get --yes install python3
     - python3 ./run_system_tests.py --build-first
