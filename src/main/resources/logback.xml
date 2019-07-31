@@ -19,7 +19,7 @@
     </appender>
 
     <root level="${log.level:-INFO}">
-        <appender-ref ref="STDOUT" />
+        <!-- <appender-ref ref="STDOUT" /> -->
         <appender-ref ref="FILE" />
     </root>
 </configuration>
