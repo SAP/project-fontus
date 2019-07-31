@@ -15,6 +15,7 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
     private void mergeTaint(IASString str) {
         this.tainted |= str.isTainted();
     }
+
     public IASStringBuilder() {
         this.builder = new StringBuilder();
         this.tainted = false;

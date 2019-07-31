@@ -19,7 +19,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
 
     private final Collection<BlackListEntry> blacklist = new ArrayList<>();
     private static final String mainDescriptor = "([Ljava/lang/String;)V";
-    private static final String newMainDescriptor = "("+ Constants.TStringArrayDesc +")V";
+    private static final String newMainDescriptor = "(" + Constants.TStringArrayDesc + ")V";
     private final Collection<Tuple<Tuple<String, String>, Object>> staticFinalFields;
     private boolean hasClInit = false;
     private MethodVisitRecording recording;
@@ -57,6 +57,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
 
     /**
      * Writes all static final String field initializations into the static initializer
+     *
      * @param mv The visitor creating the static initialization block
      */
     private void writeToStaticInitializer(MethodVisitor mv) {
@@ -77,18 +78,23 @@ public class ClassTaintingVisitor extends ClassVisitor {
 
         Matcher descMatcher = Constants.strPattern.matcher(descriptor);
         Matcher sbDescMatcher = Constants.strBuilderPattern.matcher(descriptor);
+        Matcher sBufferDescMatcher = Constants.strBufferPattern.matcher(descriptor);
         // TODO: both? more? how to deuglify if the list grows
-        if(descMatcher.find()) {
+        if (descMatcher.find()) {
             String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
             logger.info("Replacing String field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
             FieldVisitor fv = super.visitField(access, name, newDescriptor, signature, null);
-            if(value != null && access == (Opcodes.ACC_FINAL | Opcodes.ACC_STATIC)) {
+            if (value != null && access == (Opcodes.ACC_FINAL | Opcodes.ACC_STATIC)) {
                 this.staticFinalFields.add(Tuple.of(Tuple.of(name, descriptor), value));
             }
             return fv;
-        } else if(sbDescMatcher.find()) {
+        } else if (sbDescMatcher.find()) {
             String newDescriptor = sbDescMatcher.replaceAll(Constants.TStringBuilderDesc);
             logger.info("Replacing StringBuilder field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
+            return super.visitField(access, name, newDescriptor, signature, value);
+        } else if (sBufferDescMatcher.find()) {
+            String newDescriptor = sBufferDescMatcher.replaceAll(Constants.TStringBufferDesc);
+            logger.info("Replacing StringBuffer field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
             return super.visitField(access, name, newDescriptor, signature, value);
         } else {
             return super.visitField(access, name, descriptor, signature, value);
@@ -97,16 +103,16 @@ public class ClassTaintingVisitor extends ClassVisitor {
 
     /**
      * Generate the body of the toString proxy method
-     *
+     * <p>
      * To not break OOP we can't change the Signature of the toString method inherited from Object.
      * Our solution is thus to instrument the toString method and rename it to $toString with descriptor ()TString;
-     *
+     * <p>
      * To provide a working toString method (i.e., not break applications by having objects use the default toString method)
      * the code generated here calls $toString, check whether it was tainted and returns the regular String.
-     *
+     * <p>
      * This loses the taint! Thus passing instrumented objects to JVM standard library functions which call toString need special handling.
      * One solution is to write proxy methods that reassemble the taint information afterwards.
-     *
+     * <p>
      * TODO: The taint handling probably needs various levels of action when a tainted String is required.
      * This function could just log that the taint is lost and thus notifies the developer that a proxy might be required.
      * Maybe a whitelist where losing the taint is fine would be a good idea? Where the toString is called,
@@ -142,11 +148,14 @@ public class ClassTaintingVisitor extends ClassVisitor {
             final String signature,
             final String[] exceptions) {
 
+        Matcher builderDescMatcher = Constants.strBuilderPattern.matcher(descriptor);
+        Matcher bufferDescMatcher = Constants.strBufferPattern.matcher(descriptor);
         Matcher descMatcher = Constants.strPattern.matcher(descriptor);
         MethodVisitor mv;
         String desc = descriptor;
         String newName = name;
-        if(this.recording == null && isClInit(access, name, desc) ) {
+
+        if (this.recording == null && isClInit(access, name, desc)) {
             logger.info("Recording static initializer");
             RecordingMethodVisitor rmv = new RecordingMethodVisitor();
             this.recording = rmv.getRecording();
@@ -156,7 +165,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
 
         // Create a new main method, wrapping the regular one and translating all Strings to IASStrings
         // TODO: acceptable for main is a parameter of String[] or String...! Those have different access bits set (i.e., the ACC_VARARGS bits are set too) -> Handle this nicer..
-        if(((access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC) && (access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC && "main".equals(name) && descriptor.equals(mainDescriptor)) {
+        if (((access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC) && (access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC && "main".equals(name) && descriptor.equals(mainDescriptor)) {
             logger.info("Creating proxy main method");
             MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "main", mainDescriptor, signature, exceptions);
             this.createMainWrapperMethod(v);
@@ -171,8 +180,12 @@ public class ClassTaintingVisitor extends ClassVisitor {
             newName = Constants.ToStringInstrumented;
             desc = Constants.ToStringInstrumentedDesc;
             mv = super.visitMethod(access, newName, desc, signature, exceptions);
-        } else if (!this.blacklist.contains(new BlackListEntry(name, descriptor, access)) && descMatcher.find()) {
+        } else if (!this.blacklist.contains(new BlackListEntry(name, descriptor, access)) && (descMatcher.find() || bufferDescMatcher.find() || builderDescMatcher.find())) {
             String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
+            Matcher innerMatcher = Constants.strBufferPattern.matcher(newDescriptor);
+            newDescriptor = innerMatcher.replaceAll(Constants.TStringBufferDesc);
+            innerMatcher = Constants.strBuilderPattern.matcher(newDescriptor);
+            newDescriptor = innerMatcher.replaceAll(Constants.TStringBuilderDesc);
             logger.info("Rewriting method signature {}{} to {}{}", name, descriptor, name, newDescriptor);
             mv = super.visitMethod(access, name, newDescriptor, signature, exceptions);
             desc = newDescriptor;
@@ -185,6 +198,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
 
     /**
      * Writes the code for a static initialization block.
+     *
      * @param mv The MethodVisitor for the static initialization block. Should be a Taint-aware MethodVisitor!
      */
     private void createStaticStringInitializer(MethodVisitor mv) {
@@ -198,11 +212,11 @@ public class ClassTaintingVisitor extends ClassVisitor {
 
     @Override
     public void visitEnd() {
-        if(!this.hasClInit && !this.staticFinalFields.isEmpty()) {
+        if (!this.hasClInit && !this.staticFinalFields.isEmpty()) {
             logger.info("Adding a new static initializer to initialize static final String fields");
             MethodVisitor mv = this.visitMethod(Opcodes.ACC_STATIC, Constants.ClInit, "()V", null, null);
             this.createStaticStringInitializer(mv);
-        } else if(this.hasClInit) {
+        } else if (this.hasClInit) {
             logger.info("Replaying static initializer and augmenting it");
             MethodVisitor mv = this.visitMethod(Opcodes.ACC_STATIC, Constants.ClInit, "()V", null, null);
             ClassInitializerAugmentingVisitor augmentingVisitor = new ClassInitializerAugmentingVisitor(mv, this.owner, this.staticFinalFields);
@@ -214,7 +228,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
     /**
      * Replaces the original main method's body with a wrapper.
      * It translates the String parameter array to a taint-aware String array and calls the original main method's code.
-     *
+     * <p>
      * Autogenerated by asmify!
      */
     @SuppressWarnings("OverlyLongMethod")
@@ -232,7 +246,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
         mv.visitVarInsn(Opcodes.ISTORE, 2);
         Label label2 = new Label();
         mv.visitLabel(label2);
-        mv.visitFrame(Opcodes.F_APPEND,2, new Object[] {Constants.TStringArrayDesc, Opcodes.INTEGER}, 0, null);
+        mv.visitFrame(Opcodes.F_APPEND, 2, new Object[]{Constants.TStringArrayDesc, Opcodes.INTEGER}, 0, null);
         mv.visitVarInsn(Opcodes.ILOAD, 2);
         mv.visitVarInsn(Opcodes.ALOAD, 1);
         mv.visitInsn(Opcodes.ARRAYLENGTH);
@@ -254,7 +268,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
         mv.visitIincInsn(2, 1);
         mv.visitJumpInsn(Opcodes.GOTO, label2);
         mv.visitLabel(label3);
-        mv.visitFrame(Opcodes.F_CHOP,1, null, 0, null);
+        mv.visitFrame(Opcodes.F_CHOP, 1, null, 0, null);
         mv.visitVarInsn(Opcodes.ALOAD, 1);
         mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.owner, Constants.MainWrapper, newMainDescriptor, false);
         Label label6 = new Label();

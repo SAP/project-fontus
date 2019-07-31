@@ -18,27 +18,51 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 
-@CommandLine.Command(description = "Replaces all String instances with taint-aware Strings.",
-        name = "asm_taint", mixinStandardHelpOptions = true, version = "asm_taint 0.0.1")
+@CommandLine.Command(
+        description = "Replaces all String instances with taint-aware Strings.",
+        name = "asm_taint",
+        mixinStandardHelpOptions = true,
+        version = "asm_taint 0.0.1"
+)
 public class Main implements Callable<Void> {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    @CommandLine.Option(names = {"-f", "--file"}, required = true, paramLabel = "Input", description = "The input class/jar file or directory")
+    @CommandLine.Option(
+            names = {"-f", "--file"},
+            required = true,
+            paramLabel = "Input",
+            description = "The input class/jar file or directory"
+    )
     private File inputFile;
 
-    @CommandLine.Option(names = {"-o", "--out"}, required = true, paramLabel = "Output", description = "The output class/jar file or directory")
+    @CommandLine.Option(
+            names = {"-o", "--out"},
+            required = true,
+            paramLabel = "Output",
+            description = "The output class/jar file or directory"
+    )
     private File outputFile;
 
-    @CommandLine.Option(names = {"-a", "--add"}, paramLabel = "Add taint-aware classes", description = "Adds the class files of our taint-aware data types to the instrumented .jar file.")
+    @CommandLine.Option(
+            names = {"-a", "--add"},
+            paramLabel = "Add taint-aware classes",
+            description = "Adds the class files of our taint-aware data types to the instrumented .jar file."
+    )
     private boolean addTaintAwareClassFiles;
 
-    private static final String TStringClassName = "de/tubs/cs/ias/asm_test/IASString.class";
-    private static final String TStringBuilderClassName = "de/tubs/cs/ias/asm_test/IASStringBuilder.class";
-    private static final String TReflectionProxies = "de/tubs/cs/ias/asm_test/IASReflectionProxies.class";
+    private static final String TStringClassName = toClassName(Constants.TStringQN);
+    private static final String TStringBuilderClassName = toClassName(Constants.TStringBuilderQN);
+    private static final String TStringBufferClassName = toClassName(Constants.TStringBufferQN);
+    private static final String TReflectionProxies = toClassName("de/tubs/cs/ias/asm_test/IASReflectionProxies");
 
     private static final String classSuffix = ".class";
     private static final String jarSuffix = ".jar";
-    private static final List<String> TStringTypesClassNames = Arrays.asList(TStringClassName, TStringBuilderClassName, TReflectionProxies);
+    private static final List<String> TStringTypesClassNames = Arrays.asList(
+            TStringClassName,
+            TStringBuilderClassName,
+            TReflectionProxies,
+            TStringBufferClassName
+    );
 
 
     private static void instrumentClassStream(InputStream i, OutputStream o) throws IOException {
@@ -160,8 +184,7 @@ public class Main implements Callable<Void> {
     }
 
     private static boolean isJarEntryToCopy(String name) {
-        String[] toCopy = {TStringBuilderClassName, TStringClassName};
-        for (String e : toCopy) {
+        for (String e : TStringTypesClassNames) {
             if (e.equals(name)) return true;
         }
         return false;
@@ -184,7 +207,12 @@ public class Main implements Callable<Void> {
         return URLDecoder.decode(path, "UTF-8"); // Constant as the Enum requires JDK10 or above
     }
 
+    private static String toClassName(String classNameQn) {
+        return String.format("%s%s", classNameQn, classSuffix);
+    }
+
     public static void main(String[] args) {
         CommandLine.call(new Main(), args);
     }
+
 }

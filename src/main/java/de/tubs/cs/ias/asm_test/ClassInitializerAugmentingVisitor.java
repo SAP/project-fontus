@@ -26,7 +26,7 @@ public class ClassInitializerAugmentingVisitor extends MethodVisitor {
 
     @Override
     public void visitInsn(int opcode) {
-        if(opcode == Opcodes.RETURN) {
+        if (opcode == Opcodes.RETURN) {
             Utils.writeToStaticInitializer(this, this.owner, this.staticFinalFields);
         }
         super.visitInsn(opcode);

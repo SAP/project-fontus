@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 
 /**
  * A recording of the visitXXX calls for a given Method.
- *
+ * <p>
  * It can be replayed by calling replay with a MethodVisitor where the code should be moved to.
  */
 class MethodVisitRecording {
@@ -27,10 +27,11 @@ class MethodVisitRecording {
 
     /**
      * Replays the recording
+     *
      * @param mv The visitor onto which the recording shall be replayed
      */
     void replay(MethodVisitor mv) {
-        for(Consumer<MethodVisitor> c : this.recording) {
+        for (Consumer<MethodVisitor> c : this.recording) {
             c.accept(mv);
         }
     }

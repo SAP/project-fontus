@@ -5,7 +5,7 @@ import org.objectweb.asm.*;
 
 /**
  * A MethodVisitor that stores all visitXXX calls in a MethodVisitRecording instance.
- *
+ * <p>
  * It is important that processing of Annotations for the visited Method is <b>NOT</b> supported!
  */
 @SuppressWarnings("ReturnOfNull")
