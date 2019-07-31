@@ -20,7 +20,7 @@ public class Instrumenter {
         ClassWriter writer = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
         //ClassVisitor cca = new CheckClassAdapter(writer);
         ClassTaintingVisitor smr = new ClassTaintingVisitor(writer);
-        cr.accept(smr, ClassReader.EXPAND_FRAMES);
+        cr.accept(smr, ClassReader.SKIP_FRAMES);
         return writer.toByteArray();
     }
 
