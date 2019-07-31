@@ -5,13 +5,13 @@ steps:
 - name: unit_tests
   image: ubuntu:18.04
   commands:
-    - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y python3 openjdk-11-jdk-headless
+    - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y python3 openjdk-11-jdk-headless && rm -rf /var/lib/apt/lists/*
     - ./gradlew -s check
 
 - name: system_tests
   image: ubuntu:18.04
   commands:
-    - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y python3 openjdk-11-jdk-headless
+    - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y python3 openjdk-11-jdk-headless && rm -rf /var/lib/apt/lists/*
     - ./gradlew -s assemble
     - ./gradlew -s jar
     - ./gradlew -s check
