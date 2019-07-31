@@ -18118,3 +18118,4 @@ jdk/nio/zipfs/JarFileSystemProvider
 jdk/nio/zipfs/ZipUtils
 jdk/nio/zipfs/ZipFileSystemProvider
 jdk/nio/zipfs/ZipFileAttributes
+org/apache/maven/surefire/booter/ForkedBooter
