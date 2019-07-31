@@ -24,6 +24,7 @@ public class TaintAgent {
 
         Configuration config = Configuration.instance;
         JdkClassesLookupTable jdkClasses = JdkClassesLookupTable.instance;
+
         @Override
         public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                                 ProtectionDomain protectionDomain, byte[] classfileBuffer) {
