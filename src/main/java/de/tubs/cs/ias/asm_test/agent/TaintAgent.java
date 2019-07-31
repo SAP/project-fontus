@@ -1,9 +1,6 @@
 package de.tubs.cs.ias.asm_test.agent;
 
-import de.tubs.cs.ias.asm_test.ClassTaintingVisitor;
-import de.tubs.cs.ias.asm_test.Configuration;
-import de.tubs.cs.ias.asm_test.Constants;
-import de.tubs.cs.ias.asm_test.JdkClassesLookupTable;
+import de.tubs.cs.ias.asm_test.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.slf4j.Logger;
@@ -22,8 +19,13 @@ public class TaintAgent {
     static class TaintingTransformer implements ClassFileTransformer {
         private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-        Configuration config = Configuration.instance;
-        JdkClassesLookupTable jdkClasses = JdkClassesLookupTable.instance;
+        private Configuration config = Configuration.instance;
+        private JdkClassesLookupTable jdkClasses = JdkClassesLookupTable.instance;
+        private Instrumenter instrumenter;
+
+        TaintingTransformer() {
+            this.instrumenter = new Instrumenter();
+        }
 
         @Override
         public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
@@ -38,13 +40,7 @@ public class TaintAgent {
             }
 
             logger.info("Tainting class: {}", className);
-            ClassReader cr = new ClassReader(classfileBuffer);
-            ClassWriter writer = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
-            //ClassVisitor cca = new CheckClassAdapter(writer);
-            ClassTaintingVisitor smr = new ClassTaintingVisitor(writer);
-            cr.accept(smr, ClassReader.EXPAND_FRAMES);
-            return writer.toByteArray();
+            return this.instrumenter.instrumentClass(classfileBuffer);
         }
-
     }
 }
