@@ -213,7 +213,10 @@
     {
       "name": "Trying the Properties Parse Stuff failing in Maven",
       "source": "PropertiesLoaderTest.java"
+    },
+    {
+      "name": "StringIndexOutOfBoundsException Test",
+      "source": "StringIndexOutOfBoundsExceptionTest.java"
     }
-
   ]
 }
