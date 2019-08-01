@@ -38,6 +38,8 @@ public final class Constants {
      */
     static final String TStringBufferQN = TPackage + "IASStringBuffer";
 
+    static final String TStringUtilsQN = TPackage + "IASStringUtils";
+
     /**
      * Name of the toString method.
      */

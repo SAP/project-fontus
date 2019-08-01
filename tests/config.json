@@ -209,6 +209,10 @@
       "name": "Test from MockServlet regarding String Array Issues",
       "source": "ResourcePathsTest.java",
       "arguments": ["/etc"]
+    },
+    {
+      "name": "Trying the Properties Parse Stuff failing in Maven",
+      "source": "PropertiesLoaderTest.java"
     }
 
   ]
