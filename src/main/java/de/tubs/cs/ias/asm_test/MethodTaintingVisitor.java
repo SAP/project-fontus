@@ -322,18 +322,12 @@ class MethodTaintingVisitor extends MethodVisitor {
             return;
         }
 
-        // TODO: case when both find()s are true?
-        if (stringDescMatcher.find() && !skipInvoke) {
-            String newDescriptor = stringDescMatcher.replaceAll(Constants.TStringDesc);
-            logger.info("Rewriting invoke containing String [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
-            super.visitMethodInsn(opcode, owner, name, newDescriptor, isInterface);
-        } else if (stringBufferDescMatcher.find() && !skipInvoke) {
-            String newDescriptor = stringBufferDescMatcher.replaceAll(Constants.TStringBufferDesc);
-            logger.info("Rewriting invoke containing StringBuffer [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
-            super.visitMethodInsn(opcode, owner, name, newDescriptor, isInterface);
-        } else if (sbDescMatcher.find() && !skipInvoke) {
-            String newDescriptor = sbDescMatcher.replaceAll(Constants.TStringBuilderDesc);
-            logger.info("Rewriting invoke containing StringBuilder [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
+        // TODO: make pretty.
+        if ((stringDescMatcher.find() || sbDescMatcher.find() || stringBufferDescMatcher.find()) && !skipInvoke) {
+            String newDescriptor = descriptor.replaceAll(Constants.StringDesc, Constants.TStringDesc);
+            newDescriptor = newDescriptor.replaceAll(Constants.StringBufferDesc, Constants.TStringBufferDesc);
+            newDescriptor = newDescriptor.replaceAll(Constants.StringBuilderDesc, Constants.TStringBuilderDesc);
+            logger.info("Rewriting invoke containing String-like type [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
             super.visitMethodInsn(opcode, owner, name, newDescriptor, isInterface);
         } else {
             logger.info("Skipping invoke [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor);
