@@ -3,6 +3,9 @@ package de.tubs.cs.ias.asm_test;
 public final class IASStringUtils {
 
     public static IASString fromObject(Object obj) {
+        if(obj == null) {
+            return null;
+        }
         if(obj instanceof String) {
             return new IASString((String)obj);
         } else if(obj instanceof IASString) {
