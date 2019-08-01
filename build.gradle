@@ -65,6 +65,9 @@ jar {
             }
         }
     }
+    from {
+        configurations.compileClasspath.filter { it.exists() }.collect { it.isDirectory() ? it : zipTree(it) }
+    }
     dependsOn utilJar
 }
 
