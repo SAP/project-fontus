@@ -462,12 +462,12 @@ class MethodTaintingVisitor extends MethodVisitor {
         }
         logger.info("Visiting type [{}] instruction: {}", type, opcode);
         String newType = type;
-        if (type.contains(Constants.StringBufferQN)) {
+        boolean isArray = type.charAt(0) == '[';
+        if (type.equals(Constants.StringBufferQN) || (isArray && type.endsWith(Constants.StringBufferDesc))) {
             newType = STRING_BUFFER_QN_PATTERN.matcher(type).replaceAll(Matcher.quoteReplacement(Constants.TStringBufferQN));
-
-        } else if (type.contains(Constants.StringBuilderQN)) {
+        } else if (type.equals(Constants.StringBuilderQN) || (isArray && type.endsWith(Constants.StringBuilderDesc))) {
             newType = STRING_BUILDER_QN_PATTERN.matcher(type).replaceAll(Matcher.quoteReplacement(Constants.TStringBuilderQN));
-        } else if (type.contains(Constants.StringQN)) {
+        } else if (type.equals(Constants.StringQN)  || (isArray && type.endsWith(Constants.StringDesc))) {
             newType = STRING_QN_PATTERN.matcher(type).replaceAll(Matcher.quoteReplacement(Constants.TStringQN));
         }
         this.shouldRewriteCheckCast = false;
