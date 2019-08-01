@@ -178,6 +178,21 @@ class MethodTaintingVisitor extends MethodVisitor {
         super.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringQN, Constants.Init, Constants.TStringInitUntaintedDesc, false);
     }
 
+    private void stringBufferToTStringBuffer() {
+        super.visitTypeInsn(Opcodes.NEW, Constants.TStringBufferQN);
+        super.visitInsn(Opcodes.DUP);
+        super.visitInsn(Opcodes.DUP2_X1);
+        super.visitInsn(Opcodes.POP2);
+        super.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringBufferQN, Constants.Init, String.format("(%s)V", Constants.StringBufferDesc), false);
+    }
+
+    private void stringBuilderToTStringBuilder() {
+        super.visitTypeInsn(Opcodes.NEW, Constants.TStringBuilderQN);
+        super.visitInsn(Opcodes.DUP);
+        super.visitInsn(Opcodes.DUP2_X1);
+        super.visitInsn(Opcodes.POP2);
+        super.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringBuilderQN, Constants.Init, String.format("(%s)V", Constants.StringBuilderDesc), false);
+    }
     /**
      * If a taint-aware string is on the top of the stack, we can call this function to add a check to handle tainted strings.
      */
@@ -355,7 +370,13 @@ class MethodTaintingVisitor extends MethodVisitor {
         } else if (desc.hasStringArrayReturnType()) {
             logger.info("Converting returned String Array of {}.{}{}", owner, name, descriptor);
             super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "convertStringArray", String.format("(%s)%s", Constants.StringArrayDesc, Constants.TStringArrayDesc), false);
-        } else if(desc.getReturnType().equals(Constants.ObjectDesc)) {
+        } else if(desc.getReturnType().equals(Constants.StringBufferDesc)) {
+            logger.info("Converting returned StringBuffer of {}.{}{}", owner, name, descriptor);
+            this.stringBufferToTStringBuffer();
+        } else if(desc.getReturnType().equals(Constants.StringBuilderDesc)) {
+            logger.info("Converting returned StringBuilder of {}.{}{}", owner, name, descriptor);
+            this.stringBuilderToTStringBuilder();
+        }  else if(desc.getReturnType().equals(Constants.ObjectDesc)) {
             this.shouldRewriteCheckCast = true;
         }
     }

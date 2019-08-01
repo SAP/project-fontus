@@ -217,6 +217,10 @@
     {
       "name": "StringIndexOutOfBoundsException Test",
       "source": "StringIndexOutOfBoundsExceptionTest.java"
+    },
+    {
+      "name": "Standard Library method Returning a StringBuffer instance",
+      "source": "StringBufferReturnedFromStdLibTest.java"
     }
   ]
 }

@@ -41,6 +41,11 @@ public class IASStringBuffer
         this.buffer.append(seq);
     }
 
+    public IASStringBuffer(StringBuffer buffer) {
+        this.buffer = buffer; //TODO: do a deep copy? Can something mess us up as this is shared?
+        this.tainted = false;
+    }
+
 
     public synchronized int length() {
         return this.buffer.length();
