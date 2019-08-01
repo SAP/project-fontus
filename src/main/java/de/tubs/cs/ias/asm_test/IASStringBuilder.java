@@ -31,6 +31,10 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
         this.mergeTaint(str);
     }
 
+    public IASStringBuilder(StringBuilder sb) {
+        this.builder = sb; //TODO: shared instance okay?
+    }
+
     public IASStringBuilder(CharSequence seq) {
         this.builder = new StringBuilder(seq);
         this.tainted = false;
