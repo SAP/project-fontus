@@ -8,7 +8,7 @@ public final class IASStringUtils {
         } else if(obj instanceof IASString) {
             return (IASString) obj;
         } else {
-            throw new IllegalArgumentException(String.format("Obj is of type %s, but only String or TString are allowed!", obj.getClass().getCanonicalName()));
+            throw new IllegalArgumentException(String.format("Obj is of type %s, but only String or TString are allowed!", obj.getClass().descriptorString()));
         }
     }
 
