@@ -74,12 +74,19 @@ jar {
 
 publishing {
     publications {
-        maven(MavenPublication) {
+        main(MavenPublication) {
             groupId = 'de.tubs.cs.ias'
             artifactId = 'asm_test'
             version = '0.0.1-SNAPSHOT'
 
-	    from components.java
+            from components.java
+        }
+
+        util(MavenPublication) {
+            groupId 'de.tubs.cs.ias'
+            artifactId 'util'
+            version = '0.0.1-SNAPSHOT'
+            artifact utilJar
         }
     }
 }
