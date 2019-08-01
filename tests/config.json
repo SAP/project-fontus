@@ -221,6 +221,10 @@
     {
       "name": "Standard Library method Returning a StringBuffer instance",
       "source": "StringBufferReturnedFromStdLibTest.java"
+    },
+    {
+      "name": "Method taking several String-like types",
+      "source": "StringAndBufferParamTest.java"
     }
   ]
 }
