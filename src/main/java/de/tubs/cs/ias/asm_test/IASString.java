@@ -408,10 +408,11 @@ public class IASString implements CharSequence {
     }
 
     public static IASString valueOf(Object obj) {
-    if(obj instanceof IASString) {
-        return (IASString) obj;
-    }  else {
-        return new IASString(String.valueOf(obj));
+        if (obj instanceof IASString) {
+            return (IASString) obj;
+        } else {
+            return new IASString(String.valueOf(obj));
+        }
     }
 
     public static IASString valueOf(char data[]) {
