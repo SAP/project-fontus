@@ -52,6 +52,7 @@ class MethodTaintingVisitor extends MethodVisitor {
 
     MethodTaintingVisitor(int acc, String name, String methodDescriptor, MethodVisitor methodVisitor) {
         super(Opcodes.ASM7, methodVisitor);
+        logger.info("Instrumenting method: {}{}", name, methodDescriptor);
         this.used = Type.getArgumentsAndReturnSizes(methodDescriptor) >> 2;
         if ((acc & Opcodes.ACC_STATIC) != 0) this.used--; // no this
         this.name = name;
