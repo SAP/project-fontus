@@ -55,7 +55,7 @@ jar {
         manifest {
             if (!configurations.compile.isEmpty()) {
                 attributes(
-                        'Class-Path': configurations.compile.collect{it.toURI().toString()}.join(' '),
+                        // 'Class-Path': configurations.compile.collect{it.toURI().toString()}.join(' '),
                         'Main-Class': 'de.tubs.cs.ias.asm_test.Main',
                         'Agent-Class': 'de.tubs.cs.ias.asm_test.agent.TaintAgent',
                         'Can-Redefine-Classes': true,
