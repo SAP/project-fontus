@@ -8,12 +8,21 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
+import java.lang.instrument.UnmodifiableClassException;
 import java.lang.invoke.MethodHandles;
 import java.security.ProtectionDomain;
 
 public class TaintAgent {
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     public static void premain(String args, Instrumentation inst) {
         inst.addTransformer(new TaintAgent.TaintingTransformer());
+        Class[] clazzes = inst.getAllLoadedClasses();
+        try {
+            inst.retransformClasses(clazzes);
+        } catch(UnmodifiableClassException uce) {
+            logger.error("Can't transform unmodifiable class: ", uce);
+        }
     }
 
     static class TaintingTransformer implements ClassFileTransformer {
