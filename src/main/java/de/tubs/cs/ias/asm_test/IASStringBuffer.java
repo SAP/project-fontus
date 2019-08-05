@@ -113,6 +113,11 @@ public class IASStringBuffer
     }
 
     public synchronized IASStringBuffer append(IASString str) {
+        if(str == null) {
+            String s = null;
+            this.buffer.append(s);
+            return this;
+        }
         this.buffer.append(str.toIASString());
         this.tainted |= str.isTainted();
         return this;

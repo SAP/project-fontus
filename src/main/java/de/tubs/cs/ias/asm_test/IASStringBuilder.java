@@ -27,8 +27,12 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
     }
 
     public IASStringBuilder(IASString str) {
-        this.builder = new StringBuilder(str.getString());
-        this.mergeTaint(str);
+        if(str == null) {
+            this.builder = new StringBuilder(str);
+        } else {
+            this.builder = new StringBuilder(str.getString());
+            this.mergeTaint(str);
+        }
     }
 
     public IASStringBuilder(StringBuilder sb) {
@@ -46,6 +50,10 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
     }
 
     public IASStringBuilder append(IASString str) {
+        if(str == null) {
+            this.builder.append(str);
+            return this;
+        }
         this.builder.append(str.getString());
         this.mergeTaint(str);
         return this;
