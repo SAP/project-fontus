@@ -232,6 +232,10 @@
     {
       "name": "Lambda involving StringBuilder test",
       "source": "MapAppendLambdaTest.java"
+    },
+    {
+      "name": "Calling String.valueOf on a taint-aware String should NOT lose the taint",
+      "source": "ValueOfTest.java"
     }
   ]
 }
