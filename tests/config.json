@@ -18,8 +18,11 @@
     {
       "name": "Static Final Initializer Tests",
       "jar_file": "sit.jar"
+    },
+    {
+      "name": "Media Types Tests from Spring",
+      "jar_file": "media_types.jar"
     }
-
   ],
   "single_file_tests": [
     {
