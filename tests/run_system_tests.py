@@ -374,7 +374,18 @@ class TestRunner:
     def _instrument_jar(self, cwd, name):
         input_file = path.join(cwd, name)
         output_file = path.join(cwd, TMPDIR_OUTPUT_DIR_SUFFIX, name)
-        return self._instrument_application(cwd, input_file, output_file)
+        instrumenter_jar = format_jar_filename("asm_test", self._config.version)
+        arguments = [
+            "java",
+            "-classpath",
+            '{}:{}'.format(instrumenter_jar, input_file),
+            "de.tubs.cs.ias.asm_test.Main",
+            "-f",
+            input_file,
+            "-o",
+            output_file
+        ]
+        return run_command(cwd, arguments)
 
     def _run_instrumented_jar_internal(self, cwd, name, entry_point, additional_arguments, input_file):
         arguments = [
