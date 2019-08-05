@@ -17,10 +17,11 @@ public class TaintAgent {
 
     public static void premain(String args, Instrumentation inst) {
         inst.addTransformer(new TaintAgent.TaintingTransformer());
-        Class<?>[] clazzes = inst.getAllLoadedClasses();
-        for(Class<?> clazz : clazzes) {
+        Class[] clazzes = inst.getAllLoadedClasses();
+        for(Class clazz : clazzes) {
             if(!inst.isModifiableClass(clazz)) {
                 logger.info("{} is not modifiable, skipping!", clazz.getName());
+                continue;
             }
             try {
                 logger.info("Retransforming: {}", clazz.getName());
@@ -45,7 +46,7 @@ public class TaintAgent {
         @Override
         public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                                 ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-            if(jdkClasses.isJdkClass(className) || className.startsWith("jdk") || className.startsWith("java") || className.startsWith("ch/qos/logback")) {
+            if(jdkClasses.isJdkClass(className) || className.startsWith("jdk") || className.startsWith("java") || className.startsWith("ch/qos/logback") || className.startsWith("org/objectweb/asm/")) {
                 logger.info("Skipping JDK class: {}", className);
                 return classfileBuffer;
             }
