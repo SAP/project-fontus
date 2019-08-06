@@ -2,25 +2,14 @@ package de.tubs.cs.ias.asm_test;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Formatter;
 import java.util.Locale;
-import java.util.Objects;
-import java.util.Spliterator;
-import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 
 @SuppressWarnings("ALL")
 public class IASString implements CharSequence {
-    private static final Pattern CONCAT_PLACEHOLDER = Pattern.compile("\u0001");
     private String str;
     private boolean tainted;
 
@@ -466,43 +455,7 @@ public class IASString implements CharSequence {
     }
     */
 
-
-    public static IASString concat(String format, Object... args) {
-        String ret = format;
-        boolean taint = false;
-        for (int i = args.length - 1; i >= 0; i--) {
-            Object a = args[i];
-            if (a instanceof IASString) {
-                IASString strArg = (IASString) a;
-                taint |= strArg.tainted;
-            }
-            String arg = a == null ? "null" : a.toString();
-            ret = CONCAT_PLACEHOLDER.matcher(ret).replaceFirst(arg);
-        }
-        return new IASString(ret, taint);
-
-    }
-
     public String getString() {
         return this.str;
-    }
-
-    public static IASString[] convertStringArray(String[] arr) {
-        IASString[] ret = new IASString[arr.length];
-        for (int i = 0; i < arr.length; i++) {
-            String s = arr[i];
-            IASString ts = new IASString(s);
-            ret[i] = ts;
-        }
-        return ret;
-    }
-
-    public static String[] convertTaintAwareStringArray(IASString[] arr) {
-        String[] ret = new String[arr.length];
-        for (int i = 0; i < arr.length; i++) {
-            IASString s = arr[i];
-            ret[i] = s.getString();
-        }
-        return ret;
     }
 }

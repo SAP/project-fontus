@@ -361,7 +361,7 @@ class MethodTaintingVisitor extends MethodVisitor {
             this.stringToTString();
         } else if (desc.hasStringArrayReturnType()) {
             logger.info("Converting returned String Array of {}.{}{}", owner, name, descriptor);
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "convertStringArray", String.format("(%s)%s", Constants.StringArrayDesc, Constants.TStringArrayDesc), false);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "convertStringArray", String.format("(%s)%s", Constants.StringArrayDesc, Constants.TStringArrayDesc), false);
         } else if(desc.getReturnType().equals(Constants.StringBufferDesc)) {
             logger.info("Converting returned StringBuffer of {}.{}{}", owner, name, descriptor);
             this.stringBufferToTStringBuffer();
@@ -631,7 +631,7 @@ class MethodTaintingVisitor extends MethodVisitor {
         // Load the param array
         super.visitVarInsn(Opcodes.ALOAD, currRegister);
         // Call our concat method
-        super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "concat", Constants.ConcatDesc, false);
+        super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "concat", Constants.ConcatDesc, false);
     }
 
     /**
