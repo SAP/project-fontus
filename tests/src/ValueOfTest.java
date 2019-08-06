@@ -37,9 +37,8 @@ class ValueOfTest {
 
         ValueOfTest vot = new ValueOfTest();
 
-        // TODO: FIX
-        //String v0 = vot.getStringValue();
-        //System.out.println("v0 = " + v0);
+        String v0 = vot.getStringValue();
+        System.out.println("v0 = " + v0);
 
         vot.add("sup");
         String v1 = vot.getStringValue();
@@ -48,5 +47,12 @@ class ValueOfTest {
         vot.add("?");
         v1 = vot.getStringValue();
         System.out.println("v1 = " + v1);
+
+        List<String> vls = vot.getStringValues();
+        int i = 1;
+        for(String vl : vls) {
+            System.out.println("v" + i + " = " + vl);
+            i++;
+        }
     }
 }

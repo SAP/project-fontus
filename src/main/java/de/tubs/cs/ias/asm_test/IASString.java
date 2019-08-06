@@ -476,7 +476,7 @@ public class IASString implements CharSequence {
                 IASString strArg = (IASString) a;
                 taint |= strArg.tainted;
             }
-            String arg = a.toString();
+            String arg = a == null ? "null" : a.toString();
             ret = CONCAT_PLACEHOLDER.matcher(ret).replaceFirst(arg);
         }
         return new IASString(ret, taint);
