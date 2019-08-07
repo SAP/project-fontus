@@ -18,8 +18,11 @@
     {
       "name": "Static Final Initializer Tests",
       "jar_file": "sit.jar"
+    },
+    {
+      "name": "Media Types Tests from Spring",
+      "jar_file": "media_types.jar"
     }
-
   ],
   "single_file_tests": [
     {
@@ -225,6 +228,14 @@
     {
       "name": "Method taking several String-like types",
       "source": "StringAndBufferParamTest.java"
+    },
+    {
+      "name": "Lambda involving StringBuilder test",
+      "source": "MapAppendLambdaTest.java"
+    },
+    {
+      "name": "Calling String.valueOf on a taint-aware String should NOT lose the taint",
+      "source": "ValueOfTest.java"
     }
   ]
 }
