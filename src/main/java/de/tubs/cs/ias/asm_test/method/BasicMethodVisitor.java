@@ -12,11 +12,11 @@ public class BasicMethodVisitor extends MethodVisitor {
         this.parent = methodVisitor;
     }
 
-    public MethodVisitor getParentVisitor() {
+    public final MethodVisitor getParentVisitor() {
         return new ParentVisitor();
     }
 
-    public MethodVisitor getParent() {
+    public final MethodVisitor getParent() {
         return this.parent;
     }
 

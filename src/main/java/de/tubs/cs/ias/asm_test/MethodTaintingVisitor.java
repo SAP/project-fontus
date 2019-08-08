@@ -1,6 +1,8 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.classinstumentation.ClassInstrumentationStrategy;
 import de.tubs.cs.ias.asm_test.method.BasicMethodVisitor;
+import de.tubs.cs.ias.asm_test.methodinstrumentation.*;
 import org.objectweb.asm.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +49,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     private final Configuration configuration = Configuration.instance;
 
     private int used;
+    private final Collection<MethodInstrumentationStrategy> instrumentation = new ArrayList<>(4);
 
 
     private int usedAfterInjection;
@@ -68,6 +71,10 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         this.fillMethodsToRename();
         this.rewriteOwnerMethods();
         this.fillFieldTypes();
+        this.instrumentation.add(new StringMethodInstrumentationStrategy(this.getParentVisitor()));
+        this.instrumentation.add(new StringBuilderMethodInstrumentationStrategy(this.getParentVisitor()));
+        this.instrumentation.add(new StringBufferMethodInstrumentationStrategy(this.getParentVisitor()));
+        this.instrumentation.add(new DefaultMethodInstrumentationStrategy(this.getParentVisitor()));
     }
 
     @Override
@@ -209,17 +216,11 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     public void visitFieldInsn(final int opcode, final String owner, final String name, final String descriptor) {
         this.shouldRewriteCheckCast = false;
 
-        for (Tuple<Pattern, String> e : this.fieldTypes) {
-            Pattern pattern = e.x;
-            Matcher matcher = pattern.matcher(descriptor);
-            if (matcher.find()) {
-                String newDescriptor = matcher.replaceAll(e.y);
-                super.visitFieldInsn(opcode, owner, name, newDescriptor);
+        for(MethodInstrumentationStrategy s : this.instrumentation) {
+            if(s.instrumentFieldIns(opcode, owner, name, descriptor)) {
                 return;
             }
         }
-
-        super.visitFieldInsn(opcode, owner, name, descriptor);
     }
 
     /**
