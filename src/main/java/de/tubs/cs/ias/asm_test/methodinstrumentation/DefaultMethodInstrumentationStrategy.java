@@ -14,6 +14,11 @@ public class DefaultMethodInstrumentationStrategy implements MethodInstrumentati
     }
 
     @Override
+    public Descriptor rewriteDescriptor(Descriptor desc) {
+        return desc;
+    }
+
+    @Override
     public boolean instrumentFieldIns(int opcode, String owner, String name, String descriptor) {
         this.mv.visitFieldInsn(opcode, owner, name, descriptor);
         return true;

@@ -217,18 +217,18 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             this.handleJdkMethod(opcode, owner, name, descriptor, isInterface);
             return;
         }
-
-        // TODO: make pretty.
-        if ((stringDescMatcher.find() || sbDescMatcher.find() || stringBufferDescMatcher.find()) && !skipInvoke) {
-            String newDescriptor = descriptor.replaceAll(Constants.StringDesc, Constants.TStringDesc);
-            newDescriptor = newDescriptor.replaceAll(Constants.StringBufferDesc, Constants.TStringBufferDesc);
-            newDescriptor = newDescriptor.replaceAll(Constants.StringBuilderDesc, Constants.TStringBuilderDesc);
-            logger.info("Rewriting invoke containing String-like type [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
-            super.visitMethodInsn(opcode, owner, name, newDescriptor, isInterface);
-        } else {
-            logger.info("Skipping invoke [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor);
-            super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+        Descriptor desc = Descriptor.parseDescriptor(descriptor);
+        for(MethodInstrumentationStrategy s : this.instrumentation) {
+            desc = s.rewriteDescriptor(desc);
         }
+        if(!desc.toDescriptor().equals(descriptor)) {
+            logger.info("Rewriting invoke containing String-like type [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, desc.toDescriptor());
+            super.visitMethodInsn(opcode, owner, name, desc.toDescriptor(), isInterface);
+            return;
+         }
+
+        logger.info("Skipping invoke [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor);
+        super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
     }
 
     private void handleJdkMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {

@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test.methodinstrumentation;
 
 import de.tubs.cs.ias.asm_test.Constants;
+import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.Utils;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -21,6 +22,11 @@ public class StringMethodInstrumentationStrategy implements MethodInstrumentatio
         this.mv = mv;
         this.methodsToRename.put(Constants.ToString, "toIASString");
 
+    }
+
+    @Override
+    public Descriptor rewriteDescriptor(Descriptor desc) {
+        return desc.replaceType(Constants.StringDesc, Constants.TStringDesc);
     }
 
     @Override
