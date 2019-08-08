@@ -312,12 +312,10 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             Type type = (Type) value;
             int sort = type.getSort();
             if (sort == Type.OBJECT) {
-                if ("java.lang.String".equals(type.getClassName())) {
-                    super.visitLdcInsn(Type.getObjectType(Constants.TStringQN));
-                    return;
-                } else if ("java.lang.StringBuilder".equals(type.getClassName())) {
-                    super.visitLdcInsn(Type.getObjectType(Constants.TStringBuilderQN));
-                    return;
+                for(MethodInstrumentationStrategy s : this.instrumentation) {
+                    if(s.handleLdcType(type)) {
+                        return;
+                    }
                 }
                 //TODO: handle Arrays etc..
             }

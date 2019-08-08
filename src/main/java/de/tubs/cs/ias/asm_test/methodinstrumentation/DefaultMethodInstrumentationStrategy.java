@@ -2,6 +2,7 @@ package de.tubs.cs.ias.asm_test.methodinstrumentation;
 
 import de.tubs.cs.ias.asm_test.Descriptor;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
 
 public class DefaultMethodInstrumentationStrategy implements MethodInstrumentationStrategy {
     private final MethodVisitor mv;
@@ -37,6 +38,11 @@ public class DefaultMethodInstrumentationStrategy implements MethodInstrumentati
 
     @Override
     public boolean handleLdc(Object value) {
+        return false;
+    }
+
+    @Override
+    public boolean handleLdcType(Type type) {
         return false;
     }
 }

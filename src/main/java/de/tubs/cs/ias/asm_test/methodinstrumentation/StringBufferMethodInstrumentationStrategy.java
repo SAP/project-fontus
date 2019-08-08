@@ -6,6 +6,7 @@ import de.tubs.cs.ias.asm_test.MethodTaintingUtils;
 import de.tubs.cs.ias.asm_test.Utils;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +58,11 @@ public class StringBufferMethodInstrumentationStrategy implements MethodInstrume
 
     @Override
     public boolean handleLdc(Object value) {
+        return false;
+    }
+
+    @Override
+    public boolean handleLdcType(Type type) {
         return false;
     }
 

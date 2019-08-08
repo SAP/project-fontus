@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test.methodinstrumentation;
 
 import de.tubs.cs.ias.asm_test.Descriptor;
+import org.objectweb.asm.Type;
 
 public interface MethodInstrumentationStrategy {
 
@@ -18,4 +19,5 @@ public interface MethodInstrumentationStrategy {
     void instrumentReturnType(String owner, String name, Descriptor desc);
 
     boolean handleLdc(final Object value);
+    boolean handleLdcType(Type type);
 }
