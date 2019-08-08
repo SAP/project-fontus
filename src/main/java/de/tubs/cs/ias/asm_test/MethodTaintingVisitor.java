@@ -1,6 +1,5 @@
 package de.tubs.cs.ias.asm_test;
 
-import de.tubs.cs.ias.asm_test.classinstumentation.ClassInstrumentationStrategy;
 import de.tubs.cs.ias.asm_test.method.BasicMethodVisitor;
 import de.tubs.cs.ias.asm_test.methodinstrumentation.*;
 import org.objectweb.asm.*;
@@ -8,9 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Stack;
 
 
 class MethodTaintingVisitor extends BasicMethodVisitor {
@@ -193,27 +193,20 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             }
         }
 
-        boolean jdkMethod = JdkClassesLookupTable.instance.isJdkClass(owner);
-
-        // ToString wrapping
-        if (!jdkMethod && name.equals(Constants.ToString) && descriptor.equals(Constants.ToStringDesc)) {
-            super.visitMethodInsn(opcode, owner, Constants.ToStringInstrumented, Constants.ToStringInstrumentedDesc, isInterface);
-            return;
-        }
-
-        // Don't rewrite IASString/IASStringBuilder functions
-        boolean skipInvoke = jdkMethod || owner.contains(Constants.TStringQN) || owner.contains(Constants.TStringBuilderQN);
-
-        Matcher sbDescMatcher = Constants.strBuilderPattern.matcher(descriptor);
-        Matcher stringDescMatcher = Constants.strPattern.matcher(descriptor);
-        Matcher stringBufferDescMatcher = Constants.strBufferPattern.matcher(descriptor);
-
         // JDK methods need special handling.
         // If there isn't a proxy defined, we will just convert taint-aware Strings to regular ones before calling the function and vice versa for the return value.
+        boolean jdkMethod = JdkClassesLookupTable.instance.isJdkClass(owner);
         if (jdkMethod) {
             this.handleJdkMethod(opcode, owner, name, descriptor, isInterface);
             return;
         }
+
+        // ToString wrapping
+        if (name.equals(Constants.ToString) && descriptor.equals(Constants.ToStringDesc)) {
+            super.visitMethodInsn(opcode, owner, Constants.ToStringInstrumented, Constants.ToStringInstrumentedDesc, isInterface);
+            return;
+        }
+
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
         for(MethodInstrumentationStrategy s : this.instrumentation) {
             desc = s.rewriteDescriptor(desc);
@@ -319,10 +312,8 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
                 }
                 //TODO: handle Arrays etc..
             }
-            super.visitLdcInsn(value);
-        } else {
-            super.visitLdcInsn(value);
-        }
+         }
+        super.visitLdcInsn(value);
     }
 
 
