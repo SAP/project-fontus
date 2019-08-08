@@ -74,4 +74,9 @@ public class StringBuilderMethodInstrumentationStrategy implements MethodInstrum
             MethodTaintingUtils.stringBuilderToTStringBuilder(this.mv);
         }
     }
+
+    @Override
+    public boolean handleLdc(Object value) {
+        return false;
+    }
 }

@@ -55,6 +55,10 @@ public class StringBufferMethodInstrumentationStrategy implements MethodInstrume
         }
     }
 
+    @Override
+    public boolean handleLdc(Object value) {
+        return false;
+    }
 
 
     @Override

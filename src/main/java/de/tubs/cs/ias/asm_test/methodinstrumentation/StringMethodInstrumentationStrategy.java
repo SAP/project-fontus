@@ -78,4 +78,14 @@ public class StringMethodInstrumentationStrategy implements MethodInstrumentatio
             this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "convertStringArray", String.format("(%s)%s", Constants.StringArrayDesc, Constants.TStringArrayDesc), false);
        }
     }
+
+    @Override
+    public boolean handleLdc(Object value) {
+        // When loading a constant, make a taint-aware string out of a string constant.
+        if (value instanceof String) {
+            MethodTaintingUtils.handleLdcString(this.mv, value);
+            return true;
+        }
+        return false;
+    }
 }

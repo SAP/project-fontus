@@ -16,4 +16,6 @@ public interface MethodInstrumentationStrategy {
                                final boolean isInterface);
 
     void instrumentReturnType(String owner, String name, Descriptor desc);
+
+    boolean handleLdc(final Object value);
 }

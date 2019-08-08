@@ -170,7 +170,7 @@ public class MethodTaintingUtils {
      *
      * @param value The String value to load from the constant pool
      */
-    static void handleLdcString(MethodVisitor mv, Object value) {
+    public static void handleLdcString(MethodVisitor mv, Object value) {
         logger.info("Rewriting String LDC to IASString LDC instruction");
         mv.visitTypeInsn(Opcodes.NEW, Constants.TStringQN);
         mv.visitInsn(Opcodes.DUP);

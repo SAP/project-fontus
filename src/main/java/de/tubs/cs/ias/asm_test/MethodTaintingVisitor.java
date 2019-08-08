@@ -302,10 +302,13 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     public void visitLdcInsn(final Object value) {
         this.shouldRewriteCheckCast = false;
 
-        // When loading a constant, make a taint-aware string out of a string constant.
-        if (value instanceof String) {
-            MethodTaintingUtils.handleLdcString(this.getParentVisitor(), value);
-        } else if (value instanceof Type) {
+        for(MethodInstrumentationStrategy s : this.instrumentation) {
+            if(s.handleLdc(value)) {
+                return;
+            }
+        }
+
+         if (value instanceof Type) {
             Type type = (Type) value;
             int sort = type.getSort();
             if (sort == Type.OBJECT) {

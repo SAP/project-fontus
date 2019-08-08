@@ -9,10 +9,6 @@ public class DefaultMethodInstrumentationStrategy implements MethodInstrumentati
         this.mv = mv;
     }
 
-    //@Override
-    public void instrumentReturnType(Descriptor desc) {
-    }
-
     @Override
     public Descriptor rewriteDescriptor(Descriptor desc) {
         return desc;
@@ -37,5 +33,10 @@ public class DefaultMethodInstrumentationStrategy implements MethodInstrumentati
     @Override
     public void instrumentReturnType(String owner, String name, Descriptor desc) {
 
+    }
+
+    @Override
+    public boolean handleLdc(Object value) {
+        return false;
     }
 }
