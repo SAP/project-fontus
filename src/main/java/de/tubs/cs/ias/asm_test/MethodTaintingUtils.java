@@ -15,52 +15,6 @@ public class MethodTaintingUtils {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
-     * Converts a String that's top of the stack to an taint-aware String
-     * Precondition: String instance that's on top of the Stack!!
-     */
-    public static void stringToTString(MethodVisitor mv) {
-        /*
-        Operand stack:
-        +-------+ new  +----------+ dup  +----------+ dup2_x1  +----------+  pop2  +----------+ ispecial  +----------+
-        |String +----->+IASString +----->+IASString +--------->+IASString +------->+String    +---------->+IASString |
-        +-------+      +----------+      +----------+          +----------+        +----------+ init      +----------+
-                       +----------+      +----------+          +----------+        +----------+
-                       |String    |      |IASString |          |IASString |        |IASString |
-                       +----------+      +----------+          +----------+        +----------+
-                                         +----------+          +----------+        +----------+
-                                         |String    |          |String    |        |IASString |
-                                         +----------+          +----------+        +----------+
-                                                               +----------+
-                                                               |IASString |
-                                                               +----------+
-                                                               +----------+
-                                                               |IASString |
-                                                               +----------+
-        */
-        mv.visitTypeInsn(Opcodes.NEW, Constants.TStringQN);
-        mv.visitInsn(Opcodes.DUP);
-        mv.visitInsn(Opcodes.DUP2_X1);
-        mv.visitInsn(Opcodes.POP2);
-        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringQN, Constants.Init, Constants.TStringInitUntaintedDesc, false);
-    }
-
-    public static void stringBufferToTStringBuffer(MethodVisitor mv) {
-        mv.visitTypeInsn(Opcodes.NEW, Constants.TStringBufferQN);
-        mv.visitInsn(Opcodes.DUP);
-        mv.visitInsn(Opcodes.DUP2_X1);
-        mv.visitInsn(Opcodes.POP2);
-        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringBufferQN, Constants.Init, String.format("(%s)V", Constants.StringBufferDesc), false);
-    }
-
-    public static void stringBuilderToTStringBuilder(MethodVisitor mv) {
-        mv.visitTypeInsn(Opcodes.NEW, Constants.TStringBuilderQN);
-        mv.visitInsn(Opcodes.DUP);
-        mv.visitInsn(Opcodes.DUP2_X1);
-        mv.visitInsn(Opcodes.POP2);
-        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringBuilderQN, Constants.Init, String.format("(%s)V", Constants.StringBuilderDesc), false);
-    }
-
-    /**
      * If a taint-aware string is on the top of the stack, we can call this function to add a check to handle tainted strings.
      */
     static void callCheckTaint(MethodVisitor mv) {
@@ -148,33 +102,5 @@ public class MethodTaintingUtils {
         }
         String desc = Utils.rewriteDescriptor(descriptor);
         mv.visitInvokeDynamicInsn(name, desc, bootstrapMethodHandle, bsArgs);
-    }
-
-    /**
-     * Does potential String -> TString transformations for a single parameter JDK function
-     *
-     * @param desc The method's descriptor.
-     */
-    static void handleSingleParameterJdkMethod(MethodVisitor mv, Descriptor desc) {
-        if(!desc.hasStringLikeParameters()) return;
-
-        String param = desc.getParameterStack().pop();
-        if ((Constants.StringDesc).equals(param)) {
-            logger.info("Converting taint-aware String to String in single param method invocation");
-            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
-        }
-    }
-
-    /**
-     * One can load String constants directly from the constant pool via the LDC instruction.
-     *
-     * @param value The String value to load from the constant pool
-     */
-    public static void handleLdcString(MethodVisitor mv, Object value) {
-        logger.info("Rewriting String LDC to IASString LDC instruction");
-        mv.visitTypeInsn(Opcodes.NEW, Constants.TStringQN);
-        mv.visitInsn(Opcodes.DUP);
-        mv.visitLdcInsn(value);
-        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringQN, Constants.Init, Constants.TStringInitUntaintedDesc, false);
     }
 }

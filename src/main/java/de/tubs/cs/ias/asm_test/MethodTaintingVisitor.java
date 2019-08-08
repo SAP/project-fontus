@@ -234,7 +234,10 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             case 0:
                 break;
             case 1:
-                MethodTaintingUtils.handleSingleParameterJdkMethod(this.getParentVisitor(), desc);
+                String param = desc.getParameterStack().peek();
+                for(MethodInstrumentationStrategy s : this.instrumentation) {
+                    s.insertJdkMethodParameterConversion(param);
+                }
                 break;
             default:
                 this.handleMultiParameterJdkMethod(descriptor, desc);

@@ -2,7 +2,6 @@ package de.tubs.cs.ias.asm_test.methodinstrumentation;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
-import de.tubs.cs.ias.asm_test.MethodTaintingUtils;
 import de.tubs.cs.ias.asm_test.Utils;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -24,6 +23,14 @@ public class StringBufferMethodInstrumentationStrategy implements MethodInstrume
     public StringBufferMethodInstrumentationStrategy(MethodVisitor mv) {
         this.mv = mv;
         this.methodsToRename.put(Constants.ToString, "toIASString");
+    }
+
+    private void stringBufferToTStringBuffer() {
+        this.mv.visitTypeInsn(Opcodes.NEW, Constants.TStringBufferQN);
+        this.mv.visitInsn(Opcodes.DUP);
+        this.mv.visitInsn(Opcodes.DUP2_X1);
+        this.mv.visitInsn(Opcodes.POP2);
+        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringBufferQN, Constants.Init, String.format("(%s)V", Constants.StringBufferDesc), false);
     }
 
     @Override
@@ -54,7 +61,7 @@ public class StringBufferMethodInstrumentationStrategy implements MethodInstrume
     public void instrumentReturnType(String owner, String name, Descriptor desc) {
         if(desc.getReturnType().equals(Constants.StringBufferDesc)) {
             logger.info("Converting returned StringBuffer of {}.{}{}", owner, name, desc.toDescriptor());
-            MethodTaintingUtils.stringBufferToTStringBuffer(this.mv);
+            this.stringBufferToTStringBuffer();
         }
     }
 

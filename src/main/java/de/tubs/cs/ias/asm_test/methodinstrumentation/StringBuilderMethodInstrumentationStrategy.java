@@ -2,7 +2,6 @@ package de.tubs.cs.ias.asm_test.methodinstrumentation;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
-import de.tubs.cs.ias.asm_test.MethodTaintingUtils;
 import de.tubs.cs.ias.asm_test.Utils;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -23,6 +22,14 @@ public class StringBuilderMethodInstrumentationStrategy implements MethodInstrum
     public StringBuilderMethodInstrumentationStrategy(MethodVisitor mv) {
         this.mv = mv;
         this.methodsToRename.put(Constants.ToString, "toIASString");
+    }
+
+    private void stringBuilderToTStringBuilder() {
+        this.mv.visitTypeInsn(Opcodes.NEW, Constants.TStringBuilderQN);
+        this.mv.visitInsn(Opcodes.DUP);
+        this.mv.visitInsn(Opcodes.DUP2_X1);
+        this.mv.visitInsn(Opcodes.POP2);
+        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringBuilderQN, Constants.Init, String.format("(%s)V", Constants.StringBuilderDesc), false);
     }
 
     @Override
@@ -73,7 +80,7 @@ public class StringBuilderMethodInstrumentationStrategy implements MethodInstrum
     public void instrumentReturnType(String owner, String name, Descriptor desc) {
         if(desc.getReturnType().equals(Constants.StringBuilderDesc)) {
             logger.info("Converting returned StringBuilder of {}.{}{}", owner, name, desc.toDescriptor());
-            MethodTaintingUtils.stringBuilderToTStringBuilder(this.mv);
+            this.stringBuilderToTStringBuilder();
         }
     }
 
