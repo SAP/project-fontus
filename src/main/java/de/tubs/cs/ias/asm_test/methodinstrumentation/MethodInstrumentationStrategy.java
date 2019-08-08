@@ -20,4 +20,5 @@ public interface MethodInstrumentationStrategy {
 
     boolean handleLdc(final Object value);
     boolean handleLdcType(Type type);
+    String rewriteTypeIns(String type);
 }

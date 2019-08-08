@@ -13,11 +13,13 @@ import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class StringBufferMethodInstrumentationStrategy implements MethodInstrumentationStrategy {
     private final MethodVisitor mv;
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final HashMap<String, String> methodsToRename = new HashMap<>(1);
+    private static final Pattern STRING_BUFFER_QN_PATTERN = Pattern.compile(Constants.StringBufferQN, Pattern.LITERAL);
 
     public StringBufferMethodInstrumentationStrategy(MethodVisitor mv) {
         this.mv = mv;
@@ -64,6 +66,15 @@ public class StringBufferMethodInstrumentationStrategy implements MethodInstrume
     @Override
     public boolean handleLdcType(Type type) {
         return false;
+    }
+
+    @Override
+    public String rewriteTypeIns(String type) {
+        boolean isArray = type.startsWith("[");
+        if (type.equals(Constants.StringBufferQN) || (isArray && type.endsWith(Constants.StringBufferDesc))) {
+            return STRING_BUFFER_QN_PATTERN.matcher(type).replaceAll(Matcher.quoteReplacement(Constants.TStringBufferQN));
+        }
+        return type;
     }
 
 

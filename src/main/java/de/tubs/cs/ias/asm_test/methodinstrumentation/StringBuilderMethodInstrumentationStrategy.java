@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class StringBuilderMethodInstrumentationStrategy implements MethodInstrumentationStrategy {
     private final MethodVisitor mv;
@@ -88,5 +89,15 @@ public class StringBuilderMethodInstrumentationStrategy implements MethodInstrum
             return true;
         }
         return false;
+    }
+    private static final Pattern STRING_BUILDER_QN_PATTERN = Pattern.compile(Constants.StringBuilderQN, Pattern.LITERAL);
+
+    @Override
+    public String rewriteTypeIns(String type) {
+        boolean isArray = type.startsWith("[");
+        if (type.equals(Constants.StringBuilderQN) || (isArray && type.endsWith(Constants.StringBuilderDesc))) {
+            return STRING_BUILDER_QN_PATTERN.matcher(type).replaceAll(Matcher.quoteReplacement(Constants.TStringBuilderQN));
+        }
+       return type;
     }
 }

@@ -45,4 +45,9 @@ public class DefaultMethodInstrumentationStrategy implements MethodInstrumentati
     public boolean handleLdcType(Type type) {
         return false;
     }
+
+    @Override
+    public String rewriteTypeIns(String type) {
+        return type;
+    }
 }

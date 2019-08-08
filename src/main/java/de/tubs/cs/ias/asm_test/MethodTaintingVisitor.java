@@ -15,9 +15,6 @@ import java.util.regex.Pattern;
 
 class MethodTaintingVisitor extends BasicMethodVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final Pattern STRING_BUILDER_QN_PATTERN = Pattern.compile(Constants.StringBuilderQN, Pattern.LITERAL);
-    private static final Pattern STRING_QN_PATTERN = Pattern.compile(Constants.StringQN, Pattern.LITERAL);
-    private static final Pattern STRING_BUFFER_QN_PATTERN = Pattern.compile(Constants.StringBufferQN, Pattern.LITERAL);
 
     private boolean shouldRewriteCheckCast = false;
     private final String name;
@@ -339,13 +336,8 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         }
         logger.info("Visiting type [{}] instruction: {}", type, opcode);
         String newType = type;
-        boolean isArray = type.charAt(0) == '[';
-        if (type.equals(Constants.StringBufferQN) || (isArray && type.endsWith(Constants.StringBufferDesc))) {
-            newType = STRING_BUFFER_QN_PATTERN.matcher(type).replaceAll(Matcher.quoteReplacement(Constants.TStringBufferQN));
-        } else if (type.equals(Constants.StringBuilderQN) || (isArray && type.endsWith(Constants.StringBuilderDesc))) {
-            newType = STRING_BUILDER_QN_PATTERN.matcher(type).replaceAll(Matcher.quoteReplacement(Constants.TStringBuilderQN));
-        } else if (type.equals(Constants.StringQN)  || (isArray && type.endsWith(Constants.StringDesc))) {
-            newType = STRING_QN_PATTERN.matcher(type).replaceAll(Matcher.quoteReplacement(Constants.TStringQN));
+        for(MethodInstrumentationStrategy s : this.instrumentation) {
+            newType = s.rewriteTypeIns(newType);
         }
         this.shouldRewriteCheckCast = false;
         super.visitTypeInsn(opcode, newType);
