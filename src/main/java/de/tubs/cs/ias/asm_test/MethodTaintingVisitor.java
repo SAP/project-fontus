@@ -149,21 +149,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
 
     }
 
-    private void stringBufferToTStringBuffer() {
-        super.visitTypeInsn(Opcodes.NEW, Constants.TStringBufferQN);
-        super.visitInsn(Opcodes.DUP);
-        super.visitInsn(Opcodes.DUP2_X1);
-        super.visitInsn(Opcodes.POP2);
-        super.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringBufferQN, Constants.Init, String.format("(%s)V", Constants.StringBufferDesc), false);
-    }
 
-    private void stringBuilderToTStringBuilder() {
-        super.visitTypeInsn(Opcodes.NEW, Constants.TStringBuilderQN);
-        super.visitInsn(Opcodes.DUP);
-        super.visitInsn(Opcodes.DUP2_X1);
-        super.visitInsn(Opcodes.POP2);
-        super.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringBuilderQN, Constants.Init, String.format("(%s)V", Constants.StringBuilderDesc), false);
-    }
 
     @Override
     public void visitInsn(int opcode) {
@@ -299,13 +285,6 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         }
     }
 
-    private static String rewriteDescriptor(String desc) {
-        String newDescriptor = desc.replaceAll(Constants.StringDesc, Constants.TStringDesc);
-        newDescriptor = newDescriptor.replaceAll(Constants.StringBufferDesc, Constants.TStringBufferDesc);
-        newDescriptor = newDescriptor.replaceAll(Constants.StringBuilderDesc, Constants.TStringBuilderDesc);
-        return newDescriptor;
-    }
-
     private void handleJdkMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
         switch (desc.parameterCount()) {
@@ -328,10 +307,10 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "convertStringArray", String.format("(%s)%s", Constants.StringArrayDesc, Constants.TStringArrayDesc), false);
         } else if(desc.getReturnType().equals(Constants.StringBufferDesc)) {
             logger.info("Converting returned StringBuffer of {}.{}{}", owner, name, descriptor);
-            this.stringBufferToTStringBuffer();
+            MethodTaintingUtils.stringBufferToTStringBuffer(this.getParentVisitor());
         } else if(desc.getReturnType().equals(Constants.StringBuilderDesc)) {
             logger.info("Converting returned StringBuilder of {}.{}{}", owner, name, descriptor);
-            this.stringBuilderToTStringBuilder();
+            MethodTaintingUtils.stringBuilderToTStringBuilder(this.getParentVisitor());
         }  else if(desc.getReturnType().equals(Constants.ObjectDesc)) {
             this.shouldRewriteCheckCast = true;
         }

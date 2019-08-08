@@ -44,6 +44,21 @@ class MethodTaintingUtils {
         mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringQN, Constants.Init, Constants.TStringInitUntaintedDesc, false);
     }
 
+    static void stringBufferToTStringBuffer(MethodVisitor mv) {
+        mv.visitTypeInsn(Opcodes.NEW, Constants.TStringBufferQN);
+        mv.visitInsn(Opcodes.DUP);
+        mv.visitInsn(Opcodes.DUP2_X1);
+        mv.visitInsn(Opcodes.POP2);
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringBufferQN, Constants.Init, String.format("(%s)V", Constants.StringBufferDesc), false);
+    }
+
+    static void stringBuilderToTStringBuilder(MethodVisitor mv) {
+        mv.visitTypeInsn(Opcodes.NEW, Constants.TStringBuilderQN);
+        mv.visitInsn(Opcodes.DUP);
+        mv.visitInsn(Opcodes.DUP2_X1);
+        mv.visitInsn(Opcodes.POP2);
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringBuilderQN, Constants.Init, String.format("(%s)V", Constants.StringBuilderDesc), false);
+    }
 
     /**
      * If a taint-aware string is on the top of the stack, we can call this function to add a check to handle tainted strings.

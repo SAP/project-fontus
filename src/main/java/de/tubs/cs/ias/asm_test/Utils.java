@@ -136,11 +136,9 @@ final class Utils {
     }
 
     static String rewriteDescriptor(String desc) {
-        Matcher stringDescMatcher = Constants.strPattern.matcher(desc);
-        String newDescriptor = desc;
-        if (stringDescMatcher.find()) {
-            newDescriptor = stringDescMatcher.replaceAll(Constants.TStringDesc);
-        }
+        String newDescriptor = desc.replaceAll(Constants.StringDesc, Constants.TStringDesc);
+        newDescriptor = newDescriptor.replaceAll(Constants.StringBufferDesc, Constants.TStringBufferDesc);
+        newDescriptor = newDescriptor.replaceAll(Constants.StringBuilderDesc, Constants.TStringBuilderDesc);
         return newDescriptor;
     }
 }
