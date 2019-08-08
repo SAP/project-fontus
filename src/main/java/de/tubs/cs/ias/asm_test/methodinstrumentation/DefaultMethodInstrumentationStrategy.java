@@ -19,8 +19,13 @@ public class DefaultMethodInstrumentationStrategy implements MethodInstrumentati
         return true;
     }
 
-    //@Override
+    @Override
     public void insertJdkMethodParameterConversion(String parameter) {
 
+    }
+
+    @Override
+    public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+        return false;
     }
 }

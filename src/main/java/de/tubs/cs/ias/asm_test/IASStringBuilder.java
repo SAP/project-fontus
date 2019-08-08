@@ -248,6 +248,10 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
         return this.builder.codePoints();
     }
 
+    public StringBuilder getBuilder() {
+        return builder;
+    }
+
     /* @Override
     public int compareTo(IASStringBuilder o) {
         return this.builder.compareTo(o.builder);

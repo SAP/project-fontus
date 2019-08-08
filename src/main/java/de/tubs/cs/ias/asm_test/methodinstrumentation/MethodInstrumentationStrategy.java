@@ -7,5 +7,11 @@ public interface MethodInstrumentationStrategy {
 
     boolean instrumentFieldIns(final int opcode, final String owner, final String name, final String descriptor);
 
-    //void insertJdkMethodParameterConversion(String parameter);
+    void insertJdkMethodParameterConversion(String parameter);
+
+    boolean rewriteOwnerMethod(final int opcode,
+                               final String owner,
+                               final String name,
+                               final String descriptor,
+                               final boolean isInterface);
 }

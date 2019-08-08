@@ -342,4 +342,8 @@ public class IASStringBuffer
     public synchronized String toString() {
         return this.buffer.toString();
     }
+
+    public StringBuffer getBuffer() {
+        return this.buffer;
+    }
 }

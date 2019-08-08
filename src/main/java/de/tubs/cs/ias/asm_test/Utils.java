@@ -8,7 +8,7 @@ import org.objectweb.asm.Type;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-final class Utils {
+public final class Utils {
 
     private static final Pattern STRING_QN_MATCHER = Pattern.compile(Constants.StringQN, Pattern.LITERAL);
     private static final Pattern STRING_BUILDER_QN_MATCHER = Pattern.compile(Constants.StringBuilderQN, Pattern.LITERAL);
@@ -16,7 +16,7 @@ final class Utils {
     private Utils() {
     }
 
-    static String opcodeToString(int opcode) {
+    public static String opcodeToString(int opcode) {
         switch (opcode) {
             case Opcodes.INVOKEVIRTUAL:
                 return "v";
