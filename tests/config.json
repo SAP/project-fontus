@@ -18,8 +18,11 @@
     {
       "name": "Static Final Initializer Tests",
       "jar_file": "sit.jar"
+    },
+    {
+      "name": "Media Types Tests from Spring",
+      "jar_file": "media_types.jar"
     }
-
   ],
   "single_file_tests": [
     {
@@ -209,7 +212,30 @@
       "name": "Test from MockServlet regarding String Array Issues",
       "source": "ResourcePathsTest.java",
       "arguments": ["/etc"]
+    },
+    {
+      "name": "Trying the Properties Parse Stuff failing in Maven",
+      "source": "PropertiesLoaderTest.java"
+    },
+    {
+      "name": "StringIndexOutOfBoundsException Test",
+      "source": "StringIndexOutOfBoundsExceptionTest.java"
+    },
+    {
+      "name": "Standard Library method Returning a StringBuffer instance",
+      "source": "StringBufferReturnedFromStdLibTest.java"
+    },
+    {
+      "name": "Method taking several String-like types",
+      "source": "StringAndBufferParamTest.java"
+    },
+    {
+      "name": "Lambda involving StringBuilder test",
+      "source": "MapAppendLambdaTest.java"
+    },
+    {
+      "name": "Calling String.valueOf on a taint-aware String should NOT lose the taint",
+      "source": "ValueOfTest.java"
     }
-
   ]
 }

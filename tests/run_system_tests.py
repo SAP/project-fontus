@@ -22,13 +22,15 @@ CONFIG_FILE = path.join(TESTS_DIR, "config.json")
 TMPDIR_OUTPUT_DIR_SUFFIX = "instrumented"
 JAR_BASE_NAMES = ["asm_test", "util"]
 
-def check_rv(func):
-    def wrapper_check_rv(*args, **kwargs):
-        rv = func(*args, **kwargs)
-        if rv.return_value != 0:
-            pprint.pprint(rv)
-        return rv
-    return wrapper_check_rv
+
+def check_return_value(func):
+    def wrapper_check_return_value(*args, **kwargs):
+        ret_val = func(*args, **kwargs)
+        if ret_val.return_value != 0:
+            pprint.pprint(ret_val)
+        return ret_val
+    return wrapper_check_return_value
+
 
 def is_existing_file(file_path):
     if not file_path:
@@ -51,7 +53,7 @@ def copy_source_file(target_dir, source):
     copy_file(TESTS_SOURCE_DIR, target_dir, source)
 
 
-@check_rv
+@check_return_value
 def run_command(cwd, arguments, input_file=None):
     exec_result = subprocess.run(
         arguments,
@@ -99,6 +101,7 @@ def build_jars():
         cwd=JARS_BASE_PATH
     )
     return build_result.returncode == 0
+
 
 class ExecutionResult:
     def __init__(self, rv, stdout, stderr):
@@ -289,7 +292,6 @@ class Configuration:
                 'jar_test_cases={self._jar_test_cases!r})').format(self=self)
 
 
-
 def parse_config(config_path):
     if not is_existing_file(config_path):
         print('Can\'t find config file')
@@ -364,8 +366,8 @@ class TestRunner:
 
     def _instrument_class_file(self, cwd, name):
         classes = Path(cwd).glob('{}*.class'.format(name))
-        for cl in classes:
-            class_name = cl.name
+        for clazz in classes:
+            class_name = clazz.name
             print('\tInstrumenting: {}'.format(class_name))
             input_file = path.join(cwd, class_name)
             output_file = path.join(cwd, TMPDIR_OUTPUT_DIR_SUFFIX, class_name)
@@ -374,7 +376,18 @@ class TestRunner:
     def _instrument_jar(self, cwd, name):
         input_file = path.join(cwd, name)
         output_file = path.join(cwd, TMPDIR_OUTPUT_DIR_SUFFIX, name)
-        return self._instrument_application(cwd, input_file, output_file)
+        instrumenter_jar = format_jar_filename("asm_test", self._config.version)
+        arguments = [
+            "java",
+            "-classpath",
+            '{}:{}'.format(instrumenter_jar, input_file),
+            "de.tubs.cs.ias.asm_test.Main",
+            "-f",
+            input_file,
+            "-o",
+            output_file
+        ]
+        return run_command(cwd, arguments)
 
     def _run_instrumented_jar_internal(self, cwd, name, entry_point, additional_arguments, input_file):
         arguments = [

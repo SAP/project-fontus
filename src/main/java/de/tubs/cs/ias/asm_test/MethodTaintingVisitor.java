@@ -1,10 +1,7 @@
 package de.tubs.cs.ias.asm_test;
 
 import de.tubs.cs.ias.asm_test.method.BasicMethodVisitor;
-import org.objectweb.asm.Handle;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import org.objectweb.asm.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +17,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     private static final Pattern STRING_QN_PATTERN = Pattern.compile(Constants.StringQN, Pattern.LITERAL);
     private static final Pattern STRING_BUFFER_QN_PATTERN = Pattern.compile(Constants.StringBufferQN, Pattern.LITERAL);
 
+    private boolean shouldRewriteCheckCast = false;
     private final String name;
     private final String methodDescriptor;
     /**
@@ -49,6 +47,8 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     private final Configuration configuration = Configuration.instance;
 
     private int used;
+
+
     private int usedAfterInjection;
 
     MethodTaintingVisitor(int acc, String name, String methodDescriptor, MethodVisitor methodVisitor) {
@@ -70,6 +70,12 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         this.fillFieldTypes();
     }
 
+    @Override
+    public void visitLocalVariable(String name, String descriptor, String signature, Label start, Label end, int index) {
+        this.shouldRewriteCheckCast = false;
+        super.visitLocalVariable(name, descriptor, signature, start, end, index);
+    }
+
     /**
      * See https://stackoverflow.com/questions/47674972/getting-the-number-of-local-variables-in-a-method
      * for keeping track of used locals..
@@ -78,6 +84,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     @Override
     public void visitFrame(
             int type, int numLocal, Object[] local, int numStack, Object[] stack) {
+        this.shouldRewriteCheckCast = false;
         if (type != Opcodes.F_NEW)
             throw new IllegalStateException("only expanded frames supported");
         int l = numLocal;
@@ -89,6 +96,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
 
     @Override
     public void visitVarInsn(int opcode, int var) {
+        this.shouldRewriteCheckCast = false;
         int newMax = var + Utils.storeOpcodeSize(opcode);
         if (newMax > this.used) this.used = newMax;
         super.visitVarInsn(opcode, var);
@@ -96,6 +104,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
 
     @Override
     public void visitMaxs(int maxStack, int maxLocals) {
+        this.shouldRewriteCheckCast = false;
         super.visitMaxs(maxStack, Math.max(this.used, this.usedAfterInjection));
     }
 
@@ -140,8 +149,25 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
 
     }
 
+    private void stringBufferToTStringBuffer() {
+        super.visitTypeInsn(Opcodes.NEW, Constants.TStringBufferQN);
+        super.visitInsn(Opcodes.DUP);
+        super.visitInsn(Opcodes.DUP2_X1);
+        super.visitInsn(Opcodes.POP2);
+        super.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringBufferQN, Constants.Init, String.format("(%s)V", Constants.StringBufferDesc), false);
+    }
+
+    private void stringBuilderToTStringBuilder() {
+        super.visitTypeInsn(Opcodes.NEW, Constants.TStringBuilderQN);
+        super.visitInsn(Opcodes.DUP);
+        super.visitInsn(Opcodes.DUP2_X1);
+        super.visitInsn(Opcodes.POP2);
+        super.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringBuilderQN, Constants.Init, String.format("(%s)V", Constants.StringBuilderDesc), false);
+    }
+
     @Override
     public void visitInsn(int opcode) {
+        this.shouldRewriteCheckCast = false;
         // If we are in a "toString" method, we have to insert a call to the taint-check before returning.
         if(opcode == Opcodes.ARETURN && Constants.ToStringDesc.equals(this.methodDescriptor) && Constants.ToString.equals(this.name)) {
             MethodTaintingUtils.callCheckTaint(this.getParentVisitor());
@@ -195,6 +221,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
      */
     @Override
     public void visitFieldInsn(final int opcode, final String owner, final String name, final String descriptor) {
+        this.shouldRewriteCheckCast = false;
 
         for (Tuple<Pattern, String> e : this.fieldTypes) {
             Pattern pattern = e.x;
@@ -219,6 +246,8 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             final String name,
             final String descriptor,
             final boolean isInterface) {
+        this.shouldRewriteCheckCast = false;
+
         if (this.isSinkCall(opcode, owner, name, descriptor, isInterface) || this.isSourceCall(opcode, owner, name, descriptor, isInterface)) {
             return;
         }
@@ -252,23 +281,17 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
 
         // JDK methods need special handling.
         // If there isn't a proxy defined, we will just convert taint-aware Strings to regular ones before calling the function and vice versa for the return value.
-        if (jdkMethod && stringDescMatcher.find()) {
+        if (jdkMethod) {
             this.handleJdkMethod(opcode, owner, name, descriptor, isInterface);
             return;
         }
 
-        // TODO: case when both find()s are true?
-        if (stringDescMatcher.find() && !skipInvoke) {
-            String newDescriptor = stringDescMatcher.replaceAll(Constants.TStringDesc);
-            logger.info("Rewriting invoke containing String [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
-            super.visitMethodInsn(opcode, owner, name, newDescriptor, isInterface);
-        } else if (stringBufferDescMatcher.find() && !skipInvoke) {
-            String newDescriptor = stringBufferDescMatcher.replaceAll(Constants.TStringBufferDesc);
-            logger.info("Rewriting invoke containing StringBuffer [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
-            super.visitMethodInsn(opcode, owner, name, newDescriptor, isInterface);
-        } else if (sbDescMatcher.find() && !skipInvoke) {
-            String newDescriptor = sbDescMatcher.replaceAll(Constants.TStringBuilderDesc);
-            logger.info("Rewriting invoke containing StringBuilder [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
+        // TODO: make pretty.
+        if ((stringDescMatcher.find() || sbDescMatcher.find() || stringBufferDescMatcher.find()) && !skipInvoke) {
+            String newDescriptor = descriptor.replaceAll(Constants.StringDesc, Constants.TStringDesc);
+            newDescriptor = newDescriptor.replaceAll(Constants.StringBufferDesc, Constants.TStringBufferDesc);
+            newDescriptor = newDescriptor.replaceAll(Constants.StringBuilderDesc, Constants.TStringBuilderDesc);
+            logger.info("Rewriting invoke containing String-like type [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, newDescriptor);
             super.visitMethodInsn(opcode, owner, name, newDescriptor, isInterface);
         } else {
             logger.info("Skipping invoke [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor);
@@ -276,6 +299,12 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         }
     }
 
+    private static String rewriteDescriptor(String desc) {
+        String newDescriptor = desc.replaceAll(Constants.StringDesc, Constants.TStringDesc);
+        newDescriptor = newDescriptor.replaceAll(Constants.StringBufferDesc, Constants.TStringBufferDesc);
+        newDescriptor = newDescriptor.replaceAll(Constants.StringBuilderDesc, Constants.TStringBuilderDesc);
+        return newDescriptor;
+    }
 
     private void handleJdkMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
@@ -296,7 +325,15 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             logger.info("Converting returned String of {}.{}{}", owner, name, descriptor);
         } else if (desc.hasStringArrayReturnType()) {
             logger.info("Converting returned String Array of {}.{}{}", owner, name, descriptor);
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "convertStringArray", String.format("(%s)%s", Constants.StringArrayDesc, Constants.TStringArrayDesc), false);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "convertStringArray", String.format("(%s)%s", Constants.StringArrayDesc, Constants.TStringArrayDesc), false);
+        } else if(desc.getReturnType().equals(Constants.StringBufferDesc)) {
+            logger.info("Converting returned StringBuffer of {}.{}{}", owner, name, descriptor);
+            this.stringBufferToTStringBuffer();
+        } else if(desc.getReturnType().equals(Constants.StringBuilderDesc)) {
+            logger.info("Converting returned StringBuilder of {}.{}{}", owner, name, descriptor);
+            this.stringBuilderToTStringBuilder();
+        }  else if(desc.getReturnType().equals(Constants.ObjectDesc)) {
+            this.shouldRewriteCheckCast = true;
         }
     }
 
@@ -351,6 +388,8 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
      */
     @Override
     public void visitLdcInsn(final Object value) {
+        this.shouldRewriteCheckCast = false;
+
         // When loading a constant, make a taint-aware string out of a string constant.
         if (value instanceof String) {
             MethodTaintingUtils.handleLdcString(this.getParentVisitor(), value);
@@ -379,16 +418,23 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
      */
     @Override
     public void visitTypeInsn(final int opcode, final String type) {
+        if(this.shouldRewriteCheckCast && opcode == Opcodes.CHECKCAST && Constants.StringQN.equals(type)) {
+            logger.info("Rewriting checkcast to call to TString.fromObject(Object obj)");
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "fromObject", String.format("(%s)%s", Constants.ObjectDesc, Constants.TStringDesc), false);
+            this.shouldRewriteCheckCast = false;
+            return;
+        }
         logger.info("Visiting type [{}] instruction: {}", type, opcode);
         String newType = type;
-        if (type.contains(Constants.StringBufferQN)) {
+        boolean isArray = type.charAt(0) == '[';
+        if (type.equals(Constants.StringBufferQN) || (isArray && type.endsWith(Constants.StringBufferDesc))) {
             newType = STRING_BUFFER_QN_PATTERN.matcher(type).replaceAll(Matcher.quoteReplacement(Constants.TStringBufferQN));
-
-        } else if (type.contains(Constants.StringBuilderQN)) {
+        } else if (type.equals(Constants.StringBuilderQN) || (isArray && type.endsWith(Constants.StringBuilderDesc))) {
             newType = STRING_BUILDER_QN_PATTERN.matcher(type).replaceAll(Matcher.quoteReplacement(Constants.TStringBuilderQN));
-        } else if (type.contains(Constants.StringQN)) {
+        } else if (type.equals(Constants.StringQN)  || (isArray && type.endsWith(Constants.StringDesc))) {
             newType = STRING_QN_PATTERN.matcher(type).replaceAll(Matcher.quoteReplacement(Constants.TStringQN));
         }
+        this.shouldRewriteCheckCast = false;
         super.visitTypeInsn(opcode, newType);
     }
 
@@ -398,6 +444,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             final String descriptor,
             final Handle bootstrapMethodHandle,
             final Object... bootstrapMethodArguments) {
+        this.shouldRewriteCheckCast = false;
 
         if (this.shouldBeDynProxied(name, descriptor)) {
             return;
@@ -456,7 +503,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         // Load the param array
         super.visitVarInsn(Opcodes.ALOAD, currRegister);
         // Call our concat method
-        super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "concat", Constants.ConcatDesc, false);
+        super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "concat", Constants.ConcatDesc, false);
     }
 
     /**
@@ -546,4 +593,95 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         return false;
     }
 
+    @Override
+    public void visitCode() {
+        this.shouldRewriteCheckCast = false;
+        super.visitCode();
+    }
+
+    @Override
+    public void visitIntInsn(int opcode, int operand) {
+        this.shouldRewriteCheckCast = false;
+        super.visitIntInsn(opcode, operand);
+    }
+
+    @Override
+    public void visitMethodInsn(int opcode, String owner, String name, String descriptor) {
+        this.shouldRewriteCheckCast = false;
+        super.visitMethodInsn(opcode, owner, name, descriptor);
+    }
+
+
+    @Override
+    public void visitJumpInsn(int opcode, Label label) {
+        this.shouldRewriteCheckCast = false;
+        super.visitJumpInsn(opcode, label);
+    }
+
+
+    @Override
+    public void visitLabel(Label label) {
+        this.shouldRewriteCheckCast = false;
+        super.visitLabel(label);
+    }
+
+    @Override
+    public void visitIincInsn(int var, int increment) {
+        this.shouldRewriteCheckCast = false;
+        super.visitIincInsn(var, increment);
+    }
+
+    @Override
+    public void visitTableSwitchInsn(int min, int max, Label dflt, Label... labels) {
+        this.shouldRewriteCheckCast = false;
+        super.visitTableSwitchInsn(min, max, dflt, labels);
+    }
+
+    @Override
+    public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
+        this.shouldRewriteCheckCast = false;
+        super.visitLookupSwitchInsn(dflt, keys, labels);
+    }
+
+    @Override
+    public void visitMultiANewArrayInsn(String descriptor, int numDimensions) {
+        this.shouldRewriteCheckCast = false;
+        super.visitMultiANewArrayInsn(descriptor, numDimensions);
+    }
+
+    @Override
+    public AnnotationVisitor visitInsnAnnotation(int typeRef, TypePath typePath, String descriptor, boolean visible) {
+        this.shouldRewriteCheckCast = false;
+        return super.visitInsnAnnotation(typeRef, typePath, descriptor, visible);
+    }
+
+    @Override
+    public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
+        this.shouldRewriteCheckCast = false;
+        super.visitTryCatchBlock(start, end, handler, type);
+    }
+
+    @Override
+    public AnnotationVisitor visitTryCatchAnnotation(int typeRef, TypePath typePath, String descriptor, boolean visible) {
+        this.shouldRewriteCheckCast = false;
+        return super.visitTryCatchAnnotation(typeRef, typePath, descriptor, visible);
+    }
+
+    @Override
+    public AnnotationVisitor visitLocalVariableAnnotation(int typeRef, TypePath typePath, Label[] start, Label[] end, int[] index, String descriptor, boolean visible) {
+        this.shouldRewriteCheckCast = false;
+        return super.visitLocalVariableAnnotation(typeRef, typePath, start, end, index, descriptor, visible);
+    }
+
+    @Override
+    public void visitLineNumber(int line, Label start) {
+        this.shouldRewriteCheckCast = false;
+        super.visitLineNumber(line, start);
+    }
+
+    @Override
+    public void visitEnd() {
+        this.shouldRewriteCheckCast = false;
+        super.visitEnd();
+    }
 }

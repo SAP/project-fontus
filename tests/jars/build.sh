@@ -18,6 +18,7 @@ JAR_FOLDERS=(
     minesweeper
     binary_search_tree
     static_init_test
+    media_types
 )
 
 main() {

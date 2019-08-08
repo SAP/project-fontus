@@ -13,7 +13,13 @@ class StackOverflow {
             // The main wrapper method messes with stack depth..
             // So outputting it here breaks the test.
             //System.out.println("Testing for: " + bound);
-            downToZero(bound);
+            try{
+                downToZero(bound);
+            }
+            catch(StackOverflowError e){
+                System.err.println(e.getMessage());
+                System.exit(0);
+            }
         }
     }
 

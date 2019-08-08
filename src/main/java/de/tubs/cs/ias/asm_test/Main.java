@@ -26,6 +26,7 @@ import java.util.jar.JarOutputStream;
 )
 public class Main implements Callable<Void> {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private Instrumenter instrumenter;
 
     @CommandLine.Option(
             names = {"-f", "--file"},
@@ -64,14 +65,14 @@ public class Main implements Callable<Void> {
             TStringBufferClassName
     );
 
+    private Main() {
+        this.instrumenter = new Instrumenter();
+    }
 
-    private static void instrumentClassStream(InputStream i, OutputStream o) throws IOException {
-        ClassReader cr = new ClassReader(i);
-        ClassWriter writer = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
-        //ClassVisitor cca = new CheckClassAdapter(writer);
-        ClassTaintingVisitor smr = new ClassTaintingVisitor(writer);
-        cr.accept(smr, ClassReader.EXPAND_FRAMES);
-        o.write(writer.toByteArray());
+
+    private void instrumentClassStream(InputStream i, OutputStream o) throws IOException {
+        byte[] out = this.instrumenter.instrumentClass(i);
+        o.write(out);
     }
 
     private static void copySingleEntry(InputStream i, OutputStream o) throws IOException {
@@ -83,11 +84,11 @@ public class Main implements Callable<Void> {
         }
     }
 
-    private static void instrumentClassFile(File input, File output) throws IOException {
+    private void instrumentClassFile(File input, File output) throws IOException {
         FileInputStream fi = new FileInputStream(input);
         FileOutputStream fo = new FileOutputStream(output);
         logger.info("Reading class file from: {}", input.getAbsolutePath());
-        instrumentClassStream(fi, fo);
+        this.instrumentClassStream(fi, fo);
         logger.info("Writing transformed class file to: {}", output.getAbsolutePath());
     }
 
@@ -117,7 +118,7 @@ public class Main implements Callable<Void> {
 
                 // Skip the taint aware string types so we don't mess them up by instrumenting them again!
                 if (jei.getName().endsWith(classSuffix) && !TStringTypesClassNames.contains(jei.getName())) {
-                    instrumentClassStream(jeis, jos);
+                    this.instrumentClassStream(jeis, jos);
                 } else {
                     copySingleEntry(jeis, jos);
                 }
