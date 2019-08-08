@@ -33,4 +33,9 @@ public class DefaultMethodInstrumentationStrategy implements MethodInstrumentati
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         return false;
     }
+
+    @Override
+    public void instrumentReturnType(String owner, String name, Descriptor desc) {
+
+    }
 }

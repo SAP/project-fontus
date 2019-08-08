@@ -67,7 +67,7 @@ public class Descriptor {
         return Collections.unmodifiableCollection(this.parameters);
     }
 
-    String getReturnType() {
+    public String getReturnType() {
         return this.returnType;
     }
 

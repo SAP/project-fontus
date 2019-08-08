@@ -2,6 +2,7 @@ package de.tubs.cs.ias.asm_test.methodinstrumentation;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
+import de.tubs.cs.ias.asm_test.MethodTaintingUtils;
 import de.tubs.cs.ias.asm_test.Utils;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -45,6 +46,16 @@ public class StringBufferMethodInstrumentationStrategy implements MethodInstrume
             this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringBufferQN, "getBuffer", String.format("()%s", Constants.StringBufferDesc), false);
         }
     }
+
+    @Override
+    public void instrumentReturnType(String owner, String name, Descriptor desc) {
+        if(desc.getReturnType().equals(Constants.StringBufferDesc)) {
+            logger.info("Converting returned StringBuffer of {}.{}{}", owner, name, desc.toDescriptor());
+            MethodTaintingUtils.stringBufferToTStringBuffer(this.mv);
+        }
+    }
+
+
 
     @Override
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {

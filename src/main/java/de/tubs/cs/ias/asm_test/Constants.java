@@ -38,7 +38,7 @@ public final class Constants {
      */
     public static final String TStringBufferQN = TPackage + "IASStringBuffer";
 
-    static final String TStringUtilsQN = TPackage + "IASStringUtils";
+    public static final String TStringUtilsQN = TPackage + "IASStringUtils";
 
     /**
      * Name of the toString method.

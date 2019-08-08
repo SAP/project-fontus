@@ -11,14 +11,14 @@ import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
 
-class MethodTaintingUtils {
+public class MethodTaintingUtils {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Converts a String that's top of the stack to an taint-aware String
      * Precondition: String instance that's on top of the Stack!!
      */
-    static void stringToTString(MethodVisitor mv) {
+    public static void stringToTString(MethodVisitor mv) {
         /*
         Operand stack:
         +-------+ new  +----------+ dup  +----------+ dup2_x1  +----------+  pop2  +----------+ ispecial  +----------+
@@ -44,7 +44,7 @@ class MethodTaintingUtils {
         mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringQN, Constants.Init, Constants.TStringInitUntaintedDesc, false);
     }
 
-    static void stringBufferToTStringBuffer(MethodVisitor mv) {
+    public static void stringBufferToTStringBuffer(MethodVisitor mv) {
         mv.visitTypeInsn(Opcodes.NEW, Constants.TStringBufferQN);
         mv.visitInsn(Opcodes.DUP);
         mv.visitInsn(Opcodes.DUP2_X1);
@@ -52,7 +52,7 @@ class MethodTaintingUtils {
         mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringBufferQN, Constants.Init, String.format("(%s)V", Constants.StringBufferDesc), false);
     }
 
-    static void stringBuilderToTStringBuilder(MethodVisitor mv) {
+    public static void stringBuilderToTStringBuilder(MethodVisitor mv) {
         mv.visitTypeInsn(Opcodes.NEW, Constants.TStringBuilderQN);
         mv.visitInsn(Opcodes.DUP);
         mv.visitInsn(Opcodes.DUP2_X1);

@@ -245,19 +245,11 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         }
         logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor);
         super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
-        if (desc.hasStringLikeReturnType()) {
-            MethodTaintingUtils.stringToTString(this.getParentVisitor());
-            logger.info("Converting returned String of {}.{}{}", owner, name, descriptor);
-        } else if (desc.hasStringArrayReturnType()) {
-            logger.info("Converting returned String Array of {}.{}{}", owner, name, descriptor);
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "convertStringArray", String.format("(%s)%s", Constants.StringArrayDesc, Constants.TStringArrayDesc), false);
-        } else if(desc.getReturnType().equals(Constants.StringBufferDesc)) {
-            logger.info("Converting returned StringBuffer of {}.{}{}", owner, name, descriptor);
-            MethodTaintingUtils.stringBufferToTStringBuffer(this.getParentVisitor());
-        } else if(desc.getReturnType().equals(Constants.StringBuilderDesc)) {
-            logger.info("Converting returned StringBuilder of {}.{}{}", owner, name, descriptor);
-            MethodTaintingUtils.stringBuilderToTStringBuilder(this.getParentVisitor());
-        }  else if(desc.getReturnType().equals(Constants.ObjectDesc)) {
+        for(MethodInstrumentationStrategy s : this.instrumentation) {
+            s.instrumentReturnType(owner, name, desc);
+        }
+
+        if(desc.getReturnType().equals(Constants.ObjectDesc)) {
             this.shouldRewriteCheckCast = true;
         }
     }

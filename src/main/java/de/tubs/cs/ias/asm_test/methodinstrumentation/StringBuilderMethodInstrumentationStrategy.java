@@ -2,6 +2,7 @@ package de.tubs.cs.ias.asm_test.methodinstrumentation;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
+import de.tubs.cs.ias.asm_test.MethodTaintingUtils;
 import de.tubs.cs.ias.asm_test.Utils;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -64,5 +65,13 @@ public class StringBuilderMethodInstrumentationStrategy implements MethodInstrum
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void instrumentReturnType(String owner, String name, Descriptor desc) {
+        if(desc.getReturnType().equals(Constants.StringBuilderDesc)) {
+            logger.info("Converting returned StringBuilder of {}.{}{}", owner, name, desc.toDescriptor());
+            MethodTaintingUtils.stringBuilderToTStringBuilder(this.mv);
+        }
     }
 }

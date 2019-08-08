@@ -2,6 +2,7 @@ package de.tubs.cs.ias.asm_test.methodinstrumentation;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
+import de.tubs.cs.ias.asm_test.MethodTaintingUtils;
 import de.tubs.cs.ias.asm_test.Utils;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -65,5 +66,16 @@ public class StringMethodInstrumentationStrategy implements MethodInstrumentatio
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void instrumentReturnType(String owner, String name, Descriptor desc) {
+        if (Constants.StringDesc.equals(desc.getReturnType())) {
+            MethodTaintingUtils.stringToTString(this.mv);
+            logger.info("Converting returned String of {}.{}{}", owner, name, desc.toDescriptor());
+        } else if (Constants.StringArrayDesc.equals(desc.getReturnType())) {
+            logger.info("Converting returned String Array of {}.{}{}", owner, name, desc.toDescriptor());
+            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "convertStringArray", String.format("(%s)%s", Constants.StringArrayDesc, Constants.TStringArrayDesc), false);
+       }
     }
 }
