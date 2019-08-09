@@ -103,8 +103,8 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/net/URLEncoder", "encode", "(Ljava/lang/String;)Ljava/lang/String;", false),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, String.format("%sTURLEncoder", Constants.TPackage), "encode", String.format("(%s)%s", Constants.TStringDesc, Constants.TStringDesc), false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/net/URLDecoder", "decode", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, String.format("%sTURLURLDecoder", Constants.TPackage), "decode", String.format("(%s%s)%s", Constants.TStringDesc, Constants.TStringDesc, Constants.TStringDesc), false));
-        this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/net/URLURLDecoder", "decode", "(Ljava/lang/String;)Ljava/lang/String;", false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, String.format("%sTURLDecoder", Constants.TPackage), "decode", String.format("(%s%s)%s", Constants.TStringDesc, Constants.TStringDesc, Constants.TStringDesc), false));
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/net/URLDecoder", "decode", "(Ljava/lang/String;)Ljava/lang/String;", false),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, String.format("%sTURLDecoder", Constants.TPackage), "decode", String.format("(%s)%s", Constants.TStringDesc, Constants.TStringDesc), false));
     }
 
