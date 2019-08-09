@@ -6,7 +6,7 @@ public final class Constants {
     /**
      * The package our taint-aware classes are in
      */
-    private static final String TPackage = "de/tubs/cs/ias/asm_test/taintaware/";
+    public static final String TPackage = "de/tubs/cs/ias/asm_test/taintaware/";
 
     /**
      * Fully qualified name of the java Object class.

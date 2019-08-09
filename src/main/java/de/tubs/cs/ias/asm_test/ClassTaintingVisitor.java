@@ -21,7 +21,6 @@ class ClassTaintingVisitor extends ClassVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Collection<BlackListEntry> blacklist = new ArrayList<>();
-    private static final String mainDescriptor = Constants.MAIN_METHOD_DESC;
     private static final String newMainDescriptor = "(" + Constants.TStringArrayDesc + ")V";
     private final Collection<Tuple<Tuple<String, String>, Object>> staticFinalFields;
     private boolean hasClInit = false;
@@ -50,7 +49,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private void fillBlacklist() {
-        this.blacklist.add(new BlackListEntry("main", mainDescriptor, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
+        this.blacklist.add(new BlackListEntry("main", Constants.MAIN_METHOD_DESC, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
         this.blacklist.add(new BlackListEntry(Constants.ToString, Constants.ToStringDesc, Opcodes.ACC_PUBLIC));
     }
 
@@ -163,9 +162,9 @@ class ClassTaintingVisitor extends ClassVisitor {
 
         // Create a new main method, wrapping the regular one and translating all Strings to IASStrings
         // TODO: acceptable for main is a parameter of String[] or String...! Those have different access bits set (i.e., the ACC_VARARGS bits are set too) -> Handle this nicer..
-        if (((access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC) && (access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC && "main".equals(name) && descriptor.equals(mainDescriptor)) {
+        if (((access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC) && (access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC && "main".equals(name) && descriptor.equals(Constants.MAIN_METHOD_DESC)) {
             logger.info("Creating proxy main method");
-            MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "main", mainDescriptor, signature, exceptions);
+            MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "main", Constants.MAIN_METHOD_DESC, signature, exceptions);
             this.createMainWrapperMethod(v);
             logger.info("Processing renamed main method.");
             mv = super.visitMethod(access, Constants.MainWrapper, newMainDescriptor, signature, exceptions);

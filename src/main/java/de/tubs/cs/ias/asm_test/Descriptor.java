@@ -97,18 +97,6 @@ public class Descriptor {
     }
 
     /**
-     * Does the descriptor have a String-like return type?
-     * TODO: Add other String types
-     */
-    boolean hasStringLikeReturnType() {
-        return Constants.StringDesc.equals(this.returnType);
-    }
-
-    boolean hasStringArrayReturnType() {
-        return Constants.StringArrayDesc.equals(this.returnType);
-    }
-
-    /**
      * Checks whether the parameter list contains String like Parameters that need conversion before calling.
      * TODO: Add other String types
      *
