@@ -1,8 +1,8 @@
 package de.tubs.cs.ias.asm_test.strategies.clazz;
 
 import de.tubs.cs.ias.asm_test.Constants;
-import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.TriConsumer;
+import de.tubs.cs.ias.asm_test.strategies.StringBuilderInstrumentation;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.slf4j.Logger;
@@ -12,7 +12,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import java.util.regex.Matcher;
 
-public class StringBuilderClassInstrumentationStrategy implements ClassInstrumentationStrategy {
+public class StringBuilderClassInstrumentationStrategy extends StringBuilderInstrumentation implements ClassInstrumentationStrategy {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final ClassVisitor visitor;
@@ -29,10 +29,5 @@ public class StringBuilderClassInstrumentationStrategy implements ClassInstrumen
             return Optional.of(this.visitor.visitField(access, name, newDescriptor, signature, value));
         }
         return Optional.empty();
-    }
-
-    @Override
-    public Descriptor instrumentMethodInvocation(Descriptor desc) {
-        return desc.replaceType(Constants.StringBuilderDesc, Constants.TStringBuilderDesc);
     }
 }

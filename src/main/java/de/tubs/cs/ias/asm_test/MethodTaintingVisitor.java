@@ -209,7 +209,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
 
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
         for(MethodInstrumentationStrategy s : this.instrumentation) {
-            desc = s.rewriteDescriptor(desc);
+            desc = s.instrument(desc);
         }
         if(!desc.toDescriptor().equals(descriptor)) {
             logger.info("Rewriting invoke containing String-like type [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, desc.toDescriptor());

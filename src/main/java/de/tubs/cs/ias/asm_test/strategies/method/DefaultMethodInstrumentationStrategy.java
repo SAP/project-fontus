@@ -11,7 +11,7 @@ public class DefaultMethodInstrumentationStrategy implements MethodInstrumentati
     }
 
     @Override
-    public Descriptor rewriteDescriptor(Descriptor desc) {
+    public Descriptor instrument(Descriptor desc) {
         return desc;
     }
 

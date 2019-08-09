@@ -3,6 +3,7 @@ package de.tubs.cs.ias.asm_test.strategies.method;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.Utils;
+import de.tubs.cs.ias.asm_test.strategies.StringBuilderInstrumentation;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -14,7 +15,7 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class StringBuilderMethodInstrumentationStrategy implements MethodInstrumentationStrategy {
+public class StringBuilderMethodInstrumentationStrategy extends StringBuilderInstrumentation implements MethodInstrumentationStrategy {
     private final MethodVisitor mv;
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final HashMap<String, String> methodsToRename = new HashMap<>(1);
@@ -30,12 +31,6 @@ public class StringBuilderMethodInstrumentationStrategy implements MethodInstrum
         this.mv.visitInsn(Opcodes.DUP2_X1);
         this.mv.visitInsn(Opcodes.POP2);
         this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringBuilderQN, Constants.Init, String.format("(%s)V", Constants.StringBuilderDesc), false);
-    }
-
-    @Override
-    public Descriptor rewriteDescriptor(Descriptor desc) {
-        return desc.replaceType(Constants.StringBuilderDesc, Constants.TStringBuilderDesc);
-
     }
 
     @Override
@@ -70,7 +65,7 @@ public class StringBuilderMethodInstrumentationStrategy implements MethodInstrum
             String newName = this.methodsToRename.getOrDefault(name, name);
 
             logger.info("Rewriting StringBuilder invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, finalDescriptor);
-            mv.visitMethodInsn(opcode, newOwner, newName, finalDescriptor, isInterface);
+            this.mv.visitMethodInsn(opcode, newOwner, newName, finalDescriptor, isInterface);
             return true;
         }
         return false;

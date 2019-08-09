@@ -1,8 +1,8 @@
 package de.tubs.cs.ias.asm_test.strategies.clazz;
 
 import de.tubs.cs.ias.asm_test.Constants;
-import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.TriConsumer;
+import de.tubs.cs.ias.asm_test.strategies.StringInstrumentation;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Opcodes;
@@ -13,14 +13,13 @@ import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import java.util.regex.Matcher;
 
-public class StringClassInstrumentationStrategy implements ClassInstrumentationStrategy{
+public class StringClassInstrumentationStrategy extends StringInstrumentation implements ClassInstrumentationStrategy{
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final ClassVisitor cv;
     public StringClassInstrumentationStrategy(ClassVisitor cv) {
         this.cv = cv;
     }
-
 
     @Override
     public Optional<FieldVisitor> instrumentFieldInstruction(int access, String name, String descriptor, String signature, Object value, TriConsumer tc) {
@@ -35,10 +34,5 @@ public class StringClassInstrumentationStrategy implements ClassInstrumentationS
             return Optional.of(this.cv.visitField(access, name, newDescriptor, signature, null));
         }
         return Optional.empty();
-    }
-
-    @Override
-    public Descriptor instrumentMethodInvocation(Descriptor desc) {
-        return desc.replaceType(Constants.StringDesc, Constants.TStringDesc);
     }
 }

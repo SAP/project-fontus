@@ -5,7 +5,7 @@ import org.objectweb.asm.Type;
 
 public interface MethodInstrumentationStrategy {
 
-    Descriptor rewriteDescriptor(Descriptor desc);
+    Descriptor instrument(Descriptor desc);
     boolean instrumentFieldIns(final int opcode, final String owner, final String name, final String descriptor);
 
     void insertJdkMethodParameterConversion(String parameter);

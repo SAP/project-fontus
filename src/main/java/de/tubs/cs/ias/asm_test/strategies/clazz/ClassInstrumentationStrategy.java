@@ -11,5 +11,5 @@ public interface ClassInstrumentationStrategy {
     Optional<FieldVisitor> instrumentFieldInstruction(int access, String name, String descriptor,
                                                       String signature, Object value, TriConsumer tc);
 
-    Descriptor instrumentMethodInvocation(Descriptor desc);
+    Descriptor instrument(Descriptor desc);
 }

@@ -183,7 +183,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         } else {
             Descriptor d = Descriptor.parseDescriptor(descriptor);
             for (ClassInstrumentationStrategy is : this.instrumentation) {
-                d = is.instrumentMethodInvocation(d);
+                d = is.instrument(d);
             }
             desc = d.toDescriptor();
             if (!desc.equals(descriptor)) {

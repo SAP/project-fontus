@@ -3,6 +3,7 @@ package de.tubs.cs.ias.asm_test.strategies.method;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.Utils;
+import de.tubs.cs.ias.asm_test.strategies.StringInstrumentation;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -14,7 +15,7 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class StringMethodInstrumentationStrategy implements MethodInstrumentationStrategy {
+public class StringMethodInstrumentationStrategy extends StringInstrumentation implements MethodInstrumentationStrategy{
     private final MethodVisitor mv;
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final HashMap<String, String> methodsToRename = new HashMap<>(1);
@@ -67,11 +68,6 @@ public class StringMethodInstrumentationStrategy implements MethodInstrumentatio
         this.mv.visitInsn(Opcodes.DUP2_X1);
         this.mv.visitInsn(Opcodes.POP2);
         this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringQN, Constants.Init, Constants.TStringInitUntaintedDesc, false);
-    }
-
-    @Override
-    public Descriptor rewriteDescriptor(Descriptor desc) {
-        return desc.replaceType(Constants.StringDesc, Constants.TStringDesc);
     }
 
     @Override

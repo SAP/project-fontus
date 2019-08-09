@@ -22,7 +22,7 @@ public class DefaultClassInstrumentationStrategy implements ClassInstrumentation
     }
 
     @Override
-    public Descriptor instrumentMethodInvocation(Descriptor desc) {
+    public Descriptor instrument(Descriptor desc) {
         return desc;
     }
 }
