@@ -1,6 +1,5 @@
 package de.tubs.cs.ias.asm_test.method;
 
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.*;
 
 /**

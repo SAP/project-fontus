@@ -22,7 +22,7 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
 
     public StringBuilderMethodInstrumentationStrategy(MethodVisitor mv) {
         this.mv = mv;
-        this.methodsToRename.put(Constants.ToString, "toIASString");
+        this.methodsToRename.put(Constants.ToString, Constants.TO_TSTRING);
     }
 
     private void stringBuilderToTStringBuilder() {

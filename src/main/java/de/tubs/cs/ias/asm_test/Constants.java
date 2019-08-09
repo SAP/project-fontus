@@ -163,6 +163,8 @@ public final class Constants {
      * The Taint-aware String method to check and act on a potential taint
      */
     public static final String ABORT_IF_TAINTED = "abortIfTainted";
+    static final String MAIN_METHOD_DESC = "([Ljava/lang/String;)V";
+    public static final String TO_TSTRING = "toIASString";
 
 
     private Constants() {

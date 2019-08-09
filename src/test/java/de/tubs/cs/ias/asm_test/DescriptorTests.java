@@ -123,7 +123,7 @@ class DescriptorTests {
                         )),
                 Arguments.of("([Ljava/lang/Object;)Ljava/util/List;",
                         new Descriptor("[Ljava/lang/Object;", "Ljava/util/List;")),
-                Arguments.of("([Ljava/lang/String;)V",
+                Arguments.of(Constants.MAIN_METHOD_DESC,
                         new Descriptor("[Ljava/lang/String;", "V")),
                 Arguments.of("(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;",
                         new Descriptor("Ljava/lang/String;",

@@ -1,7 +1,5 @@
 package de.tubs.cs.ias.asm_test;
 
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -168,7 +166,7 @@ public class Main implements Callable<Void> {
 
     private void walkFileTree(File input, File output) throws IOException {
         if (input.getName().endsWith(classSuffix)) {
-            instrumentClassFile(input, output);
+            this.instrumentClassFile(input, output);
         } else if (input.getName().endsWith(jarSuffix)) {
             this.instrumentJarFile(input, output);
         } else if (input.isDirectory()) {

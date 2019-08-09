@@ -21,7 +21,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Collection<BlackListEntry> blacklist = new ArrayList<>();
-    private static final String mainDescriptor = "([Ljava/lang/String;)V";
+    private static final String mainDescriptor = Constants.MAIN_METHOD_DESC;
     private static final String newMainDescriptor = "(" + Constants.TStringArrayDesc + ")V";
     private final Collection<Tuple<Tuple<String, String>, Object>> staticFinalFields;
     private boolean hasClInit = false;

@@ -23,7 +23,7 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
 
     public StringBufferMethodInstrumentationStrategy(MethodVisitor mv) {
         this.mv = mv;
-        this.methodsToRename.put(Constants.ToString, "toIASString");
+        this.methodsToRename.put(Constants.ToString, Constants.TO_TSTRING);
     }
 
     private void stringBufferToTStringBuffer() {
@@ -94,7 +94,7 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
             String newName = this.methodsToRename.getOrDefault(name, name);
 
             logger.info("Rewriting StringBuffer invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, finalDescriptor);
-            mv.visitMethodInsn(opcode, newOwner, newName, finalDescriptor, isInterface);
+            this.mv.visitMethodInsn(opcode, newOwner, newName, finalDescriptor, isInterface);
             return true;
         }
         return false;
