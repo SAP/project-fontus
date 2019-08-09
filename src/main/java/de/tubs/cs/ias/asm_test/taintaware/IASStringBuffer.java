@@ -1,4 +1,4 @@
-package de.tubs.cs.ias.asm_test;
+package de.tubs.cs.ias.asm_test.taintaware;
 
 
 @SuppressWarnings({"SynchronizedMethod", "ReturnOfThis", "WeakerAccess"})

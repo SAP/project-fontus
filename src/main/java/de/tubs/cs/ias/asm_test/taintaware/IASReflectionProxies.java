@@ -1,5 +1,7 @@
-package de.tubs.cs.ias.asm_test;
+package de.tubs.cs.ias.asm_test.taintaware;
 
+
+import de.tubs.cs.ias.asm_test.Constants;
 
 public class IASReflectionProxies {
     public static Class<?> classForName(IASString str) throws ClassNotFoundException {

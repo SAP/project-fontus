@@ -1,5 +1,7 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.taintaware.IASString;
+import de.tubs.cs.ias.asm_test.taintaware.IASStringBuffer;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

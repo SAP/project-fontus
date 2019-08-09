@@ -1,5 +1,7 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.taintaware.IASString;
+
 public class TaintStringHelper {
 
     public static Boolean isTainted(String str) {
