@@ -1,4 +1,4 @@
-package de.tubs.cs.ias.asm_test.classinstumentation;
+package de.tubs.cs.ias.asm_test.strategies.clazz;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;

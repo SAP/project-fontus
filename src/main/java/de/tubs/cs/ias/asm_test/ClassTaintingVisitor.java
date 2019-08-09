@@ -1,6 +1,6 @@
 package de.tubs.cs.ias.asm_test;
 
-import de.tubs.cs.ias.asm_test.classinstumentation.*;
+import de.tubs.cs.ias.asm_test.strategies.clazz.*;
 import de.tubs.cs.ias.asm_test.method.MethodVisitRecording;
 import de.tubs.cs.ias.asm_test.method.RecordingMethodVisitor;
 import org.objectweb.asm.ClassVisitor;

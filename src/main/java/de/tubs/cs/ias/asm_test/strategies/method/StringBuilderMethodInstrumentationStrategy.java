@@ -1,4 +1,4 @@
-package de.tubs.cs.ias.asm_test.methodinstrumentation;
+package de.tubs.cs.ias.asm_test.strategies.method;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
