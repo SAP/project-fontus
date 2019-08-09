@@ -102,6 +102,7 @@ public final class Utils {
 
 
     static Handle instrumentHandle(Handle h) {
+        // TODO: Add Buffer
         String desc = h.getDesc();
         desc = Constants.strPattern.matcher(desc).replaceAll(Constants.TStringDesc);
         desc = Constants.strBuilderPattern.matcher(desc).replaceAll(Constants.TStringBuilderDesc);
@@ -112,6 +113,7 @@ public final class Utils {
     }
 
     static String translateClassName(String className) {
+        // TODO: Add Buffer
         if (className.equals(fixup(Constants.StringQN))) {
             return fixup(Constants.TStringQN);
         } else if (className.equals(fixup(Constants.StringBuilderQN))) {
@@ -135,6 +137,7 @@ public final class Utils {
         }
     }
 
+    //TODO: Move around and make modular..
     static String rewriteDescriptor(String desc) {
         String newDescriptor = desc.replaceAll(Constants.StringDesc, Constants.TStringDesc);
         newDescriptor = newDescriptor.replaceAll(Constants.StringBufferDesc, Constants.TStringBufferDesc);
