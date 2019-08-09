@@ -5,13 +5,13 @@ import java.net.URLDecoder;
 
 public class TURLDecoder {
     @Deprecated
-    static IASString decode(IASString url) {
+    public static IASString decode(IASString url) {
         boolean taint = url.isTainted();
         String decoded = URLDecoder.decode(url.getString());
         return new IASString(decoded, taint);
     }
 
-    static IASString decode(IASString url, IASString enc) throws UnsupportedEncodingException {
+    public static IASString decode(IASString url, IASString enc) throws UnsupportedEncodingException {
         boolean taint = url.isTainted();
         String decoded = URLDecoder.decode(url.getString(), enc.getString());
         return new IASString(decoded, taint);
