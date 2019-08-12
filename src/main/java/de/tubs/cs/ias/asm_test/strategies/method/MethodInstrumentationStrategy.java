@@ -1,17 +1,13 @@
 package de.tubs.cs.ias.asm_test.strategies.method;
 
 import de.tubs.cs.ias.asm_test.Descriptor;
+import de.tubs.cs.ias.asm_test.strategies.InstrumentationStrategy;
 import org.objectweb.asm.Type;
 
 /**
  * Interface containing the various tasks a MethodVisitor might want to execute to instrument the code inside a method.
  */
-public interface MethodInstrumentationStrategy {
-
-    /**
-     * Rewrites a {@link Descriptor}, replacing all occurrences of a certain type with its taint-aware counterpart.
-     */
-    Descriptor instrument(Descriptor desc);
+public interface MethodInstrumentationStrategy extends InstrumentationStrategy {
 
     /**
      * Called for @link{ {@link org.objectweb.asm.MethodVisitor#visitFieldInsn(int, String, String, String)}} calls.
