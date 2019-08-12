@@ -1,35 +1,18 @@
 package de.tubs.cs.ias.asm_test.taintaware;
 
-
-import de.tubs.cs.ias.asm_test.Constants;
+import de.tubs.cs.ias.asm_test.strategies.ClassNameTranslator;
 
 public class IASReflectionProxies {
     public static Class<?> classForName(IASString str) throws ClassNotFoundException {
         String s = str.getString();
-
-        if (s.equals(fixup(Constants.StringQN))) {
-            return Class.forName(fixup(Constants.TStringQN));
-        } else if (s.equals(fixup(Constants.StringBuilderQN))) {
-            return Class.forName(fixup(Constants.TStringBuilderQN));
-        } else {
-            return Class.forName(s);
-        }
+        String clazz = ClassNameTranslator.translateClassName(s);
+        return Class.forName(clazz);
     }
 
     public static Class<?> classForName(IASString str, boolean initialize,
                                         ClassLoader loader) throws ClassNotFoundException {
         String s = str.getString();
-
-        if (s.equals(fixup(Constants.StringQN))) {
-            return Class.forName(fixup(Constants.TStringQN), initialize, loader);
-        } else if (s.equals(fixup(Constants.StringBuilderQN))) {
-            return Class.forName(fixup(Constants.TStringBuilderQN), initialize, loader);
-        } else {
-            return Class.forName(s, initialize, loader);
-        }
-    }
-
-    private static String fixup(String s) {
-        return s.replace('/', '.');
+        String clazz = ClassNameTranslator.translateClassName(s);
+        return Class.forName(clazz, initialize, loader);
     }
 }
