@@ -25,4 +25,9 @@ public class DefaultClassInstrumentationStrategy implements ClassInstrumentation
     public Descriptor instrument(Descriptor desc) {
         return desc;
     }
+
+    @Override
+    public String instrumentQN(String qn) {
+        return qn;
+    }
 }

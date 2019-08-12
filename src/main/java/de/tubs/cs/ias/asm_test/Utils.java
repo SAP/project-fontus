@@ -1,18 +1,13 @@
 package de.tubs.cs.ias.asm_test;
 
 import de.tubs.cs.ias.asm_test.strategies.DescriptorInstrumenter;
+import de.tubs.cs.ias.asm_test.strategies.QualifiedNameInstrumenter;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public final class Utils {
-
-    private static final Pattern STRING_QN_MATCHER = Pattern.compile(Constants.StringQN, Pattern.LITERAL);
-    private static final Pattern STRING_BUILDER_QN_MATCHER = Pattern.compile(Constants.StringBuilderQN, Pattern.LITERAL);
 
     private Utils() {
     }
@@ -102,10 +97,7 @@ public final class Utils {
     static Handle instrumentHandle(Handle h) {
         Descriptor desc = Descriptor.parseDescriptor(h.getDesc());
         desc = DescriptorInstrumenter.instrument(desc);
-        String owner = h.getOwner();
-        // TODO: Add Buffer
-        owner = STRING_QN_MATCHER.matcher(owner).replaceAll(Matcher.quoteReplacement(Constants.TStringQN));
-        owner = STRING_BUILDER_QN_MATCHER.matcher(owner).replaceAll(Matcher.quoteReplacement(Constants.TStringBuilderQN));
+        String owner = QualifiedNameInstrumenter.instrumentQN(h.getOwner());
         return new Handle(h.getTag(), owner, h.getName(), desc.toDescriptor(), h.isInterface());
     }
 
