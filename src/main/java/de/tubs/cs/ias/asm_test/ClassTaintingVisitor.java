@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
@@ -22,7 +23,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 
     private final Collection<BlackListEntry> blacklist = new ArrayList<>();
     private static final String newMainDescriptor = "(" + Constants.TStringArrayDesc + ")V";
-    private final Collection<Tuple<Tuple<String, String>, Object>> staticFinalFields;
+    private final Collection<FieldData> staticFinalFields;
     private boolean hasClInit = false;
     private MethodVisitRecording recording;
     private final ClassVisitor visitor;
@@ -74,11 +75,10 @@ class ClassTaintingVisitor extends ClassVisitor {
      * @param mv The visitor creating the static initialization block
      */
     private void writeToStaticInitializer(MethodVisitor mv) {
-        for (Tuple<Tuple<String, String>, Object> e : this.staticFinalFields) {
-            Object value = e.y;
-            Tuple<String, String> field = e.x;
+        for (FieldData e : this.staticFinalFields) {
+            Object value = e.getValue();
             mv.visitLdcInsn(value);
-            mv.visitFieldInsn(Opcodes.PUTSTATIC, this.owner, field.x, field.y);
+            mv.visitFieldInsn(Opcodes.PUTSTATIC, this.owner, e.getName(), e.getDescriptor());
         }
     }
 
@@ -93,7 +93,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         for (ClassInstrumentationStrategy is : this.instrumentation) {
             Optional<FieldVisitor> ofv = is.instrumentFieldInstruction(
                     access, name, descriptor, signature, value,
-                    (n, d, v) -> this.staticFinalFields.add(Tuple.of(Tuple.of(n, d), v))
+                    (n, d, v) -> this.staticFinalFields.add(FieldData.of(n, d, v))
             );
             if (ofv.isPresent()) {
                 fv = ofv.get();

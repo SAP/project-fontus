@@ -106,12 +106,11 @@ public final class Utils {
         return s.replace('/', '.');
     }
 
-    static void writeToStaticInitializer(MethodVisitor mv, String owner, Iterable<Tuple<Tuple<String, String>, Object>> staticFields) {
-        for (Tuple<Tuple<String, String>, Object> e : staticFields) {
-            Object value = e.y;
-            Tuple<String, String> field = e.x;
+    static void writeToStaticInitializer(MethodVisitor mv, String owner, Iterable<FieldData> staticFields) {
+        for (FieldData field : staticFields) {
+            Object value = field.getValue();
             mv.visitLdcInsn(value);
-            mv.visitFieldInsn(Opcodes.PUTSTATIC, owner, field.x, field.y);
+            mv.visitFieldInsn(Opcodes.PUTSTATIC, owner, field.getName(), field.getDescriptor());
         }
     }
 }

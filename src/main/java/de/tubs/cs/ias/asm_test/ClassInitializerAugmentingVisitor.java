@@ -12,12 +12,12 @@ import java.util.Collection;
 public class ClassInitializerAugmentingVisitor extends MethodVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final Collection<Tuple<Tuple<String, String>, Object>> staticFinalFields;
+    private final Collection<FieldData> staticFinalFields;
     private final String owner;
 
     ClassInitializerAugmentingVisitor(MethodVisitor methodVisitor,
                                       String owner,
-                                      Collection<Tuple<Tuple<String, String>, Object>> staticFinalFields) {
+                                      Collection<FieldData> staticFinalFields) {
         super(Opcodes.ASM7, methodVisitor);
         this.staticFinalFields = new ArrayList<>(staticFinalFields.size());
         this.staticFinalFields.addAll(staticFinalFields);
