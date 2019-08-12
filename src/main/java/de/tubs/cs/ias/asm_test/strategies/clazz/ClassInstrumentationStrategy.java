@@ -1,6 +1,5 @@
 package de.tubs.cs.ias.asm_test.strategies.clazz;
 
-import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.TriConsumer;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationStrategy;
 import org.objectweb.asm.FieldVisitor;

@@ -22,9 +22,9 @@ import java.util.jar.JarOutputStream;
         mixinStandardHelpOptions = true,
         version = "asm_taint 0.0.1"
 )
-public class Main implements Callable<Void> {
+public final class Main implements Callable<Void> {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private Instrumenter instrumenter;
+    private final Instrumenter instrumenter;
 
     @CommandLine.Option(
             names = {"-f", "--file"},

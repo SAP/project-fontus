@@ -1,12 +1,12 @@
 package de.tubs.cs.ias.asm_test.taintaware;
 
 
-@SuppressWarnings({"SynchronizedMethod", "ReturnOfThis", "WeakerAccess"})
+@SuppressWarnings({"SynchronizedMethod", "ReturnOfThis", "WeakerAccess", "ClassWithTooManyConstructors", "ClassWithTooManyMethods"})
 public class IASStringBuffer
         implements java.io.Serializable, CharSequence {
 
     // TODO: accessed in both synchronized and unsynchronized methods
-    private StringBuffer buffer;
+    private final StringBuffer buffer;
     private boolean tainted = false;
 
     public boolean isTainted() {

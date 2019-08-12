@@ -7,7 +7,7 @@ import org.objectweb.asm.*;
  * <p>
  * It is important that processing of Annotations for the visited Method is <b>NOT</b> supported!
  */
-@SuppressWarnings("ReturnOfNull")
+@SuppressWarnings({"ReturnOfNull", "deprecation"})
 public class RecordingMethodVisitor extends MethodVisitor {
 
     private final MethodVisitRecording recording;

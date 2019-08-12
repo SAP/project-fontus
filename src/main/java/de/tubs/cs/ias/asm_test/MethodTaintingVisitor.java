@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Stack;
 
 
+@SuppressWarnings("deprecation")
 class MethodTaintingVisitor extends BasicMethodVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

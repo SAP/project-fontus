@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SuppressWarnings({"ClassIndependentOfModule", "ClassOnlyUsedInOneModule"})
 public class UtilsTests {
     private static final Pattern StringPattern = Pattern.compile(Constants.StringQN, Pattern.LITERAL);
     private static final String desc = "(Ljava/lang/String;Ljava/lang/String;)I";

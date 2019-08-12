@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.stream.Stream;
 
-@SuppressWarnings({"DuplicateStringLiteralInspection", "SpellCheckingInspection"})
+@SuppressWarnings({"DuplicateStringLiteralInspection", "SpellCheckingInspection", "ClassIndependentOfModule", "ClassOnlyUsedInOneModule"})
 class DescriptorTests {
 
     @Test

@@ -103,13 +103,12 @@ public class Descriptor {
      * @return Whether on of the parameters is a String like type
      */
     boolean hasStringLikeParameters() {
-        boolean hasTaintAwareParam = false;
         for (String p : this.getParameters()) {
             if (p.equals(Constants.StringDesc)) {
-                hasTaintAwareParam = true;
+                return true;
             }
         }
-        return hasTaintAwareParam;
+        return false;
     }
 
     // TODO: maybe remove the ';'s?
