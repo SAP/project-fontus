@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.strategies.DescriptorInstrumenter;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -94,8 +95,7 @@ public final class Utils {
     static Type instrumentType(Type t) {
         String desc = t.getDescriptor();
         Descriptor d = Descriptor.parseDescriptor(desc);
-        d = d.replaceType(Constants.StringDesc, Constants.TStringDesc);
-        d = d.replaceType(Constants.StringBuilderDesc, Constants.TStringBuilderDesc);
+        d = DescriptorInstrumenter.instrument(d);
         return Type.getType(d.toDescriptor());
 
     }
@@ -104,12 +104,13 @@ public final class Utils {
     static Handle instrumentHandle(Handle h) {
         // TODO: Add Buffer
         String desc = h.getDesc();
-        desc = Constants.strPattern.matcher(desc).replaceAll(Constants.TStringDesc);
-        desc = Constants.strBuilderPattern.matcher(desc).replaceAll(Constants.TStringBuilderDesc);
+        Descriptor d = Descriptor.parseDescriptor(desc);
+        d = DescriptorInstrumenter.instrument(d);
         String owner = h.getOwner();
+        // TODO: Add Buffer
         owner = STRING_QN_MATCHER.matcher(owner).replaceAll(Matcher.quoteReplacement(Constants.TStringQN));
         owner = STRING_BUILDER_QN_MATCHER.matcher(owner).replaceAll(Matcher.quoteReplacement(Constants.TStringBuilderQN));
-        return new Handle(h.getTag(), owner, h.getName(), desc, h.isInterface());
+        return new Handle(h.getTag(), owner, h.getName(), d.toDescriptor(), h.isInterface());
     }
 
     static String translateClassName(String className) {
