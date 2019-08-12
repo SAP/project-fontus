@@ -28,4 +28,9 @@ public class StringBufferInstrumentation implements InstrumentationStrategy {
         }
         return Optional.empty();
     }
+
+    @Override
+    public boolean handlesType(String typeName) {
+        return Constants.StringBufferDesc.endsWith(typeName);
+    }
 }

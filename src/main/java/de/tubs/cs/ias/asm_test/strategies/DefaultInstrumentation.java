@@ -19,4 +19,9 @@ public class DefaultInstrumentation implements InstrumentationStrategy {
     public Optional<String> translateClassName(String className) {
         return Optional.of(className);
     }
+
+    @Override
+    public boolean handlesType(String typeName) {
+        return false;
+    }
 }

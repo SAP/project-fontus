@@ -29,4 +29,9 @@ public class StringBuilderInstrumentation implements InstrumentationStrategy {
         }
         return Optional.empty();
     }
+
+    @Override
+    public boolean handlesType(String typeName) {
+        return Constants.StringBuilderDesc.endsWith(typeName);
+    }
 }

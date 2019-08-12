@@ -1,5 +1,7 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
+
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -98,13 +100,12 @@ public class Descriptor {
 
     /**
      * Checks whether the parameter list contains String like Parameters that need conversion before calling.
-     * TODO: Add other String types
      *
      * @return Whether on of the parameters is a String like type
      */
     boolean hasStringLikeParameters() {
         for (String p : this.getParameters()) {
-            if (p.equals(Constants.StringDesc)) {
+            if (InstrumentationHelper.canHandleType(p)) {
                 return true;
             }
         }

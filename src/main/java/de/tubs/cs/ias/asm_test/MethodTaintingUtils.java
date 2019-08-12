@@ -1,6 +1,6 @@
 package de.tubs.cs.ias.asm_test;
 
-import de.tubs.cs.ias.asm_test.strategies.DescriptorInstrumenter;
+import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -102,7 +102,7 @@ public class MethodTaintingUtils {
             }
         }
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
-        String descr = DescriptorInstrumenter.instrument(desc).toDescriptor();
+        String descr = InstrumentationHelper.instrument(desc).toDescriptor();
         mv.visitInvokeDynamicInsn(name, descr, bootstrapMethodHandle, bsArgs);
     }
 }

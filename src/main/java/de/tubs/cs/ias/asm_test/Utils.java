@@ -1,7 +1,6 @@
 package de.tubs.cs.ias.asm_test;
 
-import de.tubs.cs.ias.asm_test.strategies.DescriptorInstrumenter;
-import de.tubs.cs.ias.asm_test.strategies.QualifiedNameInstrumenter;
+import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -89,15 +88,14 @@ public final class Utils {
 
     static Type instrumentType(Type t) {
         Descriptor desc = Descriptor.parseDescriptor( t.getDescriptor());
-        desc = DescriptorInstrumenter.instrument(desc);
+        desc = InstrumentationHelper.instrument(desc);
         return Type.getType(desc.toDescriptor());
     }
 
-
     static Handle instrumentHandle(Handle h) {
         Descriptor desc = Descriptor.parseDescriptor(h.getDesc());
-        desc = DescriptorInstrumenter.instrument(desc);
-        String owner = QualifiedNameInstrumenter.instrumentQN(h.getOwner());
+        desc = InstrumentationHelper.instrument(desc);
+        String owner = InstrumentationHelper.instrumentQN(h.getOwner());
         return new Handle(h.getTag(), owner, h.getName(), desc.toDescriptor(), h.isInterface());
     }
 

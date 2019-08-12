@@ -8,4 +8,5 @@ public interface InstrumentationStrategy {
     Descriptor instrument(Descriptor desc);
     String instrumentQN(String qn);
     Optional<String> translateClassName(String className);
+    boolean handlesType(String typeName);
 }

@@ -242,7 +242,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
                 }
                 break;
             default:
-                this.handleMultiParameterJdkMethod(descriptor, desc);
+                this.handleMultiParameterJdkMethod(desc);
                 break;
         }
         logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor);
@@ -257,7 +257,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
 
-    private void handleMultiParameterJdkMethod(String descriptor, Descriptor desc) {
+    private void handleMultiParameterJdkMethod(Descriptor desc) {
         if (!desc.hasStringLikeParameters()) return;
 
         // TODO: Add optimization that the upmost parameter on the stack does not need to be stored/loaded..
@@ -265,7 +265,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         Stack<Runnable> loadStack = new Stack<>();
         Stack<String> params = new Stack<>();
         params.addAll(parameters);
-        int numVars = (Type.getArgumentsAndReturnSizes(descriptor) >> 2) - 1;
+        int numVars = (Type.getArgumentsAndReturnSizes(desc.toDescriptor()) >> 2) - 1;
         this.usedAfterInjection = this.used + numVars;
         int n = this.used;
         while (!params.empty()) {
