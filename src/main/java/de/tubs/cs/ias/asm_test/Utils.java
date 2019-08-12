@@ -101,19 +101,8 @@ public final class Utils {
         return new Handle(h.getTag(), owner, h.getName(), desc.toDescriptor(), h.isInterface());
     }
 
-    static String translateClassName(String className) {
-        // TODO: Add Buffer
-        if (className.equals(fixup(Constants.StringQN))) {
-            return fixup(Constants.TStringQN);
-        } else if (className.equals(fixup(Constants.StringBuilderQN))) {
-            return fixup(Constants.TStringBuilderQN);
-        } else {
-            return className;
-        }
-    }
-
     // Duplication with IASReflectionProxies, but we don't want to add all that many class files to the utils jar..
-    private static String fixup(String s) {
+    public static String fixup(String s) {
         return s.replace('/', '.');
     }
 

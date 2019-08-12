@@ -1,11 +1,10 @@
 package de.tubs.cs.ias.asm_test.strategies;
 
-import de.tubs.cs.ias.asm_test.Descriptor;
-
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 
-public class DescriptorInstrumenter {
+public class ClassNameTranslator {
     private static final Collection<InstrumentationStrategy> strategies = new ArrayList<>(4);
 
     static {
@@ -15,12 +14,13 @@ public class DescriptorInstrumenter {
         strategies.add(new DefaultInstrumentation());
     }
 
-    public static Descriptor instrument(Descriptor desc) {
-        Descriptor newDesc = desc;
+    public static String translateClassName(String clazzName) {
+
         for(InstrumentationStrategy is : strategies) {
-            newDesc = is.instrument(newDesc);
+            Optional<String> os = is.translateClassName(clazzName);
+            if(os.isPresent()) { return os.get(); }
         }
-        return newDesc;
+        return clazzName;
     }
 
 }

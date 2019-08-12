@@ -129,7 +129,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
 
     @Override
     public boolean handleLdcType(Type type) {
-        if ("java.lang.String".equals(type.getClassName())) {
+        if (Constants.STRING_FULL_NAME.equals(type.getClassName())) {
             this.mv.visitLdcInsn(Type.getObjectType(Constants.TStringQN));
             return true;
         }

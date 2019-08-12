@@ -165,6 +165,7 @@ public final class Constants {
     public static final String ABORT_IF_TAINTED = "abortIfTainted";
     static final String MAIN_METHOD_DESC = "([Ljava/lang/String;)V";
     public static final String TO_TSTRING = "toIASString";
+    public static final String STRING_FULL_NAME = "java.lang.String";
 
 
     private Constants() {
