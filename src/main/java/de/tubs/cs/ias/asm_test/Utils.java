@@ -93,24 +93,20 @@ public final class Utils {
     }
 
     static Type instrumentType(Type t) {
-        String desc = t.getDescriptor();
-        Descriptor d = Descriptor.parseDescriptor(desc);
-        d = DescriptorInstrumenter.instrument(d);
-        return Type.getType(d.toDescriptor());
-
+        Descriptor desc = Descriptor.parseDescriptor( t.getDescriptor());
+        desc = DescriptorInstrumenter.instrument(desc);
+        return Type.getType(desc.toDescriptor());
     }
 
 
     static Handle instrumentHandle(Handle h) {
-        // TODO: Add Buffer
-        String desc = h.getDesc();
-        Descriptor d = Descriptor.parseDescriptor(desc);
-        d = DescriptorInstrumenter.instrument(d);
+        Descriptor desc = Descriptor.parseDescriptor(h.getDesc());
+        desc = DescriptorInstrumenter.instrument(desc);
         String owner = h.getOwner();
         // TODO: Add Buffer
         owner = STRING_QN_MATCHER.matcher(owner).replaceAll(Matcher.quoteReplacement(Constants.TStringQN));
         owner = STRING_BUILDER_QN_MATCHER.matcher(owner).replaceAll(Matcher.quoteReplacement(Constants.TStringBuilderQN));
-        return new Handle(h.getTag(), owner, h.getName(), d.toDescriptor(), h.isInterface());
+        return new Handle(h.getTag(), owner, h.getName(), desc.toDescriptor(), h.isInterface());
     }
 
     static String translateClassName(String className) {
@@ -136,13 +132,5 @@ public final class Utils {
             mv.visitLdcInsn(value);
             mv.visitFieldInsn(Opcodes.PUTSTATIC, owner, field.x, field.y);
         }
-    }
-
-    //TODO: Move around and make modular..
-    static String rewriteDescriptor(String desc) {
-        String newDescriptor = desc.replaceAll(Constants.StringDesc, Constants.TStringDesc);
-        newDescriptor = newDescriptor.replaceAll(Constants.StringBufferDesc, Constants.TStringBufferDesc);
-        newDescriptor = newDescriptor.replaceAll(Constants.StringBuilderDesc, Constants.TStringBuilderDesc);
-        return newDescriptor;
     }
 }
