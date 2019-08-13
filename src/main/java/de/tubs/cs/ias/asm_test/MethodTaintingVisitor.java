@@ -17,7 +17,7 @@ import java.util.Stack;
 class MethodTaintingVisitor extends BasicMethodVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private boolean shouldRewriteCheckCast = false;
+    private boolean shouldRewriteCheckCast;
     private final String name;
     private final String methodDescriptor;
     /**
@@ -29,19 +29,18 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
      */
     private final HashMap<ProxiedDynamicFunctionEntry, Runnable> dynProxies;
 
-
-    private final Configuration configuration = Configuration.instance;
-
     private int used;
+    private int usedAfterInjection;
+
     private final Collection<MethodInstrumentationStrategy> instrumentation = new ArrayList<>(4);
 
-
-    private int usedAfterInjection;
 
     MethodTaintingVisitor(int acc, String name, String methodDescriptor, MethodVisitor methodVisitor) {
         super(Opcodes.ASM7, methodVisitor);
         this.used = Type.getArgumentsAndReturnSizes(methodDescriptor) >> 2;
+        this.usedAfterInjection = 0;
         if ((acc & Opcodes.ACC_STATIC) != 0) this.used--; // no this
+        this.shouldRewriteCheckCast = false;
         this.name = name;
         this.methodDescriptor = methodDescriptor;
         this.methodProxies = new HashMap<>();
@@ -130,7 +129,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
                                final String descriptor,
                                final boolean isInterface) {
         FunctionCall pfe = new FunctionCall(opcode, owner, name, descriptor, isInterface);
-        if (this.configuration.getSinks().contains(pfe)) {
+        if (Configuration.instance.getSinks().contains(pfe)) {
             logger.info("{}.{}{} is a sink, so calling the check taint function before passing the value!", owner, name, descriptor);
             // Call dup here to put the TString reference twice on the stack so the call can pop one without affecting further processing
             MethodTaintingUtils.callCheckTaint(this.getParentVisitor());
@@ -151,7 +150,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
                                  final String descriptor,
                                  final boolean isInterface) {
         FunctionCall pfe = new FunctionCall(opcode, owner, name, descriptor, isInterface);
-        if (this.configuration.getSources().contains(pfe)) {
+        if (Configuration.instance.getSources().contains(pfe)) {
             logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", owner, name, descriptor, Constants.TStringQN);
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
             super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "tainted", Constants.CreateTaintedStringDesc, false);
