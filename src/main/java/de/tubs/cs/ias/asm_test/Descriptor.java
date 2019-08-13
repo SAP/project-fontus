@@ -112,9 +112,12 @@ public class Descriptor {
         return false;
     }
 
-    // TODO: maybe remove the ';'s?
-    // TODO: throw exception on invalid descriptor
-    // TODO: think of a nicer structure, this is really messy
+    /**
+     * Parses a textual Descriptor and disassembles it into its types
+     * TODO: maybe remove the ';'s?
+     * TODO: throw exception on invalid descriptor
+     * TODO: think of a nicer structure, this is really messy
+     */
     public static Descriptor parseDescriptor(String descriptor) {
         ArrayList<String> out;
         StringBuilder returnType;
@@ -126,7 +129,6 @@ public class Descriptor {
             String next = sc.next();
             StringBuilder buffer = new StringBuilder();
             boolean inType = false;
-            boolean inArray = false;
             while (!")".equals(next)) {
                 buffer.append(next);
                 Matcher primitivesMatcher = PRIMITIVE_DATA_TYPES.matcher(next);

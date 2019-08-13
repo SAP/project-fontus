@@ -222,12 +222,10 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         }
         if(!desc.toDescriptor().equals(descriptor)) {
             logger.info("Rewriting invoke containing String-like type [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, desc.toDescriptor());
-            super.visitMethodInsn(opcode, owner, name, desc.toDescriptor(), isInterface);
-            return;
          }
 
-        logger.info("Skipping invoke [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor);
-        super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+        logger.info("Skipping invoke [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, desc.toDescriptor());
+        super.visitMethodInsn(opcode, owner, name, desc.toDescriptor(), isInterface);
     }
 
     private void handleJdkMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
