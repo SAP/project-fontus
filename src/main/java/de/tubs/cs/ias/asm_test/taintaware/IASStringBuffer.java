@@ -3,34 +3,42 @@ package de.tubs.cs.ias.asm_test.taintaware;
 
 @SuppressWarnings({"SynchronizedMethod", "ReturnOfThis", "WeakerAccess", "ClassWithTooManyConstructors", "ClassWithTooManyMethods"})
 public class IASStringBuffer
-        implements java.io.Serializable, CharSequence {
+        implements java.io.Serializable, CharSequence, IASTaintAware {
 
     // TODO: accessed in both synchronized and unsynchronized methods
     private final StringBuffer buffer;
     private boolean tainted = false;
 
+    @Override
     public boolean isTainted() {
         return this.tainted;
     }
+
+    @Override
+    public void setTaint(boolean taint) {
+        this.tainted = taint;
+    }
+
+    private void mergeTaint(IASTaintAware other) {
+        this.tainted |= other.isTainted();
+    }
+
 
     public IASStringBuffer() {
         this.buffer = new StringBuffer();
     }
 
     public IASStringBuffer(int capacity) {
-
         this.buffer = new StringBuffer(capacity);
-
     }
 
     public IASStringBuffer(IASString str) {
         this.buffer = new StringBuffer(str.length() + 16);
         this.buffer.append(str);
-        this.tainted = str.isTainted();
+        this.mergeTaint(str);
     }
 
     public IASStringBuffer(String str) {
-
         this.buffer = new StringBuffer(str.length() + 16);
         this.buffer.append(str);
     }
@@ -119,7 +127,7 @@ public class IASStringBuffer
             return this;
         }
         this.buffer.append(str.toIASString());
-        this.tainted |= str.isTainted();
+        this.mergeTaint(str);
         return this;
     }
 
@@ -130,14 +138,14 @@ public class IASStringBuffer
 
     public synchronized IASStringBuffer append(IASStringBuffer sb) {
         this.buffer.append(sb);
-        this.tainted |= sb.tainted;
+        this.mergeTaint(sb);
         return this;
     }
 
     // TODO: Add the abstract base class
     synchronized IASStringBuffer append(IASStringBuilder asb) {
         this.buffer.append(asb);
-        this.tainted |= asb.isTainted();
+        this.mergeTaint(asb);
         return this;
     }
 
@@ -214,7 +222,7 @@ public class IASStringBuffer
 
     public synchronized IASStringBuffer replace(int start, int end, IASString str) {
         this.buffer.replace(start, end, str.getString());
-        this.tainted |= str.isTainted();
+        this.mergeTaint(str);
         return this;
     }
 

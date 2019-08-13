@@ -3,16 +3,21 @@ package de.tubs.cs.ias.asm_test.taintaware;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("ALL")
-public class IASStringBuilder implements java.io.Serializable, /* Comparable<IASStringBuilder>, */ CharSequence {
+public class IASStringBuilder implements java.io.Serializable, /* Comparable<IASStringBuilder>, */ CharSequence, IASTaintAware {
 
     private final StringBuilder builder;
     private boolean tainted;
 
+    @Override
     public boolean isTainted() {
         return this.tainted;
     }
 
-    private void mergeTaint(IASString str) {
+    @Override
+    public void setTaint(boolean taint) {
+        this.tainted = taint;
+    }
+    private void mergeTaint(IASTaintAware str) {
         this.tainted |= str.isTainted();
     }
 

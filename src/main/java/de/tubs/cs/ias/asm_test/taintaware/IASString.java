@@ -9,7 +9,8 @@ import java.util.stream.IntStream;
 
 
 @SuppressWarnings("ALL")
-public class IASString implements CharSequence {
+public class IASString implements IASTaintAware, CharSequence  {
+
     private String str;
     private boolean tainted;
 
@@ -32,12 +33,18 @@ public class IASString implements CharSequence {
         return new IASString(str, true);
     }
 
+    @Override
     public boolean isTainted() {
         return this.tainted;
     }
 
-    public void setTaint(Boolean b) {
+    @Override
+    public void setTaint(boolean b) {
         this.tainted = b;
+    }
+
+    private void mergeTaint(IASTaintAware other) {
+        this.tainted |= other.isTainted();
     }
 
     public void abortIfTainted() {
