@@ -1,11 +1,13 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
+
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-class Descriptor {
+public class Descriptor {
 
     private static final Pattern PRIMITIVE_DATA_TYPES = Pattern.compile("[ZBCSIFDJ]");
     private final Collection<String> parameters;
@@ -67,7 +69,7 @@ class Descriptor {
         return Collections.unmodifiableCollection(this.parameters);
     }
 
-    String getReturnType() {
+    public String getReturnType() {
         return this.returnType;
     }
 
@@ -97,36 +99,25 @@ class Descriptor {
     }
 
     /**
-     * Does the descriptor have a String-like return type?
-     * TODO: Add other String types
-     */
-    boolean hasStringLikeReturnType() {
-        return Constants.StringDesc.equals(this.returnType);
-    }
-
-    boolean hasStringArrayReturnType() {
-        return Constants.StringArrayDesc.equals(this.returnType);
-    }
-
-    /**
      * Checks whether the parameter list contains String like Parameters that need conversion before calling.
-     * TODO: Add other String types
      *
      * @return Whether on of the parameters is a String like type
      */
     boolean hasStringLikeParameters() {
-        boolean hasTaintAwareParam = false;
         for (String p : this.getParameters()) {
-            if (p.equals(Constants.StringDesc)) {
-                hasTaintAwareParam = true;
+            if (InstrumentationHelper.canHandleType(p)) {
+                return true;
             }
         }
-        return hasTaintAwareParam;
+        return false;
     }
 
-    // TODO: maybe remove the ';'s?
-    // TODO: throw exception on invalid descriptor
-    // TODO: think of a nicer structure, this is really messy
+    /**
+     * Parses a textual Descriptor and disassembles it into its types
+     * TODO: maybe remove the ';'s?
+     * TODO: throw exception on invalid descriptor
+     * TODO: think of a nicer structure, this is really messy
+     */
     public static Descriptor parseDescriptor(String descriptor) {
         ArrayList<String> out;
         StringBuilder returnType;
@@ -144,7 +135,7 @@ class Descriptor {
                 if (!inType && primitivesMatcher.matches()) {
                     out.add(buffer.toString());
                     buffer = new StringBuilder();
-                } else {
+                } else if(!"[".equals(next)) {
                     inType = true;
                     if (";".equals(next)) {
                         out.add(buffer.toString());

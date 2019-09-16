@@ -1,22 +1,17 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-final class Utils {
-
-    private static final Pattern STRING_QN_MATCHER = Pattern.compile(Constants.StringQN, Pattern.LITERAL);
-    private static final Pattern STRING_BUILDER_QN_MATCHER = Pattern.compile(Constants.StringBuilderQN, Pattern.LITERAL);
+public final class Utils {
 
     private Utils() {
     }
 
-    static String opcodeToString(int opcode) {
+    public static String opcodeToString(int opcode) {
         switch (opcode) {
             case Opcodes.INVOKEVIRTUAL:
                 return "v";
@@ -92,46 +87,28 @@ final class Utils {
     }
 
     static Type instrumentType(Type t) {
-        String desc = t.getDescriptor();
-        Descriptor d = Descriptor.parseDescriptor(desc);
-        d = d.replaceType(Constants.StringDesc, Constants.TStringDesc);
-        d = d.replaceType(Constants.StringBuilderDesc, Constants.TStringBuilderDesc);
-        return Type.getType(d.toDescriptor());
-
+        Descriptor desc = Descriptor.parseDescriptor( t.getDescriptor());
+        desc = InstrumentationHelper.instrument(desc);
+        return Type.getType(desc.toDescriptor());
     }
-
 
     static Handle instrumentHandle(Handle h) {
-        String desc = h.getDesc();
-        desc = Constants.strPattern.matcher(desc).replaceAll(Constants.TStringDesc);
-        desc = Constants.strBuilderPattern.matcher(desc).replaceAll(Constants.TStringBuilderDesc);
-        String owner = h.getOwner();
-        owner = STRING_QN_MATCHER.matcher(owner).replaceAll(Matcher.quoteReplacement(Constants.TStringQN));
-        owner = STRING_BUILDER_QN_MATCHER.matcher(owner).replaceAll(Matcher.quoteReplacement(Constants.TStringBuilderQN));
-        return new Handle(h.getTag(), owner, h.getName(), desc, h.isInterface());
-    }
-
-    static String translateClassName(String className) {
-        if (className.equals(fixup(Constants.StringQN))) {
-            return fixup(Constants.TStringQN);
-        } else if (className.equals(fixup(Constants.StringBuilderQN))) {
-            return fixup(Constants.TStringBuilderQN);
-        } else {
-            return className;
-        }
+        Descriptor desc = Descriptor.parseDescriptor(h.getDesc());
+        desc = InstrumentationHelper.instrument(desc);
+        String owner = InstrumentationHelper.instrumentQN(h.getOwner());
+        return new Handle(h.getTag(), owner, h.getName(), desc.toDescriptor(), h.isInterface());
     }
 
     // Duplication with IASReflectionProxies, but we don't want to add all that many class files to the utils jar..
-    private static String fixup(String s) {
+    public static String fixup(String s) {
         return s.replace('/', '.');
     }
 
-    static void writeToStaticInitializer(MethodVisitor mv, String owner, Iterable<Tuple<Tuple<String, String>, Object>> staticFields) {
-        for (Tuple<Tuple<String, String>, Object> e : staticFields) {
-            Object value = e.y;
-            Tuple<String, String> field = e.x;
+    static void writeToStaticInitializer(MethodVisitor mv, String owner, Iterable<FieldData> staticFields) {
+        for (FieldData field : staticFields) {
+            Object value = field.getValue();
             mv.visitLdcInsn(value);
-            mv.visitFieldInsn(Opcodes.PUTSTATIC, owner, field.x, field.y);
+            mv.visitFieldInsn(Opcodes.PUTSTATIC, owner, field.getName(), field.getDescriptor());
         }
     }
 }

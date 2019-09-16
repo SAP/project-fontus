@@ -1,5 +1,8 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.taintaware.IASString;
+
+@SuppressWarnings({"ClassUnconnectedToPackage", "ClassOnlyUsedInOnePackage"})
 public class TaintStringHelper {
 
     public static Boolean isTainted(String str) {

@@ -46,7 +46,9 @@ test {
 
 task utilJar(type: Jar) {
     from(sourceSets.main.output) {
-        include "**/asm_test/IAS*"
+        include "**/asm_test/taintaware/*"
+        include "**/asm_test/strategies/*"
+        include "**/asm_test/Utils*"
     }
     utilJar.baseName = "util"
 }

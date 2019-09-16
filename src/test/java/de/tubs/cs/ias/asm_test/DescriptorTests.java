@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.stream.Stream;
 
-@SuppressWarnings({"DuplicateStringLiteralInspection", "SpellCheckingInspection"})
+@SuppressWarnings({"DuplicateStringLiteralInspection", "SpellCheckingInspection", "ClassIndependentOfModule", "ClassOnlyUsedInOneModule"})
 class DescriptorTests {
 
     @Test
@@ -18,6 +18,20 @@ class DescriptorTests {
         Descriptor d = new Descriptor("Ljava/lang/String;");
         Descriptor pd = Descriptor.parseDescriptor(Constants.ToStringDesc);
         assertEquals(d, pd, "toString should have no parameters and return Ljava/lang/String;");
+    }
+
+    @Test
+    void parseCharArrayDescriptor() {
+        Descriptor d = new Descriptor("[C", "V");
+        Descriptor pd = Descriptor.parseDescriptor("([C)V");
+        assertEquals(d, pd, "Both descriptors should have one char array parameter and void return type.");
+    }
+
+    @Test
+    void parseArrayDescriptor() {
+        Descriptor d = new Descriptor("[Ljava/lang/String;", "[C");
+        Descriptor pd = Descriptor.parseDescriptor("([Ljava/lang/String;)[C");
+        assertEquals(d, pd, "Both descriptors should have one String array array parameter and a char array return type.");
     }
 
     @ParameterizedTest(name = "(){0} = no parameters and {0} as return type.")
@@ -109,7 +123,7 @@ class DescriptorTests {
                         )),
                 Arguments.of("([Ljava/lang/Object;)Ljava/util/List;",
                         new Descriptor("[Ljava/lang/Object;", "Ljava/util/List;")),
-                Arguments.of("([Ljava/lang/String;)V",
+                Arguments.of(Constants.MAIN_METHOD_DESC,
                         new Descriptor("[Ljava/lang/String;", "V")),
                 Arguments.of("(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;",
                         new Descriptor("Ljava/lang/String;",

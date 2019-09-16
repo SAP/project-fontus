@@ -1,5 +1,8 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.strategies.clazz.*;
+import de.tubs.cs.ias.asm_test.method.MethodVisitRecording;
+import de.tubs.cs.ias.asm_test.method.RecordingMethodVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Label;
@@ -11,18 +14,19 @@ import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.regex.Matcher;
+import java.util.Optional;
 
 
 public class ClassTaintingVisitor extends ClassVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Collection<BlackListEntry> blacklist = new ArrayList<>();
-    private static final String mainDescriptor = "([Ljava/lang/String;)V";
     private static final String newMainDescriptor = "(" + Constants.TStringArrayDesc + ")V";
-    private final Collection<Tuple<Tuple<String, String>, Object>> staticFinalFields;
+    private final Collection<FieldData> staticFinalFields;
     private boolean hasClInit = false;
     private MethodVisitRecording recording;
+    private final ClassVisitor visitor;
+    private final Collection<ClassInstrumentationStrategy> instrumentation = new ArrayList<>(4);
 
     /**
      * The name of the class currently processed.
@@ -31,12 +35,21 @@ public class ClassTaintingVisitor extends ClassVisitor {
 
     public ClassTaintingVisitor(ClassVisitor cv) {
         super(Opcodes.ASM7, cv);
+        this.visitor = cv;
         this.staticFinalFields = new ArrayList<>();
         this.fillBlacklist();
+        this.fillStrategies();
+    }
+
+    private void fillStrategies() {
+        this.instrumentation.add(new StringBufferClassInstrumentationStrategy(this.visitor));
+        this.instrumentation.add(new StringBuilderClassInstrumentationStrategy(this.visitor));
+        this.instrumentation.add(new StringClassInstrumentationStrategy(this.visitor));
+        this.instrumentation.add(new DefaultClassInstrumentationStrategy(this.visitor));
     }
 
     private void fillBlacklist() {
-        this.blacklist.add(new BlackListEntry("main", mainDescriptor, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
+        this.blacklist.add(new BlackListEntry("main", Constants.MAIN_METHOD_DESC, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
         this.blacklist.add(new BlackListEntry(Constants.ToString, Constants.ToStringDesc, Opcodes.ACC_PUBLIC));
     }
 
@@ -61,11 +74,10 @@ public class ClassTaintingVisitor extends ClassVisitor {
      * @param mv The visitor creating the static initialization block
      */
     private void writeToStaticInitializer(MethodVisitor mv) {
-        for (Tuple<Tuple<String, String>, Object> e : this.staticFinalFields) {
-            Object value = e.y;
-            Tuple<String, String> field = e.x;
+        for (FieldData e : this.staticFinalFields) {
+            Object value = e.getValue();
             mv.visitLdcInsn(value);
-            mv.visitFieldInsn(Opcodes.PUTSTATIC, this.owner, field.x, field.y);
+            mv.visitFieldInsn(Opcodes.PUTSTATIC, this.owner, e.getName(), e.getDescriptor());
         }
     }
 
@@ -76,29 +88,17 @@ public class ClassTaintingVisitor extends ClassVisitor {
     public FieldVisitor visitField(int access, String name, String descriptor,
                                    String signature, Object value) {
 
-        Matcher descMatcher = Constants.strPattern.matcher(descriptor);
-        Matcher sbDescMatcher = Constants.strBuilderPattern.matcher(descriptor);
-        Matcher sBufferDescMatcher = Constants.strBufferPattern.matcher(descriptor);
-        // TODO: both? more? how to deuglify if the list grows
-        if (descMatcher.find()) {
-            String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
-            logger.info("Replacing String field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
-            FieldVisitor fv = super.visitField(access, name, newDescriptor, signature, null);
-            if (value != null && access == (Opcodes.ACC_FINAL | Opcodes.ACC_STATIC)) {
-                this.staticFinalFields.add(Tuple.of(Tuple.of(name, descriptor), value));
+        FieldVisitor fv = null;
+        for (ClassInstrumentationStrategy is : this.instrumentation) {
+            Optional<FieldVisitor> ofv = is.instrumentFieldInstruction(
+                    access, name, descriptor, signature, value,
+                    (n, d, v) -> this.staticFinalFields.add(FieldData.of(n, d, v))
+            );
+            if (ofv.isPresent()) {
+                fv = ofv.get();
             }
-            return fv;
-        } else if (sbDescMatcher.find()) {
-            String newDescriptor = sbDescMatcher.replaceAll(Constants.TStringBuilderDesc);
-            logger.info("Replacing StringBuilder field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
-            return super.visitField(access, name, newDescriptor, signature, value);
-        } else if (sBufferDescMatcher.find()) {
-            String newDescriptor = sBufferDescMatcher.replaceAll(Constants.TStringBufferDesc);
-            logger.info("Replacing StringBuffer field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
-            return super.visitField(access, name, newDescriptor, signature, value);
-        } else {
-            return super.visitField(access, name, descriptor, signature, value);
         }
+        return fv;
     }
 
     /**
@@ -147,10 +147,6 @@ public class ClassTaintingVisitor extends ClassVisitor {
             final String descriptor,
             final String signature,
             final String[] exceptions) {
-
-        Matcher builderDescMatcher = Constants.strBuilderPattern.matcher(descriptor);
-        Matcher bufferDescMatcher = Constants.strBufferPattern.matcher(descriptor);
-        Matcher descMatcher = Constants.strPattern.matcher(descriptor);
         MethodVisitor mv;
         String desc = descriptor;
         String newName = name;
@@ -165,9 +161,9 @@ public class ClassTaintingVisitor extends ClassVisitor {
 
         // Create a new main method, wrapping the regular one and translating all Strings to IASStrings
         // TODO: acceptable for main is a parameter of String[] or String...! Those have different access bits set (i.e., the ACC_VARARGS bits are set too) -> Handle this nicer..
-        if (((access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC) && (access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC && "main".equals(name) && descriptor.equals(mainDescriptor)) {
+        if (((access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC) && (access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC && "main".equals(name) && descriptor.equals(Constants.MAIN_METHOD_DESC)) {
             logger.info("Creating proxy main method");
-            MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "main", mainDescriptor, signature, exceptions);
+            MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "main", Constants.MAIN_METHOD_DESC, signature, exceptions);
             this.createMainWrapperMethod(v);
             logger.info("Processing renamed main method.");
             mv = super.visitMethod(access, Constants.MainWrapper, newMainDescriptor, signature, exceptions);
@@ -180,18 +176,20 @@ public class ClassTaintingVisitor extends ClassVisitor {
             newName = Constants.ToStringInstrumented;
             desc = Constants.ToStringInstrumentedDesc;
             mv = super.visitMethod(access, newName, desc, signature, exceptions);
-        } else if (!this.blacklist.contains(new BlackListEntry(name, descriptor, access)) && (descMatcher.find() || bufferDescMatcher.find() || builderDescMatcher.find())) {
-            String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
-            Matcher innerMatcher = Constants.strBufferPattern.matcher(newDescriptor);
-            newDescriptor = innerMatcher.replaceAll(Constants.TStringBufferDesc);
-            innerMatcher = Constants.strBuilderPattern.matcher(newDescriptor);
-            newDescriptor = innerMatcher.replaceAll(Constants.TStringBuilderDesc);
-            logger.info("Rewriting method signature {}{} to {}{}", name, descriptor, name, newDescriptor);
-            mv = super.visitMethod(access, name, newDescriptor, signature, exceptions);
-            desc = newDescriptor;
-        } else {
+        } else if (this.blacklist.contains(new BlackListEntry(name, descriptor, access))) {
             mv = super.visitMethod(access, name, descriptor, signature, exceptions);
+        } else {
+            Descriptor d = Descriptor.parseDescriptor(descriptor);
+            for (ClassInstrumentationStrategy is : this.instrumentation) {
+                d = is.instrument(d);
+            }
+            desc = d.toDescriptor();
+            if (!desc.equals(descriptor)) {
+                logger.info("Rewriting method signature {}{} to {}{}", name, descriptor, name, desc);
+            }
+            mv = super.visitMethod(access, name, desc, signature, exceptions);
         }
+
         return new MethodTaintingVisitor(access, newName, desc, mv);
     }
 

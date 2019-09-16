@@ -1,11 +1,12 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.taintaware.IASString;
+import de.tubs.cs.ias.asm_test.taintaware.IASStringUtils;
 import org.junit.jupiter.api.Test;
-
-import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings({"ClassIndependentOfModule", "ClassOnlyUsedInOneModule", "ClassUnconnectedToPackage", "ClassOnlyUsedInOnePackage"})
 public class TaintStringUtilsTests {
     @Test
     public void testConcat() {
