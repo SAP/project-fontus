@@ -141,6 +141,7 @@ class TestCase:
         self._javac_version = None  # test_dict.get('javac_version')
         self._regular_result = None
         self._instrumented_result = None
+        self._agent_result = None
 
     @property
     def name(self):
@@ -219,10 +220,11 @@ class JarTestCase:
 
 
 class TestResult:
-    def __init__(self, test_case, regular_result, instrumented_result):
+    def __init__(self, test_case, regular_result, instrumented_result, agent_result):
         self._test_case = test_case
         self._regular_result = regular_result
         self._instrumented_result = instrumented_result
+        self._agent_result = agent_result
 
     @property
     def test_case(self):
@@ -231,7 +233,7 @@ class TestResult:
     @property
     def successful(self):
         return not (self._regular_result is None or self._instrumented_result is None) and \
-               self._regular_result == self._instrumented_result
+               (self._regular_result == self._instrumented_result and (self._regular_result == self._agent_result))
 
     @property
     def regular_result(self):
@@ -249,10 +251,19 @@ class TestResult:
     def regular_result(self, value):
         self._regular_result = value
 
+    @property
+    def agent_result(self):
+        return self._agent_result
+
+    @agent_result.setter
+    def agent_result(self, value):
+        self._agent_result = value
+
     def __repr__(self):
         return ('TestResult(\n\ttest_case={self._test_case}, '
                 '\n\tregular_result={self._regular_result!r}, '
-                '\n\tinstrumented_result={self._instrumented_result!r}\n)').format(self=self)
+                '\n\tinstrumented_result={self._instrumented_result!r},'
+                '\n\tagent_result={self._agent_result!r}\n)').format(self=self)
 
 
 class Configuration:
@@ -346,6 +357,15 @@ class TestRunner:
     def __init__(self, config):
         self._config = config
 
+    def _run_regular_class_file_with_agent(self, cwd, name, arguments):
+        arguments = ["java",
+                     "-classpath",
+                     '.:{}'.format(format_jar_filename("asm_test", self._config.version)),
+                     '-javaagent:{}'.format(format_jar_filename("asm_test", self._config.version)),
+                     name
+                     ] + arguments
+        return run_command(cwd, arguments)
+
     @staticmethod
     def _run_regular_class_file(cwd, name, arguments):
         arguments = ["java", name] + arguments
@@ -398,6 +418,16 @@ class TestRunner:
         ] + additional_arguments
         return run_command(cwd, arguments, input_file)
 
+    def _run_agent_jar_internal(self, cwd, name, entry_point, additional_arguments, input_file):
+        arguments = [
+                        "java",
+                        "-cp",
+                        '{}:{}'.format(format_jar_filename("asm_test", self._config.version), name),
+                        '-javaagent:{}'.format(format_jar_filename("asm_test", self._config.version)),
+                        entry_point
+                    ] + additional_arguments
+        return run_command(cwd, arguments, input_file)
+
     @staticmethod
     def _run_jar_internal(cwd, name, additional_arguments, input_file):
         arguments = [
@@ -420,6 +450,13 @@ class TestRunner:
                 return self._run_instrumented_jar_internal(cwd, name, entry_point, arguments, inp)
         else:
             return self._run_instrumented_jar_internal(cwd, name, entry_point, arguments, input_file)
+
+    def _run_agent_jar(self, cwd, name, entry_point, arguments, input_file=None):
+        if input_file:
+            with open(input_file, "r", encoding="utf-8") as inp:
+                return self._run_agent_jar_internal(cwd, name, entry_point, arguments, inp)
+        else:
+            return self._run_agent_jar_internal(cwd, name, entry_point, arguments, input_file)
 
     def _run_instrumented_class_file(self, cwd, name, additional_arguments):
         arguments = [
@@ -447,7 +484,13 @@ class TestRunner:
             test.arguments,
             test.input_file
         )
-
+        agent_result = self._run_agent_jar(
+            base_dir,
+            test.jar_file,
+            test.entry_point,
+            test.arguments,
+            test.input_file
+        )
         instrumented_cwd = path.join(base_dir, TMPDIR_OUTPUT_DIR_SUFFIX)
         instrumented_result = self._run_instrumented_jar(
             instrumented_cwd,
@@ -456,7 +499,7 @@ class TestRunner:
             test.arguments,
             test.input_file
         )
-        return TestResult(test, regular_result, instrumented_result)
+        return TestResult(test, regular_result, instrumented_result, agent_result)
 
     def _run_test(self, base_dir, test):
         print('Running Test: "{}"'.format(test.name))
@@ -475,7 +518,12 @@ class TestRunner:
             base_name,
             test.arguments
         )
-        return TestResult(test, regular_result, instrumented_result)
+        agent_result = self._run_regular_class_file_with_agent(
+            base_dir,
+            base_name,
+            test.arguments
+        )
+        return TestResult(test, regular_result, instrumented_result, agent_result)
 
     def _run_tests(self, base_dir):
         test_results = []
