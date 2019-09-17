@@ -46,7 +46,7 @@ public class TaintAgent {
         @Override
         public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                                 ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-            if(jdkClasses.isJdkClass(className) || className.startsWith("jdk") || className.startsWith("java") || className.startsWith("ch/qos/logback") || className.startsWith("org/objectweb/asm/")) {
+            if(jdkClasses.isJdkClass(className) || className.startsWith("jdk") || className.startsWith("java") || className.startsWith("sun/misc/") || className.startsWith("ch/qos/logback") || className.startsWith("org/objectweb/asm/")) {
                 logger.info("Skipping JDK class: {}", className);
                 return classfileBuffer;
             }
