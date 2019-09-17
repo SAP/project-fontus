@@ -22,6 +22,10 @@
     {
       "name": "Media Types Tests from Spring",
       "jar_file": "media_types.jar"
+    },
+    {
+      "name": "AsciiBytes from Spring Boot",
+      "jar_file": "sbasciibytes.jar"
     }
   ],
   "single_file_tests": [

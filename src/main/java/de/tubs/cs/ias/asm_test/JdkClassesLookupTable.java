@@ -49,6 +49,7 @@ public final class JdkClassesLookupTable {
     }
 
     public boolean isJdkClass(String className) {
+        if(className == null) return true;
         //TODO: is the split on $ the optimal way to only get the prefix? This is supposed to catch inner classes too
         String[] parts = className.split("\\$");
         assert parts[0] != null;

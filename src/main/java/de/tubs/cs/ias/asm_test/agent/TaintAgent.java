@@ -14,6 +14,7 @@ import java.security.ProtectionDomain;
 
 public class TaintAgent {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final JdkClassesLookupTable jdkClasses = JdkClassesLookupTable.instance;
 
     public static void premain(String args, Instrumentation inst) {
         inst.addTransformer(new TaintAgent.TaintingTransformer());
@@ -24,19 +25,29 @@ public class TaintAgent {
                 continue;
             }
             try {
-                logger.info("Retransforming: {}", clazz.getName());
-                inst.retransformClasses(clazz);
+                String name = clazz.getName();
+                if(name == null) continue;
+                name = name.replace('.', '/');
+
+                if(!isJdkClass(name)) {
+                    logger.info("Retransforming: {}", name);
+                    inst.retransformClasses(clazz);
+                }
             } catch(UnmodifiableClassException uce) {
                 logger.error("Can't transform unmodifiable class: ", uce);
             }
         }*/
     }
 
+    static boolean isJdkClass(String className) {
+        return jdkClasses.isJdkClass(className) || className.startsWith("de/tubs/cs") || className.startsWith("sun") || className.startsWith("com/sun") || className.startsWith("jdk") || className.startsWith("java") || className.startsWith("sun/misc/") || className.startsWith("ch/qos/logback") || className.startsWith("org/objectweb/asm/");
+
+        }
+
     static class TaintingTransformer implements ClassFileTransformer {
         private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
         private Configuration config = Configuration.instance;
-        private JdkClassesLookupTable jdkClasses = JdkClassesLookupTable.instance;
         private Instrumenter instrumenter;
 
         TaintingTransformer() {
@@ -46,7 +57,7 @@ public class TaintAgent {
         @Override
         public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                                 ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-            if(jdkClasses.isJdkClass(className) || className.startsWith("jdk") || className.startsWith("java") || className.startsWith("sun/misc/") || className.startsWith("ch/qos/logback") || className.startsWith("org/objectweb/asm/")) {
+            if(isJdkClass(className)) {
                 logger.info("Skipping JDK class: {}", className);
                 return classfileBuffer;
             }

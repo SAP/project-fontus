@@ -19,6 +19,7 @@ JAR_FOLDERS=(
     binary_search_tree
     static_init_test
     media_types
+    springboot_asciibytes
 )
 
 main() {
