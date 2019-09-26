@@ -12,7 +12,7 @@ cd ${BASE_DIR}/build/libs;
 java -jar asm_test-0.0.1-SNAPSHOT.jar -f ${BASE_DIR}/tests/TestString.class -o ${BASE_DIR}/tests/out/TestString.class
 ```
 This will instrument the byte code of the input file (path after the -f flag) and write the result into the output file, given after the -o flag.
-The instrumented file can then be executed by running ``java -classpath ".:util-0.0.1-SNAPSHOT.jar" TestString``.
+The instrumented file can then be executed by running ``java -classpath ".:asm_test-0.0.1-SNAPSHOT.jar" TestString``.
 
 ### Logging
 
