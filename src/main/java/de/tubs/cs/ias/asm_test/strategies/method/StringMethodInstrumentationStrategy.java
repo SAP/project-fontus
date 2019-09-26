@@ -87,7 +87,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
         }
         if (Constants.StringDesc.equals(parameter)) {
             logger.info("Converting taint-aware String to String in multi param method invocation");
-            this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
+            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "asString", String.format("(%s)%s", Constants.TStringDesc, Constants.StringDesc), false);
         }
     }
 

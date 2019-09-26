@@ -240,6 +240,10 @@
     {
       "name": "Calling String.valueOf on a taint-aware String should NOT lose the taint",
       "source": "ValueOfTest.java"
+    },
+    {
+      "name": "Logging Test from trying to instrument tomcat",
+      "source": "LoggerTest.java"
     }
   ]
 }
