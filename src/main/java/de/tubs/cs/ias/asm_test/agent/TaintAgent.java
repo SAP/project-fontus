@@ -18,7 +18,7 @@ public class TaintAgent {
 
     public static void premain(String args, Instrumentation inst) {
         inst.addTransformer(new TaintAgent.TaintingTransformer());
-        Class[] clazzes = inst.getAllLoadedClasses();
+        /*Class[] clazzes = inst.getAllLoadedClasses();
         for(Class clazz : clazzes) {
             if(!inst.isModifiableClass(clazz)) {
                 logger.info("{} is not modifiable, skipping!", clazz.getName());
@@ -36,7 +36,7 @@ public class TaintAgent {
             } catch(UnmodifiableClassException uce) {
                 logger.error("Can't transform unmodifiable class: ", uce);
             }
-        }
+        }*/
     }
 
     static boolean isJdkClass(String className) {
@@ -67,7 +67,7 @@ public class TaintAgent {
             }
 
             logger.info("Tainting class: {}", className);
-            return this.instrumenter.instrumentClass(classfileBuffer);
+            return this.instrumenter.instrumentClass(classfileBuffer, loader);
         }
     }
 }
