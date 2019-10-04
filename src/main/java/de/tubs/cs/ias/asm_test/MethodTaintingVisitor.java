@@ -220,11 +220,12 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         for(MethodInstrumentationStrategy s : this.instrumentation) {
             desc = s.instrument(desc);
         }
-        if(!desc.toDescriptor().equals(descriptor)) {
-            logger.info("Rewriting invoke containing String-like type [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, desc.toDescriptor());
-         }
 
-        logger.info("Skipping invoke [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, desc.toDescriptor());
+        if (desc.toDescriptor().equals(descriptor)) {
+            logger.info("Skipping invoke [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, desc.toDescriptor());
+        } else {
+            logger.info("Rewriting invoke containing String-like type [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, desc.toDescriptor());
+        }
         super.visitMethodInsn(opcode, owner, name, desc.toDescriptor(), isInterface);
     }
 
