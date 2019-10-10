@@ -23,6 +23,7 @@ dependencies {
     compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.9'
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
     compile 'ch.qos.logback:logback-classic:1.2.3'
+    compile group: 'org.mutabilitydetector', name: 'asm-nonclassloadingextensions', version: '1.0-rc2'
     testImplementation('org.junit.jupiter:junit-jupiter:5.4.2')
 }
 

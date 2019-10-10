@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test;
 
+import org.mutabilitydetector.asm.NonClassloadingClassWriter;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.slf4j.Logger;
@@ -21,7 +22,7 @@ public class Instrumenter {
     }
 
     private byte[] instrumentInternal(ClassReader cr, ClassLoader loader) {
-        ClassWriter writer = new LoaderAwareClassWriter(loader, cr, ClassWriter.COMPUTE_FRAMES);
+        NonClassloadingClassWriter writer = new NonClassloadingClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
         //ClassVisitor cca = new CheckClassAdapter(writer);
         ClassTaintingVisitor smr = new ClassTaintingVisitor(writer);
         cr.accept(smr, ClassReader.SKIP_FRAMES);
