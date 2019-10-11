@@ -260,6 +260,10 @@
     {
       "name": "SystemGetProperty",
       "source": "SystemGetProperty.java"
+    },
+    {
+      "name": "FieldAccessTest",
+      "source": "FieldAccessTest.java"
     }
   ]
 }

@@ -1,8 +1,6 @@
 package de.tubs.cs.ias.asm_test.strategies.method;
 
-import de.tubs.cs.ias.asm_test.Constants;
-import de.tubs.cs.ias.asm_test.Descriptor;
-import de.tubs.cs.ias.asm_test.Utils;
+import de.tubs.cs.ias.asm_test.*;
 import de.tubs.cs.ias.asm_test.strategies.StringInstrumentation;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -18,6 +16,7 @@ import java.util.regex.Matcher;
 public class StringMethodInstrumentationStrategy extends StringInstrumentation implements MethodInstrumentationStrategy{
     private final MethodVisitor mv;
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final JdkClassesLookupTable lookupTable = JdkClassesLookupTable.instance;
     private final HashMap<String, String> methodsToRename = new HashMap<>(1);
 
     public StringMethodInstrumentationStrategy(MethodVisitor mv) {
@@ -77,8 +76,13 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     public boolean instrumentFieldIns(int opcode, String owner, String name, String descriptor) {
         Matcher matcher = Constants.strPattern.matcher(descriptor);
         if (matcher.find()) {
-            String newDescriptor = matcher.replaceAll(Constants.TStringDesc);
-            this.mv.visitFieldInsn(opcode, owner, name, newDescriptor);
+            if(lookupTable.isJdkClass(owner)) {
+                this.mv.visitFieldInsn(opcode, owner, name, descriptor);
+                this.stringToTStringBuilderBased();
+            } else {
+                String newDescriptor = matcher.replaceAll(Constants.TStringDesc);
+                this.mv.visitFieldInsn(opcode, owner, name, newDescriptor);
+            }
             return true;
         }
         return false;
