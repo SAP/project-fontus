@@ -40,8 +40,7 @@ public class TaintAgent {
     }
 
     static boolean isJdkClass(String className) {
-        return jdkClasses.isJdkClass(className) || className.startsWith("de/tubs/cs") || className.startsWith("sun") || className.startsWith("com/sun") || className.startsWith("jdk") || className.startsWith("java") || className.startsWith("sun/misc/") || className.startsWith("ch/qos/logback") || className.startsWith("org/objectweb/asm/");
-
+        return (jdkClasses.isJdkClass(className) || className.startsWith("de/tubs/cs") || className.startsWith("sun") || className.startsWith("com/sun") || className.startsWith("jdk") || className.startsWith("java") || className.startsWith("sun/misc/") || className.startsWith("ch/qos/logback") || className.startsWith("org/objectweb/asm/")) && ! className.startsWith("javax/servlet");
         }
 
     static class TaintingTransformer implements ClassFileTransformer {
