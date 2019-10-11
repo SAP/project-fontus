@@ -244,6 +244,22 @@
     {
       "name": "Logging Test from trying to instrument tomcat",
       "source": "LoggerTest.java"
+    },
+    {
+      "name": "Testing Null returning Functions",
+      "source": "NullReturned.java"
+    },
+    {
+      "name": "Testing Null assignment",
+      "source": "NullAssigned.java"
+    },
+    {
+      "name": "Testing Null returned from Stdlib",
+      "source": "NullReturnedFromStdLib.java"
+    },
+    {
+      "name": "SystemGetProperty",
+      "source": "SystemGetProperty.java"
     }
   ]
 }

@@ -4,6 +4,7 @@ import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.Utils;
 import de.tubs.cs.ias.asm_test.strategies.StringInstrumentation;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -68,6 +69,10 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
         this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringQN, Constants.Init, Constants.TStringInitUntaintedDesc, false);
     }
 
+    private void stringToTStringBuilderBased() {
+        this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "fromString", String.format("(%s)%s", Constants.StringDesc, Constants.TStringDesc, false));
+    }
+
     @Override
     public boolean instrumentFieldIns(int opcode, String owner, String name, String descriptor) {
         Matcher matcher = Constants.strPattern.matcher(descriptor);
@@ -109,7 +114,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     @Override
     public void instrumentReturnType(String owner, String name, Descriptor desc) {
         if (Constants.StringDesc.equals(desc.getReturnType())) {
-            this.stringToTString();
+            this.stringToTStringBuilderBased();
             logger.info("Converting returned String of {}.{}{}", owner, name, desc.toDescriptor());
         } else if (Constants.StringArrayDesc.equals(desc.getReturnType())) {
             logger.info("Converting returned String Array of {}.{}{}", owner, name, desc.toDescriptor());

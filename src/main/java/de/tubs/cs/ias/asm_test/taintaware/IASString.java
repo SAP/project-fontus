@@ -462,6 +462,11 @@ public class IASString implements IASTaintAware, CharSequence  {
     }
     */
 
+    public static IASString fromString(String str) {
+        if(str == null) return null;
+
+        return new IASString(str);
+    }
     public static String asString(IASString str) {
         if(str == null) return null;
         return str.getString();

@@ -134,7 +134,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             logger.info("{}.{}{} is a sink, so calling the check taint function before passing the value!", owner, name, descriptor);
             // Call dup here to put the TString reference twice on the stack so the call can pop one without affecting further processing
             MethodTaintingUtils.callCheckTaint(this.getParentVisitor());
-            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "asString", String.format("(%s)%s", Constants.TStringDesc, Constants.StringDesc), false);
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, owner, name, descriptor, isInterface);
             return true;
         }
