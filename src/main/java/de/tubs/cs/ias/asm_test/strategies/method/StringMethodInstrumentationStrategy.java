@@ -70,7 +70,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     }
 
     private void stringToTStringBuilderBased() {
-        this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "fromString", String.format("(%s)%s", Constants.StringDesc, Constants.TStringDesc, false));
+        this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "fromString", String.format("(%s)%s", Constants.StringDesc, Constants.TStringDesc), false);
     }
 
     @Override
