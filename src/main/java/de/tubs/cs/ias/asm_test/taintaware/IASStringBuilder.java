@@ -257,6 +257,11 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
         return builder;
     }
 
+    public void setLength(int newLength) {
+        this.builder.setLength(newLength);
+        // TODO: need to trim the taint once it is character based
+    }
+
     /* @Override
     public int compareTo(IASStringBuilder o) {
         return this.builder.compareTo(o.builder);
