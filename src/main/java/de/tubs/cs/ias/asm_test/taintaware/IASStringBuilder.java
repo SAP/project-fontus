@@ -70,6 +70,10 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
     }
 
     public IASStringBuilder append(CharSequence cs) {
+        if(cs instanceof IASTaintAware) {
+            IASTaintAware ta = (IASTaintAware) cs;
+            this.mergeTaint(ta);
+        }
         this.builder.append(cs);
         return this;
     }
