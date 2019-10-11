@@ -1,7 +1,6 @@
 package de.tubs.cs.ias.asm_test.strategies;
 
 import de.tubs.cs.ias.asm_test.Descriptor;
-import de.tubs.cs.ias.asm_test.strategies.*;
 
 import java.util.ArrayList;
 import java.util.Collection;

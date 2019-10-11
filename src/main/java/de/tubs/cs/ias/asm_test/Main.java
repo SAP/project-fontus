@@ -6,11 +6,7 @@ import picocli.CommandLine;
 
 import java.io.*;
 import java.lang.invoke.MethodHandles;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -76,9 +72,7 @@ public final class Main implements Callable<Void> {
 
     private void instrumentJarFile(File input, File output) throws IOException {
         JarOutputStream jos;
-        String jarPath = getPathToCurrentJar();
-        File f = new File(jarPath);
-        try (JarFile ji = new JarFile(input); JarFile currJar = new JarFile(f)) {
+        try (JarFile ji = new JarFile(input)) {
 
             FileOutputStream fos = new FileOutputStream(output);
             jos = new JarOutputStream(fos);
@@ -141,15 +135,6 @@ public final class Main implements Callable<Void> {
     public Void call() throws IOException {
         this.walkFileTree(this.inputFile, this.outputFile);
         return null;
-    }
-
-    private static String getPathToCurrentJar() throws UnsupportedEncodingException {
-        String path = Main.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        return URLDecoder.decode(path, "UTF-8"); // Constant as the Enum requires JDK10 or above
-    }
-
-    private static String toClassName(String classNameQn) {
-        return String.format("%s%s", classNameQn, classSuffix);
     }
 
     public static void main(String[] args) {

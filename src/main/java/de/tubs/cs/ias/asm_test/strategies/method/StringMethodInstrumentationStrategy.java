@@ -2,7 +2,6 @@ package de.tubs.cs.ias.asm_test.strategies.method;
 
 import de.tubs.cs.ias.asm_test.*;
 import de.tubs.cs.ias.asm_test.strategies.StringInstrumentation;
-import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
