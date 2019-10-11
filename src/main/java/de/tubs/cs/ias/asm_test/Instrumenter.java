@@ -13,17 +13,16 @@ import java.lang.invoke.MethodHandles;
 public class Instrumenter {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    public byte[] instrumentClass(InputStream in, ClassLoader loader) throws IOException {
-        return this.instrumentInternal(new ClassReader(in), loader);
+    public byte[] instrumentClass(InputStream in) throws IOException {
+        return this.instrumentInternal(new ClassReader(in));
     }
 
-    public byte[] instrumentClass(byte[] classFileBuffer, ClassLoader loader) {
-        return this.instrumentInternal(new ClassReader(classFileBuffer), loader);
+    public byte[] instrumentClass(byte[] classFileBuffer) {
+        return this.instrumentInternal(new ClassReader(classFileBuffer));
     }
 
-    private byte[] instrumentInternal(ClassReader cr, ClassLoader loader) {
+    private byte[] instrumentInternal(ClassReader cr) {
         NonClassloadingClassWriter writer = new NonClassloadingClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
-        //ClassVisitor cca = new CheckClassAdapter(writer);
         ClassTaintingVisitor smr = new ClassTaintingVisitor(writer);
         cr.accept(smr, ClassReader.SKIP_FRAMES);
         String clazzName = cr.getClassName();

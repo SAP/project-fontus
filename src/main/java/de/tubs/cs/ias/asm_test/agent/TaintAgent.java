@@ -66,7 +66,7 @@ public class TaintAgent {
             }
 
             logger.info("Tainting class: {}", className);
-            return this.instrumenter.instrumentClass(classfileBuffer, loader);
+            return this.instrumenter.instrumentClass(classfileBuffer);
         }
     }
 }
