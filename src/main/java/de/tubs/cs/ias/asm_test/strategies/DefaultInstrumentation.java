@@ -24,4 +24,9 @@ public class DefaultInstrumentation implements InstrumentationStrategy {
     public boolean handlesType(String typeName) {
         return false;
     }
+
+    @Override
+    public String instrumentDesc(String desc) {
+        return desc;
+    }
 }

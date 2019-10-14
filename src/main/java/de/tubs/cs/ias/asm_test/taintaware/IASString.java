@@ -108,6 +108,11 @@ public class IASString implements IASTaintAware, CharSequence  {
         this.tainted = builder.isTainted();
     }
 
+    public IASString(IASStringBuffer buffer) {
+        this.str = buffer.toString();
+        this.tainted = buffer.isTainted();
+    }
+
     public IASString(IASString string) {
         this.str = string.str;
         this.tainted = string.tainted;
@@ -165,6 +170,10 @@ public class IASString implements IASTaintAware, CharSequence  {
         if (!(anObject instanceof IASString)) return false;
         IASString other = (IASString) anObject;
         return this.str.equals(other.str);
+    }
+    
+    public boolean contentEquals(IASStringBuffer sb) {
+        return this.str.contentEquals(sb.getBuffer());
     }
 
     public boolean contentEquals(StringBuffer sb) {

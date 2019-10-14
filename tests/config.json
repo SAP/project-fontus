@@ -264,6 +264,10 @@
     {
       "name": "FieldAccessTest",
       "source": "FieldAccessTest.java"
+    },
+    {
+      "name": "String via StringBuffer",
+      "source": "StringViaStringBuffer.java"
     }
   ]
 }

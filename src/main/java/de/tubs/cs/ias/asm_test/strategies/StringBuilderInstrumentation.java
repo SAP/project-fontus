@@ -23,6 +23,11 @@ public class StringBuilderInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
+    public String instrumentDesc(String desc) {
+        return Constants.strBuilderPattern.matcher(desc).replaceAll(Constants.TStringBuilderDesc);
+    }
+
+    @Override
     public Optional<String> translateClassName(String className) {
         if (className.equals(Utils.fixup(Constants.StringBuilderQN))) {
             return Optional.of(Utils.fixup(Constants.TStringBuilderQN));

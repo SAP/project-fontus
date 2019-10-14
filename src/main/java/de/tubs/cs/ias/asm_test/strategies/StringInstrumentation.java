@@ -22,6 +22,11 @@ public class StringInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
+    public String instrumentDesc(String desc) {
+        return Constants.strPattern.matcher(desc).replaceAll(Constants.TStringDesc);
+    }
+
+    @Override
     public Optional<String> translateClassName(String className) {
         if (className.equals(Utils.fixup(Constants.StringQN))) {
             return Optional.of(Utils.fixup(Constants.TStringQN));

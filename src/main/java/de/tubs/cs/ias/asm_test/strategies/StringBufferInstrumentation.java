@@ -22,6 +22,11 @@ public class StringBufferInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
+    public String instrumentDesc(String desc) {
+        return Constants.strBufferPattern.matcher(desc).replaceAll(Constants.TStringBufferDesc);
+    }
+
+    @Override
     public Optional<String> translateClassName(String className) {
         if (className.equals(Utils.fixup(Constants.StringBufferQN))) {
             return Optional.of(Utils.fixup(Constants.TStringBufferQN));

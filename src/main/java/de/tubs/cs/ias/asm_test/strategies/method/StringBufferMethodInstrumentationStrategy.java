@@ -3,6 +3,7 @@ package de.tubs.cs.ias.asm_test.strategies.method;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.Utils;
+import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import de.tubs.cs.ias.asm_test.strategies.StringBufferInstrumentation;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -83,17 +84,13 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
     @Override
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         if(owner.equals(Constants.StringBufferQN)) {
-            Matcher sbDescMatcher = Constants.strBufferPattern.matcher(descriptor);
+            String newDescriptor = InstrumentationHelper.instrumentDesc(descriptor);
             String newOwner = Constants.TStringBufferQN;
-            String newDescriptor = sbDescMatcher.replaceAll(Constants.TStringBufferDesc);
-            // Replace all instances of java/lang/String
-            Matcher newDescriptorMatcher = Constants.strPattern.matcher(newDescriptor);
-            String finalDescriptor = newDescriptorMatcher.replaceAll(Constants.TStringDesc);
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up
             String newName = this.methodsToRename.getOrDefault(name, name);
 
-            logger.info("Rewriting StringBuffer invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, finalDescriptor);
-            this.mv.visitMethodInsn(opcode, newOwner, newName, finalDescriptor, isInterface);
+            logger.info("Rewriting StringBuffer invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, newDescriptor);
+            this.mv.visitMethodInsn(opcode, newOwner, newName, newDescriptor, isInterface);
             return true;
         }
         return false;

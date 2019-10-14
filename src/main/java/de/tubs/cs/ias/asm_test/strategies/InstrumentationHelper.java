@@ -32,6 +32,13 @@ public class InstrumentationHelper {
         return newDesc;
     }
 
+    public static String instrumentDesc(String desc) {
+        String newDesc = desc;
+        for(InstrumentationStrategy is : strategies) {
+            newDesc = is.instrumentDesc(newDesc);
+        }
+        return newDesc;
+    }
     public static String translateClassName(String clazzName) {
 
         for(InstrumentationStrategy is : strategies) {
