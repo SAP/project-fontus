@@ -9,7 +9,7 @@ import java.util.stream.IntStream;
 
 
 @SuppressWarnings("ALL")
-public class IASString implements IASTaintAware, CharSequence  {
+public class IASString implements IASTaintAware, Comparable<IASString>, CharSequence  {
 
     private String str;
     private boolean tainted;
@@ -171,7 +171,7 @@ public class IASString implements IASTaintAware, CharSequence  {
         IASString other = (IASString) anObject;
         return this.str.equals(other.str);
     }
-    
+
     public boolean contentEquals(IASStringBuffer sb) {
         return this.str.contentEquals(sb.getBuffer());
     }
@@ -188,6 +188,7 @@ public class IASString implements IASTaintAware, CharSequence  {
         return this.str.equalsIgnoreCase(anotherString.str);
     }
 
+    @Override
     public int compareTo(IASString anotherString) {
         return this.str.compareTo(anotherString.str);
     }
