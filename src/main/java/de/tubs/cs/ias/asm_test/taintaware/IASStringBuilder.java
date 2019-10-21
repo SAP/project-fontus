@@ -46,7 +46,10 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
 
     public IASStringBuilder(CharSequence seq) {
         this.builder = new StringBuilder(seq);
-        this.tainted = false;
+        if(seq instanceof IASTaintAware) {
+            IASTaintAware ta = (IASTaintAware) seq;
+            this.mergeTaint(ta);
+        }
     }
 
     public IASStringBuilder append(Object obj) {
@@ -175,12 +178,20 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
     }
 
     public IASStringBuilder insert(int dstOffset, CharSequence s) {
+        if(s instanceof IASTaintAware) {
+            IASTaintAware ta = (IASTaintAware) s;
+            this.mergeTaint(ta);
+        }
         this.builder.insert(dstOffset, s);
         return this;
     }
 
     public IASStringBuilder insert(int dstOffset, CharSequence s,
                                    int start, int end) {
+        if(s instanceof IASTaintAware) {
+            IASTaintAware ta = (IASTaintAware) s;
+            this.mergeTaint(ta);
+        }
         this.builder.insert(dstOffset, s, start, end);
         return this;
     }
