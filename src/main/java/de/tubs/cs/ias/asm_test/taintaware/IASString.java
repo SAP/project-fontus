@@ -406,16 +406,26 @@ public class IASString implements IASTaintAware, Comparable<IASString>, CharSequ
         return this.str.toCharArray();
     }
 
+    private static boolean isTainted(Object[] args) {
+        boolean tainted = false;
+        for(Object obj : args) {
+            if(obj instanceof IASTaintAware) {
+                IASTaintAware ta = (IASTaintAware) obj;
+                tainted |= ta.isTainted();
+            }
+        }
+        return tainted;
+    }
 
     //TODO: sound?
     public static IASString format(IASString format, Object... args) {
-        return new IASString(String.format(format.str, args));
+        return new IASString(String.format(format.str, args), isTainted(args));
     }
 
 
     //TODO: sound?
     public static IASString format(Locale l, IASString format, Object... args) {
-        return new IASString(String.format(l, format.str, args));
+        return new IASString(String.format(l, format.str, args), isTainted(args));
     }
 
     public static IASString valueOf(Object obj) {
