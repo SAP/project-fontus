@@ -250,6 +250,28 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
         return this.builder.capacity();
     }
 
+    public IASString substring(int start) {
+        String substr = this.builder.substring(start);
+        return new IASString(substr, this.isTainted());
+    }
+
+    public IASString substring(int start, int end) {
+        String substr = this.builder.substring(start, end);
+        return new IASString(substr, this.isTainted());
+    }
+
+    public void setCharAt(int index, char c) {
+        this.builder.setCharAt(index, c);
+    }
+
+    public void ensureCapacity(int minimumCapacity) {
+        this.builder.ensureCapacity(minimumCapacity);
+    }
+
+    public void trimToSize() {
+        this.builder.trimToSize();
+    }
+    
     @Override
     public int length() {
         return this.builder.length();
