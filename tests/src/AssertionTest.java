@@ -1,3 +1,4 @@
+// The code in this test is taken from iustitia and JUnit to reproduce an issue wrt failing Assertion.assertEquals calls
 class AssertionTest {
 
     static public void fail(String message) {
