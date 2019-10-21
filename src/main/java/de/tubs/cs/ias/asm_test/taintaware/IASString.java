@@ -118,6 +118,11 @@ public class IASString implements IASTaintAware, Comparable<IASString>, CharSequ
         this.tainted = string.tainted;
     }
 
+    private IASString(CharSequence cs, boolean tainted) {
+        this.str = cs.toString();
+        this.tainted = tainted;
+    }
+
     public int length() {
         return this.str.length();
     }
@@ -263,7 +268,7 @@ public class IASString implements IASTaintAware, Comparable<IASString>, CharSequ
     }
 
     public CharSequence subSequence(int beginIndex, int endIndex) {
-        return this.str.subSequence(beginIndex, endIndex);
+        return new IASString(this.str.subSequence(beginIndex, endIndex), this.tainted);
     }
 
     public IASString concat(IASString str) {

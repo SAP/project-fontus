@@ -271,7 +271,7 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
     public void trimToSize() {
         this.builder.trimToSize();
     }
-    
+
     @Override
     public int length() {
         return this.builder.length();
@@ -285,7 +285,9 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
     // TODO: unsound
     @Override
     public CharSequence subSequence(int start, int end) {
-        return this.builder.subSequence(start, end);
+        IASStringBuilder sb = new IASStringBuilder(this.builder.subSequence(start, end));
+        sb.tainted = this.tainted;
+        return sb;
     }
 
     @Override

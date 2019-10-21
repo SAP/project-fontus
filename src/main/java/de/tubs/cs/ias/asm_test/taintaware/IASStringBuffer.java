@@ -232,7 +232,9 @@ public class IASStringBuffer
 
 
     public synchronized CharSequence subSequence(int start, int end) {
-        return this.buffer.substring(start, end);
+        IASStringBuffer sb = new IASStringBuffer(this.buffer.substring(start, end));
+        sb.tainted = this.tainted;
+        return sb;
     }
 
 

@@ -268,6 +268,10 @@
     {
       "name": "String via StringBuffer",
       "source": "StringViaStringBuffer.java"
+    },
+    {
+      "name": "Failing Assertions Issue",
+      "source": "AssertionTest.java"
     }
   ]
 }
