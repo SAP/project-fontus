@@ -68,7 +68,15 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
         this.builder.append(strb);
         return this;
     }
-
+    public IASStringBuilder append(IASStringBuffer strb) {
+        if(strb == null) {
+            this.builder.append(strb);
+            return this;
+        }
+        this.mergeTaint(strb);
+        this.builder.append(strb.getBuffer());
+        return this;
+    }
     public IASStringBuilder append(CharSequence cs) {
         if(cs instanceof IASTaintAware) {
             IASTaintAware ta = (IASTaintAware) cs;
@@ -79,6 +87,11 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
     }
 
     public IASStringBuilder append(CharSequence s, int start, int end) {
+        this.builder.append(s, start, end);
+        return this;
+    }
+
+    public IASStringBuilder append(char[] s, int start, int end) {
         this.builder.append(s, start, end);
         return this;
     }
@@ -133,8 +146,9 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
         return this;
     }
 
-    public IASStringBuilder replace(int start, int end, String str) {
-        this.builder.replace(start, end, str);
+    public IASStringBuilder replace(int start, int end, IASString str) {
+        this.mergeTaint(str);
+        this.builder.replace(start, end, str.getString());
         return this;
     }
 
@@ -149,8 +163,9 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
         return this;
     }
 
-    public IASStringBuilder insert(int offset, String str) {
-        this.builder.insert(offset, str);
+    public IASStringBuilder insert(int offset, IASString str) {
+        this.mergeTaint(str);
+        this.builder.insert(offset, str.getString());
         return this;
     }
 
@@ -229,6 +244,10 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
 
     public IASString toIASString() {
         return new IASString(this.builder.toString(), this.tainted);
+    }
+
+    public int capacity()  {
+        return this.builder.capacity();
     }
 
     @Override
