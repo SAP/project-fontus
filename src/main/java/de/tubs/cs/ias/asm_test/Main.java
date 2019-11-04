@@ -41,7 +41,7 @@ public final class Main implements Callable<Void> {
 
     private static final String classSuffix = ".class";
     private static final String jarSuffix = ".jar";
-
+    private static final JdkClassesLookupTable jdkClasses = JdkClassesLookupTable.instance;
 
     private Main() {
         this.instrumenter = new Instrumenter();
@@ -73,7 +73,6 @@ public final class Main implements Callable<Void> {
     private void instrumentJarFile(File input, File output) throws IOException {
         JarOutputStream jos;
         try (JarFile ji = new JarFile(input)) {
-
             FileOutputStream fos = new FileOutputStream(output);
             jos = new JarOutputStream(fos);
 
@@ -88,8 +87,7 @@ public final class Main implements Callable<Void> {
 
                 jos.putNextEntry(jeo);
 
-                // Skip the taint aware string types so we don't mess them up by instrumenting them again!
-                if (jei.getName().endsWith(classSuffix)) {
+                if (jei.getName().endsWith(classSuffix) && !jei.getName().startsWith("de/tubs/cs/ias/asm_test/") && !jei.getName().startsWith("org/slf4j") && !jei.getName().startsWith("ch/qos/logback")) {
                     this.instrumentClassStream(jeis, jos);
                 } else {
                     copySingleEntry(jeis, jos);
@@ -122,7 +120,7 @@ public final class Main implements Callable<Void> {
     private void walkFileTree(File input, File output) throws IOException {
         if (input.getName().endsWith(classSuffix)) {
             this.instrumentClassFile(input, output);
-        } else if (input.getName().endsWith(jarSuffix)) {
+        } else if (input.getName().endsWith(jarSuffix) && !input.getName().contains("asm_test")) {
             this.instrumentJarFile(input, output);
         } else if (input.isDirectory()) {
             this.instrumentDirectory(input, output);
