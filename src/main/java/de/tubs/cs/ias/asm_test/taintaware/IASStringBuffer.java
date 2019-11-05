@@ -3,7 +3,7 @@ package de.tubs.cs.ias.asm_test.taintaware;
 
 @SuppressWarnings({"SynchronizedMethod", "ReturnOfThis", "WeakerAccess", "ClassWithTooManyConstructors", "ClassWithTooManyMethods"})
 public class IASStringBuffer
-        implements java.io.Serializable, CharSequence, IASTaintAware {
+        implements java.io.Serializable, CharSequence, IASTaintAware, Comparable<IASStringBuffer> {
 
     // TODO: accessed in both synchronized and unsynchronized methods
     private final StringBuffer buffer;
@@ -375,5 +375,10 @@ public class IASStringBuffer
 
     public StringBuffer getBuffer() {
         return this.buffer;
+    }
+
+    @Override
+    public int compareTo(IASStringBuffer o) {
+        return this.buffer.compareTo(o.buffer);
     }
 }

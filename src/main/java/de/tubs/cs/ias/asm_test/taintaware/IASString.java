@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 
 @SuppressWarnings("ALL")
@@ -363,27 +364,31 @@ public class IASString implements IASTaintAware, Comparable<IASString>, CharSequ
         return new IASString(this.str.trim(), this.tainted);
     }
 
-    /* JDK 11
-    public String strip() {
-        return this.str.strip();
+    /* JDK 11 BEGIN */
+    public IASString strip() {
+        return new IASString(this.str.strip(), this.tainted);
     }
 
-    public String stripLeading() {
-        return this.str.stripLeading();
+    public IASString stripLeading() {
+        return new IASString(this.str.stripLeading(), this.tainted);
     }
 
-    public String stripTrailing() {
-        return this.str.stripTrailing();
+    public IASString stripTrailing() {
+        return new IASString(this.str.stripTrailing(), this.tainted);
     }
 
     public boolean isBlank() {
         return this.str.isBlank();
     }
 
-    public Stream<String> lines() {
-        return this.str.lines();
+    public Stream<IASString> lines() {
+        return this.str.lines().map(s -> new IASString(s, this.tainted));
     }
-    */
+
+    public IASString repeat(int count) {
+        return new IASString(this.str.repeat(count), this.tainted);
+    }
+    /* JDK 11 END */
 
     //TODO: sound?
     public String toString() {
@@ -481,11 +486,7 @@ public class IASString implements IASTaintAware, Comparable<IASString>, CharSequ
         return this.str.intern();
     }
 
-    /* JDK11
-    public String repeat(int count) {
-        return this.str.repeat(count);
-    }
-    */
+
 
     public static IASString fromString(String str) {
         if(str == null) return null;

@@ -3,7 +3,7 @@ package de.tubs.cs.ias.asm_test.taintaware;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("ALL")
-public class IASStringBuilder implements java.io.Serializable, /* Comparable<IASStringBuilder>, */ CharSequence, IASTaintAware {
+public class IASStringBuilder implements java.io.Serializable, Comparable<IASStringBuilder>, CharSequence, IASTaintAware {
 
     private final StringBuilder builder;
     private boolean tainted;
@@ -320,8 +320,8 @@ public class IASStringBuilder implements java.io.Serializable, /* Comparable<IAS
         // TODO: need to trim the taint once it is character based
     }
 
-    /* @Override
+    @Override
     public int compareTo(IASStringBuilder o) {
         return this.builder.compareTo(o.builder);
-    }*/
+    }
 }
