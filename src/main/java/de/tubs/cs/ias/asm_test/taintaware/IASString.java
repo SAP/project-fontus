@@ -341,7 +341,14 @@ public class IASString implements IASTaintAware, Comparable<IASString>, CharSequ
 
     public static IASString join(CharSequence delimiter,
                                  Iterable<? extends CharSequence> elements) {
-        return new IASString(String.join(delimiter, elements));
+        boolean taint = false;
+        for(CharSequence cs : elements) {
+            if(cs instanceof IASTaintAware) {
+                IASTaintAware t = (IASTaintAware) cs;
+                taint |= t.isTainted();
+            }
+        }
+        return new IASString(String.join(delimiter, elements), taint);
     }
 
     public IASString toLowerCase(Locale locale) {
@@ -361,7 +368,11 @@ public class IASString implements IASTaintAware, Comparable<IASString>, CharSequ
     }
 
     public IASString trim() {
-        return new IASString(this.str.trim(), this.tainted);
+        String trimmed = this.str.trim();
+        if(trimmed.isEmpty()) {
+            return new IASString("");
+        }
+        return new IASString(trimmed, this.tainted);
     }
 
     /* JDK 11 BEGIN */
