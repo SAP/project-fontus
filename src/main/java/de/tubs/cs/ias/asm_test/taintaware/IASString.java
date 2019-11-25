@@ -366,15 +366,27 @@ public class IASString implements IASTaintAware, Comparable<IASString>, CharSequ
 
     /* JDK 11 BEGIN */
     public IASString strip() {
-        return new IASString(this.str.strip(), this.tainted);
+        String stripped = this.str.strip();
+        if(stripped.isEmpty()) {
+            return new IASString("");
+        }
+        return new IASString(stripped, this.tainted);
     }
 
     public IASString stripLeading() {
-        return new IASString(this.str.stripLeading(), this.tainted);
+        String stripped = this.str.stripLeading();
+        if(stripped.isEmpty()) {
+            return new IASString("");
+        }
+        return new IASString(stripped, this.tainted);
     }
 
     public IASString stripTrailing() {
-        return new IASString(this.str.stripTrailing(), this.tainted);
+        String stripped = this.str.stripTrailing();
+        if(stripped.isEmpty()) {
+            return new IASString("");
+        }
+        return new IASString(stripped, this.tainted);
     }
 
     public boolean isBlank() {

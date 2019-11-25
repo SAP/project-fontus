@@ -222,12 +222,18 @@ public class IASStringBuffer
 
     public synchronized IASStringBuffer delete(int start, int end) {
         this.buffer.delete(start, end);
+        if(this.buffer.length() == 0) {
+            this.tainted = false;
+        }
         return this;
     }
 
 
     public synchronized IASStringBuffer deleteCharAt(int index) {
         this.buffer.deleteCharAt(index);
+        if(this.buffer.length() == 0) {
+            this.tainted = false;
+        }
         return this;
     }
 
@@ -267,6 +273,7 @@ public class IASStringBuffer
 
     public synchronized IASStringBuffer insert(int offset, IASString str) {
         this.buffer.insert(offset, str);
+        this.mergeTaint(str);
         return this;
     }
 

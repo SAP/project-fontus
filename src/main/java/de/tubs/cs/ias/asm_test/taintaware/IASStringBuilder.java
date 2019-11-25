@@ -141,11 +141,17 @@ public class IASStringBuilder implements java.io.Serializable, Comparable<IASStr
 
     public IASStringBuilder delete(int start, int end) {
         this.builder.delete(start, end);
+        if(this.builder.length() == 0) {
+            this.tainted = false;
+        }
         return this;
     }
 
     public IASStringBuilder deleteCharAt(int index) {
         this.builder.deleteCharAt(index);
+        if(this.builder.length() == 0) {
+            this.tainted = false;
+        }
         return this;
     }
 
