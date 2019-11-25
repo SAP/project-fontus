@@ -13,7 +13,14 @@ public final class IASStringUtils {
             return new IASString((String)obj);
         } else if(obj instanceof IASString) {
             return (IASString) obj;
+        } else if(obj instanceof IASStringBuilder) {
+            IASStringBuilder b = (IASStringBuilder) obj;
+            return new IASString(b.toIASString());
+        } else if(obj instanceof IASStringBuffer) {
+            IASStringBuffer b = (IASStringBuffer) obj;
+            return new IASString(b.toIASString());
         } else {
+
             throw new IllegalArgumentException(String.format("Obj is of type %s, but only String or TString are allowed!", obj.getClass().getName()));
         }
     }
