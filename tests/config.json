@@ -272,6 +272,11 @@
     {
       "name": "Failing Assertions Issue",
       "source": "AssertionTest.java"
+    },
+    {
+      "name": "Failing cast when called via .class.cast()",
+      "source": "ClassCastTest.java"
     }
+
   ]
 }

@@ -82,7 +82,7 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
 
     @Override
     public boolean handleLdcType(Type type) {
-        if ("java.lang.StringBuilder".equals(type.getClassName())) {
+        if (Constants.STRINGBUILDER_FULL_NAME.equals(type.getClassName())) {
             this.mv.visitLdcInsn(Type.getObjectType(Constants.TStringBuilderQN));
             return true;
         }

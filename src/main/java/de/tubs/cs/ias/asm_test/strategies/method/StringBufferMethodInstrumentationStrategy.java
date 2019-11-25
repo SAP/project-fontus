@@ -68,6 +68,10 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
 
     @Override
     public boolean handleLdcType(Type type) {
+        if (Constants.STRINGBUFFER_FULL_NAME.equals(type.getClassName())) {
+            this.mv.visitLdcInsn(Type.getObjectType(Constants.TStringBufferQN));
+            return true;
+        }
         return false;
     }
 

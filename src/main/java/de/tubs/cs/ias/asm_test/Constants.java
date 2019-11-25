@@ -166,6 +166,8 @@ public final class Constants {
     static final String MAIN_METHOD_DESC = "([Ljava/lang/String;)V";
     public static final String TO_TSTRING = "toIASString";
     public static final String STRING_FULL_NAME = "java.lang.String";
+    public static final String STRINGBUFFER_FULL_NAME = "java.lang.StringBuffer";
+    public static final String STRINGBUILDER_FULL_NAME = "java.lang.StringBuilder";
 
 
     private Constants() {
