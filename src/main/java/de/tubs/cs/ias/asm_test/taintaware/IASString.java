@@ -482,8 +482,8 @@ public class IASString implements IASTaintAware, Comparable<IASString>, CharSequ
     }
 
     //TODO: sound?
-    public String intern() {
-        return this.str.intern();
+    public IASString intern() {
+        return new IASString(this.str.intern(), this.tainted);
     }
 
 
