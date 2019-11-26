@@ -87,7 +87,12 @@ public final class Main implements Callable<Void> {
 
                 jos.putNextEntry(jeo);
 
-                if (jei.getName().endsWith(classSuffix) && !jei.getName().startsWith("de/tubs/cs/ias/asm_test/") && !jei.getName().startsWith("org/slf4j") && !jei.getName().startsWith("ch/qos/logback")) {
+                if (jei.getName().endsWith(classSuffix) &&
+                        !jdkClasses.isJdkClass(jei.getName()) &&
+                        !jei.getName().startsWith("de/tubs/cs/ias/asm_test/") &&
+                        !jei.getName().startsWith("org/slf4j") &&
+                        !jei.getName().startsWith("ch/qos/logback")
+                ) {
                     this.instrumentClassStream(jeis, jos);
                 } else {
                     copySingleEntry(jeis, jos);
