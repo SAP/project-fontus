@@ -276,7 +276,10 @@
     {
       "name": "Failing cast when called via .class.cast()",
       "source": "ClassCastTest.java"
+    },
+    {
+      "name": "System.arraycopy proxy",
+      "source": "ArrayCopyTest.java"
     }
-
   ]
 }
