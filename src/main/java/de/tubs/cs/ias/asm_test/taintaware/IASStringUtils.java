@@ -5,6 +5,19 @@ import java.util.regex.Pattern;
 public final class IASStringUtils {
     private static final Pattern CONCAT_PLACEHOLDER = Pattern.compile("\u0001");
 
+    public static void arraycopy(Object src,
+             int srcPos,
+             Object dest,
+             int destPos,
+             int length) {
+        Object source = src;
+        if(src instanceof String[]) {
+            String[] strSrc = (String[]) src;
+            source = convertStringArray(strSrc);
+        }
+        System.arraycopy(source, srcPos, dest, destPos, length);
+    }
+
     public static IASString fromObject(Object obj) {
         if(obj == null) {
             return null;

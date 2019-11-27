@@ -95,6 +95,8 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
      * Initializes the method proxy maps.
      */
     private void fillProxies() {
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/System", "arraycopy", "(Ljava/lang/Object;ILjava/lang/Object;II)V", false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "arraycopy", "(Ljava/lang/Object;ILjava/lang/Object;II)V", false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;", false),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ReflectionProxiesQN, "classForName", String.format("(%s)Ljava/lang/Class;", Constants.TStringDesc), false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;", false),
