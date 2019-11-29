@@ -24,6 +24,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
     private static final String newMainDescriptor = "(" + Constants.TStringArrayDesc + ")V";
     private final Collection<FieldData> staticFinalFields;
     private boolean hasClInit = false;
+    private boolean hasToString = false;
     private MethodVisitRecording recording;
     private final ClassVisitor visitor;
     private final Collection<ClassInstrumentationStrategy> instrumentation = new ArrayList<>(4);
@@ -65,6 +66,9 @@ public class ClassTaintingVisitor extends ClassVisitor {
             final String superName,
             final String[] interfaces) {
         this.owner = name;
+        if((access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE) {
+            this.hasToString = true;
+        }
         super.visit(version, access, name, signature, superName, interfaces);
     }
 
@@ -133,6 +137,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
         mv.visitEnd();
     }
 
+    
     /**
      * Checks whether the method is the 'clinit' method.
      */
@@ -170,6 +175,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
             newName = Constants.MainWrapper;
             desc = newMainDescriptor;
         } else if (access == Opcodes.ACC_PUBLIC && Constants.ToString.equals(name) && Constants.ToStringDesc.equals(descriptor)) {
+            this.hasToString = true;
             logger.info("Creating proxy toString method");
             MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC, Constants.ToString, Constants.ToStringDesc, signature, exceptions);
             this.generateToStringProxy(v);
@@ -210,6 +216,11 @@ public class ClassTaintingVisitor extends ClassVisitor {
 
     @Override
     public void visitEnd() {
+        if(!this.hasToString) {
+            logger.info("Creating proxy toString method");
+            MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC, Constants.ToStringInstrumented, Constants.ToStringInstrumentedDesc, null, null);
+            this.createToString(v);
+        }
         if (!this.hasClInit && !this.staticFinalFields.isEmpty()) {
             logger.info("Adding a new static initializer to initialize static final String fields");
             MethodVisitor mv = this.visitMethod(Opcodes.ACC_STATIC, Constants.ClInit, "()V", null, null);
@@ -221,6 +232,16 @@ public class ClassTaintingVisitor extends ClassVisitor {
             this.recording.replay(augmentingVisitor);
         }
         super.visitEnd();
+    }
+
+    private void createToString(MethodVisitor mv) {
+        mv.visitCode();
+        mv.visitVarInsn(Opcodes.ALOAD, 0);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.owner, Constants.ToString, Constants.ToStringDesc, false);
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "fromString", String.format("(%s)%s", Constants.StringDesc, Constants.TStringDesc), false);
+        mv.visitInsn(Opcodes.ARETURN);
+        mv.visitMaxs(6, 3);
+        mv.visitEnd();
     }
 
     /**
