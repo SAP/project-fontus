@@ -1,5 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public final class IASStringUtils {
@@ -38,7 +40,23 @@ public final class IASStringUtils {
         }
     }
 
-    public static IASString[] convertStringArray(String[] arr) {
+    public static List<IASString> convertStringList(List<String> lst) {
+        List<IASString> alst = new ArrayList<>(lst.size());
+        for(String s : lst) {
+            alst.add(IASString.fromString(s));
+        }
+        return alst;
+    }
+
+    public static List<String> convertTStringList(List<IASString> tlst) {
+        List<String> alst = new ArrayList<>(tlst.size());
+        for(IASString s : tlst) {
+            alst.add(s.getString());
+        }
+        return alst;
+    }
+
+        public static IASString[] convertStringArray(String[] arr) {
         IASString[] ret = new IASString[arr.length];
         for (int i = 0; i < arr.length; i++) {
             String s = arr[i];

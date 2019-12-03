@@ -7,7 +7,7 @@ class JvmArgsTest {
         List<String> inputArguments = ManagementFactory.getRuntimeMXBean().getInputArguments();
         String[] argsArray = inputArguments.toArray(new String[inputArguments.size()]);
         for(String arg : argsArray) {
-            System.out.println(arg);
+            //System.out.println(arg);
         }
     }
 

@@ -241,6 +241,9 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
                 for(MethodInstrumentationStrategy s : this.instrumentation) {
                     s.insertJdkMethodParameterConversion(param);
                 }
+                if(owner.equals("java/lang/ProcessBuilder") && name.equals(Constants.Init) && param.equals("Ljava/util/List;")) {
+                    super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "convertTStringList", "(Ljava/util/List;)Ljava/util/List;", false);
+                }
                 break;
             default:
                 this.handleMultiParameterJdkMethod(desc);
@@ -250,6 +253,10 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
         for(MethodInstrumentationStrategy s : this.instrumentation) {
             s.instrumentReturnType(owner, name, desc);
+        }
+
+        if(owner.equals("java/lang/management/RuntimeMXBean") && name.equals("getInputArguments") && descriptor.equals("()Ljava/util/List;")) {
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "convertStringList", "(Ljava/util/List;)Ljava/util/List;", false);
         }
 
         if(desc.getReturnType().equals(Constants.ObjectDesc)) {

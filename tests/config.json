@@ -284,6 +284,10 @@
     {
       "name": "JVM Args Test",
       "source": "JvmArgsTest.java"
+    },
+    {
+      "name": "Process Builder Test",
+      "source": "ProcessBuilderTest.java"
     }
   ]
 }
