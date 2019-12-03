@@ -280,6 +280,10 @@
     {
       "name": "System.arraycopy proxy",
       "source": "ArrayCopyTest.java"
+    },
+    {
+      "name": "JVM Args Test",
+      "source": "JvmArgsTest.java"
     }
   ]
 }

@@ -33,6 +33,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
      * The name of the class currently processed.
      */
     private String owner;
+    private String superName;
 
     public ClassTaintingVisitor(ClassVisitor cv) {
         super(Opcodes.ASM7, cv);
@@ -66,6 +67,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
             final String superName,
             final String[] interfaces) {
         this.owner = name;
+        this.superName = superName;
         if((access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE) {
             this.hasToString = true;
         }
@@ -237,8 +239,12 @@ public class ClassTaintingVisitor extends ClassVisitor {
     private void createToString(MethodVisitor mv) {
         mv.visitCode();
         mv.visitVarInsn(Opcodes.ALOAD, 0);
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.owner, Constants.ToString, Constants.ToStringDesc, false);
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "fromString", String.format("(%s)%s", Constants.StringDesc, Constants.TStringDesc), false);
+        if(JdkClassesLookupTable.instance.isJdkClass(this.superName)) {
+            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superName, Constants.ToString, Constants.ToStringDesc, false);
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "fromString", String.format("(%s)%s", Constants.StringDesc, Constants.TStringDesc), false);
+        } else {
+            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superName, Constants.ToStringInstrumented, Constants.ToStringInstrumentedDesc, false);
+        }
         mv.visitInsn(Opcodes.ARETURN);
         mv.visitMaxs(6, 3);
         mv.visitEnd();
