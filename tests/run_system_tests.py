@@ -530,11 +530,13 @@ class TestRunner:
         for test in self._config.test_cases:
             test_result = self._run_test(base_dir, test)
             if not test_result.successful:
-                print(('Test "{}" failed:\nRegular result: "{}", '
-                       'Instrumented Result: "{}"').format(
+                print(('Test "{}" failed:\nRegular result: "{}",\n'
+                       'Instrumented Result: "{}"\n'
+                       'Agent Result: "{}"').format(
                            test.name,
                            test_result.regular_result,
-                           test_result.instrumented_result
+                           test_result.instrumented_result,
+                           test_result.agent_result
                            )
                       )
             elif self._config.verbose:
@@ -545,16 +547,15 @@ class TestRunner:
         for test in self._config.jar_test_cases:
             test_result = self._run_jar_test(base_dir, test)
             if not test_result.successful:
-                print(
-                    (
-                        'Test "{}" failed:\nRegular result: "{}", '
-                        'Instrumented Result: "{}"'
-                    ).format(
-                        test.name,
-                        test_result.regular_result,
-                        test_result.instrumented_result
-                    )
-                )
+                print(('Test "{}" failed:\nRegular result: "{}",\n'
+                       'Instrumented Result: "{}"\n'
+                       'Agent Result: "{}"').format(
+                           test.name,
+                           test_result.regular_result,
+                           test_result.instrumented_result,
+                           test_result.agent_result
+                           )
+                      )
             elif self._config.verbose:
                 print(test_result)
 
