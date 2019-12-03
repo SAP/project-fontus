@@ -41,7 +41,10 @@ public class IASString implements IASTaintAware, Comparable<IASString>, CharSequ
 
     @Override
     public void setTaint(boolean b) {
-        this.tainted = b;
+	// Prevent tainting of empty strings
+	if (str.length() > 0) {
+	    this.tainted = b;
+	}
     }
 
     private void mergeTaint(IASTaintAware other) {
