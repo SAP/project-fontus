@@ -91,7 +91,8 @@ public final class Main implements Callable<Void> {
                         !jdkClasses.isJdkClass(jei.getName()) &&
                         !jei.getName().startsWith("de/tubs/cs/ias/asm_test/") &&
                         !jei.getName().startsWith("org/slf4j") &&
-                        !jei.getName().startsWith("ch/qos/logback")
+                        !jei.getName().startsWith("ch/qos/logback") &&
+                        !jei.getName().startsWith("module-info")
                 ) {
                     this.instrumentClassStream(jeis, jos);
                 } else {
