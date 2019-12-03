@@ -6,8 +6,12 @@ import de.tubs.cs.ias.asm_test.JdkClassesLookupTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.ProtectionDomain;
 
 class TaintingTransformer implements ClassFileTransformer {
@@ -15,9 +19,11 @@ class TaintingTransformer implements ClassFileTransformer {
 
     private Configuration config = Configuration.instance;
     private Instrumenter instrumenter;
+    private final boolean verbose;
     private static final JdkClassesLookupTable jdkClasses = JdkClassesLookupTable.instance;
 
-    TaintingTransformer() {
+    TaintingTransformer(boolean verbose) {
+        this.verbose = verbose;
         this.instrumenter = new Instrumenter();
     }
 
@@ -34,7 +40,21 @@ class TaintingTransformer implements ClassFileTransformer {
         }
 
         logger.info("Tainting class: {}", className);
-        return this.instrumenter.instrumentClass(classfileBuffer);
+        byte[] outArray = this.instrumenter.instrumentClass(classfileBuffer);
+        if(this.verbose) {
+            String baseName = "/tmp";
+            File outFile = new File(baseName, className + ".class");
+            File parent = new File(outFile.getParent());
+            parent.mkdirs();
+            try {
+                outFile.createNewFile();
+                Path p = outFile.toPath();
+                Files.write(p, outArray);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return outArray;
     }
 
     static boolean isJdkClass(String className) {
