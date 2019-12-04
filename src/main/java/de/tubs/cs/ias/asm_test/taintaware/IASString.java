@@ -41,7 +41,10 @@ public class IASString implements IASTaintAware, Comparable<IASString>, CharSequ
 
     @Override
     public void setTaint(boolean b) {
-        this.tainted = b;
+	// Prevent tainting of empty strings
+	if (str.length() > 0) {
+	    this.tainted = b;
+	}
     }
 
     private void mergeTaint(IASTaintAware other) {
@@ -335,7 +338,19 @@ public class IASString implements IASTaintAware, Comparable<IASString>, CharSequ
     }
 
     public static IASString join(CharSequence delimiter, CharSequence... elements) {
-        return new IASString(String.join(delimiter, elements));
+        boolean taint = false;
+        for(CharSequence cs : elements) {
+            if(cs instanceof IASTaintAware) {
+                IASTaintAware t = (IASTaintAware) cs;
+                taint |= t.isTainted();
+            }
+        }
+	// Don't forget the delimiter!
+	if (delimiter instanceof IASTaintAware) {
+	    IASTaintAware t = (IASTaintAware) delimiter;
+	    taint |= t.isTainted();
+	}
+        return new IASString(String.join(delimiter, elements), taint);
     }
 
 
@@ -348,6 +363,11 @@ public class IASString implements IASTaintAware, Comparable<IASString>, CharSequ
                 taint |= t.isTainted();
             }
         }
+	// Don't forget the delimiter!
+	if (delimiter instanceof IASTaintAware) {
+	    IASTaintAware t = (IASTaintAware) delimiter;
+	    taint |= t.isTainted();
+	}
         return new IASString(String.join(delimiter, elements), taint);
     }
 
