@@ -314,7 +314,14 @@ public class IASString implements IASTaintAware, Comparable<IASString>, CharSequ
     }
 
     public IASString replace(CharSequence target, CharSequence replacement) {
-        return new IASString(this.str.replace(target, replacement), this.tainted);
+	boolean taint = this.tainted;
+	if (this.str.contains(target)) {
+	    if (replacement instanceof IASTaintAware) {
+		IASTaintAware t = (IASTaintAware) replacement;
+		taint |= t.isTainted();
+	    }
+	}
+        return new IASString(this.str.replace(target, replacement), taint);
     }
 
     // TODO: this propagates the taint for the whole string
