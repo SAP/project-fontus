@@ -92,7 +92,10 @@ public final class Main implements Callable<Void> {
                         !jei.getName().startsWith("de/tubs/cs/ias/asm_test/") &&
                         !jei.getName().startsWith("org/slf4j") &&
                         !jei.getName().startsWith("ch/qos/logback") &&
-                        !jei.getName().startsWith("module-info")
+                        !jei.getName().startsWith("module-info") &&
+                        !jei.getName().startsWith("org/openjdk/jmh/") &&
+                        !jei.getName().startsWith("org/apache/commons/commons-math3") &&
+                        !jei.getName().startsWith("net/sf/jopt-simple/")
                 ) {
                     this.instrumentClassStream(jeis, jos);
                 } else {

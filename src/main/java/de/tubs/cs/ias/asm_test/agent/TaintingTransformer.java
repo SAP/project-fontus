@@ -58,6 +58,6 @@ class TaintingTransformer implements ClassFileTransformer {
     }
 
     static boolean isJdkClass(String className) {
-        return (jdkClasses.isJdkClass(className) || className.startsWith("sun") || className.startsWith("com/sun") || className.startsWith("jdk") || className.startsWith("java") || className.startsWith("sun/misc/") || className.startsWith("org/objectweb/asm/")) && !className.startsWith("javax/servlet");
+        return jdkClasses.isJdkClass(className);
     }
 }
