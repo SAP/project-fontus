@@ -2,7 +2,7 @@ package de.tubs.cs.ias.asm_test.taintaware;
 
 
 @SuppressWarnings({"SynchronizedMethod", "ReturnOfThis", "WeakerAccess", "ClassWithTooManyConstructors", "ClassWithTooManyMethods"})
-public class IASStringBuffer
+public final class IASStringBuffer
         implements java.io.Serializable, CharSequence, IASTaintAware, Comparable<IASStringBuffer> {
 
     // TODO: accessed in both synchronized and unsynchronized methods

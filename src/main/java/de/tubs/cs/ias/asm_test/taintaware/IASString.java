@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 
 @SuppressWarnings("ALL")
-public class IASString implements IASTaintAware, Comparable<IASString>, CharSequence  {
+public final class IASString implements IASTaintAware, Comparable<IASString>, CharSequence  {
 
     private String str;
     private boolean tainted;
