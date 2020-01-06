@@ -127,12 +127,16 @@ public final class Main implements Callable<Void> {
     }
 
     private void walkFileTree(File input, File output) throws IOException {
-        if (input.getName().endsWith(classSuffix)) {
-            this.instrumentClassFile(input, output);
-        } else if (input.getName().endsWith(jarSuffix) && !input.getName().contains("asm_test")) {
-            this.instrumentJarFile(input, output);
-        } else if (input.isDirectory()) {
+        if (input.isDirectory()) {
+            // Some directories end with .jar, so check for directory first
             this.instrumentDirectory(input, output);
+        } else if (input.length() == 0L) {
+            // There sometimes are .jar files that are empty, handle those..
+            logger.info("File of size 0: {}", input.getName());
+        } else if (input.getName().endsWith(classSuffix)) {
+            this.instrumentClassFile(input, output);
+        } else if (input.getName().endsWith(jarSuffix)) {
+            this.instrumentJarFile(input, output);
         } else {
             logger.error("Input file name must have class or jar extension!");
         }
