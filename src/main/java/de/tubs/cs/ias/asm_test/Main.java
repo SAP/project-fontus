@@ -38,9 +38,6 @@ public final class Main implements Callable<Void> {
     )
     private File outputFile;
 
-
-    private static final String classSuffix = ".class";
-    private static final String jarSuffix = ".jar";
     private static final JdkClassesLookupTable jdkClasses = JdkClassesLookupTable.instance;
 
     private Main() {
@@ -87,7 +84,7 @@ public final class Main implements Callable<Void> {
 
                 jos.putNextEntry(jeo);
 
-                if (jei.getName().endsWith(classSuffix) &&
+                if (jei.getName().endsWith(Constants.CLASS_FILE_SUFFIX) &&
                         !jdkClasses.isJdkClass(jei.getName()) &&
                         !jei.getName().startsWith("de/tubs/cs/ias/asm_test/") &&
                         !jei.getName().startsWith("org/slf4j") &&
@@ -133,9 +130,9 @@ public final class Main implements Callable<Void> {
         } else if (input.length() == 0L) {
             // There sometimes are .jar files that are empty, handle those..
             logger.info("File of size 0: {}", input.getName());
-        } else if (input.getName().endsWith(classSuffix)) {
+        } else if (input.getName().endsWith(Constants.CLASS_FILE_SUFFIX)) {
             this.instrumentClassFile(input, output);
-        } else if (input.getName().endsWith(jarSuffix)) {
+        } else if (input.getName().endsWith(Constants.JAR_FILE_SUFFIX)) {
             this.instrumentJarFile(input, output);
         } else {
             logger.error("Input file name must have class or jar extension!");

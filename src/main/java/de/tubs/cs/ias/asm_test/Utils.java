@@ -99,7 +99,6 @@ public final class Utils {
         return new Handle(h.getTag(), owner, h.getName(), desc.toDescriptor(), h.isInterface());
     }
 
-    // Duplication with IASReflectionProxies, but we don't want to add all that many class files to the utils jar..
     public static String fixup(String s) {
         return s.replace('/', '.');
     }

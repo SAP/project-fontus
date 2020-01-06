@@ -169,6 +169,16 @@ public final class Constants {
     public static final String STRINGBUFFER_FULL_NAME = "java.lang.StringBuffer";
     public static final String STRINGBUILDER_FULL_NAME = "java.lang.StringBuilder";
 
+    /**
+     * Suffix of class files.
+     */
+    public static final String CLASS_FILE_SUFFIX = ".class";
+
+    /**
+     * Suffix of jar files.
+     */
+    public static final String JAR_FILE_SUFFIX = ".jar";
+
 
     private Constants() {
     }

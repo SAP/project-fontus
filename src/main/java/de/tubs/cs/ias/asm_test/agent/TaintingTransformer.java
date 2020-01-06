@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test.agent;
 
 import de.tubs.cs.ias.asm_test.Configuration;
+import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Instrumenter;
 import de.tubs.cs.ias.asm_test.JdkClassesLookupTable;
 import org.slf4j.Logger;
@@ -43,7 +44,7 @@ class TaintingTransformer implements ClassFileTransformer {
         byte[] outArray = this.instrumenter.instrumentClass(classfileBuffer);
         if(this.verbose) {
             String baseName = "/tmp";
-            File outFile = new File(baseName, className + ".class");
+            File outFile = new File(baseName, className + Constants.CLASS_FILE_SUFFIX);
             File parent = new File(outFile.getParent());
             parent.mkdirs();
             try {
@@ -51,7 +52,7 @@ class TaintingTransformer implements ClassFileTransformer {
                 Path p = outFile.toPath();
                 Files.write(p, outArray);
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Failed to write class file", e);
             }
         }
         return outArray;
