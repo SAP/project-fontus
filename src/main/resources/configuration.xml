@@ -28,4 +28,29 @@
             </function>
         </functions>
     </sinks>
+    <converters>
+        <functions>
+            <function>
+                <opcode>184</opcode>
+                <owner>de/tubs/cs/ias/asm_test/taintaware/IASStringUtils</owner>
+                <name>convertStringList</name>
+                <descriptor>(Ljava/util/List;)Ljava/util/List;</descriptor>
+                <isInterface>false</isInterface>
+            </function>
+        </functions>
+    </converters>
+    <returnGeneric>
+        <functions>
+            <returns>
+                <function>
+                    <opcode>185</opcode>
+                    <owner>java/lang/management/RuntimeMXBean</owner>
+                    <name>getInputArguments</name>
+                    <descriptor>()Ljava/util/List;</descriptor>
+                    <isInterface>true</isInterface>
+                </function>
+                <converter>convertStringList</converter>
+            </returns>
+        </functions>
+    </returnGeneric>
 </configuration>

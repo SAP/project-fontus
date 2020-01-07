@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
+import de.tubs.cs.ias.asm_test.FunctionCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,9 +43,11 @@ public class Configuration {
     }
 
     @JsonCreator
-    public Configuration(@JsonProperty("sources") Sources sources, @JsonProperty("sinks") Sinks sinks) {
+    public Configuration(@JsonProperty("sources") Sources sources, @JsonProperty("sinks") Sinks sinks, @JsonProperty("converters") Converters converters, @JsonProperty("returnGeneric") ReturnGeneric returnGeneric) {
         this.sources = sources;
         this.sinks = sinks;
+        this.converters = converters;
+        this.returnGeneric = returnGeneric;
     }
 
     public Sources getSources() {
@@ -53,6 +56,35 @@ public class Configuration {
 
     public Sinks getSinks() {
         return this.sinks;
+    }
+
+    public Converters getConverters() {
+        return this.converters;
+    }
+
+    public ReturnGeneric getReturnGeneric() {
+        return this.returnGeneric;
+    }
+
+    public FunctionCall getConverter(String name) {
+        for(FunctionCall fc : this.converters.getFunction()) {
+            if(fc.getName().equals(name)) {
+                return fc;
+            }
+        }
+        return null;
+    }
+
+    public FunctionCall getConverterForCall(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+        FunctionCall c = new FunctionCall(opcode, owner, name, descriptor, isInterface);
+        for(ReturnsGeneric rg : this.returnGeneric.getFunction()) {
+            if(rg.getFunctionCall().equals(c)) {
+                String converterName = rg.getConverter();
+                FunctionCall converter = this.getConverter(converterName);
+                return converter;
+            }
+        }
+        return null;
     }
 
     /**
@@ -65,4 +97,10 @@ public class Configuration {
      */
     @JacksonXmlElementWrapper(useWrapping = false)
     private final Sinks sinks;
+
+    @JacksonXmlElementWrapper(useWrapping = false)
+    private final Converters converters;
+
+    @JacksonXmlElementWrapper(useWrapping = false)
+    private final ReturnGeneric returnGeneric;
 }

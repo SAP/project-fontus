@@ -256,9 +256,15 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             s.instrumentReturnType(owner, name, desc);
         }
 
-        if(owner.equals("java/lang/management/RuntimeMXBean") && name.equals("getInputArguments") && descriptor.equals("()Ljava/util/List;")) {
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "convertStringList", "(Ljava/util/List;)Ljava/util/List;", false);
+        FunctionCall converter = Configuration.instance.getConverterForCall(opcode, owner, name, descriptor, isInterface);
+        if(converter != null) {
+            super.visitMethodInsn(converter.getOpcode(), converter.getOwner(), converter.getName(), converter.getDescriptor(), converter.isInterface());
         }
+
+        /*if(owner.equals("java/lang/management/RuntimeMXBean") && name.equals("getInputArguments") && descriptor.equals("()Ljava/util/List;")) {
+            FunctionCall fc = Configuration.instance.getConverter("convertStringList");
+            super.visitMethodInsn(fc.getOpcode(), fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.isInterface());
+        }*/
 
         if(desc.getReturnType().equals(Constants.ObjectDesc)) {
             this.shouldRewriteCheckCast = true;

@@ -28,7 +28,7 @@ public class FunctionCall {
     @XmlElement
     private final boolean isInterface;
 
-    FunctionCall(final int opcode, final String owner, final String name, final String descriptor, final boolean isInterface) {
+    public FunctionCall(final int opcode, final String owner, final String name, final String descriptor, final boolean isInterface) {
         this.opcode = opcode;
         this.owner = owner;
         this.name = name;
