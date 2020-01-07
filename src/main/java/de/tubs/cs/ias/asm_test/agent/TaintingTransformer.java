@@ -1,6 +1,6 @@
 package de.tubs.cs.ias.asm_test.agent;
 
-import de.tubs.cs.ias.asm_test.Configuration;
+import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Instrumenter;
 import de.tubs.cs.ias.asm_test.JdkClassesLookupTable;

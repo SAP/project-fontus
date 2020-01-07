@@ -1,4 +1,4 @@
-package de.tubs.cs.ias.asm_test;
+package de.tubs.cs.ias.asm_test.config;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -47,11 +47,11 @@ public class Configuration {
         this.sinks = sinks;
     }
 
-    Sources getSources() {
+    public Sources getSources() {
         return this.sources;
     }
 
-    Sinks getSinks() {
+    public Sinks getSinks() {
         return this.sinks;
     }
 
