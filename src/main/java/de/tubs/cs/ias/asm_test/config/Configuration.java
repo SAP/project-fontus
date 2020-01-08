@@ -43,11 +43,12 @@ public class Configuration {
     }
 
     @JsonCreator
-    public Configuration(@JsonProperty("sources") Sources sources, @JsonProperty("sinks") Sinks sinks, @JsonProperty("converters") Converters converters, @JsonProperty("returnGeneric") ReturnGeneric returnGeneric) {
+    public Configuration(@JsonProperty("sources") Sources sources, @JsonProperty("sinks") Sinks sinks, @JsonProperty("converters") Converters converters, @JsonProperty("returnGeneric") ReturnGeneric returnGeneric, @JsonProperty("takeGeneric") TakeGeneric takeGeneric) {
         this.sources = sources;
         this.sinks = sinks;
         this.converters = converters;
         this.returnGeneric = returnGeneric;
+        this.takeGeneric = takeGeneric;
     }
 
     public Sources getSources() {
@@ -66,7 +67,11 @@ public class Configuration {
         return this.returnGeneric;
     }
 
-    public FunctionCall getConverter(String name) {
+    public TakeGeneric getTakeGeneric() {
+        return this.takeGeneric;
+    }
+
+    private FunctionCall getConverter(String name) {
         for(FunctionCall fc : this.converters.getFunction()) {
             if(fc.getName().equals(name)) {
                 return fc;
@@ -75,7 +80,29 @@ public class Configuration {
         return null;
     }
 
-    public FunctionCall getConverterForCall(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+    public boolean needsParameterConversion(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+        FunctionCall c = new FunctionCall(opcode, owner, name, descriptor, isInterface);
+        for(TakesGeneric tg : this.takeGeneric.getFunction()) {
+            if (tg.getFunctionCall().equals(c)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public FunctionCall getConverterForParameter(int opcode, String owner, String name, String descriptor, boolean isInterface, int index) {
+        FunctionCall c = new FunctionCall(opcode, owner, name, descriptor, isInterface);
+        for(TakesGeneric tg : this.takeGeneric.getFunction()) {
+            if(tg.getFunctionCall().equals(c) && tg.getIndex() == index) {
+                String converterName = tg.getConverter();
+                FunctionCall converter = this.getConverter(converterName);
+                return converter;
+            }
+        }
+        return null;
+    }
+
+    public FunctionCall getConverterForReturnValue(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         FunctionCall c = new FunctionCall(opcode, owner, name, descriptor, isInterface);
         for(ReturnsGeneric rg : this.returnGeneric.getFunction()) {
             if(rg.getFunctionCall().equals(c)) {
@@ -103,4 +130,7 @@ public class Configuration {
 
     @JacksonXmlElementWrapper(useWrapping = false)
     private final ReturnGeneric returnGeneric;
+
+    @JacksonXmlElementWrapper(useWrapping = false)
+    private final TakeGeneric takeGeneric;
 }

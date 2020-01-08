@@ -242,12 +242,13 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
                 for(MethodInstrumentationStrategy s : this.instrumentation) {
                     s.insertJdkMethodParameterConversion(param);
                 }
-                if(owner.equals("java/lang/ProcessBuilder") && name.equals(Constants.Init) && param.equals("Ljava/util/List;")) {
-                    super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "convertTStringList", "(Ljava/util/List;)Ljava/util/List;", false);
+                FunctionCall converter = Configuration.instance.getConverterForParameter(opcode, owner, name, descriptor, isInterface, 0);
+                if(converter != null) {
+                    super.visitMethodInsn(converter.getOpcode(), converter.getOwner(), converter.getName(), converter.getDescriptor(), converter.isInterface());
                 }
                 break;
             default:
-                this.handleMultiParameterJdkMethod(desc);
+                this.handleMultiParameterJdkMethod(opcode, owner, name, descriptor, isInterface);
                 break;
         }
         logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor);
@@ -256,15 +257,10 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             s.instrumentReturnType(owner, name, desc);
         }
 
-        FunctionCall converter = Configuration.instance.getConverterForCall(opcode, owner, name, descriptor, isInterface);
+        FunctionCall converter = Configuration.instance.getConverterForReturnValue(opcode, owner, name, descriptor, isInterface);
         if(converter != null) {
             super.visitMethodInsn(converter.getOpcode(), converter.getOwner(), converter.getName(), converter.getDescriptor(), converter.isInterface());
         }
-
-        /*if(owner.equals("java/lang/management/RuntimeMXBean") && name.equals("getInputArguments") && descriptor.equals("()Ljava/util/List;")) {
-            FunctionCall fc = Configuration.instance.getConverter("convertStringList");
-            super.visitMethodInsn(fc.getOpcode(), fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.isInterface());
-        }*/
 
         if(desc.getReturnType().equals(Constants.ObjectDesc)) {
             this.shouldRewriteCheckCast = true;
@@ -272,8 +268,9 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
 
-    private void handleMultiParameterJdkMethod(Descriptor desc) {
-        if (!desc.hasStringLikeParameters()) return;
+    private void handleMultiParameterJdkMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+        Descriptor desc = Descriptor.parseDescriptor(descriptor);
+        if (!desc.hasStringLikeParameters() && !Configuration.instance.needsParameterConversion(opcode, owner, name, descriptor, isInterface)) return;
 
         // TODO: Add optimization that the upmost parameter on the stack does not need to be stored/loaded..
         Collection<String> parameters = desc.getParameters();
@@ -283,6 +280,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         int numVars = (Type.getArgumentsAndReturnSizes(desc.toDescriptor()) >> 2) - 1;
         this.usedAfterInjection = this.used + numVars;
         int n = this.used;
+        int index = params.size()-1;
         while (!params.empty()) {
             String p = params.pop();
             int storeOpcode = Utils.getStoreOpcode(p);
@@ -292,6 +290,12 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             for(MethodInstrumentationStrategy s : this.instrumentation) {
                 s.insertJdkMethodParameterConversion(p);
             }
+
+            FunctionCall converter = Configuration.instance.getConverterForParameter(opcode, owner, name, descriptor, isInterface, index);
+            if(converter != null) {
+                super.visitMethodInsn(converter.getOpcode(), converter.getOwner(), converter.getName(), converter.getDescriptor(), converter.isInterface());
+            }
+            index--;
 
             final int finalN = n;
             super.visitVarInsn(storeOpcode, finalN);

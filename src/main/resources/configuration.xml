@@ -37,6 +37,13 @@
                 <descriptor>(Ljava/util/List;)Ljava/util/List;</descriptor>
                 <isInterface>false</isInterface>
             </function>
+            <function>
+                <opcode>184</opcode>
+                <owner>de/tubs/cs/ias/asm_test/taintaware/IASStringUtils</owner>
+                <name>convertTStringList</name>
+                <descriptor>(Ljava/util/List;)Ljava/util/List;</descriptor>
+                <isInterface>false</isInterface>
+            </function>
         </functions>
     </converters>
     <returnGeneric>
@@ -53,4 +60,19 @@
             </returns>
         </functions>
     </returnGeneric>
+    <takeGeneric>
+        <functions>
+            <takes>
+                <function>
+                    <opcode>183</opcode>
+                    <owner>java/lang/ProcessBuilder</owner>
+                    <name>&lt;init&gt;</name>
+                    <descriptor>(Ljava/util/List;)V</descriptor>
+                    <isInterface>false</isInterface>
+                </function>
+                <converter>convertTStringList</converter>
+                <index>0</index>
+            </takes>
+        </functions>
+    </takeGeneric>
 </configuration>
