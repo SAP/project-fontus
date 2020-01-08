@@ -351,16 +351,16 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         return new IASStringTaintRange(this.str.replaceFirst(regex.str, replacement.str), taint);
     }
 
-    public IASStringTaintRange replaceAll(IASStringTaintRange regex, IASStringTaintRange replacement) {
-        String replacedStr = this.str.replaceFirst(regex.str, replacement.str);
-        IASStringTaintRange newStr = new IASStringTaintRange(replacedStr, this.taintInformation.getAllRanges());
+    public IASString replaceAll(IASString regex, IASString replacement) {
+        String replacedStr = this.str.replaceAll(regex.str, replacement.str);
+        IASString newStr = new IASString(replacedStr, this.taintInformation.getAllRanges());
 
         // Are there any changes through the replacement? If not, it's irrelevant if one happened for the tainting
         if (!replacedStr.equals(this.str)) {
             Pattern p = Pattern.compile(regex.str);
             Matcher m = p.matcher(this.str);
 
-            for (int i = 0; i < m.groupCount(); i++) {
+            for (int i = 0; m.find(); i++) {
                 final int start = m.start(i);
                 final int end = m.end(i);
 
