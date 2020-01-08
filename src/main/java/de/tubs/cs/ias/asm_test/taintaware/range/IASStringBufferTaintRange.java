@@ -1,0 +1,401 @@
+package de.tubs.cs.ias.asm_test.taintaware.range;
+
+
+import de.tubs.cs.ias.asm_test.taintaware.IASString;
+import de.tubs.cs.ias.asm_test.taintaware.IASStringBuilder;
+import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
+import de.tubs.cs.ias.asm_test.taintaware.IASTaintInformation;
+
+@SuppressWarnings({"SynchronizedMethod", "ReturnOfThis", "WeakerAccess", "ClassWithTooManyConstructors", "ClassWithTooManyMethods"})
+public final class IASStringBufferTaintRange
+        implements java.io.Serializable, CharSequence, IASTaintAware, Comparable<IASStringBufferTaintRange> {
+
+    // TODO: accessed in both synchronized and unsynchronized methods
+    private final StringBuffer buffer;
+    private boolean tainted = false;
+    private IASTaintInformation taintInformation;
+
+    @Override
+    public boolean isTainted() {
+        return this.tainted;
+    }
+
+    @Override
+    public void setTaint(boolean taint) {
+        this.tainted = taint;
+    }
+
+    private void mergeTaint(IASTaintAware other) {
+        this.tainted |= other.isTainted();
+    }
+
+
+    public IASStringBufferTaintRange() {
+        this.buffer = new StringBuffer();
+    }
+
+    public IASStringBufferTaintRange(int capacity) {
+        this.buffer = new StringBuffer(capacity);
+    }
+
+    public IASStringBufferTaintRange(IASString str) {
+        this.buffer = new StringBuffer(str.length() + 16);
+        this.buffer.append(str);
+        this.mergeTaint(str);
+    }
+
+    public IASStringBufferTaintRange(String str) {
+        this.buffer = new StringBuffer(str.length() + 16);
+        this.buffer.append(str);
+    }
+
+
+    public IASStringBufferTaintRange(CharSequence seq) {
+        this.buffer = new StringBuffer(seq.length() + 16);
+        this.buffer.append(seq);
+        if(seq instanceof IASTaintAware) {
+            IASTaintAware ta = (IASTaintAware) seq;
+            this.mergeTaint(ta);
+        }
+    }
+
+    public IASStringBufferTaintRange(StringBuffer buffer) {
+        this.buffer = buffer; //TODO: do a deep copy? Can something mess us up as this is shared?
+        this.tainted = false;
+    }
+
+
+    public synchronized int length() {
+        return this.buffer.length();
+    }
+
+
+    public synchronized int capacity() {
+        return this.buffer.capacity();
+    }
+
+
+    public synchronized void ensureCapacity(int minimumCapacity) {
+        this.buffer.ensureCapacity(minimumCapacity);
+    }
+
+
+    public synchronized void trimToSize() {
+        this.buffer.trimToSize();
+    }
+
+
+    public synchronized void setLength(int newLength) {
+        this.buffer.setLength(newLength);
+    }
+
+
+    public synchronized char charAt(int index) {
+        return this.buffer.charAt(index);
+    }
+
+
+    public synchronized int codePointAt(int index) {
+        return this.buffer.codePointAt(index);
+    }
+
+
+    public synchronized int codePointBefore(int index) {
+        return this.buffer.codePointBefore(index);
+    }
+
+
+    public synchronized int codePointCount(int beginIndex, int endIndex) {
+        return this.buffer.codePointCount(beginIndex, endIndex);
+    }
+
+
+    public synchronized int offsetByCodePoints(int index, int codePointOffset) {
+        return this.buffer.offsetByCodePoints(index, codePointOffset);
+    }
+
+
+    public synchronized void getChars(int srcBegin, int srcEnd, char[] dst,
+                                      int dstBegin) {
+        this.buffer.getChars(srcBegin, srcEnd, dst, dstBegin);
+    }
+
+    public synchronized void setCharAt(int index, char ch) {
+        this.buffer.setCharAt(index, ch);
+    }
+
+    public synchronized IASStringBufferTaintRange append(Object obj) {
+        // TODO: fix?
+        this.buffer.append(String.valueOf(obj));
+        return this;
+    }
+
+    public synchronized IASStringBufferTaintRange append(IASString str) {
+        if(str == null) {
+            String s = null;
+            this.buffer.append(s);
+            return this;
+        }
+        this.buffer.append(str.toIASString());
+        this.mergeTaint(str);
+        return this;
+    }
+
+    public synchronized IASStringBufferTaintRange append(String str) {
+        this.buffer.append(str);
+        return this;
+    }
+
+    public synchronized IASStringBufferTaintRange append(IASStringBufferTaintRange sb) {
+        this.buffer.append(sb);
+        this.mergeTaint(sb);
+        return this;
+    }
+
+    // TODO: Add the abstract base class
+    synchronized IASStringBufferTaintRange append(IASStringBuilder asb) {
+        this.buffer.append(asb);
+        this.mergeTaint(asb);
+        return this;
+    }
+
+
+    public synchronized IASStringBufferTaintRange append(CharSequence s) {
+        this.buffer.append(s);
+        if(s instanceof IASTaintAware) {
+            IASTaintAware ta = (IASTaintAware) s;
+            this.mergeTaint(ta);
+        }
+        return this;
+    }
+
+
+    public synchronized IASStringBufferTaintRange append(CharSequence s, int start, int end) {
+        this.buffer.append(s, start, end);
+        if(s instanceof IASTaintAware) {
+            IASTaintAware ta = (IASTaintAware) s;
+            this.mergeTaint(ta);
+        }
+        return this;
+    }
+
+    public synchronized IASStringBufferTaintRange append(char[] str) {
+        this.buffer.append(str);
+        return this;
+    }
+
+    public synchronized IASStringBufferTaintRange append(char[] str, int offset, int len) {
+        this.buffer.append(str, offset, len);
+        return this;
+    }
+
+    public synchronized IASStringBufferTaintRange append(boolean b) {
+        this.buffer.append(b);
+        return this;
+    }
+
+    public synchronized IASStringBufferTaintRange append(char c) {
+        this.buffer.append(c);
+        return this;
+    }
+
+    public synchronized IASStringBufferTaintRange append(int i) {
+        this.buffer.append(i);
+        return this;
+    }
+
+    public synchronized IASStringBufferTaintRange appendCodePoint(int codePoint) {
+        this.buffer.appendCodePoint(codePoint);
+        return this;
+    }
+
+
+    public synchronized IASStringBufferTaintRange append(long lng) {
+        this.buffer.append(lng);
+        return this;
+    }
+
+    public synchronized IASStringBufferTaintRange append(float f) {
+        this.buffer.append(f);
+        return this;
+    }
+
+    public synchronized IASStringBufferTaintRange append(double d) {
+        this.buffer.append(d);
+        return this;
+    }
+
+
+    public synchronized IASStringBufferTaintRange delete(int start, int end) {
+        this.buffer.delete(start, end);
+        if(this.buffer.length() == 0) {
+            this.tainted = false;
+        }
+        return this;
+    }
+
+
+    public synchronized IASStringBufferTaintRange deleteCharAt(int index) {
+        this.buffer.deleteCharAt(index);
+        if(this.buffer.length() == 0) {
+            this.tainted = false;
+        }
+        return this;
+    }
+
+
+    public synchronized IASStringBufferTaintRange replace(int start, int end, IASString str) {
+        this.buffer.replace(start, end, str.getString());
+        this.mergeTaint(str);
+        return this;
+    }
+
+    public synchronized IASString substring(int start) {
+        return this.substring(start, this.buffer.length());
+    }
+
+
+    public synchronized CharSequence subSequence(int start, int end) {
+        IASStringBufferTaintRange sb = new IASStringBufferTaintRange(this.buffer.substring(start, end));
+        sb.tainted = this.tainted;
+        return sb;
+    }
+
+
+    public synchronized IASString substring(int start, int end) {
+        return new IASString(this.buffer.substring(start, end), this.tainted);
+    }
+
+    public synchronized IASStringBufferTaintRange insert(int index, char[] str, int offset,
+                                                         int len) {
+        this.buffer.insert(index, str, offset, len);
+        return this;
+    }
+
+    public synchronized IASStringBufferTaintRange insert(int offset, Object obj) {
+        this.buffer.insert(offset, String.valueOf(obj));
+        return this;
+    }
+
+    public synchronized IASStringBufferTaintRange insert(int offset, IASString str) {
+        this.buffer.insert(offset, str);
+        this.mergeTaint(str);
+        return this;
+    }
+
+    public synchronized IASStringBufferTaintRange insert(int offset, char[] str) {
+        this.buffer.insert(offset, str);
+        return this;
+    }
+
+    public IASStringBufferTaintRange insert(int dstOffset, CharSequence s) {
+        // Note, synchronization achieved via invocations of other StringBuffer methods
+        // after narrowing of s to specific type
+        // Ditto for toStringCache clearing
+        if(s instanceof IASTaintAware) {
+            IASTaintAware ta = (IASTaintAware) s;
+            this.mergeTaint(ta);
+        }
+        this.buffer.insert(dstOffset, s);
+        return this;
+    }
+
+    public synchronized IASStringBufferTaintRange insert(int dstOffset, CharSequence s,
+                                                         int start, int end) {
+        if(s instanceof IASTaintAware) {
+            IASTaintAware ta = (IASTaintAware) s;
+            this.mergeTaint(ta);
+        }
+        this.buffer.insert(dstOffset, s, start, end);
+        return this;
+    }
+
+    public IASStringBufferTaintRange insert(int offset, boolean b) {
+        // Note, synchronization achieved via invocation of StringBuffer insert(int, String)
+        // after conversion of b to String by super class method
+        // Ditto for toStringCache clearing
+        this.buffer.insert(offset, b);
+        return this;
+    }
+
+    public synchronized IASStringBufferTaintRange insert(int offset, char c) {
+        this.buffer.insert(offset, c);
+        return this;
+    }
+
+    public IASStringBufferTaintRange insert(int offset, int i) {
+        // Note, synchronization achieved via invocation of StringBuffer insert(int, String)
+        // after conversion of i to String by super class method
+        // Ditto for toStringCache clearing
+        this.buffer.insert(offset, i);
+        return this;
+    }
+
+    public IASStringBufferTaintRange insert(int offset, long l) {
+        // Note, synchronization achieved via invocation of StringBuffer insert(int, String)
+        // after conversion of l to String by super class method
+        // Ditto for toStringCache clearing
+        this.buffer.insert(offset, l);
+        return this;
+    }
+
+    public IASStringBufferTaintRange insert(int offset, float f) {
+        // Note, synchronization achieved via invocation of StringBuffer insert(int, String)
+        // after conversion of f to String by super class method
+        // Ditto for toStringCache clearing
+        this.buffer.insert(offset, f);
+        return this;
+    }
+
+    public IASStringBufferTaintRange insert(int offset, double d) {
+        // Note, synchronization achieved via invocation of StringBuffer insert(int, String)
+        // after conversion of d to String by super class method
+        // Ditto for toStringCache clearing
+        this.buffer.insert(offset, d);
+        return this;
+    }
+
+    public int indexOf(IASString str) {
+        // Note, synchronization achieved via invocations of other StringBuffer methods
+        return this.buffer.indexOf(str.getString());
+    }
+
+    public synchronized int indexOf(IASString str, int fromIndex) {
+        return this.buffer.indexOf(str.getString(), fromIndex);
+    }
+
+    public int lastIndexOf(IASString str) {
+        // Note, synchronization achieved via invocations of other StringBuffer methods
+        return this.lastIndexOf(str, this.buffer.length()); //TODO: correct?
+    }
+
+    public synchronized int lastIndexOf(IASString str, int fromIndex) {
+        return this.buffer.lastIndexOf(str.getString(), fromIndex);
+    }
+
+    public synchronized IASStringBufferTaintRange reverse() {
+        this.buffer.reverse();
+        return this;
+    }
+
+    public synchronized IASString toIASString() {
+        return new IASString(this.buffer.toString(), this.tainted);
+    }
+
+    public synchronized String toString() {
+        return this.buffer.toString();
+    }
+
+    public StringBuffer getBuffer() {
+        return this.buffer;
+    }
+
+    @Override
+    public int compareTo(IASStringBufferTaintRange o) {
+        return this.buffer.compareTo(o.buffer);
+    }
+
+    public IASTaintInformation getTaintInformation() {
+        return this.taintInformation;
+    }
+}
