@@ -290,7 +290,7 @@ public final class IASStringTaintRange implements IASTaintAware, Comparable<IASS
         List<IASTaintRange> ranges = this.getSubstringRanges(beginIndex, this.length());
         return new IASStringTaintRange(this.str.substring(beginIndex), ranges);
     }
-    
+
     public IASStringTaintRange substring(int beginIndex, int endIndex) {
         List<IASTaintRange> ranges = this.getSubstringRanges(beginIndex, endIndex);
         return new IASStringTaintRange(this.str.substring(beginIndex, endIndex), ranges);
@@ -315,6 +315,7 @@ public final class IASStringTaintRange implements IASTaintAware, Comparable<IASS
     /**
      * Same behaviour like {@link String#replace(char, char)}
      * The new string gets the same taint ranges as the original one
+     *
      * @param oldChar
      * @param newChar
      * @return
@@ -332,26 +333,41 @@ public final class IASStringTaintRange implements IASTaintAware, Comparable<IASS
     }
 
     public IASStringTaintRange replaceFirst(IASStringTaintRange regex, IASStringTaintRange replacement) {
-        String newStr = this.str.replaceFirst(regex.str, replacement.str);
-        // TODO: this seems pretty expensive..
-        boolean taint = this.tainted;
-        Pattern p = Pattern.compile(regex.str);
-        Matcher m = p.matcher(this.str);
-        if (m.find()) {
-            taint |= replacement.tainted;
+        String replacedStr = this.str.replaceFirst(regex.str, replacement.str);
+        IASStringTaintRange newStr = new IASStringTaintRange(replacedStr, this.taintInformation.getAllRanges());
+
+        // Are there any changes through the replacement? If not, it's irrelevant if one happened for the tainting
+        if (!replacedStr.equals(this.str)) {
+            Pattern p = Pattern.compile(regex.str);
+            Matcher m = p.matcher(this.str);
+
+            if (m.find()) {
+                final int start = m.start();
+                final int end = m.end();
+
+                newStr.taintInformation.replaceTaintInformation(start, end, replacement.taintInformation.getAllRanges());
+            }
         }
         return new IASStringTaintRange(this.str.replaceFirst(regex.str, replacement.str), taint);
     }
 
     public IASStringTaintRange replaceAll(IASStringTaintRange regex, IASStringTaintRange replacement) {
-        // TODO: this seems pretty expensive..
-        boolean taint = this.tainted;
-        Pattern p = Pattern.compile(regex.str);
-        Matcher m = p.matcher(this.str);
-        if (m.find()) {
-            taint |= replacement.tainted;
+        String replacedStr = this.str.replaceFirst(regex.str, replacement.str);
+        IASStringTaintRange newStr = new IASStringTaintRange(replacedStr, this.taintInformation.getAllRanges());
+
+        // Are there any changes through the replacement? If not, it's irrelevant if one happened for the tainting
+        if (!replacedStr.equals(this.str)) {
+            Pattern p = Pattern.compile(regex.str);
+            Matcher m = p.matcher(this.str);
+
+            for (int i = 0; i < m.groupCount(); i++) {
+                final int start = m.start(i);
+                final int end = m.end(i);
+
+                newStr.taintInformation.replaceTaintInformation(start, end, replacement.taintInformation.getAllRanges());
+            }
         }
-        return new IASStringTaintRange(this.str.replaceAll(regex.str, replacement.str), taint);
+        return newStr;
     }
 
     public IASStringTaintRange replace(CharSequence target, CharSequence replacement) {

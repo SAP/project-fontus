@@ -80,6 +80,11 @@ public class IASTaintInformation {
         return this;
     }
 
+    public IASTaintInformation replaceTaintInformation(int start, int end, List<IASTaintRange> newRanges) {
+        // TODO Implement
+        throw new UnsupportedOperationException("Implement!");
+    }
+
     private int getListIndexOfFirstContainingOrAdjacentRange(int index) {
         return Collections.binarySearch(this.ranges, null, (range, irrelevant) -> {
             if(range.getStart() <= index && range.getEnd() > index) {
