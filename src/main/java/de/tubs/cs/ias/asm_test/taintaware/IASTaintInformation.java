@@ -82,9 +82,30 @@ public class IASTaintInformation {
         return this;
     }
 
-    public IASTaintInformation replaceTaintInformation(int start, int end, List<IASTaintRange> newRanges) {
-        // TODO Implement
-        throw new UnsupportedOperationException("Implement!");
+    /**
+     * This method "cuts out" the tainted ranges from start to end.
+     * If start or end lies within a range, the range will be cut at this point and only the part within the interval removed.
+     *
+     * @param start inclusive
+     * @param end exclusive
+     * @param newRanges the ranges do not have to be adopted to the new place, this is done by this method
+     * @param replacementWidth "width" of the newly inserted ranges (determines shift for the ranges behind the insertion)
+     */
+    public void replaceTaintInformation(int start, int end, List<IASTaintRange> newRanges, int replacementWidth) {
+        List<IASTaintRange> leftSide = this.getAllRanges();
+        IASTaintRangeUtils.adjustRanges(leftSide, 0, start, 0);
+
+        int leftShift = (end - start) - replacementWidth;
+
+        List<IASTaintRange> rightSide = this.getAllRanges();
+        IASTaintRangeUtils.adjustRanges(rightSide, end, Integer.MAX_VALUE, leftShift);
+
+        IASTaintRangeUtils.shiftRight(newRanges, start);
+
+        this.ranges.clear();
+        this.appendRanges(leftSide);
+        this.appendRanges(newRanges);
+        this.appendRanges(rightSide);
     }
 
     private int getListIndexOfFirstContainingOrAdjacentRange(int index) {
