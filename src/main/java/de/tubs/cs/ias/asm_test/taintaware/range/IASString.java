@@ -348,7 +348,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
                 newStr.taintInformation.replaceTaintInformation(start, end, replacement.taintInformation.getAllRanges(), replacement.length());
             }
         }
-        return new IASStringTaintRange(this.str.replaceFirst(regex.str, replacement.str), taint);
+        return newStr;
     }
 
     public IASString replaceAll(IASString regex, IASString replacement) {
