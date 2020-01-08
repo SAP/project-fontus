@@ -364,7 +364,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
                 final int start = m.start(i);
                 final int end = m.end(i);
 
-                newStr.taintInformation.replaceTaintInformation(start, end, replacement.taintInformation.getAllRanges());
+                newStr.taintInformation.replaceTaintInformation(start, end, replacement.taintInformation.getAllRanges(), replacement.length());
             }
         }
         return newStr;
