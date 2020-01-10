@@ -317,12 +317,16 @@ public class StringTest {
 //        IASString in = "ß".concat(ltUC).concat("B");
         IASString in = new IASString("ß").concat(ltUC).concat(foo).concat(ltUC).concat(bar);
 
-        assertThat(in, is("ß\u00CCfoo\u00CCbar"));
-        assertThat(in, taintEquals(range(1, 2, 1).add(2, 5, 2).add(5, 6, 1).add(8, 9, 3).done()));
+        assertThat(in.toString(), is("ß\u00CCfoo\u00CCbar"));
+        assertThat(in, taintEquals(
+                range(1, 2, 1)
+                        .add(2, 5, 2)
+                        .add(5, 6, 1)
+                        .add(8, 9, 3).done()));
 
         IASString lc = in.toLowerCase(lithuanian);
 
-        assertThat(lc, is("ß\u0069\u0307\u0300foo\u0069\u0307\u0300bar"));
+        assertThat(lc.toString(), is("ß\u0069\u0307\u0300foo\u0069\u0307\u0300bar"));
         assertThat(lc, taintEquals(range(1, 4, 1).add(4, 7, 2).add(7, 10, 1).add(12, 13, 3).done()));
 
         assertThat("B".toLowerCase(), taintUninitialized());

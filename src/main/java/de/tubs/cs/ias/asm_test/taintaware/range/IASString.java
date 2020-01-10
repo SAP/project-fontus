@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 public final class IASString implements IASTaintAware, Comparable<IASString>, CharSequence {
 
     private String str;
-    private IASTaintInformation taintInformation = new IASTaintInformation();
+    private final IASTaintInformation taintInformation = new IASTaintInformation();
 
     public IASString() {
         this.str = "";
@@ -360,14 +360,27 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
             Pattern p = Pattern.compile(regex.str);
             Matcher m = p.matcher(this.str);
 
+            // Shift that have to be added after the first round, because the replacement could have changed the string size
+            int rightShift = 0;
             for (int i = 0; m.find(); i++) {
                 final int start = m.start(i);
                 final int end = m.end(i);
 
-                newStr.taintInformation.replaceTaintInformation(start, end, replacement.taintInformation.getAllRanges(), replacement.length());
+                IASString grReplacement = replaceGroups(replacement, m);
+
+                newStr.taintInformation.replaceTaintInformation(start + rightShift, end + rightShift, replacement.taintInformation.getAllRanges(), replacement.length());
+
+                rightShift += replacement.length() - (end - start);
             }
         }
         return newStr;
+    }
+
+    private IASString replaceGroups(IASString repl, Matcher m) {
+        final String replacement = repl.toString();
+        // TODO Implement group replacement in Replacement string
+
+        throw new UnsupportedOperationException("Not implemented!");
     }
 
     public IASString replace(CharSequence target, CharSequence replacement) {
@@ -572,5 +585,14 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     public String getString() {
         // TODO
         throw new UnsupportedOperationException("Not implemented!");
+    }
+
+    public IASTaintInformation getTaintInformation() {
+        return taintInformation;
+    }
+
+    public boolean isUninitialized() {
+//        return this.taintInformation == null;
+        return false;
     }
 }

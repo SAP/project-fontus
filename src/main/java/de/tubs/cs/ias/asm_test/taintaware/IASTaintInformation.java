@@ -92,12 +92,12 @@ public class IASTaintInformation {
      * @param replacementWidth "width" of the newly inserted ranges (determines shift for the ranges behind the insertion)
      */
     public void replaceTaintInformation(int start, int end, List<IASTaintRange> newRanges, int replacementWidth) {
-        List<IASTaintRange> leftSide = this.getAllRanges();
+        List<IASTaintRange> leftSide = this.getRanges(0, start);
         IASTaintRangeUtils.adjustRanges(leftSide, 0, start, 0);
 
         int leftShift = (end - start) - replacementWidth;
 
-        List<IASTaintRange> rightSide = this.getAllRanges();
+        List<IASTaintRange> rightSide = this.getRanges(end, Integer.MAX_VALUE);
         IASTaintRangeUtils.adjustRanges(rightSide, end, Integer.MAX_VALUE, leftShift);
 
         IASTaintRangeUtils.shiftRight(newRanges, start);
