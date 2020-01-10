@@ -24,7 +24,9 @@ dependencies {
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
     compile 'ch.qos.logback:logback-classic:1.2.3'
     compile group: 'org.mutabilitydetector', name: 'asm-nonclassloadingextensions', version: '1.0-rc2'
-    testImplementation('org.junit.jupiter:junit-jupiter:5.4.2')
+    testCompile('org.junit.jupiter:junit-jupiter:5.4.2')
+    testCompile('org.junit.jupiter:junit-jupiter-migrationsupport:5.4.2')
+    testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
 }
 
 test {
