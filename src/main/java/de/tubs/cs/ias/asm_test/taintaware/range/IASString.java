@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
+import de.tubs.cs.ias.asm_test.TaintStringHelper;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintInformation;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintRange;
@@ -433,8 +434,19 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public IASString trim() {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        // TODO is there a better way?
+        int len = this.length();
+        int st = 0;
+        char[] val = this.str.toCharArray();
+
+        while ((st < len) && (val[st] <= ' ')) {
+            st++;
+        }
+        while ((st < len) && (val[len - 1] <= ' ')) {
+            len--;
+        }
+
+        return ((st > 0) || (len < this.length())) ? substring(st, len) : this;
     }
 
     /* JDK 11 BEGIN */
