@@ -324,4 +324,8 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
         // TODO
         throw new UnsupportedOperationException("Not implemented!");
     }
+
+    public boolean isUninitialized() {
+        return false;
+    }
 }

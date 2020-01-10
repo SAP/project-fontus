@@ -43,4 +43,24 @@ public class IASTaintRange implements Cloneable {
     public short getSource() {
         return source;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        IASTaintRange range = (IASTaintRange) o;
+
+        if (start != range.start) return false;
+        if (end != range.end) return false;
+        return source == range.source;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = start;
+        result = 31 * result + end;
+        result = 31 * result + (int) source;
+        return result;
+    }
 }
