@@ -11,7 +11,7 @@ public class TaintAgent {
 
     public static void premain(String args, Instrumentation inst) {
         boolean verbose = false;
-        if(args != null && args.equals("verbose")) {
+        if("verbose".equals(args)) {
             verbose = true;
         }
         inst.addTransformer(new TaintingTransformer(verbose));

@@ -18,8 +18,8 @@ import java.security.ProtectionDomain;
 class TaintingTransformer implements ClassFileTransformer {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private Configuration config = Configuration.instance;
-    private Instrumenter instrumenter;
+    private final Configuration config = Configuration.instance;
+    private final Instrumenter instrumenter;
     private final boolean verbose;
     private static final JdkClassesLookupTable jdkClasses = JdkClassesLookupTable.instance;
 
