@@ -153,7 +153,7 @@ public class IASTaintInformation {
      */
     public List<IASTaintRange> getRanges(int startIndex, int endIndex) {
         if (endIndex < startIndex || startIndex < 0) {
-            throw new IndexOutOfBoundsException("startIndex: $startIndex, endIndex: $endIndex");
+            throw new IndexOutOfBoundsException("startIndex: " + startIndex + ", endIndex: " + endIndex);
         } else if (endIndex == startIndex) {
             return new ArrayList<>(0);
         }
@@ -161,7 +161,7 @@ public class IASTaintInformation {
         List<IASTaintRange> affectedRanges = new ArrayList<>(this.ranges.size());
 
         for (IASTaintRange range : this.ranges) {
-            if (range.getEnd() < startIndex || endIndex <= range.getStart()) {
+            if (range.getEnd() <= startIndex || endIndex < range.getStart()) {
                 // Outside range
                 continue;
             }
