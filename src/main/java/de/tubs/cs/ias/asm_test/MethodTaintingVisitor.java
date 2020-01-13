@@ -137,7 +137,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             // Call dup here to put the TString reference twice on the stack so the call can pop one without affecting further processing
             MethodTaintingUtils.callCheckTaint(this.getParentVisitor());
             super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "asString", String.format("(%s)%s", Constants.TStringDesc, Constants.StringDesc), false);
-            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.isInterface());
+            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.isInterface()); //TODO: Why is invokevirtual hardcoded in here?
             return true;
         }
         return false;
@@ -189,7 +189,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         }
 
         // If a method has a defined proxy, apply it right away
-        if (this.shouldBeProxied(opcode, owner, name, descriptor, isInterface)) {
+        if (this.shouldBeProxied(fc)) {
             return;
         }
 
@@ -445,10 +445,9 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     /**
      * Is there a proxy defined? If so apply and return true.
      */
-    private boolean shouldBeProxied(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        FunctionCall pfe = new FunctionCall(opcode, owner, name, descriptor, isInterface);
+    private boolean shouldBeProxied(FunctionCall pfe) {
         if (this.methodProxies.containsKey(pfe)) {
-            logger.info("Proxying call to {}.{}{}", owner, name, descriptor);
+            logger.info("Proxying call to {}.{}{}", pfe.getOwner(), pfe.getName(), pfe.getDescriptor());
             Runnable pf = this.methodProxies.get(pfe);
             pf.run();
             return true;
