@@ -188,6 +188,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             final String descriptor,
             final boolean isInterface) {
         this.shouldRewriteCheckCast = false;
+        FunctionCall fc = new FunctionCall(opcode, owner, name, descriptor, isInterface);
 
         if (this.isSinkCall(opcode, owner, name, descriptor, isInterface) || this.isSourceCall(opcode, owner, name, descriptor, isInterface)) {
             return;
@@ -242,7 +243,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
                 for(MethodInstrumentationStrategy s : this.instrumentation) {
                     s.insertJdkMethodParameterConversion(param);
                 }
-                FunctionCall converter = Configuration.instance.getConverterForParameter(opcode, owner, name, descriptor, isInterface, 0);
+                FunctionCall converter = Configuration.instance.getConverterForParameter(new FunctionCall(opcode, owner, name, descriptor, isInterface), 0);
                 if(converter != null) {
                     super.visitMethodInsn(converter.getOpcode(), converter.getOwner(), converter.getName(), converter.getDescriptor(), converter.isInterface());
                 }
@@ -257,7 +258,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             s.instrumentReturnType(owner, name, desc);
         }
 
-        FunctionCall converter = Configuration.instance.getConverterForReturnValue(opcode, owner, name, descriptor, isInterface);
+        FunctionCall converter = Configuration.instance.getConverterForReturnValue(new FunctionCall(opcode, owner, name, descriptor, isInterface));
         if(converter != null) {
             super.visitMethodInsn(converter.getOpcode(), converter.getOwner(), converter.getName(), converter.getDescriptor(), converter.isInterface());
         }
@@ -270,7 +271,8 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
 
     private void handleMultiParameterJdkMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
-        if (!desc.hasStringLikeParameters() && !Configuration.instance.needsParameterConversion(opcode, owner, name, descriptor, isInterface)) return;
+        FunctionCall call = new FunctionCall(opcode, owner, name, descriptor, isInterface);
+        if (!desc.hasStringLikeParameters() && !Configuration.instance.needsParameterConversion(call)) return;
 
         // TODO: Add optimization that the upmost parameter on the stack does not need to be stored/loaded..
         Collection<String> parameters = desc.getParameters();
@@ -291,7 +293,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
                 s.insertJdkMethodParameterConversion(p);
             }
 
-            FunctionCall converter = Configuration.instance.getConverterForParameter(opcode, owner, name, descriptor, isInterface, index);
+            FunctionCall converter = Configuration.instance.getConverterForParameter(call, index);
             if(converter != null) {
                 super.visitMethodInsn(converter.getOpcode(), converter.getOwner(), converter.getName(), converter.getDescriptor(), converter.isInterface());
             }

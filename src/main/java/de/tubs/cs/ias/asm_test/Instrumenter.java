@@ -14,14 +14,14 @@ public class Instrumenter {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public byte[] instrumentClass(InputStream in) throws IOException {
-        return this.instrumentInternal(new ClassReader(in));
+        return instrumentInternal(new ClassReader(in));
     }
 
     public byte[] instrumentClass(byte[] classFileBuffer) {
-        return this.instrumentInternal(new ClassReader(classFileBuffer));
+        return instrumentInternal(new ClassReader(classFileBuffer));
     }
 
-    private byte[] instrumentInternal(ClassReader cr) {
+    private static byte[] instrumentInternal(ClassReader cr) {
         NonClassloadingClassWriter writer = new NonClassloadingClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
         ClassTaintingVisitor smr = new ClassTaintingVisitor(writer);
         cr.accept(smr, ClassReader.SKIP_FRAMES);
