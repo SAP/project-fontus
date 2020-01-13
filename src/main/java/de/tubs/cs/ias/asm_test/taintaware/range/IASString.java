@@ -1,12 +1,12 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
-import de.tubs.cs.ias.asm_test.TaintStringHelper;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintInformation;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintRange;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -429,55 +429,48 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public IASString toLowerCase(Locale locale) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return new IASString(this.str.toLowerCase(locale), this.getTaintInformation().getAllRanges());
     }
 
     public IASString toLowerCase() {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return new IASString(this.str.toLowerCase(), this.getTaintInformation().getAllRanges());
     }
 
     public IASString toUpperCase(Locale locale) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return new IASString(this.str.toUpperCase(locale), this.getTaintInformation().getAllRanges());
     }
 
     public IASString toUpperCase() {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return new IASString(this.str.toUpperCase(), this.getTaintInformation().getAllRanges());
     }
 
     public IASString trim() {
-        // TODO is there a better way?
-        int len = this.length();
-        int st = 0;
-        char[] val = this.str.toCharArray();
-
-        while ((st < len) && (val[st] <= ' ')) {
-            st++;
-        }
-        while ((st < len) && (val[len - 1] <= ' ')) {
-            len--;
-        }
-
-        return ((st > 0) || (len < this.length())) ? substring(st, len) : this;
+        String newStr = this.str.trim();
+        int start = this.str.indexOf(newStr);
+        int end = start + newStr.length();
+        return this.substring(start, end);
     }
 
     /* JDK 11 BEGIN */
     public IASString strip() {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        String newStr = this.str.strip();
+        int start = this.str.indexOf(newStr);
+        int end = start + newStr.length();
+        return this.substring(start, end);
     }
 
     public IASString stripLeading() {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        String newStr = this.str.stripLeading();
+        int start = this.str.indexOf(newStr);
+        int end = start + newStr.length();
+        return this.substring(start, end);
     }
 
     public IASString stripTrailing() {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        String newStr = this.str.stripTrailing();
+        int start = this.str.indexOf(newStr);
+        int end = start + newStr.length();
+        return this.substring(start, end);
     }
 
     public boolean isBlank() {
@@ -485,13 +478,15 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public Stream<IASString> lines() {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return Arrays.stream(this.split(new IASString("\\n")));
     }
 
     public IASString repeat(int count) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        IASStringBuilder stringBuilder = new IASStringBuilder();
+        for(int i = 0; i < count; i++) {
+            stringBuilder.append(this);
+        }
+        return stringBuilder.toIASString();
     }
     /* JDK 11 END */
 
@@ -517,8 +512,16 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     private static boolean isTainted(Object[] args) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        boolean isTainted = false;
+        if(args != null) {
+            for (Object o : args) {
+                if(o instanceof IASTaintAware) {
+                    IASTaintAware ta = (IASTaintAware) o;
+                    isTainted |= ta.isTainted();
+                }
+            }
+        }
+        return isTainted;
     }
 
     //TODO: sound?
@@ -543,75 +546,61 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public static IASString valueOf(char data[]) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return new IASString(String.valueOf(data));
     }
 
     public static IASString valueOf(char data[], int offset, int count) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return new IASString(String.valueOf(data, offset, count));
     }
 
     public static IASString copyValueOf(char data[], int offset, int count) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return new IASString(String.copyValueOf(data, offset, count));
     }
 
     public static IASString copyValueOf(char data[]) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return new IASString(String.copyValueOf(data));
     }
 
     public static IASString valueOf(boolean b) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return new IASString(String.valueOf(b));
     }
 
     public static IASString valueOf(char c) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return new IASString(String.valueOf(c));
     }
 
     public static IASString valueOf(int i) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return new IASString(String.valueOf(i));
     }
 
     public static IASString valueOf(long l) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return new IASString(String.valueOf(l));
     }
 
     public static IASString valueOf(float f) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return new IASString(String.valueOf(f));
     }
 
     public static IASString valueOf(double d) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return new IASString(String.valueOf(d));
     }
 
     //TODO: sound?
     public IASString intern() {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return this;
     }
 
 
     public static IASString fromString(String str) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return new IASString(str);
     }
 
     public static String asString(IASString str) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return str.str;
     }
 
     public String getString() {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return this.str;
     }
 
     public IASTaintInformation getTaintInformation() {
