@@ -63,4 +63,13 @@ public class IASTaintRange implements Cloneable {
         result = 31 * result + (int) source;
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "IASTaintRange{" +
+                "start=" + start +
+                ", end=" + end +
+                ", source=" + source +
+                '}';
+    }
 }
