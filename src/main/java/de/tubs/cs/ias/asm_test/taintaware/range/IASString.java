@@ -468,7 +468,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public static IASString join(CharSequence delimiter, CharSequence... elements) {
-        if (elements != null || elements.length == 0) {
+        if (elements == null || elements.length == 0) {
             return new IASString();
         } else if (elements.length == 1) {
             return IASString.valueOf(elements[0]);
