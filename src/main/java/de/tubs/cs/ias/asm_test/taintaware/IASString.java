@@ -3,6 +3,8 @@ package de.tubs.cs.ias.asm_test.taintaware;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Locale;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
@@ -13,7 +15,8 @@ import java.util.stream.Stream;
 public final class IASString implements IASTaintAware, Comparable<IASString>, CharSequence  {
 
     private String str;
-    private boolean tainted;
+    private boolean tainted = false;
+    private static ConcurrentHashMap<String, IASString> internPool = new ConcurrentHashMap<>();
 
     public IASString() {
         this.str = "";
@@ -533,7 +536,25 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     //TODO: sound?
     public IASString intern() {
-        return new IASString(this.str.intern(), this.tainted);
+        /*if(this.internPool.containsKey(this.str)) {
+            return this.internPool.get(this.str);
+        } else {
+            this.internPool.put(this.str, this);
+            return this;
+        }*/
+        /*IASString current = this.internPool.get(this.str);
+        if(current == null) {
+            this.internPool.put(this.str, this);
+            return this;
+        }
+        return current;*/
+        IASString rv = internPool.putIfAbsent(this.str, this);
+        if(rv == null) {
+            return internPool.get(this.str);
+        } else {
+            return rv;
+        }
+        //return new IASString(this.str.intern(), this.tainted);
     }
 
 
