@@ -3,60 +3,64 @@ package de.tubs.cs.ias.asm_test.taintaware.range;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintInformation;
 
-@SuppressWarnings({"SynchronizedMethod", "ReturnOfThis", "WeakerAccess", "ClassWithTooManyConstructors", "ClassWithTooManyMethods"})
+import java.util.ArrayList;
+
+@SuppressWarnings({"SynchronizedMethod", "ReturnOfThis", "WeakerAccess", "ClassWithTooManyConstructors", "ClassWithTooManyMethods", "unused"})
 public final class IASStringBuffer
         implements java.io.Serializable, CharSequence, IASTaintAware, Comparable<IASStringBuffer> {
 
     // TODO: accessed in both synchronized and unsynchronized methods
     private final StringBuffer buffer;
-    private IASTaintInformation taintInformation;
+    private final IASTaintInformation taintInformation;
+
+    public IASStringBuffer(StringBuffer buffer, IASTaintInformation taintInformation) {
+        this.buffer = new StringBuffer(buffer);
+        this.taintInformation = taintInformation.copy();
+    }
 
     @Override
     public boolean isTainted() {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return this.taintInformation.isTainted();
     }
 
     @Override
     public void setTaint(boolean taint) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
-    }
-
-    private void mergeTaint(IASTaintAware other) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        if (!this.isTainted()) {
+            var end = this.buffer.length();
+            this.taintInformation.addRange(0, end, (short) 0);
+        }
     }
 
     public IASStringBuffer() {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer = new StringBuffer();
+        this.taintInformation = new IASTaintInformation();
     }
 
     public IASStringBuffer(int capacity) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer = new StringBuffer(capacity);
+        this.taintInformation = new IASTaintInformation();
     }
 
     public IASStringBuffer(IASString str) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer = new StringBuffer(str.getString());
+        this.taintInformation = new IASTaintInformation(str.getTaintInformation().getAllRanges());
     }
 
     public IASStringBuffer(String str) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer = new StringBuffer(str);
+        this.taintInformation = new IASTaintInformation();
     }
 
 
     public IASStringBuffer(CharSequence seq) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        var str = IASString.valueOf(seq);
+        this.buffer = new StringBuffer(seq);
+        this.taintInformation = new IASTaintInformation(str.getTaintInformation().getAllRanges());
     }
 
     public IASStringBuffer(StringBuffer buffer) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer = new StringBuffer(buffer);
+        this.taintInformation = new IASTaintInformation();
     }
 
 
@@ -120,199 +124,203 @@ public final class IASStringBuffer
     }
 
     public synchronized IASStringBuffer append(Object obj) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        var str = IASString.valueOf(obj);
+        return this.append(str);
     }
 
     public synchronized IASStringBuffer append(IASString str) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        var shift = this.length();
+        this.taintInformation.appendRangesFrom(str.getTaintInformation(), shift);
+        this.buffer.append(str.toString());
+        return this;
     }
 
     public synchronized IASStringBuffer append(String str) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer.append(str);
+        return this;
     }
 
     public synchronized IASStringBuffer append(IASStringBuffer sb) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.taintInformation.appendRangesFrom(sb.getTaintInformation(), this.length());
+        this.buffer.append(sb);
+        return this;
     }
 
     // TODO: Add the abstract base class
     synchronized IASStringBuffer append(IASStringBuilder asb) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.taintInformation.appendRangesFrom(asb.getTaintInformation(), this.length());
+        this.buffer.append(asb);
+        return this;
     }
 
 
     public synchronized IASStringBuffer append(CharSequence s) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        var str = IASString.valueOf(s);
+        return this.append(str);
     }
 
 
     public synchronized IASStringBuffer append(CharSequence s, int start, int end) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        var str = IASString.valueOf(s, start, end);
+        return this.append(str);
     }
 
     public synchronized IASStringBuffer append(char[] str) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer.append(str);
+        return this;
     }
 
     public synchronized IASStringBuffer append(char[] str, int offset, int len) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer.append(str, offset, len);
+        return this;
     }
 
     public synchronized IASStringBuffer append(boolean b) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer.append(b);
+        return this;
     }
 
     public synchronized IASStringBuffer append(char c) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer.append(c);
+        return this;
     }
 
     public synchronized IASStringBuffer append(int i) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer.append(i);
+        return this;
     }
 
     public synchronized IASStringBuffer appendCodePoint(int codePoint) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer.appendCodePoint(codePoint);
+        return this;
     }
 
 
     public synchronized IASStringBuffer append(long lng) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer.append(lng);
+        return this;
     }
 
     public synchronized IASStringBuffer append(float f) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer.append(f);
+        return this;
     }
 
     public synchronized IASStringBuffer append(double d) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer.append(d);
+        return this;
     }
 
 
     public synchronized IASStringBuffer delete(int start, int end) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer.delete(start, end);
+        this.taintInformation.removeTaintFor(start, end, true);
+        return this;
     }
 
 
     public synchronized IASStringBuffer deleteCharAt(int index) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer.deleteCharAt(index);
+        this.taintInformation.removeTaintFor(index, index + 1, true);
+        return this;
     }
 
 
     public synchronized IASStringBuffer replace(int start, int end, IASString str) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer.replace(start, end, str.toString());
+        this.taintInformation.replaceTaintInformation(start, end, str.getTaintInformation().getAllRanges(), str.length());
+        return this;
     }
 
     public synchronized IASString substring(int start) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return this.toIASString().substring(start);
     }
 
 
     public synchronized CharSequence subSequence(int start, int end) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return this.toIASString().subSequence(start, end);
     }
 
 
     public synchronized IASString substring(int start, int end) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return this.toIASString().substring(start, end);
     }
 
     public synchronized IASStringBuffer insert(int index, char[] str, int offset,
                                                int len) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer.insert(index,str, offset, len);
+        this.taintInformation.insert(index, new ArrayList<>(0), len);
+        return this;
     }
 
     public synchronized IASStringBuffer insert(int offset, Object obj) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        var str = IASString.valueOf(obj);
+        return this.insert(offset, str);
     }
 
     public synchronized IASStringBuffer insert(int offset, IASString str) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer.insert(offset, str.toString());
+        this.taintInformation.insert(offset, str.getTaintInformation().getAllRanges(), str.length());
+        return this;
     }
 
     public synchronized IASStringBuffer insert(int offset, char[] str) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        this.buffer.insert(offset, str);
+        this.taintInformation.insert(offset, new ArrayList<>(0), str.length);
+        return this;
     }
 
     public IASStringBuffer insert(int dstOffset, CharSequence s) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        var str = IASString.valueOf(s);
+        return this.insert(dstOffset, str);
     }
 
     public synchronized IASStringBuffer insert(int dstOffset, CharSequence s,
                                                int start, int end) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        var str = IASString.valueOf(s, start, end);
+        return this.insert(dstOffset, str);
     }
 
     public IASStringBuffer insert(int offset, boolean b) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        var str = IASString.valueOf(b);
+        return this.insert(offset, str);
     }
 
     public synchronized IASStringBuffer insert(int offset, char c) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        var str = IASString.valueOf(c);
+        return this.insert(offset, str);
     }
 
     public IASStringBuffer insert(int offset, int i) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        var str = IASString.valueOf(i);
+        return this.insert(offset, str);
     }
 
     public IASStringBuffer insert(int offset, long l) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        var str = IASString.valueOf(l);
+        return this.insert(offset, str);
     }
 
     public IASStringBuffer insert(int offset, float f) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        var str = IASString.valueOf(f);
+        return this.insert(offset, str);
     }
 
     public IASStringBuffer insert(int offset, double d) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        var str = IASString.valueOf(d);
+        return this.insert(offset, str);
     }
 
     public int indexOf(IASString str) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return this.buffer.indexOf(str.toString());
     }
 
     public synchronized int indexOf(IASString str, int fromIndex) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return this.buffer.indexOf(str.toString(), fromIndex);
     }
 
     public int lastIndexOf(IASString str) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return this.buffer.lastIndexOf(str.toString());
     }
 
     public synchronized int lastIndexOf(IASString str, int fromIndex) {
@@ -320,18 +328,17 @@ public final class IASStringBuffer
     }
 
     public synchronized IASStringBuffer reverse() {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        var reversedBuf = this.buffer.reverse();
+        var reversedTintInfo = this.taintInformation.reversed(this.length());
+        return new IASStringBuffer(reversedBuf, reversedTintInfo);
     }
 
     public synchronized IASString toIASString() {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return new IASString(this.buffer.toString(), this.taintInformation.getAllRanges());
     }
 
     public synchronized String toString() {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return this.buffer.toString();
     }
 
     public StringBuffer getBuffer() {
@@ -340,12 +347,10 @@ public final class IASStringBuffer
 
     @Override
     public int compareTo(IASStringBuffer o) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return this.buffer.compareTo(o.buffer);
     }
 
     public IASTaintInformation getTaintInformation() {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return this.taintInformation;
     }
 }

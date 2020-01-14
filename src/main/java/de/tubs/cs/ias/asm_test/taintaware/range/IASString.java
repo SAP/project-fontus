@@ -582,6 +582,14 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         }
     }
 
+    public static IASString valueOf(CharSequence s, int start, int end) {
+        if(s instanceof IASString) {
+            return ((IASString) s).substring(start, end);
+        } else {
+            return IASString.valueOf(s.subSequence(start, end));
+        }
+    }
+
     public static IASString valueOf(char data[]) {
         return new IASString(String.valueOf(data));
     }
