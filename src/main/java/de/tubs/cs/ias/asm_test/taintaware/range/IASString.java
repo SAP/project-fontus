@@ -413,6 +413,37 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     // TODO: this propagates the taint for the whole string
     public IASString[] split(IASString regex, int limit) {
+        this.str.split(regex.toString(), limit);
+        var matcher = Pattern.compile(regex.toString()).matcher(this.str);
+
+        var result = new ArrayList<IASString>();
+        var start = 0;
+        var count = 0;
+        while (matcher.find()) {
+            if(limit > 0 && count >= limit) {
+                break;
+            }
+
+            var matchSize = matcher.end() - matcher.start();
+            if(count != 0 || matchSize > 0) {
+                var end = matcher.start();
+
+                var part = this.substring(start, end);
+                result.add(part);
+
+            }
+            start = matcher.end();
+            count++;
+        }
+
+        if(start < this.length() || limit < 0) {
+            var endPart = this.substring(start);
+            result.add(endPart);
+        } else if (start == 0 && this.length() == 0) {
+            result.add(this);
+        }
+
+        return result.toArray(new IASString[result.size()]);
         // This implementation ignored that the split regex is removed
 //        String[] parts = this.str.split(regex.str);
 //        int start = 0;
@@ -429,8 +460,6 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 //        }
 //
 //        return result;
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
     }
 
     // TODO: this propagates the taint for the whole string
