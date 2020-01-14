@@ -178,7 +178,7 @@ public class IASTaintInformation {
         List<IASTaintRange> affectedRanges = new ArrayList<>(this.ranges.size());
 
         for (IASTaintRange range : this.ranges) {
-            if (range.getEnd() <= startIndex || endIndex < range.getStart()) {
+            if (range.getEnd() <= startIndex || endIndex <= range.getStart()) {
                 // Outside range
                 continue;
             }
