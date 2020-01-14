@@ -131,7 +131,7 @@ public class IASTaintInformation {
     }
 
     public boolean isTainted() {
-        return ranges.isEmpty();
+        return !ranges.isEmpty();
     }
 
     public void removeAll() {
