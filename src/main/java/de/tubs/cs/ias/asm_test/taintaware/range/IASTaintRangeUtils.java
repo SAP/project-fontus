@@ -13,7 +13,7 @@ public class IASTaintRangeUtils {
      */
     public static void adjustRanges(List<IASTaintRange> ranges, int startIndex, int endIndex, int leftShift) {
         if (endIndex <= startIndex || startIndex < 0) {
-            throw new IllegalArgumentException("startIndex: $startIndex, endIndex: $endIndex");
+            throw new IllegalArgumentException("startIndex: " + startIndex + ", endIndex: " + endIndex);
         }
 
         if (ranges.isEmpty()) {
