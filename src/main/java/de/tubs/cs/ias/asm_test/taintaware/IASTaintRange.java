@@ -66,10 +66,10 @@ public class IASTaintRange implements Cloneable {
 
     @Override
     public String toString() {
-        return "IASTaintRange{" +
-                "start=" + start +
-                ", end=" + end +
-                ", source=" + source +
+        return "TRange{" +
+                "b=" + start +
+                ", e=" + end +
+                ", src=" + source +
                 '}';
     }
 }
