@@ -6,8 +6,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static de.tubs.cs.ias.asm_test.taintaware.range.IASTaintRangeUtils.adjustRanges;
+
 public class IASTaintInformation {
-    private List<IASTaintRange> ranges = new ArrayList<>(1);
+    private List<IASTaintRange> ranges;
+
+    public IASTaintInformation() {
+        this.ranges = new ArrayList<>(1);
+    }
+
+    public IASTaintInformation(List<IASTaintRange> ranges) {
+        this.ranges = new ArrayList<>(ranges);
+    }
 
     public synchronized IASTaintInformation addRange(int start, int end, short sourceId) {
         if (start == end) {
@@ -86,19 +96,19 @@ public class IASTaintInformation {
      * This method "cuts out" the tainted ranges from start to end.
      * If start or end lies within a range, the range will be cut at this point and only the part within the interval removed.
      *
-     * @param start inclusive
-     * @param end exclusive
-     * @param newRanges the ranges do not have to be adopted to the new place, this is done by this method
+     * @param start            inclusive
+     * @param end              exclusive
+     * @param newRanges        the ranges do not have to be adopted to the new place, this is done by this method
      * @param replacementWidth "width" of the newly inserted ranges (determines shift for the ranges behind the insertion)
      */
     public void replaceTaintInformation(int start, int end, List<IASTaintRange> newRanges, int replacementWidth) {
         List<IASTaintRange> leftSide = this.getRanges(0, start);
-        IASTaintRangeUtils.adjustRanges(leftSide, 0, start, 0);
+        adjustRanges(leftSide, 0, start, 0);
 
         int leftShift = (end - start) - replacementWidth;
 
         List<IASTaintRange> rightSide = this.getRanges(end, Integer.MAX_VALUE);
-        IASTaintRangeUtils.adjustRanges(rightSide, end, Integer.MAX_VALUE, leftShift);
+        adjustRanges(rightSide, end, Integer.MAX_VALUE, leftShift);
 
         IASTaintRangeUtils.shiftRight(newRanges, start);
 
@@ -110,7 +120,7 @@ public class IASTaintInformation {
 
     private int getListIndexOfFirstContainingOrAdjacentRange(int index) {
         return Collections.binarySearch(this.ranges, null, (range, irrelevant) -> {
-            if(range.getStart() <= index && range.getEnd() > index) {
+            if (range.getStart() <= index && range.getEnd() > index) {
                 return 0;
             } else if (range.getStart() > index) {
                 return 1;
@@ -141,6 +151,13 @@ public class IASTaintInformation {
 
     }
 
+    public synchronized void resize(int start, int end, int leftShift) {
+        var ranges = this.getRanges(start, end);
+        IASTaintRangeUtils.adjustRanges(ranges, start, end, leftShift);
+        this.removeAll();
+        this.appendRanges(ranges);
+    }
+
     public synchronized void appendRanges(List<IASTaintRange> ranges) {
         this.ranges.addAll(ranges);
     }
@@ -151,7 +168,7 @@ public class IASTaintInformation {
      * @param startIndex including
      * @param endIndex   excluding
      */
-    public List<IASTaintRange> getRanges(int startIndex, int endIndex) {
+    public synchronized List<IASTaintRange> getRanges(int startIndex, int endIndex) {
         if (endIndex < startIndex || startIndex < 0) {
             throw new IndexOutOfBoundsException("startIndex: " + startIndex + ", endIndex: " + endIndex);
         } else if (endIndex == startIndex) {
@@ -171,7 +188,84 @@ public class IASTaintInformation {
         return affectedRanges;
     }
 
-    public List<IASTaintRange> getAllRanges() {
+    public synchronized List<IASTaintRange> getAllRanges() {
         return new ArrayList<>(this.ranges);
+    }
+
+    public synchronized void removeTaintFor(int start, int end, boolean leftShiftRangesAfterClearedArea) {
+        if (end <= start || start < 0) {
+            throw new IllegalArgumentException("start: " + start + ", end: " + end);
+        }
+
+        if (ranges.isEmpty()) {
+            return;
+        }
+
+        final var r1 = getRanges(0, start);
+        if (!r1.isEmpty()) {
+            // if r1 is not empty we can be sure, that start > 0 (and by this conditional
+            // we also avoid an unnecessary methods call
+            adjustRanges(r1, 0, start, 0);
+        }
+
+        final var r2 = getAllRangesStartingAt(end);
+        if (!r2.isEmpty()) {
+            int leftShift = 0;
+            if (leftShiftRangesAfterClearedArea) {
+                leftShift = end - start;
+            }
+            adjustRanges(r2, end, r2.get(ranges.size() - 1).getEnd(), leftShift);
+        }
+
+        ranges.clear();
+        ranges.addAll(r1);
+        ranges.addAll(r2);
+    }
+
+    private synchronized List<IASTaintRange> getAllRangesStartingAt(int startIndex) {
+        // Requesting all ranges starting from behind the last range should be valid, therefore we have to make sure that the end index
+        // is >= startIndex, otherwise getRanges() will throw an Exception
+        int endIndex = startIndex;
+        if (!ranges.isEmpty()) {
+            endIndex = Math.max(ranges.get(ranges.size() - 1).getEnd(), startIndex);
+        }
+        return getRanges(startIndex, endIndex);
+    }
+
+    public synchronized void insert(int index, List<IASTaintRange> insertions, int width) {
+        List<IASTaintRange> startRanges = new ArrayList<>();
+        if (index < 0) {
+            throw new IllegalArgumentException("Index must be 0 or greater!");
+        } else if (index > 0) {
+            startRanges.addAll(this.getRanges(0, index));
+            IASTaintRangeUtils.adjustRanges(startRanges, 0, index, 0);
+        }
+
+        IASTaintRangeUtils.shiftRight(insertions, index);
+
+        List<IASTaintRange> endRanges = this.getAllRangesStartingAt(index);
+        IASTaintRangeUtils.adjustRanges(endRanges, index, Integer.MAX_VALUE, -width);
+
+        this.ranges.clear();
+        this.ranges.addAll(startRanges);
+        this.ranges.addAll(insertions);
+        this.ranges.addAll(endRanges);
+    }
+
+    public synchronized IASTaintInformation reversed(int length) {
+        var r = this.getAllRanges();
+        var newRanges = new ArrayList<IASTaintRange>(r.size());
+
+        for (IASTaintRange range : r) {
+            var newStart = length - range.getEnd();
+            var newEnd = newStart - (range.getEnd() - range.getStart());
+            var newRange = new IASTaintRange(newStart, newEnd, range.getSource());
+            newRanges.add(0, newRange);
+        }
+        return new IASTaintInformation(newRanges);
+    }
+
+    public synchronized IASTaintInformation copy() {
+        return new IASTaintInformation(this.getAllRanges());
     }
 }

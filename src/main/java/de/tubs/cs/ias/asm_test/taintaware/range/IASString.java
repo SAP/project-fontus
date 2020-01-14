@@ -6,6 +6,7 @@ import de.tubs.cs.ias.asm_test.taintaware.IASTaintRange;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -67,6 +68,11 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         if (taint) {
             this.taintInformation.addRange(0, this.str.length(), (short) -1);
         }
+    }
+
+    public IASString(String s, IASTaintInformation iasTaintInformation) {
+        this.str = s;
+        this.taintInformation.appendRangesFrom(iasTaintInformation);
     }
 
     public IASString(char value[]) {
@@ -483,7 +489,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     public IASString repeat(int count) {
         IASStringBuilder stringBuilder = new IASStringBuilder();
-        for(int i = 0; i < count; i++) {
+        for (int i = 0; i < count; i++) {
             stringBuilder.append(this);
         }
         return stringBuilder.toIASString();
@@ -513,9 +519,9 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     private static boolean isTainted(Object[] args) {
         boolean isTainted = false;
-        if(args != null) {
+        if (args != null) {
             for (Object o : args) {
-                if(o instanceof IASTaintAware) {
+                if (o instanceof IASTaintAware) {
                     IASTaintAware ta = (IASTaintAware) o;
                     isTainted |= ta.isTainted();
                 }
