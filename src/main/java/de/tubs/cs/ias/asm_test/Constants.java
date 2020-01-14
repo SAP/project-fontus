@@ -169,6 +169,12 @@ public final class Constants {
     public static final String STRINGBUFFER_FULL_NAME = "java.lang.StringBuffer";
     public static final String STRINGBUILDER_FULL_NAME = "java.lang.StringBuilder";
 
+    public static final String AS_STRING = "asString";
+    public static final String AS_STRING_DESC = String.format("(%s)%s", TStringDesc, StringDesc);
+
+    public static final String FROM_STRING = "fromString";
+    public static final String FROM_STRING_DESC = String.format("(%s)%s", StringDesc, TStringDesc);
+
     /**
      * Suffix of class files.
      */

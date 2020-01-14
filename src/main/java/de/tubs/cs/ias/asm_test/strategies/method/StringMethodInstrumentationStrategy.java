@@ -69,7 +69,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     }
 
     private void stringToTStringBuilderBased() {
-        this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "fromString", String.format("(%s)%s", Constants.StringDesc, Constants.TStringDesc), false);
+        this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, Constants.FROM_STRING, Constants.FROM_STRING_DESC, false);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
         }
         if (Constants.StringDesc.equals(parameter)) {
             logger.info("Converting taint-aware String to String in multi param method invocation");
-            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "asString", String.format("(%s)%s", Constants.TStringDesc, Constants.StringDesc), false);
+            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, Constants.AS_STRING, Constants.AS_STRING_DESC, false);
         }
     }
 
