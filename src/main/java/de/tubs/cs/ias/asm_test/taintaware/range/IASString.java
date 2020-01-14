@@ -32,7 +32,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     public IASString(String s, boolean tainted) {
         this.str = s;
-        this.taintInformation.addRange(0, s.length() - 1, (short) -1);
+        this.taintInformation.addRange(0, s.length(), (short) -1);
     }
 
     public IASString(String s, List<IASTaintRange> ranges) {
