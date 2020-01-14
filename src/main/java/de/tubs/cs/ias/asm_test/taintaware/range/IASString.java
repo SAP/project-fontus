@@ -299,11 +299,11 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public IASString substring(int beginIndex, int endIndex) {
-        if(beginIndex < 0 ||  this.length() < endIndex || endIndex < beginIndex) {
+        if (beginIndex < 0 || this.length() < endIndex || endIndex < beginIndex) {
             throw new IllegalArgumentException("startIndex: " + beginIndex + ", endIndex: " + endIndex);
         }
 
-        if(beginIndex == endIndex) {
+        if (beginIndex == endIndex) {
             return new IASString();
         }
 
@@ -400,7 +400,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     public IASString replace(CharSequence target, CharSequence replacement) {
         int start = this.str.indexOf(target.toString());
-        if(start < 0) {
+        if (start < 0) {
             return this;
         }
         IASString beginStr = this.substring(0, start);
@@ -447,7 +447,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
             IASString iasDelimiter = IASString.valueOf(delimiter);
             IASStringBuilder sb = new IASStringBuilder(elements[0]);
 
-            for(int i = 1; i < elements.length; i++) {
+            for (int i = 1; i < elements.length; i++) {
                 sb.append(iasDelimiter);
                 sb.append(IASString.valueOf(elements[i]));
             }
@@ -577,13 +577,17 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     public static IASString valueOf(Object obj) {
         if (obj instanceof IASString) {
             return (IASString) obj;
+        } else if (obj instanceof IASStringBuffer) {
+            return ((IASStringBuffer) obj).toIASString();
+        } else if (obj instanceof IASStringBuilder) {
+            return ((IASStringBuilder) obj).toIASString();
         } else {
             return new IASString(String.valueOf(obj));
         }
     }
 
     public static IASString valueOf(CharSequence s, int start, int end) {
-        if(s instanceof IASString) {
+        if (s instanceof IASString) {
             return ((IASString) s).substring(start, end);
         } else {
             return IASString.valueOf(s.subSequence(start, end));
