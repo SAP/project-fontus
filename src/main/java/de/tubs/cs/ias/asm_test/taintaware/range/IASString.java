@@ -299,6 +299,14 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public IASString substring(int beginIndex, int endIndex) {
+        if(beginIndex < 0 ||  this.length() < endIndex || endIndex < beginIndex) {
+            throw new IllegalArgumentException("startIndex: " + beginIndex + ", endIndex: " + endIndex);
+        }
+
+        if(beginIndex == endIndex) {
+            return new IASString();
+        }
+
         List<IASTaintRange> ranges = this.getSubstringRanges(beginIndex, endIndex);
         return new IASString(this.str.substring(beginIndex, endIndex), ranges);
     }
@@ -391,8 +399,16 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public IASString replace(CharSequence target, CharSequence replacement) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        int start = this.str.indexOf(target.toString());
+        if(start < 0) {
+            return this;
+        }
+        IASString beginStr = this.substring(0, start);
+
+        int end = start + target.length();
+        IASString endStr = this.substring(end).replace(target, replacement);
+
+        return beginStr.concat(IASString.valueOf(replacement)).concat(endStr);
     }
 
     // TODO: this propagates the taint for the whole string
@@ -423,15 +439,30 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public static IASString join(CharSequence delimiter, CharSequence... elements) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        if (elements != null || elements.length == 0) {
+            return new IASString();
+        } else if (elements.length == 1) {
+            return IASString.valueOf(elements[0]);
+        } else {
+            IASString iasDelimiter = IASString.valueOf(delimiter);
+            IASStringBuilder sb = new IASStringBuilder(elements[0]);
+
+            for(int i = 1; i < elements.length; i++) {
+                sb.append(iasDelimiter);
+                sb.append(IASString.valueOf(elements[i]));
+            }
+            return sb.toIASString();
+        }
     }
 
 
     public static IASString join(CharSequence delimiter,
                                  Iterable<? extends CharSequence> elements) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        ArrayList<CharSequence> l = new ArrayList();
+        for (CharSequence s : elements) {
+            l.add(s);
+        }
+        return IASString.join(delimiter, l.toArray(new CharSequence[l.size()]));
     }
 
     public IASString toLowerCase(Locale locale) {
