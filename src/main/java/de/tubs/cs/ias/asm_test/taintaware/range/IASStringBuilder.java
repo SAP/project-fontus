@@ -67,6 +67,7 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
     public IASStringBuilder append(IASString str) {
         int size = this.length();
         this.taintInformation.appendRangesFrom(str.getTaintInformation(), size);
+        this.builder.append(str.toString());
         return this;
     }
 
