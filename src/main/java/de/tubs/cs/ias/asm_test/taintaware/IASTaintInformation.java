@@ -4,6 +4,7 @@ import de.tubs.cs.ias.asm_test.taintaware.range.IASTaintRangeUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import static de.tubs.cs.ias.asm_test.taintaware.range.IASTaintRangeUtils.adjustRanges;
@@ -145,12 +146,19 @@ public class IASTaintInformation {
         this.appendRangesFrom(other, 0);
     }
 
+    /**
+     * By default no merging of ranges
+     */
     public synchronized void appendRangesFrom(IASTaintInformation other, int rightShift) {
+        appendRangesFrom(other, rightShift, false);
+    }
+
+    public synchronized void appendRangesFrom(IASTaintInformation other, int rightShift, boolean merge) {
         var ranges = other.getAllRanges();
         if (rightShift != 0) {
             IASTaintRangeUtils.shiftRight(ranges, rightShift);
         }
-        this.ranges.addAll(ranges);
+        this.appendRanges(ranges, merge);
     }
 
     public synchronized void resize(int start, int end, int leftShift) {
@@ -160,8 +168,54 @@ public class IASTaintInformation {
         this.appendRanges(ranges);
     }
 
+    /**
+     * This appends the ranges to the current range set
+     * If there are merging is wanted, neighbors of the inserted ranges will be checked if they have the same source, if yes they will be merges to one range.
+     * The merging will also affect the appended ranges itself, if they are next to each other and have the same source
+     */
+    public synchronized void appendRanges(List<IASTaintRange> ranges, boolean merge) {
+        if (!merge) {
+            this.ranges.addAll(ranges);
+            return;
+        }
+        this.ranges.sort(Comparator.comparingInt(IASTaintRange::getStart));
+
+        for (var range : ranges) {
+            // Merge with range after, if existent
+            int afterIndex = Collections.binarySearch(this.ranges, range, (o1, o2) -> o2.getEnd() - o1.getStart() );
+            if (afterIndex >= 0) {
+                var afterRange = this.ranges.get(afterIndex);
+                if (afterRange.getSource() == range.getSource()) {
+                    range = new IASTaintRange(afterRange.getStart(), range.getEnd(), range.getSource());
+                    this.ranges.remove(afterIndex);
+                }
+            }
+
+            // Merge with range before, if existent
+            int beforeIndex = Collections.binarySearch(this.ranges, range, (o1, o2) -> o1.getEnd() - o2.getStart());
+            if (beforeIndex >= 0) {
+                var beforeRange = this.ranges.get(beforeIndex);
+                if (beforeRange.getSource() == range.getSource()) {
+                    range = new IASTaintRange(beforeRange.getStart(), range.getEnd(), range.getSource());
+                    this.ranges.remove(beforeIndex);
+                } else {
+                    beforeIndex++;
+                }
+            } else {
+                beforeIndex = -(beforeIndex + 1);
+            }
+            this.ranges.add(beforeIndex, range);
+        }
+    }
+
+    /**
+     * This appends the ranges to the current range set
+     * The ranges will not be merged
+     *
+     * @param ranges
+     */
     public synchronized void appendRanges(List<IASTaintRange> ranges) {
-        this.ranges.addAll(ranges);
+        this.appendRanges(ranges, false);
     }
 
     /**

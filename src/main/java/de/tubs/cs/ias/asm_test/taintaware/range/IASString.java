@@ -374,15 +374,15 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
             var end = m.start();
 
             var first = this.substring(start, end);
-            stringBuilder.append(first);
+            stringBuilder.append(first, true);
             var currRepl = replacer.doReplacement(m, this);
-            stringBuilder.append(currRepl);
+            stringBuilder.append(currRepl, true);
             start = m.end();
         }
 
         if (start < this.length()) {
             var last = this.substring(start);
-            stringBuilder.append(last);
+            stringBuilder.append(last, true);
         }
 
         return stringBuilder.toIASString();
@@ -425,7 +425,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
                 var insert = orig.substring(start, end);
 
                 var index = groups.get(key);
-                if(index < lastIndex) {
+                if (index < lastIndex) {
                     throw new IllegalStateException("Map not sorted ascending");
                 }
                 lastIndex = index;

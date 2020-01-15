@@ -65,8 +65,13 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
     }
 
     public IASStringBuilder append(IASString str) {
+        return this.append(str, false);
+    }
+
+
+    public IASStringBuilder append(IASString str, boolean merge) {
         int size = this.length();
-        this.taintInformation.appendRangesFrom(str.getTaintInformation(), size);
+        this.taintInformation.appendRangesFrom(str.getTaintInformation(), size, merge);
         this.builder.append(str.toString());
         return this;
     }
