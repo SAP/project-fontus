@@ -6,10 +6,7 @@ import de.tubs.cs.ias.asm_test.taintaware.IASTaintRange;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
@@ -367,35 +364,155 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public IASString replaceAll(IASString regex, IASString replacement) {
-        String replacedStr = this.str.replaceAll(regex.str, replacement.str);
-        IASString newStr = new IASString(replacedStr, this.taintInformation.getAllRanges());
+        var p = Pattern.compile(regex.toString());
+        var m = p.matcher(this.str);
 
-        // Are there any changes through the replacement? If not, it's irrelevant if one happened for the tainting
-        if (!replacedStr.equals(this.str)) {
-            Pattern p = Pattern.compile(regex.str);
-            Matcher m = p.matcher(this.str);
+        var stringBuilder = new IASStringBuilder();
+        var start = 0;
+        var replacer = Replacement.createReplacement(replacement);
+        while (m.find()) {
+            var end = m.start();
 
-            // Shift that have to be added after the first round, because the replacement could have changed the string size
-            int rightShift = 0;
-            for (int i = 0; m.find(); i++) {
-                final int start = m.start(i);
-                final int end = m.end(i);
-
-                IASString grReplacement = replaceGroups(replacement, m);
-
-                newStr.taintInformation.replaceTaintInformation(start + rightShift, end + rightShift, replacement.taintInformation.getAllRanges(), replacement.length());
-
-                rightShift += replacement.length() - (end - start);
-            }
+            var first = this.substring(start, end);
+            stringBuilder.append(first);
+            var currRepl = replacer.doReplacement(m, this);
+            stringBuilder.append(currRepl);
+            start = m.end();
         }
-        return newStr;
+
+        if (start < this.length()) {
+            var last = this.substring(start);
+            stringBuilder.append(last);
+        }
+
+        return stringBuilder.toIASString();
     }
 
-    private IASString replaceGroups(IASString repl, Matcher m) {
-        final String replacement = repl.toString();
-        // TODO Implement group replacement in Replacement string
+    private static final class Replacement {
+        /**
+         * Mapping von group name or group index to index in string
+         */
+        private final Map<Object, Integer> groups;
 
-        throw new UnsupportedOperationException("Not implemented!");
+        /**
+         * Replacement string without the group insertions
+         */
+        private final IASString clearedReplacementString;
+
+        private Replacement(IASString clearedReplacementString, HashMap<Object, Integer> groups) {
+            this.clearedReplacementString = clearedReplacementString;
+            this.groups = groups;
+        }
+
+        public IASString doReplacement(Matcher m, IASString orig) {
+            int lastIndex = -1;
+            int shift = 0;
+            IASStringBuffer stringBuffer = new IASStringBuffer(this.clearedReplacementString);
+
+            for (Object key : this.groups.keySet()) {
+                int start;
+                int end;
+                if (key instanceof String) {
+                    start = m.start((String) key);
+                    end = m.end((String) key);
+                } else if (key instanceof Integer) {
+                    start = m.start((Integer) key);
+                    end = m.end((Integer) key);
+                } else {
+                    throw new IllegalStateException("Group map must not contain something else as strinngs and ints");
+                }
+
+                var insert = orig.substring(start, end);
+
+                var index = groups.get(key);
+                if(index < lastIndex) {
+                    throw new IllegalStateException("Map not sorted ascending");
+                }
+                lastIndex = index;
+
+                stringBuffer.insert(index + shift, insert);
+                shift += insert.length();
+            }
+            return stringBuffer.toIASString();
+        }
+
+        public static Replacement createReplacement(IASString repl) {
+            var groups = new LinkedHashMap<Object, Integer>();
+
+            boolean escaped = false;
+            boolean groupParsing = false;
+            boolean indexedParsing = false;
+            boolean namedParsing = false;
+
+            int groupIndex = -1;
+            String groupName = null;
+
+            IASString clearedString = new IASString();
+
+            for (int i = 0; i < repl.length(); i++) {
+                char c = repl.charAt(i);
+
+                if (!escaped) {
+                    if (groupParsing) {
+                        if (indexedParsing) {
+                            if (Character.isDigit(c)) {
+                                groupIndex = groupIndex * 10 + Character.getNumericValue(c);
+                            } else {
+                                groupParsing = false;
+                                indexedParsing = false;
+
+                                groups.put(groupIndex, clearedString.length());
+
+                                // Analyse character again
+                                i--;
+                                continue;
+                            }
+                        } else if (namedParsing) {
+                            if (isAlphanum(c)) {
+                                groupName += c;
+                            } else if (c == '}') {
+                                if (groupName.isBlank()) {
+                                    throw new IllegalStateException("Groupname cannot be empty!");
+                                }
+                                groups.put(groupName, clearedString.length());
+
+                                groupName = null;
+                                namedParsing = false;
+                                groupParsing = false;
+                            }
+                        } else {
+                            if (Character.isDigit(c)) {
+                                indexedParsing = true;
+                                groupIndex = Character.getNumericValue(c);
+                            } else if (c == '{') {
+                                namedParsing = true;
+                            } else {
+                                throw new IllegalStateException("After $ there mus be a group index or a named capture group name");
+                            }
+                        }
+                    } else {
+                        if (c == '\\') {
+                            escaped = true;
+                        } else if (c == '$') {
+                            groupParsing = true;
+                        } else {
+                            var ins = repl.substring(i, i + 1);
+                            clearedString = clearedString.concat(ins);
+                        }
+                    }
+                } else {
+                    var ins = repl.substring(i, i + 1);
+                    clearedString = clearedString.concat(ins);
+                    escaped = false;
+                }
+            }
+
+            return new Replacement(clearedString, groups);
+        }
+
+        private static boolean isAlphanum(char c) {
+            return Character.isDigit(c) || Character.isLetter(c);
+        }
     }
 
     public IASString replace(CharSequence target, CharSequence replacement) {
@@ -420,12 +537,12 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         var start = 0;
         var count = 0;
         while (matcher.find()) {
-            if(limit > 0 && count >= limit) {
+            if (limit > 0 && count >= limit) {
                 break;
             }
 
             var matchSize = matcher.end() - matcher.start();
-            if(count != 0 || matchSize > 0) {
+            if (count != 0 || matchSize > 0) {
                 var end = matcher.start();
 
                 var part = this.substring(start, end);
@@ -436,7 +553,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
             count++;
         }
 
-        if(start < this.length() || limit < 0) {
+        if (start < this.length() || limit < 0) {
             var endPart = this.substring(start);
             result.add(endPart);
         } else if (start == 0 && this.length() == 0) {

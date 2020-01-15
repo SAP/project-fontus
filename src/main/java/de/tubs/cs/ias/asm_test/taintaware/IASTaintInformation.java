@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static de.tubs.cs.ias.asm_test.taintaware.range.IASTaintRangeUtils.adjustRanges;
+import static de.tubs.cs.ias.asm_test.taintaware.range.IASTaintRangeUtils.shiftRight;
 
 public class IASTaintInformation {
     private List<IASTaintRange> ranges;
@@ -103,11 +104,13 @@ public class IASTaintInformation {
      */
     public void replaceTaintInformation(int start, int end, List<IASTaintRange> newRanges, int replacementWidth) {
         List<IASTaintRange> leftSide = this.getRanges(0, start);
-        adjustRanges(leftSide, 0, start, 0);
+        if (start > 0) {
+            adjustRanges(leftSide, 0, start, 0);
+        }
 
         int leftShift = (end - start) - replacementWidth;
 
-        List<IASTaintRange> rightSide = this.getRanges(end, Integer.MAX_VALUE);
+        List<IASTaintRange> rightSide = this.getAllRangesStartingAt(end);
         adjustRanges(rightSide, end, Integer.MAX_VALUE, leftShift);
 
         IASTaintRangeUtils.shiftRight(newRanges, start);
@@ -143,12 +146,11 @@ public class IASTaintInformation {
     }
 
     public synchronized void appendRangesFrom(IASTaintInformation other, int rightShift) {
-        if (rightShift == 0) {
-            ranges.addAll(other.ranges);
-            return;
+        var ranges = other.getAllRanges();
+        if (rightShift != 0) {
+            IASTaintRangeUtils.shiftRight(ranges, rightShift);
         }
-        // TODO
-
+        this.ranges.addAll(ranges);
     }
 
     public synchronized void resize(int start, int end, int leftShift) {
