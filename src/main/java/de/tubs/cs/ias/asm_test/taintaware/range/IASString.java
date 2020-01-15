@@ -447,7 +447,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
             int groupIndex = -1;
             String groupName = null;
 
-            IASString clearedString = new IASString();
+            var clearedStringBuilder = new IASStringBuilder();
 
             for (int i = 0; i < repl.length(); i++) {
                 char c = repl.charAt(i);
@@ -461,7 +461,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
                                 groupParsing = false;
                                 indexedParsing = false;
 
-                                groups.put(groupIndex, clearedString.length());
+                                groups.put(groupIndex, clearedStringBuilder.length());
 
                                 // Analyse character again
                                 i--;
@@ -474,7 +474,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
                                 if (groupName.isBlank()) {
                                     throw new IllegalStateException("Groupname cannot be empty!");
                                 }
-                                groups.put(groupName, clearedString.length());
+                                groups.put(groupName, clearedStringBuilder.length());
 
                                 groupName = null;
                                 namedParsing = false;
@@ -496,18 +496,18 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
                         } else if (c == '$') {
                             groupParsing = true;
                         } else {
-                            var ins = repl.substring(i, i + 1);
-                            clearedString = clearedString.concat(ins);
+                            var charStr = repl.substring(i, i + 1);
+                            clearedStringBuilder.append(charStr);
                         }
                     }
                 } else {
-                    var ins = repl.substring(i, i + 1);
-                    clearedString = clearedString.concat(ins);
+                    var charStr = repl.substring(i, i + 1);
+                    clearedStringBuilder.append(charStr);
                     escaped = false;
                 }
             }
 
-            return new Replacement(clearedString, groups);
+            return new Replacement(clearedStringBuilder.toIASString(), groups);
         }
 
         private static boolean isAlphanum(char c) {
