@@ -290,7 +290,7 @@ public class IASTaintInformation {
             if (leftShiftRangesAfterClearedArea) {
                 leftShift = end - start;
             }
-            adjustRanges(r2, end, r2.get(ranges.size() - 1).getEnd(), leftShift);
+            adjustRanges(r2, end, r2.get(r2.size() - 1).getEnd(), leftShift);
         }
 
         ranges.clear();
