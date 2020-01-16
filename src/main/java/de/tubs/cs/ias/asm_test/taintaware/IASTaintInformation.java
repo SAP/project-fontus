@@ -103,7 +103,7 @@ public class IASTaintInformation {
      * @param newRanges        the ranges do not have to be adopted to the new place, this is done by this method
      * @param replacementWidth "width" of the newly inserted ranges (determines shift for the ranges behind the insertion)
      */
-    public void replaceTaintInformation(int start, int end, List<IASTaintRange> newRanges, int replacementWidth) {
+    public void replaceTaintInformation(int start, int end, List<IASTaintRange> newRanges, int replacementWidth, boolean shiftNewRanges) {
         List<IASTaintRange> leftSide = this.getRanges(0, start);
         if (start > 0) {
             adjustRanges(leftSide, 0, start, 0);
@@ -114,12 +114,32 @@ public class IASTaintInformation {
         List<IASTaintRange> rightSide = this.getAllRangesStartingAt(end);
         adjustRanges(rightSide, end, Integer.MAX_VALUE, leftShift);
 
-        IASTaintRangeUtils.shiftRight(newRanges, start);
+        if (shiftNewRanges) {
+            IASTaintRangeUtils.shiftRight(newRanges, start);
+        }
 
         this.ranges.clear();
         this.appendRanges(leftSide);
         this.appendRanges(newRanges);
         this.appendRanges(rightSide);
+        this.mergeRanges();
+    }
+
+    private void mergeRanges() {
+        this.ranges.sort(Comparator.comparingInt(IASTaintRange::getStart));
+
+        for (int i = 0; i < this.ranges.size() - 1; i++) {
+            var currRange = this.ranges.get(i);
+            var nextRange = this.ranges.get(i + 1);
+
+            // Is merge possible?
+            if (currRange.getEnd() == nextRange.getStart() && currRange.getSource() == nextRange.getSource()) {
+                var newRange = new IASTaintRange(currRange.getStart(), nextRange.getEnd(), nextRange.getSource());
+                this.ranges.set(i, newRange);
+                this.ranges.remove(i + 1);
+                i--;
+            }
+        }
     }
 
     private int getListIndexOfFirstContainingOrAdjacentRange(int index) {
@@ -182,7 +202,7 @@ public class IASTaintInformation {
 
         for (var range : ranges) {
             // Merge with range after, if existent
-            int afterIndex = Collections.binarySearch(this.ranges, range, (o1, o2) -> o2.getEnd() - o1.getStart() );
+            int afterIndex = Collections.binarySearch(this.ranges, range, (o1, o2) -> o2.getEnd() - o1.getStart());
             if (afterIndex >= 0) {
                 var afterRange = this.ranges.get(afterIndex);
                 if (afterRange.getSource() == range.getSource()) {
@@ -308,20 +328,44 @@ public class IASTaintInformation {
         this.ranges.addAll(endRanges);
     }
 
-    public synchronized IASTaintInformation reversed(int length) {
+    public synchronized void reversed(int length) {
         var r = this.getAllRanges();
         var newRanges = new ArrayList<IASTaintRange>(r.size());
 
         for (IASTaintRange range : r) {
-            var newStart = length - range.getEnd();
-            var newEnd = newStart - (range.getEnd() - range.getStart());
+            var newEnd = length - range.getStart();
+            var newStart = newEnd - (range.getEnd() - range.getStart());
             var newRange = new IASTaintRange(newStart, newEnd, range.getSource());
             newRanges.add(0, newRange);
         }
-        return new IASTaintInformation(newRanges);
+        this.ranges.clear();
+        this.ranges.addAll(newRanges);
     }
 
     public synchronized IASTaintInformation copy() {
         return new IASTaintInformation(this.getAllRanges());
+    }
+
+    public IASTaintRange getRange(int listIndex) {
+        return this.ranges.get(listIndex);
+    }
+
+    /**
+     * Performs a getRanges and cuts of the endings
+     *
+     * @param end exclusive
+     */
+    public List<IASTaintRange> cutTaint(int start, int end) {
+        var ranges = getRanges(start, end);
+        adjustRanges(ranges, start, end, 0);
+        return ranges;
+    }
+
+    public IASTaintRange cutTaint(int index) {
+        var ranges = cutTaint(index, index + 1);
+        if (ranges.size() == 0) {
+            return null;
+        }
+        return ranges.get(0);
     }
 }

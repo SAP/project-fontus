@@ -228,7 +228,7 @@ public final class IASStringBuffer
 
     public synchronized IASStringBuffer replace(int start, int end, IASString str) {
         this.buffer.replace(start, end, str.toString());
-        this.taintInformation.replaceTaintInformation(start, end, str.getTaintInformation().getAllRanges(), str.length());
+        this.taintInformation.replaceTaintInformation(start, end, str.getTaintInformation().getAllRanges(), str.length(), true);
         return this;
     }
 
@@ -248,7 +248,7 @@ public final class IASStringBuffer
 
     public synchronized IASStringBuffer insert(int index, char[] str, int offset,
                                                int len) {
-        this.buffer.insert(index,str, offset, len);
+        this.buffer.insert(index, str, offset, len);
         this.taintInformation.insert(index, new ArrayList<>(0), len);
         return this;
     }
@@ -328,9 +328,9 @@ public final class IASStringBuffer
     }
 
     public synchronized IASStringBuffer reverse() {
-        var reversedBuf = this.buffer.reverse();
-        var reversedTintInfo = this.taintInformation.reversed(this.length());
-        return new IASStringBuffer(reversedBuf, reversedTintInfo);
+        this.buffer.reverse();
+        this.taintInformation.reversed(this.length());
+        return this;
     }
 
     public synchronized IASString toIASString() {

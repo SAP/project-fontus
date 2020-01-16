@@ -1,11 +1,12 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
-import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintInformation;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintRange;
 
 import java.util.ArrayList;
 import java.util.stream.IntStream;
+
+import static de.tubs.cs.ias.asm_test.taintaware.range.IASTaintRangeUtils.adjustRanges;
 
 @SuppressWarnings("ALL")
 public final class IASStringBuilder implements java.io.Serializable, Comparable<IASStringBuilder>, CharSequence, IASTaintAware {
@@ -156,7 +157,7 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
 
     public IASStringBuilder replace(int start, int end, IASString str) {
         this.builder.replace(start, end, str.toString());
-        this.taintInformation.replaceTaintInformation(start, end, str.getTaintInformation().getAllRanges(), str.length());
+        this.taintInformation.replaceTaintInformation(start, end, str.getTaintInformation().getAllRanges(), str.length(), true);
         return this;
     }
 
@@ -244,9 +245,36 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
     }
 
     public IASStringBuilder reverse() {
-        var newTaintInfo = this.taintInformation.reversed(this.length());
-        var newBuilder = new IASStringBuilder(this.builder.reverse(), newTaintInfo);
-        return newBuilder;
+        this.builder.reverse();
+        this.taintInformation.reversed(this.length());
+        handleSurrogatesForReversed();
+
+        return this;
+    }
+
+    private void handleSurrogatesForReversed() {
+        var chars = this.toString().toCharArray();
+        for (int i = 0; i < this.length() - 1; i++) {
+            char highSur = chars[i];
+            char lowSur = chars[i + 1];
+            if (Character.isLowSurrogate(lowSur) && Character.isHighSurrogate(highSur)) {
+                var oldHighRange = this.taintInformation.cutTaint(i);
+                var oldLowRange = this.taintInformation.cutTaint(i + 1);
+
+                var ranges = new ArrayList<IASTaintRange>(2);
+
+                if (oldLowRange != null) {
+                    var newHighRange = oldLowRange.shiftRight(-1);
+                    ranges.add(newHighRange);
+                }
+                if (oldHighRange != null) {
+                    var newLowRange = oldHighRange.shiftRight(1);
+                    ranges.add(newLowRange);
+                }
+
+                this.taintInformation.replaceTaintInformation(i, i + 2, ranges, 2, false);
+            }
+        }
     }
 
     @Override
