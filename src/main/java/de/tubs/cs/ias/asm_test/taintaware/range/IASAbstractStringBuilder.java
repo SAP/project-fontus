@@ -159,7 +159,7 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
     }
 
     public IASAbstractStringBuilder insert(int index, char[] str, int offset,
-                              int len) {
+                                           int len) {
         IASString iasString = IASString.valueOf(str, offset, len);
         this.insert(index, iasString);
         return this;
@@ -188,7 +188,7 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
     }
 
     public IASAbstractStringBuilder insert(int dstOffset, CharSequence s,
-                              int start, int end) {
+                                           int start, int end) {
         IASString iasString = IASString.valueOf(s);
         iasString = iasString.substring(start, end);
         this.insert(dstOffset, iasString);
@@ -297,6 +297,7 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
 
     public void setCharAt(int index, char c) {
         this.builder.setCharAt(index, c);
+        this.taintInformation.removeTaintFor(index, index + 1, false);
     }
 
     public void ensureCapacity(int minimumCapacity) {
