@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 
 @SuppressWarnings("ALL")
-public final class IASString implements IASTaintAware, Comparable<IASString>, CharSequence {
+public final class IASString implements IASRangeAware, Comparable<IASString>, CharSequence {
 
     private String str;
     private final IASTaintInformation taintInformation = new IASTaintInformation();
@@ -804,6 +804,6 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     public boolean isUninitialized() {
 //        return this.taintInformation == null;
-        return false;
+        return !isTainted();
     }
 }

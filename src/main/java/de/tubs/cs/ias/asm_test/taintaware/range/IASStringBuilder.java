@@ -9,7 +9,7 @@ import java.util.stream.IntStream;
 import static de.tubs.cs.ias.asm_test.taintaware.range.IASTaintRangeUtils.adjustRanges;
 
 @SuppressWarnings("ALL")
-public final class IASStringBuilder implements java.io.Serializable, Comparable<IASStringBuilder>, CharSequence, IASTaintAware {
+public final class IASStringBuilder implements java.io.Serializable, Comparable<IASStringBuilder>, CharSequence, IASRangeAware {
 
     private final StringBuilder builder;
     private final IASTaintInformation taintInformation;
@@ -21,14 +21,14 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
 
     @Override
     public boolean isTainted() {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        return this.taintInformation.isTainted();
     }
 
     @Override
     public void setTaint(boolean taint) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        if (!this.isTainted()) {
+            this.taintInformation.addRange(0, this.length(), (short) 0);
+        }
     }
 
     public IASStringBuilder() {
@@ -355,6 +355,6 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
     }
 
     public boolean isUninitialized() {
-        return false;
+        return !isTainted();
     }
 }

@@ -1,13 +1,12 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
-import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintInformation;
 
 import java.util.ArrayList;
 
 @SuppressWarnings({"SynchronizedMethod", "ReturnOfThis", "WeakerAccess", "ClassWithTooManyConstructors", "ClassWithTooManyMethods", "unused"})
 public final class IASStringBuffer
-        implements java.io.Serializable, CharSequence, IASTaintAware, Comparable<IASStringBuffer> {
+        implements java.io.Serializable, CharSequence, IASRangeAware, Comparable<IASStringBuffer> {
 
     // TODO: accessed in both synchronized and unsynchronized methods
     private final StringBuffer buffer;
@@ -352,5 +351,9 @@ public final class IASStringBuffer
 
     public IASTaintInformation getTaintInformation() {
         return this.taintInformation;
+    }
+
+    public boolean isUninitialized() {
+        return !isTainted();
     }
 }
