@@ -185,7 +185,7 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
     }
 
     public IASStringBuilder insert(int offset, IASString str) {
-        this.taintInformation.insert(offset, new ArrayList<IASTaintRange>(0), str.length());
+        this.taintInformation.insert(offset, str.getTaintInformation().getAllRanges(), str.length());
         this.builder.insert(offset, str.toString());
         return this;
     }
