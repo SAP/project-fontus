@@ -129,8 +129,12 @@ public final class IASStringBuffer
     }
 
     public synchronized IASStringBuffer append(IASString str) {
-        var shift = this.length();
-        this.taintInformation.appendRangesFrom(str.getTaintInformation(), shift);
+        var leftShift = -this.length();
+
+        var ranges = str.getTaintInformation().getAllRanges();
+        IASTaintRangeUtils.adjustRanges(ranges, 0, str.length(), leftShift);
+        this.taintInformation.appendRanges(ranges);
+
         this.buffer.append(str.toString());
         return this;
     }

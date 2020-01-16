@@ -12,8 +12,11 @@ public class IASTaintRangeUtils {
      * @param endIndex   exclusive (the same as for ranges)
      */
     public static void adjustRanges(List<IASTaintRange> ranges, int startIndex, int endIndex, int leftShift) {
-        if (endIndex <= startIndex || startIndex < 0) {
+        if (endIndex < startIndex || startIndex < 0) {
             throw new IllegalArgumentException("startIndex: " + startIndex + ", endIndex: " + endIndex);
+        } else if (endIndex == startIndex) {
+            ranges.clear();
+            return;
         }
 
         if (ranges.isEmpty()) {

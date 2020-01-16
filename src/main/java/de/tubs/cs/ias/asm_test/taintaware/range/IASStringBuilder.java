@@ -71,8 +71,12 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
 
 
     public IASStringBuilder append(IASString str, boolean merge) {
-        int size = this.length();
-        this.taintInformation.appendRangesFrom(str.getTaintInformation(), size, merge);
+        var leftShift = -this.length();
+
+        var ranges = str.getTaintInformation().getAllRanges();
+        adjustRanges(ranges, 0, str.length(), leftShift);
+        this.taintInformation.appendRanges(ranges, merge);
+
         this.builder.append(str.toString());
         return this;
     }
@@ -83,8 +87,14 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
     }
 
     public IASStringBuilder append(IASStringBuffer strb) {
+        var leftShift = -this.length();
+
+        var ranges = strb.getTaintInformation().getAllRanges();
+        adjustRanges(ranges, 0, strb.length(), leftShift);
+        this.taintInformation.appendRanges(ranges);
+
         this.builder.append(strb.getBuffer());
-        this.taintInformation.appendRangesFrom(strb.getTaintInformation(), this.length());
+
         return this;
     }
 
