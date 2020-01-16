@@ -1,7 +1,6 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
 import de.tubs.cs.ias.asm_test.taintaware.range.testHelper.THelper;
-import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.migrationsupport.EnableJUnit4MigrationSupport;
@@ -83,10 +82,11 @@ public class StringBuilderTest {
 
     @Test
     public void setCharAt() {
+        THelper.get(foo).addRange(0, 3, (short) 0);
         foo.setCharAt(1, 'l');
 
         assertThat(foo.toString(), is("flo"));
-        assertThat(foo, taintEquals(range(1, 2, TaintSource.TS_CHAR_UNKNOWN_ORIGIN)));
+        assertThat(foo, taintEquals(range(0, 1, 0).add(2, 3, 0).done()));
     }
 
     @Test
@@ -148,34 +148,34 @@ public class StringBuilderTest {
     }
 
     @Test
-    @Ignore
     public void append_charArray() {
+        THelper.get(foo).addRange(0, 3, (short) 0);
         char[] arr = new char[]{'b', 'a', 'r'};
 
         foo.append(arr);
 
         assertThat(foo.toString(), is("foobar"));
-        assertThat(foo, taintEquals(range(3, 6, TaintSource.TS_CHAR_UNKNOWN_ORIGIN)));
+        assertThat(foo, taintEquals(range(0, 3, 0)));
     }
 
     @Test
-    @Ignore
     public void append_charArray_range() {
+        THelper.get(foo).addRange(0, 3, (short) 0);
         char[] arr = new char[]{'b', 'a', 'r'};
 
         foo.append(arr, 1, 1);
 
         assertThat(foo.toString(), is("fooa"));
-        assertThat(foo, taintEquals(range(3, 4, TaintSource.TS_CHAR_UNKNOWN_ORIGIN)));
+        assertThat(foo, taintEquals(range(0, 3, 0)));
     }
 
     @Test
-    @Ignore
     public void append_char() {
+        foo.getTaintInformation().addRange(0, 3, (short) 0);
         foo.append('o');
 
         assertThat(foo.toString(), is("fooo"));
-        assertThat(foo, taintEquals(range(3, 4, TaintSource.TS_CHAR_UNKNOWN_ORIGIN)));
+        assertThat(foo, taintEquals(range(0, 3, 0)));
     }
 
     @Test
@@ -250,7 +250,7 @@ public class StringBuilderTest {
         foo.insert(1, ar, 1, 2);
 
         assertThat(foo.toString(), is("faroo"));
-        assertThat(foo, taintEquals(range(0, 1, 0).add(1, 3, TaintSource.TS_CHAR_UNKNOWN_ORIGIN).add(3, 5, 0)));
+        assertThat(foo, taintEquals(range(0, 1, 0).add(3, 5, 0)));
     }
 
     @Test
@@ -287,7 +287,7 @@ public class StringBuilderTest {
         foo.insert(1, ar);
 
         assertThat(foo.toString(), is("fbaroo"));
-        assertThat(foo, taintEquals(range(0, 1, 0).add(1, 4, TaintSource.TS_CHAR_UNKNOWN_ORIGIN).add(4, 6, 0)));
+        assertThat(foo, taintEquals(range(0, 1, 0).add(4, 6, 0)));
     }
 
     @Test
@@ -306,11 +306,16 @@ public class StringBuilderTest {
     public void insert_charSequence_2() {
         // insert an unknown implementation of CharSequence
         THelper.get(foo).addRange(0, 3, (short) 0);
+        var foo2 = new IASStringBuffer(foo);
 
         foo.insert(0, createCharSequence("blub"));
+        foo2.insert(1, createCharSequence("blub"));
 
         assertThat(foo.toString(), is("blubfoo"));
-        assertThat(foo, taintEquals(range(0, 4, TaintSource.TS_CS_UNKNOWN_ORIGIN).add(4, 7, 0)));
+        assertThat(foo, taintEquals(range(4, 7, 0)));
+
+        assertThat(foo2.toString(), is("fbluboo"));
+        assertThat(foo2, taintEquals(range(0, 1, 0).add(5, 7, 0)));
     }
 
     @Test
@@ -338,10 +343,16 @@ public class StringBuilderTest {
         // insert an untainted String
         THelper.get(foo).addRange(0, 3, (short) 0);
 
+        var foo2 = new IASStringBuffer(foo);
+
         foo.insert(0, 'u');
+        foo2.insert(1, 'u');
 
         assertThat(foo.toString(), is("ufoo"));
-        assertThat(foo, taintEquals(range(0, 1, TaintSource.TS_CHAR_UNKNOWN_ORIGIN).add(1, 4, 0)));
+        assertThat(foo, taintEquals(range(1, 4, 0)));
+
+        assertThat(foo2.toString(), is("fuoo"));
+        assertThat(foo2, taintEquals(range(0, 1, 0).add(2, 4, 0)));
     }
 
     @Test
