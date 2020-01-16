@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @EnableJUnit4MigrationSupport
 public class StringTest {
-    private final static short SAMPLE_SOURCE = TaintSource.TS_CS_UNKNOWN_ORIGIN;
+    private final static IASTaintSource SAMPLE_SOURCE = IASTaintSource.TS_CS_UNKNOWN_ORIGIN;
     private IASString foo = null;
     private IASString bar = null;
 
@@ -180,19 +180,19 @@ public class StringTest {
 
 
         assertThat(s1.toString(), equalTo("poo"));
-        assertThat(s1, taintEquals(range(0, 1, TaintSource.TS_CHAR_UNKNOWN_ORIGIN).done()));
+        assertThat(s1, taintEquals(range(0, 1, IASTaintSource.TS_CHAR_UNKNOWN_ORIGIN).done()));
 
         assertThat(s2.toString(), equalTo("fee"));
         // Every replaced char gets its own ranges...
-        assertThat(THelper.get(s2).getAllRanges(), equalTo(range(0, 1, 0).add(1, 2, TaintSource.TS_CHAR_UNKNOWN_ORIGIN).add(2, 3, TaintSource.TS_CHAR_UNKNOWN_ORIGIN).done()));
+        assertThat(THelper.get(s2).getAllRanges(), equalTo(range(0, 1, 0).add(1, 2, IASTaintSource.TS_CHAR_UNKNOWN_ORIGIN).add(2, 3, IASTaintSource.TS_CHAR_UNKNOWN_ORIGIN).done()));
         // .. but usually the adjacent ranges get merged on retrieval
-        assertThat(s2, taintEquals(range(0, 1, 0).add(1, 3, TaintSource.TS_CHAR_UNKNOWN_ORIGIN).done()));
+        assertThat(s2, taintEquals(range(0, 1, 0).add(1, 3, IASTaintSource.TS_CHAR_UNKNOWN_ORIGIN).done()));
 
         assertThat(s3.toString(), equalTo(s3));
         assertThat(s3, taintEquals(range(0, 1, 0).done()));
 
         assertThat(s4.toString(), equalTo("bir"));
-        assertThat(s4, taintEquals(range(1, 2, TaintSource.TS_CHAR_UNKNOWN_ORIGIN).done()));
+        assertThat(s4, taintEquals(range(1, 2, IASTaintSource.TS_CHAR_UNKNOWN_ORIGIN).done()));
     }
 
     @Test
@@ -300,7 +300,7 @@ public class StringTest {
         IASString s2 = IASString.join(delimiter, a, b, "c");
 
         assertThat(b.toString(), equalTo("b"));
-        assertThat(s2, taintEquals(range(0, 1, TaintSource.TS_CS_UNKNOWN_ORIGIN).done()));
+        assertThat(s2, taintEquals(range(0, 1, IASTaintSource.TS_CS_UNKNOWN_ORIGIN).done()));
         assertThat(s2.toString(), equalTo("a,b,c"));
 
         // TODO Not yet working because StringJoiner doesn't use CharSequence#toString, it uses a StringBuilder and its append method
