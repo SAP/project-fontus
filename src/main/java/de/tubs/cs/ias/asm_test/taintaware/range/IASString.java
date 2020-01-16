@@ -29,7 +29,7 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
 
     public IASString(String s, boolean tainted) {
         this.str = s;
-        this.taintInformation.addRange(0, s.length(), (short) -1);
+        this.taintInformation.addRange(0, s.length(), (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
     }
 
     public IASString(String s, List<IASTaintRange> ranges) {
@@ -63,7 +63,7 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
             this.taintInformation.removeAll();
         }
         if (taint) {
-            this.taintInformation.addRange(0, this.str.length(), (short) -1);
+            this.taintInformation.addRange(0, this.str.length(), (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
         }
     }
 
