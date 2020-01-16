@@ -85,6 +85,7 @@ public final class IASStringBuffer
 
     public synchronized void setLength(int newLength) {
         this.buffer.setLength(newLength);
+        this.taintInformation.resize(0, newLength, 0);
     }
 
 
@@ -140,7 +141,12 @@ public final class IASStringBuffer
     }
 
     public synchronized IASStringBuffer append(IASStringBuffer sb) {
-        this.taintInformation.appendRangesFrom(sb.getTaintInformation(), this.length());
+        var leftShift = -this.length();
+
+        var ranges = sb.getTaintInformation().getAllRanges();
+        IASTaintRangeUtils.adjustRanges(ranges, 0, sb.length(), leftShift);
+        this.taintInformation.appendRanges(ranges);
+
         this.buffer.append(sb);
         return this;
     }
