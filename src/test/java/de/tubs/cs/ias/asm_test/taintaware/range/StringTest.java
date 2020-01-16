@@ -1,7 +1,5 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
-import de.tubs.cs.ias.asm_test.taintaware.range.*;
-
 import de.tubs.cs.ias.asm_test.taintaware.range.testHelper.THelper;
 import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
@@ -203,10 +201,15 @@ public class StringTest {
         THelper.get(foo).addRange(1, 3, (short) 0);
         THelper.get(bar).addRange(1, 2, (short) 1);
 
-        IASString s = foo.replaceFirst(new IASString("o*"), bar);
+        IASString s = foo.replaceFirst(new IASString("o+"), bar);
 
         assertThat(s.toString(), equalTo("fbar"));
         assertThat(s, taintEquals(range(2, 3, 1).done()));
+
+        IASString s2 = foo.replaceFirst(new IASString("o*"), bar);
+
+        assertThat(s2.toString(), equalTo("barfoo"));
+        assertThat(s2, taintEquals(range(1, 2, 1).add(4, 6, 0).done()));
     }
 
     @Test
@@ -218,7 +221,7 @@ public class StringTest {
         THelper.get(foofoo).addRange(0, 4, (short) 0);
         THelper.get(bar).addRange(3, 5, (short) 1);
 
-        IASString s = foofoo.replaceAll(new IASString("o*"), bar);
+        IASString s = foofoo.replaceAll(new IASString("o+"), bar);
 
         assertThat(s.toString(), equalTo("fbarfbar"));
         assertThat(s, taintEquals(range(0, 1, 0).add(1, 4, 1).add(4, 5, 0).add(5, 8, 1).done()));
@@ -464,8 +467,4 @@ public class StringTest {
         assertThat(out, taintEquals(range(0, 5, 1).add(5, 8, TaintSource.TS_CS_UNKNOWN_ORIGIN).add(8, 11, 1).add(11, 14, TaintSource.TS_CS_UNKNOWN_ORIGIN).add(14, 15, 1).done()));
     }
 
-    private class TaintSource {
-        private static final int TS_CHAR_UNKNOWN_ORIGIN = -2;
-        private static final int TS_CS_UNKNOWN_ORIGIN = -1;
-    }
 }
