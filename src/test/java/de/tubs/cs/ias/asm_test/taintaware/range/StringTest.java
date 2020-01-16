@@ -168,6 +168,7 @@ public class StringTest {
     }
 
     @Test
+    @Ignore
     public void replace() {
         THelper.get(foo).addRange(0, 1, (short) 0);
 
