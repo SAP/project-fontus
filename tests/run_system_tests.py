@@ -389,7 +389,7 @@ class TestRunner:
         arguments = ["java", name] + arguments
         return (await run_command(cwd, arguments))
 
-    async def _instrument_application(self, cwd, input_file, output_file):
+    def _instrument_application(self, cwd, input_file, output_file):
         arguments = [
             "java",
             "-jar",
@@ -400,19 +400,16 @@ class TestRunner:
             "-o",
             output_file
         ]
-        return (await run_command(cwd, arguments))
+        return run_command_sync(cwd, arguments)
 
-    async def _instrument_class_file(self, cwd, name):
+    def _instrument_class_file(self, cwd, name):
         classes = Path(cwd).glob('{}*.class'.format(name))
-        instruments = []
         for clazz in classes:
             class_name = clazz.name
             print('\tInstrumenting: {}'.format(class_name))
             input_file = path.join(cwd, class_name)
             output_file = path.join(cwd, TMPDIR_OUTPUT_DIR_SUFFIX, class_name)
-            instruments.append((cwd, input_file, output_file))
-        await asyncio.gather(*(self._instrument_application(cwd, input_file, output_file)
-                               for (cwd, input_file, output_file) in instruments))
+            self._instrument_application(cwd, input_file, output_file)
 
     def _instrument_jar(self, cwd, name):
         input_file = path.join(cwd, name)
@@ -531,7 +528,7 @@ class TestRunner:
         (base_name, _, _) = test.source.partition(".java")
         copy_source_file(base_dir, test.source)
         await self._compile_source_file(base_dir, test.source)
-        await self._instrument_class_file(base_dir, base_name)
+        self._instrument_class_file(base_dir, base_name)
         # regular_result = await self._run_regular_class_file(
         #     base_dir,
         #     base_name,
