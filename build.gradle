@@ -1,3 +1,4 @@
+import groovy.text.GStringTemplateEngine
 plugins {
     id 'java'
     id 'maven-publish'
@@ -63,13 +64,50 @@ task createBuildConfig() {
     }
 }
 
-task jarRange() {
+task configureTaintType() {
+    def template = file('template/application.properties')
+    // changing file via stage
+    def appProperties = file('src/main/resources/application.properties')
+    outputs.file appProperties
+    outputs.upToDateWhen {
+        false
+    }
+    doLast {
+        // change contents via cli options
+        def binding = [subpath: taintSubPackage]
+        // change file contents
+        def tmp = new GStringTemplateEngine()
+                .createTemplate(template)
+                .make(binding)
+        appProperties.write(tmp.toString(), 'UTF-8')
+    }
+}
+
+task setRange() {
     doFirst {
         taintSubPackage = "range/"
     }
-    dependsOn createBuildConfig
+}
+
+task setBool() {
+    doFirst {
+        taintSubPackage = ""
+    }
+}
+
+task jarBool(dependsOn: setBool) {
+    dependsOn configureTaintType
     dependsOn jar
 }
+
+task jarRange(dependsOn: setRange) {
+    dependsOn configureTaintType
+    dependsOn jar
+}
+
+configureTaintType.mustRunAfter setRange
+configureTaintType.mustRunAfter setBool
+jar.mustRunAfter configureTaintType
 
 task utilJar(type: Jar) {
     from(sourceSets.main.output) {

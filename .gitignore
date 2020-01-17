@@ -13,3 +13,5 @@ bin
 
 # Emacs files
 *~
+
+src/main/resources/application.properties
