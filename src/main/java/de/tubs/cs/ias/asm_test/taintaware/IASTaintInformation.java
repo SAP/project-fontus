@@ -129,12 +129,12 @@ public class IASTaintInformation {
         this.ranges.sort(Comparator.comparingInt(IASTaintRange::getStart));
 
         for (int i = 0; i < this.ranges.size() - 1; i++) {
-            var currRange = this.ranges.get(i);
-            var nextRange = this.ranges.get(i + 1);
+            IASTaintRange currRange = this.ranges.get(i);
+            IASTaintRange nextRange = this.ranges.get(i + 1);
 
             // Is merge possible?
             if (currRange.getEnd() == nextRange.getStart() && currRange.getSource() == nextRange.getSource()) {
-                var newRange = new IASTaintRange(currRange.getStart(), nextRange.getEnd(), nextRange.getSource());
+                IASTaintRange newRange = new IASTaintRange(currRange.getStart(), nextRange.getEnd(), nextRange.getSource());
                 this.ranges.set(i, newRange);
                 this.ranges.remove(i + 1);
                 i--;
@@ -174,7 +174,7 @@ public class IASTaintInformation {
     }
 
     public synchronized void appendRangesFrom(IASTaintInformation other, int rightShift, boolean merge) {
-        var ranges = other.getAllRanges();
+        List<IASTaintRange> ranges = other.getAllRanges();
         if (rightShift != 0) {
             IASTaintRangeUtils.shiftRight(ranges, rightShift);
         }
@@ -182,7 +182,7 @@ public class IASTaintInformation {
     }
 
     public synchronized void resize(int start, int end, int leftShift) {
-        var ranges = this.getRanges(start, end);
+        List<IASTaintRange> ranges = this.getRanges(start, end);
         IASTaintRangeUtils.adjustRanges(ranges, start, end, leftShift);
         this.removeAll();
         this.appendRanges(ranges);
@@ -200,11 +200,11 @@ public class IASTaintInformation {
         }
         this.ranges.sort(Comparator.comparingInt(IASTaintRange::getStart));
 
-        for (var range : ranges) {
+        for (IASTaintRange range : ranges) {
             // Merge with range after, if existent
             int afterIndex = Collections.binarySearch(this.ranges, range, (o1, o2) -> o2.getEnd() - o1.getStart());
             if (afterIndex >= 0) {
-                var afterRange = this.ranges.get(afterIndex);
+                IASTaintRange afterRange = this.ranges.get(afterIndex);
                 if (afterRange.getSource() == range.getSource()) {
                     range = new IASTaintRange(afterRange.getStart(), range.getEnd(), range.getSource());
                     this.ranges.remove(afterIndex);
@@ -214,7 +214,7 @@ public class IASTaintInformation {
             // Merge with range before, if existent
             int beforeIndex = Collections.binarySearch(this.ranges, range, (o1, o2) -> o1.getEnd() - o2.getStart());
             if (beforeIndex >= 0) {
-                var beforeRange = this.ranges.get(beforeIndex);
+                IASTaintRange beforeRange = this.ranges.get(beforeIndex);
                 if (beforeRange.getSource() == range.getSource()) {
                     range = new IASTaintRange(beforeRange.getStart(), range.getEnd(), range.getSource());
                     this.ranges.remove(beforeIndex);
@@ -277,14 +277,14 @@ public class IASTaintInformation {
             return;
         }
 
-        final var r1 = getRanges(0, start);
+        final List<IASTaintRange> r1 = getRanges(0, start);
         if (!r1.isEmpty()) {
             // if r1 is not empty we can be sure, that start > 0 (and by this conditional
             // we also avoid an unnecessary methods call
             adjustRanges(r1, 0, start, 0);
         }
 
-        final var r2 = getAllRangesStartingAt(end);
+        final List<IASTaintRange> r2 = getAllRangesStartingAt(end);
         if (!r2.isEmpty()) {
             int leftShift = 0;
             if (leftShiftRangesAfterClearedArea) {
@@ -329,13 +329,13 @@ public class IASTaintInformation {
     }
 
     public synchronized void reversed(int length) {
-        var r = this.getAllRanges();
-        var newRanges = new ArrayList<IASTaintRange>(r.size());
+        List<IASTaintRange> r = this.getAllRanges();
+        List<IASTaintRange> newRanges = new ArrayList<IASTaintRange>(r.size());
 
         for (IASTaintRange range : r) {
-            var newEnd = length - range.getStart();
-            var newStart = newEnd - (range.getEnd() - range.getStart());
-            var newRange = new IASTaintRange(newStart, newEnd, range.getSource());
+            int newEnd = length - range.getStart();
+            int newStart = newEnd - (range.getEnd() - range.getStart());
+            IASTaintRange newRange = new IASTaintRange(newStart, newEnd, range.getSource());
             newRanges.add(0, newRange);
         }
         this.ranges.clear();
@@ -356,13 +356,13 @@ public class IASTaintInformation {
      * @param end exclusive
      */
     public List<IASTaintRange> cutTaint(int start, int end) {
-        var ranges = getRanges(start, end);
+        List<IASTaintRange> ranges = getRanges(start, end);
         adjustRanges(ranges, start, end, 0);
         return ranges;
     }
 
     public IASTaintRange cutTaint(int index) {
-        var ranges = cutTaint(index, index + 1);
+        List<IASTaintRange> ranges = cutTaint(index, index + 1);
         if (ranges.size() == 0) {
             return null;
         }

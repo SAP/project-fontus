@@ -4,6 +4,7 @@ import de.tubs.cs.ias.asm_test.taintaware.IASTaintInformation;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintRange;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.IntStream;
 
 import static de.tubs.cs.ias.asm_test.taintaware.range.IASTaintRangeUtils.adjustRanges;
@@ -29,7 +30,7 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
     }
 
     public IASAbstractStringBuilder(CharSequence seq) {
-        var str = IASString.valueOf(seq);
+        IASString str = IASString.valueOf(seq);
         this.builder = new StringBuilder(str);
         this.taintInformation = new IASTaintInformation(str.getTaintInformation().getAllRanges());
     }
@@ -58,9 +59,9 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
 
 
     public IASAbstractStringBuilder append(IASString str, boolean merge) {
-        var leftShift = -this.length();
+        int leftShift = -this.length();
 
-        var ranges = str.getTaintInformation().getAllRanges();
+        List<IASTaintRange> ranges = str.getTaintInformation().getAllRanges();
         adjustRanges(ranges, 0, str.length(), leftShift);
         this.taintInformation.appendRanges(ranges, merge);
 
@@ -74,9 +75,9 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
     }
 
     public IASAbstractStringBuilder append(IASStringBuffer strb) {
-        var leftShift = -this.length();
+        int leftShift = -this.length();
 
-        var ranges = strb.getTaintInformation().getAllRanges();
+        List<IASTaintRange> ranges = strb.getTaintInformation().getAllRanges();
         adjustRanges(ranges, 0, strb.length(), leftShift);
         this.taintInformation.appendRanges(ranges);
 
@@ -196,32 +197,32 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
     }
 
     public IASAbstractStringBuilder insert(int offset, boolean b) {
-        var s = IASString.valueOf(b);
+        IASString s = IASString.valueOf(b);
         return this.insert(offset, s);
     }
 
     public IASAbstractStringBuilder insert(int offset, char c) {
-        var s = IASString.valueOf(c);
+        IASString s = IASString.valueOf(c);
         return this.insert(offset, s);
     }
 
     public IASAbstractStringBuilder insert(int offset, int i) {
-        var s = IASString.valueOf(i);
+        IASString s = IASString.valueOf(i);
         return this.insert(offset, s);
     }
 
     public IASAbstractStringBuilder insert(int offset, long l) {
-        var s = IASString.valueOf(l);
+        IASString s = IASString.valueOf(l);
         return this.insert(offset, s);
     }
 
     public IASAbstractStringBuilder insert(int offset, float f) {
-        var s = IASString.valueOf(f);
+        IASString s = IASString.valueOf(f);
         return this.insert(offset, s);
     }
 
     public IASAbstractStringBuilder insert(int offset, double d) {
-        var s = IASString.valueOf(d);
+        IASString s = IASString.valueOf(d);
         return this.insert(offset, s);
     }
 
@@ -250,22 +251,22 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
     }
 
     private void handleSurrogatesForReversed() {
-        var chars = this.toString().toCharArray();
+        char[] chars = this.toString().toCharArray();
         for (int i = 0; i < this.length() - 1; i++) {
             char highSur = chars[i];
             char lowSur = chars[i + 1];
             if (Character.isLowSurrogate(lowSur) && Character.isHighSurrogate(highSur)) {
-                var oldHighRange = this.taintInformation.cutTaint(i);
-                var oldLowRange = this.taintInformation.cutTaint(i + 1);
+                IASTaintRange oldHighRange = this.taintInformation.cutTaint(i);
+                IASTaintRange oldLowRange = this.taintInformation.cutTaint(i + 1);
 
-                var ranges = new ArrayList<IASTaintRange>(2);
+                List<IASTaintRange> ranges = new ArrayList<IASTaintRange>(2);
 
                 if (oldLowRange != null) {
-                    var newHighRange = oldLowRange.shiftRight(-1);
+                    IASTaintRange newHighRange = oldLowRange.shiftRight(-1);
                     ranges.add(newHighRange);
                 }
                 if (oldHighRange != null) {
-                    var newLowRange = oldHighRange.shiftRight(1);
+                    IASTaintRange newLowRange = oldHighRange.shiftRight(1);
                     ranges.add(newLowRange);
                 }
 

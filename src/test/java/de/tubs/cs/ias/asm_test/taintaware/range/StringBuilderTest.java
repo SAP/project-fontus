@@ -35,7 +35,7 @@ public class StringBuilderTest {
     public void toString_1() {
         THelper.get(foo).addRange(1, 2, (short) 0);
 
-        var str = foo.toIASString();
+        IASString str = foo.toIASString();
 
         assertThat(str.toString(), is("foo"));
         assertThat(str, taintEquals(range(1, 2, 0)));
@@ -306,7 +306,7 @@ public class StringBuilderTest {
     public void insert_charSequence_2() {
         // insert an unknown implementation of CharSequence
         THelper.get(foo).addRange(0, 3, (short) 0);
-        var foo2 = new IASStringBuffer(foo);
+        IASStringBuffer foo2 = new IASStringBuffer(foo);
 
         foo.insert(0, createCharSequence("blub"));
         foo2.insert(1, createCharSequence("blub"));
@@ -343,7 +343,7 @@ public class StringBuilderTest {
         // insert an untainted String
         THelper.get(foo).addRange(0, 3, (short) 0);
 
-        var foo2 = new IASStringBuffer(foo);
+        IASStringBuffer foo2 = new IASStringBuffer(foo);
 
         foo.insert(0, 'u');
         foo2.insert(1, 'u');

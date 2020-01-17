@@ -364,24 +364,24 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
     }
 
     public IASString replaceAll(IASString regex, IASString replacement) {
-        var p = Pattern.compile(regex.toString());
-        var m = p.matcher(this.str);
+        Pattern p = Pattern.compile(regex.toString());
+        Matcher m = p.matcher(this.str);
 
-        var stringBuilder = new IASStringBuilder();
-        var start = 0;
-        var replacer = Replacement.createReplacement(replacement);
+        IASStringBuilder stringBuilder = new IASStringBuilder();
+        int start = 0;
+        Replacement replacer = Replacement.createReplacement(replacement);
         while (m.find()) {
-            var end = m.start();
+            int end = m.start();
 
-            var first = this.substring(start, end);
+            IASString first = this.substring(start, end);
             stringBuilder.append(first, true);
-            var currRepl = replacer.doReplacement(m, this);
+            IASString currRepl = replacer.doReplacement(m, this);
             stringBuilder.append(currRepl, true);
             start = m.end();
         }
 
         if (start < this.length()) {
-            var last = this.substring(start);
+            IASString last = this.substring(start);
             stringBuilder.append(last, true);
         }
 
@@ -422,9 +422,9 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
                     throw new IllegalStateException("Group map must not contain something else as strinngs and ints");
                 }
 
-                var insert = orig.substring(start, end);
+                IASString insert = orig.substring(start, end);
 
-                var index = groups.get(key);
+                int index = groups.get(key);
                 if (index < lastIndex) {
                     throw new IllegalStateException("Map not sorted ascending");
                 }
@@ -437,7 +437,7 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
         }
 
         public static Replacement createReplacement(IASString repl) {
-            var groups = new LinkedHashMap<Object, Integer>();
+            LinkedHashMap<Object, Integer> groups = new LinkedHashMap<>();
 
             boolean escaped = false;
             boolean groupParsing = false;
@@ -447,7 +447,7 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
             int groupIndex = -1;
             String groupName = null;
 
-            var clearedStringBuilder = new IASStringBuilder();
+            IASStringBuilder clearedStringBuilder = new IASStringBuilder();
 
             for (int i = 0; i < repl.length(); i++) {
                 char c = repl.charAt(i);
@@ -496,12 +496,12 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
                         } else if (c == '$') {
                             groupParsing = true;
                         } else {
-                            var charStr = repl.substring(i, i + 1);
+                            IASString charStr = repl.substring(i, i + 1);
                             clearedStringBuilder.append(charStr);
                         }
                     }
                 } else {
-                    var charStr = repl.substring(i, i + 1);
+                    IASString charStr = repl.substring(i, i + 1);
                     clearedStringBuilder.append(charStr);
                     escaped = false;
                 }
@@ -531,21 +531,21 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
     // TODO: this propagates the taint for the whole string
     public IASString[] split(IASString regex, int limit) {
         this.str.split(regex.toString(), limit);
-        var matcher = Pattern.compile(regex.toString()).matcher(this.str);
+        Matcher matcher = Pattern.compile(regex.toString()).matcher(this.str);
 
-        var result = new ArrayList<IASString>();
-        var start = 0;
-        var count = 0;
+        ArrayList<IASString> result = new ArrayList<>();
+        int start = 0;
+        int count = 0;
         while (matcher.find()) {
             if (limit > 0 && count >= limit) {
                 break;
             }
 
-            var matchSize = matcher.end() - matcher.start();
+            int matchSize = matcher.end() - matcher.start();
             if (count != 0 || matchSize > 0) {
-                var end = matcher.start();
+                int end = matcher.start();
 
-                var part = this.substring(start, end);
+                IASString part = this.substring(start, end);
                 result.add(part);
 
             }
@@ -554,7 +554,7 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
         }
 
         if (start < this.length() || limit < 0) {
-            var endPart = this.substring(start);
+            IASString endPart = this.substring(start);
             result.add(endPart);
         } else if (start == 0 && this.length() == 0) {
             result.add(this);

@@ -40,7 +40,7 @@ public class IASTaintSource {
                 throw new IllegalArgumentException("For creation of a taint-source a TaintSourceSeverityLevel has to be stated!");
             }
 
-            final var source = new IASTaintSource(name, (short) (arr.size() + Short.MIN_VALUE), level);
+            final IASTaintSource source = new IASTaintSource(name, (short) (arr.size() + Short.MIN_VALUE), level);
             arr.add(source);
 
             instance = source;
@@ -81,7 +81,7 @@ public class IASTaintSource {
         }
         if (other.getClass() != this.getClass()) return false;
 
-        var source = (IASTaintSource) other;
+        IASTaintSource source = (IASTaintSource) other;
 
         if (!name.equals(source.name)) {
             return false;
@@ -94,7 +94,7 @@ public class IASTaintSource {
 
     @Override
     public int hashCode() {
-        var result = name.hashCode();
+        int result = name.hashCode();
         result = 31 * result + id;
         result = 31 * result + level.hashCode();
         return result;
