@@ -1,5 +1,7 @@
-package de.tubs.cs.ias.asm_test.taintaware;
+package de.tubs.cs.ias.asm_test.taintaware.bool;
 
+
+import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 
 @SuppressWarnings({"SynchronizedMethod", "ReturnOfThis", "WeakerAccess", "ClassWithTooManyConstructors", "ClassWithTooManyMethods"})
 public final class IASStringBuffer

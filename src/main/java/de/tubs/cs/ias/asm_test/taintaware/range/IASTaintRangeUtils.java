@@ -1,7 +1,5 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
-import de.tubs.cs.ias.asm_test.taintaware.IASTaintRange;
-
 import java.util.List;
 
 public class IASTaintRangeUtils {

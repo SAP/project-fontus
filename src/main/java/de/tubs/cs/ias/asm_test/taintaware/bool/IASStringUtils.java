@@ -1,4 +1,4 @@
-package de.tubs.cs.ias.asm_test.taintaware;
+package de.tubs.cs.ias.asm_test.taintaware.bool;
 
 import java.util.ArrayList;
 import java.util.List;

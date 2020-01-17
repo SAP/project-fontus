@@ -1,4 +1,4 @@
-package de.tubs.cs.ias.asm_test.taintaware;
+package de.tubs.cs.ias.asm_test.taintaware.range;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

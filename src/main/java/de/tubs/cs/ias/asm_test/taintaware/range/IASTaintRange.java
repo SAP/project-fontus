@@ -1,4 +1,4 @@
-package de.tubs.cs.ias.asm_test.taintaware;
+package de.tubs.cs.ias.asm_test.taintaware.range;
 
 public class IASTaintRange implements Cloneable {
     /**

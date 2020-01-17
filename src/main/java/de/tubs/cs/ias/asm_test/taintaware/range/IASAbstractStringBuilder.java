@@ -1,8 +1,5 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
-import de.tubs.cs.ias.asm_test.taintaware.IASTaintInformation;
-import de.tubs.cs.ias.asm_test.taintaware.IASTaintRange;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;

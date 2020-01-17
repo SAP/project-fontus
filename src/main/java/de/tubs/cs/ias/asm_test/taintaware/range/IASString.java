@@ -1,8 +1,6 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
-import de.tubs.cs.ias.asm_test.taintaware.IASTaintInformation;
-import de.tubs.cs.ias.asm_test.taintaware.IASTaintRange;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;

@@ -1,6 +1,4 @@
-package de.tubs.cs.ias.asm_test.taintaware;
-
-import de.tubs.cs.ias.asm_test.taintaware.range.IASTaintRangeUtils;
+package de.tubs.cs.ias.asm_test.taintaware.range;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,7 +6,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import static de.tubs.cs.ias.asm_test.taintaware.range.IASTaintRangeUtils.adjustRanges;
-import static de.tubs.cs.ias.asm_test.taintaware.range.IASTaintRangeUtils.shiftRight;
 
 public class IASTaintInformation {
     private List<IASTaintRange> ranges;

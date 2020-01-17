@@ -1,8 +1,6 @@
 package de.tubs.cs.ias.asm_test;
 
-import de.tubs.cs.ias.asm_test.taintaware.IASString;
-import de.tubs.cs.ias.asm_test.taintaware.IASStringBuffer;
-import de.tubs.cs.ias.asm_test.taintaware.IASStringBuilder;
+import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 
 @SuppressWarnings({"ClassUnconnectedToPackage", "ClassOnlyUsedInOnePackage"})
 public class TaintStringHelper {
@@ -35,31 +33,11 @@ public class TaintStringHelper {
         throw new IllegalStateException("Bytecode instrumentation not engaged");
     }
 
-    public static Boolean isTainted(IASString str) {
-        return str.isTainted();
+    public static Boolean isTainted(IASTaintAware taintAware) {
+        return taintAware.isTainted();
     }
 
-    public static void setTaint(IASString str, Boolean b) {
-        str.setTaint(b);
-    }
-
-    public static Boolean isTainted(IASStringBuffer str) {
-        return str.isTainted();
-    }
-
-    public static void setTaint(IASStringBuffer str, Boolean b) {
-        str.setTaint(b);
-    }
-
-    public static Boolean isTainted(IASStringBuilder str) {
-        return str.isTainted();
-    }
-
-    public static void setTaint(IASStringBuilder str, Boolean b) {
-        str.setTaint(b);
-    }
-
-    public static String getString(IASString str) {
-        return str.getString();
+    public static void setTaint(IASTaintAware taintAware, Boolean b) {
+        taintAware.setTaint(b);
     }
 }

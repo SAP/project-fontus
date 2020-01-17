@@ -91,16 +91,16 @@ task setRange() {
 
 task setBool() {
     doFirst {
-        taintSubPackage = ""
+        taintSubPackage = "bool/"
     }
 }
 
-task jarBool(dependsOn: setBool) {
+task boolJar(dependsOn: setBool) {
     dependsOn configureTaintType
     dependsOn jar
 }
 
-task jarRange(dependsOn: setRange) {
+task rangeJar(dependsOn: setRange) {
     dependsOn configureTaintType
     dependsOn jar
 }

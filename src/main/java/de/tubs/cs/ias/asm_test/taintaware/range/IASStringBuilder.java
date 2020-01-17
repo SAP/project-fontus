@@ -1,7 +1,5 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
-import de.tubs.cs.ias.asm_test.taintaware.IASTaintInformation;
-
 public final class IASStringBuilder extends IASAbstractStringBuilder {
 
     public IASStringBuilder(StringBuilder sb, IASTaintInformation taintInformation) {

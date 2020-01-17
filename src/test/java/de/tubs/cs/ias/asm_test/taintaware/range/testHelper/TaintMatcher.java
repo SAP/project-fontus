@@ -1,10 +1,8 @@
 package de.tubs.cs.ias.asm_test.taintaware.range.testHelper;
 
-import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
-import de.tubs.cs.ias.asm_test.taintaware.IASTaintInformation;
-import de.tubs.cs.ias.asm_test.taintaware.IASTaintRange;
+import de.tubs.cs.ias.asm_test.taintaware.range.IASTaintInformation;
+import de.tubs.cs.ias.asm_test.taintaware.range.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.range.IASRangeAware;
-import de.tubs.cs.ias.asm_test.taintaware.range.IASString;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
