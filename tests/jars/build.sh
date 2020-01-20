@@ -20,6 +20,7 @@ JAR_FOLDERS=(
     static_init_test
     media_types
     springboot_asciibytes
+    forward_main
 )
 
 main() {

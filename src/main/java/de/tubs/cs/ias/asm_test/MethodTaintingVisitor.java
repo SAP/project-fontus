@@ -334,6 +334,12 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
                     }
                 }
                 //TODO: handle Arrays etc..
+            } else if (sort == Type.ARRAY) {
+                for(MethodInstrumentationStrategy s : this.instrumentation) {
+                    if(s.handleLdcArray(type)) {
+                        return;
+                    }
+                }
             }
          }
         super.visitLdcInsn(value);

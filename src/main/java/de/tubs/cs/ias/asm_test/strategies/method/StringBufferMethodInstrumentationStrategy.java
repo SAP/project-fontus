@@ -76,6 +76,11 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
     }
 
     @Override
+    public boolean handleLdcArray(Type type) {
+        return false;
+    }
+
+    @Override
     public String rewriteTypeIns(String type) {
         boolean isArray = type.startsWith("[");
         if (type.equals(Constants.StringBufferQN) || (isArray && type.endsWith(Constants.StringBufferDesc))) {

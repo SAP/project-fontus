@@ -3,6 +3,7 @@ package de.tubs.cs.ias.asm_test.strategies.method;
 import de.tubs.cs.ias.asm_test.*;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import de.tubs.cs.ias.asm_test.strategies.StringInstrumentation;
+import de.tubs.cs.ias.asm_test.taintaware.IASString;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -139,6 +140,18 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     public boolean handleLdcType(Type type) {
         if (Constants.STRING_FULL_NAME.equals(type.getClassName())) {
             this.mv.visitLdcInsn(Type.getObjectType(Constants.TStringQN));
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean handleLdcArray(Type type) {
+        Type stringArray = Type.getType(String[].class);
+        if (stringArray.equals(type)) {
+            Type taintStringArray = Type.getType(IASString[].class);
+
+            this.mv.visitLdcInsn(taintStringArray);
             return true;
         }
         return false;
