@@ -55,6 +55,8 @@ def copy_source_file(target_dir, source):
 
 @check_return_value
 def run_command(cwd, arguments, input_file=None):
+    #print("cwd: {}".format(cwd))
+    #print(arguments)
     exec_result = subprocess.run(
         arguments,
         universal_newlines=True,
@@ -502,27 +504,32 @@ class TestRunner:
         return TestResult(test, regular_result, instrumented_result, agent_result)
 
     def _run_test(self, base_dir, test):
+        #print("Base dir: {}".format(base_dir))
         print('Running Test: "{}"'.format(test.name))
         (base_name, _, _) = test.source.partition(".java")
         copy_source_file(base_dir, test.source)
         self._compile_source_file(base_dir, test.source)
         self._instrument_class_file(base_dir, base_name)
+        #input("Classes compiled and instrumented: Press Enter to continue...")
         regular_result = self._run_regular_class_file(
             base_dir,
             base_name,
             test.arguments
         )
+        #input("Regular tests executed: Press Enter to continue...")
         instrumented_cwd = path.join(base_dir, TMPDIR_OUTPUT_DIR_SUFFIX)
         instrumented_result = self._run_instrumented_class_file(
             instrumented_cwd,
             base_name,
             test.arguments
         )
+        #input("Instrumented tests executed: Press Enter to continue...")
         agent_result = self._run_regular_class_file_with_agent(
             base_dir,
             base_name,
             test.arguments
         )
+        #input("Agent tests executed: Press Enter to continue...")
         return TestResult(test, regular_result, instrumented_result, agent_result)
 
     def _run_tests(self, base_dir):
