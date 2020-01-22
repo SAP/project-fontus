@@ -789,6 +789,9 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
     }
 
     public static String asString(IASString str) {
+        if(str == null) {
+            return null;
+        }
         return str.str;
     }
 
@@ -803,5 +806,12 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
     public boolean isUninitialized() {
 //        return this.taintInformation == null;
         return !isTainted();
+    }
+
+    public void abortIfTainted() {
+        if (this.isTainted()) {
+            System.err.printf("String %s is tainted!\nAborting..!\n", this.str);
+            System.exit(1);
+        }
     }
 }
