@@ -13,9 +13,8 @@ import java.util.List;
 @XmlRootElement(name = "sources")
 public class Sources {
 
-
-    @JacksonXmlElementWrapper(localName = "functions")
-    @XmlElement(name = "function")
+    @JacksonXmlElementWrapper(useWrapping = false, localName = "sources")
+    @XmlElement(name = "source")
     private final List<FunctionCall> functions;
 
     @JsonCreator
