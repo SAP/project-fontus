@@ -95,11 +95,11 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     public void insertJdkMethodParameterConversion(String parameter) {
         Type paramType = Type.getType(parameter);
         if (stringArrayType.equals(paramType)) {
-            logger.info("Converting taint-aware String-Array to String-Array in multi param method invocation");
+            logger.info("Converting taint-aware String-Array to String-Array in JDK method invocation");
             this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "convertTaintAwareStringArray", String.format("(%s)%s", Constants.TStringArrayDesc, Constants.StringArrayDesc), false);
         }
         if (stringType.equals(paramType)) {
-            logger.info("Converting taint-aware String to String in multi param method invocation");
+            logger.info("Converting taint-aware String to String in JDK method invocation");
             this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, Constants.AS_STRING, Constants.AS_STRING_DESC, false);
         }
     }
