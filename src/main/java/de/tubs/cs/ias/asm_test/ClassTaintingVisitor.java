@@ -3,6 +3,7 @@ package de.tubs.cs.ias.asm_test;
 import de.tubs.cs.ias.asm_test.strategies.clazz.*;
 import de.tubs.cs.ias.asm_test.method.MethodVisitRecording;
 import de.tubs.cs.ias.asm_test.method.RecordingMethodVisitor;
+import de.tubs.cs.ias.asm_test.config.Configuration;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Label;
@@ -28,6 +29,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
     private MethodVisitRecording recording;
     private final ClassVisitor visitor;
     private final Collection<ClassInstrumentationStrategy> instrumentation = new ArrayList<>(4);
+    private final Configuration config;
 
     /**
      * The name of the class currently processed.
@@ -35,12 +37,13 @@ public class ClassTaintingVisitor extends ClassVisitor {
     private String owner;
     private String superName;
 
-    public ClassTaintingVisitor(ClassVisitor cv) {
+    public ClassTaintingVisitor(ClassVisitor cv, Configuration config) {
         super(Opcodes.ASM7, cv);
         this.visitor = cv;
         this.staticFinalFields = new ArrayList<>();
         this.fillBlacklist();
         this.fillStrategies();
+	this.config = config;
     }
 
     private void fillStrategies() {
@@ -198,7 +201,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
             mv = super.visitMethod(access, name, desc, signature, exceptions);
         }
 
-        return new MethodTaintingVisitor(access, newName, desc, mv);
+        return new MethodTaintingVisitor(access, newName, desc, mv, config);
     }
 
 

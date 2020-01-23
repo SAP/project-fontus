@@ -12,6 +12,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 
+import de.tubs.cs.ias.asm_test.config.Configuration;
+
 @CommandLine.Command(
         description = "Replaces all String instances with taint-aware Strings.",
         name = "asm_taint",
@@ -46,7 +48,7 @@ public final class Main implements Callable<Void> {
 
 
     private void instrumentClassStream(InputStream i, OutputStream o) throws IOException {
-        byte[] out = this.instrumenter.instrumentClass(i);
+        byte[] out = this.instrumenter.instrumentClass(i, Configuration.instance);
         o.write(out);
     }
 

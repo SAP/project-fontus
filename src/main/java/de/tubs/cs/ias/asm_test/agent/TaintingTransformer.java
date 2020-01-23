@@ -41,7 +41,7 @@ class TaintingTransformer implements ClassFileTransformer {
         }
 
         logger.info("Tainting class: {}", className);
-        byte[] outArray = this.instrumenter.instrumentClass(classfileBuffer);
+        byte[] outArray = this.instrumenter.instrumentClass(classfileBuffer, config);
         if(this.verbose) {
             String baseName = "/tmp";
             File outFile = new File(baseName, className + Constants.CLASS_FILE_SUFFIX);

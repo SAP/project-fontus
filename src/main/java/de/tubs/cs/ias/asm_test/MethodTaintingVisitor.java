@@ -35,8 +35,9 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
 
     private final Collection<MethodInstrumentationStrategy> instrumentation = new ArrayList<>(4);
 
+    private final Configuration config;
 
-    MethodTaintingVisitor(int acc, String name, String methodDescriptor, MethodVisitor methodVisitor) {
+    MethodTaintingVisitor(int acc, String name, String methodDescriptor, MethodVisitor methodVisitor, Configuration config) {
         super(Opcodes.ASM7, methodVisitor);
         logger.info("Instrumenting method: {}{}", name, methodDescriptor);
         this.used = Type.getArgumentsAndReturnSizes(methodDescriptor) >> 2;
@@ -52,6 +53,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         this.instrumentation.add(new StringBuilderMethodInstrumentationStrategy(this.getParentVisitor()));
         this.instrumentation.add(new StringBufferMethodInstrumentationStrategy(this.getParentVisitor()));
         this.instrumentation.add(new DefaultMethodInstrumentationStrategy(this.getParentVisitor()));
+	this.config = config;
     }
 
     @Override
@@ -132,7 +134,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
      * Return false otherwise.
      */
     private boolean isSinkCall(FunctionCall fc) {
-        if (Configuration.instance.getSinks().contains(fc)) {
+        if (config.getSinks().contains(fc)) {
             logger.info("{}.{}{} is a sink, so calling the check taint function before passing the value!", fc.getOwner(), fc.getName(), fc.getDescriptor());
             // Call dup here to put the TString reference twice on the stack so the call can pop one without affecting further processing
             MethodTaintingUtils.callCheckTaint(this.getParentVisitor());
@@ -148,7 +150,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
      * Return false otherwise.
      */
     private boolean isSourceCall(FunctionCall fc) {
-        if (Configuration.instance.getSources().contains(fc)) {
+        if (config.getSources().contains(fc)) {
             logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", fc.getOwner(), fc.getName(), fc.getDescriptor(), Constants.TStringQN);
             this.visitMethodInsn(fc);
             super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "tainted", Constants.CreateTaintedStringDesc, false);
@@ -237,7 +239,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
                 for(MethodInstrumentationStrategy s : this.instrumentation) {
                     s.insertJdkMethodParameterConversion(param);
                 }
-                FunctionCall converter = Configuration.instance.getConverterForParameter(call, 0);
+                FunctionCall converter = config.getConverterForParameter(call, 0);
                 if(converter != null) {
                     this.visitMethodInsn(converter);
                 }
@@ -252,7 +254,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             s.instrumentReturnType(call.getOwner(), call.getName(), desc);
         }
 
-        FunctionCall converter = Configuration.instance.getConverterForReturnValue(call);
+        FunctionCall converter = config.getConverterForReturnValue(call);
         if(converter != null) {
             this.visitMethodInsn(converter);
         }
@@ -265,7 +267,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
 
     private void handleMultiParameterJdkMethod(FunctionCall call) {
         Descriptor desc = Descriptor.parseDescriptor(call.getDescriptor());
-        if (!desc.hasStringLikeParameters() && !Configuration.instance.needsParameterConversion(call)) return;
+        if (!desc.hasStringLikeParameters() && !config.needsParameterConversion(call)) return;
 
         // TODO: Add optimization that the upmost parameter on the stack does not need to be stored/loaded..
         Collection<String> parameters = desc.getParameters();
@@ -286,7 +288,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
                 s.insertJdkMethodParameterConversion(p);
             }
 
-            FunctionCall converter = Configuration.instance.getConverterForParameter(call, index);
+            FunctionCall converter = config.getConverterForParameter(call, index);
             if(converter != null) {
                 this.visitMethodInsn(converter);
             }
