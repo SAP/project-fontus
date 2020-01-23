@@ -65,21 +65,28 @@ task createBuildConfig() {
 }
 
 task configureTaintType() {
-    def template = file('template/application.properties')
-    // changing file via stage
-    def appProperties = file('src/main/resources/application.properties')
-    outputs.file appProperties
+    def templates = file('template/')
+
+    def outputFolder = file('src/main/resources/')
+    templates.eachFile { file ->
+        def outputFile = new File(outputFolder, file.getName())
+        outputs.file outputFile
+    }
+
     outputs.upToDateWhen {
         false
     }
     doLast {
         // change contents via cli options
         def binding = [subpath: taintSubPackage]
-        // change file contents
-        def tmp = new GStringTemplateEngine()
-                .createTemplate(template)
-                .make(binding)
-        appProperties.write(tmp.toString(), 'UTF-8')
+
+        templates.eachFile { template ->
+            def outputFile = new File (outputFolder, template.getName())
+            def tmp = new GStringTemplateEngine()
+                    .createTemplate(template)
+                    .make(binding)
+            outputFile.write(tmp.toString(), 'UTF-8')
+        }
     }
 }
 
