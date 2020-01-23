@@ -103,9 +103,9 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
 
     @Override
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        if (owner.equals(Constants.StringQN)) {
+        if (owner.equals(Constants.StringQN) || owner.endsWith(Constants.StringDesc)) {
             String newDescriptor = InstrumentationHelper.instrumentDesc(descriptor);
-            String newOwner = Constants.TStringQN;
+            String newOwner = owner.replace(Constants.StringQN, Constants.TStringQN);
             // TODO: this call is superfluous, TString.toTString is a NOP pretty much.. Maybe drop those calls?
             String newName = this.methodsToRename.getOrDefault(name, name);
             logger.info("Rewriting String invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, newDescriptor);
