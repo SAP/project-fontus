@@ -161,6 +161,7 @@ class TestCase:
     def __init__(self, test_dict):
         self._name = test_dict.get('name')
         self._source = test_dict.get('source')
+        self._safe = test_dict.get('safe')
         self._source_path = path.join(TESTS_SOURCE_DIR, self._source)
         self._arguments = test_dict.get('arguments', [])
         self._javac_version = None  # test_dict.get('javac_version')
@@ -177,6 +178,10 @@ class TestCase:
         return self._source
 
     @property
+    def safe(self):
+        return self._safe
+
+    @property
     def source_path(self):
         return self._source_path
 
@@ -190,6 +195,7 @@ class TestCase:
 
     def __repr__(self):
         return ('TestCase(name={self._name!r}, source={self._source!r}, '
+                'safe_mode={self._safe!r}'
                 'source_path={self._source_path!r}, '
                 'arguments={self._arguments!r}, '
                 'javac_version={self._javac_version!r})').format(self=self)
@@ -201,6 +207,7 @@ class JarTestCase:
         self._jar_file = test_dict.get('jar_file')
         self._jar_path = path.join(JARS_BASE_PATH, self._jar_file)
         self._arguments = test_dict.get('arguments', [])
+        self._safe = test_dict.get('safe')
         self._input_file = test_dict.get('input_file', None)
         if self._input_file is not None:
             self._input_file = path.join(INPUTS_BASE_PATH, self._input_file)
@@ -222,6 +229,10 @@ class JarTestCase:
     @property
     def arguments(self):
         return self._arguments
+
+    @property
+    def safe(self):
+        return self._safe
 
     @property
     def input_file(self):
@@ -380,8 +391,9 @@ class TestRunResult:
 
 
 class TestRunner:
-    def __init__(self, config):
+    def __init__(self, config, safe):
         self._config = config
+        self._safe = safe
 
     async def _run_regular_class_file_with_agent(self, cwd, name, arguments):
         arguments = ["java",
@@ -399,7 +411,20 @@ class TestRunner:
         arguments = ["java", name] + arguments
         return (await run_command(cwd, arguments))
 
-    def _instrument_application(self, cwd, input_file, output_file):
+    async def _instrument_application(self, cwd, input_file, output_file):
+        arguments = [
+            "java",
+            "-jar",
+            format_jar_filename(
+                "asm_test", self._config.version),
+            "-f",
+            input_file,
+            "-o",
+            output_file
+        ]
+        return await run_command(cwd, arguments)
+
+    def _instrument_application_sync(self, cwd, input_file, output_file):
         arguments = [
             "java",
             "-jar",
@@ -412,14 +437,26 @@ class TestRunner:
         ]
         return run_command_sync(cwd, arguments)
 
-    def _instrument_class_file(self, cwd, name):
+    async def _instrument_class_file(self, cwd, name):
+        classes = Path(cwd).glob('{}*.class'.format(name))
+        instruments = []
+        for clazz in classes:
+            class_name = clazz.name
+            print('\tInstrumenting: {}'.format(class_name))
+            input_file = path.join(cwd, class_name)
+            output_file = path.join(cwd, TMPDIR_OUTPUT_DIR_SUFFIX, class_name)
+            instruments.append((cwd, input_file, output_file))
+        await asyncio.gather(*(self._instrument_application(cwd, input_file, output_file)
+                               for (cwd, input_file, output_file) in instruments))
+
+    def _instrument_class_file_sync(self, cwd, name):
         classes = Path(cwd).glob('{}*.class'.format(name))
         for clazz in classes:
             class_name = clazz.name
             print('\tInstrumenting: {}'.format(class_name))
             input_file = path.join(cwd, class_name)
             output_file = path.join(cwd, TMPDIR_OUTPUT_DIR_SUFFIX, class_name)
-            self._instrument_application(cwd, input_file, output_file)
+            self._instrument_application_sync(cwd, input_file, output_file)
 
     async def _instrument_jar(self, cwd, name):
         input_file = path.join(cwd, name)
@@ -437,6 +474,23 @@ class TestRunner:
             output_file
         ]
         return (await run_command(cwd, arguments))
+
+    def _instrument_jar_sync(self, cwd, name):
+        input_file = path.join(cwd, name)
+        output_file = path.join(cwd, TMPDIR_OUTPUT_DIR_SUFFIX, name)
+        instrumenter_jar = format_jar_filename(
+            "asm_test", self._config.version)
+        arguments = [
+            "java",
+            "-classpath",
+            '{}:{}'.format(instrumenter_jar, input_file),
+            "de.tubs.cs.ias.asm_test.Main",
+            "-f",
+            input_file,
+            "-o",
+            output_file
+        ]
+        return (run_command_sync(cwd, arguments))
 
     async def _run_instrumented_jar_internal(self, cwd, name, entry_point, additional_arguments, input_file):
         arguments = [
@@ -509,7 +563,11 @@ class TestRunner:
     async def _run_jar_test(self, base_dir, test):
         print('Running Jar Test: "{}"'.format(test.name))
         copy_jar(base_dir, test.jar_file)
-        await self._instrument_jar(base_dir, test.jar_file)
+        # check whether test should be run in safe mode or safe mode is activated
+        if(test.safe == True or self._safe == True):
+            self._instrument_jar_sync(base_dir, test.jar_file)
+        else:
+            await self._instrument_jar(base_dir, test.jar_file)
         instrumented_cwd = path.join(base_dir, TMPDIR_OUTPUT_DIR_SUFFIX)
         regular_result, agent_result, instrumented_result = await(asyncio.gather(self._run_jar(
             base_dir,
@@ -541,7 +599,11 @@ class TestRunner:
         (base_name, _, _) = test.source.partition(".java")
         copy_source_file(base_dir, test.source)
         await self._compile_source_file(base_dir, test.source)
-        self._instrument_class_file(base_dir, base_name)
+        # check whether test should be run in safe mode or safe mode is activated
+        if(test.safe == True or self._safe == True):
+            self._instrument_class_file_sync(base_dir, base_name)
+        else:
+            await self._instrument_class_file(base_dir, base_name)
         instrumented_cwd = path.join(base_dir, TMPDIR_OUTPUT_DIR_SUFFIX)
         regular_result, instrumented_result, agent_result = await asyncio.gather(self._run_regular_class_file(
             base_dir,
@@ -605,7 +667,7 @@ def main(args):
     config.version = args.version
     config.verbose = args.verbose
     # pprint.pprint(config)
-    runner = TestRunner(config)
+    runner = TestRunner(config, args.safe)
     result = asyncio.run(runner.run_tests())
     print(result)
     sys.exit(result.num_failed)
@@ -616,6 +678,8 @@ if __name__ == "__main__":
     ARG_PARSER.add_argument("--build-first", action="store_true")
     ARG_PARSER.add_argument("--verbose", action="store_true")
     ARG_PARSER.add_argument("--version", default="0.0.1-SNAPSHOT")
+    ARG_PARSER.add_argument("--safe", action="store_true",
+                            help="Runs all tests in safe mode.")
     ARG_PARSER.add_argument("--config", default=CONFIG_FILE)
 
     main(ARG_PARSER.parse_args())
