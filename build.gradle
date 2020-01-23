@@ -3,7 +3,6 @@ plugins {
     id 'java'
     id 'maven-publish'
     id 'idea'
-    id 'de.fuerstenau.buildconfig' version '1.1.8'
 }
 
 
@@ -118,7 +117,7 @@ jar.mustRunAfter configureTaintType
 
 task utilJar(type: Jar) {
     from(sourceSets.main.output) {
-        include "**/asm_test/taintaware/*"
+        include "**/asm_test/taintaware/**"
         include "**/asm_test/strategies/*"
         include "**/asm_test/Utils*"
     }
