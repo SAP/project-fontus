@@ -30,4 +30,12 @@ public class Sources {
     public boolean contains(FunctionCall fc) {
         return this.functions.contains(fc);
     }
+
+    public int size() {
+        return this.functions.size();
+    }
+
+    public void append(Sources other) {
+	this.functions.addAll(other.functions);
+    }
 }

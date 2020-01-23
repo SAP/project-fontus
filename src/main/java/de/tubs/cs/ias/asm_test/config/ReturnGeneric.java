@@ -28,4 +28,11 @@ public class ReturnGeneric {
         return this.functions.contains(fc);
     }
 
+    public int size() {
+        return this.functions.size();
+    }
+
+    public void append(ReturnGeneric other) {
+	this.functions.addAll(other.functions);
+    }
 }

@@ -18,6 +18,11 @@ public class SourceSinkConfigTests {
     }
 
     @Test
+    public void testBundledConfig() {
+	assertNotNull(Configuration.instance);
+    }
+
+    @Test
     public void testLoadConfig() {
 	Configuration config = this.getConfiguration(config_path);
 	assertNotNull(config);
@@ -28,4 +33,19 @@ public class SourceSinkConfigTests {
 	assertEquals(1, config.getReturnGeneric().size());
 	assertEquals(1, config.getTakeGeneric().size());
     }
+
+    @Test
+    public void testAddConfig() {
+	Configuration config = this.getConfiguration(config_path);
+	Configuration config2 = this.getConfiguration(config_path);
+
+	config.append(config2);
+
+	assertEquals(4, config.getSources().size());
+	assertEquals(2, config.getSinks().size());
+	assertEquals(4, config.getConverters().size());
+	assertEquals(2, config.getReturnGeneric().size());
+	assertEquals(2, config.getTakeGeneric().size());
+    }
+
 }

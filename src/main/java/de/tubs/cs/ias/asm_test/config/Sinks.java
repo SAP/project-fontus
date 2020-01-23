@@ -27,4 +27,13 @@ public class Sinks {
     public boolean contains(FunctionCall fc) {
         return this.functions.contains(fc);
     }
+
+    public int size() {
+        return this.functions.size();
+    }
+
+    public void append(Sinks other) {
+	this.functions.addAll(other.functions);
+    }
+
 }

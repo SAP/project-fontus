@@ -21,16 +21,14 @@ import java.lang.invoke.MethodHandles;
 public class Configuration {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    public static final Configuration instance = readConfiguration();
+    public static final Configuration instance = readBundledXmlConfiguration();
 
-    private static Configuration readConfiguration() {
+    public static Configuration readXmlConfiguration(InputStream stream) {
         ObjectMapper objectMapper = new XmlMapper();
-
         objectMapper.registerModule(new JaxbAnnotationModule());
 
-        try (InputStream inputStream = Configuration.class
-                .getClassLoader().getResourceAsStream("configuration.xml")) {
-            return objectMapper.readValue(inputStream, Configuration.class);
+        try {
+            return objectMapper.readValue(stream, Configuration.class);
         } catch (JsonParseException | JsonMappingException e) {
             logger.error("Malformed configuration resource file, aborting!");
             // TODO: ugly exception, find more fitting one!
@@ -42,6 +40,10 @@ public class Configuration {
         }
     }
 
+    private static Configuration readBundledXmlConfiguration() {
+	return readXmlConfiguration(Configuration.class.getClassLoader().getResourceAsStream("configuration.xml"));
+    }
+
     @JsonCreator
     public Configuration(@JsonProperty("sources") Sources sources, @JsonProperty("sinks") Sinks sinks, @JsonProperty("converters") Converters converters, @JsonProperty("returnGeneric") ReturnGeneric returnGeneric, @JsonProperty("takeGeneric") TakeGeneric takeGeneric) {
         this.sources = sources;
@@ -49,6 +51,14 @@ public class Configuration {
         this.converters = converters;
         this.returnGeneric = returnGeneric;
         this.takeGeneric = takeGeneric;
+    }
+
+    public void append(Configuration other) {
+        this.sources.append(other.sources);
+        this.sinks.append(other.sinks);
+	this.converters.append(other.converters);
+	this.returnGeneric.append(other.returnGeneric);
+	this.takeGeneric.append(other.takeGeneric);
     }
 
     public Sources getSources() {
