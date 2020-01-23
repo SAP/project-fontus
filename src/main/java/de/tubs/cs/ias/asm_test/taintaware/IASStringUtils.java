@@ -57,6 +57,7 @@ public final class IASStringUtils {
     }
 
         public static IASString[] convertStringArray(String[] arr) {
+        if(arr == null) return null;
         IASString[] ret = new IASString[arr.length];
         for (int i = 0; i < arr.length; i++) {
             String s = arr[i];
