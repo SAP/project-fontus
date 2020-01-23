@@ -19,6 +19,8 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final JdkClassesLookupTable lookupTable = JdkClassesLookupTable.instance;
     private final HashMap<String, String> methodsToRename = new HashMap<>(1);
+    private static final Type stringType = Type.getType(String.class);
+    private static final Type stringArrayType = Type.getType(String[].class);
 
     public StringMethodInstrumentationStrategy(MethodVisitor mv) {
         this.mv = mv;
@@ -91,11 +93,12 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
 
     @Override
     public void insertJdkMethodParameterConversion(String parameter) {
-        if (Constants.StringArrayDesc.equals(parameter)) {
+        Type paramType = Type.getType(parameter);
+        if (stringArrayType.equals(paramType)) {
             logger.info("Converting taint-aware String-Array to String-Array in multi param method invocation");
             this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "convertTaintAwareStringArray", String.format("(%s)%s", Constants.TStringArrayDesc, Constants.StringArrayDesc), false);
         }
-        if (Constants.StringDesc.equals(parameter)) {
+        if (stringType.equals(paramType)) {
             logger.info("Converting taint-aware String to String in multi param method invocation");
             this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, Constants.AS_STRING, Constants.AS_STRING_DESC, false);
         }
@@ -103,7 +106,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
 
     @Override
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        if (owner.equals(Constants.StringQN) || owner.endsWith(Constants.StringDesc)) {
+        if (Type.getObjectType(owner).equals(stringType) || owner.endsWith(Constants.StringDesc)) {
             String newDescriptor = InstrumentationHelper.instrumentDesc(descriptor);
             String newOwner = owner.replace(Constants.StringQN, Constants.TStringQN);
             // TODO: this call is superfluous, TString.toTString is a NOP pretty much.. Maybe drop those calls?
@@ -117,10 +120,11 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
 
     @Override
     public void instrumentReturnType(String owner, String name, Descriptor desc) {
-        if (Constants.StringDesc.equals(desc.getReturnType())) {
+        Type returnType = Type.getReturnType(desc.toDescriptor());
+        if (stringType.equals(returnType)) {
             this.stringToTStringBuilderBased();
             logger.info("Converting returned String of {}.{}{}", owner, name, desc.toDescriptor());
-        } else if (Constants.StringArrayDesc.equals(desc.getReturnType())) {
+        } else if (stringArrayType.equals(returnType)) {
             logger.info("Converting returned String Array of {}.{}{}", owner, name, desc.toDescriptor());
             this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "convertStringArray", String.format("(%s)%s", Constants.StringArrayDesc, Constants.TStringArrayDesc), false);
         }
@@ -138,7 +142,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
 
     @Override
     public boolean handleLdcType(Type type) {
-        if (Constants.STRING_FULL_NAME.equals(type.getClassName())) {
+        if (stringType.equals(type)) {
             this.mv.visitLdcInsn(Type.getObjectType(Constants.TStringQN));
             return true;
         }
@@ -147,10 +151,8 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
 
     @Override
     public boolean handleLdcArray(Type type) {
-        Type stringArray = Type.getType(String[].class);
-        if (stringArray.equals(type)) {
+        if (stringArrayType.equals(type)) {
             Type taintStringArray = Type.getType(IASString[].class);
-
             this.mv.visitLdcInsn(taintStringArray);
             return true;
         }
@@ -160,7 +162,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     @Override
     public String rewriteTypeIns(String type) {
         boolean isArray = type.startsWith("[");
-        if (type.equals(Constants.StringQN) || (isArray && type.endsWith(Constants.StringDesc))) {
+        if (Type.getObjectType(type).equals(stringType) || (isArray && type.endsWith(Constants.StringDesc))) {
             return this.instrumentQN(type);
         }
         return type;
