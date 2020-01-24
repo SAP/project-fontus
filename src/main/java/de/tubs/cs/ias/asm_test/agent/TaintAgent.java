@@ -10,11 +10,8 @@ public class TaintAgent {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static void premain(String args, Instrumentation inst) {
-        boolean verbose = false;
-        if("verbose".equals(args)) {
-            verbose = true;
-        }
-        inst.addTransformer(new TaintingTransformer(verbose));
+        AgentConfig cfg = AgentConfig.parseConfig(args);
+        inst.addTransformer(new TaintingTransformer(cfg));
     }
 
 

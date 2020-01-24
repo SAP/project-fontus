@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.strategies.clazz.*;
 import de.tubs.cs.ias.asm_test.method.MethodVisitRecording;
 import de.tubs.cs.ias.asm_test.method.RecordingMethodVisitor;
@@ -18,7 +19,7 @@ import java.util.Optional;
 
 
 public class ClassTaintingVisitor extends ClassVisitor {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LoggerFactory.getLogger("");
 
     private final Collection<BlackListEntry> blacklist = new ArrayList<>();
     private static final String newMainDescriptor = "(" + Constants.TStringArrayDesc + ")V";
@@ -169,12 +170,13 @@ public class ClassTaintingVisitor extends ClassVisitor {
         // Create a new main method, wrapping the regular one and translating all Strings to IASStrings
         // TODO: acceptable for main is a parameter of String[] or String...! Those have different access bits set (i.e., the ACC_VARARGS bits are set too) -> Handle this nicer..
         if (((access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC) && (access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC && "main".equals(name) && descriptor.equals(Constants.MAIN_METHOD_DESC)
-                && !"org/dacapo/harness/TestHarness".equals(this.owner)
+                && !Configuration.instance.isClassMainBlacklisted(this.owner)
+            /*!"org/dacapo/harness/TestHarness".equals(this.owner)
                 && !"water/H2OApp".equals(owner)
         && !"org/python/util/jython".equals(owner)
         && !"org/jboss/modules/Main".equals(owner)
         && !"edu/cmu/graphchi/apps/Pagerank".equals(owner)
-        && !"org/apache/catalina/startup/Bootstrap".equals(owner)) {
+        && !"org/apache/catalina/startup/Bootstrap".equals(owner)*/) {
             logger.info("Creating proxy main method");
             MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "main", Constants.MAIN_METHOD_DESC, signature, exceptions);
             this.createMainWrapperMethod(v);
