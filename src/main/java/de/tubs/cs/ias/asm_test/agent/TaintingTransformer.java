@@ -24,6 +24,7 @@ class TaintingTransformer implements ClassFileTransformer {
 
     TaintingTransformer(AgentConfig config) {
         this.instrumenter = new Instrumenter();
+        this.config.mergeAgentConfig(config);
     }
 
     @Override
@@ -39,7 +40,7 @@ class TaintingTransformer implements ClassFileTransformer {
         }
 
         logger.info("Tainting class: {}", className);
-        byte[] outArray = this.instrumenter.instrumentClass(classfileBuffer);
+        byte[] outArray = this.instrumenter.instrumentClass(classfileBuffer, loader);
         if(this.config.isVerbose()) {
             String baseName = "/tmp/agent";
             File outFile = new File(baseName, className + Constants.CLASS_FILE_SUFFIX);
