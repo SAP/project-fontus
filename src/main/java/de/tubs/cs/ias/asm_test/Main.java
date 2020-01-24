@@ -48,7 +48,7 @@ public final class Main implements Callable<Void> {
 
 
     private void instrumentClassStream(InputStream i, OutputStream o) throws IOException {
-        byte[] out = this.instrumenter.instrumentClass(i, Configuration.instance);
+        byte[] out = this.instrumenter.instrumentClass(i, ClassLoader.getSystemClassLoader(), Configuration.instance);
         o.write(out);
     }
 

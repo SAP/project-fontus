@@ -31,7 +31,13 @@
       "name": "Forwarding Argument to Main via Reflection",
       "jar_file": "forward_main.jar",
       "input_file": "forward.input"
+    },
+    {
+      "name": "String Array Clone",
+      "jar_file": "str_array_clone.jar",
+      "input_file": "str_array_clone.input"
     }
+
   ],
   "single_file_tests": [
     {
@@ -94,7 +100,8 @@
     },
     {
       "name": "StringBuilder Field Test",
-      "source": "StringBuilderFieldTest.java"
+      "source": "StringBuilderFieldTest.java",
+      "safe": true
     },
     {
       "name": "StringBuilder Local Variable Test",
@@ -122,7 +129,8 @@
     },
     {
       "name": "Inner Class Example Tests",
-      "source": "InnerClassExample.java"
+      "source": "InnerClassExample.java",
+      "safe": true
     },
     {
       "name": "Main as a Varargs method Test",
@@ -131,7 +139,8 @@
     },
     {
       "name": "Anonymous Classes Test",
-      "source": "AnonymousClasses.java"
+      "source": "AnonymousClasses.java",
+      "safe": true
     },
     {
       "name": "Main as a Varargs method Test",
@@ -140,7 +149,8 @@
     },
     {
       "name": "Static Inner Class Test",
-      "source": "StaticInnerClassTest.java"
+      "source": "StaticInnerClassTest.java",
+      "safe": true
     },
     {
       "name": "Reflection Test: creating an empty String",
@@ -248,7 +258,8 @@
     },
     {
       "name": "Logging Test from trying to instrument tomcat",
-      "source": "LoggerTest.java"
+      "source": "LoggerTest.java",
+      "safe": true
     },
     {
       "name": "Testing Null returning Functions",
@@ -293,6 +304,16 @@
     {
       "name": "Process Builder Test",
       "source": "ProcessBuilderTest.java"
+    },
+    {
+      "name": "ArrayCloneTest",
+      "source": "ArrayCloneTest.java",
+      "arguments": ["Sup", "son", "?"]
+    },
+    {
+      "name": "ComparatorTest",
+      "source": "ComparatorTest.java",
+      "arguments": ["Sup", "son", "?"]
     }
   ]
 }

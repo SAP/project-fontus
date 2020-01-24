@@ -14,24 +14,26 @@ import java.lang.invoke.MethodHandles;
 public class Instrumenter {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    public byte[] instrumentClass(InputStream in, Configuration config) throws IOException {
-        return instrumentInternal(new ClassReader(in), config);
+    public byte[] instrumentClass(InputStream in, ClassLoader loader, Configuration config) throws IOException {
+        return instrumentInternal(new ClassReader(in), loader, config);
     }
 
-    public byte[] instrumentClass(byte[] classFileBuffer, Configuration config) {
-        return instrumentInternal(new ClassReader(classFileBuffer), config);
+    public byte[] instrumentClass(byte[] classFileBuffer, ClassLoader loader, Configuration config) {
+        return instrumentInternal(new ClassReader(classFileBuffer), loader, config);
     }
 
-    private static byte[] instrumentInternal(ClassReader cr, Configuration config) {
-        NonClassloadingClassWriter writer = new NonClassloadingClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
+    private static byte[] instrumentInternal(ClassReader cr, ClassLoader loader, Configuration config) {
+        NonClassloadingClassWriter writer = new NonClassloadingClassWriter(cr, ClassWriter.COMPUTE_FRAMES, new TypeHierarchyReaderWithLoaderSupport(loader));
+
         ClassTaintingVisitor smr = new ClassTaintingVisitor(writer, config);
         cr.accept(smr, ClassReader.SKIP_FRAMES);
-        String clazzName = cr.getClassName();
-        String superName = cr.getSuperName();
-        String[] interfaces = cr.getInterfaces();
-        String ifs = String.join(", ", interfaces);
-        logger.info("{} <- {} implements: {}", clazzName, superName, interfaces);
-        return writer.toByteArray();
+            String clazzName = cr.getClassName();
+            String superName = cr.getSuperName();
+            String[] interfaces = cr.getInterfaces();
+            String ifs = String.join(", ", interfaces);
+            logger.info("{} <- {} implements: {}", clazzName, superName, interfaces);
+            return writer.toByteArray();
+
     }
 
 }

@@ -21,6 +21,7 @@ JAR_FOLDERS=(
     media_types
     springboot_asciibytes
     forward_main
+    str_array_clone
 )
 
 main() {

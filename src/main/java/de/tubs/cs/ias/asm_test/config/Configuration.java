@@ -7,6 +7,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import de.tubs.cs.ias.asm_test.FunctionCall;
+import de.tubs.cs.ias.asm_test.agent.AgentConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,27 +64,36 @@ public class Configuration {
     }
 
     public Configuration() {
+	this.verbose = false;
         this.sources = new ArrayList<FunctionCall>();
         this.sinks = new ArrayList<Sink>();
         this.converters = new ArrayList<FunctionCall>();
         this.returnGeneric = new ArrayList<ReturnsGeneric>();
         this.takeGeneric = new ArrayList<TakesGeneric>();
+	this.mainMethodBlackList = new ArrayList<String>();
     }
 
-    public Configuration(List<FunctionCall> sources, List<Sink> sinks, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric) {
+    public void mergeAgentConfig(AgentConfig agentConfig) {
+        this.verbose = agentConfig.isVerbose();
+        this.mainMethodBlackList.addAll(agentConfig.getBlacklistedMainClasses());
+    }
+    
+    public Configuration(boolean verbose, List<FunctionCall> sources, List<Sink> sinks, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> mainMethodBlackList) {
+	this.verbose = verbose;
         this.sources = sources;
         this.sinks = sinks;
         this.converters = converters;
         this.returnGeneric = returnGeneric;
         this.takeGeneric = takeGeneric;
+        this.mainMethodBlackList = mainMethodBlackList;
     }
 
     public void append(Configuration other) {
         this.sources.addAll(other.sources);
         this.sinks.addAll(other.sinks);
-	    this.converters.addAll(other.converters);
-	    this.returnGeneric.addAll(other.returnGeneric);
-	    this.takeGeneric.addAll(other.takeGeneric);
+        this.converters.addAll(other.converters);
+        this.returnGeneric.addAll(other.returnGeneric);
+        this.takeGeneric.addAll(other.takeGeneric);
     }
 
     public List<FunctionCall> getSources() {
@@ -104,6 +114,10 @@ public class Configuration {
 
     public List<TakesGeneric> getTakeGeneric() {
         return this.takeGeneric;
+    }
+
+    public List<String> getMainMethodBlackList() {
+        return this.mainMethodBlackList;
     }
 
     private FunctionCall getConverter(String name) {
@@ -148,6 +162,15 @@ public class Configuration {
         return null;
     }
 
+    public boolean isVerbose() {
+        return this.verbose;
+    }
+
+    public boolean isClassMainBlacklisted(String owner) {
+        return this.mainMethodBlackList.contains(owner);
+    }
+
+    private boolean verbose = false;
     /**
      * All functions listed here return Strings that should be marked as tainted.
      */
@@ -172,4 +195,8 @@ public class Configuration {
     @JacksonXmlElementWrapper(localName = "takeGenerics")
     @XmlElement(name = "takeGeneric")
     private final List<TakesGeneric> takeGeneric;
+
+    @JacksonXmlElementWrapper(localName = "mainMethodBlacklist")
+    @XmlElement(name = "method")
+    private final List<String> mainMethodBlackList;
 }
