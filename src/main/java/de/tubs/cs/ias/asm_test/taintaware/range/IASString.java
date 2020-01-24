@@ -82,6 +82,9 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
     }
 
     private void appendRangesFrom(IASTaintInformation iasTaintInformation) {
+        if(iasTaintInformation == null) {
+            return;
+        }
         appendRangesFrom(iasTaintInformation.getAllRanges());
     }
 
@@ -159,7 +162,7 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
 
     public IASString(IASString string) {
         this(string.str);
-        this.appendRangesFrom(string.taintInformation);
+        this.appendRangesFrom(string.getTaintInformation());
     }
 
     /**
