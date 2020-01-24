@@ -15,29 +15,33 @@ import java.util.stream.Stream;
 public final class IASString implements IASRangeAware, Comparable<IASString>, CharSequence {
 
     private String str;
-    private final IASTaintInformation taintInformation = new IASTaintInformation();
+    private IASTaintInformation taintInformation;
 
     public IASString() {
         this.str = "";
     }
 
     public IASString(String s) {
+        if (s == null) {
+            throw new IllegalArgumentException("String cannot be null");
+        }
         this.str = s;
     }
 
     public IASString(String s, boolean tainted) {
-        this.str = s;
+        this(s);
+        this.taintInformation = new IASTaintInformation();
         this.taintInformation.addRange(0, s.length(), (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
     }
 
     public IASString(String s, List<IASTaintRange> ranges) {
-        this.str = s;
-        this.taintInformation.appendRanges(ranges);
+        this(s);
+        this.appendRangesFrom(ranges);
     }
 
     public IASString(CharSequence sequence, List<IASTaintRange> ranges) {
-        this.str = sequence.toString();
-        this.taintInformation.appendRanges(ranges);
+        this(sequence.toString());
+        this.appendRangesFrom(ranges);
     }
 
     public static IASString tainted(String str) {
@@ -46,6 +50,9 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
 
     @Override
     public boolean isTainted() {
+        if (this.taintInformation == null) {
+            return false;
+        }
         return this.taintInformation.isTainted();
     }
 
@@ -61,77 +68,98 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
             this.taintInformation.removeAll();
         }
         if (taint) {
+            if (isUninitialized()) {
+                this.taintInformation = new IASTaintInformation();
+            }
             this.taintInformation.addRange(0, this.str.length(), (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
         }
     }
 
+    public void initialize() {
+        if(isUninitialized()) {
+            this.taintInformation = new IASTaintInformation();
+        }
+    }
+
+    private void appendRangesFrom(IASTaintInformation iasTaintInformation) {
+        appendRangesFrom(iasTaintInformation.getAllRanges());
+    }
+
+    private void appendRangesFrom(List<IASTaintRange> ranges) {
+        if (isUninitialized() && ranges.size() > 0) {
+            this.taintInformation = new IASTaintInformation(ranges);
+        } else if (ranges.size() > 0) {
+            this.taintInformation.appendRanges(ranges);
+        }
+    }
+
     public IASString(String s, IASTaintInformation iasTaintInformation) {
-        this.str = s;
-        this.taintInformation.appendRangesFrom(iasTaintInformation);
+        this(s);
+        this.appendRangesFrom(iasTaintInformation);
     }
 
     public IASString(char value[]) {
-        this.str = new String(value);
+        this(new String(value));
     }
 
     public IASString(char value[], int offset, int count) {
-        this.str = new String(value, offset, count);
+        this(new String(value, offset, count));
     }
 
     public IASString(int[] codePoints, int offset, int count) {
-        this.str = new String(codePoints, offset, count);
+        this(new String(codePoints, offset, count));
     }
 
     public IASString(byte ascii[], int hibyte, int offset, int count) {
-        this.str = new String(ascii, hibyte, offset, count);
+        this(new String(ascii, hibyte, offset, count));
     }
 
     public IASString(byte ascii[], int hibyte) {
-        this.str = new String(ascii, hibyte);
+        this(new String(ascii, hibyte));
     }
 
     public IASString(byte bytes[], int offset, int length, String charsetName)
             throws UnsupportedEncodingException {
-        this.str = new String(bytes, offset, length, charsetName);
+        this(new String(bytes, offset, length, charsetName));
     }
 
     public IASString(byte bytes[], int offset, int length, Charset charset) {
-        this.str = new String(bytes, offset, length, charset);
+        this(new String(bytes, offset, length, charset));
     }
 
     public IASString(byte bytes[], String charsetName) throws UnsupportedEncodingException {
-        this.str = new String(bytes, charsetName);
+        this(new String(bytes, charsetName));
     }
 
     public IASString(byte bytes[], Charset charset) {
-        this.str = new String(bytes, charset);
+        this(new String(bytes, charset));
     }
 
     public IASString(byte bytes[], int offset, int length) {
-        this.str = new String(bytes, offset, length);
+        this(new String(bytes, offset, length));
     }
 
     public IASString(byte[] bytes) {
-        this.str = new String(bytes);
+        this(new String(bytes));
     }
 
     public IASString(StringBuffer buffer) {
-        this.str = new String(buffer);
+        this(new String(buffer));
     }
 
     public IASString(IASStringBuilder builder) {
-        this.str = builder.toString();
-        this.taintInformation.appendRangesFrom(builder.getTaintInformation());
+        this(builder.toString());
+        this.appendRangesFrom(builder.getTaintInformation());
     }
 
     public IASString(IASStringBuffer buffer) {
-        this.str = buffer.toString();
-        this.taintInformation.appendRangesFrom(buffer.getTaintInformation());
+        this(buffer.toString());
+        this.appendRangesFrom(buffer.getTaintInformation());
     }
 
     public IASString(IASString string) {
-        this.str = string.str;
-        this.taintInformation.appendRangesFrom(string.taintInformation);
+        this(string.str);
+        this.appendRangesFrom(string.taintInformation);
     }
 
     /**
@@ -142,7 +170,7 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
      * @param tainted
      */
     private IASString(CharSequence cs, boolean tainted) {
-        this.str = cs.toString();
+        this(cs.toString());
         this.setTaint(tainted);
     }
 
@@ -283,9 +311,13 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
     }
 
     private List<IASTaintRange> getSubstringRanges(int beginIndex, int endIndex) {
-        List<IASTaintRange> ranges = this.taintInformation.getRanges(beginIndex, endIndex);
-        IASTaintRangeUtils.adjustRanges(ranges, beginIndex, endIndex, beginIndex);
-        return ranges;
+        if (isTainted()) {
+            List<IASTaintRange> ranges = this.taintInformation.getRanges(beginIndex, endIndex);
+            IASTaintRangeUtils.adjustRanges(ranges, beginIndex, endIndex, beginIndex);
+            return ranges;
+        } else {
+            return new ArrayList<>(0);
+        }
     }
 
     public IASString substring(int beginIndex) {
@@ -312,14 +344,24 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
     }
 
     public IASString concat(IASString str) {
-        List<IASTaintRange> ranges = this.taintInformation.getAllRanges();
-        IASString newStr = new IASString(this.str.concat(str.str), this.taintInformation.getAllRanges());
+        IASString newStr = new IASString(this.str.concat(str.str), this.getAllRangesAdjusted());
 
-        List<IASTaintRange> otherRanges = str.taintInformation.getAllRanges();
+        List<IASTaintRange> otherRanges = str.getAllRangesAdjusted();
         IASTaintRangeUtils.adjustRanges(otherRanges, 0, str.length(), -this.length());
 
-        newStr.taintInformation.appendRanges(otherRanges);
+        newStr.appendRangesFrom(otherRanges);
+
         return newStr;
+    }
+
+    List<IASTaintRange> getAllRanges() {
+        return isTainted() ? this.taintInformation.getAllRanges() : new ArrayList<>(0);
+    }
+
+    List<IASTaintRange> getAllRangesAdjusted() {
+        List<IASTaintRange> ranges = getAllRanges();
+        IASTaintRangeUtils.adjustRanges(ranges, 0, this.length(), 0);
+        return ranges;
     }
 
     /**
@@ -331,7 +373,7 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
      * @return
      */
     public IASString replace(char oldChar, char newChar) {
-        return new IASString(this.str.replace(oldChar, newChar), this.taintInformation.getAllRanges());
+        return new IASString(this.str.replace(oldChar, newChar), this.getAllRangesAdjusted());
     }
 
     public boolean matches(IASString regex) {
@@ -344,10 +386,10 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
 
     public IASString replaceFirst(IASString regex, IASString replacement) {
         String replacedStr = this.str.replaceFirst(regex.str, replacement.str);
-        IASString newStr = new IASString(replacedStr, this.taintInformation.getAllRanges());
+        IASString newStr = new IASString(replacedStr, this.getAllRangesAdjusted());
 
-        // Are there any changes through the replacement? If not, it's irrelevant if one happened for the tainting
-        if (!replacedStr.equals(this.str)) {
+        // Are both Strings tainted? If not, it's irrelevant if one happened for the tainting
+        if (this.isTainted() && replacement.isTainted()) {
             Pattern p = Pattern.compile(regex.str);
             Matcher m = p.matcher(this.str);
 
@@ -355,7 +397,10 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
                 final int start = m.start();
                 final int end = m.end();
 
-                newStr.taintInformation.replaceTaintInformation(start, end, replacement.taintInformation.getAllRanges(), replacement.length(), true);
+                if (!newStr.isTainted()) {
+                    newStr.taintInformation = new IASTaintInformation();
+                }
+                newStr.taintInformation.replaceTaintInformation(start, end, replacement.getAllRangesAdjusted(), replacement.length(), true);
             }
         }
         return newStr;
@@ -610,19 +655,19 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
     }
 
     public IASString toLowerCase(Locale locale) {
-        return new IASString(this.str.toLowerCase(locale), this.getTaintInformation().getAllRanges());
+        return new IASString(this.str.toLowerCase(locale), this.getAllRangesAdjusted());
     }
 
     public IASString toLowerCase() {
-        return new IASString(this.str.toLowerCase(), this.getTaintInformation().getAllRanges());
+        return new IASString(this.str.toLowerCase(), this.getAllRangesAdjusted());
     }
 
     public IASString toUpperCase(Locale locale) {
-        return new IASString(this.str.toUpperCase(locale), this.getTaintInformation().getAllRanges());
+        return new IASString(this.str.toUpperCase(locale), this.getAllRangesAdjusted());
     }
 
     public IASString toUpperCase() {
-        return new IASString(this.str.toUpperCase(), this.getTaintInformation().getAllRanges());
+        return new IASString(this.str.toUpperCase(), this.getAllRangesAdjusted());
     }
 
     public IASString trim() {
@@ -785,11 +830,14 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
 
 
     public static IASString fromString(String str) {
+        if (str == null) {
+            return null;
+        }
         return new IASString(str);
     }
 
     public static String asString(IASString str) {
-        if(str == null) {
+        if (str == null) {
             return null;
         }
         return str.str;
@@ -804,8 +852,7 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
     }
 
     public boolean isUninitialized() {
-//        return this.taintInformation == null;
-        return !isTainted();
+        return this.taintInformation == null;
     }
 
     public void abortIfTainted() {

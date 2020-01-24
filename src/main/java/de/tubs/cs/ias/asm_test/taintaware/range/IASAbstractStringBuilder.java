@@ -9,38 +9,62 @@ import static de.tubs.cs.ias.asm_test.taintaware.range.IASTaintRangeUtils.adjust
 @SuppressWarnings("unused")
 public abstract class IASAbstractStringBuilder implements java.io.Serializable, Comparable<IASStringBuilder>, CharSequence, IASRangeAware {
     protected final StringBuilder builder;
-    protected final IASTaintInformation taintInformation;
+    private IASTaintInformation taintInformation;
 
     public IASAbstractStringBuilder() {
         this.builder = new StringBuilder();
-        this.taintInformation = new IASTaintInformation();
     }
 
     public IASAbstractStringBuilder(int capacity) {
         this.builder = new StringBuilder(capacity);
-        this.taintInformation = new IASTaintInformation();
     }
 
     public IASAbstractStringBuilder(IASString str) {
-        this.builder = new StringBuilder(str);
-        this.taintInformation = new IASTaintInformation(str.getTaintInformation().getAllRanges());
+        this.builder = new StringBuilder();
+        this.append(str);
     }
 
     public IASAbstractStringBuilder(CharSequence seq) {
         IASString str = IASString.valueOf(seq);
-        this.builder = new StringBuilder(str);
-        this.taintInformation = new IASTaintInformation(str.getTaintInformation().getAllRanges());
+        this.builder = new StringBuilder();
+        this.append(str);
+    }
+
+    private void appendShifted(List<IASTaintRange> ranges, boolean merge) {
+        if (ranges.size() == 0) {
+            return;
+        }
+
+        if (isUninitialized()) {
+            this.taintInformation = new IASTaintInformation();
+        }
+
+        IASTaintRangeUtils.shiftRight(ranges, this.length());
+        this.taintInformation.appendRanges(ranges, merge);
+    }
+
+    @Override
+    public void initialize() {
+        if(isUninitialized()) {
+            this.taintInformation = new IASTaintInformation();
+        }
     }
 
     @Override
     public void setTaint(boolean taint) {
         if (!this.isTainted()) {
+            if (isUninitialized()) {
+                this.taintInformation = new IASTaintInformation();
+            }
             this.taintInformation.addRange(0, this.length(), (short) 0);
         }
     }
 
     @Override
     public boolean isTainted() {
+        if (isUninitialized()) {
+            return false;
+        }
         return this.taintInformation.isTainted();
     }
 
@@ -51,16 +75,15 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
     }
 
     public IASAbstractStringBuilder append(IASString str) {
-        return this.append(str, false);
+        return this.append(str, true);
     }
 
 
     public IASAbstractStringBuilder append(IASString str, boolean merge) {
         int leftShift = -this.length();
 
-        List<IASTaintRange> ranges = str.getTaintInformation().getAllRanges();
-        adjustRanges(ranges, 0, str.length(), leftShift);
-        this.taintInformation.appendRanges(ranges, merge);
+        List<IASTaintRange> ranges = str.getAllRangesAdjusted();
+        this.appendShifted(ranges, merge);
 
         this.builder.append(str.toString());
         return this;
@@ -72,15 +95,27 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
     }
 
     public IASAbstractStringBuilder append(IASStringBuffer strb) {
-        int leftShift = -this.length();
 
-        List<IASTaintRange> ranges = strb.getTaintInformation().getAllRanges();
-        adjustRanges(ranges, 0, strb.length(), leftShift);
-        this.taintInformation.appendRanges(ranges);
+        List<IASTaintRange> ranges = strb.getAllRangesAdjusted();
+        this.appendShifted(ranges);
 
         this.builder.append(strb.toString());
 
         return this;
+    }
+
+    protected void appendShifted(List<IASTaintRange> ranges) {
+        this.appendShifted(ranges, false);
+    }
+
+    protected List<IASTaintRange> getAllRanges() {
+        return isTainted() ? this.taintInformation.getAllRanges() : new ArrayList<>(0);
+    }
+
+    protected List<IASTaintRange> getAllRangesAdjusted() {
+        List<IASTaintRange> ranges = getAllRanges();
+        IASTaintRangeUtils.adjustRanges(ranges, 0, this.length(), 0);
+        return ranges;
     }
 
     public IASAbstractStringBuilder append(CharSequence cs) {
@@ -140,19 +175,28 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
 
     public IASAbstractStringBuilder delete(int start, int end) {
         this.builder.delete(start, end);
-        this.taintInformation.removeTaintFor(start, end, true);
+        if (isTainted()) {
+            this.taintInformation.removeTaintFor(start, end, true);
+        }
         return this;
     }
 
     public IASAbstractStringBuilder deleteCharAt(int index) {
         this.builder.deleteCharAt(index);
-        this.taintInformation.removeTaintFor(index, index + 1, true);
+        if (isTainted()) {
+            this.taintInformation.removeTaintFor(index, index + 1, true);
+        }
         return this;
     }
 
     public IASAbstractStringBuilder replace(int start, int end, IASString str) {
         this.builder.replace(start, end, str.toString());
-        this.taintInformation.replaceTaintInformation(start, end, str.getTaintInformation().getAllRanges(), str.length(), true);
+        if (isUninitialized() && str.isTainted()) {
+            this.taintInformation = new IASTaintInformation();
+        }
+        if (this.isTainted() || str.isTainted()) {
+            this.taintInformation.replaceTaintInformation(start, end, str.getAllRangesAdjusted(), str.length(), true);
+        }
         return this;
     }
 
@@ -170,7 +214,12 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
     }
 
     public IASAbstractStringBuilder insert(int offset, IASString str) {
-        this.taintInformation.insert(offset, str.getTaintInformation().getAllRanges(), str.length());
+        if (isUninitialized() && str.isTainted()) {
+            this.taintInformation = new IASTaintInformation();
+        }
+        if (this.isTainted() || str.isTainted()) {
+            this.taintInformation.insert(offset, str.getAllRangesAdjusted(), str.length());
+        }
         this.builder.insert(offset, str.toString());
         return this;
     }
@@ -241,13 +290,19 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
 
     public IASAbstractStringBuilder reverse() {
         this.builder.reverse();
-        this.taintInformation.reversed(this.length());
+        if (isTainted()) {
+            this.taintInformation.reversed(this.length());
+        }
         handleSurrogatesForReversed();
 
         return this;
     }
 
     private void handleSurrogatesForReversed() {
+        if (!isTainted()) {
+            return;
+        }
+
         char[] chars = this.toString().toCharArray();
         for (int i = 0; i < this.length() - 1; i++) {
             char highSur = chars[i];
@@ -278,7 +333,7 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
     }
 
     public IASString toIASString() {
-        return new IASString(this.builder.toString(), this.taintInformation.copy());
+        return new IASString(this.builder.toString(), this.getAllRangesAdjusted());
     }
 
     public int capacity() {
@@ -295,7 +350,9 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
 
     public void setCharAt(int index, char c) {
         this.builder.setCharAt(index, c);
-        this.taintInformation.removeTaintFor(index, index + 1, false);
+        if (isTainted()) {
+            this.taintInformation.removeTaintFor(index, index + 1, false);
+        }
     }
 
     public void ensureCapacity(int minimumCapacity) {
@@ -337,7 +394,9 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
 
     public void setLength(int newLength) {
         this.builder.setLength(newLength);
-        this.taintInformation.resize(0, newLength, 0);
+        if (isTainted()) {
+            this.taintInformation.resize(0, newLength, 0);
+        }
     }
 
     @Override
@@ -350,6 +409,6 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
     }
 
     public boolean isUninitialized() {
-        return !isTainted();
+        return this.taintInformation == null;
     }
 }

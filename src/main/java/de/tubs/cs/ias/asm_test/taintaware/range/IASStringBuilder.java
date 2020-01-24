@@ -4,8 +4,8 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
 
     public IASStringBuilder(StringBuilder sb, IASTaintInformation taintInformation) {
         super();
+        this.appendShifted(taintInformation.getAllRanges());
         this.builder.append(sb);
-        this.taintInformation.appendRangesFrom(taintInformation);
     }
 
     public IASStringBuilder() {

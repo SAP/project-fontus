@@ -6,8 +6,8 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
 
     public IASStringBuffer(StringBuffer sb, IASTaintInformation taintInformation) {
         super();
+        this.appendShifted(taintInformation.getAllRanges());
         this.builder.append(sb);
-        this.taintInformation.appendRangesFrom(taintInformation);
     }
 
     public IASStringBuffer() {
