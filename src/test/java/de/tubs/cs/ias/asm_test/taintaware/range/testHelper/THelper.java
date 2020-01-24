@@ -9,6 +9,7 @@ public class THelper {
     }
 
     public static IASTaintInformation get(IASRangeAware sB) {
+        sB.initialize();
         return sB.getTaintInformation();
     }
 }

@@ -171,7 +171,7 @@ public class StringBuilderTest {
 
     @Test
     public void append_char() {
-        foo.getTaintInformation().addRange(0, 3, (short) 0);
+        THelper.get(foo).addRange(0, 3, (short) 0);
         foo.append('o');
 
         assertThat(foo.toString(), is("fooo"));
