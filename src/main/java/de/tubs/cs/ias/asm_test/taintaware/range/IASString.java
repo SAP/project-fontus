@@ -753,17 +753,15 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
         return isTainted;
     }
 
-    //TODO: sound?
     public static IASString format(IASString format, Object... args) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        // TODO Implement rainting
+        return IASString.fromString(String.format(format.toString(), args));
     }
 
 
-    //TODO: sound?
     public static IASString format(Locale l, IASString format, Object... args) {
-        // TODO
-        throw new UnsupportedOperationException("Not implemented!");
+        // TODO Implement rainting
+        return IASString.fromString(String.format(l, format.toString(), args));
     }
 
     public static IASString valueOf(Object obj) {

@@ -10,6 +10,10 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
         this.builder.append(sb);
     }
 
+    public IASStringBuffer(StringBuffer sb) {
+        super(sb);
+    }
+
     public IASStringBuffer() {
         super();
     }

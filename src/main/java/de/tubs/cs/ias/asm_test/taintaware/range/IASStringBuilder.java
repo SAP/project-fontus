@@ -8,6 +8,10 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
         this.builder.append(sb);
     }
 
+    public IASStringBuilder(StringBuilder sb) {
+        super(sb);
+    }
+
     public IASStringBuilder() {
         super();
     }
