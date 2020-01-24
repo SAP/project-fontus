@@ -1,7 +1,5 @@
 package de.tubs.cs.ias.asm_test.config;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,10 +10,14 @@ import de.tubs.cs.ias.asm_test.FunctionCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @XmlRootElement(name = "configuration")
 public class Configuration {
@@ -41,11 +43,34 @@ public class Configuration {
     }
 
     private static Configuration readBundledXmlConfiguration() {
-	return readXmlConfiguration(Configuration.class.getClassLoader().getResourceAsStream("configuration.xml"));
+	    return readXmlConfiguration(Configuration.class.getClassLoader().getResourceAsStream("configuration.xml"));
     }
 
-    @JsonCreator
-    public Configuration(@JsonProperty("sources") Sources sources, @JsonProperty("sinks") Sinks sinks, @JsonProperty("converters") Converters converters, @JsonProperty("returnGeneric") ReturnGeneric returnGeneric, @JsonProperty("takeGeneric") TakeGeneric takeGeneric) {
+    public static Configuration readJsonConfiguration(InputStream stream) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        try {
+            return objectMapper.readValue(stream, Configuration.class);
+        } catch (JsonParseException | JsonMappingException e) {
+            logger.error("Malformed configuration resource file, aborting!");
+            // TODO: ugly exception, find more fitting one!
+            throw new IllegalStateException("Missing configuration file\nAborting!", e);
+        } catch (IOException e) {
+            logger.error("Can't find the configuration resource file, aborting!");
+            // TODO: ugly exception, find more fitting one!
+            throw new IllegalStateException("Missing configuration file\nAborting!", e);
+        }
+    }
+
+    public Configuration() {
+        this.sources = new ArrayList<FunctionCall>();
+        this.sinks = new ArrayList<Sink>();
+        this.converters = new ArrayList<FunctionCall>();
+        this.returnGeneric = new ArrayList<ReturnsGeneric>();
+        this.takeGeneric = new ArrayList<TakesGeneric>();
+    }
+
+    public Configuration(List<FunctionCall> sources, List<Sink> sinks, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric) {
         this.sources = sources;
         this.sinks = sinks;
         this.converters = converters;
@@ -54,35 +79,35 @@ public class Configuration {
     }
 
     public void append(Configuration other) {
-        this.sources.append(other.sources);
-        this.sinks.append(other.sinks);
-	this.converters.append(other.converters);
-	this.returnGeneric.append(other.returnGeneric);
-	this.takeGeneric.append(other.takeGeneric);
+        this.sources.addAll(other.sources);
+        this.sinks.addAll(other.sinks);
+	    this.converters.addAll(other.converters);
+	    this.returnGeneric.addAll(other.returnGeneric);
+	    this.takeGeneric.addAll(other.takeGeneric);
     }
 
-    public Sources getSources() {
-        return this.sources;
+    public List<FunctionCall> getSources() {
+        return Collections.unmodifiableList(this.sources);
     }
 
-    public Sinks getSinks() {
+    public List<Sink> getSinks() {
         return this.sinks;
     }
 
-    public Converters getConverters() {
+    public List<FunctionCall> getConverters() {
         return this.converters;
     }
 
-    public ReturnGeneric getReturnGeneric() {
+    public List<ReturnsGeneric> getReturnGeneric() {
         return this.returnGeneric;
     }
 
-    public TakeGeneric getTakeGeneric() {
+    public List<TakesGeneric> getTakeGeneric() {
         return this.takeGeneric;
     }
 
     private FunctionCall getConverter(String name) {
-        for(FunctionCall fc : this.converters.getFunction()) {
+        for(FunctionCall fc : this.converters) {
             if(fc.getName().equals(name)) {
                 return fc;
             }
@@ -91,7 +116,7 @@ public class Configuration {
     }
 
     public boolean needsParameterConversion(FunctionCall c) {
-        for(TakesGeneric tg : this.takeGeneric.getFunction()) {
+        for(TakesGeneric tg : this.takeGeneric) {
             if (tg.getFunctionCall().equals(c)) {
                 return true;
             }
@@ -100,7 +125,7 @@ public class Configuration {
     }
 
     public FunctionCall getConverterForParameter(FunctionCall c, int index) {
-        for(TakesGeneric tg : this.takeGeneric.getFunction()) {
+        for(TakesGeneric tg : this.takeGeneric) {
             if(tg.getFunctionCall().equals(c) && tg.getIndex() == index) {
                 String converterName = tg.getConverter();
                 FunctionCall converter = this.getConverter(converterName);
@@ -112,7 +137,7 @@ public class Configuration {
     }
 
     public FunctionCall getConverterForReturnValue(FunctionCall c) {
-        for(ReturnsGeneric rg : this.returnGeneric.getFunction()) {
+        for(ReturnsGeneric rg : this.returnGeneric) {
             if(rg.getFunctionCall().equals(c)) {
                 String converterName = rg.getConverter();
                 FunctionCall converter = this.getConverter(converterName);
@@ -126,20 +151,25 @@ public class Configuration {
     /**
      * All functions listed here return Strings that should be marked as tainted.
      */
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private final Sources sources;
+    @JacksonXmlElementWrapper(localName = "sources") 
+    @XmlElement(name = "source")
+    private final List<FunctionCall> sources;
     /**
      * All functions listed here consume Strings that need to be checked first.
      */
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private final Sinks sinks;
+    @JacksonXmlElementWrapper(localName = "sinks")
+    @XmlElement(name = "sink")
+    private final List<Sink> sinks;
 
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private final Converters converters;
+    @JacksonXmlElementWrapper(localName = "converters")
+    @XmlElement(name = "converter")
+    private final List<FunctionCall> converters;
 
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private final ReturnGeneric returnGeneric;
+    @JacksonXmlElementWrapper(localName = "returnGenerics")
+    @XmlElement(name = "returnGeneric")
+    private final List<ReturnsGeneric> returnGeneric;
 
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private final TakeGeneric takeGeneric;
+    @JacksonXmlElementWrapper(localName = "takeGenerics")
+    @XmlElement(name = "takeGeneric")
+    private final List<TakesGeneric> takeGeneric;
 }

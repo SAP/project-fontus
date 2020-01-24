@@ -11,4 +11,15 @@ public class Parameter {
     @XmlElement
     private int index;
 
+    public Parameter() {
+        this.index = -1;
+    }
+
+    public Parameter(int index) {
+        this.index = index;
+    }
+
+    public int getIndex() {
+        return index;
+    }
 }

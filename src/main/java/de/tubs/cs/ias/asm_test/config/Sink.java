@@ -8,26 +8,45 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @XmlRootElement(name = "sink")
 public class Sink {
 
-    @XmlElement(name = "function")
-    private FunctionCall functionCall;
+    @XmlElement
+    private String name;
 
-    @JacksonXmlElementWrapper(localName = "parameters", useWrapping = false)    
+    @XmlElement
+    private FunctionCall function;
+
+    @JacksonXmlElementWrapper(localName = "parameters")    
     @XmlElement(name = "parameter")
     private final List<Parameter> parameters;
 
-    @JsonCreator
-    public Sink(@JsonProperty("function") FunctionCall functionCall, @JsonProperty("parameters") List<Parameter> parameters) {
-	this.functionCall = functionCall;
+    public Sink() {
+        this.name = "";
+	    this.function = new FunctionCall();
+        this.parameters = new ArrayList<Parameter>();
+    }
+
+    public Sink(String name, FunctionCall functionCall, List<Parameter> parameters) {
+        this.name = name;
+	    this.function = functionCall;
         this.parameters = parameters;
     }
    
-    public FunctionCall getFunctionCall() {
-        return this.functionCall;
+    public List<Parameter> getParameters() {
+        return Collections.unmodifiableList(this.parameters);
+    }
+
+    public FunctionCall getFunction() {
+        return this.function;
+    }
+
+    public String getName() {
+        return this.name;
     }
 
 }
