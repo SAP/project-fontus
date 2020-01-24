@@ -100,7 +100,8 @@
     },
     {
       "name": "StringBuilder Field Test",
-      "source": "StringBuilderFieldTest.java"
+      "source": "StringBuilderFieldTest.java",
+      "safe": true
     },
     {
       "name": "StringBuilder Local Variable Test",
@@ -128,7 +129,8 @@
     },
     {
       "name": "Inner Class Example Tests",
-      "source": "InnerClassExample.java"
+      "source": "InnerClassExample.java",
+      "safe": true
     },
     {
       "name": "Main as a Varargs method Test",
@@ -137,7 +139,8 @@
     },
     {
       "name": "Anonymous Classes Test",
-      "source": "AnonymousClasses.java"
+      "source": "AnonymousClasses.java",
+      "safe": true
     },
     {
       "name": "Main as a Varargs method Test",
@@ -146,7 +149,8 @@
     },
     {
       "name": "Static Inner Class Test",
-      "source": "StaticInnerClassTest.java"
+      "source": "StaticInnerClassTest.java",
+      "safe": true
     },
     {
       "name": "Reflection Test: creating an empty String",
@@ -254,7 +258,8 @@
     },
     {
       "name": "Logging Test from trying to instrument tomcat",
-      "source": "LoggerTest.java"
+      "source": "LoggerTest.java",
+      "safe": true
     },
     {
       "name": "Testing Null returning Functions",
