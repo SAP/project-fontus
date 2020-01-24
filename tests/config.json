@@ -89,7 +89,8 @@
     },
     {
       "name": "StringBuilder Field Test",
-      "source": "StringBuilderFieldTest.java"
+      "source": "StringBuilderFieldTest.java",
+      "safe": true
     },
     {
       "name": "StringBuilder Local Variable Test",
