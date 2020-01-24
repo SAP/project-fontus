@@ -442,7 +442,8 @@ class TestRunner:
         instruments = []
         for clazz in classes:
             class_name = clazz.name
-            print('\tInstrumenting: {}'.format(class_name))
+            if self._config.verbose:
+                print('\tInstrumenting: {}'.format(class_name))
             input_file = path.join(cwd, class_name)
             output_file = path.join(cwd, TMPDIR_OUTPUT_DIR_SUFFIX, class_name)
             instruments.append((cwd, input_file, output_file))
@@ -453,7 +454,8 @@ class TestRunner:
         classes = Path(cwd).glob('{}*.class'.format(name))
         for clazz in classes:
             class_name = clazz.name
-            print('\tInstrumenting: {}'.format(class_name))
+            if self._config.verbose:
+                print('\tInstrumenting: {}'.format(class_name))
             input_file = path.join(cwd, class_name)
             output_file = path.join(cwd, TMPDIR_OUTPUT_DIR_SUFFIX, class_name)
             self._instrument_application_sync(cwd, input_file, output_file)
@@ -668,7 +670,8 @@ def main(args):
     config.verbose = args.verbose
     # pprint.pprint(config)
     runner = TestRunner(config, args.safe)
-    result = asyncio.run(runner.run_tests())
+    loop = asyncio.get_event_loop()
+    result = loop.run_until_complete(runner.run_tests())
     print(result)
     sys.exit(result.num_failed)
 
