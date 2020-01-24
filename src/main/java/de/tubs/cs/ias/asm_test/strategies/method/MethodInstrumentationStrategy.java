@@ -40,5 +40,6 @@ public interface MethodInstrumentationStrategy extends InstrumentationStrategy {
 
     boolean handleLdc(final Object value);
     boolean handleLdcType(Type type);
+    boolean handleLdcArray(Type type);
     String rewriteTypeIns(String type);
 }

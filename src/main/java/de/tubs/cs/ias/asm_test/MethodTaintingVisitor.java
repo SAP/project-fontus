@@ -92,6 +92,10 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         super.visitMaxs(maxStack, Math.max(this.used, this.usedAfterInjection));
     }
 
+    private void visitMethodInsn(FunctionCall fc) {
+        super.visitMethodInsn(fc.getOpcode(), fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.isInterface());
+    }
+
     /**
      * Initializes the method proxy maps.
      */
@@ -127,18 +131,13 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
      * If the method is in the list of sinks: call the taint check before call it. Return true in this case.
      * Return false otherwise.
      */
-    private boolean isSinkCall(final int opcode,
-                               final String owner,
-                               final String name,
-                               final String descriptor,
-                               final boolean isInterface) {
-        FunctionCall pfe = new FunctionCall(opcode, owner, name, descriptor, isInterface);
-        if (Configuration.instance.getSinks().contains(pfe)) {
-            logger.info("{}.{}{} is a sink, so calling the check taint function before passing the value!", owner, name, descriptor);
+    private boolean isSinkCall(FunctionCall fc) {
+        if (Configuration.instance.getSinks().contains(fc)) {
+            logger.info("{}.{}{} is a sink, so calling the check taint function before passing the value!", fc.getOwner(), fc.getName(), fc.getDescriptor());
             // Call dup here to put the TString reference twice on the stack so the call can pop one without affecting further processing
             MethodTaintingUtils.callCheckTaint(this.getParentVisitor());
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "asString", String.format("(%s)%s", Constants.TStringDesc, Constants.StringDesc), false);
-            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, owner, name, descriptor, isInterface);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, Constants.AS_STRING, Constants.AS_STRING_DESC, false);
+            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.isInterface()); //TODO: Why is invokevirtual hardcoded in here?
             return true;
         }
         return false;
@@ -148,15 +147,10 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
      * If the method is in the list of sources: call it, mark the returned String as tainted. Return true in this case.
      * Return false otherwise.
      */
-    private boolean isSourceCall(final int opcode,
-                                 final String owner,
-                                 final String name,
-                                 final String descriptor,
-                                 final boolean isInterface) {
-        FunctionCall pfe = new FunctionCall(opcode, owner, name, descriptor, isInterface);
-        if (Configuration.instance.getSources().contains(pfe)) {
-            logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", owner, name, descriptor, Constants.TStringQN);
-            super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+    private boolean isSourceCall(FunctionCall fc) {
+        if (Configuration.instance.getSources().contains(fc)) {
+            logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", fc.getOwner(), fc.getName(), fc.getDescriptor(), Constants.TStringQN);
+            this.visitMethodInsn(fc);
             super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "tainted", Constants.CreateTaintedStringDesc, false);
             return true;
         }
@@ -188,13 +182,14 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             final String descriptor,
             final boolean isInterface) {
         this.shouldRewriteCheckCast = false;
+        FunctionCall fc = new FunctionCall(opcode, owner, name, descriptor, isInterface);
 
-        if (this.isSinkCall(opcode, owner, name, descriptor, isInterface) || this.isSourceCall(opcode, owner, name, descriptor, isInterface)) {
+        if (this.isSinkCall(fc) || this.isSourceCall(fc)) {
             return;
         }
 
         // If a method has a defined proxy, apply it right away
-        if (this.shouldBeProxied(opcode, owner, name, descriptor, isInterface)) {
+        if (this.shouldBeProxied(fc)) {
             return;
         }
 
@@ -209,7 +204,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         // If there isn't a proxy defined, we will just convert taint-aware Strings to regular ones before calling the function and vice versa for the return value.
         boolean jdkMethod = JdkClassesLookupTable.instance.isJdkClass(owner);
         if (jdkMethod) {
-            this.handleJdkMethod(opcode, owner, name, descriptor, isInterface);
+            this.handleJdkMethod(fc);
             return;
         }
 
@@ -232,8 +227,8 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         super.visitMethodInsn(opcode, owner, name, desc.toDescriptor(), isInterface);
     }
 
-    private void handleJdkMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        Descriptor desc = Descriptor.parseDescriptor(descriptor);
+    private void handleJdkMethod(FunctionCall call) {
+        Descriptor desc = Descriptor.parseDescriptor(call.getDescriptor());
         switch (desc.parameterCount()) {
             case 0:
                 break;
@@ -242,24 +237,24 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
                 for(MethodInstrumentationStrategy s : this.instrumentation) {
                     s.insertJdkMethodParameterConversion(param);
                 }
-                FunctionCall converter = Configuration.instance.getConverterForParameter(opcode, owner, name, descriptor, isInterface, 0);
+                FunctionCall converter = Configuration.instance.getConverterForParameter(call, 0);
                 if(converter != null) {
-                    super.visitMethodInsn(converter.getOpcode(), converter.getOwner(), converter.getName(), converter.getDescriptor(), converter.isInterface());
+                    this.visitMethodInsn(converter);
                 }
                 break;
             default:
-                this.handleMultiParameterJdkMethod(opcode, owner, name, descriptor, isInterface);
+                this.handleMultiParameterJdkMethod(call);
                 break;
         }
-        logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor);
-        super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+        logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+        this.visitMethodInsn(call);
         for(MethodInstrumentationStrategy s : this.instrumentation) {
-            s.instrumentReturnType(owner, name, desc);
+            s.instrumentReturnType(call.getOwner(), call.getName(), desc);
         }
 
-        FunctionCall converter = Configuration.instance.getConverterForReturnValue(opcode, owner, name, descriptor, isInterface);
+        FunctionCall converter = Configuration.instance.getConverterForReturnValue(call);
         if(converter != null) {
-            super.visitMethodInsn(converter.getOpcode(), converter.getOwner(), converter.getName(), converter.getDescriptor(), converter.isInterface());
+            this.visitMethodInsn(converter);
         }
 
         if(desc.getReturnType().equals(Constants.ObjectDesc)) {
@@ -268,9 +263,9 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
 
-    private void handleMultiParameterJdkMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        Descriptor desc = Descriptor.parseDescriptor(descriptor);
-        if (!desc.hasStringLikeParameters() && !Configuration.instance.needsParameterConversion(opcode, owner, name, descriptor, isInterface)) return;
+    private void handleMultiParameterJdkMethod(FunctionCall call) {
+        Descriptor desc = Descriptor.parseDescriptor(call.getDescriptor());
+        if (!desc.hasStringLikeParameters() && !Configuration.instance.needsParameterConversion(call)) return;
 
         // TODO: Add optimization that the upmost parameter on the stack does not need to be stored/loaded..
         Collection<String> parameters = desc.getParameters();
@@ -291,9 +286,9 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
                 s.insertJdkMethodParameterConversion(p);
             }
 
-            FunctionCall converter = Configuration.instance.getConverterForParameter(opcode, owner, name, descriptor, isInterface, index);
+            FunctionCall converter = Configuration.instance.getConverterForParameter(call, index);
             if(converter != null) {
-                super.visitMethodInsn(converter.getOpcode(), converter.getOwner(), converter.getName(), converter.getDescriptor(), converter.isInterface());
+                this.visitMethodInsn(converter);
             }
             index--;
 
@@ -339,6 +334,12 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
                     }
                 }
                 //TODO: handle Arrays etc..
+            } else if (sort == Type.ARRAY) {
+                for(MethodInstrumentationStrategy s : this.instrumentation) {
+                    if(s.handleLdcArray(type)) {
+                        return;
+                    }
+                }
             }
          }
         super.visitLdcInsn(value);
@@ -450,10 +451,9 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     /**
      * Is there a proxy defined? If so apply and return true.
      */
-    private boolean shouldBeProxied(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        FunctionCall pfe = new FunctionCall(opcode, owner, name, descriptor, isInterface);
+    private boolean shouldBeProxied(FunctionCall pfe) {
         if (this.methodProxies.containsKey(pfe)) {
-            logger.info("Proxying call to {}.{}{}", owner, name, descriptor);
+            logger.info("Proxying call to {}.{}{}", pfe.getOwner(), pfe.getName(), pfe.getDescriptor());
             Runnable pf = this.methodProxies.get(pfe);
             pf.run();
             return true;

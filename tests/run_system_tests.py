@@ -9,6 +9,7 @@ import subprocess
 from pathlib import Path
 import tempfile
 from shutil import copyfile
+import asyncio
 
 SCRIPT_PATH = path.dirname(path.abspath(__file__))
 PROJECT_BASE_PATH = path.join(SCRIPT_PATH, '..')
@@ -24,6 +25,15 @@ JAR_BASE_NAMES = ["asm_test", "util"]
 
 
 def check_return_value(func):
+    async def wrapper_check_return_value(*args, **kwargs):
+        ret_val = await func(*args, **kwargs)
+        if ret_val.return_value != 0:
+            pprint.pprint(ret_val)
+        return ret_val
+    return wrapper_check_return_value
+
+
+def check_return_value_sync(func):
     def wrapper_check_return_value(*args, **kwargs):
         ret_val = func(*args, **kwargs)
         if ret_val.return_value != 0:
@@ -53,10 +63,8 @@ def copy_source_file(target_dir, source):
     copy_file(TESTS_SOURCE_DIR, target_dir, source)
 
 
-@check_return_value
-def run_command(cwd, arguments, input_file=None):
-    #print("cwd: {}".format(cwd))
-    #print(arguments)
+@check_return_value_sync
+def run_command_sync(cwd, arguments, input_file=None):
     exec_result = subprocess.run(
         arguments,
         universal_newlines=True,
@@ -66,6 +74,21 @@ def run_command(cwd, arguments, input_file=None):
         cwd=cwd
     )
     return ExecutionResult(exec_result.returncode, exec_result.stdout, exec_result.stderr)
+
+
+@check_return_value
+async def run_command(cwd, arguments, input_file=None):
+    # exec_result = subprocess.run(
+    proc = await asyncio.create_subprocess_shell(
+        " ".join(arguments),
+        # universal_newlines=False,
+        stdin=input_file,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+        cwd=cwd
+    )
+    stdout, stderr = await proc.communicate()
+    return ExecutionResult(proc.returncode, stdout, stderr)
 
 
 def format_jar_filename(base_name, version):
@@ -130,8 +153,8 @@ class ExecutionResult:
 
     def __eq__(self, other):
         return self._return_value == other.return_value \
-               and self._stdout == other.stdout \
-               and self._stderr == other.stderr
+            and self._stdout == other.stdout \
+            and self._stderr == other.stderr
 
 
 class TestCase:
@@ -235,7 +258,8 @@ class TestResult:
     @property
     def successful(self):
         return not (self._regular_result is None or self._instrumented_result is None) and \
-               (self._regular_result == self._instrumented_result and (self._regular_result == self._agent_result))
+            (self._regular_result == self._instrumented_result and (
+                self._regular_result == self._agent_result))
 
     @property
     def regular_result(self):
@@ -359,19 +383,21 @@ class TestRunner:
     def __init__(self, config):
         self._config = config
 
-    def _run_regular_class_file_with_agent(self, cwd, name, arguments):
+    async def _run_regular_class_file_with_agent(self, cwd, name, arguments):
         arguments = ["java",
                      "-classpath",
-                     '.:{}'.format(format_jar_filename("asm_test", self._config.version)),
-                     '-javaagent:{}'.format(format_jar_filename("asm_test", self._config.version)),
+                     '.:{}'.format(format_jar_filename(
+                         "asm_test", self._config.version)),
+                     '-javaagent:{}'.format(format_jar_filename(
+                         "asm_test", self._config.version)),
                      name
                      ] + arguments
-        return run_command(cwd, arguments)
+        return (await run_command(cwd, arguments))
 
     @staticmethod
-    def _run_regular_class_file(cwd, name, arguments):
+    async def _run_regular_class_file(cwd, name, arguments):
         arguments = ["java", name] + arguments
-        return run_command(cwd, arguments)
+        return (await run_command(cwd, arguments))
 
     def _instrument_application(self, cwd, input_file, output_file):
         arguments = [
@@ -384,7 +410,7 @@ class TestRunner:
             "-o",
             output_file
         ]
-        return run_command(cwd, arguments)
+        return run_command_sync(cwd, arguments)
 
     def _instrument_class_file(self, cwd, name):
         classes = Path(cwd).glob('{}*.class'.format(name))
@@ -395,10 +421,11 @@ class TestRunner:
             output_file = path.join(cwd, TMPDIR_OUTPUT_DIR_SUFFIX, class_name)
             self._instrument_application(cwd, input_file, output_file)
 
-    def _instrument_jar(self, cwd, name):
+    async def _instrument_jar(self, cwd, name):
         input_file = path.join(cwd, name)
         output_file = path.join(cwd, TMPDIR_OUTPUT_DIR_SUFFIX, name)
-        instrumenter_jar = format_jar_filename("asm_test", self._config.version)
+        instrumenter_jar = format_jar_filename(
+            "asm_test", self._config.version)
         arguments = [
             "java",
             "-classpath",
@@ -409,58 +436,61 @@ class TestRunner:
             "-o",
             output_file
         ]
-        return run_command(cwd, arguments)
+        return (await run_command(cwd, arguments))
 
-    def _run_instrumented_jar_internal(self, cwd, name, entry_point, additional_arguments, input_file):
+    async def _run_instrumented_jar_internal(self, cwd, name, entry_point, additional_arguments, input_file):
         arguments = [
             "java",
             "-cp",
-            '{}:{}'.format(format_jar_filename("util", self._config.version), name),
+            '{}:{}'.format(format_jar_filename(
+                "util", self._config.version), name),
             entry_point
         ] + additional_arguments
-        return run_command(cwd, arguments, input_file)
+        return (await run_command(cwd, arguments, input_file))
 
-    def _run_agent_jar_internal(self, cwd, name, entry_point, additional_arguments, input_file):
+    async def _run_agent_jar_internal(self, cwd, name, entry_point, additional_arguments, input_file):
         arguments = [
-                        "java",
-                        "-cp",
-                        '{}:{}'.format(format_jar_filename("asm_test", self._config.version), name),
-                        '-javaagent:{}'.format(format_jar_filename("asm_test", self._config.version)),
-                        entry_point
-                    ] + additional_arguments
-        return run_command(cwd, arguments, input_file)
+            "java",
+            "-cp",
+            '{}:{}'.format(format_jar_filename(
+                "asm_test", self._config.version), name),
+            '-javaagent:{}'.format(format_jar_filename(
+                "asm_test", self._config.version)),
+            entry_point
+        ] + additional_arguments
+        return (await run_command(cwd, arguments, input_file))
 
     @staticmethod
-    def _run_jar_internal(cwd, name, additional_arguments, input_file):
+    async def _run_jar_internal(cwd, name, additional_arguments, input_file):
         arguments = [
             "java",
             "-jar",
             name
         ] + additional_arguments
-        return run_command(cwd, arguments, input_file)
+        return (await run_command(cwd, arguments, input_file))
 
-    def _run_jar(self, cwd, name, arguments, input_file=None):
+    async def _run_jar(self, cwd, name, arguments, input_file=None):
         if input_file:
             with open(input_file, "r", encoding="utf-8") as inp:
-                return self._run_jar_internal(cwd, name, arguments, inp)
+                return (await self._run_jar_internal(cwd, name, arguments, inp))
         else:
-            return self._run_jar_internal(cwd, name, arguments, input_file)
+            return (await self._run_jar_internal(cwd, name, arguments, input_file))
 
-    def _run_instrumented_jar(self, cwd, name, entry_point, arguments, input_file=None):
+    async def _run_instrumented_jar(self, cwd, name, entry_point, arguments, input_file=None):
         if input_file:
             with open(input_file, "r", encoding="utf-8") as inp:
-                return self._run_instrumented_jar_internal(cwd, name, entry_point, arguments, inp)
+                return (await self._run_instrumented_jar_internal(cwd, name, entry_point, arguments, inp))
         else:
-            return self._run_instrumented_jar_internal(cwd, name, entry_point, arguments, input_file)
+            return (await self._run_instrumented_jar_internal(cwd, name, entry_point, arguments, input_file))
 
-    def _run_agent_jar(self, cwd, name, entry_point, arguments, input_file=None):
+    async def _run_agent_jar(self, cwd, name, entry_point, arguments, input_file=None):
         if input_file:
             with open(input_file, "r", encoding="utf-8") as inp:
-                return self._run_agent_jar_internal(cwd, name, entry_point, arguments, inp)
+                return (await self._run_agent_jar_internal(cwd, name, entry_point, arguments, inp))
         else:
-            return self._run_agent_jar_internal(cwd, name, entry_point, arguments, input_file)
+            return (await self._run_agent_jar_internal(cwd, name, entry_point, arguments, input_file))
 
-    def _run_instrumented_class_file(self, cwd, name, additional_arguments):
+    async def _run_instrumented_class_file(self, cwd, name, additional_arguments):
         arguments = [
             "java",
             "-classpath",
@@ -468,113 +498,95 @@ class TestRunner:
                 "util", self._config.version)),
             name
         ] + additional_arguments
-        return run_command(cwd, arguments)
+        return (await run_command(cwd, arguments))
 
     @staticmethod
-    def _compile_source_file(cwd, source):
+    async def _compile_source_file(cwd, source):
         arguments = ["javac", "-encoding", "UTF-8", source]
-        exec_result = run_command(cwd, arguments)
+        exec_result = await run_command(cwd, arguments)
         return exec_result.return_value == 0
 
-    def _run_jar_test(self, base_dir, test):
+    async def _run_jar_test(self, base_dir, test):
         print('Running Jar Test: "{}"'.format(test.name))
         copy_jar(base_dir, test.jar_file)
-        self._instrument_jar(base_dir, test.jar_file)
-        regular_result = self._run_jar(
+        await self._instrument_jar(base_dir, test.jar_file)
+        instrumented_cwd = path.join(base_dir, TMPDIR_OUTPUT_DIR_SUFFIX)
+        regular_result, agent_result, instrumented_result = await(asyncio.gather(self._run_jar(
             base_dir,
             test.jar_file,
             test.arguments,
             test.input_file
-        )
-        agent_result = self._run_agent_jar(
+        ),
+            self._run_agent_jar(
             base_dir,
             test.jar_file,
             test.entry_point,
             test.arguments,
             test.input_file
-        )
-        instrumented_cwd = path.join(base_dir, TMPDIR_OUTPUT_DIR_SUFFIX)
-        instrumented_result = self._run_instrumented_jar(
+        ),
+            self._run_instrumented_jar(
             instrumented_cwd,
             test.jar_file,
             test.entry_point,
             test.arguments,
             test.input_file
         )
+        ))
         return TestResult(test, regular_result, instrumented_result, agent_result)
 
-    def _run_test(self, base_dir, test):
-        #print("Base dir: {}".format(base_dir))
+    async def _run_test(self, base_dir, test):
+        if(isinstance(test, JarTestCase)):
+            return (await self._run_jar_test(base_dir, test))
         print('Running Test: "{}"'.format(test.name))
         (base_name, _, _) = test.source.partition(".java")
         copy_source_file(base_dir, test.source)
-        self._compile_source_file(base_dir, test.source)
+        await self._compile_source_file(base_dir, test.source)
         self._instrument_class_file(base_dir, base_name)
-        #input("Classes compiled and instrumented: Press Enter to continue...")
-        regular_result = self._run_regular_class_file(
+        instrumented_cwd = path.join(base_dir, TMPDIR_OUTPUT_DIR_SUFFIX)
+        regular_result, instrumented_result, agent_result = await asyncio.gather(self._run_regular_class_file(
             base_dir,
             base_name,
             test.arguments
-        )
-        #input("Regular tests executed: Press Enter to continue...")
-        instrumented_cwd = path.join(base_dir, TMPDIR_OUTPUT_DIR_SUFFIX)
-        instrumented_result = self._run_instrumented_class_file(
+        ),
+            self._run_instrumented_class_file(
             instrumented_cwd,
             base_name,
             test.arguments
-        )
-        #input("Instrumented tests executed: Press Enter to continue...")
-        agent_result = self._run_regular_class_file_with_agent(
+        ),
+            self._run_regular_class_file_with_agent(
             base_dir,
             base_name,
             test.arguments
         )
-        #input("Agent tests executed: Press Enter to continue...")
+        )
         return TestResult(test, regular_result, instrumented_result, agent_result)
 
-    def _run_tests(self, base_dir):
-        test_results = []
-        for test in self._config.test_cases:
-            test_result = self._run_test(base_dir, test)
+    async def _run_tests(self, base_dir):
+        # run all the tests concurrently and then check their results once they're all finished
+        all_tests = self._config.test_cases + self._config.jar_test_cases
+        test_results = await asyncio.gather(
+            *(self._run_test(base_dir, test) for test in all_tests))
+        for test_result in test_results:
             if not test_result.successful:
                 print(('Test "{}" failed:\nRegular result: "{}",\n'
                        'Instrumented Result: "{}"\n'
                        'Agent Result: "{}"').format(
-                           test.name,
+                           test_result.test_case.name,
                            test_result.regular_result,
                            test_result.instrumented_result,
                            test_result.agent_result
-                           )
-                      )
+                )
+                )
             elif self._config.verbose:
                 print(test_result)
-
-            test_results.append(test_result)
-
-        for test in self._config.jar_test_cases:
-            test_result = self._run_jar_test(base_dir, test)
-            if not test_result.successful:
-                print(('Test "{}" failed:\nRegular result: "{}",\n'
-                       'Instrumented Result: "{}"\n'
-                       'Agent Result: "{}"').format(
-                           test.name,
-                           test_result.regular_result,
-                           test_result.instrumented_result,
-                           test_result.agent_result
-                           )
-                      )
-            elif self._config.verbose:
-                print(test_result)
-
-            test_results.append(test_result)
 
         return test_results
 
-    def run_tests(self):
+    async def run_tests(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             out_dir = Path(path.join(tmpdir, TMPDIR_OUTPUT_DIR_SUFFIX))
             out_dir.mkdir()
-            test_results = self._run_tests(tmpdir)
+            test_results = await self._run_tests(tmpdir)
 
         return TestRunResult(test_results)
 
@@ -594,7 +606,7 @@ def main(args):
     config.verbose = args.verbose
     # pprint.pprint(config)
     runner = TestRunner(config)
-    result = runner.run_tests()
+    result = asyncio.run(runner.run_tests())
     print(result)
     sys.exit(result.num_failed)
 

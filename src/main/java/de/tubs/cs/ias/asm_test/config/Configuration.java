@@ -80,8 +80,7 @@ public class Configuration {
         return null;
     }
 
-    public boolean needsParameterConversion(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        FunctionCall c = new FunctionCall(opcode, owner, name, descriptor, isInterface);
+    public boolean needsParameterConversion(FunctionCall c) {
         for(TakesGeneric tg : this.takeGeneric.getFunction()) {
             if (tg.getFunctionCall().equals(c)) {
                 return true;
@@ -90,24 +89,24 @@ public class Configuration {
         return false;
     }
 
-    public FunctionCall getConverterForParameter(int opcode, String owner, String name, String descriptor, boolean isInterface, int index) {
-        FunctionCall c = new FunctionCall(opcode, owner, name, descriptor, isInterface);
+    public FunctionCall getConverterForParameter(FunctionCall c, int index) {
         for(TakesGeneric tg : this.takeGeneric.getFunction()) {
             if(tg.getFunctionCall().equals(c) && tg.getIndex() == index) {
                 String converterName = tg.getConverter();
                 FunctionCall converter = this.getConverter(converterName);
+                logger.info("Found converter for {} at index {}: {}", c, index, converter);
                 return converter;
             }
         }
         return null;
     }
 
-    public FunctionCall getConverterForReturnValue(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        FunctionCall c = new FunctionCall(opcode, owner, name, descriptor, isInterface);
+    public FunctionCall getConverterForReturnValue(FunctionCall c) {
         for(ReturnsGeneric rg : this.returnGeneric.getFunction()) {
             if(rg.getFunctionCall().equals(c)) {
                 String converterName = rg.getConverter();
                 FunctionCall converter = this.getConverter(converterName);
+                logger.info("Found converter for rv of {}: {}", c, converter);
                 return converter;
             }
         }

@@ -24,7 +24,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
     private static final String newMainDescriptor = "(" + Constants.TStringArrayDesc + ")V";
     private final Collection<FieldData> staticFinalFields;
     private boolean hasClInit = false;
-    private boolean hasToString = false;
+    private boolean lacksToString = true;
     private MethodVisitRecording recording;
     private final ClassVisitor visitor;
     private final Collection<ClassInstrumentationStrategy> instrumentation = new ArrayList<>(4);
@@ -69,7 +69,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
         this.owner = name;
         this.superName = superName;
         if((access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE) {
-            this.hasToString = true;
+            this.lacksToString = false;
         }
         super.visit(version, access, name, signature, superName, interfaces);
     }
@@ -177,7 +177,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
             newName = Constants.MainWrapper;
             desc = newMainDescriptor;
         } else if (access == Opcodes.ACC_PUBLIC && Constants.ToString.equals(name) && Constants.ToStringDesc.equals(descriptor)) {
-            this.hasToString = true;
+            this.lacksToString = false;
             logger.info("Creating proxy toString method");
             MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC, Constants.ToString, Constants.ToStringDesc, signature, exceptions);
             this.generateToStringProxy(v);
@@ -218,7 +218,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
 
     @Override
     public void visitEnd() {
-        if(!this.hasToString) {
+        if(this.lacksToString) {
             logger.info("Creating proxy toString method");
             MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC, Constants.ToStringInstrumented, Constants.ToStringInstrumentedDesc, null, null);
             this.createToString(v);
@@ -241,7 +241,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         if(JdkClassesLookupTable.instance.isJdkClass(this.superName)) {
             mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superName, Constants.ToString, Constants.ToStringDesc, false);
-            mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "fromString", String.format("(%s)%s", Constants.StringDesc, Constants.TStringDesc), false);
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, Constants.FROM_STRING, Constants.FROM_STRING_DESC, false);
         } else {
             mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superName, Constants.ToStringInstrumented, Constants.ToStringInstrumentedDesc, false);
         }

@@ -26,6 +26,11 @@
     {
       "name": "AsciiBytes from Spring Boot",
       "jar_file": "sbasciibytes.jar"
+    },
+    {
+      "name": "Forwarding Argument to Main via Reflection",
+      "jar_file": "forward_main.jar",
+      "input_file": "forward.input"
     }
   ],
   "single_file_tests": [

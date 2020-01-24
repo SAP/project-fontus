@@ -39,6 +39,11 @@ public class DefaultMethodInstrumentationStrategy extends DefaultInstrumentation
     }
 
     @Override
+    public boolean handleLdcArray(Type type) {
+        return false;
+    }
+
+    @Override
     public String rewriteTypeIns(String type) {
         return type;
     }
