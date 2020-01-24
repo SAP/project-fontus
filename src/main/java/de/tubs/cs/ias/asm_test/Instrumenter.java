@@ -22,15 +22,20 @@ public class Instrumenter {
     }
 
     private static byte[] instrumentInternal(ClassReader cr) {
-        NonClassloadingClassWriter writer = new NonClassloadingClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
-        ClassTaintingVisitor smr = new ClassTaintingVisitor(writer);
-        cr.accept(smr, ClassReader.SKIP_FRAMES);
-        String clazzName = cr.getClassName();
-        String superName = cr.getSuperName();
-        String[] interfaces = cr.getInterfaces();
-        String ifs = String.join(", ", interfaces);
-        logger.info("{} <- {} implements: {}", clazzName, superName, interfaces);
-        return writer.toByteArray();
+        try {
+            NonClassloadingClassWriter writer = new NonClassloadingClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
+            ClassTaintingVisitor smr = new ClassTaintingVisitor(writer);
+            cr.accept(smr, ClassReader.SKIP_FRAMES);
+            String clazzName = cr.getClassName();
+            String superName = cr.getSuperName();
+            String[] interfaces = cr.getInterfaces();
+            String ifs = String.join(", ", interfaces);
+            logger.info("{} <- {} implements: {}", clazzName, superName, interfaces);
+            return writer.toByteArray();
+        } catch(Exception ex) {
+            logger.error("Caught exception!", ex);
+            return null;
+        }
     }
 
 }
