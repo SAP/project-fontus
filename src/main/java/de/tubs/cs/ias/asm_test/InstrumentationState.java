@@ -1,5 +1,7 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.asm.ClassReaderWithLoaderSupport;
+import de.tubs.cs.ias.asm_test.asm.NopVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;

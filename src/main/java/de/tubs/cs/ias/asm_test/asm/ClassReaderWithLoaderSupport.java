@@ -1,4 +1,6 @@
-package de.tubs.cs.ias.asm_test;
+package de.tubs.cs.ias.asm_test.asm;
+
+import de.tubs.cs.ias.asm_test.ClassResolver;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -50,9 +52,7 @@ public class ClassReaderWithLoaderSupport extends org.objectweb.asm.ClassReader 
     }
 
     public ClassReaderWithLoaderSupport(ClassResolver resolver, String className) throws IOException {
-        this(
-                readStream(
-                        resolver.resolve(className), true));
+        this(readStream(resolver.resolve(className), true));
     }
 
     private static byte[] readStream(final InputStream inputStream, final boolean close)

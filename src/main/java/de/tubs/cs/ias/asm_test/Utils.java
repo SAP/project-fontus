@@ -107,7 +107,7 @@ public final class Utils {
         return s.replace('.', '/');
     }
 
-    static void writeToStaticInitializer(MethodVisitor mv, String owner, Iterable<FieldData> staticFields) {
+    public static void writeToStaticInitializer(MethodVisitor mv, String owner, Iterable<FieldData> staticFields) {
         for (FieldData field : staticFields) {
             Object value = field.getValue();
             mv.visitLdcInsn(value);

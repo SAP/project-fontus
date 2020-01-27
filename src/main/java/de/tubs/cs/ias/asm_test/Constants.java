@@ -38,6 +38,9 @@ public final class Constants {
      */
     public static final String TStringBufferQN = TPackage + "IASStringBuffer";
 
+    /**
+     * Fully qualified name of the taint-aware utils class.
+     */
     public static final String TStringUtilsQN = TPackage + "IASStringUtils";
 
     /**
@@ -163,10 +166,30 @@ public final class Constants {
      * The Taint-aware String method to check and act on a potential taint
      */
     public static final String ABORT_IF_TAINTED = "abortIfTainted";
+
+    /**
+     * Descriptor of the Java main method
+     */
     static final String MAIN_METHOD_DESC = "([Ljava/lang/String;)V";
+
+    /**
+     * Method to return taint-aware string representation from instrumented class.
+     */
     public static final String TO_TSTRING = "toIASString";
+
+    /**
+     * Full name of the Java String type
+     */
     public static final String STRING_FULL_NAME = "java.lang.String";
+
+    /**
+     * Full name of the Java StringBuffer type
+     */
     public static final String STRINGBUFFER_FULL_NAME = "java.lang.StringBuffer";
+
+    /**
+     * Full name of the Java StringBuilder type
+     */
     public static final String STRINGBUILDER_FULL_NAME = "java.lang.StringBuilder";
 
     public static final String AS_STRING = "asString";
