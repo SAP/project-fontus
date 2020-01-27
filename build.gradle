@@ -64,7 +64,7 @@ task configureTaintType() {
         false
     }
 
-    sourceSets.main.output.dir genOutputDir, builtBy: configureTaintType
+    sourceSets.main.output.dir genOutputDir
 
     doLast {
         // change contents via cli options
