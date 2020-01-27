@@ -6,7 +6,7 @@ import java.util.Properties;
 
 public class TaintMethodConfig {
     private static final Properties properties;
-    private static String taintPath;
+    private static TaintMethod taintMethod;
 
     static {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -20,9 +20,39 @@ public class TaintMethodConfig {
     }
 
     public static String getTaintSubPackage() {
-        if(taintPath == null) {
-            taintPath = (String) properties.getOrDefault("taintpath", "");
+        return getTaintMethod().getPath();
+    }
+
+    public static TaintMethod getTaintMethod() {
+        if(taintMethod == null) {
+            String path = (String) properties.getOrDefault("taintpath", "");
+            taintMethod = TaintMethod.getTaintMethodByPath(path);
         }
-        return taintPath;
+        return taintMethod;
+    }
+
+    public enum TaintMethod {
+        BOOLEAN("bool/"), RANGE("range/");
+
+        private final String path;
+
+        TaintMethod(String path) {
+            this.path = path;
+        }
+
+        public String getPath() {
+            return this.path;
+        }
+
+        public static TaintMethod getTaintMethodByPath(String path) {
+            switch (path) {
+                case "bool/":
+                    return TaintMethod.BOOLEAN;
+                case "range/":
+                    return TaintMethod.RANGE;
+                default:
+                    throw new IllegalArgumentException("Taint method/path unknown:" + path);
+            }
+        }
     }
 }

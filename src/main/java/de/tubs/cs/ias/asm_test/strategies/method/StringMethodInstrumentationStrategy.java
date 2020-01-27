@@ -1,9 +1,12 @@
 package de.tubs.cs.ias.asm_test.strategies.method;
 
-import de.tubs.cs.ias.asm_test.*;
+import de.tubs.cs.ias.asm_test.Constants;
+import de.tubs.cs.ias.asm_test.Descriptor;
+import de.tubs.cs.ias.asm_test.JdkClassesLookupTable;
+import de.tubs.cs.ias.asm_test.Utils;
+import de.tubs.cs.ias.asm_test.config.TaintMethodConfig;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import de.tubs.cs.ias.asm_test.strategies.StringInstrumentation;
-import de.tubs.cs.ias.asm_test.taintaware.IASString;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -14,7 +17,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 
-public class StringMethodInstrumentationStrategy extends StringInstrumentation implements MethodInstrumentationStrategy{
+public class StringMethodInstrumentationStrategy extends StringInstrumentation implements MethodInstrumentationStrategy {
     private final MethodVisitor mv;
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final JdkClassesLookupTable lookupTable = JdkClassesLookupTable.instance;
@@ -77,7 +80,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     public boolean instrumentFieldIns(int opcode, String owner, String name, String descriptor) {
         Matcher matcher = Constants.strPattern.matcher(descriptor);
         if (matcher.find()) {
-            if(lookupTable.isJdkClass(owner)) {
+            if (lookupTable.isJdkClass(owner)) {
                 this.mv.visitFieldInsn(opcode, owner, name, descriptor);
                 this.stringToTStringBuilderBased();
             } else {
@@ -149,7 +152,14 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     public boolean handleLdcArray(Type type) {
         Type stringArray = Type.getType(String[].class);
         if (stringArray.equals(type)) {
-            Type taintStringArray = Type.getType(IASString[].class);
+            Type taintStringArray;
+            if (TaintMethodConfig.getTaintMethod() == TaintMethodConfig.TaintMethod.BOOLEAN) {
+                taintStringArray = Type.getType(de.tubs.cs.ias.asm_test.taintaware.bool.IASString[].class);
+            } else if(TaintMethodConfig.getTaintMethod() == TaintMethodConfig.TaintMethod.RANGE) {
+                taintStringArray = Type.getType(de.tubs.cs.ias.asm_test.taintaware.range.IASString[].class);
+            } else {
+                throw new IllegalStateException("Taint method unsupported or not specified!");
+            }
 
             this.mv.visitLdcInsn(taintStringArray);
             return true;
