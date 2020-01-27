@@ -69,6 +69,7 @@ public final class IASStringUtils {
     }
 
     public static String[] convertTaintAwareStringArray(IASString[] arr) {
+        if(arr == null) return null;
         String[] ret = new String[arr.length];
         for (int i = 0; i < arr.length; i++) {
             IASString s = arr[i];
