@@ -861,4 +861,15 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
             System.exit(1);
         }
     }
+
+    public static final Comparator<IASString> CASE_INSENSITIVE_ORDER
+            = new CaseInsensitiveComparator();
+
+    private static class CaseInsensitiveComparator
+            implements Comparator<IASString>, java.io.Serializable {
+
+        public int compare(IASString s1, IASString s2) {
+            return s1.compareToIgnoreCase(s2);
+        }
+    }
 }
