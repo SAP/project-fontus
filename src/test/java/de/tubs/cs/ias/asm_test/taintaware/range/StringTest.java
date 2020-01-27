@@ -15,7 +15,9 @@ import static de.tubs.cs.ias.asm_test.taintaware.range.testHelper.TaintMatcher.t
 import static de.tubs.cs.ias.asm_test.taintaware.range.testHelper.TaintMatcher.taintUninitialized;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @EnableJUnit4MigrationSupport
 public class StringTest {
@@ -194,6 +196,48 @@ public class StringTest {
 
         assertThat(s4.toString(), equalTo("bir"));
         assertThat(s4, taintEquals(range(1, 2, IASTaintSource.TS_CHAR_UNKNOWN_ORIGIN).done()));
+    }
+
+    @Test
+    public void replaceFirst_ignoredTainting_regression_1() {
+        IASString s1 = new IASString("hellllo");
+        IASString s2 = new IASString("zz");
+        IASString s3 = new IASString("ll");
+
+        THelper.get(s2).addRange(0, 2, (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
+
+        IASString s = s1.replaceFirst(s3, s2);
+
+        assertEquals("hellllo", s1.toString());
+        assertEquals("zz", s2.toString());
+        assertEquals("ll", s3.toString());
+        assertEquals("hezzllo", s.toString());
+
+        assertTrue(THelper.isUninitialized(s1));
+        assertThat(s2, taintEquals(range(0, 2, (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId())));
+        assertTrue(THelper.isUninitialized(s3));
+        assertThat(s, taintEquals(range(2, 4, (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId())));
+    }
+
+    @Test
+    public void replaceFirst_ignoredTainting_regression_2() {
+        IASString s1 = new IASString("hellllo");
+        IASString s2 = new IASString("zz");
+        IASString s3 = new IASString("ll");
+
+        THelper.get(s1).addRange(2, 4, (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
+
+        IASString s = s1.replaceFirst(s3, s2);
+
+        assertEquals("hellllo", s1.toString());
+        assertEquals("zz", s2.toString());
+        assertEquals("ll", s3.toString());
+        assertEquals("hezzllo", s.toString());
+
+        assertThat(s1, taintEquals(range(2, 4, (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId())));
+        assertTrue(THelper.isUninitialized(s2));
+        assertTrue(THelper.isUninitialized(s3));
+        assertTrue(THelper.isUninitialized(s));
     }
 
     @Test
