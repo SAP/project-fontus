@@ -5,10 +5,9 @@ plugins {
     id 'idea'
 }
 
+ext.taintSubPackage = ""
 
 version '0.0.1-SNAPSHOT'
-
-def taintSubPackage = ""
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -49,24 +48,13 @@ test {
                     "\t${result.skippedTestCount} skipped"
         }
     }
-
-}
-
-
-
-task createBuildConfig() {
-    doFirst {
-        project.buildConfig {
-            packageName = 'de.tubs.cs.ias.asm_test.config'
-            buildConfigField 'String', 'TaintSubPackage', taintSubPackage
-        }
-    }
 }
 
 task configureTaintType() {
+    def genOutputDir = file("$buildDir/generated-resources")
     def templates = file('template/')
 
-    def outputFolder = file('src/main/resources/')
+    def outputFolder = file(genOutputDir)
     templates.eachFile { file ->
         def outputFile = new File(outputFolder, file.getName())
         outputs.file outputFile
@@ -120,6 +108,8 @@ task utilJar(type: Jar) {
         include "**/asm_test/taintaware/**"
         include "**/asm_test/strategies/*"
         include "**/asm_test/Utils*"
+        include "**/asm_test/Constants*"
+        include "**/asm_test/TaintMethodConfig*"
     }
     utilJar.baseName = "util"
 }
