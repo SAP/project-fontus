@@ -95,3 +95,10 @@ publishing {
     }
 }
 
+task deleteLogs(type:Delete) {
+    delete fileTree('.') {
+        include '**/asm_test-*.log'
+    }
+}
+
+tasks.clean.dependsOn(tasks.deleteLogs)
