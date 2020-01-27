@@ -142,8 +142,8 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         Sink sink = config.getSinkConfig().getSinkForFunction(fc);
         if (sink != null) {
             logger.info("{}.{}{} is a sink, so calling the check taint function before passing the value!", fc.getOwner(), fc.getName(), fc.getDescriptor());           
-            this.checkSinkParameters(sink);
-            this.visitMethodInsn(fc);
+	    this.checkSinkParameters(sink);
+            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.isInterface()); //TODO: Why is invokevirtual hardcoded in here?
             return true;
         }
         return false;
@@ -174,6 +174,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
                 if (InstrumentationHelper.canHandleType(p)) {
                     logger.info("Adding taint check for sink {}, paramater {} ({})", sink.getName(), index, p);
                     MethodTaintingUtils.callCheckTaint(this.getParent());
+		    super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, Constants.AS_STRING, Constants.AS_STRING_DESC, false);
                 } else {
                     logger.warn("Tried to check taint for type {} (index {}) in sink {} although it is not taintable!", p, index, sink.getName());
                 }
