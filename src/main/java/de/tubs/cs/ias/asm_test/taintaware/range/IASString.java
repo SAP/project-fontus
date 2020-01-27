@@ -30,8 +30,7 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
 
     public IASString(String s, boolean tainted) {
         this(s);
-        this.taintInformation = new IASTaintInformation();
-        this.taintInformation.addRange(0, s.length(), (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
+        setTaint(tainted);
     }
 
     public IASString(String s, List<IASTaintRange> ranges) {

@@ -220,6 +220,15 @@ public class StringTest {
     }
 
     @Test
+    public void boolTaintConstructorRegressionTest() {
+        IASString s = new IASString("Hallo Welt!", false);
+        assertTrue(s.isUninitialized());
+
+        IASString s2 = new IASString("Hallo Welt 2!", true);
+        assertThat(s2, taintEquals(range(0, s2.length(), IASTaintSource.TS_CS_UNKNOWN_ORIGIN)));
+    }
+
+    @Test
     public void replaceFirst_ignoredTainting_regression_2() {
         IASString s1 = new IASString("hellllo");
         IASString s2 = new IASString("zz");
