@@ -60,7 +60,6 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
                 this.taintInformation.addRange(0, this.length(), (short) 0);
             }
         } else {
-            this.taintInformation.removeAll();
             this.taintInformation = null;
         }
     }
