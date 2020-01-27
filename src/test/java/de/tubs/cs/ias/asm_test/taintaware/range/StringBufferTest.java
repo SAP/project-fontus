@@ -1,7 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
+import de.tubs.cs.ias.asm_test.TaintStringHelper;
 import de.tubs.cs.ias.asm_test.taintaware.range.testHelper.THelper;
-import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.migrationsupport.EnableJUnit4MigrationSupport;
@@ -12,6 +12,8 @@ import static de.tubs.cs.ias.asm_test.taintaware.range.testHelper.TaintMatcher.t
 import static de.tubs.cs.ias.asm_test.taintaware.range.testHelper.TaintMatcher.taintUninitialized;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -40,6 +42,27 @@ public class StringBufferTest {
 
         assertThat(str.toString(), is("foo"));
         assertThat(str, taintEquals(range(1, 2, 0)));
+    }
+
+    @Test
+    public void setTaint_test() {
+        IASStringBuffer sb1 = new IASStringBuffer("hello");
+
+        TaintStringHelper.setTaint(sb1, false);
+        assertFalse(TaintStringHelper.isTainted(sb1));
+
+        TaintStringHelper.setTaint(sb1, true);
+        assertTrue(TaintStringHelper.isTainted(sb1));
+
+
+
+        IASStringBuffer sb2 = new IASStringBuffer("hello");
+
+        TaintStringHelper.setTaint(sb2, true);
+        assertTrue(TaintStringHelper.isTainted(sb2));
+
+        TaintStringHelper.setTaint(sb2, false);
+        assertFalse(TaintStringHelper.isTainted(sb2));
     }
 
     @Test
