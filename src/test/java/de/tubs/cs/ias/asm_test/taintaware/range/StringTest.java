@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
+import de.tubs.cs.ias.asm_test.TaintStringHelper;
 import de.tubs.cs.ias.asm_test.taintaware.range.testHelper.THelper;
 import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
@@ -278,6 +279,22 @@ public class StringTest {
         assertFalse(arr[0].isTainted());
         assertFalse(arr[1].isTainted());
         assertThat(arr[2], taintEquals(range(0, 4, 1).done()));
+    }
+
+    @Test
+    public void split_limit() {
+        IASString a = new IASString("a,b,c");
+        THelper.get(a).addRange(0, 3, (short) 1);
+
+        IASString[] splitted = a.split(new IASString(","), 2);
+
+        // Content assertions
+        assertEquals("a", splitted[0].toString());
+        assertEquals("b,c", splitted[1].toString());
+
+        // Taint assertions
+        assertThat(splitted[0], taintEquals(range(0, 1, 1)));
+        assertThat(splitted[1], taintEquals(range(0, 1, 1)));
     }
 
     @Test
