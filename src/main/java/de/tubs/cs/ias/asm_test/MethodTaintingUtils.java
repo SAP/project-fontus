@@ -21,6 +21,7 @@ public class MethodTaintingUtils {
      */
     static void callCheckTaint(MethodVisitor mv) {
         Label after = new Label();
+        // Call dup here to put the TString reference twice on the stack so the call can pop one without affecting further processing
         mv.visitInsn(Opcodes.DUP);
         mv.visitJumpInsn(Opcodes.IFNULL, after);
         mv.visitInsn(Opcodes.DUP);
@@ -110,4 +111,6 @@ public class MethodTaintingUtils {
         String descr = InstrumentationHelper.instrument(desc).toDescriptor();
         mv.visitInvokeDynamicInsn(name, descr, bootstrapMethodHandle, bsArgs);
     }
+
+
 }

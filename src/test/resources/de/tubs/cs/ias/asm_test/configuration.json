@@ -15,23 +15,25 @@
             "interface": false
         }
     ],
-    "sinks": [
-        {
-            "name": "println",
-            "function": {
-                "opcode": 182,
-                "owner": "java/io/PrintStream",
+    "sinkConfig" : {
+        "sinks": [
+            {
                 "name": "println",
-                "descriptor": "(Ljava/lang/String;)V",
-                "interface": false
-            },
-            "parameters": [
-                {
-                    "index": 0
-                }
-            ]
-        }
-    ],
+                "function": {
+                    "opcode": 182,
+                    "owner": "java/io/PrintStream",
+                    "name": "println",
+                    "descriptor": "(Ljava/lang/String;)V",
+                    "interface": false
+                },
+                "parameters": [
+                    {
+                        "index": 0
+                    }
+                ]
+            }
+        ]
+    },
     "converters": [
         {
             "opcode": 184,

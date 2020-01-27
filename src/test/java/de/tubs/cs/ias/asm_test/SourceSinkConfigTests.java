@@ -37,13 +37,13 @@ public class SourceSinkConfigTests {
         assertNotNull(config);
 
         assertEquals(2, config.getSources().size());
-        assertEquals(1, config.getSinks().size());
+        assertEquals(1, config.getSinkConfig().getSinks().size());
         assertEquals(2, config.getConverters().size());
         assertEquals(1, config.getReturnGeneric().size());
         assertEquals(1, config.getTakeGeneric().size());
 
-        assertEquals("println", config.getSinks().get(0).getName());
-        assertEquals(1, config.getSinks().get(0).getParameters().size());
+        assertEquals("println", config.getSinkConfig().getSinks().get(0).getName());
+        assertEquals(1, config.getSinkConfig().getSinks().get(0).getParameters().size());
     }
 
     @Test
@@ -54,7 +54,7 @@ public class SourceSinkConfigTests {
         config.append(config2);
 
         assertEquals(4, config.getSources().size());
-        assertEquals(2, config.getSinks().size());
+        assertEquals(2, config.getSinkConfig().getSinks().size());
         assertEquals(4, config.getConverters().size());
         assertEquals(2, config.getReturnGeneric().size());
         assertEquals(2, config.getTakeGeneric().size());
@@ -70,7 +70,7 @@ public class SourceSinkConfigTests {
         assertNotNull(config2);
 
         assertEquals(2, config.getSources().size());
-        assertEquals(1, config.getSinks().size());
+        assertEquals(1, config.getSinkConfig().getSinks().size());
         assertEquals(2, config.getConverters().size());
         assertEquals(1, config.getReturnGeneric().size());
         assertEquals(1, config.getTakeGeneric().size());

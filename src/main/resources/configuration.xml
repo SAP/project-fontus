@@ -15,23 +15,25 @@
                 <interface>false</interface>
             </source>
     </sources>
-    <sinks>
-        <sink>
-            <name>println</name>
-            <function>
-                <opcode>182</opcode>
-                <owner>java/io/PrintStream</owner>
+    <sinkConfig>
+        <sinks>
+            <sink>
                 <name>println</name>
-                <descriptor>(Ljava/lang/String;)V</descriptor>
-                <interface>false</interface>
-            </function>
-	        <parameters>
-	            <parameter>
-		            <index>0</index>
-	            </parameter>
-	        </parameters>
-       </sink>
-    </sinks>
+                <function>
+                    <opcode>182</opcode>
+                    <owner>java/io/PrintStream</owner>
+                    <name>println</name>
+                    <descriptor>(Ljava/lang/String;)V</descriptor>
+                    <interface>false</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>0</index>
+                    </parameter>
+                </parameters>
+            </sink>
+        </sinks>
+    </sinkConfig>
     <converters>
         <converter>
             <opcode>184</opcode>

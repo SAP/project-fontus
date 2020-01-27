@@ -66,11 +66,11 @@ public class Configuration {
     public Configuration() {
 	this.verbose = false;
         this.sources = new ArrayList<FunctionCall>();
-        this.sinks = new ArrayList<Sink>();
+        this.sinkConfig = new SinkConfig();
         this.converters = new ArrayList<FunctionCall>();
         this.returnGeneric = new ArrayList<ReturnsGeneric>();
         this.takeGeneric = new ArrayList<TakesGeneric>();
-	this.mainMethodBlackList = new ArrayList<String>();
+	    this.mainMethodBlackList = new ArrayList<String>();
     }
 
     public void mergeAgentConfig(AgentConfig agentConfig) {
@@ -78,10 +78,10 @@ public class Configuration {
         this.mainMethodBlackList.addAll(agentConfig.getBlacklistedMainClasses());
     }
     
-    public Configuration(boolean verbose, List<FunctionCall> sources, List<Sink> sinks, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> mainMethodBlackList) {
+    public Configuration(boolean verbose, List<FunctionCall> sources, SinkConfig sinkConfig, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> mainMethodBlackList) {
 	this.verbose = verbose;
         this.sources = sources;
-        this.sinks = sinks;
+        this.sinkConfig = sinkConfig;
         this.converters = converters;
         this.returnGeneric = returnGeneric;
         this.takeGeneric = takeGeneric;
@@ -90,7 +90,7 @@ public class Configuration {
 
     public void append(Configuration other) {
         this.sources.addAll(other.sources);
-        this.sinks.addAll(other.sinks);
+        this.sinkConfig.append(other.sinkConfig);
         this.converters.addAll(other.converters);
         this.returnGeneric.addAll(other.returnGeneric);
         this.takeGeneric.addAll(other.takeGeneric);
@@ -100,8 +100,8 @@ public class Configuration {
         return Collections.unmodifiableList(this.sources);
     }
 
-    public List<Sink> getSinks() {
-        return this.sinks;
+    public SinkConfig getSinkConfig() {
+        return this.sinkConfig;
     }
 
     public List<FunctionCall> getConverters() {
@@ -180,9 +180,8 @@ public class Configuration {
     /**
      * All functions listed here consume Strings that need to be checked first.
      */
-    @JacksonXmlElementWrapper(localName = "sinks")
-    @XmlElement(name = "sink")
-    private final List<Sink> sinks;
+    @XmlElement
+    private final SinkConfig sinkConfig;
 
     @JacksonXmlElementWrapper(localName = "converters")
     @XmlElement(name = "converter")

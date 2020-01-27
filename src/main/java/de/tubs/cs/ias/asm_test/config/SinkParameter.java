@@ -1,21 +1,19 @@
 package de.tubs.cs.ias.asm_test.config;
 
-import de.tubs.cs.ias.asm_test.FunctionCall;
-
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "parameter")
-public class Parameter {
+public class SinkParameter {
 
     @XmlElement
     private int index;
 
-    public Parameter() {
+    public SinkParameter() {
         this.index = -1;
     }
 
-    public Parameter(int index) {
+    public SinkParameter(int index) {
         this.index = index;
     }
 

@@ -1,8 +1,11 @@
 package de.tubs.cs.ias.asm_test;
 
 import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.Sink;
+import de.tubs.cs.ias.asm_test.config.SinkParameter;
 import de.tubs.cs.ias.asm_test.method.BasicMethodVisitor;
 import de.tubs.cs.ias.asm_test.strategies.method.*;
+import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import org.objectweb.asm.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +56,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         this.instrumentation.add(new StringBuilderMethodInstrumentationStrategy(this.getParentVisitor()));
         this.instrumentation.add(new StringBufferMethodInstrumentationStrategy(this.getParentVisitor()));
         this.instrumentation.add(new DefaultMethodInstrumentationStrategy(this.getParentVisitor()));
-	this.config = config;
+	    this.config = config;
     }
 
     @Override
@@ -134,15 +137,63 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
      * Return false otherwise.
      */
     private boolean isSinkCall(FunctionCall fc) {
-        if (config.getSinks().contains(fc)) {
-            logger.info("{}.{}{} is a sink, so calling the check taint function before passing the value!", fc.getOwner(), fc.getName(), fc.getDescriptor());
-            // Call dup here to put the TString reference twice on the stack so the call can pop one without affecting further processing
-            MethodTaintingUtils.callCheckTaint(this.getParentVisitor());
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, Constants.AS_STRING, Constants.AS_STRING_DESC, false);
-            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.isInterface()); //TODO: Why is invokevirtual hardcoded in here?
+        Sink sink = config.getSinkConfig().getSinkForFunction(fc);
+        if (sink != null) {
+            logger.info("{}.{}{} is a sink, so calling the check taint function before passing the value!", fc.getOwner(), fc.getName(), fc.getDescriptor());           
+            this.checkSinkParameters(sink);
+            this.visitMethodInsn(fc);
             return true;
         }
         return false;
+    }
+
+    private void checkSinkParameters(Sink sink) {
+        Descriptor desc = Descriptor.parseDescriptor(sink.getFunction().getDescriptor());
+        if (!desc.hasStringLikeParameters()) return;
+
+        Stack<Runnable> loadStack = new Stack<>();
+        Stack<String> params = desc.getParameterStack();
+        int numVars = (Type.getArgumentsAndReturnSizes(desc.toDescriptor()) >> 2) - 1;
+        int localUsedAfterInjection = this.used + numVars;
+        int n = this.used;
+        int index = params.size() - 1;
+
+        logger.info("Adding taint checks for sink: {}", sink.getName());
+
+        while (!params.empty()) {
+            String p = params.pop();
+            int storeOpcode = Utils.getStoreOpcode(p);
+            int loadOpcode = Utils.getLoadOpcode(p);
+
+            logger.debug("Type: {}", p);
+            // Check whether this parameter needs to be checked for taint
+            SinkParameter sp = sink.findParameter(index);
+            if (sp != null) {
+                if (InstrumentationHelper.canHandleType(p)) {
+                    logger.info("Adding taint check for sink {}, paramater {} ({})", sink.getName(), index, p);
+                    MethodTaintingUtils.callCheckTaint(this.getParent());
+                } else {
+                    logger.warn("Tried to check taint for type {} (index {}) in sink {} although it is not taintable!", p, index, sink.getName());
+                }
+            }
+            index--;
+
+            final int finalN = n;
+            super.visitVarInsn(storeOpcode, finalN);
+            logger.info("Executing store: {}_{} for {}", storeOpcode, finalN, p);
+
+            loadStack.push(() -> {
+                logger.info("Executing load {}_{} for {}", loadOpcode, finalN, p);
+                super.visitVarInsn(loadOpcode, finalN);
+            });
+            n += Utils.storeOpcodeSize(storeOpcode);
+        }
+        assert n == localUsedAfterInjection;
+        this.usedAfterInjection = Math.max(this.usedAfterInjection, localUsedAfterInjection);
+        while (!loadStack.empty()) {
+            Runnable l = loadStack.pop();
+            l.run();
+        }
     }
 
     /**
@@ -275,7 +326,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         Stack<String> params = new Stack<>();
         params.addAll(parameters);
         int numVars = (Type.getArgumentsAndReturnSizes(desc.toDescriptor()) >> 2) - 1;
-        this.usedAfterInjection = this.used + numVars;
+        int localUsedAfterInjection = this.used + numVars;
         int n = this.used;
         int index = params.size()-1;
         while (!params.empty()) {
@@ -304,7 +355,8 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             });
             n += Utils.storeOpcodeSize(storeOpcode);
         }
-        assert n == this.usedAfterInjection;
+        assert n == localUsedAfterInjection;
+        this.usedAfterInjection = Math.max(this.usedAfterInjection, localUsedAfterInjection);
         while (!loadStack.empty()) {
             Runnable l = loadStack.pop();
             l.run();
