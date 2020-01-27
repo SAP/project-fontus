@@ -441,6 +441,9 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public IASString repeat(int count) {
+        if(count == 0) {
+            return new IASString("");
+        }
         return new IASString(this.str.repeat(count), this.tainted);
     }
     /* JDK 11 END */
