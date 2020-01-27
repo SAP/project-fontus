@@ -5,9 +5,9 @@ plugins {
     id 'idea'
 }
 
-ext.taintSubPackage = ""
-
 version '0.0.1-SNAPSHOT'
+
+def taintSubPackage = ""
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -63,6 +63,9 @@ task configureTaintType() {
     outputs.upToDateWhen {
         false
     }
+
+    sourceSets.main.output.dir genOutputDir, builtBy: configureTaintType
+
     doLast {
         // change contents via cli options
         def binding = [subpath: taintSubPackage]
@@ -111,6 +114,9 @@ task utilJar(type: Jar) {
         include "**/asm_test/Constants*"
         include "**/asm_test/TaintMethodConfig*"
     }
+//    from(sourceSets.main.output.resourcesDir) {
+//        include "application.properties"
+//    }
     utilJar.baseName = "util"
 }
 
