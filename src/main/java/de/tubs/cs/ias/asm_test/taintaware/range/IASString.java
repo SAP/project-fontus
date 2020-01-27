@@ -762,7 +762,7 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
 
     public static IASString format(Locale l, IASString format, Object... args) {
         // TODO Implement rainting
-        return IASString.fromString(String.format(l, format.toString(), args));
+        return new IASString(String.format(l, format.toString(), args), format.isTainted());
     }
 
     public static IASString valueOf(Object obj) {
