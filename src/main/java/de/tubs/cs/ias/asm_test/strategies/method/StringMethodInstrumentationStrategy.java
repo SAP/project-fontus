@@ -1,6 +1,9 @@
 package de.tubs.cs.ias.asm_test.strategies.method;
 
-import de.tubs.cs.ias.asm_test.*;
+import de.tubs.cs.ias.asm_test.Constants;
+import de.tubs.cs.ias.asm_test.Descriptor;
+import de.tubs.cs.ias.asm_test.JdkClassesLookupTable;
+import de.tubs.cs.ias.asm_test.Utils;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import de.tubs.cs.ias.asm_test.strategies.StringInstrumentation;
 import de.tubs.cs.ias.asm_test.taintaware.IASString;
@@ -14,7 +17,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 
-public class StringMethodInstrumentationStrategy extends StringInstrumentation implements MethodInstrumentationStrategy{
+public class StringMethodInstrumentationStrategy extends StringInstrumentation implements MethodInstrumentationStrategy {
     private final MethodVisitor mv;
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final JdkClassesLookupTable lookupTable = JdkClassesLookupTable.instance;
@@ -78,12 +81,12 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     @Override
     public boolean instrumentFieldIns(int opcode, String owner, String name, String descriptor) {
         String newOwner = owner;
-        if(Constants.StringQN.equals(owner)) {
+        if (Constants.StringQN.equals(owner)) {
             newOwner = Constants.TStringQN;
         }
         Matcher matcher = Constants.strPattern.matcher(descriptor);
         if (matcher.find()) {
-            if(lookupTable.isJdkClass(newOwner)) {
+            if (lookupTable.isJdkClass(newOwner)) {
                 this.mv.visitFieldInsn(opcode, newOwner, name, descriptor);
                 this.stringToTStringBuilderBased();
             } else {
@@ -92,7 +95,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
             }
             return true;
         }
-        if(!owner.equals(newOwner)) {
+        if (!owner.equals(newOwner)) {
             this.mv.visitFieldInsn(opcode, newOwner, name, descriptor);
             return true;
         }

@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -32,7 +31,7 @@ public final class InstrumentationState {
     }
 
     public boolean isAnnotation(String name, ClassResolver resolver) {
-        if(this.annotations.contains(name)) {
+        if (this.annotations.contains(name)) {
             return true;
         } else if (this.noAnnotations.contains(name)) {
             return false;
@@ -40,7 +39,6 @@ public final class InstrumentationState {
             return this.testAnnotation(name, resolver);
         }
     }
-
 
 
     private boolean testAnnotation(String className, ClassResolver resolver) {
@@ -53,15 +51,16 @@ public final class InstrumentationState {
             String[] interfaces = cr.getInterfaces();
             String ifs = String.join(", ", interfaces);
             logger.info("Testing {} (super: {}, interfaces: {} for being an annotation", clazzName, superName, ifs);
-            if(Utils.contains(interfaces, Constants.AnnotationQN)) {
+            if (Utils.contains(interfaces, Constants.AnnotationQN)) {
                 this.annotations.add(className);
                 return true;
             }
 
-            if(Constants.ProxyQN.equals(superName)) {
-                if(interfaces.length == 1) {
+            if (Constants.ProxyQN.equals(superName)) {
+                if (interfaces.length == 1) {
                     String interf = interfaces[0];
                     if (this.testAnnotation(interf, resolver)) {
+                        this.annotations.add(className);
                         return true;
                     }
                 }

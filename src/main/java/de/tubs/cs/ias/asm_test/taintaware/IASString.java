@@ -5,7 +5,6 @@ import java.nio.charset.Charset;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
@@ -13,7 +12,7 @@ import java.util.stream.Stream;
 
 
 @SuppressWarnings("ALL")
-public final class IASString implements IASTaintAware, Comparable<IASString>, CharSequence  {
+public final class IASString implements IASTaintAware, Comparable<IASString>, CharSequence {
 
     private String str;
     private boolean tainted = false;
@@ -45,10 +44,10 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     @Override
     public void setTaint(boolean b) {
-	// Prevent tainting of empty strings
-	if (str.length() > 0) {
-	    this.tainted = b;
-	}
+        // Prevent tainting of empty strings
+        if (str.length() > 0) {
+            this.tainted = b;
+        }
     }
 
     private void mergeTaint(IASTaintAware other) {
@@ -320,13 +319,13 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public IASString replace(CharSequence target, CharSequence replacement) {
-	boolean taint = this.tainted;
-	if (this.str.contains(target)) {
-	    if (replacement instanceof IASTaintAware) {
-		IASTaintAware t = (IASTaintAware) replacement;
-		taint |= t.isTainted();
-	    }
-	}
+        boolean taint = this.tainted;
+        if (this.str.contains(target)) {
+            if (replacement instanceof IASTaintAware) {
+                IASTaintAware t = (IASTaintAware) replacement;
+                taint |= t.isTainted();
+            }
+        }
         return new IASString(this.str.replace(target, replacement), taint);
     }
 
@@ -352,17 +351,17 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     public static IASString join(CharSequence delimiter, CharSequence... elements) {
         boolean taint = false;
-        for(CharSequence cs : elements) {
-            if(cs instanceof IASTaintAware) {
+        for (CharSequence cs : elements) {
+            if (cs instanceof IASTaintAware) {
                 IASTaintAware t = (IASTaintAware) cs;
                 taint |= t.isTainted();
             }
         }
-	// Don't forget the delimiter!
-	if (delimiter instanceof IASTaintAware) {
-	    IASTaintAware t = (IASTaintAware) delimiter;
-	    taint |= t.isTainted();
-	}
+        // Don't forget the delimiter!
+        if (delimiter instanceof IASTaintAware) {
+            IASTaintAware t = (IASTaintAware) delimiter;
+            taint |= t.isTainted();
+        }
         return new IASString(String.join(delimiter, elements), taint);
     }
 
@@ -370,17 +369,17 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     public static IASString join(CharSequence delimiter,
                                  Iterable<? extends CharSequence> elements) {
         boolean taint = false;
-        for(CharSequence cs : elements) {
-            if(cs instanceof IASTaintAware) {
+        for (CharSequence cs : elements) {
+            if (cs instanceof IASTaintAware) {
                 IASTaintAware t = (IASTaintAware) cs;
                 taint |= t.isTainted();
             }
         }
-	// Don't forget the delimiter!
-	if (delimiter instanceof IASTaintAware) {
-	    IASTaintAware t = (IASTaintAware) delimiter;
-	    taint |= t.isTainted();
-	}
+        // Don't forget the delimiter!
+        if (delimiter instanceof IASTaintAware) {
+            IASTaintAware t = (IASTaintAware) delimiter;
+            taint |= t.isTainted();
+        }
         return new IASString(String.join(delimiter, elements), taint);
     }
 
@@ -402,7 +401,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     public IASString trim() {
         String trimmed = this.str.trim();
-        if(trimmed.isEmpty()) {
+        if (trimmed.isEmpty()) {
             return new IASString("");
         }
         return new IASString(trimmed, this.tainted);
@@ -411,7 +410,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     /* JDK 11 BEGIN */
     public IASString strip() {
         String stripped = this.str.strip();
-        if(stripped.isEmpty()) {
+        if (stripped.isEmpty()) {
             return new IASString("");
         }
         return new IASString(stripped, this.tainted);
@@ -419,7 +418,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     public IASString stripLeading() {
         String stripped = this.str.stripLeading();
-        if(stripped.isEmpty()) {
+        if (stripped.isEmpty()) {
             return new IASString("");
         }
         return new IASString(stripped, this.tainted);
@@ -427,7 +426,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     public IASString stripTrailing() {
         String stripped = this.str.stripTrailing();
-        if(stripped.isEmpty()) {
+        if (stripped.isEmpty()) {
             return new IASString("");
         }
         return new IASString(stripped, this.tainted);
@@ -469,8 +468,8 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     private static boolean isTainted(Object[] args) {
         boolean tainted = false;
-        for(Object obj : args) {
-            if(obj instanceof IASTaintAware) {
+        for (Object obj : args) {
+            if (obj instanceof IASTaintAware) {
                 IASTaintAware ta = (IASTaintAware) obj;
                 tainted |= ta.isTainted();
             }
@@ -552,7 +551,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         }
         return current;*/
         IASString rv = internPool.putIfAbsent(this.str, this);
-        if(rv == null) {
+        if (rv == null) {
             return internPool.get(this.str);
         } else {
             return rv;
@@ -561,14 +560,14 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
 
-
     public static IASString fromString(String str) {
-        if(str == null) return null;
+        if (str == null) return null;
 
         return new IASString(str);
     }
+
     public static String asString(IASString str) {
-        if(str == null) return null;
+        if (str == null) return null;
         return str.getString();
     }
 
@@ -578,6 +577,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     public static final Comparator<IASString> CASE_INSENSITIVE_ORDER
             = new CaseInsensitiveComparator();
+
     private static class CaseInsensitiveComparator
             implements Comparator<IASString>, java.io.Serializable {
         private static final long serialVersionUID = 8575799808933029326L;
@@ -587,4 +587,4 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         }
     }
 
-    }
+}

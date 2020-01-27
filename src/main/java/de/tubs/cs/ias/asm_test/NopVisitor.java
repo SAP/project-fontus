@@ -1,6 +1,6 @@
 package de.tubs.cs.ias.asm_test;
 
-import org.objectweb.asm.*;
+import org.objectweb.asm.ClassVisitor;
 
 public class NopVisitor extends ClassVisitor {
 

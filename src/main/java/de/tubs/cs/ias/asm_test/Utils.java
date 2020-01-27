@@ -87,7 +87,7 @@ public final class Utils {
     }
 
     static Type instrumentType(Type t) {
-        Descriptor desc = Descriptor.parseDescriptor( t.getDescriptor());
+        Descriptor desc = Descriptor.parseDescriptor(t.getDescriptor());
         desc = InstrumentationHelper.instrument(desc);
         return Type.getType(desc.toDescriptor());
     }
@@ -102,6 +102,7 @@ public final class Utils {
     public static String fixup(String s) {
         return s.replace('/', '.');
     }
+
     public static String fixupReverse(String s) {
         return s.replace('.', '/');
     }
@@ -115,8 +116,8 @@ public final class Utils {
     }
 
     public static boolean contains(String[] array, String value) {
-        for(String member : array) {
-            if(member.equals(value)) {
+        for (String member : array) {
+            if (member.equals(value)) {
                 return true;
             }
         }

@@ -56,7 +56,7 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
 
     @Override
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        if(Type.getObjectType(owner).equals(stringBuilderType)) {
+        if (Type.getObjectType(owner).equals(stringBuilderType)) {
             String newDescriptor = InstrumentationHelper.instrumentDesc(descriptor);
             String newOwner = Constants.TStringBuilderQN;
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up
@@ -72,7 +72,7 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
     @Override
     public void instrumentReturnType(String owner, String name, Descriptor desc) {
         Type returnType = Type.getReturnType(desc.toDescriptor());
-        if(stringBuilderType.equals(returnType)) {
+        if (stringBuilderType.equals(returnType)) {
             logger.info("Converting returned StringBuilder of {}.{}{}", owner, name, desc.toDescriptor());
             this.stringBuilderToTStringBuilder();
         }
@@ -103,6 +103,6 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
         if (Type.getObjectType(type).equals(stringBuilderType) || (isArray && type.endsWith(Constants.StringBuilderDesc))) {
             return this.instrumentQN(type);
         }
-       return type;
+        return type;
     }
 }

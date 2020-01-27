@@ -7,6 +7,7 @@ import org.objectweb.asm.Type;
 
 public class DefaultMethodInstrumentationStrategy extends DefaultInstrumentation implements MethodInstrumentationStrategy {
     private final MethodVisitor mv;
+
     public DefaultMethodInstrumentationStrategy(MethodVisitor mv) {
         this.mv = mv;
     }
@@ -18,7 +19,8 @@ public class DefaultMethodInstrumentationStrategy extends DefaultInstrumentation
     }
 
     @Override
-    public void insertJdkMethodParameterConversion(String parameter) {    }
+    public void insertJdkMethodParameterConversion(String parameter) {
+    }
 
     @Override
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
@@ -26,7 +28,8 @@ public class DefaultMethodInstrumentationStrategy extends DefaultInstrumentation
     }
 
     @Override
-    public void instrumentReturnType(String owner, String name, Descriptor desc) {    }
+    public void instrumentReturnType(String owner, String name, Descriptor desc) {
+    }
 
     @Override
     public boolean handleLdc(Object value) {

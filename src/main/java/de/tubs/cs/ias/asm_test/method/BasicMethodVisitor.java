@@ -1,7 +1,7 @@
 package de.tubs.cs.ias.asm_test.method;
 
 
-import org.objectweb.asm.*;
+import org.objectweb.asm.MethodVisitor;
 
 public class BasicMethodVisitor extends MethodVisitor {
 
@@ -22,7 +22,7 @@ public class BasicMethodVisitor extends MethodVisitor {
 
     /**
      * A MethodVisitor referencing writing through to the visitor passed to the constructor.
-     *
+     * <p>
      * Allows to factor out calls to the MethodVisitor that shouldn't be transformed further to avoid infinite recursion.
      */
     private class ParentVisitor extends MethodVisitor {

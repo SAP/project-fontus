@@ -1,14 +1,10 @@
 package de.tubs.cs.ias.asm_test;
 
 import de.tubs.cs.ias.asm_test.config.Configuration;
-import de.tubs.cs.ias.asm_test.strategies.clazz.*;
 import de.tubs.cs.ias.asm_test.method.MethodVisitRecording;
 import de.tubs.cs.ias.asm_test.method.RecordingMethodVisitor;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
+import de.tubs.cs.ias.asm_test.strategies.clazz.*;
+import org.objectweb.asm.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +15,7 @@ import java.util.Optional;
 
 
 public class ClassTaintingVisitor extends ClassVisitor {
-    private static final Logger logger = LoggerFactory.getLogger("");
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Collection<BlackListEntry> blacklist = new ArrayList<>();
     private static final String newMainDescriptor = "(" + Constants.TStringArrayDesc + ")V";
@@ -71,7 +67,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
             final String[] interfaces) {
         this.owner = name;
         this.superName = superName;
-        if((access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE) {
+        if ((access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE) {
             this.lacksToString = false;
         }
 
@@ -111,7 +107,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
     @Override
     public FieldVisitor visitField(int access, String name, String descriptor,
                                    String signature, Object value) {
-        if(this.isAnnotation) {
+        if (this.isAnnotation) {
             return super.visitField(access, name, descriptor, signature, value);
         }
 
@@ -160,7 +156,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
         mv.visitEnd();
     }
 
-    
+
     /**
      * Checks whether the method is the 'clinit' method.
      */
@@ -175,7 +171,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
             final String descriptor,
             final String signature,
             final String[] exceptions) {
-        if(this.isAnnotation) {
+        if (this.isAnnotation) {
             return super.visitMethod(access, name, descriptor, signature, exceptions);
         }
         MethodVisitor mv;
@@ -243,7 +239,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
 
     @Override
     public void visitEnd() {
-        if(this.lacksToString) {
+        if (this.lacksToString) {
             logger.info("Creating proxy toString method");
             MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC, Constants.ToStringInstrumented, Constants.ToStringInstrumentedDesc, null, null);
             this.createToString(v);
@@ -264,7 +260,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
     private void createToString(MethodVisitor mv) {
         mv.visitCode();
         mv.visitVarInsn(Opcodes.ALOAD, 0);
-        if(JdkClassesLookupTable.instance.isJdkClass(this.superName)) {
+        if (JdkClassesLookupTable.instance.isJdkClass(this.superName)) {
             mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superName, Constants.ToString, Constants.ToStringDesc, false);
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, Constants.FROM_STRING, Constants.FROM_STRING_DESC, false);
         } else {
