@@ -76,13 +76,13 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
     }
 
     public void initialize() {
-        if(isUninitialized()) {
+        if (isUninitialized()) {
             this.taintInformation = new IASTaintInformation();
         }
     }
 
     private void appendRangesFrom(IASTaintInformation iasTaintInformation) {
-        if(iasTaintInformation == null) {
+        if (iasTaintInformation == null) {
             return;
         }
         appendRangesFrom(iasTaintInformation.getAllRanges());
@@ -580,15 +580,15 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
         Matcher matcher = Pattern.compile(regex.toString()).matcher(this.str);
 
         ArrayList<IASString> result = new ArrayList<>();
+        boolean isLimited = limit > 0;
         int start = 0;
-        int count = 0;
         while (matcher.find()) {
-            if (limit > 0 && count >= limit) {
+            if (isLimited && result.size() >= limit - 1) {
                 break;
             }
 
             int matchSize = matcher.end() - matcher.start();
-            if (count != 0 || matchSize > 0) {
+            if (result.size() != 0 || matchSize > 0) {
                 int end = matcher.start();
 
                 IASString part = this.substring(start, end);
@@ -596,7 +596,6 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
 
             }
             start = matcher.end();
-            count++;
         }
 
         if (start < this.length() || limit < 0) {
