@@ -578,6 +578,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     public static final Comparator<IASString> CASE_INSENSITIVE_ORDER
             = new CaseInsensitiveComparator();
+
     private static class CaseInsensitiveComparator
             implements Comparator<IASString>, java.io.Serializable {
         private static final long serialVersionUID = 8575799808933029326L;
@@ -587,4 +588,4 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         }
     }
 
-    }
+}
