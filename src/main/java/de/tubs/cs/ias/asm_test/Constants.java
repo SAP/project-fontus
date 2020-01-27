@@ -184,6 +184,8 @@ public final class Constants {
      * Suffix of jar files.
      */
     public static final String JAR_FILE_SUFFIX = ".jar";
+    public static final String AnnotationQN = "java/lang/annotation/Annotation";
+    public static final String ProxyQN = "java/lang/reflect/Proxy";
 
 
     private Constants() {

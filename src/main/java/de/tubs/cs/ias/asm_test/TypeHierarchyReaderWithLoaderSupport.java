@@ -8,14 +8,14 @@ import java.io.IOException;
 
 public class TypeHierarchyReaderWithLoaderSupport extends TypeHierarchyReader {
 
-    private final ClassLoader loader;
+    private final ClassResolver resolver;
 
-    public TypeHierarchyReaderWithLoaderSupport(ClassLoader loader) {
-        this.loader = loader;
+    public TypeHierarchyReaderWithLoaderSupport(ClassResolver resolver) {
+        this.resolver = resolver;
     }
 
     @Override
     protected ClassReader reader(Type t) throws IOException {
-        return new ClassReaderWithLoaderSupport(this.loader, t.getInternalName());
+        return new ClassReaderWithLoaderSupport(this.resolver, t.getInternalName());
     }
 }

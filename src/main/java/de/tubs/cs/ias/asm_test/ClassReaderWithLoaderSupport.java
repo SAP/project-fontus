@@ -49,10 +49,10 @@ public class ClassReaderWithLoaderSupport extends org.objectweb.asm.ClassReader 
         throw new UnsupportedOperationException("Can't call constructor without providing a classloader");
     }
 
-    public ClassReaderWithLoaderSupport(ClassLoader loader, String className) throws IOException {
+    public ClassReaderWithLoaderSupport(ClassResolver resolver, String className) throws IOException {
         this(
                 readStream(
-                        loader.getResourceAsStream(className.replace('.', '/') + ".class"), true));
+                        resolver.resolve(className), true));
     }
 
     private static byte[] readStream(final InputStream inputStream, final boolean close)

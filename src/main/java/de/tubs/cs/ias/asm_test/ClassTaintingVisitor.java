@@ -26,20 +26,22 @@ public class ClassTaintingVisitor extends ClassVisitor {
     private final Collection<FieldData> staticFinalFields;
     private boolean hasClInit = false;
     private boolean lacksToString = true;
+    private boolean isAnnotation = false;
     private MethodVisitRecording recording;
     private final ClassVisitor visitor;
     private final Collection<ClassInstrumentationStrategy> instrumentation = new ArrayList<>(4);
-
+    private final ClassResolver resolver;
     /**
      * The name of the class currently processed.
      */
     private String owner;
     private String superName;
 
-    public ClassTaintingVisitor(ClassVisitor cv) {
+    public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver) {
         super(Opcodes.ASM7, cv);
         this.visitor = cv;
         this.staticFinalFields = new ArrayList<>();
+        this.resolver = resolver;
         this.fillBlacklist();
         this.fillStrategies();
     }
@@ -72,6 +74,21 @@ public class ClassTaintingVisitor extends ClassVisitor {
         if((access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE) {
             this.lacksToString = false;
         }
+
+        // Is this class/interface an annotation or annotation proxy class? If yes, don't instrument it
+        // Cf Java Language Specification 12 - 9.6.1 Annotation Types
+        if (Utils.contains(interfaces, Constants.AnnotationQN) ||
+                (Constants.ProxyQN.equals(superName)
+                        && interfaces.length == 1
+                        && InstrumentationState.instance.isAnnotation(interfaces[0], this.resolver)
+                )
+        ) {
+            logger.info("{} is annotation or annotation proxy!", name);
+            this.isAnnotation = true;
+            this.lacksToString = false;
+            InstrumentationState.instance.addAnnotation(name);
+        }
+
         super.visit(version, access, name, signature, superName, interfaces);
     }
 
@@ -94,6 +111,9 @@ public class ClassTaintingVisitor extends ClassVisitor {
     @Override
     public FieldVisitor visitField(int access, String name, String descriptor,
                                    String signature, Object value) {
+        if(this.isAnnotation) {
+            return super.visitField(access, name, descriptor, signature, value);
+        }
 
         FieldVisitor fv = null;
         for (ClassInstrumentationStrategy is : this.instrumentation) {
@@ -155,6 +175,9 @@ public class ClassTaintingVisitor extends ClassVisitor {
             final String descriptor,
             final String signature,
             final String[] exceptions) {
+        if(this.isAnnotation) {
+            return super.visitMethod(access, name, descriptor, signature, exceptions);
+        }
         MethodVisitor mv;
         String desc = descriptor;
         String newName = name;
@@ -200,7 +223,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
             mv = super.visitMethod(access, name, desc, signature, exceptions);
         }
 
-        return new MethodTaintingVisitor(access, newName, desc, mv);
+        return new MethodTaintingVisitor(access, newName, desc, mv, this.resolver);
     }
 
 

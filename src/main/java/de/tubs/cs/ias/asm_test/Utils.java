@@ -102,6 +102,9 @@ public final class Utils {
     public static String fixup(String s) {
         return s.replace('/', '.');
     }
+    public static String fixupReverse(String s) {
+        return s.replace('.', '/');
+    }
 
     static void writeToStaticInitializer(MethodVisitor mv, String owner, Iterable<FieldData> staticFields) {
         for (FieldData field : staticFields) {
@@ -109,5 +112,14 @@ public final class Utils {
             mv.visitLdcInsn(value);
             mv.visitFieldInsn(Opcodes.PUTSTATIC, owner, field.getName(), field.getDescriptor());
         }
+    }
+
+    public static boolean contains(String[] array, String value) {
+        for(String member : array) {
+            if(member.equals(value)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

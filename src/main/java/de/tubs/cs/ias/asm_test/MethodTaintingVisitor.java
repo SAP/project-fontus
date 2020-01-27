@@ -21,6 +21,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     private boolean shouldRewriteCheckCast;
     private final String name;
     private final String methodDescriptor;
+    private final ClassResolver resolver;
     /**
      * Some methods are not handled in a generic fashion, one can defined specialized proxies here
      */
@@ -36,8 +37,9 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     private final Collection<MethodInstrumentationStrategy> instrumentation = new ArrayList<>(4);
 
 
-    MethodTaintingVisitor(int acc, String name, String methodDescriptor, MethodVisitor methodVisitor) {
+    MethodTaintingVisitor(int acc, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver) {
         super(Opcodes.ASM7, methodVisitor);
+        this.resolver = resolver;
         logger.info("Instrumenting method: {}{}", name, methodDescriptor);
         this.used = Type.getArgumentsAndReturnSizes(methodDescriptor) >> 2;
         this.usedAfterInjection = 0;
@@ -203,7 +205,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         // JDK methods need special handling.
         // If there isn't a proxy defined, we will just convert taint-aware Strings to regular ones before calling the function and vice versa for the return value.
         boolean jdkMethod = JdkClassesLookupTable.instance.isJdkClass(owner);
-        if (jdkMethod) {
+        if (jdkMethod || InstrumentationState.instance.isAnnotation(owner, this.resolver)) {
             this.handleJdkMethod(fc);
             return;
         }
