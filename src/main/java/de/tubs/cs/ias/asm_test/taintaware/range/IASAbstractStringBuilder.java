@@ -52,11 +52,16 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
 
     @Override
     public void setTaint(boolean taint) {
-        if (!this.isTainted()) {
-            if (isUninitialized()) {
-                this.taintInformation = new IASTaintInformation();
+        if(taint) {
+            if (!this.isTainted()) {
+                if (isUninitialized()) {
+                    this.taintInformation = new IASTaintInformation();
+                }
+                this.taintInformation.addRange(0, this.length(), (short) 0);
             }
-            this.taintInformation.addRange(0, this.length(), (short) 0);
+        } else {
+            this.taintInformation.removeAll();
+            this.taintInformation = null;
         }
     }
 
