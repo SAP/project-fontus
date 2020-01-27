@@ -72,6 +72,8 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
                 this.taintInformation = new IASTaintInformation();
             }
             this.taintInformation.addRange(0, this.str.length(), (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
+        } else {
+            this.taintInformation = null;
         }
     }
 
@@ -391,8 +393,8 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
         String replacedStr = this.str.replaceFirst(regex.str, replacement.str);
         IASString newStr = new IASString(replacedStr, this.getAllRangesAdjusted());
 
-        // Are both Strings tainted? If not, it's irrelevant if one happened for the tainting
-        if (this.isTainted() && replacement.isTainted()) {
+        // Is one of both Strings tainted? If not, it's irrelevant if one happened for the tainting
+        if (this.isTainted() || replacement.isTainted()) {
             Pattern p = Pattern.compile(regex.str);
             Matcher m = p.matcher(this.str);
 
@@ -400,11 +402,12 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
                 final int start = m.start();
                 final int end = m.end();
 
-                if (!newStr.isTainted()) {
-                    newStr.taintInformation = new IASTaintInformation();
-                }
+                newStr.initialize();
                 newStr.taintInformation.replaceTaintInformation(start, end, replacement.getAllRangesAdjusted(), replacement.length(), true);
             }
+        }
+        if(!newStr.isTainted()) {
+            newStr.taintInformation = null;
         }
         return newStr;
     }
