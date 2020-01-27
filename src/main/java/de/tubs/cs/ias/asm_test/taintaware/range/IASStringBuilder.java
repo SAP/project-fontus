@@ -1,6 +1,6 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
-public final class IASStringBuilder extends IASAbstractStringBuilder {
+public final class IASStringBuilder extends IASAbstractStringBuilder implements Comparable<IASStringBuilder> {
 
     public IASStringBuilder(StringBuilder sb, IASTaintInformation taintInformation) {
         super();
@@ -157,5 +157,10 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
 
     public IASStringBuilder reverse() {
         return (IASStringBuilder) super.reverse();
+    }
+
+    @Override
+    public int compareTo(IASStringBuilder o) {
+        return this.builder.compareTo(o.builder);
     }
 }

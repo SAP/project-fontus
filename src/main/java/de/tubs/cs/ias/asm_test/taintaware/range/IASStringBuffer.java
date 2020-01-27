@@ -2,7 +2,7 @@ package de.tubs.cs.ias.asm_test.taintaware.range;
 
 import java.util.stream.IntStream;
 
-public final class IASStringBuffer extends IASAbstractStringBuilder {
+public final class IASStringBuffer extends IASAbstractStringBuilder implements Comparable<IASStringBuffer> {
 
     public IASStringBuffer(StringBuffer sb, IASTaintInformation taintInformation) {
         super();
@@ -296,8 +296,8 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
-    public synchronized int compareTo(IASStringBuilder o) {
-        return super.compareTo(o);
+    public synchronized int compareTo(IASStringBuffer o) {
+        return this.builder.compareTo(o.builder);
     }
 
     @Override
