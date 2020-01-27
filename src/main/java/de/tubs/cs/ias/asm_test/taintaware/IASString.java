@@ -82,17 +82,19 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         this.str = new String(ascii, hibyte);
     }
 
-    public IASString(byte bytes[], int offset, int length, String charsetName)
+    public IASString(byte bytes[], int offset, int length, IASString charsetName)
             throws UnsupportedEncodingException {
-        this.str = new String(bytes, offset, length, charsetName);
+        this.str = new String(bytes, offset, length, charsetName.str);
     }
 
     public IASString(byte bytes[], int offset, int length, Charset charset) {
+        // TODO: howto handle this? Does the charset affect tainting?
         this.str = new String(bytes, offset, length, charset);
     }
 
-    public IASString(byte bytes[], String charsetName) throws UnsupportedEncodingException {
-        this.str = new String(bytes, charsetName);
+    public IASString(byte bytes[], IASString charsetName) throws UnsupportedEncodingException {
+        // TODO: howto handle this? Does the charset affect tainting?
+        this.str = new String(bytes, charsetName.str);
     }
 
     public IASString(byte bytes[], Charset charset) {
