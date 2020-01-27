@@ -4,6 +4,7 @@ import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.util.Comparator;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -574,4 +575,16 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     public String getString() {
         return this.str;
     }
-}
+
+    public static final Comparator<IASString> CASE_INSENSITIVE_ORDER
+            = new CaseInsensitiveComparator();
+    private static class CaseInsensitiveComparator
+            implements Comparator<IASString>, java.io.Serializable {
+        private static final long serialVersionUID = 8575799808933029326L;
+
+        public int compare(IASString s1, IASString s2) {
+            return s1.compareToIgnoreCase(s2);
+        }
+    }
+
+    }

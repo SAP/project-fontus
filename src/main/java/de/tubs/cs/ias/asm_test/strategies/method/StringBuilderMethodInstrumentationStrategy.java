@@ -19,6 +19,7 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
     private final MethodVisitor mv;
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final HashMap<String, String> methodsToRename = new HashMap<>(1);
+    private static final Type stringBuilderType = Type.getType(StringBuilder.class);
 
     public StringBuilderMethodInstrumentationStrategy(MethodVisitor mv) {
         this.mv = mv;
@@ -46,7 +47,8 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
 
     @Override
     public void insertJdkMethodParameterConversion(String parameter) {
-        if (Constants.StringBuilderDesc.equals(parameter)) {
+        Type paramType = Type.getType(parameter);
+        if (stringBuilderType.equals(paramType)) {
             logger.info("Converting taint-aware StringBuilder to StringBuilder in multi param method invocation");
             this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringBuilderQN, "getBuilder", String.format("()%s", Constants.StringBuilderDesc), false);
         }
@@ -54,7 +56,7 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
 
     @Override
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        if(owner.equals(Constants.StringBuilderQN)) {
+        if(Type.getObjectType(owner).equals(stringBuilderType)) {
             String newDescriptor = InstrumentationHelper.instrumentDesc(descriptor);
             String newOwner = Constants.TStringBuilderQN;
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up
@@ -69,7 +71,8 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
 
     @Override
     public void instrumentReturnType(String owner, String name, Descriptor desc) {
-        if(desc.getReturnType().equals(Constants.StringBuilderDesc)) {
+        Type returnType = Type.getReturnType(desc.toDescriptor());
+        if(stringBuilderType.equals(returnType)) {
             logger.info("Converting returned StringBuilder of {}.{}{}", owner, name, desc.toDescriptor());
             this.stringBuilderToTStringBuilder();
         }
@@ -82,7 +85,7 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
 
     @Override
     public boolean handleLdcType(Type type) {
-        if (Constants.STRINGBUILDER_FULL_NAME.equals(type.getClassName())) {
+        if (stringBuilderType.equals(type)) {
             this.mv.visitLdcInsn(Type.getObjectType(Constants.TStringBuilderQN));
             return true;
         }
@@ -97,7 +100,7 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
     @Override
     public String rewriteTypeIns(String type) {
         boolean isArray = type.startsWith("[");
-        if (type.equals(Constants.StringBuilderQN) || (isArray && type.endsWith(Constants.StringBuilderDesc))) {
+        if (Type.getObjectType(type).equals(stringBuilderType) || (isArray && type.endsWith(Constants.StringBuilderDesc))) {
             return this.instrumentQN(type);
         }
        return type;

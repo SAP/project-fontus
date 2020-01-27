@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.bool;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -57,6 +58,7 @@ public final class IASStringUtils {
     }
 
         public static IASString[] convertStringArray(String[] arr) {
+        if(arr == null) return null;
         IASString[] ret = new IASString[arr.length];
         for (int i = 0; i < arr.length; i++) {
             String s = arr[i];
@@ -73,6 +75,15 @@ public final class IASStringUtils {
             ret[i] = s.getString();
         }
         return ret;
+    }
+
+    public static Hashtable<String, String> convertTStringToTStringHashTable(Hashtable<IASString, IASString> tbl) {
+        Hashtable<String, String> result = new Hashtable<>();
+        for(IASString key : tbl.keySet()) {
+            IASString val = tbl.get(key);
+            result.put(key.getString(), val.getString());
+        }
+        return result;
     }
 
     public static IASString concat(String format, Object... args) {

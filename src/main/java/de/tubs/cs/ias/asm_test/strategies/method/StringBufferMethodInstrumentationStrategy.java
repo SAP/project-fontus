@@ -20,6 +20,8 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
     private final MethodVisitor mv;
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final HashMap<String, String> methodsToRename = new HashMap<>(1);
+    private static final Type stringBufferType = Type.getType(StringBuffer.class);
+
 
     public StringBufferMethodInstrumentationStrategy(MethodVisitor mv) {
         this.mv = mv;
@@ -47,7 +49,8 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
 
     @Override
     public void insertJdkMethodParameterConversion(String parameter) {
-        if (Constants.StringBufferDesc.equals(parameter)) {
+        Type paramType = Type.getType(parameter);
+        if (stringBufferType.equals(paramType)) {
             logger.info("Converting taint-aware StringBuffer to StringBuffer in multi param method invocation");
             this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringBufferQN, "getBuffer", String.format("()%s", Constants.StringBufferDesc), false);
         }
@@ -55,7 +58,8 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
 
     @Override
     public void instrumentReturnType(String owner, String name, Descriptor desc) {
-        if(desc.getReturnType().equals(Constants.StringBufferDesc)) {
+        Type returnType = Type.getReturnType(desc.toDescriptor());
+        if(stringBufferType.equals(returnType)) {
             logger.info("Converting returned StringBuffer of {}.{}{}", owner, name, desc.toDescriptor());
             this.stringBufferToTStringBuffer();
         }
@@ -68,7 +72,7 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
 
     @Override
     public boolean handleLdcType(Type type) {
-        if (Constants.STRINGBUFFER_FULL_NAME.equals(type.getClassName())) {
+        if (stringBufferType.equals(type)) {
             this.mv.visitLdcInsn(Type.getObjectType(Constants.TStringBufferQN));
             return true;
         }
@@ -83,7 +87,7 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
     @Override
     public String rewriteTypeIns(String type) {
         boolean isArray = type.startsWith("[");
-        if (type.equals(Constants.StringBufferQN) || (isArray && type.endsWith(Constants.StringBufferDesc))) {
+        if (Type.getObjectType(type).equals(stringBufferType) || (isArray && type.endsWith(Constants.StringBufferDesc))) {
             return this.instrumentQN(type);
         }
         return type;
@@ -92,7 +96,7 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
 
     @Override
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        if(owner.equals(Constants.StringBufferQN)) {
+        if(Type.getObjectType(owner).equals(stringBufferType)) {
             String newDescriptor = InstrumentationHelper.instrumentDesc(descriptor);
             String newOwner = Constants.TStringBufferQN;
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up

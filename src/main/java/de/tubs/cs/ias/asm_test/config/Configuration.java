@@ -9,6 +9,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import de.tubs.cs.ias.asm_test.FunctionCall;
+import de.tubs.cs.ias.asm_test.agent.AgentConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +17,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 @XmlRootElement(name = "configuration")
 public class Configuration {
@@ -40,6 +44,11 @@ public class Configuration {
             // TODO: ugly exception, find more fitting one!
             throw new IllegalStateException("Missing configuration file\nAborting!", e);
         }
+    }
+
+    public void mergeAgentConfig(AgentConfig agentConfig) {
+        this.verbose = agentConfig.isVerbose();
+        this.mainMethodBlackList = agentConfig.getBlacklistedMainClasses();
     }
 
     @JsonCreator
@@ -132,4 +141,15 @@ public class Configuration {
 
     @JacksonXmlElementWrapper(useWrapping = false)
     private final TakeGeneric takeGeneric;
+
+    public boolean isVerbose() {
+        return this.verbose;
+    }
+
+    public boolean isClassMainBlacklisted(String owner) {
+        return this.mainMethodBlackList.contains(owner);
+    }
+
+    private boolean verbose = false;
+    private Collection<String> mainMethodBlackList = new ArrayList<>(0);
 }
