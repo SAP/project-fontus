@@ -1,6 +1,5 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
-import de.tubs.cs.ias.asm_test.TaintStringHelper;
 import de.tubs.cs.ias.asm_test.taintaware.range.testHelper.THelper;
 import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,11 +12,10 @@ import static de.tubs.cs.ias.asm_test.taintaware.range.testHelper.HelperUtils.cr
 import static de.tubs.cs.ias.asm_test.taintaware.range.testHelper.RangeChainer.range;
 import static de.tubs.cs.ias.asm_test.taintaware.range.testHelper.TaintMatcher.taintEquals;
 import static de.tubs.cs.ias.asm_test.taintaware.range.testHelper.TaintMatcher.taintUninitialized;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 @EnableJUnit4MigrationSupport
 public class StringTest {
