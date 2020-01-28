@@ -250,6 +250,27 @@ public class StringTest {
     }
 
     @Test
+    public void testIntern() {
+        String s1 = new String("Hello World!");
+        String s2 = new String("Hello World!");
+        IASString iasString1 = new IASString(s1);
+        IASString iasString2 = new IASString(s2);
+
+        IASString iasString3 = iasString1.intern();
+        IASString iasString4 = iasString2.intern();
+
+        assertNotSame(s1, s2);
+        assertNotSame(iasString1, iasString2);
+        assertEquals(iasString1, iasString3);
+        assertEquals(iasString1, iasString4);
+
+        assertEquals(s1, iasString1.getString());
+        assertEquals(s1, iasString2.getString());
+        assertEquals(s1, iasString3.getString());
+        assertEquals(s1, iasString4.getString());
+    }
+
+    @Test
 //    @Ignore
     public void replaceFirst() {
         // Primary test cases for this are located in PatternTest#replaceFirst
