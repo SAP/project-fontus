@@ -20,8 +20,10 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
     }
 
     public IASAbstractStringBuilder(IASString str) {
-        this.builder = new StringBuilder();
-        this.append(str);
+        this.builder = new StringBuilder(str.getString());
+        if(str.isTainted()) {
+            this.taintInformation = new IASTaintInformation(str.getAllRangesAdjusted());
+        }
     }
 
     public IASAbstractStringBuilder(CharSequence seq) {
@@ -84,8 +86,6 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
 
 
     public IASAbstractStringBuilder append(IASString str, boolean merge) {
-        int leftShift = -this.length();
-
         List<IASTaintRange> ranges = str.getAllRangesAdjusted();
         this.appendShifted(ranges, merge);
 
