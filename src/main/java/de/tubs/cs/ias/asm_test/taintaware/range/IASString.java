@@ -825,11 +825,10 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
         return new IASString(String.valueOf(d));
     }
 
-    //TODO: sound?
     public IASString intern() {
-        return this;
+        this.str = this.str.intern();
+        return IASStringPool.intern(this);
     }
-
 
     public static IASString fromString(String str) {
         if (str == null) {
