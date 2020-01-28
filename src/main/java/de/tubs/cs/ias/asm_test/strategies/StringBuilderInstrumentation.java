@@ -19,7 +19,7 @@ public class StringBuilderInstrumentation implements InstrumentationStrategy {
 
     @Override
     public String instrumentQN(String qn) {
-        return  STRING_BUILDER_QN_MATCHER.matcher(qn).replaceAll(Matcher.quoteReplacement(Constants.TStringBuilderQN));
+        return STRING_BUILDER_QN_MATCHER.matcher(qn).replaceAll(Matcher.quoteReplacement(Constants.TStringBuilderQN));
     }
 
     @Override

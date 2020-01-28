@@ -16,6 +16,7 @@ public class StringBuilderClassInstrumentationStrategy extends StringBuilderInst
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final ClassVisitor visitor;
+
     public StringBuilderClassInstrumentationStrategy(ClassVisitor cv) {
         this.visitor = cv;
     }
@@ -23,7 +24,7 @@ public class StringBuilderClassInstrumentationStrategy extends StringBuilderInst
     @Override
     public Optional<FieldVisitor> instrumentFieldInstruction(int access, String name, String descriptor, String signature, Object value, TriConsumer tc) {
         Matcher descMatcher = Constants.strBuilderPattern.matcher(descriptor);
-        if(descMatcher.find()) {
+        if (descMatcher.find()) {
             String newDescriptor = descMatcher.replaceAll(Constants.TStringBuilderDesc);
             logger.info("Replacing StringBuilder field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
             return Optional.of(this.visitor.visitField(access, name, newDescriptor, signature, value));

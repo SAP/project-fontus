@@ -13,10 +13,11 @@ import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import java.util.regex.Matcher;
 
-public class StringClassInstrumentationStrategy extends StringInstrumentation implements ClassInstrumentationStrategy{
+public class StringClassInstrumentationStrategy extends StringInstrumentation implements ClassInstrumentationStrategy {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final ClassVisitor cv;
+
     public StringClassInstrumentationStrategy(ClassVisitor cv) {
         this.cv = cv;
     }
@@ -25,7 +26,7 @@ public class StringClassInstrumentationStrategy extends StringInstrumentation im
     public Optional<FieldVisitor> instrumentFieldInstruction(int access, String name, String descriptor, String signature, Object value, TriConsumer tc) {
         assert this.cv != null;
         Matcher descMatcher = Constants.strPattern.matcher(descriptor);
-        if(descMatcher.find()) {
+        if (descMatcher.find()) {
             String newDescriptor = descMatcher.replaceAll(Constants.TStringDesc);
             logger.info("Replacing String field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
             if (value != null && access == (Opcodes.ACC_FINAL | Opcodes.ACC_STATIC)) {

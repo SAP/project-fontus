@@ -22,6 +22,7 @@ JAR_FOLDERS=(
     springboot_asciibytes
     forward_main
     str_array_clone
+    annotation_test
 )
 
 main() {

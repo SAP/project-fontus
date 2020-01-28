@@ -17,7 +17,7 @@ public class AgentConfig {
         if(args == null) {
             return ConfigurationLoader.defaultConfiguration();
         }
-        try(Scanner sc = new Scanner(args)) {
+        try (Scanner sc = new Scanner(args)) {
             sc.useDelimiter(";");
             Collection<String> parts = new ArrayList<>();
             while (sc.hasNext()) {
@@ -50,7 +50,7 @@ public class AgentConfig {
 
     private static String afterEquals(String part) {
         int idx = part.indexOf('=');
-        return part.substring(idx+1);
+        return part.substring(idx + 1);
     }
 
 }

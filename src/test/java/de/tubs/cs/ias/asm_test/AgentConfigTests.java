@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,8 +38,10 @@ public class AgentConfigTests {
 
     @Test
     void parseBlacklist() throws IOException {
-        Configuration cfg = AgentConfig.parseConfig("blacklisted_main_classes=/etc/lsb-release");
-        File input = new File("/etc/lsb-release");
+        URL url = AgentConfigTests.class.getResource("/TestList");
+        String fname = url.getPath();
+        Configuration cfg = AgentConfig.parseConfig("blacklisted_main_classes=" + fname);
+        File input = new File(fname);
 
         List<String> actual = Files.readAllLines(input.toPath());
         assertIterableEquals(cfg.getBlacklistedMainClasses(), actual , "Should be able to resolve list from resources");
@@ -48,11 +51,13 @@ public class AgentConfigTests {
 
     @Test
     void parseCombined() throws IOException {
-        Configuration cfg = AgentConfig.parseConfig("blacklisted_main_classes=/etc/lsb-release;verbose");
-        File input = new File("/etc/lsb-release");
+        URL url = AgentConfigTests.class.getResource("/TestList");
+        String fname = url.getPath();
+        Configuration cfg = AgentConfig.parseConfig("blacklisted_main_classes=" + fname + ";verbose");
+        File input = new File(fname);
 
         List<String> actual = Files.readAllLines(input.toPath());
         assertIterableEquals(cfg.getBlacklistedMainClasses(), actual , "Should be able to resolve list from resources");
-        assertTrue(cfg.isVerbose(), "parsing combined only should result in verbose == true");
+        assertTrue(cfg.isVerbose(), "parsing combined should result in verbose == true");
     }
 }
