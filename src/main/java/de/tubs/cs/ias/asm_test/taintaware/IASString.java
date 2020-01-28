@@ -304,7 +304,9 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         if (m.find()) {
             taint |= replacement.tainted;
         }
-        return new IASString(this.str.replaceFirst(regex.str, replacement.str), taint);
+        String result = this.str.replaceFirst(regex.str, replacement.str);
+        if(result.isEmpty()) { taint = false; }
+        return new IASString(result, taint);
     }
 
     public IASString replaceAll(IASString regex, IASString replacement) {
@@ -315,7 +317,9 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         if (m.find()) {
             taint |= replacement.tainted;
         }
-        return new IASString(this.str.replaceAll(regex.str, replacement.str), taint);
+        String result = this.str.replaceAll(regex.str, replacement.str);
+        if(result.isEmpty()) { taint = false; }
+        return new IASString(result, taint);
     }
 
     public IASString replace(CharSequence target, CharSequence replacement) {
