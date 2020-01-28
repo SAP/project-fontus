@@ -1,4 +1,5 @@
 {
+    "verbose": true,
     "sources": [
         {
             "opcode": 182,
@@ -74,5 +75,8 @@
             "index": 0,
             "converter": "convertTStringList"
         }
+    ],
+    "blacklistedMainClasses": [
+        "myclass", "otherblacklistedclass", "alsoblacklisted", "anothermainclass"
     ]
 }

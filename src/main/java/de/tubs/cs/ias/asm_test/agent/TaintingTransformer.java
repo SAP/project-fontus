@@ -18,13 +18,13 @@ import java.security.ProtectionDomain;
 class TaintingTransformer implements ClassFileTransformer {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final Configuration config = Configuration.instance;
+    private final Configuration config;
     private final Instrumenter instrumenter;
     private static final JdkClassesLookupTable jdkClasses = JdkClassesLookupTable.instance;
 
-    TaintingTransformer(AgentConfig config) {
+    TaintingTransformer(Configuration config) {
         this.instrumenter = new Instrumenter();
-        this.config.mergeAgentConfig(config);
+        this.config = config;
     }
 
     @Override

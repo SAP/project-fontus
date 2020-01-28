@@ -185,6 +185,15 @@ public final class Constants {
      */
     public static final String JAR_FILE_SUFFIX = ".jar";
 
+    /**
+     * Suffix of json
+     */
+    public static final String JSON_FILE_SUFFIX = ".json";
+
+    /**
+     * Suffix of XML
+     */
+    public static final String XML_FILE_SUFFIX = ".xml";
 
     private Constants() {
     }

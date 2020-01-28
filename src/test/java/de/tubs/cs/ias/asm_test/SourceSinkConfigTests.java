@@ -3,12 +3,15 @@ package de.tubs.cs.ias.asm_test;
 import org.junit.jupiter.api.Test;
 
 import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.ConfigurationLoader;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
@@ -17,18 +20,19 @@ public class SourceSinkConfigTests {
 
     private static String config_path = "configuration.xml";
     private static String config_json = "configuration.json";
+    private static String config_black = "blacklist.json";
 
     private Configuration getConfiguration(String name) {
-        return Configuration.readXmlConfiguration(this.getClass().getResourceAsStream(name));
+        return ConfigurationLoader.readXmlConfiguration(this.getClass().getResourceAsStream(name));
     }
 
     private Configuration getJsonConfiguration(String name) {
-        return Configuration.readJsonConfiguration(this.getClass().getResourceAsStream(name));
+        return ConfigurationLoader.readJsonConfiguration(this.getClass().getResourceAsStream(name));
     }
 
     @Test
     public void testBundledConfig() {
-        assertNotNull(Configuration.instance);
+        assertNotNull(ConfigurationLoader.defaultConfiguration());
     }
 
     @Test
@@ -53,11 +57,23 @@ public class SourceSinkConfigTests {
 
         config.append(config2);
 
+        assertTrue(config.isVerbose());
         assertEquals(4, config.getSources().size());
         assertEquals(2, config.getSinkConfig().getSinks().size());
         assertEquals(4, config.getConverters().size());
         assertEquals(2, config.getReturnGeneric().size());
         assertEquals(2, config.getTakeGeneric().size());
+        assertEquals(6, config.getBlacklistedMainClasses().size());
+    }
+
+    public void testVerbose() {
+        Configuration config = new Configuration();
+        Configuration config2 = new Configuration();
+
+        config2.setVerbose(true);
+        config.append(config2);
+
+        assertTrue(config.isVerbose());
     }
 
     @Test
@@ -74,11 +90,44 @@ public class SourceSinkConfigTests {
         assertEquals(2, config.getConverters().size());
         assertEquals(1, config.getReturnGeneric().size());
         assertEquals(1, config.getTakeGeneric().size());
+        assertEquals(3, config.getBlacklistedMainClasses().size());
     }
 
     @Test
     public void testReadJsonConfig() throws JsonProcessingException {
         Configuration config = this.getJsonConfiguration(config_json);              
         assertNotNull(config);
+
+        assertTrue(config.isVerbose());
+        assertEquals(2, config.getSources().size());
+        assertEquals(1, config.getSinkConfig().getSinks().size());
+        assertEquals(2, config.getConverters().size());
+        assertEquals(1, config.getReturnGeneric().size());
+        assertEquals(1, config.getTakeGeneric().size());
+        assertEquals(4, config.getBlacklistedMainClasses().size());
+    }
+
+    @Test
+    public void testReadBlacklist() throws JsonProcessingException {
+        Configuration config = this.getJsonConfiguration(config_black);              
+        assertNotNull(config);
+
+        assertFalse(config.isVerbose());
+        assertEquals(0, config.getSources().size());
+        assertEquals(0, config.getSinkConfig().getSinks().size());
+        assertEquals(0, config.getConverters().size());
+        assertEquals(0, config.getReturnGeneric().size());
+        assertEquals(0, config.getTakeGeneric().size());
+        assertEquals(3, config.getBlacklistedMainClasses().size());
+    }
+
+    @Test
+    public void testMergeBlacklist() throws JsonProcessingException {
+        Configuration config = this.getJsonConfiguration(config_black);              
+        assertNotNull(config);
+
+        config.append(ConfigurationLoader.defaultConfiguration());
+
+        assertEquals(3, config.getBlacklistedMainClasses().size());
     }
 }

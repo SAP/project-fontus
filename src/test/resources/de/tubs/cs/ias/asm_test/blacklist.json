@@ -1,0 +1,5 @@
+{
+    "blacklistedMainClasses": [
+        "onlymyclass", "onlyotherblacklistedclass", "montypythonsflyingclass"
+    ]
+}

@@ -1,4 +1,5 @@
 <configuration>
+    <verbose>true</verbose>
     <sources>
             <source>
                 <opcode>182</opcode>
@@ -75,4 +76,9 @@
             <index>0</index>
         </takeGeneric>
     </takeGenerics>
+    <blacklistedMainClasses>
+        <class>myclass</class>
+        <class>myotherclass</class>
+        <class>yetanotherclass</class>
+    </blacklistedMainClasses>
 </configuration>
