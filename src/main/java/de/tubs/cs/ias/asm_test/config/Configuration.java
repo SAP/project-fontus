@@ -50,6 +50,12 @@ public class Configuration {
         }
     }
 
+    public void appendBlacklist(List<String> other) {
+        if (blacklistedMainClasses != null) {
+            this.blacklistedMainClasses.addAll(other);
+        }
+    }
+
     public List<FunctionCall> getSources() {
         return Collections.unmodifiableList(this.sources);
     }

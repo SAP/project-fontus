@@ -13,7 +13,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 @SuppressWarnings({ "ClassIndependentOfModule", "ClassOnlyUsedInOneModule" })
 public class SourceSinkConfigTests {
@@ -95,7 +98,7 @@ public class SourceSinkConfigTests {
 
     @Test
     public void testReadJsonConfig() throws JsonProcessingException {
-        Configuration config = this.getJsonConfiguration(config_json);              
+        Configuration config = this.getJsonConfiguration(config_json);
         assertNotNull(config);
 
         assertTrue(config.isVerbose());
@@ -109,7 +112,7 @@ public class SourceSinkConfigTests {
 
     @Test
     public void testReadBlacklist() throws JsonProcessingException {
-        Configuration config = this.getJsonConfiguration(config_black);              
+        Configuration config = this.getJsonConfiguration(config_black);
         assertNotNull(config);
 
         assertFalse(config.isVerbose());
@@ -123,11 +126,27 @@ public class SourceSinkConfigTests {
 
     @Test
     public void testMergeBlacklist() throws JsonProcessingException {
-        Configuration config = this.getJsonConfiguration(config_black);              
+        Configuration config = this.getJsonConfiguration(config_black);
         assertNotNull(config);
 
         config.append(ConfigurationLoader.defaultConfiguration());
 
         assertEquals(3, config.getBlacklistedMainClasses().size());
+    }
+
+    @Test
+    public void parseConfigurationFileLoad() throws URISyntaxException {
+        URL url = this.getClass().getResource("configuration.json");
+        Configuration config = ConfigurationLoader.loadConfigurationFrom(new File(url.toURI()));
+
+        assertNotNull(config);
+
+        assertTrue(config.isVerbose());
+        assertEquals(2, config.getSources().size());
+        assertEquals(1, config.getSinkConfig().getSinks().size());
+        assertEquals(2, config.getConverters().size());
+        assertEquals(1, config.getReturnGeneric().size());
+        assertEquals(1, config.getTakeGeneric().size());
+        assertEquals(4, config.getBlacklistedMainClasses().size());
     }
 }

@@ -15,6 +15,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ConfigurationLoader {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -72,16 +75,35 @@ public class ConfigurationLoader {
                 } else if (f.getName().endsWith(Constants.XML_FILE_SUFFIX)) {
                     c = readXmlConfiguration(fi);
                 } else {
-                    logger.error("File {} ending not recognised!", f.getName());
+                    logger.error("File {} ending not recognised!", f.getAbsolutePath());
                 }
             } else {
-                logger.error("File {} does not exist!", f.getName());
+                logger.error("File {} does not exist!", f.getAbsolutePath());
             }
         } catch (Exception e) {
-            logger.error("Error opening file {}!", f.getName());
+            logger.error("Error opening file {}!", f.getAbsolutePath());
             logger.error("Exception opening configuration file", e);
         }
         return c;
+    }
+
+    public static Configuration loadBlacklistFromFile(File f) {
+        Configuration c = new Configuration();
+        c.appendBlacklist(readFromFile(f));
+        return c;
+    }
+
+    private static List<String> readFromFile(File input) {
+        if (!input.isFile()) {
+            logger.error("Suggested file '{}' does not exist!", input.getAbsolutePath());
+            return new ArrayList<>(0);
+        }
+        try {
+            return Files.readAllLines(input.toPath());
+        } catch (IOException e) {
+            logger.error("Exception while reading file: '{}':", input.getAbsolutePath(), e);
+            return new ArrayList<>(0);
+        }
     }
 
 }

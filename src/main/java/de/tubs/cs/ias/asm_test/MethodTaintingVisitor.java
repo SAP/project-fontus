@@ -3,7 +3,7 @@ package de.tubs.cs.ias.asm_test;
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.Sink;
 import de.tubs.cs.ias.asm_test.config.SinkParameter;
-import de.tubs.cs.ias.asm_test.method.BasicMethodVisitor;
+import de.tubs.cs.ias.asm_test.asm.BasicMethodVisitor;
 import de.tubs.cs.ias.asm_test.strategies.method.*;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import org.objectweb.asm.*;

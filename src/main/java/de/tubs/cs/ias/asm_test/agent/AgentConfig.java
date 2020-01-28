@@ -29,7 +29,7 @@ public class AgentConfig {
     }
 
     private static Configuration parseParts(Iterable<String> parts) {
-        Configuration c = null;
+        Configuration c = ConfigurationLoader.defaultConfiguration();
         boolean verbose = false;
         for(String part : parts) {
             if ("verbose".equals(part)) {
@@ -37,7 +37,13 @@ public class AgentConfig {
             }
             if (part.startsWith("config=")) {
                 String filename = afterEquals(part);
-                c = ConfigurationLoader.loadAndMergeConfiguration(new File(filename));
+                Configuration cmdlineconfig = ConfigurationLoader.loadConfigurationFrom(new File(filename));
+                c.append(cmdlineconfig);
+            }
+            if (part.startsWith("blacklisted_main_classes=")) {
+                String filename = afterEquals(part);
+                Configuration blacklist = ConfigurationLoader.loadBlacklistFromFile(new File(filename));
+                c.append(blacklist);
             }
         }
         if (c == null) {
