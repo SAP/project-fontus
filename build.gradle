@@ -7,7 +7,7 @@ plugins {
 
 version '0.0.1-SNAPSHOT'
 
-def taintSubPackage = ""
+def taintMethod = TaintMethods.BOOL
 def genOutputDir = file("$buildDir/generated-resources")
 
 sourceCompatibility = 1.8
@@ -68,7 +68,7 @@ task configureTaintType() {
 
     doLast {
         // change contents via cli options
-        def binding = [subpath: taintSubPackage]
+        def binding = [subpath: taintMethod.getSubPackage()]
 
         templates.eachFile { template ->
             def outputFile = new File (outputFolder, template.getName())
@@ -82,13 +82,13 @@ task configureTaintType() {
 
 task setRange() {
     doFirst {
-        taintSubPackage = "range/"
+        taintMethod = TaintMethods.RANGE
     }
 }
 
 task setBool() {
     doFirst {
-        taintSubPackage = "bool/"
+        taintMethod = TaintMethods.BOOL
     }
 }
 
@@ -137,6 +137,7 @@ jar {
         configurations.compileClasspath.filter { it.exists() }.collect { it.isDirectory() ? it : zipTree(it) }
     }
     dependsOn utilJar
+    dependsOn configureTaintType
 }
 
 
@@ -156,5 +157,19 @@ publishing {
             version = '0.0.1-SNAPSHOT'
             artifact utilJar
         }
+    }
+}
+
+enum TaintMethods {
+    BOOL("bool/"), RANGE("range/")
+
+    private final String subPackage;
+
+    TaintMethods(String subPackage) {
+        this.subPackage = subPackage;
+    }
+
+    public String getSubPackage() {
+        return this.subPackage;
     }
 }
