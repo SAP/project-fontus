@@ -1,9 +1,14 @@
+import groovy.text.GStringTemplateEngine
 plugins {
     id 'java'
     id 'maven-publish'
+    id 'idea'
 }
 
 version '0.0.1-SNAPSHOT'
+
+def taintSubPackage = ""
+def genOutputDir = file("$buildDir/generated-resources")
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -24,7 +29,9 @@ dependencies {
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
     compile 'ch.qos.logback:logback-classic:1.2.3'
     compile group: 'org.mutabilitydetector', name: 'asm-nonclassloadingextensions', version: '1.0-rc2'
-    testImplementation('org.junit.jupiter:junit-jupiter:5.4.2')
+    testCompile('org.junit.jupiter:junit-jupiter:5.4.2')
+    testCompile('org.junit.jupiter:junit-jupiter-migrationsupport:5.4.2')
+    testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
 }
 
 test {
@@ -42,14 +49,71 @@ test {
                     "\t${result.skippedTestCount} skipped"
         }
     }
-
 }
+
+task configureTaintType() {
+    def templates = file('template/')
+
+    def outputFolder = file(genOutputDir)
+    templates.eachFile { file ->
+        def outputFile = new File(outputFolder, file.getName())
+        outputs.file outputFile
+    }
+
+    outputs.upToDateWhen {
+        false
+    }
+
+    sourceSets.main.output.dir genOutputDir
+
+    doLast {
+        // change contents via cli options
+        def binding = [subpath: taintSubPackage]
+
+        templates.eachFile { template ->
+            def outputFile = new File (outputFolder, template.getName())
+            def tmp = new GStringTemplateEngine()
+                    .createTemplate(template)
+                    .make(binding)
+            outputFile.write(tmp.toString(), 'UTF-8')
+        }
+    }
+}
+
+task setRange() {
+    doFirst {
+        taintSubPackage = "range/"
+    }
+}
+
+task setBool() {
+    doFirst {
+        taintSubPackage = "bool/"
+    }
+}
+
+task boolJar(dependsOn: setBool) {
+    dependsOn configureTaintType
+    dependsOn jar
+}
+
+task rangeJar(dependsOn: setRange) {
+    dependsOn configureTaintType
+    dependsOn jar
+}
+
+configureTaintType.mustRunAfter setRange
+configureTaintType.mustRunAfter setBool
+jar.mustRunAfter configureTaintType
 
 task utilJar(type: Jar) {
     from(sourceSets.main.output) {
-        include "**/asm_test/taintaware/*"
+        include "**/asm_test/taintaware/**"
         include "**/asm_test/strategies/*"
         include "**/asm_test/Utils*"
+        include "**/asm_test/Constants*"
+        include "**/asm_test/config/TaintMethodConfig*"
+        include "**/application.properties"
     }
     utilJar.baseName = "util"
 }

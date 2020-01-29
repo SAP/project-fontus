@@ -1,4 +1,6 @@
-package de.tubs.cs.ias.asm_test.taintaware;
+package de.tubs.cs.ias.asm_test.taintaware.bool;
+
+import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;

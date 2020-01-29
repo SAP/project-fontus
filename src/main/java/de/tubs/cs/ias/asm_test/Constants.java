@@ -1,12 +1,14 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.config.TaintMethodConfig;
+
 import java.util.regex.Pattern;
 
 public final class Constants {
     /**
      * The package our taint-aware classes are in
      */
-    public static final String TPackage = "de/tubs/cs/ias/asm_test/taintaware/";
+    public static final String TPackage = "de/tubs/cs/ias/asm_test/taintaware/" + TaintMethodConfig.getTaintSubPackage();
 
     /**
      * Fully qualified name of the java Object class.
