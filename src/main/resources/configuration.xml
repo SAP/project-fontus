@@ -46,7 +46,7 @@
             </function>
             <function>
                 <opcode>184</opcode>
-                <owner>de/tubs/cs/ias/asm_test/taintaware/IASStringUtils</owner>
+                <owner>de/tubs/cs/ias/asm_test/taintaware/${subpath}IASStringUtils</owner>
                 <name>convertTStringToTStringHashTable</name>
                 <descriptor>(Ljava/util/Hashtable;)Ljava/util/Hashtable;</descriptor>
                 <isInterface>false</isInterface>
