@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
@@ -24,7 +25,7 @@ public class MethodTaintingUtils {
         mv.visitInsn(Opcodes.DUP);
         mv.visitJumpInsn(Opcodes.IFNULL, after);
         mv.visitInsn(Opcodes.DUP);
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.ABORT_IF_TAINTED, "()V", false);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Configuration.instance.getTaintStringConfig().getTStringQN(), Constants.ABORT_IF_TAINTED, "()V", false);
         mv.visitLabel(after);
     }
 

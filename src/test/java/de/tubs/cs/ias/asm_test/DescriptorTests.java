@@ -1,5 +1,7 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.config.TaintMethod;
+import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -12,6 +14,7 @@ import java.util.stream.Stream;
 
 @SuppressWarnings({"DuplicateStringLiteralInspection", "SpellCheckingInspection", "ClassIndependentOfModule", "ClassOnlyUsedInOneModule"})
 class DescriptorTests {
+    public final static TaintStringConfig taintStringConfig = new TaintStringConfig(TaintMethod.defaultTaintMethod());
 
     @Test
     void parseToString() {
@@ -86,9 +89,9 @@ class DescriptorTests {
                                 "Ljava/util/List;"
                         ),
                         Constants.StringDesc,
-                        Constants.TStringDesc,
+                        taintStringConfig.getTStringDesc(),
                         new Descriptor("I",
-                                Constants.TStringDesc,
+                                taintStringConfig.getTStringDesc(),
                                 "[Ljava/lang/Object;",
                                 "F",
                                 "Ljava/util/function/Function;",
@@ -99,13 +102,13 @@ class DescriptorTests {
                 Arguments.of(
                         new Descriptor("[Ljava/lang/Object;", "Ljava/util/List;"),
                         Constants.StringDesc,
-                        Constants.TStringDesc,
+                        taintStringConfig.getTStringDesc(),
                         new Descriptor("[Ljava/lang/Object;", "Ljava/util/List;")),
                 Arguments.of(
                         new Descriptor("[Ljava/lang/String;", "V"),
                         Constants.StringDesc,
-                        Constants.TStringDesc,
-                        new Descriptor("[" + Constants.TStringDesc, "V")
+                        taintStringConfig.getTStringDesc(),
+                        new Descriptor("[" + taintStringConfig.getTStringDesc(), "V")
                 )
         );
     }

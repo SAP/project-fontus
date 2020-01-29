@@ -26,7 +26,6 @@ public class Configuration {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static final Configuration instance = readConfiguration();
-
     private static Configuration readConfiguration() {
         ObjectMapper objectMapper = new XmlMapper();
 
@@ -49,6 +48,8 @@ public class Configuration {
     public void mergeAgentConfig(AgentConfig agentConfig) {
         this.verbose = agentConfig.isVerbose();
         this.mainMethodBlackList = agentConfig.getBlacklistedMainClasses();
+        this.taintMethod = agentConfig.getTaintMethod();
+        this.taintStringConfig = new TaintStringConfig(this.taintMethod);
     }
 
     @JsonCreator
@@ -122,6 +123,7 @@ public class Configuration {
         return null;
     }
 
+
     /**
      * All functions listed here return Strings that should be marked as tainted.
      */
@@ -141,7 +143,6 @@ public class Configuration {
 
     @JacksonXmlElementWrapper(useWrapping = false)
     private final TakeGeneric takeGeneric;
-
     public boolean isVerbose() {
         return this.verbose;
     }
@@ -150,6 +151,18 @@ public class Configuration {
         return this.mainMethodBlackList.contains(owner);
     }
 
+
     private boolean verbose = false;
     private Collection<String> mainMethodBlackList = new ArrayList<>(0);
+    private TaintMethod taintMethod;
+
+    public TaintStringConfig getTaintStringConfig() {
+        return taintStringConfig;
+    }
+
+    private TaintStringConfig taintStringConfig;
+
+    public TaintMethod getTaintMethod() {
+        return this.taintMethod;
+    }
 }

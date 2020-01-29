@@ -3,6 +3,8 @@ package de.tubs.cs.ias.asm_test.strategies.method;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.Utils;
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import de.tubs.cs.ias.asm_test.strategies.StringBufferInstrumentation;
 import org.objectweb.asm.MethodVisitor;
@@ -21,6 +23,7 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final HashMap<String, String> methodsToRename = new HashMap<>(1);
     private static final Type stringBufferType = Type.getType(StringBuffer.class);
+    private final TaintStringConfig stringConfig = Configuration.instance.getTaintStringConfig();
 
 
     public StringBufferMethodInstrumentationStrategy(MethodVisitor mv) {
@@ -29,18 +32,18 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
     }
 
     private void stringBufferToTStringBuffer() {
-        this.mv.visitTypeInsn(Opcodes.NEW, Constants.TStringBufferQN);
+        this.mv.visitTypeInsn(Opcodes.NEW, stringConfig.getTStringBufferQN());
         this.mv.visitInsn(Opcodes.DUP);
         this.mv.visitInsn(Opcodes.DUP2_X1);
         this.mv.visitInsn(Opcodes.POP2);
-        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringBufferQN, Constants.Init, String.format("(%s)V", Constants.StringBufferDesc), false);
+        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, stringConfig.getTStringBufferQN(), Constants.Init, String.format("(%s)V", Constants.StringBufferDesc), false);
     }
 
     @Override
     public boolean instrumentFieldIns(int opcode, String owner, String name, String descriptor) {
         Matcher matcher = Constants.strBufferPattern.matcher(descriptor);
         if (matcher.find()) {
-            String newDescriptor = matcher.replaceAll(Constants.TStringBufferDesc);
+            String newDescriptor = matcher.replaceAll(stringConfig.getTStringBufferDesc());
             this.mv.visitFieldInsn(opcode, owner, name, newDescriptor);
             return true;
         }
@@ -52,7 +55,7 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
         Type paramType = Type.getType(parameter);
         if (stringBufferType.equals(paramType)) {
             logger.info("Converting taint-aware StringBuffer to StringBuffer in multi param method invocation");
-            this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringBufferQN, "getBuffer", String.format("()%s", Constants.StringBufferDesc), false);
+            this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, stringConfig.getTStringBufferQN(), "getBuffer", String.format("()%s", Constants.StringBufferDesc), false);
         }
     }
 
@@ -73,7 +76,7 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
     @Override
     public boolean handleLdcType(Type type) {
         if (stringBufferType.equals(type)) {
-            this.mv.visitLdcInsn(Type.getObjectType(Constants.TStringBufferQN));
+            this.mv.visitLdcInsn(Type.getObjectType(stringConfig.getTStringBufferQN()));
             return true;
         }
         return false;
@@ -98,7 +101,7 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         if(Type.getObjectType(owner).equals(stringBufferType)) {
             String newDescriptor = InstrumentationHelper.instrumentDesc(descriptor);
-            String newOwner = Constants.TStringBufferQN;
+            String newOwner = stringConfig.getTStringBufferQN();
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up
             String newName = this.methodsToRename.getOrDefault(name, name);
 

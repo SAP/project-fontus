@@ -3,6 +3,8 @@ package de.tubs.cs.ias.asm_test.strategies.method;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.Utils;
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import de.tubs.cs.ias.asm_test.strategies.StringBuilderInstrumentation;
 import org.objectweb.asm.MethodVisitor;
@@ -20,6 +22,7 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final HashMap<String, String> methodsToRename = new HashMap<>(1);
     private static final Type stringBuilderType = Type.getType(StringBuilder.class);
+    private final TaintStringConfig stringConfig = Configuration.instance.getTaintStringConfig();
 
     public StringBuilderMethodInstrumentationStrategy(MethodVisitor mv) {
         this.mv = mv;
@@ -27,18 +30,18 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
     }
 
     private void stringBuilderToTStringBuilder() {
-        this.mv.visitTypeInsn(Opcodes.NEW, Constants.TStringBuilderQN);
+        this.mv.visitTypeInsn(Opcodes.NEW, stringConfig.getTStringBuilderQN());
         this.mv.visitInsn(Opcodes.DUP);
         this.mv.visitInsn(Opcodes.DUP2_X1);
         this.mv.visitInsn(Opcodes.POP2);
-        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringBuilderQN, Constants.Init, String.format("(%s)V", Constants.StringBuilderDesc), false);
+        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, stringConfig.getTStringBuilderQN(), Constants.Init, String.format("(%s)V", Constants.StringBuilderDesc), false);
     }
 
     @Override
     public boolean instrumentFieldIns(int opcode, String owner, String name, String descriptor) {
         Matcher matcher = Constants.strBuilderPattern.matcher(descriptor);
         if (matcher.find()) {
-            String newDescriptor = matcher.replaceAll(Constants.TStringBuilderDesc);
+            String newDescriptor = matcher.replaceAll(stringConfig.getTStringBuilderDesc());
             this.mv.visitFieldInsn(opcode, owner, name, newDescriptor);
             return true;
         }
@@ -50,7 +53,7 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
         Type paramType = Type.getType(parameter);
         if (stringBuilderType.equals(paramType)) {
             logger.info("Converting taint-aware StringBuilder to StringBuilder in multi param method invocation");
-            this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringBuilderQN, "getBuilder", String.format("()%s", Constants.StringBuilderDesc), false);
+            this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, stringConfig.getTStringBuilderQN(), "getBuilder", String.format("()%s", Constants.StringBuilderDesc), false);
         }
     }
 
@@ -58,7 +61,7 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         if(Type.getObjectType(owner).equals(stringBuilderType)) {
             String newDescriptor = InstrumentationHelper.instrumentDesc(descriptor);
-            String newOwner = Constants.TStringBuilderQN;
+            String newOwner = stringConfig.getTStringBuilderQN();
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up
             String newName = this.methodsToRename.getOrDefault(name, name);
 
@@ -86,7 +89,7 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
     @Override
     public boolean handleLdcType(Type type) {
         if (stringBuilderType.equals(type)) {
-            this.mv.visitLdcInsn(Type.getObjectType(Constants.TStringBuilderQN));
+            this.mv.visitLdcInsn(Type.getObjectType(stringConfig.getTStringBuilderQN()));
             return true;
         }
         return false;

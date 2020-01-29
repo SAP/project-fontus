@@ -1,14 +1,8 @@
 package de.tubs.cs.ias.asm_test;
 
-import de.tubs.cs.ias.asm_test.config.TaintMethodConfig;
-
 import java.util.regex.Pattern;
 
 public final class Constants {
-    /**
-     * The package our taint-aware classes are in
-     */
-    public static final String TPackage = "de/tubs/cs/ias/asm_test/taintaware/" + TaintMethodConfig.getTaintSubPackage();
 
     /**
      * Fully qualified name of the java Object class.
@@ -31,18 +25,6 @@ public final class Constants {
     public static final String StringBufferQN = "java/lang/StringBuffer";
 
     /**
-     * The fully qualified name type of our taint-aware String
-     */
-    public static final String TStringQN = TPackage + "IASString";
-
-    /**
-     * The fully qualified name type of our taint-aware StringBuffer
-     */
-    public static final String TStringBufferQN = TPackage + "IASStringBuffer";
-
-    public static final String TStringUtilsQN = TPackage + "IASStringUtils";
-
-    /**
      * Name of the toString method.
      */
     public static final String ToString = "toString";
@@ -51,16 +33,6 @@ public final class Constants {
      * Descriptor of the java Object class
      */
     public static final String ObjectDesc = java.lang.String.format("L%s;", ObjectQN);
-
-    /**
-     * The fully qualified name of the class containing the Reflection proxies.
-     */
-    public static final String ReflectionProxiesQN = TPackage + "IASReflectionProxies";
-
-    /**
-     * The bytecode descriptor of our taint aware string
-     */
-    public static final String TStringDesc = java.lang.String.format("L%s;", TStringQN);
 
     /**
      * Descriptor of the java String class
@@ -80,24 +52,6 @@ public final class Constants {
      * Descriptor of the java StringBuffer class
      */
     public static final String StringBufferDesc = java.lang.String.format("L%s;", StringBufferQN);
-    /**
-     * The bytecode descriptor of an array of our taint aware string
-     */
-    public static final String TStringArrayDesc = "[" + TStringDesc;
-
-    /**
-     * The type of our taint-aware StringBuilder
-     */
-    public static final String TStringBuilderQN = TPackage + "IASStringBuilder";
-
-    /**
-     * The bytecode descriptor of our taint aware StringBuilder
-     */
-    public static final String TStringBuilderDesc = String.format("L%s;", TStringBuilderQN);
-    /**
-     * The bytecode descriptor of our taint aware StringBuffer
-     */
-    public static final String TStringBufferDesc = String.format("L%s;", TStringBufferQN);
     /**
      * Constructor name
      */
@@ -134,21 +88,6 @@ public final class Constants {
     public static final String TStringInitUntaintedDesc = "(Ljava/lang/String;)V";
 
     /**
-     * Descriptor of the concat method
-     */
-    public static final String ConcatDesc = String.format("(%s[Ljava/lang/Object;)%s", StringDesc, TStringDesc);
-
-    /**
-     * Descriptor of the instrumented toString method.
-     */
-    public static final String ToStringInstrumentedDesc = String.format("()%s", TStringDesc);
-
-    /**
-     * Descriptor of the 'tainted' method that turns a regular String into a tainted one
-     */
-    public static final String CreateTaintedStringDesc = String.format("(Ljava/lang/String;)%s", TStringDesc);
-
-    /**
      * Matches fully qualified String names
      */
     public static final Pattern strPattern = Pattern.compile(StringDesc);
@@ -172,10 +111,8 @@ public final class Constants {
     public static final String STRINGBUILDER_FULL_NAME = "java.lang.StringBuilder";
 
     public static final String AS_STRING = "asString";
-    public static final String AS_STRING_DESC = String.format("(%s)%s", TStringDesc, StringDesc);
 
     public static final String FROM_STRING = "fromString";
-    public static final String FROM_STRING_DESC = String.format("(%s)%s", StringDesc, TStringDesc);
 
     /**
      * Suffix of class files.

@@ -4,7 +4,9 @@ import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.Utils;
-import de.tubs.cs.ias.asm_test.config.TaintMethodConfig;
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintMethod;
+import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import de.tubs.cs.ias.asm_test.strategies.StringInstrumentation;
 import org.objectweb.asm.MethodVisitor;
@@ -24,6 +26,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     private final HashMap<String, String> methodsToRename = new HashMap<>(1);
     private static final Type stringType = Type.getType(String.class);
     private static final Type stringArrayType = Type.getType(String[].class);
+    private final TaintStringConfig stringConfig = Configuration.instance.getTaintStringConfig();
 
     public StringMethodInstrumentationStrategy(MethodVisitor mv) {
         this.mv = mv;
@@ -38,10 +41,10 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
      */
     private void handleLdcString(Object value) {
         logger.info("Rewriting String LDC to IASString LDC instruction");
-        this.mv.visitTypeInsn(Opcodes.NEW, Constants.TStringQN);
+        this.mv.visitTypeInsn(Opcodes.NEW, stringConfig.getTStringQN());
         this.mv.visitInsn(Opcodes.DUP);
         this.mv.visitLdcInsn(value);
-        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringQN, Constants.Init, Constants.TStringInitUntaintedDesc, false);
+        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, stringConfig.getTStringQN(), Constants.Init, Constants.TStringInitUntaintedDesc, false);
     }
 
     /**
@@ -67,22 +70,22 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
                                                                |IASString |
                                                                +----------+
         */
-        this.mv.visitTypeInsn(Opcodes.NEW, Constants.TStringQN);
+        this.mv.visitTypeInsn(Opcodes.NEW, stringConfig.getTStringQN());
         this.mv.visitInsn(Opcodes.DUP);
         this.mv.visitInsn(Opcodes.DUP2_X1);
         this.mv.visitInsn(Opcodes.POP2);
-        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Constants.TStringQN, Constants.Init, Constants.TStringInitUntaintedDesc, false);
+        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, stringConfig.getTStringQN(), Constants.Init, Constants.TStringInitUntaintedDesc, false);
     }
 
     private void stringToTStringBuilderBased() {
-        this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, Constants.FROM_STRING, Constants.FROM_STRING_DESC, false);
+        this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, stringConfig.getTStringQN(), Constants.FROM_STRING, stringConfig.getFROM_STRING_DESC(), false);
     }
 
     @Override
     public boolean instrumentFieldIns(int opcode, String owner, String name, String descriptor) {
         String newOwner = owner;
         if(Constants.StringQN.equals(owner)) {
-            newOwner = Constants.TStringQN;
+            newOwner = stringConfig.getTStringQN();
         }
         Matcher matcher = Constants.strPattern.matcher(descriptor);
         if (matcher.find()) {
@@ -90,7 +93,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
                 this.mv.visitFieldInsn(opcode, newOwner, name, descriptor);
                 this.stringToTStringBuilderBased();
             } else {
-                String newDescriptor = matcher.replaceAll(Constants.TStringDesc);
+                String newDescriptor = matcher.replaceAll(stringConfig.getTStringDesc());
                 this.mv.visitFieldInsn(opcode, newOwner, name, newDescriptor);
             }
             return true;
@@ -107,11 +110,11 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
         Type paramType = Type.getType(parameter);
         if (stringArrayType.equals(paramType)) {
             logger.info("Converting taint-aware String-Array to String-Array in JDK method invocation");
-            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "convertTaintAwareStringArray", String.format("(%s)%s", Constants.TStringArrayDesc, Constants.StringArrayDesc), false);
+            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, stringConfig.getTStringUtilsQN(), "convertTaintAwareStringArray", String.format("(%s)%s", stringConfig.getTStringArrayDesc(), Constants.StringArrayDesc), false);
         }
         if (stringType.equals(paramType)) {
             logger.info("Converting taint-aware String to String in JDK method invocation");
-            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, Constants.AS_STRING, Constants.AS_STRING_DESC, false);
+            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, stringConfig.getTStringQN(), Constants.AS_STRING, stringConfig.getAS_STRING_DESC(), false);
         }
     }
 
@@ -119,7 +122,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         if (Type.getObjectType(owner).equals(stringType) || owner.endsWith(Constants.StringDesc)) {
             String newDescriptor = InstrumentationHelper.instrumentDesc(descriptor);
-            String newOwner = owner.replace(Constants.StringQN, Constants.TStringQN);
+            String newOwner = owner.replace(Constants.StringQN, stringConfig.getTStringQN());
             // TODO: this call is superfluous, TString.toTString is a NOP pretty much.. Maybe drop those calls?
             String newName = this.methodsToRename.getOrDefault(name, name);
             logger.info("Rewriting String invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, newDescriptor);
@@ -137,7 +140,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
             logger.info("Converting returned String of {}.{}{}", owner, name, desc.toDescriptor());
         } else if (stringArrayType.equals(returnType)) {
             logger.info("Converting returned String Array of {}.{}{}", owner, name, desc.toDescriptor());
-            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "convertStringArray", String.format("(%s)%s", Constants.StringArrayDesc, Constants.TStringArrayDesc), false);
+            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, stringConfig.getTStringUtilsQN(), "convertStringArray", String.format("(%s)%s", Constants.StringArrayDesc, stringConfig.getTStringArrayDesc()), false);
         }
     }
 
@@ -154,7 +157,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     @Override
     public boolean handleLdcType(Type type) {
         if (stringType.equals(type)) {
-            this.mv.visitLdcInsn(Type.getObjectType(Constants.TStringQN));
+            this.mv.visitLdcInsn(Type.getObjectType(stringConfig.getTStringQN()));
             return true;
         }
         return false;
@@ -165,9 +168,9 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
         Type stringArray = Type.getType(String[].class);
         if (stringArray.equals(type)) {
             Type taintStringArray;
-            if (TaintMethodConfig.getTaintMethod() == TaintMethodConfig.TaintMethod.BOOLEAN) {
+            if (Configuration.instance.getTaintMethod() == TaintMethod.BOOLEAN) {
                 taintStringArray = Type.getType(de.tubs.cs.ias.asm_test.taintaware.bool.IASString[].class);
-            } else if(TaintMethodConfig.getTaintMethod() == TaintMethodConfig.TaintMethod.RANGE) {
+            } else if(Configuration.instance.getTaintMethod() == TaintMethod.RANGE) {
                 taintStringArray = Type.getType(de.tubs.cs.ias.asm_test.taintaware.range.IASString[].class);
             } else {
                 throw new IllegalStateException("Taint method unsupported or not specified!");

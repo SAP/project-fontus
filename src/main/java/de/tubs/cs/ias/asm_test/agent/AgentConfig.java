@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test.agent;
 
+import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +15,7 @@ public class AgentConfig {
 
     private final boolean verbose;
     private final List<String> blacklist;
+    private final TaintMethod taintMethod;
 
     public boolean isVerbose() {
         return this.verbose;
@@ -23,14 +25,20 @@ public class AgentConfig {
         return Collections.unmodifiableList(this.blacklist);
     }
 
+    public TaintMethod getTaintMethod() {
+        return this.taintMethod;
+    }
+
     private AgentConfig() {
         this.verbose = false;
         this.blacklist = new ArrayList<>();
+        this.taintMethod = TaintMethod.defaultTaintMethod();
     }
 
-    private AgentConfig(boolean verbose, List<String> blacklist) {
+    private AgentConfig(boolean verbose, List<String> blacklist, TaintMethod taintMethod) {
         this.verbose = verbose;
         this.blacklist = blacklist;
+        this.taintMethod = taintMethod;
     }
 
     public static AgentConfig parseConfig(String args) {
@@ -51,16 +59,21 @@ public class AgentConfig {
     private static AgentConfig parseParts(Iterable<String> parts) {
         boolean verbose = false;
         List<String> blacklist = new ArrayList<>();
+        TaintMethod taintMethod = TaintMethod.defaultTaintMethod();
         for(String part : parts) {
             if("verbose".equals(part)) {
                 verbose = true;
+            }
+            if(part.startsWith("taintmethod=")) {
+                String taintMethodArgName = afterEquals(part);
+                taintMethod = TaintMethod.getTaintMethodByArgumentName(taintMethodArgName);
             }
             if(part.startsWith("blacklisted_main_classes=")) {
                 String filename = afterEquals(part);
                 blacklist = readFromFile(filename);
             }
         }
-        return new AgentConfig(verbose, blacklist);
+        return new AgentConfig(verbose, blacklist, taintMethod);
     }
 
     private static List<String> readFromFile(String fileName) {
