@@ -77,8 +77,12 @@
                     <descriptor>(Ljava/util/List;)V</descriptor>
                     <isInterface>false</isInterface>
                 </function>
-                <converter>convertTStringList</converter>
-                <index>0</index>
+                <conversions>
+                    <conversion>
+                        <converter>convertTStringList</converter>
+                        <index>0</index>
+                    </conversion>
+                </conversions>
             </takes>
             <takes>
                 <function>
@@ -88,8 +92,12 @@
                     <descriptor>(Ljava/lang/String;Ljava/util/Hashtable;)V</descriptor>
                     <isInterface>false</isInterface>
                 </function>
-                <converter>convertTStringToTStringHashTable</converter>
-                <index>1</index>
+                <conversions>
+                    <conversion>
+                        <converter>convertTStringToTStringHashTable</converter>
+                        <index>1</index>
+                    </conversion>
+                </conversions>
             </takes>
         </functions>
     </takeGeneric>

@@ -99,11 +99,14 @@ public class Configuration {
 
     public FunctionCall getConverterForParameter(FunctionCall c, int index) {
         for (TakesGeneric tg : this.takeGeneric.getFunction()) {
-            if (tg.getFunctionCall().equals(c) && tg.getIndex() == index) {
-                String converterName = tg.getConverter();
-                FunctionCall converter = this.getConverter(converterName);
-                logger.info("Found converter for {} at index {}: {}", c, index, converter);
-                return converter;
+            if (tg.getFunctionCall().equals(c)) {
+                Conversion conversion = tg.getConversionAt(index);
+                if(conversion != null) {
+                    String converterName = conversion.getConverter();
+                    FunctionCall converter = this.getConverter(converterName);
+                    logger.info("Found converter for {} at index {}: {}", c, index, converter);
+                    return converter;
+                }
             }
         }
         return null;
