@@ -10,6 +10,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import de.tubs.cs.ias.asm_test.FunctionCall;
 import de.tubs.cs.ias.asm_test.agent.AgentConfig;
+import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,13 +20,16 @@ import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @XmlRootElement(name = "configuration")
 public class Configuration {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static final Configuration instance = readConfiguration();
+
     private static Configuration readConfiguration() {
         ObjectMapper objectMapper = new XmlMapper();
 
@@ -50,6 +54,24 @@ public class Configuration {
         this.mainMethodBlackList = agentConfig.getBlacklistedMainClasses();
         this.taintMethod = agentConfig.getTaintMethod();
         this.taintStringConfig = new TaintStringConfig(this.taintMethod);
+        this.refactorFunctionCalls();
+    }
+
+    private void refactorFunctionCalls() {
+        HashMap<String, String> replacements = new HashMap<>();
+        replacements.put("subpath", this.taintMethod.getSubPath());
+        StringSubstitutor sub = new StringSubstitutor(replacements);
+
+        List<FunctionCall> functions = this.converters.getFunction();
+
+        List<FunctionCall> transformedFunctions = functions.stream().map(functionCall -> {
+            String oldOwner = functionCall.getOwner();
+
+            String newOwner = sub.replace(oldOwner);
+            return new FunctionCall(functionCall.getOpcode(), newOwner, functionCall.getName(), functionCall.getDescriptor(), functionCall.isInterface());
+        }).collect(Collectors.toList());
+
+        this.converters = new Converters(transformedFunctions);
     }
 
     @JsonCreator
@@ -82,8 +104,8 @@ public class Configuration {
     }
 
     private FunctionCall getConverter(String name) {
-        for(FunctionCall fc : this.converters.getFunction()) {
-            if(fc.getName().equals(name)) {
+        for (FunctionCall fc : this.converters.getFunction()) {
+            if (fc.getName().equals(name)) {
                 return fc;
             }
         }
@@ -91,7 +113,7 @@ public class Configuration {
     }
 
     public boolean needsParameterConversion(FunctionCall c) {
-        for(TakesGeneric tg : this.takeGeneric.getFunction()) {
+        for (TakesGeneric tg : this.takeGeneric.getFunction()) {
             if (tg.getFunctionCall().equals(c)) {
                 return true;
             }
@@ -100,8 +122,8 @@ public class Configuration {
     }
 
     public FunctionCall getConverterForParameter(FunctionCall c, int index) {
-        for(TakesGeneric tg : this.takeGeneric.getFunction()) {
-            if(tg.getFunctionCall().equals(c) && tg.getIndex() == index) {
+        for (TakesGeneric tg : this.takeGeneric.getFunction()) {
+            if (tg.getFunctionCall().equals(c) && tg.getIndex() == index) {
                 String converterName = tg.getConverter();
                 FunctionCall converter = this.getConverter(converterName);
                 logger.info("Found converter for {} at index {}: {}", c, index, converter);
@@ -112,8 +134,8 @@ public class Configuration {
     }
 
     public FunctionCall getConverterForReturnValue(FunctionCall c) {
-        for(ReturnsGeneric rg : this.returnGeneric.getFunction()) {
-            if(rg.getFunctionCall().equals(c)) {
+        for (ReturnsGeneric rg : this.returnGeneric.getFunction()) {
+            if (rg.getFunctionCall().equals(c)) {
                 String converterName = rg.getConverter();
                 FunctionCall converter = this.getConverter(converterName);
                 logger.info("Found converter for rv of {}: {}", c, converter);
@@ -136,13 +158,14 @@ public class Configuration {
     private final Sinks sinks;
 
     @JacksonXmlElementWrapper(useWrapping = false)
-    private final Converters converters;
+    private Converters converters;
 
     @JacksonXmlElementWrapper(useWrapping = false)
     private final ReturnGeneric returnGeneric;
 
     @JacksonXmlElementWrapper(useWrapping = false)
     private final TakeGeneric takeGeneric;
+
     public boolean isVerbose() {
         return this.verbose;
     }

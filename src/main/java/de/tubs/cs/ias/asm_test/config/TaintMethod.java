@@ -9,8 +9,12 @@ public enum TaintMethod {
         this.path = path;
     }
 
-    public String getPath() {
+    public String getSubPath() {
         return this.path;
+    }
+
+    public String getSubPackage() {
+        return getSubPath().replace('/', '.');
     }
 
     public static TaintMethod getTaintMethodByPath(String path) {

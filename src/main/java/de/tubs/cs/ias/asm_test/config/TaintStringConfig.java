@@ -130,7 +130,7 @@ public class TaintStringConfig {
 
     public TaintStringConfig(TaintMethod taintMethod) {
         this.taintMethod = taintMethod;
-        this.TPackage = "de/tubs/cs/ias/asm_test/taintaware/" + taintMethod.getPath();
+        this.TPackage = "de/tubs/cs/ias/asm_test/taintaware/" + taintMethod.getSubPath();
         this.TStringQN = TPackage + "IASString";
         this.TStringBufferQN = TPackage + "IASStringBuffer";
         this.TStringUtilsQN = TPackage + "IASStringUtils";
