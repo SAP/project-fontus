@@ -55,7 +55,7 @@ public class Descriptor {
         return new Descriptor(replaced, ret);
     }
 
-    int parameterCount() {
+    public int parameterCount() {
         return this.parameters.size();
     }
 

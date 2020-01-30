@@ -101,6 +101,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
     private void visitMethodInsn(FunctionCall fc) {
+	logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(fc.getOpcode()), fc.getOwner(), fc.getName(), fc.getDescriptor());
         super.visitMethodInsn(fc.getOpcode(), fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.isInterface());
     }
 
@@ -162,10 +163,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.shouldRewriteCheckCast = false;
         FunctionCall fc = new FunctionCall(opcode, owner, name, descriptor, isInterface);
 
-//        if (this.isSinkCall(fc) || this.isSourceCall(fc)) {
-//            return;
-//        }
-
         // If a method has a defined proxy, apply it right away
         if (this.shouldBeProxied(fc)) {
             return;
@@ -203,7 +200,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
 
-    private class JdkMethodTransformer implements MethodParameterTransformer.Transformation {
+    private class JdkMethodTransformer implements MethodParameterTransformer.ParameterTransformation, MethodParameterTransformer.ReturnTransformation {
 
         private FunctionCall call;
 
@@ -240,43 +237,37 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
     }
 
-    private class SourceSinkTransformer implements MethodParameterTransformer.Transformation {
+    private class SinkTransformer implements MethodParameterTransformer.ParameterTransformation {
 
         private FunctionCall call;
+	private Sink sink;
 
-        public SourceSinkTransformer(FunctionCall call) {
+        public SinkTransformer(FunctionCall call, Sink sink) {
             this.call = call;
+	    this.sink = sink;
         }
 
-        public boolean isSourceOrSink() {
-            return (this.getSink() != null);
-        }
-        private Sink getSink() {
-            return config.getSinkConfig().getSinkForFunction(call);
-        }
- 
         @Override
         public void ParameterTransformation(int index, String type, MethodTaintingVisitor visitor) {
 
-            if (getSink() == null) {
+            if (sink == null) {
                 return;
             }
 
             // Sink checks
             logger.debug("Type: {}", type);
             // Check whether this parameter needs to be checked for taint
-            SinkParameter sp = getSink().findParameter(index);
+            SinkParameter sp = sink.findParameter(index);
             if (sp != null) {
                 if (InstrumentationHelper.canHandleType(type)) {
-                    logger.info("Adding taint check for sink {}, paramater {} ({})", getSink().getName(), index, type);
+                    logger.info("Adding taint check for sink {}, paramater {} ({})", sink.getName(), index, type);
                     MethodTaintingUtils.callCheckTaint(visitor.getParent());
                 } else {
-                    logger.warn("Tried to check taint for type {} (index {}) in sink {} although it is not taintable!", type, index, getSink().getName());
+                    logger.warn("Tried to check taint for type {} (index {}) in sink {} although it is not taintable!", type, index, sink.getName());
                 }
             }
         }
 
-        @Override
         public void ReturnTransformation(MethodTaintingVisitor visitor, Descriptor desc) {
 
            // Source transforms go here!
@@ -290,15 +281,19 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         MethodParameterTransformer transformer = new MethodParameterTransformer(this, call);
 
         // Add JDK transformations
-        Descriptor desc = Descriptor.parseDescriptor(call.getDescriptor());
-        if (desc.hasStringLikeParameters() || config.needsParameterConversion(call)) {
-            transformer.AddTransformation(new JdkMethodTransformer(call));
+	if (JdkClassesLookupTable.instance.isJdkClass(call.getOwner()) || InstrumentationState.instance.isAnnotation(call.getOwner(), this.resolver)) {
+	    logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+	    JdkMethodTransformer t = new JdkMethodTransformer(call);
+            transformer.AddParameterTransformation(t);
+	    transformer.AddReturnTransformation(t);
         }
 
-        // Add Source and Sink transformations
-        SourceSinkTransformer sourceSinkTransform = new SourceSinkTransformer(call);
-        if (sourceSinkTransform.isSourceOrSink()) {
-            transformer.AddTransformation(sourceSinkTransform);
+        // Add Sink transformations
+	Sink sink = config.getSinkConfig().getSinkForFunction(call);
+	if (sink != null) {
+	    logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+            SinkTransformer t = new SinkTransformer(call, sink);
+            transformer.AddParameterTransformation(t);
         }
 
         // No transformations required
@@ -310,7 +305,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         transformer.ModifyStackParameters(this.used);
         this.usedAfterInjection = Math.max(this.usedAfterInjection, transformer.getExtraStackSlots());
         // Make the call
-        logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
         this.visitMethodInsn(call);
         // Modify Return parameters
         transformer.ModifyReturnType();

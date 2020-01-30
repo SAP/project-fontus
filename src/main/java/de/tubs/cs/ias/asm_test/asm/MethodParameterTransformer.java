@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 public class MethodParameterTransformer {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    public interface Transformation {
+    public interface ParameterTransformation {
 
         /**
          * Called for each parameter in a method.
@@ -37,19 +37,28 @@ public class MethodParameterTransformer {
          * @param visitor The method visitor
          */
         public void ParameterTransformation(int i, String type, MethodTaintingVisitor visitor);
+    }
 
+    public interface ReturnTransformation {
         public void ReturnTransformation(MethodTaintingVisitor visitor, Descriptor desc);
     }
 
     public MethodParameterTransformer(MethodTaintingVisitor visitor, FunctionCall function) {
         this.visitor = visitor;
         this.function = function;
-        transformations = new ArrayList<>();
+        paramTransformations = new ArrayList<>();
+        returnTransformations = new ArrayList<>();
     }
 
-    public void AddTransformation(Transformation transformation) {
+    public void AddParameterTransformation(ParameterTransformation transformation) {
         if (transformation != null) {
-            transformations.add(transformation);
+            paramTransformations.add(transformation);
+        }
+    }
+
+    public void AddReturnTransformation(ReturnTransformation transformation) {
+        if (transformation != null) {
+            returnTransformations.add(transformation);
         }
     }
 
@@ -66,7 +75,7 @@ public class MethodParameterTransformer {
     }
 
     public boolean needsTransformation() {
-        return !transformations.isEmpty();
+        return !paramTransformations.isEmpty() || !returnTransformations.isEmpty();
     }
 
     /**
@@ -90,7 +99,7 @@ public class MethodParameterTransformer {
      */
     public void ModifyStackParameters(int nUsedLocalVariables) {
 
-        if (this.transformations.isEmpty()) {
+        if (this.paramTransformations.isEmpty()) {
             return;
         }
     
@@ -101,14 +110,21 @@ public class MethodParameterTransformer {
         int n = nUsedLocalVariables;
         // The current method parameter, starting at the end (on top of the stack)
         int index = params.size() - 1;
+	// With zero parameters, the loop is skipped
         while (!params.empty()) {
             String p = params.pop();
             int storeOpcode = Utils.getStoreOpcode(p);
             int loadOpcode = Utils.getLoadOpcode(p);
 
             // Call the transformation callbacks in reverse order!
-            for (int i = this.transformations.size(); i-- > 0;) {
-                this.transformations.get(i).ParameterTransformation(index, p, this.visitor);
+            for (int i = this.paramTransformations.size(); i-- > 0;) {
+                logger.info("Calling transformation: {} on parameter {} for {}", i, index, p);
+                this.paramTiransformations.get(i).ParameterTransformation(index, p, this.visitor);
+            }
+
+	    // If there is just one parameter, can skip storing and loading stack
+	    if (getFunctionDescriptor().parameterCount() == 1) {
+                break;
             }
             index--;
 
@@ -130,12 +146,13 @@ public class MethodParameterTransformer {
             Runnable l = loadStack.pop();
             l.run();
         }
-
     }
 
     public void ModifyReturnType() {
+	if (
+	logger.info("Calling return type transformation");
         // Call the transformation callbacks
-        for (Transformation t : this.transformations) {
+        for (ReturnTransformation t : this.returnTransformations) {
             t.ReturnTransformation(this.visitor, this.getFunctionDescriptor());
         }
     }
@@ -143,6 +160,7 @@ public class MethodParameterTransformer {
    private MethodTaintingVisitor visitor;
    private final FunctionCall function;
 
-   private List<Transformation> transformations;
+   private List<ParameterTransformation> paramTransformations;
+   private List<ReturnTransformation> returnTransformations;
 
 }
