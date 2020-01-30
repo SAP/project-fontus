@@ -119,7 +119,7 @@ public class MethodParameterTransformer {
             // Call the transformation callbacks in reverse order!
             for (int i = this.paramTransformations.size(); i-- > 0;) {
                 logger.info("Calling transformation: {} on parameter {} for {}", i, index, p);
-                this.paramTiransformations.get(i).ParameterTransformation(index, p, this.visitor);
+                this.paramTransformations.get(i).ParameterTransformation(index, p, this.visitor);
             }
 
 	    // If there is just one parameter, can skip storing and loading stack
@@ -149,8 +149,7 @@ public class MethodParameterTransformer {
     }
 
     public void ModifyReturnType() {
-	if (
-	logger.info("Calling return type transformation");
+    	logger.info("Calling return type transformation");
         // Call the transformation callbacks
         for (ReturnTransformation t : this.returnTransformations) {
             t.ReturnTransformation(this.visitor, this.getFunctionDescriptor());

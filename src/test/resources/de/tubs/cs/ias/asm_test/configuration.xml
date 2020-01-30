@@ -1,21 +1,29 @@
 <configuration>
     <verbose>true</verbose>
-    <sources>
-            <source>
-                <opcode>182</opcode>
-                <owner>java/util/Scanner</owner>
-                <name>next</name>
-                <descriptor>()Ljava/lang/String;</descriptor>
-                <interface>false</interface>
-            </source>
-            <source>
-                <opcode>182</opcode>
-                <owner>java/util/Scanner</owner>
-                <name>nextLine</name>
-                <descriptor>()Ljava/lang/String;</descriptor>
-                <interface>false</interface>
-            </source>
-    </sources>
+    <sourceConfig>
+        <sources>
+                <source>
+                    <name>next</name>
+                    <function>
+                        <opcode>182</opcode>
+                        <owner>java/util/Scanner</owner>
+                        <name>next</name>
+                        <descriptor>()Ljava/lang/String;</descriptor>
+                        <interface>false</interface>
+                    </function>
+                </source>
+                <source>
+                    <name>nextLine</name>
+                    <function>
+                        <opcode>182</opcode>
+                        <owner>java/util/Scanner</owner>
+                        <name>nextLine</name>
+                        <descriptor>()Ljava/lang/String;</descriptor>
+                        <interface>false</interface>
+                    </function>
+                </source>
+        </sources>
+    </sourceConfig>
     <sinkConfig>
         <sinks>
             <sink>

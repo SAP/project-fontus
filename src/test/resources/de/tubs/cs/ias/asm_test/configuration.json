@@ -1,21 +1,29 @@
 {
     "verbose": true,
-    "sources": [
-        {
-            "opcode": 182,
-            "owner": "java/util/Scanner",
-            "name": "next",
-            "descriptor": "()Ljava/lang/String;",
-            "interface": false
-        },
-        {
-            "opcode": 182,
-            "owner": "java/util/Scanner",
-            "name": "nextLine",
-            "descriptor": "()Ljava/lang/String;",
-            "interface": false
-        }
-    ],
+    "sourceConfig" : {
+            "sources": [
+            {
+                "name" : "next",
+                    "function" : {
+                        "opcode": 182,
+                        "owner": "java/util/Scanner",
+                        "name": "next",
+                        "descriptor": "()Ljava/lang/String;",
+                        "interface": false
+                }
+            },
+            {
+                "name" : "next",
+                "function" : {
+                    "opcode": 182,
+                    "owner": "java/util/Scanner",
+                    "name": "nextLine",
+                    "descriptor": "()Ljava/lang/String;",
+                    "interface": false
+                }
+            }
+        ]
+    },
     "sinkConfig" : {
         "sinks": [
             {

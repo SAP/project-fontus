@@ -20,7 +20,7 @@ public class Configuration {
 
     public Configuration() {
 	    this.verbose = false;
-        this.sources = new ArrayList<FunctionCall>();
+        this.sourceConfig = new SourceConfig();
         this.sinkConfig = new SinkConfig();
         this.converters = new ArrayList<FunctionCall>();
         this.returnGeneric = new ArrayList<ReturnsGeneric>();
@@ -28,9 +28,9 @@ public class Configuration {
 	    this.blacklistedMainClasses = new ArrayList<String>();
     }
    
-    public Configuration(boolean verbose, List<FunctionCall> sources, SinkConfig sinkConfig, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> blacklistedMainClasses) {
+    public Configuration(boolean verbose, SourceConfig sourceConfig, SinkConfig sinkConfig, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> blacklistedMainClasses) {
 	    this.verbose = verbose;
-        this.sources = sources;
+        this.sourceConfig = sourceConfig;
         this.sinkConfig = sinkConfig;
         this.converters = converters;
         this.returnGeneric = returnGeneric;
@@ -41,7 +41,7 @@ public class Configuration {
     public void append(Configuration other) {
         if (other != null) {
             this.verbose |= other.verbose;
-            this.sources.addAll(other.sources);
+            this.sourceConfig.append(other.sourceConfig);
             this.sinkConfig.append(other.sinkConfig);
             this.converters.addAll(other.converters);
             this.returnGeneric.addAll(other.returnGeneric);
@@ -56,8 +56,8 @@ public class Configuration {
         }
     }
 
-    public List<FunctionCall> getSources() {
-        return Collections.unmodifiableList(this.sources);
+    public SourceConfig getSourceConfig() {
+        return this.sourceConfig;
     }
 
     public SinkConfig getSinkConfig() {
@@ -136,12 +136,9 @@ public class Configuration {
 
     @XmlElement
     private boolean verbose = false;
-    /**
-     * All functions listed here return Strings that should be marked as tainted.
-     */
-    @JacksonXmlElementWrapper(localName = "sources") 
-    @XmlElement(name = "source")
-    private final List<FunctionCall> sources;
+
+    @XmlElement
+    private final SourceConfig sourceConfig;
     /**
      * All functions listed here consume Strings that need to be checked first.
      */

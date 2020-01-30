@@ -43,7 +43,7 @@ public class SourceSinkConfigTests {
         Configuration config = this.getConfiguration(config_path);
         assertNotNull(config);
 
-        assertEquals(2, config.getSources().size());
+        assertEquals(2, config.getSourceConfig().getSources().size());
         assertEquals(1, config.getSinkConfig().getSinks().size());
         assertEquals(2, config.getConverters().size());
         assertEquals(1, config.getReturnGeneric().size());
@@ -61,7 +61,7 @@ public class SourceSinkConfigTests {
         config.append(config2);
 
         assertTrue(config.isVerbose());
-        assertEquals(4, config.getSources().size());
+        assertEquals(4, config.getSourceConfig().getSources().size());
         assertEquals(2, config.getSinkConfig().getSinks().size());
         assertEquals(4, config.getConverters().size());
         assertEquals(2, config.getReturnGeneric().size());
@@ -88,7 +88,7 @@ public class SourceSinkConfigTests {
         Configuration config2 = objectMapper.readValue(configAsJson, Configuration.class);
         assertNotNull(config2);
 
-        assertEquals(2, config.getSources().size());
+        assertEquals(2, config.getSourceConfig().getSources().size());
         assertEquals(1, config.getSinkConfig().getSinks().size());
         assertEquals(2, config.getConverters().size());
         assertEquals(1, config.getReturnGeneric().size());
@@ -102,7 +102,7 @@ public class SourceSinkConfigTests {
         assertNotNull(config);
 
         assertTrue(config.isVerbose());
-        assertEquals(2, config.getSources().size());
+        assertEquals(2, config.getSourceConfig().getSources().size());
         assertEquals(1, config.getSinkConfig().getSinks().size());
         assertEquals(2, config.getConverters().size());
         assertEquals(1, config.getReturnGeneric().size());
@@ -116,7 +116,7 @@ public class SourceSinkConfigTests {
         assertNotNull(config);
 
         assertFalse(config.isVerbose());
-        assertEquals(0, config.getSources().size());
+        assertEquals(0, config.getSourceConfig().getSources().size());
         assertEquals(0, config.getSinkConfig().getSinks().size());
         assertEquals(0, config.getConverters().size());
         assertEquals(0, config.getReturnGeneric().size());
@@ -142,7 +142,7 @@ public class SourceSinkConfigTests {
         assertNotNull(config);
 
         assertTrue(config.isVerbose());
-        assertEquals(2, config.getSources().size());
+        assertEquals(2, config.getSourceConfig().getSources().size());
         assertEquals(1, config.getSinkConfig().getSinks().size());
         assertEquals(2, config.getConverters().size());
         assertEquals(1, config.getReturnGeneric().size());
