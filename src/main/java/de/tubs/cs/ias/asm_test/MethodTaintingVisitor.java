@@ -3,6 +3,7 @@ package de.tubs.cs.ias.asm_test;
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.Sink;
 import de.tubs.cs.ias.asm_test.config.SinkParameter;
+import de.tubs.cs.ias.asm_test.config.Source;
 import de.tubs.cs.ias.asm_test.asm.BasicMethodVisitor;
 import de.tubs.cs.ias.asm_test.asm.MethodParameterTransformer;
 import de.tubs.cs.ias.asm_test.strategies.method.*;
@@ -239,12 +240,10 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
     private class SinkTransformer implements MethodParameterTransformer.ParameterTransformation {
 
-        private FunctionCall call;
-	private Sink sink;
+	    private Sink sink;
 
-        public SinkTransformer(FunctionCall call, Sink sink) {
-            this.call = call;
-	    this.sink = sink;
+        public SinkTransformer(Sink sink) {
+	        this.sink = sink;
         }
 
         @Override
@@ -267,11 +266,23 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
                 }
             }
         }
+    }
 
+    private class SourceTransformer implements MethodParameterTransformer.ReturnTransformation {
+
+	    private Source source;
+
+        public SourceTransformer(Source source) {
+	        this.source = source;
+        }
+
+        @Override
         public void ReturnTransformation(MethodTaintingVisitor visitor, Descriptor desc) {
+            FunctionCall fc = this.source.getFunction();
+            logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", fc.getOwner(), fc.getName(), fc.getDescriptor(), Constants.TStringQN);
 
-           // Source transforms go here!
-           // super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "tainted", Constants.CreateTaintedStringDesc, false);
+            FunctionCall tainter = new FunctionCall(Opcodes.INVOKESTATIC, Constants.TStringQN, "tainted", Constants.CreateTaintedStringDesc, false);
+            visitor.visitMethodInsn(tainter);
         }
 
     }
@@ -289,11 +300,19 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         }
 
         // Add Sink transformations
-	Sink sink = config.getSinkConfig().getSinkForFunction(call);
-	if (sink != null) {
-	    logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-            SinkTransformer t = new SinkTransformer(call, sink);
+        Sink sink = config.getSinkConfig().getSinkForFunction(call);
+        if (sink != null) {
+            logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+            SinkTransformer t = new SinkTransformer(sink);
             transformer.AddParameterTransformation(t);
+        }
+
+        // Add Source transformations
+        Source source = config.getSourceConfig().getSourceForFunction(call);
+        if (source != null) {
+            logger.info("Adding source tainting for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+            SourceTransformer t = new SourceTransformer(source);
+            transformer.AddReturnTransformation(t);
         }
 
         // No transformations required
