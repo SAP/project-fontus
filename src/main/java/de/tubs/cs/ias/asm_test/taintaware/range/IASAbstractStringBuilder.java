@@ -28,7 +28,7 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
 
     public IASAbstractStringBuilder(CharSequence seq) {
         IASString str = IASString.valueOf(seq);
-        this.builder = new StringBuilder();
+        this.builder = new StringBuilder(str.length() + 16);
         this.append(str);
     }
 
