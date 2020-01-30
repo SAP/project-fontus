@@ -58,7 +58,7 @@ public class IASTaintSource {
         return map.get(name);
     }
 
-    public IASTaintSource getInstanceById(short id) {
+    public static IASTaintSource getInstanceById(short id) {
         if (id < Short.MIN_VALUE || id - Short.MIN_VALUE > arr.size()) {
             throw new IllegalArgumentException("Given TaintSource id ($id) seems to be invalid!");
         }

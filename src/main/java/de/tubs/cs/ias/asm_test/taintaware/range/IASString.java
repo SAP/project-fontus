@@ -542,13 +542,15 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
 
     public static IASString format(IASString format, Object... args) {
         // TODO Implement rainting
-        return IASString.fromString(String.format(format.toString(), args));
+//        return new IASString(String.format(format.toString(), args), isTainted(args));
+        return new IASFormatter().format(format, args).toIASString();
     }
 
 
     public static IASString format(Locale l, IASString format, Object... args) {
         // TODO Implement rainting
-        return new IASString(String.format(l, format.toString(), args), format.isTainted());
+//        return new IASString(String.format(l, format.toString(), args), isTainted(args));
+        return new IASFormatter(l).format(format, args).toIASString();
     }
 
     public static IASString valueOf(Object obj) {
