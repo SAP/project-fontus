@@ -59,7 +59,7 @@ public class Descriptor {
         return this.parameters.size();
     }
 
-    Stack<String> getParameterStack() {
+    public Stack<String> getParameterStack() {
         Stack<String> pStack = new Stack<>();
         pStack.addAll(this.parameters);
         return pStack;

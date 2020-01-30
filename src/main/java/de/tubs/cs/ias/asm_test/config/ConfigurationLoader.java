@@ -70,23 +70,23 @@ public class ConfigurationLoader {
 	if (f == null) {
 	    logger.error("Null file input!");
 	} else {
-            try {
-                if (f != null && f.exists() && f.isFile()) {
-                    FileInputStream fi = new FileInputStream(f);
-                    if (f.getName().endsWith(Constants.JSON_FILE_SUFFIX)) {
-                        c = readJsonConfiguration(fi);
-                    } else if (f.getName().endsWith(Constants.XML_FILE_SUFFIX)) {
-                        c = readXmlConfiguration(fi);
-                    } else {
-                        logger.error("File {} ending not recognised!", f.getAbsolutePath());
-                    }
+        try {
+            if (f != null && f.exists() && f.isFile()) {
+                FileInputStream fi = new FileInputStream(f);
+                if (f.getName().endsWith(Constants.JSON_FILE_SUFFIX)) {
+                    c = readJsonConfiguration(fi);
+                } else if (f.getName().endsWith(Constants.XML_FILE_SUFFIX)) {
+                    c = readXmlConfiguration(fi);
                 } else {
-                    logger.error("File {} does not exist!", f.getAbsolutePath());
+                    logger.error("File {} ending not recognised!", f.getAbsolutePath());
                 }
-            } catch (Exception e) {
-                logger.error("Error opening file {}!", f.getAbsolutePath());
-                logger.error("Exception opening configuration file", e);
+            } else {
+                logger.error("File {} does not exist!", f.getAbsolutePath());
             }
+        } catch (Exception e) {
+            logger.error("Error opening file {}!", f.getAbsolutePath());
+            logger.error("Exception opening configuration file", e);
+        }
 	}
         return c;
     }
