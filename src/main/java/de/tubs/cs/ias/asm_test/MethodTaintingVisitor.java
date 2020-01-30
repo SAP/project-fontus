@@ -281,7 +281,11 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             FunctionCall fc = this.source.getFunction();
             logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", fc.getOwner(), fc.getName(), fc.getDescriptor(), Constants.TStringQN);
 
-            FunctionCall tainter = new FunctionCall(Opcodes.INVOKESTATIC, Constants.TStringQN, "tainted", Constants.CreateTaintedStringDesc, false);
+            FunctionCall tainter = new FunctionCall(Opcodes.INVOKESTATIC,
+						    Constants.TStringQN,
+						    "tainted",
+						    Constants.CreateTaintedStringDesc,
+						    false);
             visitor.visitMethodInsn(tainter);
         }
 
@@ -295,7 +299,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 	if (JdkClassesLookupTable.instance.isJdkClass(call.getOwner()) || InstrumentationState.instance.isAnnotation(call.getOwner(), this.resolver)) {
 	    logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
 	    JdkMethodTransformer t = new JdkMethodTransformer(call);
-            transformer.AddParameterTransformation(t);
+	    transformer.AddParameterTransformation(t);
 	    transformer.AddReturnTransformation(t);
         }
 
@@ -312,7 +316,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         if (source != null) {
             logger.info("Adding source tainting for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
             SourceTransformer t = new SourceTransformer(source);
-            transformer.AddReturnTransformation(t);
+	    transformer.AddReturnTransformation(t);
         }
 
         // No transformations required
@@ -322,13 +326,14 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         // Do the transformations
         transformer.ModifyStackParameters(this.used);
-        this.usedAfterInjection = Math.max(this.usedAfterInjection, transformer.getExtraStackSlots());
+        this.usedAfterInjection = this.used + transformer.getExtraStackSlots();
         // Make the call
         this.visitMethodInsn(call);
         // Modify Return parameters
         transformer.ModifyReturnType();
         this.shouldRewriteCheckCast = transformer.rewriteCheckCast();
 
+	logger.info("Finished transforming parameters for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
         return true;
     }
 

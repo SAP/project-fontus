@@ -147,7 +147,7 @@ public final class Constants {
     /**
      * Descriptor of the 'tainted' method that turns a regular String into a tainted one
      */
-    public static final String CreateTaintedStringDesc = String.format("(%s;)%s", TStringDesc, TStringDesc);
+    public static final String CreateTaintedStringDesc = String.format("(%s)%s", TStringDesc, TStringDesc);
 
     /**
      * Matches fully qualified String names
