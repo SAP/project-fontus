@@ -160,6 +160,16 @@ publishing {
     }
 }
 
+task publishRangeLocal() {
+    dependsOn rangeJar
+    dependsOn publishToMavenLocal
+}
+
+task publishBoolLocal() {
+    dependsOn boolJar
+    dependsOn publishToMavenLocal
+}
+
 enum TaintMethods {
     BOOL("bool/"), RANGE("range/")
 
