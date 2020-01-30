@@ -1,5 +1,7 @@
-package de.tubs.cs.ias.asm_test;
+package de.tubs.cs.ias.asm_test.asm;
 
+import de.tubs.cs.ias.asm_test.FieldData;
+import de.tubs.cs.ias.asm_test.Utils;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
@@ -15,9 +17,9 @@ public class ClassInitializerAugmentingVisitor extends MethodVisitor {
     private final Collection<FieldData> staticFinalFields;
     private final String owner;
 
-    ClassInitializerAugmentingVisitor(MethodVisitor methodVisitor,
-                                      String owner,
-                                      Collection<FieldData> staticFinalFields) {
+    public ClassInitializerAugmentingVisitor(MethodVisitor methodVisitor,
+                                             String owner,
+                                             Collection<FieldData> staticFinalFields) {
         super(Opcodes.ASM7, methodVisitor);
         this.staticFinalFields = new ArrayList<>(staticFinalFields.size());
         this.staticFinalFields.addAll(staticFinalFields);

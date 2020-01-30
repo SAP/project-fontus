@@ -1,7 +1,7 @@
 package de.tubs.cs.ias.asm_test;
 
 import de.tubs.cs.ias.asm_test.config.Configuration;
-import de.tubs.cs.ias.asm_test.method.BasicMethodVisitor;
+import de.tubs.cs.ias.asm_test.asm.BasicMethodVisitor;
 import de.tubs.cs.ias.asm_test.strategies.method.*;
 import org.objectweb.asm.*;
 import org.slf4j.Logger;
@@ -21,6 +21,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     private boolean shouldRewriteCheckCast;
     private final String name;
     private final String methodDescriptor;
+    private final ClassResolver resolver;
     /**
      * Some methods are not handled in a generic fashion, one can defined specialized proxies here
      */
@@ -36,8 +37,9 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     private final Collection<MethodInstrumentationStrategy> instrumentation = new ArrayList<>(4);
 
 
-    MethodTaintingVisitor(int acc, String name, String methodDescriptor, MethodVisitor methodVisitor) {
+    MethodTaintingVisitor(int acc, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver) {
         super(Opcodes.ASM7, methodVisitor);
+        this.resolver = resolver;
         logger.info("Instrumenting method: {}{}", name, methodDescriptor);
         this.used = Type.getArgumentsAndReturnSizes(methodDescriptor) >> 2;
         this.usedAfterInjection = 0;
@@ -120,7 +122,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     public void visitInsn(int opcode) {
         this.shouldRewriteCheckCast = false;
         // If we are in a "toString" method, we have to insert a call to the taint-check before returning.
-        if(opcode == Opcodes.ARETURN && Constants.ToStringDesc.equals(this.methodDescriptor) && Constants.ToString.equals(this.name)) {
+        if (opcode == Opcodes.ARETURN && Constants.ToStringDesc.equals(this.methodDescriptor) && Constants.ToString.equals(this.name)) {
             MethodTaintingUtils.callCheckTaint(this.getParentVisitor());
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
         }
@@ -164,8 +166,8 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     public void visitFieldInsn(final int opcode, final String owner, final String name, final String descriptor) {
         this.shouldRewriteCheckCast = false;
 
-        for(MethodInstrumentationStrategy s : this.instrumentation) {
-            if(s.instrumentFieldIns(opcode, owner, name, descriptor)) {
+        for (MethodInstrumentationStrategy s : this.instrumentation) {
+            if (s.instrumentFieldIns(opcode, owner, name, descriptor)) {
                 return;
             }
         }
@@ -194,8 +196,8 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         }
 
 
-        for(MethodInstrumentationStrategy s : this.instrumentation) {
-            if(s.rewriteOwnerMethod(opcode, owner, name, descriptor, isInterface)) {
+        for (MethodInstrumentationStrategy s : this.instrumentation) {
+            if (s.rewriteOwnerMethod(opcode, owner, name, descriptor, isInterface)) {
                 return;
             }
         }
@@ -203,7 +205,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         // JDK methods need special handling.
         // If there isn't a proxy defined, we will just convert taint-aware Strings to regular ones before calling the function and vice versa for the return value.
         boolean jdkMethod = JdkClassesLookupTable.instance.isJdkClass(owner);
-        if (jdkMethod) {
+        if (jdkMethod || InstrumentationState.instance.isAnnotation(owner, this.resolver)) {
             this.handleJdkMethod(fc);
             return;
         }
@@ -215,7 +217,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         }
 
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
-        for(MethodInstrumentationStrategy s : this.instrumentation) {
+        for (MethodInstrumentationStrategy s : this.instrumentation) {
             desc = s.instrument(desc);
         }
 
@@ -234,11 +236,11 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
                 break;
             case 1:
                 String param = desc.getParameterStack().peek();
-                for(MethodInstrumentationStrategy s : this.instrumentation) {
+                for (MethodInstrumentationStrategy s : this.instrumentation) {
                     s.insertJdkMethodParameterConversion(param);
                 }
                 FunctionCall converter = Configuration.instance.getConverterForParameter(call, 0);
-                if(converter != null) {
+                if (converter != null) {
                     this.visitMethodInsn(converter);
                 }
                 break;
@@ -248,16 +250,16 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         }
         logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
         this.visitMethodInsn(call);
-        for(MethodInstrumentationStrategy s : this.instrumentation) {
+        for (MethodInstrumentationStrategy s : this.instrumentation) {
             s.instrumentReturnType(call.getOwner(), call.getName(), desc);
         }
 
         FunctionCall converter = Configuration.instance.getConverterForReturnValue(call);
-        if(converter != null) {
+        if (converter != null) {
             this.visitMethodInsn(converter);
         }
 
-        if(desc.getReturnType().equals(Constants.ObjectDesc)) {
+        if (desc.getReturnType().equals(Constants.ObjectDesc)) {
             this.shouldRewriteCheckCast = true;
         }
     }
@@ -275,19 +277,19 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         int numVars = (Type.getArgumentsAndReturnSizes(desc.toDescriptor()) >> 2) - 1;
         this.usedAfterInjection = this.used + numVars;
         int n = this.used;
-        int index = params.size()-1;
+        int index = params.size() - 1;
         while (!params.empty()) {
             String p = params.pop();
             int storeOpcode = Utils.getStoreOpcode(p);
             int loadOpcode = Utils.getLoadOpcode(p);
 
             //logger.info("Type: {}", p);
-            for(MethodInstrumentationStrategy s : this.instrumentation) {
+            for (MethodInstrumentationStrategy s : this.instrumentation) {
                 s.insertJdkMethodParameterConversion(p);
             }
 
             FunctionCall converter = Configuration.instance.getConverterForParameter(call, index);
-            if(converter != null) {
+            if (converter != null) {
                 this.visitMethodInsn(converter);
             }
             index--;
@@ -318,30 +320,30 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     public void visitLdcInsn(final Object value) {
         this.shouldRewriteCheckCast = false;
 
-        for(MethodInstrumentationStrategy s : this.instrumentation) {
-            if(s.handleLdc(value)) {
+        for (MethodInstrumentationStrategy s : this.instrumentation) {
+            if (s.handleLdc(value)) {
                 return;
             }
         }
 
-         if (value instanceof Type) {
+        if (value instanceof Type) {
             Type type = (Type) value;
             int sort = type.getSort();
             if (sort == Type.OBJECT) {
-                for(MethodInstrumentationStrategy s : this.instrumentation) {
-                    if(s.handleLdcType(type)) {
+                for (MethodInstrumentationStrategy s : this.instrumentation) {
+                    if (s.handleLdcType(type)) {
                         return;
                     }
                 }
                 //TODO: handle Arrays etc..
             } else if (sort == Type.ARRAY) {
-                for(MethodInstrumentationStrategy s : this.instrumentation) {
-                    if(s.handleLdcArray(type)) {
+                for (MethodInstrumentationStrategy s : this.instrumentation) {
+                    if (s.handleLdcArray(type)) {
                         return;
                     }
                 }
             }
-         }
+        }
         super.visitLdcInsn(value);
     }
 
@@ -351,7 +353,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
      */
     @Override
     public void visitTypeInsn(final int opcode, final String type) {
-        if(this.shouldRewriteCheckCast && opcode == Opcodes.CHECKCAST && Constants.StringQN.equals(type)) {
+        if (this.shouldRewriteCheckCast && opcode == Opcodes.CHECKCAST && Constants.StringQN.equals(type)) {
             logger.info("Rewriting checkcast to call to TString.fromObject(Object obj)");
             super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "fromObject", String.format("(%s)%s", Constants.ObjectDesc, Constants.TStringDesc), false);
             this.shouldRewriteCheckCast = false;
@@ -359,7 +361,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         }
         logger.info("Visiting type [{}] instruction: {}", type, opcode);
         String newType = type;
-        for(MethodInstrumentationStrategy s : this.instrumentation) {
+        for (MethodInstrumentationStrategy s : this.instrumentation) {
             newType = s.rewriteTypeIns(newType);
         }
         this.shouldRewriteCheckCast = false;

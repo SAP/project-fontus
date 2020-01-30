@@ -19,7 +19,6 @@ import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 
 @XmlRootElement(name = "configuration")
 public class Configuration {
@@ -81,8 +80,8 @@ public class Configuration {
     }
 
     private FunctionCall getConverter(String name) {
-        for(FunctionCall fc : this.converters.getFunction()) {
-            if(fc.getName().equals(name)) {
+        for (FunctionCall fc : this.converters.getFunction()) {
+            if (fc.getName().equals(name)) {
                 return fc;
             }
         }
@@ -90,7 +89,7 @@ public class Configuration {
     }
 
     public boolean needsParameterConversion(FunctionCall c) {
-        for(TakesGeneric tg : this.takeGeneric.getFunction()) {
+        for (TakesGeneric tg : this.takeGeneric.getFunction()) {
             if (tg.getFunctionCall().equals(c)) {
                 return true;
             }
@@ -99,8 +98,8 @@ public class Configuration {
     }
 
     public FunctionCall getConverterForParameter(FunctionCall c, int index) {
-        for(TakesGeneric tg : this.takeGeneric.getFunction()) {
-            if(tg.getFunctionCall().equals(c) && tg.getIndex() == index) {
+        for (TakesGeneric tg : this.takeGeneric.getFunction()) {
+            if (tg.getFunctionCall().equals(c) && tg.getIndex() == index) {
                 String converterName = tg.getConverter();
                 FunctionCall converter = this.getConverter(converterName);
                 logger.info("Found converter for {} at index {}: {}", c, index, converter);
@@ -111,8 +110,8 @@ public class Configuration {
     }
 
     public FunctionCall getConverterForReturnValue(FunctionCall c) {
-        for(ReturnsGeneric rg : this.returnGeneric.getFunction()) {
-            if(rg.getFunctionCall().equals(c)) {
+        for (ReturnsGeneric rg : this.returnGeneric.getFunction()) {
+            if (rg.getFunctionCall().equals(c)) {
                 String converterName = rg.getConverter();
                 FunctionCall converter = this.getConverter(converterName);
                 logger.info("Found converter for rv of {}: {}", c, converter);

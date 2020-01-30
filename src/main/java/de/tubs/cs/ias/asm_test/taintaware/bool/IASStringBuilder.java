@@ -19,6 +19,7 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
     public void setTaint(boolean taint) {
         this.tainted = taint;
     }
+
     private void mergeTaint(IASTaintAware str) {
         this.tainted |= str.isTainted();
     }
@@ -34,7 +35,7 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
     }
 
     public IASStringBuilder(IASString str) {
-        if(str == null) {
+        if (str == null) {
             this.builder = new StringBuilder(str);
         } else {
             this.builder = new StringBuilder(str.getString());
@@ -48,7 +49,7 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
 
     public IASStringBuilder(CharSequence seq) {
         this.builder = new StringBuilder(seq);
-        if(seq instanceof IASTaintAware) {
+        if (seq instanceof IASTaintAware) {
             IASTaintAware ta = (IASTaintAware) seq;
             this.mergeTaint(ta);
         }
@@ -60,7 +61,7 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
     }
 
     public IASStringBuilder append(IASString str) {
-        if(str == null) {
+        if (str == null) {
             this.builder.append(str);
             return this;
         }
@@ -73,8 +74,9 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
         this.builder.append(strb);
         return this;
     }
+
     public IASStringBuilder append(IASStringBuffer strb) {
-        if(strb == null) {
+        if (strb == null) {
             this.builder.append(strb);
             return this;
         }
@@ -82,8 +84,9 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
         this.builder.append(strb.getBuffer());
         return this;
     }
+
     public IASStringBuilder append(CharSequence cs) {
-        if(cs instanceof IASTaintAware) {
+        if (cs instanceof IASTaintAware) {
             IASTaintAware ta = (IASTaintAware) cs;
             this.mergeTaint(ta);
         }
@@ -143,7 +146,7 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
 
     public IASStringBuilder delete(int start, int end) {
         this.builder.delete(start, end);
-        if(this.builder.length() == 0) {
+        if (this.builder.length() == 0) {
             this.tainted = false;
         }
         return this;
@@ -151,7 +154,7 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
 
     public IASStringBuilder deleteCharAt(int index) {
         this.builder.deleteCharAt(index);
-        if(this.builder.length() == 0) {
+        if (this.builder.length() == 0) {
             this.tainted = false;
         }
         return this;
@@ -186,7 +189,7 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
     }
 
     public IASStringBuilder insert(int dstOffset, CharSequence s) {
-        if(s instanceof IASTaintAware) {
+        if (s instanceof IASTaintAware) {
             IASTaintAware ta = (IASTaintAware) s;
             this.mergeTaint(ta);
         }
@@ -196,7 +199,7 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
 
     public IASStringBuilder insert(int dstOffset, CharSequence s,
                                    int start, int end) {
-        if(s instanceof IASTaintAware) {
+        if (s instanceof IASTaintAware) {
             IASTaintAware ta = (IASTaintAware) s;
             this.mergeTaint(ta);
         }
@@ -265,7 +268,7 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
         return new IASString(this.builder.toString(), this.tainted);
     }
 
-    public int capacity()  {
+    public int capacity() {
         return this.builder.capacity();
     }
 

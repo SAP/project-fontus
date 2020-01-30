@@ -81,12 +81,12 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     @Override
     public boolean instrumentFieldIns(int opcode, String owner, String name, String descriptor) {
         String newOwner = owner;
-        if(Constants.StringQN.equals(owner)) {
+        if (Constants.StringQN.equals(owner)) {
             newOwner = Constants.TStringQN;
         }
         Matcher matcher = Constants.strPattern.matcher(descriptor);
         if (matcher.find()) {
-            if(lookupTable.isJdkClass(newOwner)) {
+            if (lookupTable.isJdkClass(newOwner)) {
                 this.mv.visitFieldInsn(opcode, newOwner, name, descriptor);
                 this.stringToTStringBuilderBased();
             } else {
@@ -95,7 +95,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
             }
             return true;
         }
-        if(!owner.equals(newOwner)) {
+        if (!owner.equals(newOwner)) {
             this.mv.visitFieldInsn(opcode, newOwner, name, descriptor);
             return true;
         }

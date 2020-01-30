@@ -49,7 +49,7 @@ public final class IASStringBuffer
     public IASStringBuffer(CharSequence seq) {
         this.buffer = new StringBuffer(seq.length() + 16);
         this.buffer.append(seq);
-        if(seq instanceof IASTaintAware) {
+        if (seq instanceof IASTaintAware) {
             IASTaintAware ta = (IASTaintAware) seq;
             this.mergeTaint(ta);
         }
@@ -127,7 +127,7 @@ public final class IASStringBuffer
     }
 
     public synchronized IASStringBuffer append(IASString str) {
-        if(str == null) {
+        if (str == null) {
             String s = null;
             this.buffer.append(s);
             return this;
@@ -158,7 +158,7 @@ public final class IASStringBuffer
 
     public synchronized IASStringBuffer append(CharSequence s) {
         this.buffer.append(s);
-        if(s instanceof IASTaintAware) {
+        if (s instanceof IASTaintAware) {
             IASTaintAware ta = (IASTaintAware) s;
             this.mergeTaint(ta);
         }
@@ -168,7 +168,7 @@ public final class IASStringBuffer
 
     public synchronized IASStringBuffer append(CharSequence s, int start, int end) {
         this.buffer.append(s, start, end);
-        if(s instanceof IASTaintAware) {
+        if (s instanceof IASTaintAware) {
             IASTaintAware ta = (IASTaintAware) s;
             this.mergeTaint(ta);
         }
@@ -224,7 +224,7 @@ public final class IASStringBuffer
 
     public synchronized IASStringBuffer delete(int start, int end) {
         this.buffer.delete(start, end);
-        if(this.buffer.length() == 0) {
+        if (this.buffer.length() == 0) {
             this.tainted = false;
         }
         return this;
@@ -233,7 +233,7 @@ public final class IASStringBuffer
 
     public synchronized IASStringBuffer deleteCharAt(int index) {
         this.buffer.deleteCharAt(index);
-        if(this.buffer.length() == 0) {
+        if (this.buffer.length() == 0) {
             this.tainted = false;
         }
         return this;
@@ -288,7 +288,7 @@ public final class IASStringBuffer
         // Note, synchronization achieved via invocations of other StringBuffer methods
         // after narrowing of s to specific type
         // Ditto for toStringCache clearing
-        if(s instanceof IASTaintAware) {
+        if (s instanceof IASTaintAware) {
             IASTaintAware ta = (IASTaintAware) s;
             this.mergeTaint(ta);
         }
@@ -298,7 +298,7 @@ public final class IASStringBuffer
 
     public synchronized IASStringBuffer insert(int dstOffset, CharSequence s,
                                                int start, int end) {
-        if(s instanceof IASTaintAware) {
+        if (s instanceof IASTaintAware) {
             IASTaintAware ta = (IASTaintAware) s;
             this.mergeTaint(ta);
         }

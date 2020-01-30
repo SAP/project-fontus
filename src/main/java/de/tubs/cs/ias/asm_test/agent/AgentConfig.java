@@ -34,10 +34,10 @@ public class AgentConfig {
     }
 
     public static AgentConfig parseConfig(String args) {
-        if(args == null) {
+        if (args == null) {
             return new AgentConfig();
         }
-        try(Scanner sc = new Scanner(args)) {
+        try (Scanner sc = new Scanner(args)) {
             sc.useDelimiter(";");
             Collection<String> parts = new ArrayList<>();
             while (sc.hasNext()) {
@@ -51,11 +51,11 @@ public class AgentConfig {
     private static AgentConfig parseParts(Iterable<String> parts) {
         boolean verbose = false;
         List<String> blacklist = new ArrayList<>();
-        for(String part : parts) {
-            if("verbose".equals(part)) {
+        for (String part : parts) {
+            if ("verbose".equals(part)) {
                 verbose = true;
             }
-            if(part.startsWith("blacklisted_main_classes=")) {
+            if (part.startsWith("blacklisted_main_classes=")) {
                 String filename = afterEquals(part);
                 blacklist = readFromFile(filename);
             }
@@ -65,7 +65,7 @@ public class AgentConfig {
 
     private static List<String> readFromFile(String fileName) {
         File input = new File(fileName);
-        if(!input.isFile()) {
+        if (!input.isFile()) {
             logger.error("Suggested file '{}' does not exist!", fileName);
             return new ArrayList<>(0);
         }
@@ -79,7 +79,7 @@ public class AgentConfig {
 
     private static String afterEquals(String part) {
         int idx = part.indexOf('=');
-        return part.substring(idx+1);
+        return part.substring(idx + 1);
     }
 
 }
