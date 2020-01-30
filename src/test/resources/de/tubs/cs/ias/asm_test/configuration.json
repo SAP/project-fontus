@@ -80,8 +80,12 @@
                 "descriptor": "(Ljava/util/List;)V",
                 "interface": false
             },
-            "index": 0,
-            "converter": "convertTStringList"
+	    "conversions": [
+		{
+		    "index": 0,
+		    "converter": "convertTStringList"
+		}
+	    ]
         }
     ],
     "blacklistedMainClasses": [

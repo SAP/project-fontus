@@ -105,8 +105,12 @@ def check_output_files_existence(version):
             sys.exit(1)
 
 
-def compile_project():
-    compile_result = subprocess.run(["./gradlew", "jar"],
+def compile_project(args):
+    if args.taint_type == "bool":
+        taint_type = "boolJar"
+    elif args.taint_type == "range":
+        taint_type = "rangeJar"
+    compile_result = subprocess.run(["./gradlew", "clean", taint_type],
                                     check=False,
                                     universal_newlines=True,
                                     stdout=subprocess.PIPE,
@@ -663,7 +667,7 @@ class TestRunner:
 
 def main(args):
     if args.build_first:
-        compile_project()
+        compile_project(args)
 
     if check_output_files_existence(args.version) is False:
         print('Failed to compile java project!')
@@ -690,5 +694,7 @@ if __name__ == "__main__":
     ARG_PARSER.add_argument("--safe", action="store_true",
                             help="Runs all tests in safe mode.")
     ARG_PARSER.add_argument("--config", default=CONFIG_FILE)
+    ARG_PARSER.add_argument("--taint_type", choices=['bool', 'range'],
+                            default='bool')
 
     main(ARG_PARSER.parse_args())

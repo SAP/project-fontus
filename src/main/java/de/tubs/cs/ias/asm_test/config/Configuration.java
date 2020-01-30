@@ -19,13 +19,13 @@ public class Configuration {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public Configuration() {
-	    this.verbose = false;
+        this.verbose = false;
         this.sourceConfig = new SourceConfig();
         this.sinkConfig = new SinkConfig();
         this.converters = new ArrayList<FunctionCall>();
         this.returnGeneric = new ArrayList<ReturnsGeneric>();
         this.takeGeneric = new ArrayList<TakesGeneric>();
-	    this.blacklistedMainClasses = new ArrayList<String>();
+        this.blacklistedMainClasses = new ArrayList<String>();
     }
    
     public Configuration(boolean verbose, SourceConfig sourceConfig, SinkConfig sinkConfig, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> blacklistedMainClasses) {
@@ -100,11 +100,14 @@ public class Configuration {
 
     public FunctionCall getConverterForParameter(FunctionCall c, int index) {
         for(TakesGeneric tg : this.takeGeneric) {
-            if(tg.getFunctionCall().equals(c) && tg.getIndex() == index) {
-                String converterName = tg.getConverter();
-                FunctionCall converter = this.getConverter(converterName);
-                logger.info("Found converter for {} at index {}: {}", c, index, converter);
-                return converter;
+            if(tg.getFunctionCall().equals(c)) {
+                Conversion conversion = tg.getConversionAt(index);
+                if(conversion != null) {
+                    String converterName = conversion.getConverter();
+                    FunctionCall converter = this.getConverter(converterName);
+                    logger.info("Found converter for {} at index {}: {}", c, index, converter);
+                    return converter;
+                }
             }
         }
         return null;

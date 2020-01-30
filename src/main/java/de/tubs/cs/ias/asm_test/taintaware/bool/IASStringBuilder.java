@@ -1,4 +1,6 @@
-package de.tubs.cs.ias.asm_test.taintaware;
+package de.tubs.cs.ias.asm_test.taintaware.bool;
+
+import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 
 import java.util.stream.IntStream;
 
@@ -92,8 +94,12 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
         return this;
     }
 
-    public IASStringBuilder append(CharSequence s, int start, int end) {
-        this.builder.append(s, start, end);
+    public IASStringBuilder append(CharSequence cs, int start, int end) {
+        if (cs instanceof IASTaintAware) {
+            IASTaintAware ta = (IASTaintAware) cs;
+            this.mergeTaint(ta);
+        }
+        this.builder.append(cs, start, end);
         return this;
     }
 

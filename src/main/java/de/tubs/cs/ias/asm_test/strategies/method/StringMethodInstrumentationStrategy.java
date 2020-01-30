@@ -4,9 +4,9 @@ import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.Utils;
+import de.tubs.cs.ias.asm_test.config.TaintMethodConfig;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import de.tubs.cs.ias.asm_test.strategies.StringInstrumentation;
-import de.tubs.cs.ias.asm_test.taintaware.IASString;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -162,8 +162,17 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
 
     @Override
     public boolean handleLdcArray(Type type) {
-        if (stringArrayType.equals(type)) {
-            Type taintStringArray = Type.getType(IASString[].class);
+        Type stringArray = Type.getType(String[].class);
+        if (stringArray.equals(type)) {
+            Type taintStringArray;
+            if (TaintMethodConfig.getTaintMethod() == TaintMethodConfig.TaintMethod.BOOLEAN) {
+                taintStringArray = Type.getType(de.tubs.cs.ias.asm_test.taintaware.bool.IASString[].class);
+            } else if(TaintMethodConfig.getTaintMethod() == TaintMethodConfig.TaintMethod.RANGE) {
+                taintStringArray = Type.getType(de.tubs.cs.ias.asm_test.taintaware.range.IASString[].class);
+            } else {
+                throw new IllegalStateException("Taint method unsupported or not specified!");
+            }
+
             this.mv.visitLdcInsn(taintStringArray);
             return true;
         }

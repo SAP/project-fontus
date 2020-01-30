@@ -45,14 +45,14 @@
     <converters>
         <converter>
             <opcode>184</opcode>
-            <owner>de/tubs/cs/ias/asm_test/taintaware/IASStringUtils</owner>
+            <owner>de/tubs/cs/ias/asm_test/taintaware/${subpath}IASStringUtils</owner>
            <name>convertStringList</name>
            <descriptor>(Ljava/util/List;)Ljava/util/List;</descriptor>
             <interface>false</interface>
         </converter>
         <converter>
             <opcode>184</opcode>
-            <owner>de/tubs/cs/ias/asm_test/taintaware/IASStringUtils</owner>
+            <owner>de/tubs/cs/ias/asm_test/taintaware/${subpath}IASStringUtils</owner>
             <name>convertTStringList</name>
             <descriptor>(Ljava/util/List;)Ljava/util/List;</descriptor>
             <interface>false</interface>
@@ -79,8 +79,21 @@
                 <descriptor>(Ljava/util/List;)V</descriptor>
                 <interface>false</interface>
             </function>
-            <converter>convertTStringList</converter>
-            <index>0</index>
+	    <conversions>
+              <conversion>
+                <converter>convertTStringList</converter>
+                <index>0</index>
+              </conversion>
+            </conversions>
+        </takeGeneric>
+	<takeGeneric>
+          <function>
+            <opcode>183</opcode>
+            <owner>javax/management/ObjectName</owner>
+            <name>&lt;init&gt;</name>
+            <descriptor>(Ljava/lang/String;Ljava/util/Hashtable;)V</descriptor>
+            <interface>false</interface>
+          </function>
         </takeGeneric>
     </takeGenerics>
 </configuration>
