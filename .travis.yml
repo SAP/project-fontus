@@ -18,4 +18,3 @@ script:
 - bash build.sh
 - cd ..
 - python3 ./run_system_tests.py --build-first  --taint_type=bool
-- python3 ./run_system_tests.py --build-first  --taint_type=range
