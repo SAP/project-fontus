@@ -2,6 +2,9 @@ package de.tubs.cs.ias.asm_test;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
 /**
@@ -25,7 +28,9 @@ public class FunctionCall {
     private final String name;
     @XmlElement
     private final String descriptor;
-    @XmlElement
+
+    @XmlElement(name = "interface")
+    @JsonProperty(value="interface")  
     private final boolean isInterface;
 
     public FunctionCall(final int opcode, final String owner, final String name, final String descriptor, final boolean isInterface) {
@@ -51,16 +56,18 @@ public class FunctionCall {
     public int getOpcode() {
         return this.opcode;
     }
-
+ 
     public boolean isInterface() {
         return this.isInterface;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || this.getClass() != obj.getClass()) return false;
-        FunctionCall that = (FunctionCall) obj;
+    public boolean equals(final Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null || this.getClass() != obj.getClass())
+            return false;
+        final FunctionCall that = (FunctionCall) obj;
         return this.opcode == that.opcode &&
                 this.isInterface == that.isInterface &&
                 this.owner.equals(that.owner) &&

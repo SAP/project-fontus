@@ -1,8 +1,14 @@
 package de.tubs.cs.ias.asm_test;
 
 import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.Sink;
+import de.tubs.cs.ias.asm_test.config.Source;
 import de.tubs.cs.ias.asm_test.asm.BasicMethodVisitor;
+import de.tubs.cs.ias.asm_test.transformer.MethodParameterTransformer;
 import de.tubs.cs.ias.asm_test.strategies.method.*;
+import de.tubs.cs.ias.asm_test.transformer.JdkMethodTransformer;
+import de.tubs.cs.ias.asm_test.transformer.SinkTransformer;
+import de.tubs.cs.ias.asm_test.transformer.SourceTransformer;
 import org.objectweb.asm.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +21,7 @@ import java.util.Stack;
 
 
 @SuppressWarnings("deprecation")
-class MethodTaintingVisitor extends BasicMethodVisitor {
+public class MethodTaintingVisitor extends BasicMethodVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private boolean shouldRewriteCheckCast;
@@ -36,8 +42,9 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
 
     private final Collection<MethodInstrumentationStrategy> instrumentation = new ArrayList<>(4);
 
+    private final Configuration config;
 
-    MethodTaintingVisitor(int acc, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver) {
+    MethodTaintingVisitor(int acc, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver, Configuration config) {
         super(Opcodes.ASM7, methodVisitor);
         this.resolver = resolver;
         logger.info("Instrumenting method: {}{}", name, methodDescriptor);
@@ -54,6 +61,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         this.instrumentation.add(new StringBuilderMethodInstrumentationStrategy(this.getParentVisitor()));
         this.instrumentation.add(new StringBufferMethodInstrumentationStrategy(this.getParentVisitor()));
         this.instrumentation.add(new DefaultMethodInstrumentationStrategy(this.getParentVisitor()));
+	    this.config = config;
     }
 
     @Override
@@ -94,7 +102,8 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         super.visitMaxs(maxStack, Math.max(this.used, this.usedAfterInjection));
     }
 
-    private void visitMethodInsn(FunctionCall fc) {
+    public void visitMethodInsn(FunctionCall fc) {
+	    logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(fc.getOpcode()), fc.getOwner(), fc.getName(), fc.getDescriptor());
         super.visitMethodInsn(fc.getOpcode(), fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.isInterface());
     }
 
@@ -130,36 +139,6 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
     /**
-     * If the method is in the list of sinks: call the taint check before call it. Return true in this case.
-     * Return false otherwise.
-     */
-    private boolean isSinkCall(FunctionCall fc) {
-        if (Configuration.instance.getSinks().contains(fc)) {
-            logger.info("{}.{}{} is a sink, so calling the check taint function before passing the value!", fc.getOwner(), fc.getName(), fc.getDescriptor());
-            // Call dup here to put the TString reference twice on the stack so the call can pop one without affecting further processing
-            MethodTaintingUtils.callCheckTaint(this.getParentVisitor());
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, Constants.AS_STRING, Constants.AS_STRING_DESC, false);
-            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.isInterface()); //TODO: Why is invokevirtual hardcoded in here?
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * If the method is in the list of sources: call it, mark the returned String as tainted. Return true in this case.
-     * Return false otherwise.
-     */
-    private boolean isSourceCall(FunctionCall fc) {
-        if (Configuration.instance.getSources().contains(fc)) {
-            logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", fc.getOwner(), fc.getName(), fc.getDescriptor(), Constants.TStringQN);
-            this.visitMethodInsn(fc);
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, "tainted", Constants.CreateTaintedStringDesc, false);
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * Replace access to fields of type IASString/IASStringBuilder
      */
     @Override
@@ -186,15 +165,10 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         this.shouldRewriteCheckCast = false;
         FunctionCall fc = new FunctionCall(opcode, owner, name, descriptor, isInterface);
 
-        if (this.isSinkCall(fc) || this.isSourceCall(fc)) {
-            return;
-        }
-
         // If a method has a defined proxy, apply it right away
         if (this.shouldBeProxied(fc)) {
             return;
         }
-
 
         for (MethodInstrumentationStrategy s : this.instrumentation) {
             if (s.rewriteOwnerMethod(opcode, owner, name, descriptor, isInterface)) {
@@ -202,11 +176,9 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
             }
         }
 
-        // JDK methods need special handling.
-        // If there isn't a proxy defined, we will just convert taint-aware Strings to regular ones before calling the function and vice versa for the return value.
-        boolean jdkMethod = JdkClassesLookupTable.instance.isJdkClass(owner);
-        if (jdkMethod || InstrumentationState.instance.isAnnotation(owner, this.resolver)) {
-            this.handleJdkMethod(fc);
+        // Call any functions which manipulate function call parameters and return types
+        // for example sources, sinks and JDK functions
+        if (this.rewriteParametersAndReturnType(fc)) {
             return;
         }
 
@@ -229,86 +201,51 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         super.visitMethodInsn(opcode, owner, name, desc.toDescriptor(), isInterface);
     }
 
-    private void handleJdkMethod(FunctionCall call) {
-        Descriptor desc = Descriptor.parseDescriptor(call.getDescriptor());
-        switch (desc.parameterCount()) {
-            case 0:
-                break;
-            case 1:
-                String param = desc.getParameterStack().peek();
-                for (MethodInstrumentationStrategy s : this.instrumentation) {
-                    s.insertJdkMethodParameterConversion(param);
-                }
-                FunctionCall converter = Configuration.instance.getConverterForParameter(call, 0);
-                if (converter != null) {
-                    this.visitMethodInsn(converter);
-                }
-                break;
-            default:
-                this.handleMultiParameterJdkMethod(call);
-                break;
+
+    private boolean rewriteParametersAndReturnType(FunctionCall call) {
+        
+        MethodParameterTransformer transformer = new MethodParameterTransformer(this, call);
+
+        // Add JDK transformations
+	if (JdkClassesLookupTable.instance.isJdkClass(call.getOwner()) || InstrumentationState.instance.isAnnotation(call.getOwner(), this.resolver)) {
+	    logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+	    JdkMethodTransformer t = new JdkMethodTransformer(call, this.instrumentation, this.config);
+	    transformer.AddParameterTransformation(t);
+	    transformer.AddReturnTransformation(t);
         }
-        logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+
+        // Add Sink transformations
+        Sink sink = config.getSinkConfig().getSinkForFunction(call);
+        if (sink != null) {
+            logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+            SinkTransformer t = new SinkTransformer(sink);
+            transformer.AddParameterTransformation(t);
+        }
+
+        // Add Source transformations
+        Source source = config.getSourceConfig().getSourceForFunction(call);
+        if (source != null) {
+            logger.info("Adding source tainting for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+            SourceTransformer t = new SourceTransformer(source);
+	    transformer.AddReturnTransformation(t);
+        }
+
+        // No transformations required
+        if (!transformer.needsTransformation()) {
+            return false;
+        }
+
+        // Do the transformations
+        transformer.ModifyStackParameters(this.used);
+        this.usedAfterInjection = this.used + transformer.getExtraStackSlots();
+        // Make the call
         this.visitMethodInsn(call);
-        for (MethodInstrumentationStrategy s : this.instrumentation) {
-            s.instrumentReturnType(call.getOwner(), call.getName(), desc);
-        }
+        // Modify Return parameters
+        transformer.ModifyReturnType();
+        this.shouldRewriteCheckCast = transformer.rewriteCheckCast();
 
-        FunctionCall converter = Configuration.instance.getConverterForReturnValue(call);
-        if (converter != null) {
-            this.visitMethodInsn(converter);
-        }
-
-        if (desc.getReturnType().equals(Constants.ObjectDesc)) {
-            this.shouldRewriteCheckCast = true;
-        }
-    }
-
-
-    private void handleMultiParameterJdkMethod(FunctionCall call) {
-        Descriptor desc = Descriptor.parseDescriptor(call.getDescriptor());
-        if (!desc.hasStringLikeParameters() && !Configuration.instance.needsParameterConversion(call)) return;
-
-        // TODO: Add optimization that the upmost parameter on the stack does not need to be stored/loaded..
-        Collection<String> parameters = desc.getParameters();
-        Stack<Runnable> loadStack = new Stack<>();
-        Stack<String> params = new Stack<>();
-        params.addAll(parameters);
-        int numVars = (Type.getArgumentsAndReturnSizes(desc.toDescriptor()) >> 2) - 1;
-        this.usedAfterInjection = this.used + numVars;
-        int n = this.used;
-        int index = params.size() - 1;
-        while (!params.empty()) {
-            String p = params.pop();
-            int storeOpcode = Utils.getStoreOpcode(p);
-            int loadOpcode = Utils.getLoadOpcode(p);
-
-            //logger.info("Type: {}", p);
-            for (MethodInstrumentationStrategy s : this.instrumentation) {
-                s.insertJdkMethodParameterConversion(p);
-            }
-
-            FunctionCall converter = Configuration.instance.getConverterForParameter(call, index);
-            if (converter != null) {
-                this.visitMethodInsn(converter);
-            }
-            index--;
-
-            final int finalN = n;
-            super.visitVarInsn(storeOpcode, finalN);
-            logger.info("Executing store: {}_{} for {}", storeOpcode, finalN, p);
-
-            loadStack.push(() -> {
-                logger.info("Executing load {}_{} for {}", loadOpcode, finalN, p);
-                super.visitVarInsn(loadOpcode, finalN);
-            });
-            n += Utils.storeOpcodeSize(storeOpcode);
-        }
-        assert n == this.usedAfterInjection;
-        while (!loadStack.empty()) {
-            Runnable l = loadStack.pop();
-            l.run();
-        }
+	logger.info("Finished transforming parameters for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+        return true;
     }
 
     /**

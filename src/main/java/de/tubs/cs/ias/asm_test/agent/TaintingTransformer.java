@@ -19,13 +19,13 @@ import java.security.ProtectionDomain;
 class TaintingTransformer implements ClassFileTransformer {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final Configuration config = Configuration.instance;
+    private final Configuration config;
     private final Instrumenter instrumenter;
     private static final JdkClassesLookupTable jdkClasses = JdkClassesLookupTable.instance;
 
-    TaintingTransformer(AgentConfig config) {
+    TaintingTransformer(Configuration config) {
         this.instrumenter = new Instrumenter();
-        this.config.mergeAgentConfig(config);
+        this.config = config;
     }
 
     @Override
@@ -41,8 +41,8 @@ class TaintingTransformer implements ClassFileTransformer {
         }
 
         logger.info("Tainting class: {}", className);
-        byte[] outArray = this.instrumenter.instrumentClass(classfileBuffer, new ClassResolver(loader));
-        if (this.config.isVerbose()) {
+        byte[] outArray = this.instrumenter.instrumentClass(classfileBuffer, new ClassResolver(loader), config);
+        if(this.config.isVerbose()) {
             String baseName = "/tmp/agent";
             File outFile = new File(baseName, className + Constants.CLASS_FILE_SUFFIX);
             File parent = new File(outFile.getParent());

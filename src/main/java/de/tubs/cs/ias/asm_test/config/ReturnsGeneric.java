@@ -5,7 +5,7 @@ import de.tubs.cs.ias.asm_test.FunctionCall;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(name = "returns")
+@XmlRootElement(name = "returnsGeneric")
 public class ReturnsGeneric {
 
     @XmlElement(name = "function")
