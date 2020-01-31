@@ -1,5 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
+import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
+
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -978,7 +980,18 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             if (null == arg) {
                 result.append("null"); //$NON-NLS-1$
             } else {
-                result.append(Integer.toHexString(arg.hashCode()));
+                String hexString = Integer.toHexString(arg.hashCode());
+                IASString taintedHexString = new IASString(hexString);
+                if (arg instanceof IASRangeAware && ((IASTaintAware) arg).isTainted()) {
+                    List<IASTaintRange> ranges = ((IASRangeAware) arg).getTaintInformation().getAllRanges();
+                    taintedHexString.initialize();
+                    if (ranges.size() == 1) {
+                        taintedHexString.getTaintInformation().addRange(0, taintedHexString.length(), ranges.get(0).getSource());
+                    } else {
+                        taintedHexString.setTaint(true);
+                    }
+                }
+                result.append(taintedHexString);
             }
             return padding(result, startIndex);
         }
