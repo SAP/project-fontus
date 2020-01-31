@@ -22,6 +22,10 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
     private IOException lastIOException;
     private boolean closed;
 
+    public IASFormatter(Formatter formatter) {
+        this(formatter.out(), formatter.locale());
+    }
+
     public IASFormatter() {
         this(new IASStringBuffer());
     }
