@@ -1,5 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
+import de.tubs.cs.ias.asm_test.Constants;
+
 import java.util.stream.IntStream;
 
 public final class IASStringBuffer extends IASAbstractStringBuilder implements Comparable<IASStringBuffer> {
@@ -296,8 +298,12 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
     }
 
     @Override
-    public synchronized int compareTo(IASStringBuffer o) {
-        return this.builder.compareTo(o.builder);
+    public int compareTo(IASStringBuffer o) {
+        if (Constants.JAVA_VERSION < 11) {
+            return this.toIASString().compareTo(IASString.valueOf(o));
+        } else {
+            return this.builder.compareTo(o.builder);
+        }
     }
 
     @Override
