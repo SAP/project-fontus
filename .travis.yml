@@ -5,6 +5,9 @@ before_install:
 - sudo apt-get update
 - sudo apt-get install python3
 
+after_install:
+- ./gradlew boolJar
+
 script:
 - cd tests
 - chmod +x run_system_tests.py
