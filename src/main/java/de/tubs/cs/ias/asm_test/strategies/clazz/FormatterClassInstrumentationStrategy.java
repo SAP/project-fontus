@@ -2,7 +2,7 @@ package de.tubs.cs.ias.asm_test.strategies.clazz;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.TriConsumer;
-import de.tubs.cs.ias.asm_test.strategies.StringInstrumentation;
+import de.tubs.cs.ias.asm_test.strategies.FormatterInstrumentation;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.slf4j.Logger;
@@ -12,7 +12,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import java.util.regex.Matcher;
 
-public class FormatterClassInstrumentationStrategy extends StringInstrumentation implements ClassInstrumentationStrategy {
+public class FormatterClassInstrumentationStrategy extends FormatterInstrumentation implements ClassInstrumentationStrategy {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final ClassVisitor visitor;
 

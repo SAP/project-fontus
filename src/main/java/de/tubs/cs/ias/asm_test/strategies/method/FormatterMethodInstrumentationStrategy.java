@@ -4,8 +4,8 @@ import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.Utils;
+import de.tubs.cs.ias.asm_test.strategies.FormatterInstrumentation;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
-import de.tubs.cs.ias.asm_test.strategies.StringInstrumentation;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -17,9 +17,8 @@ import java.util.Formatter;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 
-public class FormatterMethodInstrumentationStrategy extends StringInstrumentation implements MethodInstrumentationStrategy {
+public class FormatterMethodInstrumentationStrategy extends FormatterInstrumentation implements MethodInstrumentationStrategy {
     private final MethodVisitor mv;
-    private static final JdkClassesLookupTable lookupTable = JdkClassesLookupTable.instance;
     private final HashMap<String, String> methodsToRename = new HashMap<>(1);
     private static final Type formatterType = Type.getType(Formatter.class);
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
