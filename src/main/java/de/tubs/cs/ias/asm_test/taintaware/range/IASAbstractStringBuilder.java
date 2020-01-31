@@ -32,15 +32,6 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
         this.append(str);
     }
 
-    public IASChar getIASCharAt(int position) {
-        if(position >= this.length() || position < 0) {
-            throw new IllegalArgumentException("Position is not within the StringBuilder. Length: " + this.length() + "; Position: " + position);
-        }
-        IASTaintSource taintSource = getTaintInformation().getTaintFor(position);
-        char c = this.builder.charAt(position);
-        return new IASChar(c, taintSource);
-    }
-
     private void appendShifted(List<IASTaintRange> ranges, boolean merge) {
         if (ranges.size() == 0) {
             return;

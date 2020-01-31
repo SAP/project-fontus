@@ -18,11 +18,11 @@ public class IASCharBuffer {
         return position < limit;
     }
 
-    public IASChar get() {
+    public char get() {
         if (!hasRemaining()) {
             throw new IllegalStateException("Nothing remaining");
         }
-        IASChar c = this.stringBuffer.getIASCharAt(this.position);
+        char c = this.stringBuffer.charAt(this.position);
         this.position++;
         return c;
     }

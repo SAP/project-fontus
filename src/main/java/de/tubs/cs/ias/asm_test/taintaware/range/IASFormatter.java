@@ -4,6 +4,7 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -198,7 +199,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
 
         private int state = ENTRY_STATE;
 
-        private IASChar currentChar = new IASChar((char) 0);
+        private char currentChar = 0;
 
         private IASCharBuffer format = null;
 
@@ -207,7 +208,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         }
 
         void reset() {
-            this.currentChar = new IASChar((char) FormatToken.UNSET);
+            this.currentChar = (char) FormatToken.UNSET;
             this.state = ENTRY_STATE;
             this.token = null;
         }
@@ -227,7 +228,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
                 if (ParserStateMachine.EXIT_STATE != state) {
                     // exit state does not need to get next char
                     currentChar = getNextFormatChar();
-                    if (EOS == currentChar.getChar()
+                    if (EOS == currentChar
                             && ParserStateMachine.ENTRY_STATE != state) {
                         throw new UnknownFormatConversionException(getFormatString().toString());
                     }
@@ -276,11 +277,11 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         /*
          * Gets next char from the format string.
          */
-        private IASChar getNextFormatChar() {
+        private char getNextFormatChar() {
             if (format.hasRemaining()) {
                 return format.get();
             }
-            return new IASChar(EOS);
+            return EOS;
         }
 
         private IASString getFormatString() {
@@ -293,9 +294,9 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         }
 
         private void process_ENTRY_STATE() {
-            if (EOS == currentChar.getChar()) {
+            if (EOS == currentChar) {
                 state = ParserStateMachine.EXIT_STATE;
-            } else if ('%' == currentChar.getChar()) {
+            } else if ('%' == currentChar) {
                 // change to conversion type state
                 state = START_CONVERSION_STATE;
             }
@@ -303,14 +304,14 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         }
 
         private void process_START_CONVERSION_STATE() {
-            if (Character.isDigit(currentChar.getChar())) {
+            if (Character.isDigit(currentChar)) {
                 int position = format.position() - 1;
                 int number = parseInt(format);
-                IASChar nextChar = new IASChar((char) 0);
+                char nextChar = (char) 0;
                 if (format.hasRemaining()) {
                     nextChar = format.get();
                 }
-                if ('$' == nextChar.getChar()) {
+                if ('$' == nextChar) {
                     // the digital sequence stands for the argument
                     // index.
                     int argIndex = number;
@@ -325,7 +326,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
                     state = FLAGS_STATE;
                 } else {
                     // the digital zero stands for one format flag.
-                    if ('0' == currentChar.getChar()) {
+                    if ('0' == currentChar) {
                         state = FLAGS_STATE;
                         format.position(position);
                     } else {
@@ -337,7 +338,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
                     }
                 }
                 currentChar = nextChar;
-            } else if ('<' == currentChar.getChar()) {
+            } else if ('<' == currentChar) {
                 state = FLAGS_STATE;
                 token.setArgIndex(FormatToken.LAST_ARGUMENT_INDEX);
             } else {
@@ -349,12 +350,12 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         }
 
         private void process_FlAGS_STATE() {
-            if (token.setFlag(currentChar.getChar())) {
+            if (token.setFlag(currentChar)) {
                 // remains in FLAGS_STATE
-            } else if (Character.isDigit(currentChar.getChar())) {
+            } else if (Character.isDigit(currentChar)) {
                 token.setWidth(parseInt(format));
                 state = WIDTH_STATE;
-            } else if ('.' == currentChar.getChar()) {
+            } else if ('.' == currentChar) {
                 state = PRECISION_STATE;
             } else {
                 state = CONVERSION_TYPE_STATE;
@@ -364,7 +365,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         }
 
         private void process_WIDTH_STATE() {
-            if ('.' == currentChar.getChar()) {
+            if ('.' == currentChar) {
                 state = PRECISION_STATE;
             } else {
                 state = CONVERSION_TYPE_STATE;
@@ -374,7 +375,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         }
 
         private void process_PRECISION_STATE() {
-            if (Character.isDigit(currentChar.getChar())) {
+            if (Character.isDigit(currentChar)) {
                 token.setPrecision(parseInt(format));
             } else {
                 // the precision is required but not given by the
@@ -385,8 +386,8 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         }
 
         private void process_CONVERSION_TYPE_STATE() {
-            token.setConversionType(currentChar.getChar());
-            if ('t' == currentChar.getChar() || 'T' == currentChar.getChar()) {
+            token.setConversionType(currentChar);
+            if ('t' == currentChar || 'T' == currentChar) {
                 state = SUFFIX_STATE;
             } else {
                 state = EXIT_STATE;
@@ -395,7 +396,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         }
 
         private void process_SUFFIX_STATE() {
-            token.setDateSuffix(currentChar.getChar());
+            token.setDateSuffix(currentChar);
             state = EXIT_STATE;
         }
 
@@ -410,7 +411,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             int start = buffer.position() - 1;
             int end = buffer.limit();
             while (buffer.hasRemaining()) {
-                if (!Character.isDigit(buffer.get().getChar())) {
+                if (!Character.isDigit(buffer.get())) {
                     end = buffer.position() - 1;
                     break;
                 }
