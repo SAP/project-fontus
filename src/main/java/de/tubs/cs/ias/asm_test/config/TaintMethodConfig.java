@@ -9,13 +9,18 @@ public class TaintMethodConfig {
     private static TaintMethod taintMethod;
 
     static {
+        properties = new Properties();
+
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         InputStream is = classLoader.getResourceAsStream("application.properties");
-        properties = new Properties();
-        try {
-            properties.load(is);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(is != null) {
+            try {
+                properties.load(is);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            properties.put("taintpath", "bool/");
         }
     }
 
