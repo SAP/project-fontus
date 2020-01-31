@@ -2,12 +2,13 @@ package de.tubs.cs.ias.asm_test;
 
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.Sink;
-import de.tubs.cs.ias.asm_test.config.SinkParameter;
 import de.tubs.cs.ias.asm_test.config.Source;
 import de.tubs.cs.ias.asm_test.asm.BasicMethodVisitor;
-import de.tubs.cs.ias.asm_test.asm.MethodParameterTransformer;
+import de.tubs.cs.ias.asm_test.transformer.MethodParameterTransformer;
 import de.tubs.cs.ias.asm_test.strategies.method.*;
-import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
+import de.tubs.cs.ias.asm_test.transformer.JdkMethodTransformer;
+import de.tubs.cs.ias.asm_test.transformer.SinkTransformer;
+import de.tubs.cs.ias.asm_test.transformer.SourceTransformer;
 import org.objectweb.asm.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,8 +102,8 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         super.visitMaxs(maxStack, Math.max(this.used, this.usedAfterInjection));
     }
 
-    private void visitMethodInsn(FunctionCall fc) {
-	logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(fc.getOpcode()), fc.getOwner(), fc.getName(), fc.getDescriptor());
+    public void visitMethodInsn(FunctionCall fc) {
+	    logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(fc.getOpcode()), fc.getOwner(), fc.getName(), fc.getDescriptor());
         super.visitMethodInsn(fc.getOpcode(), fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.isInterface());
     }
 
@@ -201,96 +202,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
 
-    private class JdkMethodTransformer implements MethodParameterTransformer.ParameterTransformation, MethodParameterTransformer.ReturnTransformation {
-
-        private FunctionCall call;
-
-        public JdkMethodTransformer(FunctionCall call) {
-            this.call = call;
-        }
-
-        @Override
-        public void ParameterTransformation(int index, String type, MethodTaintingVisitor visitor) {
-
-            for (MethodInstrumentationStrategy s : visitor.instrumentation) {
-                s.insertJdkMethodParameterConversion(type);
-            }
-
-            FunctionCall converter = config.getConverterForParameter(this.call, index);
-            if(converter != null) {
-                visitor.visitMethodInsn(converter);
-            }
-        }
-
-        @Override
-        public void ReturnTransformation(MethodTaintingVisitor visitor, Descriptor desc) {
-
-            for (MethodInstrumentationStrategy s : visitor.instrumentation) {
-                s.instrumentReturnType(call.getOwner(), call.getName(), desc);
-            }
-    
-            FunctionCall converter = config.getConverterForReturnValue(call);
-            if(converter != null) {
-                visitor.visitMethodInsn(converter);
-            }
-
-        }
-
-    }
-
-    private class SinkTransformer implements MethodParameterTransformer.ParameterTransformation {
-
-	    private Sink sink;
-
-        public SinkTransformer(Sink sink) {
-	        this.sink = sink;
-        }
-
-        @Override
-        public void ParameterTransformation(int index, String type, MethodTaintingVisitor visitor) {
-
-            if (sink == null) {
-                return;
-            }
-
-            // Sink checks
-            logger.debug("Type: {}", type);
-            // Check whether this parameter needs to be checked for taint
-            SinkParameter sp = sink.findParameter(index);
-            if (sp != null) {
-                if (InstrumentationHelper.canHandleType(type)) {
-                    logger.info("Adding taint check for sink {}, paramater {} ({})", sink.getName(), index, type);
-                    MethodTaintingUtils.callCheckTaint(visitor.getParent());
-                } else {
-                    logger.warn("Tried to check taint for type {} (index {}) in sink {} although it is not taintable!", type, index, sink.getName());
-                }
-            }
-        }
-    }
-
-    private class SourceTransformer implements MethodParameterTransformer.ReturnTransformation {
-
-	    private Source source;
-
-        public SourceTransformer(Source source) {
-	        this.source = source;
-        }
-
-        @Override
-        public void ReturnTransformation(MethodTaintingVisitor visitor, Descriptor desc) {
-            FunctionCall fc = this.source.getFunction();
-            logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", fc.getOwner(), fc.getName(), fc.getDescriptor(), Constants.TStringQN);
-
-            FunctionCall tainter = new FunctionCall(Opcodes.INVOKESTATIC,
-						    Constants.TStringQN,
-						    "tainted",
-						    Constants.CreateTaintedStringDesc,
-						    false);
-            visitor.visitMethodInsn(tainter);
-        }
-
-    }
-
     private boolean rewriteParametersAndReturnType(FunctionCall call) {
         
         MethodParameterTransformer transformer = new MethodParameterTransformer(this, call);
@@ -298,7 +209,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         // Add JDK transformations
 	if (JdkClassesLookupTable.instance.isJdkClass(call.getOwner()) || InstrumentationState.instance.isAnnotation(call.getOwner(), this.resolver)) {
 	    logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-	    JdkMethodTransformer t = new JdkMethodTransformer(call);
+	    JdkMethodTransformer t = new JdkMethodTransformer(call, this.instrumentation, this.config);
 	    transformer.AddParameterTransformation(t);
 	    transformer.AddReturnTransformation(t);
         }

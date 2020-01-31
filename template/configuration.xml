@@ -1,26 +1,26 @@
 <configuration>
     <sourceConfig>
         <sources>
-                <source>
+            <source>
+                <name>next</name>
+                <function>
+                    <opcode>182</opcode>
+                    <owner>java/util/Scanner</owner>
                     <name>next</name>
-                    <function>
-                        <opcode>182</opcode>
-                        <owner>java/util/Scanner</owner>
-                        <name>next</name>
-                        <descriptor>()Ljava/lang/String;</descriptor>
-                        <interface>false</interface>
-                    </function>
-                </source>
-                <source>
+                    <descriptor>()Ljava/lang/String;</descriptor>
+                    <interface>false</interface>
+                </function>
+            </source>
+            <source>
+                <name>nextLine</name>
+                <function>
+                    <opcode>182</opcode>
+                    <owner>java/util/Scanner</owner>
                     <name>nextLine</name>
-                    <function>
-                        <opcode>182</opcode>
-                        <owner>java/util/Scanner</owner>
-                        <name>nextLine</name>
-                        <descriptor>()Ljava/lang/String;</descriptor>
-                        <interface>false</interface>
-                    </function>
-                </source>
+                    <descriptor>()Ljava/lang/String;</descriptor>
+                    <interface>false</interface>
+                </function>
+            </source>
         </sources>
     </sourceConfig>
     <sinkConfig>
@@ -46,8 +46,8 @@
         <converter>
             <opcode>184</opcode>
             <owner>de/tubs/cs/ias/asm_test/taintaware/${subpath}IASStringUtils</owner>
-           <name>convertStringList</name>
-           <descriptor>(Ljava/util/List;)Ljava/util/List;</descriptor>
+            <name>convertStringList</name>
+            <descriptor>(Ljava/util/List;)Ljava/util/List;</descriptor>
             <interface>false</interface>
         </converter>
         <converter>
@@ -55,6 +55,13 @@
             <owner>de/tubs/cs/ias/asm_test/taintaware/${subpath}IASStringUtils</owner>
             <name>convertTStringList</name>
             <descriptor>(Ljava/util/List;)Ljava/util/List;</descriptor>
+            <interface>false</interface>
+        </converter>
+        <converter>
+            <opcode>184</opcode>
+            <owner>de/tubs/cs/ias/asm_test/taintaware/${subpath}IASStringUtils</owner>
+            <name>convertTStringToTStringHashTable</name>
+            <descriptor>(Ljava/util/Hashtable;)Ljava/util/Hashtable;</descriptor>
             <interface>false</interface>
         </converter>
     </converters>
@@ -79,21 +86,27 @@
                 <descriptor>(Ljava/util/List;)V</descriptor>
                 <interface>false</interface>
             </function>
-	    <conversions>
-              <conversion>
-                <converter>convertTStringList</converter>
-                <index>0</index>
-              </conversion>
+            <conversions>
+                <conversion>
+                    <converter>convertTStringList</converter>
+                    <index>0</index>
+                </conversion>
             </conversions>
         </takeGeneric>
-	<takeGeneric>
-          <function>
-            <opcode>183</opcode>
-            <owner>javax/management/ObjectName</owner>
-            <name>&lt;init&gt;</name>
-            <descriptor>(Ljava/lang/String;Ljava/util/Hashtable;)V</descriptor>
-            <interface>false</interface>
-          </function>
+        <takeGeneric>
+            <function>
+                <opcode>183</opcode>
+                <owner>javax/management/ObjectName</owner>
+                <name>&lt;init&gt;</name>
+                <descriptor>(Ljava/lang/String;Ljava/util/Hashtable;)V</descriptor>
+                <interface>false</interface>
+            </function>
+            <conversions>
+                <conversion>
+                    <converter>convertTStringToTStringHashTable</converter>
+                    <index>1</index>
+                </conversion>
+            </conversions>
         </takeGeneric>
     </takeGenerics>
 </configuration>
