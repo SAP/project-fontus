@@ -53,6 +53,7 @@ class MethodTaintingVisitor extends BasicMethodVisitor {
         this.instrumentation.add(new StringMethodInstrumentationStrategy(this.getParentVisitor()));
         this.instrumentation.add(new StringBuilderMethodInstrumentationStrategy(this.getParentVisitor()));
         this.instrumentation.add(new StringBufferMethodInstrumentationStrategy(this.getParentVisitor()));
+        this.instrumentation.add(new FormatterMethodInstrumentationStrategy(this.getParentVisitor()));
         this.instrumentation.add(new DefaultMethodInstrumentationStrategy(this.getParentVisitor()));
     }
 
