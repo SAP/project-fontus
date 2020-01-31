@@ -5,10 +5,13 @@ before_install:
 - sudo apt-get update
 - sudo apt-get install python3
 
-after_install:
-- ./gradlew boolJar
+install: true
 
 script:
+- ./gradlew -s assemble
+- ./gradlew -s boolJar
+- ./gradlew -s check
+- ./gradlew publishToMavenLocal
 - cd tests
 - chmod +x run_system_tests.py
 - cd jars
