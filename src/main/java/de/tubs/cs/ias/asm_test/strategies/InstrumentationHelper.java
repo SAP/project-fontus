@@ -31,7 +31,7 @@ public class InstrumentationHelper {
             newDesc = is.instrument(newDesc);
         }
         return newDesc;
-    }visitor
+    }
 
     public static String instrumentDesc(String desc) {
         String newDesc = desc;
