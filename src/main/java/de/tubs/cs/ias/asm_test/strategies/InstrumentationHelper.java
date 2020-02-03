@@ -10,6 +10,7 @@ public class InstrumentationHelper {
     private static final Collection<InstrumentationStrategy> strategies = new ArrayList<>(4);
 
     static {
+        strategies.add(new FormatterInstrumentation());
         strategies.add(new StringInstrumentation());
         strategies.add(new StringBuilderInstrumentation());
         strategies.add(new StringBufferInstrumentation());

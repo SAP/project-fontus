@@ -21,6 +21,11 @@ public final class Constants {
     public static final String StringQN = "java/lang/String";
 
     /**
+     * The fully qualified name of the Formatter class
+     */
+    public static final String FormatterQN = "java/util/Formatter";
+
+    /**
      * The fully qualified name of the StringBuilder class
      */
     public static final String StringBuilderQN = "java/lang/StringBuilder";
@@ -34,6 +39,11 @@ public final class Constants {
      * The fully qualified name type of our taint-aware String
      */
     public static final String TStringQN = TPackage + "IASString";
+
+    /**
+     * The fully qualified name type of our taint-aware Formatter
+     */
+    public static final String TFormatterQN = TPackage + "IASFormatter";
 
     /**
      * The fully qualified name type of our taint-aware StringBuffer
@@ -64,6 +74,16 @@ public final class Constants {
      * The bytecode descriptor of our taint aware string
      */
     public static final String TStringDesc = java.lang.String.format("L%s;", TStringQN);
+
+    /**
+     * The bytecode descriptor of our taint aware Formatter
+     */
+    public static final String TFormatterDesc = java.lang.String.format("L%s;", TFormatterQN);
+
+    /**
+     * The bytecode descriptor of our taint aware Formatter
+     */
+    public static final String FormatterDesc = java.lang.String.format("L%s;", FormatterQN);
 
     /**
      * Descriptor of the java String class
@@ -127,6 +147,11 @@ public final class Constants {
     public static final String TStringToStringName = "getString";
 
     /**
+     * Name of the method that converts taint-aware Formatters to regular ones
+     */
+    public static final String TFormatterToFormatterName = "getFormatter";
+
+    /**
      * Descriptor of an object to regular String conversion method
      */
     public static final String ToStringDesc = "()Ljava/lang/String;";
@@ -155,6 +180,11 @@ public final class Constants {
      * Matches fully qualified String names
      */
     public static final Pattern strPattern = Pattern.compile(StringDesc);
+
+    /**
+     * Matches fully qualified String names
+     */
+    public static final Pattern formatterPattern = Pattern.compile(FormatterDesc);
 
     /**
      * Matches fully qualified StringBuilder names
@@ -225,4 +255,19 @@ public final class Constants {
     private Constants() {
     }
 
+
+    public static final int JAVA_VERSION = getVersion();
+
+    private static int getVersion() {
+        String version = System.getProperty("java.version");
+        if (version.startsWith("1.")) {
+            version = version.substring(2, 3);
+        } else {
+            int dot = version.indexOf(".");
+            if (dot != -1) {
+                version = version.substring(0, dot);
+            }
+        }
+        return Integer.parseInt(version);
+    }
 }

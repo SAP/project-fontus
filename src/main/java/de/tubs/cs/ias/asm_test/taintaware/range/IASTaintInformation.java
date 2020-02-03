@@ -365,4 +365,13 @@ public class IASTaintInformation {
         }
         return ranges.get(0);
     }
+
+    public IASTaintSource getTaintFor(int position) {
+        List<IASTaintRange> range = getRanges(position, position + 1);
+        if (range.isEmpty()) {
+            return null;
+        } else {
+            return IASTaintSource.getInstanceById(range.get(0).getSource());
+        }
+    }
 }

@@ -46,6 +46,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private void fillStrategies() {
+        this.instrumentation.add(new FormatterClassInstrumentationStrategy(this.visitor));
         this.instrumentation.add(new StringBufferClassInstrumentationStrategy(this.visitor));
         this.instrumentation.add(new StringBuilderClassInstrumentationStrategy(this.visitor));
         this.instrumentation.add(new StringClassInstrumentationStrategy(this.visitor));
