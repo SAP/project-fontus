@@ -63,7 +63,7 @@ public class AgentConfigTests {
     void parseConfigAndBlacklist() throws IOException, URISyntaxException {
         URL url = AgentConfigTests.class.getResource("TestList");
         String fname = Paths.get(url.toURI()).toString();
-        URL curl = AgentConfigTests.class.getResource("configuration.xml");
+        URL curl = AgentConfigTests.class.getResource(Constants.CONFIGURATION_XML_FILENAME);
         String cfname = Paths.get(curl.toURI()).toString();
     
         Configuration cfg = AgentConfig.parseConfig("blacklisted_main_classes=" + fname + ";config=" + cfname);

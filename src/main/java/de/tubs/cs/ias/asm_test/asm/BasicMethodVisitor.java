@@ -1,6 +1,5 @@
 package de.tubs.cs.ias.asm_test.asm;
 
-
 import org.objectweb.asm.MethodVisitor;
 
 public class BasicMethodVisitor extends MethodVisitor {

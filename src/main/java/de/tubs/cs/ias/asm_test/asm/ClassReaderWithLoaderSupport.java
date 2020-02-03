@@ -52,13 +52,13 @@ public class ClassReaderWithLoaderSupport extends org.objectweb.asm.ClassReader 
     }
 
     public ClassReaderWithLoaderSupport(ClassResolver resolver, String className) throws IOException {
-        this(readStream(resolver.resolve(className), true));
+        this(readStream(resolver.resolve(className), className));
     }
 
-    private static byte[] readStream(final InputStream inputStream, final boolean close)
+    private static byte[] readStream(final InputStream inputStream, String className)
             throws IOException {
         if (inputStream == null) {
-            throw new IOException("Class not found");
+            throw new IOException(String.format("Class '%s' not found!", className));
         }
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             byte[] data = new byte[4096];
@@ -69,9 +69,7 @@ public class ClassReaderWithLoaderSupport extends org.objectweb.asm.ClassReader 
             outputStream.flush();
             return outputStream.toByteArray();
         } finally {
-            if (close) {
-                inputStream.close();
-            }
+            inputStream.close();
         }
     }
 }
