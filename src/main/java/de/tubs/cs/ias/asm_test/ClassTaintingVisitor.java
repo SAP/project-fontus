@@ -122,6 +122,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
             );
             if (ofv.isPresent()) {
                 fv = ofv.get();
+                break;
             }
         }
         return fv;
