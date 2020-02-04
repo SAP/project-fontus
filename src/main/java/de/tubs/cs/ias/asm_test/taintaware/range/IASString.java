@@ -53,6 +53,11 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
         return this.taintInformation.isTainted();
     }
 
+    public static IASString tainted(IASString tstr) {
+        tstr.setTaint(true);
+        return tstr;
+    }
+
     /**
      * Marks the whole string as tainted.
      * If the string already has tainted parts, they will be removed and replaced with one range tainting all.

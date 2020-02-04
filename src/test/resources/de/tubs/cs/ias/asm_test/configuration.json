@@ -1,0 +1,94 @@
+{
+    "verbose": true,
+    "sourceConfig" : {
+            "sources": [
+            {
+                "name" : "next",
+                    "function" : {
+                        "opcode": 182,
+                        "owner": "java/util/Scanner",
+                        "name": "next",
+                        "descriptor": "()Ljava/lang/String;",
+                        "interface": false
+                }
+            },
+            {
+                "name" : "next",
+                "function" : {
+                    "opcode": 182,
+                    "owner": "java/util/Scanner",
+                    "name": "nextLine",
+                    "descriptor": "()Ljava/lang/String;",
+                    "interface": false
+                }
+            }
+        ]
+    },
+    "sinkConfig" : {
+        "sinks": [
+            {
+                "name": "println",
+                "function": {
+                    "opcode": 182,
+                    "owner": "java/io/PrintStream",
+                    "name": "println",
+                    "descriptor": "(Ljava/lang/String;)V",
+                    "interface": false
+                },
+                "parameters": [
+                    {
+                        "index": 0
+                    }
+                ]
+            }
+        ]
+    },
+    "converters": [
+        {
+            "opcode": 184,
+            "owner": "de/tubs/cs/ias/asm_test/taintaware/IASStringUtils",
+            "name": "convertStringList",
+            "descriptor": "(Ljava/util/List;)Ljava/util/List;",
+            "interface": false
+        },
+        {
+            "opcode": 184,
+            "owner": "de/tubs/cs/ias/asm_test/taintaware/IASStringUtils",
+            "name": "convertTStringList",
+            "descriptor": "(Ljava/util/List;)Ljava/util/List;",
+            "interface": false
+        }
+    ],
+    "returnGeneric": [
+        {
+            "functionCall": {
+                "opcode": 185,
+                "owner": "java/lang/management/RuntimeMXBean",
+                "name": "getInputArguments",
+                "descriptor": "()Ljava/util/List;",
+                "interface": true
+            },
+            "converter": "convertStringList"
+        }
+    ],
+    "takeGeneric": [
+        {
+            "functionCall": {
+                "opcode": 183,
+                "owner": "java/lang/ProcessBuilder",
+                "name": "<init>",
+                "descriptor": "(Ljava/util/List;)V",
+                "interface": false
+            },
+	    "conversions": [
+		{
+		    "index": 0,
+		    "converter": "convertTStringList"
+		}
+	    ]
+        }
+    ],
+    "blacklistedMainClasses": [
+        "myclass", "otherblacklistedclass", "alsoblacklisted", "anothermainclass"
+    ]
+}

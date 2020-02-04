@@ -174,7 +174,7 @@ public final class Constants {
     /**
      * Descriptor of the 'tainted' method that turns a regular String into a tainted one
      */
-    public static final String CreateTaintedStringDesc = String.format("(Ljava/lang/String;)%s", TStringDesc);
+    public static final String CreateTaintedStringDesc = String.format("(%s)%s", TStringDesc, TStringDesc);
 
     /**
      * Matches fully qualified String names
@@ -242,6 +242,15 @@ public final class Constants {
     public static final String AnnotationQN = "java/lang/annotation/Annotation";
     public static final String ProxyQN = "java/lang/reflect/Proxy";
 
+    /**
+     * Suffix of json
+     */
+    public static final String JSON_FILE_SUFFIX = ".json";
+
+    /**
+     * Suffix of XML
+     */
+    public static final String XML_FILE_SUFFIX = ".xml";
 
     private Constants() {
     }
