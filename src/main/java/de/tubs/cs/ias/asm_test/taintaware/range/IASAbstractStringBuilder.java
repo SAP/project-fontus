@@ -7,7 +7,7 @@ import java.util.stream.IntStream;
 import static de.tubs.cs.ias.asm_test.taintaware.range.IASTaintRangeUtils.adjustRanges;
 
 @SuppressWarnings("unused")
-public abstract class IASAbstractStringBuilder implements java.io.Serializable, CharSequence, IASRangeAware {
+public abstract class IASAbstractStringBuilder implements java.io.Serializable, CharSequence, IASRangeAware, Appendable {
     protected final StringBuilder builder;
     private IASTaintInformation taintInformation;
 
@@ -28,7 +28,7 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
 
     public IASAbstractStringBuilder(CharSequence seq) {
         IASString str = IASString.valueOf(seq);
-        this.builder = new StringBuilder();
+        this.builder = new StringBuilder(str.length() + 16);
         this.append(str);
     }
 

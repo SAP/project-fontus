@@ -135,7 +135,7 @@ public class Descriptor {
                 if (!inType && primitivesMatcher.matches()) {
                     out.add(buffer.toString());
                     buffer = new StringBuilder();
-                } else if(!"[".equals(next)) {
+                } else if (!"[".equals(next)) {
                     inType = true;
                     if (";".equals(next)) {
                         out.add(buffer.toString());

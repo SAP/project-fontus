@@ -1,9 +1,10 @@
 package de.tubs.cs.ias.asm_test.agent;
 
-import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.ClassResolver;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Instrumenter;
 import de.tubs.cs.ias.asm_test.JdkClassesLookupTable;
+import de.tubs.cs.ias.asm_test.config.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,8 +41,8 @@ class TaintingTransformer implements ClassFileTransformer {
         }
 
         logger.info("Tainting class: {}", className);
-        byte[] outArray = this.instrumenter.instrumentClass(classfileBuffer, loader);
-        if(this.config.isVerbose()) {
+        byte[] outArray = this.instrumenter.instrumentClass(classfileBuffer, new ClassResolver(loader));
+        if (this.config.isVerbose()) {
             String baseName = "/tmp/agent";
             File outFile = new File(baseName, className + Constants.CLASS_FILE_SUFFIX);
             File parent = new File(outFile.getParent());

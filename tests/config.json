@@ -36,8 +36,11 @@
       "name": "String Array Clone",
       "jar_file": "str_array_clone.jar",
       "input_file": "str_array_clone.input"
+    },
+    {
+      "name": "Annotation Special Handling",
+      "jar_file": "annotation_test.jar"
     }
-
   ],
   "single_file_tests": [
     {
@@ -314,6 +317,11 @@
       "name": "ComparatorTest",
       "source": "ComparatorTest.java",
       "arguments": ["Sup", "son", "?"]
+    },
+    {
+      "name": "InternTest",
+      "source": "InternTest.java"
     }
+
   ]
 }

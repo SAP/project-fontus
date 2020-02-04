@@ -1,4 +1,4 @@
-package de.tubs.cs.ias.asm_test.method;
+package de.tubs.cs.ias.asm_test.asm;
 
 import org.objectweb.asm.*;
 

@@ -89,7 +89,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
         }
         Matcher matcher = Constants.strPattern.matcher(descriptor);
         if (matcher.find()) {
-            if(lookupTable.isJdkClass(newOwner)) {
+            if (lookupTable.isJdkClass(newOwner)) {
                 this.mv.visitFieldInsn(opcode, newOwner, name, descriptor);
                 this.stringToTStringBuilderBased();
             } else {
@@ -98,7 +98,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
             }
             return true;
         }
-        if(!owner.equals(newOwner)) {
+        if (!owner.equals(newOwner)) {
             this.mv.visitFieldInsn(opcode, newOwner, name, descriptor);
             return true;
         }

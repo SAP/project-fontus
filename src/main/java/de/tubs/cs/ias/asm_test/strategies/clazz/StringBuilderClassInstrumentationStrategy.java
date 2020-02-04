@@ -19,6 +19,7 @@ public class StringBuilderClassInstrumentationStrategy extends StringBuilderInst
     private final TaintStringConfig stringConfig = Configuration.instance.getTaintStringConfig();
 
     private final ClassVisitor visitor;
+
     public StringBuilderClassInstrumentationStrategy(ClassVisitor cv) {
         this.visitor = cv;
     }

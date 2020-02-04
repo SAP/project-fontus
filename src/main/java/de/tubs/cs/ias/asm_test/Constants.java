@@ -15,6 +15,11 @@ public final class Constants {
     public static final String StringQN = "java/lang/String";
 
     /**
+     * The fully qualified name of the Formatter class
+     */
+    public static final String FormatterQN = "java/util/Formatter";
+
+    /**
      * The fully qualified name of the StringBuilder class
      */
     public static final String StringBuilderQN = "java/lang/StringBuilder";
@@ -78,6 +83,11 @@ public final class Constants {
     public static final String TStringToStringName = "getString";
 
     /**
+     * Name of the method that converts taint-aware Formatters to regular ones
+     */
+    public static final String TFormatterToFormatterName = "getFormatter";
+
+    /**
      * Descriptor of an object to regular String conversion method
      */
     public static final String ToStringDesc = "()Ljava/lang/String;";
@@ -93,6 +103,11 @@ public final class Constants {
     public static final Pattern strPattern = Pattern.compile(StringDesc);
 
     /**
+     * Matches fully qualified String names
+     */
+    public static final Pattern formatterPattern = Pattern.compile(FormatterDesc);
+
+    /**
      * Matches fully qualified StringBuilder names
      */
     public static final Pattern strBuilderPattern = Pattern.compile(StringBuilderDesc);
@@ -104,10 +119,30 @@ public final class Constants {
      * The Taint-aware String method to check and act on a potential taint
      */
     public static final String ABORT_IF_TAINTED = "abortIfTainted";
+
+    /**
+     * Descriptor of the Java main method
+     */
     static final String MAIN_METHOD_DESC = "([Ljava/lang/String;)V";
+
+    /**
+     * Method to return taint-aware string representation from instrumented class.
+     */
     public static final String TO_TSTRING = "toIASString";
+
+    /**
+     * Full name of the Java String type
+     */
     public static final String STRING_FULL_NAME = "java.lang.String";
+
+    /**
+     * Full name of the Java StringBuffer type
+     */
     public static final String STRINGBUFFER_FULL_NAME = "java.lang.StringBuffer";
+
+    /**
+     * Full name of the Java StringBuilder type
+     */
     public static final String STRINGBUILDER_FULL_NAME = "java.lang.StringBuilder";
 
     public static final String AS_STRING = "asString";
@@ -123,9 +158,26 @@ public final class Constants {
      * Suffix of jar files.
      */
     public static final String JAR_FILE_SUFFIX = ".jar";
+    public static final String AnnotationQN = "java/lang/annotation/Annotation";
+    public static final String ProxyQN = "java/lang/reflect/Proxy";
 
 
     private Constants() {
     }
 
+
+    public static final int JAVA_VERSION = getVersion();
+
+    private static int getVersion() {
+        String version = System.getProperty("java.version");
+        if (version.startsWith("1.")) {
+            version = version.substring(2, 3);
+        } else {
+            int dot = version.indexOf(".");
+            if (dot != -1) {
+                version = version.substring(0, dot);
+            }
+        }
+        return Integer.parseInt(version);
+    }
 }

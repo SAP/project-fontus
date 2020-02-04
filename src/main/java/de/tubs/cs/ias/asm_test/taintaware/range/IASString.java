@@ -5,8 +5,6 @@ import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -389,178 +387,11 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
     }
 
     public IASString replaceFirst(IASString regex, IASString replacement) {
-        String replacedStr = this.str.replaceFirst(regex.str, replacement.str);
-        IASString newStr = new IASString(replacedStr, this.getAllRangesAdjusted());
-
-        // Is one of both Strings tainted? If not, it's irrelevant if one happened for the tainting
-        if (this.isTainted() || replacement.isTainted()) {
-            Pattern p = Pattern.compile(regex.str);
-            Matcher m = p.matcher(this.str);
-
-            if (m.find()) {
-                final int start = m.start();
-                final int end = m.end();
-
-                newStr.initialize();
-                newStr.taintInformation.replaceTaintInformation(start, end, replacement.getAllRangesAdjusted(), replacement.length(), true);
-            }
-        }
-        if(!newStr.isTainted()) {
-            newStr.taintInformation = null;
-        }
-        return newStr;
+        return IASPattern.compile(regex).matcher(this).replaceFirst(replacement);
     }
 
     public IASString replaceAll(IASString regex, IASString replacement) {
-        Pattern p = Pattern.compile(regex.toString());
-        Matcher m = p.matcher(this.str);
-
-        IASStringBuilder stringBuilder = new IASStringBuilder();
-        int start = 0;
-        Replacement replacer = Replacement.createReplacement(replacement);
-        while (m.find()) {
-            int end = m.start();
-
-            IASString first = this.substring(start, end);
-            stringBuilder.append(first, true);
-            IASString currRepl = replacer.doReplacement(m, this);
-            stringBuilder.append(currRepl, true);
-            start = m.end();
-        }
-
-        if (start < this.length()) {
-            IASString last = this.substring(start);
-            stringBuilder.append(last, true);
-        }
-
-        return stringBuilder.toIASString();
-    }
-
-    private static final class Replacement {
-        /**
-         * Mapping von group name or group index to index in string
-         */
-        private final Map<Object, Integer> groups;
-
-        /**
-         * Replacement string without the group insertions
-         */
-        private final IASString clearedReplacementString;
-
-        private Replacement(IASString clearedReplacementString, HashMap<Object, Integer> groups) {
-            this.clearedReplacementString = clearedReplacementString;
-            this.groups = groups;
-        }
-
-        public IASString doReplacement(Matcher m, IASString orig) {
-            int lastIndex = -1;
-            int shift = 0;
-            IASStringBuffer stringBuffer = new IASStringBuffer(this.clearedReplacementString);
-
-            for (Object key : this.groups.keySet()) {
-                int start;
-                int end;
-                if (key instanceof String) {
-                    start = m.start((String) key);
-                    end = m.end((String) key);
-                } else if (key instanceof Integer) {
-                    start = m.start((Integer) key);
-                    end = m.end((Integer) key);
-                } else {
-                    throw new IllegalStateException("Group map must not contain something else as strinngs and ints");
-                }
-
-                IASString insert = orig.substring(start, end);
-
-                int index = groups.get(key);
-                if (index < lastIndex) {
-                    throw new IllegalStateException("Map not sorted ascending");
-                }
-                lastIndex = index;
-
-                stringBuffer.insert(index + shift, insert);
-                shift += insert.length();
-            }
-            return stringBuffer.toIASString();
-        }
-
-        public static Replacement createReplacement(IASString repl) {
-            LinkedHashMap<Object, Integer> groups = new LinkedHashMap<>();
-
-            boolean escaped = false;
-            boolean groupParsing = false;
-            boolean indexedParsing = false;
-            boolean namedParsing = false;
-
-            int groupIndex = -1;
-            String groupName = null;
-
-            IASStringBuilder clearedStringBuilder = new IASStringBuilder();
-
-            for (int i = 0; i < repl.length(); i++) {
-                char c = repl.charAt(i);
-
-                if (!escaped) {
-                    if (groupParsing) {
-                        if (indexedParsing) {
-                            if (Character.isDigit(c)) {
-                                groupIndex = groupIndex * 10 + Character.getNumericValue(c);
-                            } else {
-                                groupParsing = false;
-                                indexedParsing = false;
-
-                                groups.put(groupIndex, clearedStringBuilder.length());
-
-                                // Analyse character again
-                                i--;
-                                continue;
-                            }
-                        } else if (namedParsing) {
-                            if (isAlphanum(c)) {
-                                groupName += c;
-                            } else if (c == '}') {
-                                if (groupName.isBlank()) {
-                                    throw new IllegalStateException("Groupname cannot be empty!");
-                                }
-                                groups.put(groupName, clearedStringBuilder.length());
-
-                                groupName = null;
-                                namedParsing = false;
-                                groupParsing = false;
-                            }
-                        } else {
-                            if (Character.isDigit(c)) {
-                                indexedParsing = true;
-                                groupIndex = Character.getNumericValue(c);
-                            } else if (c == '{') {
-                                namedParsing = true;
-                            } else {
-                                throw new IllegalStateException("After $ there mus be a group index or a named capture group name");
-                            }
-                        }
-                    } else {
-                        if (c == '\\') {
-                            escaped = true;
-                        } else if (c == '$') {
-                            groupParsing = true;
-                        } else {
-                            IASString charStr = repl.substring(i, i + 1);
-                            clearedStringBuilder.append(charStr);
-                        }
-                    }
-                } else {
-                    IASString charStr = repl.substring(i, i + 1);
-                    clearedStringBuilder.append(charStr);
-                    escaped = false;
-                }
-            }
-
-            return new Replacement(clearedStringBuilder.toIASString(), groups);
-        }
-
-        private static boolean isAlphanum(char c) {
-            return Character.isDigit(c) || Character.isLetter(c);
-        }
+        return IASPattern.compile(regex).matcher(this).replaceAll(replacement);
     }
 
     public IASString replace(CharSequence target, CharSequence replacement) {
@@ -578,52 +409,7 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
 
     // TODO: this propagates the taint for the whole string
     public IASString[] split(IASString regex, int limit) {
-        this.str.split(regex.toString(), limit);
-        Matcher matcher = Pattern.compile(regex.toString()).matcher(this.str);
-
-        ArrayList<IASString> result = new ArrayList<>();
-        boolean isLimited = limit > 0;
-        int start = 0;
-        while (matcher.find()) {
-            if (isLimited && result.size() >= limit - 1) {
-                break;
-            }
-
-            int matchSize = matcher.end() - matcher.start();
-            if (result.size() != 0 || matchSize > 0) {
-                int end = matcher.start();
-
-                IASString part = this.substring(start, end);
-                result.add(part);
-
-            }
-            start = matcher.end();
-        }
-
-        if (start < this.length() || limit < 0) {
-            IASString endPart = this.substring(start);
-            result.add(endPart);
-        } else if (start == 0 && this.length() == 0) {
-            result.add(this);
-        }
-
-        return result.toArray(new IASString[result.size()]);
-        // This implementation ignored that the split regex is removed
-//        String[] parts = this.str.split(regex.str);
-//        int start = 0;
-//
-//        IASString[] result = new IASString[parts.length];
-//
-//        for(String part : parts) {
-//            List<IASTaintRange> r = this.getTaintInformation().getRanges(start, part.length());
-//            IASTaintRangeUtils.adjustRanges(r, start, start + part.length(), start);
-//
-//            IASString newStr = new IASString(part, r);
-//
-//            start += part.length();
-//        }
-//
-//        return result;
+        return IASPattern.compile(regex).split(this, limit);
     }
 
     // TODO: this propagates the taint for the whole string
@@ -756,13 +542,15 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
 
     public static IASString format(IASString format, Object... args) {
         // TODO Implement rainting
-        return IASString.fromString(String.format(format.toString(), args));
+//        return new IASString(String.format(format.toString(), args), isTainted(args));
+        return new IASFormatter().format(format, args).toIASString();
     }
 
 
     public static IASString format(Locale l, IASString format, Object... args) {
         // TODO Implement rainting
-        return new IASString(String.format(l, format.toString(), args), format.isTainted());
+//        return new IASString(String.format(l, format.toString(), args), isTainted(args));
+        return new IASFormatter(l).format(format, args).toIASString();
     }
 
     public static IASString valueOf(Object obj) {

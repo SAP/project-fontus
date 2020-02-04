@@ -2,11 +2,7 @@ package de.tubs.cs.ias.asm_test;
 
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
-import org.objectweb.asm.Handle;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.Label;
+import org.objectweb.asm.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +74,7 @@ public class MethodTaintingUtils {
         types.put("Z", "Boolean");
 
         // No primitive type, nop
-        if(!types.containsKey(type)) return;
+        if (!types.containsKey(type)) return;
 
         String full = types.get(type);
         String owner = String.format("java/lang/%s", full);
@@ -90,10 +86,10 @@ public class MethodTaintingUtils {
      * Translates the call to a lambda function
      */
     static void invokeVisitLambdaCall(MethodVisitor mv,
-                                       final String name,
-                                       final String descriptor,
-                                       final Handle bootstrapMethodHandle,
-                                       final Object... bootstrapMethodArguments) {
+                                      final String name,
+                                      final String descriptor,
+                                      final Handle bootstrapMethodHandle,
+                                      final Object... bootstrapMethodArguments) {
         Object[] bsArgs = new Object[bootstrapMethodArguments.length];
         for (int i = 0; i < bootstrapMethodArguments.length; i++) {
             Object arg = bootstrapMethodArguments[i];

@@ -1,5 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
+import de.tubs.cs.ias.asm_test.Constants;
+
 public final class IASStringBuilder extends IASAbstractStringBuilder implements Comparable<IASStringBuilder> {
 
     public IASStringBuilder(StringBuilder sb, IASTaintInformation taintInformation) {
@@ -161,6 +163,10 @@ public final class IASStringBuilder extends IASAbstractStringBuilder implements 
 
     @Override
     public int compareTo(IASStringBuilder o) {
-        return this.builder.compareTo(o.builder);
+        if (Constants.JAVA_VERSION < 11) {
+            return this.toIASString().compareTo(IASString.valueOf(o));
+        } else {
+            return this.builder.compareTo(o.builder);
+        }
     }
 }

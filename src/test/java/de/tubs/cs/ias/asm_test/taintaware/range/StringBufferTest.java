@@ -12,8 +12,7 @@ import static de.tubs.cs.ias.asm_test.taintaware.range.testHelper.TaintMatcher.t
 import static de.tubs.cs.ias.asm_test.taintaware.range.testHelper.TaintMatcher.taintUninitialized;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 
 /**
@@ -42,6 +41,17 @@ public class StringBufferTest {
 
         assertThat(str.toString(), is("foo"));
         assertThat(str, taintEquals(range(1, 2, 0)));
+    }
+
+    @Test
+    public void capacity_1() {
+        IASString s = new IASString("test string");
+
+        IASStringBuilder sbuilder = new IASStringBuilder(s);
+
+        IASStringBuffer sbuffer = new IASStringBuffer(sbuilder);
+
+        assertEquals(16 + sbuilder.length(), sbuffer.capacity());
     }
 
     @Test

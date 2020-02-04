@@ -42,10 +42,10 @@ public class AgentConfig {
     }
 
     public static AgentConfig parseConfig(String args) {
-        if(args == null) {
+        if (args == null) {
             return new AgentConfig();
         }
-        try(Scanner sc = new Scanner(args)) {
+        try (Scanner sc = new Scanner(args)) {
             sc.useDelimiter(";");
             Collection<String> parts = new ArrayList<>();
             while (sc.hasNext()) {
@@ -78,7 +78,7 @@ public class AgentConfig {
 
     private static List<String> readFromFile(String fileName) {
         File input = new File(fileName);
-        if(!input.isFile()) {
+        if (!input.isFile()) {
             logger.error("Suggested file '{}' does not exist!", fileName);
             return new ArrayList<>(0);
         }
@@ -92,7 +92,7 @@ public class AgentConfig {
 
     private static String afterEquals(String part) {
         int idx = part.indexOf('=');
-        return part.substring(idx+1);
+        return part.substring(idx + 1);
     }
 
 }

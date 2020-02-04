@@ -62,7 +62,7 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
     @Override
     public void instrumentReturnType(String owner, String name, Descriptor desc) {
         Type returnType = Type.getReturnType(desc.toDescriptor());
-        if(stringBufferType.equals(returnType)) {
+        if (stringBufferType.equals(returnType)) {
             logger.info("Converting returned StringBuffer of {}.{}{}", owner, name, desc.toDescriptor());
             this.stringBufferToTStringBuffer();
         }
@@ -99,7 +99,7 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
 
     @Override
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        if(Type.getObjectType(owner).equals(stringBufferType)) {
+        if (Type.getObjectType(owner).equals(stringBufferType)) {
             String newDescriptor = InstrumentationHelper.instrumentDesc(descriptor);
             String newOwner = stringConfig.getTStringBufferQN();
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up

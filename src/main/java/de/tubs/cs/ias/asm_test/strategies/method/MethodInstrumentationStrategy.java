@@ -11,7 +11,7 @@ public interface MethodInstrumentationStrategy extends InstrumentationStrategy {
 
     /**
      * Called for @link{ {@link org.objectweb.asm.MethodVisitor#visitFieldInsn(int, String, String, String)}} calls.
-     *
+     * <p>
      * Replaces the Field with an instrumented equivalent.
      *
      * @return Has any special handling taken place?
@@ -25,7 +25,7 @@ public interface MethodInstrumentationStrategy extends InstrumentationStrategy {
 
     /**
      * Rewrites methods belonging to the class the actual strategy corresponds to.
-     *
+     * <p>
      * For an explanation of the parameters see {@link org.objectweb.asm.MethodVisitor#visitMethodInsn(int, String, String, String, boolean)}.
      *
      * @return Whether the owner matches the strategy.
@@ -39,7 +39,10 @@ public interface MethodInstrumentationStrategy extends InstrumentationStrategy {
     void instrumentReturnType(String owner, String name, Descriptor desc);
 
     boolean handleLdc(final Object value);
+
     boolean handleLdcType(Type type);
+
     boolean handleLdcArray(Type type);
+
     String rewriteTypeIns(String type);
 }
