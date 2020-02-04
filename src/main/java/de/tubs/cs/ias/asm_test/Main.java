@@ -12,6 +12,9 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.ConfigurationLoader;
+
 @CommandLine.Command(
         description = "Replaces all String instances with taint-aware Strings.",
         name = "asm_taint",
@@ -38,6 +41,16 @@ public final class Main implements Callable<Void> {
     )
     private File outputFile;
 
+    @CommandLine.Option(
+            names = {"-c", "--config"},
+            required = false,
+            paramLabel = "Config",
+            description = "Configuration file"
+    )
+    private File configFile;
+
+    private Configuration configuration;
+
     private static final JdkClassesLookupTable jdkClasses = JdkClassesLookupTable.instance;
 
     private Main() {
@@ -45,8 +58,9 @@ public final class Main implements Callable<Void> {
     }
 
 
+
     private void instrumentClassStream(InputStream i, OutputStream o) throws IOException {
-        byte[] out = this.instrumenter.instrumentClass(i, new ClassResolver(ClassLoader.getSystemClassLoader()));
+        byte[] out = this.instrumenter.instrumentClass(i, new ClassResolver(ClassLoader.getSystemClassLoader()), this.configuration);
         o.write(out);
     }
 
@@ -139,8 +153,13 @@ public final class Main implements Callable<Void> {
         }
     }
 
+    private void loadConfiguration() throws IOException {
+        this.configuration = ConfigurationLoader.loadAndMergeConfiguration(this.configFile);
+    }
+
     @Override
     public Void call() throws IOException {
+        this.loadConfiguration();
         this.walkFileTree(this.inputFile, this.outputFile);
         return null;
     }

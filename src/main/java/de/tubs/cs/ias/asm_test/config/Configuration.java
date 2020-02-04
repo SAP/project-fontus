@@ -1,62 +1,29 @@
 package de.tubs.cs.ias.asm_test.config;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
+
 import de.tubs.cs.ias.asm_test.FunctionCall;
 import de.tubs.cs.ias.asm_test.agent.AgentConfig;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.io.IOException;
-import java.io.InputStream;
+
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Collections;
+import java.util.List;
 
 @XmlRootElement(name = "configuration")
 public class Configuration {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-    public static final Configuration instance = readConfiguration();
-
-    private static Configuration readConfiguration() {
-        ObjectMapper objectMapper = new XmlMapper();
-
-        objectMapper.registerModule(new JaxbAnnotationModule());
-
-        try (InputStream inputStream = Configuration.class
-                .getClassLoader().getResourceAsStream("configuration.xml")) {
-            return objectMapper.readValue(inputStream, Configuration.class);
-        } catch (JsonParseException | JsonMappingException e) {
-            logger.error("Malformed configuration resource file, aborting!");
-            // TODO: ugly exception, find more fitting one!
-            throw new IllegalStateException("Missing configuration file\nAborting!", e);
-        } catch (IOException e) {
-            logger.error("Can't find the configuration resource file, aborting!");
-            // TODO: ugly exception, find more fitting one!
-            throw new IllegalStateException("Missing configuration file\nAborting!", e);
-        }
-    }
-
-    public void mergeAgentConfig(AgentConfig agentConfig) {
-        this.verbose = agentConfig.isVerbose();
-        this.mainMethodBlackList = agentConfig.getBlacklistedMainClasses();
-        this.taintMethod = agentConfig.getTaintMethod();
-        this.taintStringConfig = new TaintStringConfig(this.taintMethod);
-        this.refactorFunctionCalls();
-    }
-
+    
     private void refactorFunctionCalls() {
         HashMap<String, String> replacements = new HashMap<>();
         replacements.put("subpath", this.taintMethod.getSubPath());
@@ -74,38 +41,71 @@ public class Configuration {
         this.converters = new Converters(transformedFunctions);
     }
 
-    @JsonCreator
-    public Configuration(@JsonProperty("sources") Sources sources, @JsonProperty("sinks") Sinks sinks, @JsonProperty("converters") Converters converters, @JsonProperty("returnGeneric") ReturnGeneric returnGeneric, @JsonProperty("takeGeneric") TakeGeneric takeGeneric) {
-        this.sources = sources;
-        this.sinks = sinks;
+    public Configuration() {
+        this.verbose = false;
+        this.sourceConfig = new SourceConfig();
+        this.sinkConfig = new SinkConfig();
+        this.converters = new ArrayList<FunctionCall>();
+        this.returnGeneric = new ArrayList<ReturnsGeneric>();
+        this.takeGeneric = new ArrayList<TakesGeneric>();
+        this.blacklistedMainClasses = new ArrayList<String>();
+    }
+   
+    public Configuration(boolean verbose, SourceConfig sourceConfig, SinkConfig sinkConfig, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> blacklistedMainClasses) {
+	    this.verbose = verbose;
+        this.sourceConfig = sourceConfig;
+        this.sinkConfig = sinkConfig;
         this.converters = converters;
         this.returnGeneric = returnGeneric;
         this.takeGeneric = takeGeneric;
+        this.blacklistedMainClasses = blacklistedMainClasses;
     }
 
-    public Sources getSources() {
-        return this.sources;
+    public void append(Configuration other) {
+        if (other != null) {
+            this.verbose |= other.verbose;
+            this.sourceConfig.append(other.sourceConfig);
+            this.sinkConfig.append(other.sinkConfig);
+            this.converters.addAll(other.converters);
+            this.returnGeneric.addAll(other.returnGeneric);
+            this.takeGeneric.addAll(other.takeGeneric);
+            this.blacklistedMainClasses.addAll(other.blacklistedMainClasses);
+        }
     }
 
-    public Sinks getSinks() {
-        return this.sinks;
+    public void appendBlacklist(List<String> other) {
+        if (blacklistedMainClasses != null) {
+            this.blacklistedMainClasses.addAll(other);
+        }
     }
 
-    public Converters getConverters() {
+    public SourceConfig getSourceConfig() {
+        return this.sourceConfig;
+    }
+
+    public SinkConfig getSinkConfig() {
+        return this.sinkConfig;
+    }
+
+    public List<FunctionCall> getConverters() {
         return this.converters;
     }
 
-    public ReturnGeneric getReturnGeneric() {
+    public List<ReturnsGeneric> getReturnGeneric() {
         return this.returnGeneric;
     }
 
-    public TakeGeneric getTakeGeneric() {
+    public List<TakesGeneric> getTakeGeneric() {
         return this.takeGeneric;
     }
 
+    public List<String> getBlacklistedMainClasses() {
+        return this.blacklistedMainClasses;
+    }
+
     private FunctionCall getConverter(String name) {
-        for (FunctionCall fc : this.converters.getFunction()) {
-            if (fc.getName().equals(name)) {
+        for(FunctionCall fc : this.converters) {
+            if(fc.getName().equals(name)) {
                 return fc;
             }
         }
@@ -113,7 +113,7 @@ public class Configuration {
     }
 
     public boolean needsParameterConversion(FunctionCall c) {
-        for (TakesGeneric tg : this.takeGeneric.getFunction()) {
+        for(TakesGeneric tg : this.takeGeneric) {
             if (tg.getFunctionCall().equals(c)) {
                 return true;
             }
@@ -122,8 +122,8 @@ public class Configuration {
     }
 
     public FunctionCall getConverterForParameter(FunctionCall c, int index) {
-        for (TakesGeneric tg : this.takeGeneric.getFunction()) {
-            if (tg.getFunctionCall().equals(c)) {
+        for(TakesGeneric tg : this.takeGeneric) {
+            if(tg.getFunctionCall().equals(c)) {
                 Conversion conversion = tg.getConversionAt(index);
                 if(conversion != null) {
                     String converterName = conversion.getConverter();
@@ -137,8 +137,8 @@ public class Configuration {
     }
 
     public FunctionCall getConverterForReturnValue(FunctionCall c) {
-        for (ReturnsGeneric rg : this.returnGeneric.getFunction()) {
-            if (rg.getFunctionCall().equals(c)) {
+        for(ReturnsGeneric rg : this.returnGeneric) {
+            if(rg.getFunctionCall().equals(c)) {
                 String converterName = rg.getConverter();
                 FunctionCall converter = this.getConverter(converterName);
                 logger.info("Found converter for rv of {}: {}", c, converter);
@@ -148,47 +148,42 @@ public class Configuration {
         return null;
     }
 
-
-    /**
-     * All functions listed here return Strings that should be marked as tainted.
-     */
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private final Sources sources;
-    /**
-     * All functions listed here consume Strings that need to be checked first.
-     */
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private final Sinks sinks;
-
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private Converters converters;
-
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private final ReturnGeneric returnGeneric;
-
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private final TakeGeneric takeGeneric;
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 
     public boolean isVerbose() {
         return this.verbose;
     }
 
     public boolean isClassMainBlacklisted(String owner) {
-        return this.mainMethodBlackList.contains(owner);
+        return this.blacklistedMainClasses.contains(owner);
     }
 
-
+    @XmlElement
     private boolean verbose = false;
-    private Collection<String> mainMethodBlackList = new ArrayList<>(0);
-    private TaintMethod taintMethod;
 
-    public TaintStringConfig getTaintStringConfig() {
-        return taintStringConfig;
-    }
+    @XmlElement
+    private final SourceConfig sourceConfig;
+    /**
+     * All functions listed here consume Strings that need to be checked first.
+     */
+    @XmlElement
+    private final SinkConfig sinkConfig;
 
-    private TaintStringConfig taintStringConfig;
+    @JacksonXmlElementWrapper(localName = "converters")
+    @XmlElement(name = "converter")
+    private final List<FunctionCall> converters;
 
-    public TaintMethod getTaintMethod() {
-        return this.taintMethod;
-    }
+    @JacksonXmlElementWrapper(localName = "returnGenerics")
+    @XmlElement(name = "returnGeneric")
+    private final List<ReturnsGeneric> returnGeneric;
+
+    @JacksonXmlElementWrapper(localName = "takeGenerics")
+    @XmlElement(name = "takeGeneric")
+    private final List<TakesGeneric> takeGeneric;
+
+    @JacksonXmlElementWrapper(localName = "blacklistedMainClasses")
+    @XmlElement(name = "class")
+    private final List<String> blacklistedMainClasses;
 }

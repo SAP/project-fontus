@@ -4,10 +4,11 @@ import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.ConfigurationLoader;
+
 import java.io.File;
-import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.nio.file.Files;
 import java.util.*;
 
 public class AgentConfig {
@@ -41,9 +42,9 @@ public class AgentConfig {
         this.taintMethod = taintMethod;
     }
 
-    public static AgentConfig parseConfig(String args) {
-        if (args == null) {
-            return new AgentConfig();
+    public static Configuration parseConfig(String args) {
+        if(args == null) {
+            return ConfigurationLoader.defaultConfiguration();
         }
         try (Scanner sc = new Scanner(args)) {
             sc.useDelimiter(";");
@@ -56,7 +57,8 @@ public class AgentConfig {
         }
     }
 
-    private static AgentConfig parseParts(Iterable<String> parts) {
+    private static Configuration parseParts(Iterable<String> parts) {
+        Configuration c = ConfigurationLoader.defaultConfiguration();
         boolean verbose = false;
         List<String> blacklist = new ArrayList<>();
         TaintMethod taintMethod = TaintMethod.defaultTaintMethod();
@@ -68,12 +70,23 @@ public class AgentConfig {
                 String taintMethodArgName = afterEquals(part);
                 taintMethod = TaintMethod.getTaintMethodByArgumentName(taintMethodArgName);
             }
-            if(part.startsWith("blacklisted_main_classes=")) {
+            if (part.startsWith("config=")) {
                 String filename = afterEquals(part);
-                blacklist = readFromFile(filename);
+                Configuration cmdlineconfig = ConfigurationLoader.loadConfigurationFrom(new File(filename));
+                c.append(cmdlineconfig);
+            }
+            if (part.startsWith("blacklisted_main_classes=")) {
+                String filename = afterEquals(part);
+                Configuration blacklist = ConfigurationLoader.loadBlacklistFromFile(new File(filename));
+                c.append(blacklist);
             }
         }
-        return new AgentConfig(verbose, blacklist, taintMethod);
+        if (c == null) {
+            c = ConfigurationLoader.defaultConfiguration();
+        }
+        c.setVerbose(verbose || c.isVerbose());
+
+        return c;
     }
 
     private static List<String> readFromFile(String fileName) {

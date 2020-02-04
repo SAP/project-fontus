@@ -34,7 +34,7 @@ public final class Utils {
      * @param type One of Z, B, C, I, J, D, F or a class type.
      * @return The store Opcode, e.g., ASTORE
      */
-    static int getStoreOpcode(String type) {
+    public static int getStoreOpcode(String type) {
         switch (type) {
             case "Z":
             case "B":
@@ -58,7 +58,7 @@ public final class Utils {
      * @param opcode An opcode describing a store operation, e.g., ASTORE
      * @return 1 for type 1 values, 2 for type 2 values.
      */
-    static int storeOpcodeSize(int opcode) {
+    public static int storeOpcodeSize(int opcode) {
         return (opcode == Opcodes.LSTORE || opcode == Opcodes.DSTORE ? 2 : 1);
     }
 
@@ -68,7 +68,7 @@ public final class Utils {
      * @param type One of Z, B, C, I, J, D, F or a class type.
      * @return The store Opcode, e.g., ALOAD
      */
-    static int getLoadOpcode(String type) {
+    public static int getLoadOpcode(String type) {
         switch (type) {
             case "Z":
             case "B":
