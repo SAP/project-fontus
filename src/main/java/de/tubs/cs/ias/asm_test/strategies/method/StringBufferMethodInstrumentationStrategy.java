@@ -23,10 +23,10 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final HashMap<String, String> methodsToRename = new HashMap<>(1);
     private static final Type stringBufferType = Type.getType(StringBuffer.class);
-    private final TaintStringConfig stringConfig = Configuration.instance.getTaintStringConfig();
 
 
-    public StringBufferMethodInstrumentationStrategy(MethodVisitor mv) {
+    public StringBufferMethodInstrumentationStrategy(MethodVisitor mv, TaintStringConfig configuration) {
+        super(configuration);
         this.mv = mv;
         this.methodsToRename.put(Constants.ToString, Constants.TO_TSTRING);
     }
@@ -100,7 +100,7 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
     @Override
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         if (Type.getObjectType(owner).equals(stringBufferType)) {
-            String newDescriptor = InstrumentationHelper.instrumentDesc(descriptor);
+            String newDescriptor = InstrumentationHelper.getInstance(this.stringConfig).instrumentDesc(descriptor);
             String newOwner = stringConfig.getTStringBufferQN();
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up
             String newName = this.methodsToRename.getOrDefault(name, name);

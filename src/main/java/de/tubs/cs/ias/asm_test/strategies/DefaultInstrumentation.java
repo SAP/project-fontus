@@ -1,10 +1,18 @@
 package de.tubs.cs.ias.asm_test.strategies;
 
 import de.tubs.cs.ias.asm_test.Descriptor;
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 
 import java.util.Optional;
 
 public class DefaultInstrumentation implements InstrumentationStrategy {
+    protected final TaintStringConfig stringConfig;
+
+    public DefaultInstrumentation(TaintStringConfig configuration) {
+        this.stringConfig = configuration;
+    }
+
     @Override
     public Descriptor instrument(Descriptor desc) {
         return desc;

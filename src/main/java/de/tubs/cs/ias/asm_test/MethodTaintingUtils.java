@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test;
 
 import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import org.objectweb.asm.*;
 import org.slf4j.Logger;
@@ -16,13 +17,13 @@ public class MethodTaintingUtils {
     /**
      * If a taint-aware string is on the top of the stack, we can call this function to add a check to handle tainted strings.
      */
-    public static void callCheckTaint(MethodVisitor mv) {
+    public static void callCheckTaint(MethodVisitor mv, TaintStringConfig configuration) {
         Label after = new Label();
         // Call dup here to put the TString reference twice on the stack so the call can pop one without affecting further processing
         mv.visitInsn(Opcodes.DUP);
         mv.visitJumpInsn(Opcodes.IFNULL, after);
         mv.visitInsn(Opcodes.DUP);
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Configuration.instance.getTaintStringConfig().getTStringQN(), Constants.ABORT_IF_TAINTED, "()V", false);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, configuration.getTStringQN(), Constants.ABORT_IF_TAINTED, "()V", false);
         mv.visitLabel(after);
     }
 
@@ -86,7 +87,8 @@ public class MethodTaintingUtils {
     /**
      * Translates the call to a lambda function
      */
-    static void invokeVisitLambdaCall(MethodVisitor mv,
+    static void invokeVisitLambdaCall(final TaintStringConfig configuration,
+                                      MethodVisitor mv,
                                       final String name,
                                       final String descriptor,
                                       final Handle bootstrapMethodHandle,
@@ -96,16 +98,16 @@ public class MethodTaintingUtils {
             Object arg = bootstrapMethodArguments[i];
             if (arg instanceof Handle) {
                 Handle a = (Handle) arg;
-                bsArgs[i] = Utils.instrumentHandle(a);
+                bsArgs[i] = Utils.instrumentHandle(a, configuration);
             } else if (arg instanceof Type) {
                 Type a = (Type) arg;
-                bsArgs[i] = Utils.instrumentType(a);
+                bsArgs[i] = Utils.instrumentType(a, configuration);
             } else {
                 bsArgs[i] = arg;
             }
         }
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
-        String descr = InstrumentationHelper.instrument(desc).toDescriptor();
+        String descr = InstrumentationHelper.getInstance(configuration).instrument(desc).toDescriptor();
         mv.visitInvokeDynamicInsn(name, descr, bootstrapMethodHandle, bsArgs);
     }
 

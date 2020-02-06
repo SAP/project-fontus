@@ -3,6 +3,8 @@ package de.tubs.cs.ias.asm_test.strategies.method;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.Utils;
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.strategies.DefaultInstrumentation;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -16,7 +18,8 @@ public class DefaultMethodInstrumentationStrategy extends DefaultInstrumentation
     private final MethodVisitor mv;
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    public DefaultMethodInstrumentationStrategy(MethodVisitor mv) {
+    public DefaultMethodInstrumentationStrategy(MethodVisitor mv, TaintStringConfig configuration) {
+        super(configuration);
         this.mv = mv;
     }
 
@@ -32,10 +35,10 @@ public class DefaultMethodInstrumentationStrategy extends DefaultInstrumentation
 
     @Override
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        if(isToString(name, descriptor)) {
+        if (isToString(name, descriptor)) {
             int newOpcode = Opcodes.INVOKESTATIC;
-            String newOwner = Constants.TStringQN;
-            String newDescriptor = "(" + Constants.ObjectDesc + ")" + Constants.TStringDesc;
+            String newOwner = this.stringConfig.getTStringQN();
+            String newDescriptor = "(" + Constants.ObjectDesc + ")" + this.stringConfig.getTStringDesc();
             String newName = "valueOf";
             boolean newIsInterface = false;
             logger.info("Rewriting String invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, newDescriptor);

@@ -26,9 +26,9 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     private final HashMap<String, String> methodsToRename = new HashMap<>(1);
     private static final Type stringType = Type.getType(String.class);
     private static final Type stringArrayType = Type.getType(String[].class);
-    private final TaintStringConfig stringConfig = Configuration.instance.getTaintStringConfig();
 
-    public StringMethodInstrumentationStrategy(MethodVisitor mv) {
+    public StringMethodInstrumentationStrategy(MethodVisitor mv, TaintStringConfig configuration) {
+        super(configuration);
         this.mv = mv;
         this.methodsToRename.put(Constants.ToString, Constants.TO_TSTRING);
 
@@ -84,7 +84,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     @Override
     public boolean instrumentFieldIns(int opcode, String owner, String name, String descriptor) {
         String newOwner = owner;
-        if(Constants.StringQN.equals(owner)) {
+        if (Constants.StringQN.equals(owner)) {
             newOwner = stringConfig.getTStringQN();
         }
         Matcher matcher = Constants.strPattern.matcher(descriptor);
@@ -121,7 +121,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     @Override
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         if (Type.getObjectType(owner).equals(stringType) || owner.endsWith(Constants.StringDesc)) {
-            String newDescriptor = InstrumentationHelper.instrumentDesc(descriptor);
+            String newDescriptor = InstrumentationHelper.getInstance(this.stringConfig).instrumentDesc(descriptor);
             String newOwner = owner.replace(Constants.StringQN, stringConfig.getTStringQN());
             // TODO: this call is superfluous, TString.toTString is a NOP pretty much.. Maybe drop those calls?
             String newName = this.methodsToRename.getOrDefault(name, name);
@@ -167,15 +167,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     public boolean handleLdcArray(Type type) {
         Type stringArray = Type.getType(String[].class);
         if (stringArray.equals(type)) {
-            Type taintStringArray;
-            if (Configuration.instance.getTaintMethod() == TaintMethod.BOOLEAN) {
-                taintStringArray = Type.getType(de.tubs.cs.ias.asm_test.taintaware.bool.IASString[].class);
-            } else if(Configuration.instance.getTaintMethod() == TaintMethod.RANGE) {
-                taintStringArray = Type.getType(de.tubs.cs.ias.asm_test.taintaware.range.IASString[].class);
-            } else {
-                throw new IllegalStateException("Taint method unsupported or not specified!");
-            }
-
+            Type taintStringArray = Type.getType(this.stringConfig.getTStringArrayDesc());
             this.mv.visitLdcInsn(taintStringArray);
             return true;
         }

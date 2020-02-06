@@ -64,6 +64,8 @@ public class TaintStringConfig {
     private final String CreateTaintedStringDesc;
     private final String AS_STRING_DESC;
     private final String FROM_STRING_DESC;
+    private final String TFormatterDesc;
+    private final String TFormatterQN;
 
     public String getTPackage() {
         return TPackage;
@@ -127,7 +129,6 @@ public class TaintStringConfig {
 
     private final TaintMethod taintMethod;
 
-
     public TaintStringConfig(TaintMethod taintMethod) {
         this.taintMethod = taintMethod;
         this.TPackage = "de/tubs/cs/ias/asm_test/taintaware/" + taintMethod.getSubPath();
@@ -145,5 +146,19 @@ public class TaintStringConfig {
         this.CreateTaintedStringDesc = String.format("(Ljava/lang/String;)%s", TStringDesc);
         this.AS_STRING_DESC = String.format("(%s)%s", TStringDesc, StringDesc);
         this.FROM_STRING_DESC = String.format("(%s)%s", StringDesc, TStringDesc);
+        this.TFormatterQN = TPackage + "IASFormatter";
+        this.TFormatterDesc = java.lang.String.format("L%s;", TFormatterQN);
+    }
+
+    public String getTFormatterDesc() {
+        return this.TFormatterDesc;
+    }
+
+    public String getTFormatterQN() {
+        return this.TFormatterQN;
+    }
+
+    public TaintMethod getTaintMethod() {
+        return this.taintMethod;
     }
 }

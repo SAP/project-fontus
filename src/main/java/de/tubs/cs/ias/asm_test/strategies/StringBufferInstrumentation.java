@@ -12,7 +12,11 @@ import java.util.regex.Pattern;
 
 public class StringBufferInstrumentation implements InstrumentationStrategy {
     private static final Pattern STRING_BUFFER_QN_MATCHER = Pattern.compile(Constants.StringBufferQN, Pattern.LITERAL);
-    private final TaintStringConfig stringConfig = Configuration.instance.getTaintStringConfig();
+    protected final TaintStringConfig stringConfig;
+
+    public StringBufferInstrumentation(TaintStringConfig configuration) {
+        this.stringConfig = configuration;
+    }
 
     @Override
     public Descriptor instrument(Descriptor desc) {

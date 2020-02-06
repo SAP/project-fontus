@@ -1,6 +1,8 @@
 package de.tubs.cs.ias.asm_test.strategies.clazz;
 
 import de.tubs.cs.ias.asm_test.TriConsumer;
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.strategies.DefaultInstrumentation;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
@@ -11,7 +13,8 @@ public class DefaultClassInstrumentationStrategy extends DefaultInstrumentation 
 
     private final ClassVisitor visitor;
 
-    public DefaultClassInstrumentationStrategy(ClassVisitor cv) {
+    public DefaultClassInstrumentationStrategy(ClassVisitor cv, TaintStringConfig configuration) {
+        super(configuration);
         this.visitor = cv;
     }
 

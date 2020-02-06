@@ -19,7 +19,7 @@ dependencies {
     compile 'org.ow2.asm:asm:7.2'
     compile 'org.ow2.asm:asm-analysis:7.2'
     compile 'org.ow2.asm:asm-util:7.2'
-    compile 'info.picocli:picocli:3.9.5'
+    compile 'info.picocli:picocli:4.1.4'
     compile 'org.slf4j:slf4j-api:1.7.25'
     // compile 'org.slf4j:slf4j-jdk14:1.7.25'
     compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.9'
@@ -57,7 +57,7 @@ task utilJar(type: Jar) {
         include "**/asm_test/Utils*"
         include "**/asm_test/Constants*"
         include "**/asm_test/config/TaintMethodConfig*"
-        include "**/application.properties"
+//        include "**/application.properties"
     }
     utilJar.baseName = "util"
 }

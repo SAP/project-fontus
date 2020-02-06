@@ -16,13 +16,13 @@ import java.util.regex.Matcher;
 
 
 public class StringBufferClassInstrumentationStrategy extends StringBufferInstrumentation implements ClassInstrumentationStrategy {
-    private final TaintStringConfig stringConfig = Configuration.instance.getTaintStringConfig();
 
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final ClassVisitor visitor;
 
-    public StringBufferClassInstrumentationStrategy(ClassVisitor cv) {
+    public StringBufferClassInstrumentationStrategy(ClassVisitor cv, TaintStringConfig configuration) {
+        super(configuration);
         this.visitor = cv;
     }
 

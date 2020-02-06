@@ -19,10 +19,10 @@ import java.util.Optional;
 public class ClassTaintingVisitor extends ClassVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final TaintStringConfig stringConfig = Configuration.instance.getTaintStringConfig();
+    private final TaintStringConfig stringConfig;
 
     private final Collection<BlackListEntry> blacklist = new ArrayList<>();
-    private final String newMainDescriptor = "(" + stringConfig.getTStringArrayDesc() + ")V";
+    private final String newMainDescriptor;
     private final Collection<FieldData> staticFinalFields;
     private boolean hasClInit = false;
     private boolean lacksToString = true;
@@ -46,14 +46,16 @@ public class ClassTaintingVisitor extends ClassVisitor {
         this.fillBlacklist();
         this.fillStrategies();
 	    this.config = config;
+	    this.stringConfig = this.config.getTaintStringConfig();
+	    this.newMainDescriptor = "(" + stringConfig.getTStringArrayDesc() + ")V";
     }
 
     private void fillStrategies() {
-        this.instrumentation.add(new FormatterClassInstrumentationStrategy(this.visitor));
-        this.instrumentation.add(new StringBufferClassInstrumentationStrategy(this.visitor));
-        this.instrumentation.add(new StringBuilderClassInstrumentationStrategy(this.visitor));
-        this.instrumentation.add(new StringClassInstrumentationStrategy(this.visitor));
-        this.instrumentation.add(new DefaultClassInstrumentationStrategy(this.visitor));
+        this.instrumentation.add(new FormatterClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
+        this.instrumentation.add(new StringBufferClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
+        this.instrumentation.add(new StringBuilderClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
+        this.instrumentation.add(new StringClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
+        this.instrumentation.add(new DefaultClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
     }
 
     private void fillBlacklist() {

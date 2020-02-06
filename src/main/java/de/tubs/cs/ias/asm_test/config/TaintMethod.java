@@ -1,16 +1,23 @@
 package de.tubs.cs.ias.asm_test.config;
 
 public enum TaintMethod {
-    BOOLEAN("bool/"), RANGE("range/");
+    BOOLEAN("boolean", "bool/"), RANGE("range", "range/");
 
+    public final static String defaultTaintMethodName = "boolean";
     private final String path;
+    private final String name;
 
-    TaintMethod(String path) {
+    TaintMethod(String name, String path) {
+        this.name = name;
         this.path = path;
     }
 
     public String getSubPath() {
         return this.path;
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public String getSubPackage() {
@@ -30,7 +37,7 @@ public enum TaintMethod {
 
     public static TaintMethod getTaintMethodByArgumentName(String argName) {
         switch (argName) {
-            case "bool":
+            case "boolean":
                 return TaintMethod.BOOLEAN;
             case "range":
                 return TaintMethod.RANGE;
@@ -40,6 +47,6 @@ public enum TaintMethod {
     }
 
     public static TaintMethod defaultTaintMethod() {
-        return BOOLEAN;
+        return getTaintMethodByArgumentName(defaultTaintMethodName);
     }
 }

@@ -50,9 +50,11 @@ public class ConfigurationLoader {
         return readFromStream(objectMapper, stream);
     }
 
-    public static Configuration loadAndMergeConfiguration(File f) {
+    public static Configuration loadAndMergeConfiguration(File f, TaintMethod taintMethod) {
         Configuration c = defaultConfiguration();
         c.append(loadConfigurationFrom(f));
+        c.setTaintMethod(taintMethod);
+        c.transformConverters();
         return c;
     }
 

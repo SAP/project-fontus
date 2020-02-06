@@ -2,7 +2,6 @@ package de.tubs.cs.ias.asm_test;
 
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
-import de.tubs.cs.ias.asm_test.method.BasicMethodVisitor;
 import de.tubs.cs.ias.asm_test.config.Sink;
 import de.tubs.cs.ias.asm_test.config.Source;
 import de.tubs.cs.ias.asm_test.asm.BasicMethodVisitor;
@@ -26,8 +25,6 @@ import java.util.Stack;
 public class MethodTaintingVisitor extends BasicMethodVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final TaintStringConfig stringConfig = Configuration.instance.getTaintStringConfig();
-
     private boolean shouldRewriteCheckCast;
     private final String name;
     private final String methodDescriptor;
@@ -48,6 +45,8 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
     private final Configuration config;
 
+    private final TaintStringConfig stringConfig;
+
     MethodTaintingVisitor(int acc, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver, Configuration config) {
         super(Opcodes.ASM7, methodVisitor);
         this.resolver = resolver;
@@ -61,12 +60,13 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.methodProxies = new HashMap<>();
         this.dynProxies = new HashMap<>();
         this.fillProxies();
-        this.instrumentation.add(new StringMethodInstrumentationStrategy(this.getParentVisitor()));
-        this.instrumentation.add(new StringBuilderMethodInstrumentationStrategy(this.getParentVisitor()));
-        this.instrumentation.add(new StringBufferMethodInstrumentationStrategy(this.getParentVisitor()));
-        this.instrumentation.add(new FormatterMethodInstrumentationStrategy(this.getParentVisitor()));
-        this.instrumentation.add(new DefaultMethodInstrumentationStrategy(this.getParentVisitor()));
-	    this.config = config;
+        this.config = config;
+        this.stringConfig = config.getTaintStringConfig();
+        this.instrumentation.add(new StringMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
+        this.instrumentation.add(new StringBuilderMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
+        this.instrumentation.add(new StringBufferMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
+        this.instrumentation.add(new FormatterMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
+        this.instrumentation.add(new DefaultMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
     }
 
     @Override
@@ -108,7 +108,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
     public void visitMethodInsn(FunctionCall fc) {
-	    logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(fc.getOpcode()), fc.getOwner(), fc.getName(), fc.getDescriptor());
+        logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(fc.getOpcode()), fc.getOwner(), fc.getName(), fc.getDescriptor());
         super.visitMethodInsn(fc.getOpcode(), fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.isInterface());
     }
 
@@ -137,7 +137,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.shouldRewriteCheckCast = false;
         // If we are in a "toString" method, we have to insert a call to the taint-check before returning.
         if (opcode == Opcodes.ARETURN && Constants.ToStringDesc.equals(this.methodDescriptor) && Constants.ToString.equals(this.name)) {
-            MethodTaintingUtils.callCheckTaint(this.getParentVisitor());
+            MethodTaintingUtils.callCheckTaint(this.getParentVisitor(), this.stringConfig);
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, stringConfig.getTStringQN(), Constants.TStringToStringName, Constants.ToStringDesc, false);
         }
         super.visitInsn(opcode);
@@ -148,10 +148,10 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
      * Return false otherwise.
      */
     private boolean isSinkCall(FunctionCall fc) {
-        if (Configuration.instance.getSinks().contains(fc)) {
+        if (this.config.getSinkConfig().containsFunction(fc)) {
             logger.info("{}.{}{} is a sink, so calling the check taint function before passing the value!", fc.getOwner(), fc.getName(), fc.getDescriptor());
             // Call dup here to put the TString reference twice on the stack so the call can pop one without affecting further processing
-            MethodTaintingUtils.callCheckTaint(this.getParentVisitor());
+            MethodTaintingUtils.callCheckTaint(this.getParentVisitor(), this.stringConfig);
             super.visitMethodInsn(Opcodes.INVOKESTATIC, stringConfig.getTStringQN(), Constants.AS_STRING, stringConfig.getAS_STRING_DESC(), false);
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.isInterface()); //TODO: Why is invokevirtual hardcoded in here?
             return true;
@@ -164,7 +164,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
      * Return false otherwise.
      */
     private boolean isSourceCall(FunctionCall fc) {
-        if (Configuration.instance.getSources().contains(fc)) {
+        if (this.config.getSourceConfig().containsFunction(fc)) {
             logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", fc.getOwner(), fc.getName(), fc.getDescriptor(), stringConfig.getTStringQN());
             this.visitMethodInsn(fc);
             super.visitMethodInsn(Opcodes.INVOKESTATIC, stringConfig.getTStringQN(), "tainted", stringConfig.getCreateTaintedStringDesc(), false);
@@ -238,22 +238,22 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
 
     private boolean rewriteParametersAndReturnType(FunctionCall call) {
-        
+
         MethodParameterTransformer transformer = new MethodParameterTransformer(this, call);
 
         // Add JDK transformations
-	if (JdkClassesLookupTable.instance.isJdkClass(call.getOwner()) || InstrumentationState.instance.isAnnotation(call.getOwner(), this.resolver)) {
-	    logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-	    JdkMethodTransformer t = new JdkMethodTransformer(call, this.instrumentation, this.config);
-	    transformer.AddParameterTransformation(t);
-	    transformer.AddReturnTransformation(t);
+        if (JdkClassesLookupTable.instance.isJdkClass(call.getOwner()) || InstrumentationState.instance.isAnnotation(call.getOwner(), this.resolver)) {
+            logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+            JdkMethodTransformer t = new JdkMethodTransformer(call, this.instrumentation, this.config);
+            transformer.AddParameterTransformation(t);
+            transformer.AddReturnTransformation(t);
         }
 
         // Add Sink transformations
         Sink sink = config.getSinkConfig().getSinkForFunction(call);
         if (sink != null) {
             logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-            SinkTransformer t = new SinkTransformer(sink);
+            SinkTransformer t = new SinkTransformer(sink, this.stringConfig);
             transformer.AddParameterTransformation(t);
         }
 
@@ -261,8 +261,8 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         Source source = config.getSourceConfig().getSourceForFunction(call);
         if (source != null) {
             logger.info("Adding source tainting for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-            SourceTransformer t = new SourceTransformer(source);
-	    transformer.AddReturnTransformation(t);
+            SourceTransformer t = new SourceTransformer(source, this.stringConfig);
+            transformer.AddReturnTransformation(t);
         }
 
         // No transformations required
@@ -279,7 +279,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         transformer.ModifyReturnType();
         this.shouldRewriteCheckCast = transformer.rewriteCheckCast();
 
-	logger.info("Finished transforming parameters for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+        logger.info("Finished transforming parameters for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
         return true;
     }
 
@@ -354,7 +354,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         if ("java/lang/invoke/LambdaMetafactory".equals(bootstrapMethodHandle.getOwner()) &&
                 "metafactory".equals(bootstrapMethodHandle.getName())) {
-            MethodTaintingUtils.invokeVisitLambdaCall(this.getParentVisitor(), name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
+            MethodTaintingUtils.invokeVisitLambdaCall(this.stringConfig, this.getParentVisitor(), name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
             return;
         }
 

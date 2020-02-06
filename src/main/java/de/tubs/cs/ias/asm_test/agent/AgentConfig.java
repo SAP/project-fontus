@@ -8,7 +8,9 @@ import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.ConfigurationLoader;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.Files;
 import java.util.*;
 
 public class AgentConfig {
@@ -60,7 +62,6 @@ public class AgentConfig {
     private static Configuration parseParts(Iterable<String> parts) {
         Configuration c = ConfigurationLoader.defaultConfiguration();
         boolean verbose = false;
-        List<String> blacklist = new ArrayList<>();
         TaintMethod taintMethod = TaintMethod.defaultTaintMethod();
         for(String part : parts) {
             if("verbose".equals(part)) {

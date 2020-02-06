@@ -44,6 +44,8 @@ public final class Constants {
      */
     public static final String StringDesc = java.lang.String.format("L%s;", StringQN);
 
+    public static final String FormatterDesc = java.lang.String.format("L%s;", FormatterQN);
+
     /**
      * Descriptor of an array of regular Java Strings
      */
@@ -98,28 +100,10 @@ public final class Constants {
     public static final String TStringInitUntaintedDesc = "(Ljava/lang/String;)V";
 
     /**
-     * Descriptor of the concat method
-     */
-    public static final String ConcatDesc = String.format("(%s[Ljava/lang/Object;)%s", StringDesc, TStringDesc);
-
-    /**
-     * Descriptor of the instrumented toString method.
-     */
-    public static final String ToStringInstrumentedDesc = String.format("()%s", TStringDesc);
-
-    /**
-     * Descriptor of the 'tainted' method that turns a regular String into a tainted one
-     */
-    public static final String CreateTaintedStringDesc = String.format("(%s)%s", TStringDesc, TStringDesc);
-
-    /**
      * Matches fully qualified String names
      */
     public static final Pattern strPattern = Pattern.compile(StringDesc);
 
-    /**
-     * Matches fully qualified String names
-     */
     public static final Pattern formatterPattern = Pattern.compile(FormatterDesc);
 
     /**

@@ -16,11 +16,11 @@ import java.util.regex.Matcher;
 
 public class StringBuilderClassInstrumentationStrategy extends StringBuilderInstrumentation implements ClassInstrumentationStrategy {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private final TaintStringConfig stringConfig = Configuration.instance.getTaintStringConfig();
 
     private final ClassVisitor visitor;
 
-    public StringBuilderClassInstrumentationStrategy(ClassVisitor cv) {
+    public StringBuilderClassInstrumentationStrategy(ClassVisitor cv, TaintStringConfig configuration) {
+        super(configuration);
         this.visitor = cv;
     }
 

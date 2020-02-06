@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
@@ -86,16 +87,16 @@ public final class Utils {
         }
     }
 
-    static Type instrumentType(Type t) {
+    static Type instrumentType(Type t, TaintStringConfig config) {
         Descriptor desc = Descriptor.parseDescriptor(t.getDescriptor());
-        desc = InstrumentationHelper.instrument(desc);
+        desc = InstrumentationHelper.getInstance(config).instrument(desc);
         return Type.getType(desc.toDescriptor());
     }
 
-    static Handle instrumentHandle(Handle h) {
+    static Handle instrumentHandle(Handle h, TaintStringConfig config) {
         Descriptor desc = Descriptor.parseDescriptor(h.getDesc());
-        desc = InstrumentationHelper.instrument(desc);
-        String owner = InstrumentationHelper.instrumentQN(h.getOwner());
+        desc = InstrumentationHelper.getInstance(config).instrument(desc);
+        String owner = InstrumentationHelper.getInstance(config).instrumentQN(h.getOwner());
         return new Handle(h.getTag(), owner, h.getName(), desc.toDescriptor(), h.isInterface());
     }
 

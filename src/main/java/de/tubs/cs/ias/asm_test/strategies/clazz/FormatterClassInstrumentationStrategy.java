@@ -2,6 +2,8 @@ package de.tubs.cs.ias.asm_test.strategies.clazz;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.TriConsumer;
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.strategies.FormatterInstrumentation;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
@@ -16,7 +18,8 @@ public class FormatterClassInstrumentationStrategy extends FormatterInstrumentat
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final ClassVisitor visitor;
 
-    public FormatterClassInstrumentationStrategy(ClassVisitor visitor) {
+    public FormatterClassInstrumentationStrategy(ClassVisitor visitor, TaintStringConfig configuration) {
+        super(configuration);
         this.visitor = visitor;
     }
 
@@ -24,7 +27,7 @@ public class FormatterClassInstrumentationStrategy extends FormatterInstrumentat
     public Optional<FieldVisitor> instrumentFieldInstruction(int access, String name, String descriptor, String signature, Object value, TriConsumer tc) {
         Matcher descMatcher = Constants.formatterPattern.matcher(descriptor);
         if (descMatcher.find()) {
-            String newDescriptor = descMatcher.replaceAll(Constants.TFormatterDesc);
+            String newDescriptor = descMatcher.replaceAll(this.taintStringConfig.getTFormatterDesc());
             logger.info("Replacing Formatter field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
             return Optional.of(this.visitor.visitField(access, name, newDescriptor, signature, value));
         }

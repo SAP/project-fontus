@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -24,6 +25,7 @@ import de.tubs.cs.ias.asm_test.config.ConfigurationLoader;
 public final class Main implements Callable<Void> {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final Instrumenter instrumenter;
+    private static final String defaultTaint = "boolean";
 
     @CommandLine.Option(
             names = {"-f", "--file"},
@@ -49,6 +51,15 @@ public final class Main implements Callable<Void> {
     )
     private File configFile;
 
+    @CommandLine.Option(
+            names = {"-t", "taintmethod"},
+            required = false,
+            paramLabel = "Taint method",
+            description = "Taint method, which should be used. Valid values:  ${COMPLETION-CANDIDATES}",
+            defaultValue = TaintMethod.defaultTaintMethodName
+    )
+    private TaintMethod taintMethod;
+
     private Configuration configuration;
 
     private static final JdkClassesLookupTable jdkClasses = JdkClassesLookupTable.instance;
@@ -56,7 +67,6 @@ public final class Main implements Callable<Void> {
     private Main() {
         this.instrumenter = new Instrumenter();
     }
-
 
 
     private void instrumentClassStream(InputStream i, OutputStream o) throws IOException {
@@ -154,7 +164,7 @@ public final class Main implements Callable<Void> {
     }
 
     private void loadConfiguration() throws IOException {
-        this.configuration = ConfigurationLoader.loadAndMergeConfiguration(this.configFile);
+        this.configuration = ConfigurationLoader.loadAndMergeConfiguration(this.configFile, this.taintMethod);
     }
 
     @Override
@@ -165,7 +175,9 @@ public final class Main implements Callable<Void> {
     }
 
     public static void main(String[] args) {
-        CommandLine.call(new Main(), args);
+        new CommandLine(new Main())
+                .setCaseInsensitiveEnumValuesAllowed(true)
+                .execute(args);
     }
 
 }

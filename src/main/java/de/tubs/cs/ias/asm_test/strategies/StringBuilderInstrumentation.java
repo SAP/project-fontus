@@ -12,7 +12,11 @@ import java.util.regex.Pattern;
 
 public class StringBuilderInstrumentation implements InstrumentationStrategy {
     private static final Pattern STRING_BUILDER_QN_MATCHER = Pattern.compile(Constants.StringBuilderQN, Pattern.LITERAL);
-    private final TaintStringConfig stringConfig = Configuration.instance.getTaintStringConfig();
+    protected final TaintStringConfig stringConfig;
+
+    public StringBuilderInstrumentation(TaintStringConfig configuration) {
+        this.stringConfig = configuration;
+    }
 
     @Override
     public Descriptor instrument(Descriptor desc) {
