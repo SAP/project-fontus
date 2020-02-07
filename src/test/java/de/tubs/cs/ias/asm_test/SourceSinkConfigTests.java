@@ -21,7 +21,7 @@ import java.net.URL;
 @SuppressWarnings({ "ClassIndependentOfModule", "ClassOnlyUsedInOneModule" })
 public class SourceSinkConfigTests {
 
-    private static String config_path = "configuration.xml";
+    private static String config_path = Constants.CONFIGURATION_XML_FILENAME;
     private static String config_json = "configuration.json";
     private static String config_black = "blacklist.json";
 

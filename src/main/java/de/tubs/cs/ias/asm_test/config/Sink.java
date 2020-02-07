@@ -26,7 +26,7 @@ public class Sink {
     public Sink() {
         this.name = "";
 	    this.function = new FunctionCall();
-        this.parameters = new ArrayList<SinkParameter>();
+        this.parameters = new ArrayList<>();
     }
 
     public Sink(String name, FunctionCall functionCall, List<SinkParameter> parameters) {

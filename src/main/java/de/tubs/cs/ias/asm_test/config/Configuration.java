@@ -22,10 +22,10 @@ public class Configuration {
         this.verbose = false;
         this.sourceConfig = new SourceConfig();
         this.sinkConfig = new SinkConfig();
-        this.converters = new ArrayList<FunctionCall>();
-        this.returnGeneric = new ArrayList<ReturnsGeneric>();
-        this.takeGeneric = new ArrayList<TakesGeneric>();
-        this.blacklistedMainClasses = new ArrayList<String>();
+        this.converters = new ArrayList<>();
+        this.returnGeneric = new ArrayList<>();
+        this.takeGeneric = new ArrayList<>();
+        this.blacklistedMainClasses = new ArrayList<>();
     }
    
     public Configuration(boolean verbose, SourceConfig sourceConfig, SinkConfig sinkConfig, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> blacklistedMainClasses) {
@@ -51,7 +51,7 @@ public class Configuration {
     }
 
     public void appendBlacklist(List<String> other) {
-        if (blacklistedMainClasses != null) {
+        if (this.blacklistedMainClasses != null) {
             this.blacklistedMainClasses.addAll(other);
         }
     }

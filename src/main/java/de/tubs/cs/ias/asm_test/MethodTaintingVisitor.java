@@ -4,11 +4,8 @@ import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.Sink;
 import de.tubs.cs.ias.asm_test.config.Source;
 import de.tubs.cs.ias.asm_test.asm.BasicMethodVisitor;
-import de.tubs.cs.ias.asm_test.transformer.MethodParameterTransformer;
+import de.tubs.cs.ias.asm_test.transformer.*;
 import de.tubs.cs.ias.asm_test.strategies.method.*;
-import de.tubs.cs.ias.asm_test.transformer.JdkMethodTransformer;
-import de.tubs.cs.ias.asm_test.transformer.SinkTransformer;
-import de.tubs.cs.ias.asm_test.transformer.SourceTransformer;
 import org.objectweb.asm.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -216,19 +213,19 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         }
 
         // Add Sink transformations
-        Sink sink = config.getSinkConfig().getSinkForFunction(call);
+        Sink sink = this.config.getSinkConfig().getSinkForFunction(call);
         if (sink != null) {
             logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-            SinkTransformer t = new SinkTransformer(sink);
+            ParameterTransformation t = new SinkTransformer(sink);
             transformer.AddParameterTransformation(t);
         }
 
         // Add Source transformations
-        Source source = config.getSourceConfig().getSourceForFunction(call);
+        Source source = this.config.getSourceConfig().getSourceForFunction(call);
         if (source != null) {
             logger.info("Adding source tainting for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-            SourceTransformer t = new SourceTransformer(source);
-	    transformer.AddReturnTransformation(t);
+            ReturnTransformation t = new SourceTransformer(source);
+	        transformer.AddReturnTransformation(t);
         }
 
         // No transformations required

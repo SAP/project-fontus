@@ -493,17 +493,23 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     //TODO: sound?
     public static IASString format(IASString format, Object... args) {
+        //return new IASString(String.format(format.toString(), args), isTainted(args));
         return new IASFormatter().format(format, args).toIASString();
     }
 
     //TODO: sound?
     public static IASString format(Locale l, IASString format, Object... args) {
+        //return new IASString(String.format(l, format.toString(), args), isTainted(args));
         return new IASFormatter(l).format(format, args).toIASString();
     }
 
     public static IASString valueOf(Object obj) {
         if (obj instanceof IASString) {
             return (IASString) obj;
+        } else if (obj instanceof IASStringBuffer) {
+            return ((IASStringBuffer) obj).toIASString();
+        } else if (obj instanceof IASStringBuilder) {
+            return ((IASStringBuilder) obj).toIASString();
         } else {
             return new IASString(String.valueOf(obj));
         }

@@ -5,7 +5,7 @@ import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 
 @SuppressWarnings({"SynchronizedMethod", "ReturnOfThis", "WeakerAccess", "ClassWithTooManyConstructors", "ClassWithTooManyMethods"})
 public final class IASStringBuffer
-        implements java.io.Serializable, CharSequence, IASTaintAware, Comparable<IASStringBuffer> {
+        implements java.io.Serializable, CharSequence, Appendable, IASTaintAware, Comparable<IASStringBuffer> {
 
     // TODO: accessed in both synchronized and unsynchronized methods
     private final StringBuffer buffer;
@@ -60,7 +60,7 @@ public final class IASStringBuffer
         this.tainted = false;
     }
 
-
+    @Override
     public synchronized int length() {
         return this.buffer.length();
     }
@@ -85,7 +85,7 @@ public final class IASStringBuffer
         this.buffer.setLength(newLength);
     }
 
-
+    @Override
     public synchronized char charAt(int index) {
         return this.buffer.charAt(index);
     }
@@ -155,7 +155,7 @@ public final class IASStringBuffer
         return this;
     }
 
-
+    @Override
     public synchronized IASStringBuffer append(CharSequence s) {
         this.buffer.append(s);
         if (s instanceof IASTaintAware) {
@@ -165,7 +165,7 @@ public final class IASStringBuffer
         return this;
     }
 
-
+    @Override
     public synchronized IASStringBuffer append(CharSequence s, int start, int end) {
         this.buffer.append(s, start, end);
         if (s instanceof IASTaintAware) {
@@ -190,6 +190,7 @@ public final class IASStringBuffer
         return this;
     }
 
+    @Override
     public synchronized IASStringBuffer append(char c) {
         this.buffer.append(c);
         return this;
@@ -250,7 +251,7 @@ public final class IASStringBuffer
         return this.substring(start, this.buffer.length());
     }
 
-
+    @Override
     public synchronized CharSequence subSequence(int start, int end) {
         IASStringBuffer sb = new IASStringBuffer(this.buffer.substring(start, end));
         sb.tainted = this.tainted;
