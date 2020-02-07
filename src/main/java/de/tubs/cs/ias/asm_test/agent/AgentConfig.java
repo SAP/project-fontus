@@ -46,7 +46,10 @@ public class AgentConfig {
 
     public static Configuration parseConfig(String args) {
         if(args == null) {
-            return ConfigurationLoader.defaultConfiguration();
+            Configuration c = ConfigurationLoader.defaultConfiguration();
+            c.setTaintMethod(TaintMethod.defaultTaintMethod());
+            c.transformConverters();
+            return c;
         }
         try (Scanner sc = new Scanner(args)) {
             sc.useDelimiter(";");
@@ -86,7 +89,8 @@ public class AgentConfig {
             c = ConfigurationLoader.defaultConfiguration();
         }
         c.setVerbose(verbose || c.isVerbose());
-
+        c.setTaintMethod(taintMethod);
+        c.transformConverters();
         return c;
     }
 

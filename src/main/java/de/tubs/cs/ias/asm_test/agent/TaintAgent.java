@@ -15,6 +15,4 @@ public class TaintAgent {
         Configuration c = AgentConfig.parseConfig(args);
         inst.addTransformer(new TaintingTransformer(c));
     }
-
-
 }

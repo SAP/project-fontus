@@ -38,16 +38,16 @@ public class ClassTaintingVisitor extends ClassVisitor {
     private String owner;
     private String superName;
 
-     public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config) {
+    public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config) {
         super(Opcodes.ASM7, cv);
         this.visitor = cv;
         this.staticFinalFields = new ArrayList<>();
         this.resolver = resolver;
+        this.config = config;
+        this.stringConfig = this.config.getTaintStringConfig();
+        this.newMainDescriptor = "(" + stringConfig.getTStringArrayDesc() + ")V";
         this.fillBlacklist();
         this.fillStrategies();
-	    this.config = config;
-	    this.stringConfig = this.config.getTaintStringConfig();
-	    this.newMainDescriptor = "(" + stringConfig.getTStringArrayDesc() + ")V";
     }
 
     private void fillStrategies() {
