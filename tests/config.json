@@ -162,12 +162,14 @@
     {
       "name": "Reflection Test: forName -> happy path",
       "source": "ReflectionTest1.java",
-      "arguments": ["java.lang.Integer"]
+      "arguments": ["java.lang.Integer"],
+      "safe": true
     },
     {
       "name": "Reflection Test: forName alternate overload -> happy path",
       "source": "ReflectionTest2.java",
-      "arguments": ["java.lang.Integer"]
+      "arguments": ["java.lang.Integer"],
+      "safe": true
     },
     {
       "name": "Reflection Test: creating a String with constant value via reflected constructor",

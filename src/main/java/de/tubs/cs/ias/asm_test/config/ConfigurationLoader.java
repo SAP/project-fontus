@@ -42,7 +42,7 @@ public class ConfigurationLoader {
     }
 
     public static Configuration defaultConfiguration() {
-        return readXmlConfiguration(Configuration.class.getClassLoader().getResourceAsStream("configuration.xml"));
+        return readXmlConfiguration(Configuration.class.getClassLoader().getResourceAsStream(Constants.CONFIGURATION_XML_FILENAME));
     }
 
     public static Configuration readJsonConfiguration(InputStream stream) {

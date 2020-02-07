@@ -81,7 +81,7 @@ public class Configuration {
     }
 
     public void appendBlacklist(List<String> other) {
-        if (blacklistedMainClasses != null) {
+        if (this.blacklistedMainClasses != null) {
             this.blacklistedMainClasses.addAll(other);
         }
     }

@@ -14,7 +14,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import java.util.regex.Matcher;
 
-
 public class StringBufferClassInstrumentationStrategy extends StringBufferInstrumentation implements ClassInstrumentationStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

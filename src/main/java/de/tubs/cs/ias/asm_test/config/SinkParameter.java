@@ -18,6 +18,6 @@ public class SinkParameter {
     }
 
     public int getIndex() {
-        return index;
+        return this.index;
     }
 }

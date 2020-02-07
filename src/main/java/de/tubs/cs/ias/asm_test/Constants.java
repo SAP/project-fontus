@@ -169,6 +169,8 @@ public final class Constants {
      * Suffix of XML
      */
     public static final String XML_FILE_SUFFIX = ".xml";
+    public static final String CONFIGURATION_XML_FILENAME = "configuration.xml";
+    public static final String VALUE_OF = "valueOf";
 
     private Constants() {
     }

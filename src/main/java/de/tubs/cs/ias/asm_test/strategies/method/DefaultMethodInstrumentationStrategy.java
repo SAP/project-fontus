@@ -12,11 +12,24 @@ import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
+import java.util.HashSet;
+import java.util.Set;
 
 public class DefaultMethodInstrumentationStrategy extends DefaultInstrumentation implements MethodInstrumentationStrategy {
     private final MethodVisitor mv;
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Set<Type> requireValueOf = fillRequireValueOfSet();
+
+    private static Set<Type> fillRequireValueOfSet() {
+        Set<Type> set = new HashSet<>();
+        set.add(Type.getType(CharSequence.class));
+        set.add(Type.getType(Object.class));
+        set.add(Type.getType(Serializable.class));
+        set.add(Type.getType(Appendable.class));
+        return set;
+    }
 
     public DefaultMethodInstrumentationStrategy(MethodVisitor mv, TaintStringConfig configuration) {
         super(configuration);
@@ -35,7 +48,8 @@ public class DefaultMethodInstrumentationStrategy extends DefaultInstrumentation
 
     @Override
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        if (isToString(name, descriptor)) {
+        Type tOwner = Type.getObjectType(owner);
+        if(isToString(name, descriptor) && requireValueOf.contains(tOwner)) {
             int newOpcode = Opcodes.INVOKESTATIC;
             String newOwner = this.stringConfig.getTStringQN();
             String newDescriptor = "(" + Constants.ObjectDesc + ")" + this.stringConfig.getTStringDesc();
@@ -48,8 +62,8 @@ public class DefaultMethodInstrumentationStrategy extends DefaultInstrumentation
         return false;
     }
 
-    private boolean isToString(String name, String descriptor) {
-        return name.equals("toString") && descriptor.equals("()Ljava/lang/String;");
+    private static boolean isToString(String name, String descriptor) {
+        return name.equals(Constants.ToString) && descriptor.equals(Constants.ToStringDesc);
     }
 
     @Override

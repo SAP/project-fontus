@@ -14,7 +14,7 @@ public class IASFormatter implements IASTaintAware, Closeable, Flushable, AutoCl
     }
 
     public IASFormatter() {
-        this(new Formatter());
+        this(new Formatter(new IASStringBuilder()));
     }
 
     public IASFormatter(Appendable a) {
@@ -38,7 +38,7 @@ public class IASFormatter implements IASTaintAware, Closeable, Flushable, AutoCl
     }
 
     public IASFormatter(Locale l) {
-        this(new Formatter(l));
+        this(new Formatter(new IASStringBuilder(), l));
     }
 
     public IASFormatter(OutputStream o) {
@@ -73,18 +73,22 @@ public class IASFormatter implements IASTaintAware, Closeable, Flushable, AutoCl
 
     public IASFormatter format(IASString format, Object... args) {
         boolean taintedArgs = IASString.isTainted(args);
-        formatter.format(format.getString(), args);
-        if (this.formatter.out() instanceof IASTaintAware) {
-            ((IASTaintAware) this.formatter.out()).setTaint(taintedArgs | ((IASTaintAware) this.formatter.out()).isTainted());
+        this.formatter.format(format.getString(), args);
+        Appendable internal = this.formatter.out();
+        if(internal instanceof IASTaintAware) {
+            IASTaintAware tInternal = (IASTaintAware) internal;
+            tInternal.setTaint(taintedArgs || tInternal.isTainted());
         }
         return this;
     }
 
     public IASFormatter format(Locale l, IASString format, Object... args) {
         boolean taintedArgs = IASString.isTainted(args);
-        formatter.format(l, format.getString(), args);
-        if (this.formatter.out() instanceof IASTaintAware) {
-            ((IASTaintAware) this.formatter.out()).setTaint(taintedArgs | ((IASTaintAware) this.formatter.out()).isTainted());
+        this.formatter.format(l, format.getString(), args);
+        Appendable internal = this.formatter.out();
+        if(internal instanceof IASTaintAware) {
+            IASTaintAware tInternal = (IASTaintAware) internal;
+            tInternal.setTaint(taintedArgs || tInternal.isTainted());
         }
         return this;
     }

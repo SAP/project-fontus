@@ -10,6 +10,7 @@ public class ReturnsGeneric {
 
     @XmlElement(name = "function")
     private FunctionCall functionCall;
+
     @XmlElement
     private String converter;
 

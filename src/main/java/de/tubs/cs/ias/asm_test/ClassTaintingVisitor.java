@@ -128,6 +128,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
             );
             if (ofv.isPresent()) {
                 fv = ofv.get();
+                break;
             }
         }
         return fv;
@@ -228,7 +229,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
             mv = super.visitMethod(access, name, desc, signature, exceptions);
         }
 
-        return new MethodTaintingVisitor(access, newName, desc, mv, this.resolver, config);
+        return new MethodTaintingVisitor(access, newName, desc, mv, this.resolver, this.config);
     }
 
 
@@ -249,7 +250,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
     @Override
     public void visitEnd() {
         if (this.lacksToString) {
-            logger.info("Creating proxy toString method");
+            logger.info("Adding missing toString method");
             MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC, Constants.ToStringInstrumented, stringConfig.getToStringInstrumentedDesc(), null, null);
             this.createToString(v);
         }

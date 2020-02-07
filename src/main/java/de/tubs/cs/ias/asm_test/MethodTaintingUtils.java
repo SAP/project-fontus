@@ -81,7 +81,7 @@ public class MethodTaintingUtils {
         String full = types.get(type);
         String owner = String.format("java/lang/%s", full);
         String desc = String.format("(%s)L%s;", type, owner);
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, owner, "valueOf", desc, false);
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, owner, Constants.VALUE_OF, desc, false);
     }
 
     /**

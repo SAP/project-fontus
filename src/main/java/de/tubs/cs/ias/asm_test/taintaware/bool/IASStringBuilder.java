@@ -5,7 +5,7 @@ import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("ALL")
-public final class IASStringBuilder implements java.io.Serializable, Comparable<IASStringBuilder>, CharSequence, IASTaintAware {
+public final class IASStringBuilder implements java.io.Serializable, Comparable<IASStringBuilder>, CharSequence, Appendable, IASTaintAware {
 
     private final StringBuilder builder;
     private boolean tainted;
@@ -56,6 +56,10 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
     }
 
     public IASStringBuilder append(Object obj) {
+        if (obj instanceof IASTaintAware) {
+            IASTaintAware ta = (IASTaintAware) obj;
+            this.mergeTaint(ta);
+        }
         this.builder.append(obj);
         return this;
     }
@@ -85,6 +89,7 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
         return this;
     }
 
+    @Override
     public IASStringBuilder append(CharSequence cs) {
         if (cs instanceof IASTaintAware) {
             IASTaintAware ta = (IASTaintAware) cs;
@@ -94,6 +99,7 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
         return this;
     }
 
+    @Override
     public IASStringBuilder append(CharSequence cs, int start, int end) {
         if (cs instanceof IASTaintAware) {
             IASTaintAware ta = (IASTaintAware) cs;
@@ -118,6 +124,7 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
         return this;
     }
 
+    @Override
     public IASStringBuilder append(char c) {
         this.builder.append(c);
         return this;
