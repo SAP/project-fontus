@@ -28,7 +28,7 @@ public class JdkMethodTransformer implements ParameterTransformation, ReturnTran
         }
 
         FunctionCall converter = this.configuration.getConverterForParameter(this.call, index);
-        if(converter != null) {
+        if (converter != null) {
             visitor.visitMethodInsn(converter);
         }
     }
@@ -41,7 +41,7 @@ public class JdkMethodTransformer implements ParameterTransformation, ReturnTran
         }
 
         FunctionCall converter = this.configuration.getConverterForReturnValue(this.call);
-        if(converter != null) {
+        if (converter != null) {
             visitor.visitMethodInsn(converter);
         }
 

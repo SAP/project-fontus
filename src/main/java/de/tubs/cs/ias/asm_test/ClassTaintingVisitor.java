@@ -35,14 +35,14 @@ public class ClassTaintingVisitor extends ClassVisitor {
     private String owner;
     private String superName;
 
-     public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config) {
+    public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config) {
         super(Opcodes.ASM7, cv);
         this.visitor = cv;
         this.staticFinalFields = new ArrayList<>();
         this.resolver = resolver;
         this.fillBlacklist();
         this.fillStrategies();
-	    this.config = config;
+        this.config = config;
     }
 
     private void fillStrategies() {

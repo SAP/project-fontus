@@ -167,7 +167,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
             Type taintStringArray;
             if (TaintMethodConfig.getTaintMethod() == TaintMethodConfig.TaintMethod.BOOLEAN) {
                 taintStringArray = Type.getType(de.tubs.cs.ias.asm_test.taintaware.bool.IASString[].class);
-            } else if(TaintMethodConfig.getTaintMethod() == TaintMethodConfig.TaintMethod.RANGE) {
+            } else if (TaintMethodConfig.getTaintMethod() == TaintMethodConfig.TaintMethod.RANGE) {
                 taintStringArray = Type.getType(de.tubs.cs.ias.asm_test.taintaware.range.IASString[].class);
             } else {
                 throw new IllegalStateException("Taint method unsupported or not specified!");

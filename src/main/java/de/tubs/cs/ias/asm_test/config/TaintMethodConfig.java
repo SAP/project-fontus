@@ -13,7 +13,7 @@ public class TaintMethodConfig {
 
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         InputStream is = classLoader.getResourceAsStream("application.properties");
-        if(is != null) {
+        if (is != null) {
             try {
                 properties.load(is);
             } catch (IOException e) {
@@ -29,7 +29,7 @@ public class TaintMethodConfig {
     }
 
     public static TaintMethod getTaintMethod() {
-        if(taintMethod == null) {
+        if (taintMethod == null) {
             String path = (String) properties.getOrDefault("taintpath", "");
             taintMethod = TaintMethod.getTaintMethodByPath(path);
         }

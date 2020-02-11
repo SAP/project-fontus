@@ -13,8 +13,8 @@ import java.util.*;
 public class AgentConfig {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-     public static Configuration parseConfig(String args) {
-        if(args == null) {
+    public static Configuration parseConfig(String args) {
+        if (args == null) {
             return ConfigurationLoader.defaultConfiguration();
         }
         try (Scanner sc = new Scanner(args)) {
@@ -31,7 +31,7 @@ public class AgentConfig {
     private static Configuration parseParts(Iterable<String> parts) {
         Configuration c = ConfigurationLoader.defaultConfiguration();
         boolean verbose = false;
-        for(String part : parts) {
+        for (String part : parts) {
             if ("verbose".equals(part)) {
                 verbose = true;
             }

@@ -59,7 +59,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.instrumentation.add(new StringBufferMethodInstrumentationStrategy(this.getParentVisitor()));
         this.instrumentation.add(new FormatterMethodInstrumentationStrategy(this.getParentVisitor()));
         this.instrumentation.add(new DefaultMethodInstrumentationStrategy(this.getParentVisitor()));
-	    this.config = config;
+        this.config = config;
     }
 
     @Override
@@ -101,7 +101,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
     public void visitMethodInsn(FunctionCall fc) {
-	    logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(fc.getOpcode()), fc.getOwner(), fc.getName(), fc.getDescriptor());
+        logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(fc.getOpcode()), fc.getOwner(), fc.getName(), fc.getDescriptor());
         super.visitMethodInsn(fc.getOpcode(), fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.isInterface());
     }
 
@@ -201,15 +201,15 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
 
     private boolean rewriteParametersAndReturnType(FunctionCall call) {
-        
+
         MethodParameterTransformer transformer = new MethodParameterTransformer(this, call);
 
         // Add JDK transformations
-	if (JdkClassesLookupTable.instance.isJdkClass(call.getOwner()) || InstrumentationState.instance.isAnnotation(call.getOwner(), this.resolver)) {
-	    logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-	    JdkMethodTransformer t = new JdkMethodTransformer(call, this.instrumentation, this.config);
-	    transformer.AddParameterTransformation(t);
-	    transformer.AddReturnTransformation(t);
+        if (JdkClassesLookupTable.instance.isJdkClass(call.getOwner()) || InstrumentationState.instance.isAnnotation(call.getOwner(), this.resolver)) {
+            logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+            JdkMethodTransformer t = new JdkMethodTransformer(call, this.instrumentation, this.config);
+            transformer.AddParameterTransformation(t);
+            transformer.AddReturnTransformation(t);
         }
 
         // Add Sink transformations
@@ -225,7 +225,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         if (source != null) {
             logger.info("Adding source tainting for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
             ReturnTransformation t = new SourceTransformer(source);
-	        transformer.AddReturnTransformation(t);
+            transformer.AddReturnTransformation(t);
         }
 
         // No transformations required
@@ -242,7 +242,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         transformer.ModifyReturnType();
         this.shouldRewriteCheckCast = transformer.rewriteCheckCast();
 
-	logger.info("Finished transforming parameters for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+        logger.info("Finished transforming parameters for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
         return true;
     }
 

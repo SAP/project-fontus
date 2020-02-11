@@ -45,8 +45,8 @@ public class DefaultMethodInstrumentationStrategy extends DefaultInstrumentation
     @Override
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         Type tOwner = Type.getObjectType(owner);
-        if(isToString(name, descriptor) && requireValueOf.contains(tOwner)) {
-            logger.info("Replacing toString for {} with call to TString.valueOf",  owner);
+        if (isToString(name, descriptor) && requireValueOf.contains(tOwner)) {
+            logger.info("Replacing toString for {} with call to TString.valueOf", owner);
             this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, Constants.VALUE_OF, String.format("(%s)%s", Constants.ObjectDesc, Constants.TStringDesc), false);
             return true;
         }

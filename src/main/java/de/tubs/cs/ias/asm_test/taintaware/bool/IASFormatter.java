@@ -75,7 +75,7 @@ public class IASFormatter implements IASTaintAware, Closeable, Flushable, AutoCl
         boolean taintedArgs = IASString.isTainted(args);
         this.formatter.format(format.getString(), args);
         Appendable internal = this.formatter.out();
-        if(internal instanceof IASTaintAware) {
+        if (internal instanceof IASTaintAware) {
             IASTaintAware tInternal = (IASTaintAware) internal;
             tInternal.setTaint(taintedArgs || tInternal.isTainted());
         }
@@ -86,7 +86,7 @@ public class IASFormatter implements IASTaintAware, Closeable, Flushable, AutoCl
         boolean taintedArgs = IASString.isTainted(args);
         this.formatter.format(l, format.getString(), args);
         Appendable internal = this.formatter.out();
-        if(internal instanceof IASTaintAware) {
+        if (internal instanceof IASTaintAware) {
             IASTaintAware tInternal = (IASTaintAware) internal;
             tInternal.setTaint(taintedArgs || tInternal.isTainted());
         }

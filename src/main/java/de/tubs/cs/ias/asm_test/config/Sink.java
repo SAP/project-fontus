@@ -3,6 +3,7 @@ package de.tubs.cs.ias.asm_test.config;
 import de.tubs.cs.ias.asm_test.FunctionCall;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -19,22 +20,22 @@ public class Sink {
     @XmlElement
     private FunctionCall function;
 
-    @JacksonXmlElementWrapper(localName = "parameters")    
+    @JacksonXmlElementWrapper(localName = "parameters")
     @XmlElement(name = "parameter")
     private final List<SinkParameter> parameters;
 
     public Sink() {
         this.name = "";
-	    this.function = new FunctionCall();
+        this.function = new FunctionCall();
         this.parameters = new ArrayList<>();
     }
 
     public Sink(String name, FunctionCall functionCall, List<SinkParameter> parameters) {
         this.name = name;
-	    this.function = functionCall;
+        this.function = functionCall;
         this.parameters = parameters;
     }
-   
+
     public List<SinkParameter> getParameters() {
         return Collections.unmodifiableList(this.parameters);
     }

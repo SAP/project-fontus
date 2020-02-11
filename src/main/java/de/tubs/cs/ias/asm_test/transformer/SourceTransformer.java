@@ -26,10 +26,10 @@ public class SourceTransformer implements ReturnTransformation {
         logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", fc.getOwner(), fc.getName(), fc.getDescriptor(), Constants.TStringQN);
 
         FunctionCall tainter = new FunctionCall(Opcodes.INVOKESTATIC,
-                        Constants.TStringQN,
-                        "tainted",
-                        Constants.CreateTaintedStringDesc,
-                        false);
+                Constants.TStringQN,
+                "tainted",
+                Constants.CreateTaintedStringDesc,
+                false);
         visitor.visitMethodInsn(tainter);
     }
 
