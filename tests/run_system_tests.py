@@ -106,11 +106,7 @@ def check_output_files_existence(version):
 
 
 def compile_project(args):
-    if args.taint_type == "bool":
-        taint_type = "boolJar"
-    elif args.taint_type == "range":
-        taint_type = "rangeJar"
-    compile_result = subprocess.run(["./gradlew", "clean", taint_type],
+    compile_result = subprocess.run(["./gradlew", "clean", "jar"],
                                     check=False,
                                     universal_newlines=True,
                                     stdout=subprocess.PIPE,
@@ -407,8 +403,8 @@ class TestRunner:
                      "-classpath",
                      '.:{}'.format(format_jar_filename(
                          "asm_test", self._config.version)),
-                     '-javaagent:{}'.format(format_jar_filename(
-                         "asm_test", self._config.version)),
+                     '-javaagent:{}=taintmethod={}'.format(format_jar_filename(
+                         "asm_test", self._config.version), self._config.taintmethod),
                      name
                      ] + arguments
         return await run_command(cwd, arguments)
@@ -427,7 +423,9 @@ class TestRunner:
             "-f",
             input_file,
             "-o",
-            output_file
+            output_file,
+            "-t",
+            self._config.taintmethod
         ]
         return await run_command(cwd, arguments)
 
@@ -440,7 +438,9 @@ class TestRunner:
             "-f",
             input_file,
             "-o",
-            output_file
+            output_file,
+            "-t",
+            self._config.taintmethod
         ]
         return run_command_sync(cwd, arguments)
 
@@ -480,7 +480,9 @@ class TestRunner:
             "-f",
             input_file,
             "-o",
-            output_file
+            output_file,
+            "-t",
+            self._config.taintmethod
         ]
         return await run_command(cwd, arguments)
 
@@ -497,7 +499,9 @@ class TestRunner:
             "-f",
             input_file,
             "-o",
-            output_file
+            output_file,
+            "-t",
+            self._config.taintmethod
         ]
         return run_command_sync(cwd, arguments)
 
@@ -517,8 +521,8 @@ class TestRunner:
             "-cp",
             '{}:{}'.format(format_jar_filename(
                 "asm_test", self._config.version), name),
-            '-javaagent:{}'.format(format_jar_filename(
-                "asm_test", self._config.version)),
+            '-javaagent:{}=taintmethod={}'.format(format_jar_filename(
+                "asm_test", self._config.version), self._config.taintmethod),
             entry_point
         ] + additional_arguments
         return await run_command(cwd, arguments, input_file)
@@ -678,6 +682,7 @@ def main(args):
     config = parse_config(args.config)
     config.version = args.version
     config.verbose = args.verbose
+    config.taintmethod = args.taint_type
     # pprint.pprint(config)
     runner = TestRunner(config, args.safe)
     loop = asyncio.get_event_loop()
@@ -694,7 +699,7 @@ if __name__ == "__main__":
     ARG_PARSER.add_argument("--safe", action="store_true",
                             help="Runs all tests in safe mode.")
     ARG_PARSER.add_argument("--config", default=CONFIG_FILE)
-    ARG_PARSER.add_argument("--taint_type", choices=['bool', 'range'],
-                            default='bool')
+    ARG_PARSER.add_argument("--taint_type", choices=['boolean', 'range'],
+                            default='boolean')
 
     main(ARG_PARSER.parse_args())
