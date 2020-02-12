@@ -12,6 +12,7 @@ public class IASMatcher {
     private IASString input;
     private IASPattern pattern;
     private Matcher matcher;
+    private int appendPos = 0;
 
     public IASMatcher(Matcher matcher) {
         // TODO Very hacky way, but original text of a matcher is only accessible though reflection
@@ -33,13 +34,24 @@ public class IASMatcher {
     }
 
     public IASMatcher appendReplacement(IASStringBuffer sb, IASString replacement) {
-        // TODO Implement
-        throw new UnsupportedOperationException("Not implemented yet");
+        Replacement replacer = Replacement.createReplacement(replacement);
+        int end = this.start();
+
+        IASString first = this.input.substring(appendPos, end);
+        sb.append(first, true);
+        IASString currRepl = replacer.doReplacement(this.matcher, this.input);
+        sb.append(currRepl, true);
+        appendPos = this.end();
+
+        return this;
     }
 
     public IASStringBuffer appendTail(IASStringBuffer sb) {
-        // TODO Implement
-        throw new UnsupportedOperationException("Not implemented yet");
+        if (appendPos < this.input.length()) {
+            IASString last = this.input.substring(appendPos);
+            sb.append(last, true);
+        }
+        return sb;
     }
 
     public int end() {
@@ -145,25 +157,12 @@ public class IASMatcher {
     }
 
     public IASString replaceAll(IASString replacement) {
-        IASStringBuilder stringBuilder = new IASStringBuilder();
-        int start = 0;
-        Replacement replacer = Replacement.createReplacement(replacement);
+        IASStringBuffer sb = new IASStringBuffer();
+        this.reset();
         while (this.find()) {
-            int end = this.start();
-
-            IASString first = this.input.substring(start, end);
-            stringBuilder.append(first, true);
-            IASString currRepl = replacer.doReplacement(this.matcher, this.input);
-            stringBuilder.append(currRepl, true);
-            start = this.end();
+            this.appendReplacement(sb, replacement);
         }
-
-        if (start < this.input.length()) {
-            IASString last = this.input.substring(start);
-            stringBuilder.append(last, true);
-        }
-
-        return stringBuilder.toIASString();
+        return this.appendTail(sb).toIASString();
     }
 
     public IASString replaceFirst(IASString replacement) {
@@ -192,11 +191,12 @@ public class IASMatcher {
 
     public IASMatcher reset() {
         this.matcher.reset();
+        this.appendPos = 0;
         return this;
     }
 
     public IASMatcher reset(CharSequence input) {
-        this.matcher.reset(input);
+        this.reset();
         this.input = IASString.valueOf(input);
         return this;
     }
