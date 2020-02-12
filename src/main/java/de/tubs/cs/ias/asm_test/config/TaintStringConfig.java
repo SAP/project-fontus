@@ -66,6 +66,10 @@ public class TaintStringConfig {
     private final String FROM_STRING_DESC;
     private final String TFormatterDesc;
     private final String TFormatterQN;
+    private final String TMatcherDesc;
+    private final String TMatcherQN;
+    private final String TPatternDesc;
+    private final String TPatternQN;
 
     public String getTPackage() {
         return TPackage;
@@ -148,6 +152,10 @@ public class TaintStringConfig {
         this.FROM_STRING_DESC = String.format("(%s)%s", StringDesc, TStringDesc);
         this.TFormatterQN = TPackage + "IASFormatter";
         this.TFormatterDesc = java.lang.String.format("L%s;", TFormatterQN);
+        this.TMatcherQN = TPackage + "IASMatcher";
+        this.TMatcherDesc = java.lang.String.format("L%s;", TMatcherQN);
+        this.TPatternQN = TPackage + "IASPattern";
+        this.TPatternDesc = java.lang.String.format("L%s;", TPatternQN);
     }
 
     public String getTFormatterDesc() {
@@ -160,5 +168,21 @@ public class TaintStringConfig {
 
     public TaintMethod getTaintMethod() {
         return this.taintMethod;
+    }
+
+    public String getTMatcherDesc() {
+        return this.TMatcherDesc;
+    }
+
+    public String getTMatcherQN() {
+        return this.TMatcherQN;
+    }
+
+    public String getTPatternDesc() {
+        return this.TPatternDesc;
+    }
+
+    public String getTPatternQN() {
+        return this.TPatternQN;
     }
 }
