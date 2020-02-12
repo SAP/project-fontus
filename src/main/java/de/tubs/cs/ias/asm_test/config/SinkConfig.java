@@ -20,28 +20,28 @@ public class SinkConfig {
         this.sinks = sinks;
     }
 
-	public void append(SinkConfig sinkconfig) {
+    public void append(SinkConfig sinkconfig) {
         this.sinks.addAll(sinkconfig.sinks);
-	}
+    }
 
-	public Sink getSinkForFunction(FunctionCall fc) {
+    public Sink getSinkForFunction(FunctionCall fc) {
         for (Sink s : sinks) {
             if (s.getFunction().equals(fc)) {
                 return s;
             }
         }
-		return null;
+        return null;
     }
 
-	public boolean containsFunction(FunctionCall fc) {
+    public boolean containsFunction(FunctionCall fc) {
         return (this.getSinkForFunction(fc) != null);
     }
-    
+
     public List<Sink> getSinks() {
         return Collections.unmodifiableList(this.sinks);
     }
 
-    @JacksonXmlElementWrapper(localName = "sinks") 
+    @JacksonXmlElementWrapper(localName = "sinks")
     @XmlElement(name = "sink")
     private final List<Sink> sinks;
 

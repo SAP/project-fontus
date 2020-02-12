@@ -15,7 +15,6 @@ import java.util.*;
 
 public class AgentConfig {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
     private final boolean verbose;
     private final List<String> blacklist;
     private final TaintMethod taintMethod;

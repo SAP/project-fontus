@@ -260,7 +260,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         Source source = this.config.getSourceConfig().getSourceForFunction(call);
         if (source != null) {
             logger.info("Adding source tainting for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-            SourceTransformer t = new SourceTransformer(source, this.stringConfig);
+            ReturnTransformation t = new SourceTransformer(source, this.stringConfig);
             transformer.AddReturnTransformation(t);
         }
 

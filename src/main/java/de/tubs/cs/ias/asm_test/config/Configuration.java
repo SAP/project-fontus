@@ -34,7 +34,7 @@ public class Configuration {
     }
 
     public Configuration(boolean verbose, SourceConfig sourceConfig, SinkConfig sinkConfig, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> blacklistedMainClasses) {
-	    this.verbose = verbose;
+        this.verbose = verbose;
         this.sourceConfig = sourceConfig;
         this.sinkConfig = sinkConfig;
         this.converters = converters;
@@ -111,8 +111,8 @@ public class Configuration {
     }
 
     private FunctionCall getConverter(String name) {
-        for(FunctionCall fc : this.converters) {
-            if(fc.getName().equals(name)) {
+        for (FunctionCall fc : this.converters) {
+            if (fc.getName().equals(name)) {
                 return fc;
             }
         }
@@ -120,7 +120,7 @@ public class Configuration {
     }
 
     public boolean needsParameterConversion(FunctionCall c) {
-        for(TakesGeneric tg : this.takeGeneric) {
+        for (TakesGeneric tg : this.takeGeneric) {
             if (tg.getFunctionCall().equals(c)) {
                 return true;
             }
@@ -129,10 +129,10 @@ public class Configuration {
     }
 
     public FunctionCall getConverterForParameter(FunctionCall c, int index) {
-        for(TakesGeneric tg : this.takeGeneric) {
-            if(tg.getFunctionCall().equals(c)) {
+        for (TakesGeneric tg : this.takeGeneric) {
+            if (tg.getFunctionCall().equals(c)) {
                 Conversion conversion = tg.getConversionAt(index);
-                if(conversion != null) {
+                if (conversion != null) {
                     String converterName = conversion.getConverter();
                     FunctionCall converter = this.getConverter(converterName);
                     logger.info("Found converter for {} at index {}: {}", c, index, converter);
@@ -144,8 +144,8 @@ public class Configuration {
     }
 
     public FunctionCall getConverterForReturnValue(FunctionCall c) {
-        for(ReturnsGeneric rg : this.returnGeneric) {
-            if(rg.getFunctionCall().equals(c)) {
+        for (ReturnsGeneric rg : this.returnGeneric) {
+            if (rg.getFunctionCall().equals(c)) {
                 String converterName = rg.getConverter();
                 FunctionCall converter = this.getConverter(converterName);
                 logger.info("Found converter for rv of {}: {}", c, converter);

@@ -160,8 +160,6 @@ public class ClassTaintingVisitor extends ClassVisitor {
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.owner, Constants.ToStringInstrumented, stringConfig.getToStringInstrumentedDesc(), false);
         mv.visitInsn(Opcodes.DUP);
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, stringConfig.getTStringQN(), Constants.ABORT_IF_TAINTED, "()V", false);
-        mv.visitInsn(Opcodes.DUP);
         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, stringConfig.getTStringQN(), Constants.TStringToStringName, Constants.ToStringDesc, false);
         mv.visitInsn(Opcodes.ARETURN);
         mv.visitMaxs(6, 3);

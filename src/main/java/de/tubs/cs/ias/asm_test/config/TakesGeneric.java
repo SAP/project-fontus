@@ -32,8 +32,8 @@ public class TakesGeneric {
     }
 
     public Conversion getConversionAt(int index) {
-        for(Conversion c : this.conversions) {
-            if(c.getIndex() == index) return c;
+        for (Conversion c : this.conversions) {
+            if (c.getIndex() == index) return c;
         }
         return null;
     }

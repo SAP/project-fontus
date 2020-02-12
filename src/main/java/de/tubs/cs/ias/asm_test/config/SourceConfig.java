@@ -20,28 +20,28 @@ public class SourceConfig {
         this.sources = sources;
     }
 
-	public void append(SourceConfig sourceConfig) {
+    public void append(SourceConfig sourceConfig) {
         this.sources.addAll(sourceConfig.sources);
-	}
+    }
 
-	public Source getSourceForFunction(FunctionCall fc) {
+    public Source getSourceForFunction(FunctionCall fc) {
         for (Source s : this.sources) {
             if (s.getFunction().equals(fc)) {
                 return s;
             }
         }
-		return null;
+        return null;
     }
 
-	public boolean containsFunction(FunctionCall fc) {
+    public boolean containsFunction(FunctionCall fc) {
         return (this.getSourceForFunction(fc) != null);
     }
-    
+
     public List<Source> getSources() {
         return Collections.unmodifiableList(this.sources);
     }
 
-    @JacksonXmlElementWrapper(localName = "sources") 
+    @JacksonXmlElementWrapper(localName = "sources")
     @XmlElement(name = "source")
     private final List<Source> sources;
 

@@ -30,7 +30,7 @@ public class FunctionCall {
     private final String descriptor;
 
     @XmlElement(name = "interface")
-    @JsonProperty(value="interface")  
+    @JsonProperty(value = "interface")
     private final boolean isInterface;
 
     public FunctionCall(final int opcode, final String owner, final String name, final String descriptor, final boolean isInterface) {
@@ -56,7 +56,7 @@ public class FunctionCall {
     public int getOpcode() {
         return this.opcode;
     }
- 
+
     public boolean isInterface() {
         return this.isInterface;
     }

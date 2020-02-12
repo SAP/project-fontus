@@ -276,15 +276,27 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public IASString substring(int beginIndex) {
-        return new IASString(this.str.substring(beginIndex), this.tainted);
+        boolean taint = this.tainted;
+        if (beginIndex == this.str.length()) {
+            taint = false;
+        }
+        return new IASString(this.str.substring(beginIndex), taint);
     }
 
     public IASString substring(int beginIndex, int endIndex) {
-        return new IASString(this.str.substring(beginIndex, endIndex), this.tainted);
+        boolean taint = this.tainted;
+        if (beginIndex == endIndex) {
+            taint = false;
+        }
+        return new IASString(this.str.substring(beginIndex, endIndex), taint);
     }
 
     public CharSequence subSequence(int beginIndex, int endIndex) {
-        return new IASString(this.str.subSequence(beginIndex, endIndex), this.tainted);
+        boolean taint = this.tainted;
+        if (beginIndex == endIndex) {
+            taint = false;
+        }
+        return new IASString(this.str.subSequence(beginIndex, endIndex), taint);
     }
 
     public IASString concat(IASString str) {
@@ -312,7 +324,9 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
             taint |= replacement.tainted;
         }
         String result = this.str.replaceFirst(regex.str, replacement.str);
-        if(result.isEmpty()) { taint = false; }
+        if (result.isEmpty()) {
+            taint = false;
+        }
         return new IASString(result, taint);
     }
 
@@ -325,7 +339,9 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
             taint |= replacement.tainted;
         }
         String result = this.str.replaceAll(regex.str, replacement.str);
-        if(result.isEmpty()) { taint = false; }
+        if (result.isEmpty()) {
+            taint = false;
+        }
         return new IASString(result, taint);
     }
 
@@ -452,7 +468,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public IASString repeat(int count) {
-        if(count == 0) {
+        if (count == 0) {
             return new IASString("");
         }
         return new IASString(this.str.repeat(count), this.tainted);
