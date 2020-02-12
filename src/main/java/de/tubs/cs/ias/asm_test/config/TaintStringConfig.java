@@ -153,7 +153,7 @@ public class TaintStringConfig {
         this.TFormatterQN = TPackage + "IASFormatter";
         this.TFormatterDesc = java.lang.String.format("L%s;", TFormatterQN);
         this.TMatcherQN = TPackage + "IASMatcher";
-        this.TMatcherDesc = java.lang.String.format("L%s;", TFormatterQN);
+        this.TMatcherDesc = java.lang.String.format("L%s;", TMatcherQN);
         this.TPatternQN = TPackage + "IASPattern";
         this.TPatternDesc = java.lang.String.format("L%s;", TPatternQN);
     }

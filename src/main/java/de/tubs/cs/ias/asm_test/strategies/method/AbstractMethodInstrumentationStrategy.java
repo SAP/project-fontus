@@ -57,7 +57,7 @@ public abstract class AbstractMethodInstrumentationStrategy extends AbstractInst
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         if (Type.getObjectType(owner).equals(type)) {
             String newDescriptor = InstrumentationHelper.getInstance(this.taintStringConfig).instrumentDesc(descriptor);
-            String newOwner = this.taintStringConfig.getTFormatterQN();
+            String newOwner = this.taintedQN;
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up
             String newName = this.methodsToRename.getOrDefault(name, name);
 
@@ -73,16 +73,16 @@ public abstract class AbstractMethodInstrumentationStrategy extends AbstractInst
         Type returnType = Type.getReturnType(desc.toDescriptor());
         if (type.equals(returnType)) {
             logger.info("Converting returned {} of {}.{}{}", this.origQN, owner, name, desc.toDescriptor());
-            this.formatterToTFormatter();
+            this.origToTainted();
         }
     }
 
-    private void formatterToTFormatter() {
-        this.mv.visitTypeInsn(Opcodes.NEW, this.taintStringConfig.getTFormatterQN());
+    private void origToTainted() {
+        this.mv.visitTypeInsn(Opcodes.NEW, this.taintedQN);
         this.mv.visitInsn(Opcodes.DUP);
         this.mv.visitInsn(Opcodes.DUP2_X1);
         this.mv.visitInsn(Opcodes.POP2);
-        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.taintStringConfig.getTFormatterQN(), Constants.Init, String.format("(%s)V", this.origDesc), false);
+        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.taintedQN, Constants.Init, String.format("(%s)V", this.origDesc), false);
     }
 
     @Override
@@ -93,7 +93,7 @@ public abstract class AbstractMethodInstrumentationStrategy extends AbstractInst
     @Override
     public boolean handleLdcType(Type type) {
         if (this.type.equals(type)) {
-            this.mv.visitLdcInsn(Type.getObjectType(this.taintStringConfig.getTFormatterQN()));
+            this.mv.visitLdcInsn(Type.getObjectType(this.taintedQN));
             return true;
         }
         return false;
