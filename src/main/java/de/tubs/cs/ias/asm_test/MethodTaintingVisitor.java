@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test;
 
 import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.config.Sink;
 import de.tubs.cs.ias.asm_test.config.Source;
 import de.tubs.cs.ias.asm_test.asm.BasicMethodVisitor;
@@ -41,6 +42,8 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
     private final Configuration config;
 
+    private final TaintStringConfig stringConfig;
+
     MethodTaintingVisitor(int acc, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver, Configuration config) {
         super(Opcodes.ASM7, methodVisitor);
         this.resolver = resolver;
@@ -54,12 +57,13 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.methodProxies = new HashMap<>();
         this.dynProxies = new HashMap<>();
         this.fillProxies();
-        this.instrumentation.add(new StringMethodInstrumentationStrategy(this.getParentVisitor()));
-        this.instrumentation.add(new StringBuilderMethodInstrumentationStrategy(this.getParentVisitor()));
-        this.instrumentation.add(new StringBufferMethodInstrumentationStrategy(this.getParentVisitor()));
-        this.instrumentation.add(new FormatterMethodInstrumentationStrategy(this.getParentVisitor()));
-        this.instrumentation.add(new DefaultMethodInstrumentationStrategy(this.getParentVisitor()));
-	    this.config = config;
+        this.config = config;
+        this.stringConfig = config.getTaintStringConfig();
+        this.instrumentation.add(new StringMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
+        this.instrumentation.add(new StringBuilderMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
+        this.instrumentation.add(new StringBufferMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
+        this.instrumentation.add(new FormatterMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
+        this.instrumentation.add(new DefaultMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
     }
 
     @Override
@@ -101,7 +105,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
     public void visitMethodInsn(FunctionCall fc) {
-	    logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(fc.getOpcode()), fc.getOwner(), fc.getName(), fc.getDescriptor());
+        logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(fc.getOpcode()), fc.getOwner(), fc.getName(), fc.getDescriptor());
         super.visitMethodInsn(fc.getOpcode(), fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.isInterface());
     }
 
@@ -110,19 +114,19 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
      */
     private void fillProxies() {
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/System", "arraycopy", "(Ljava/lang/Object;ILjava/lang/Object;II)V", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "arraycopy", "(Ljava/lang/Object;ILjava/lang/Object;II)V", false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, stringConfig.getTStringUtilsQN(), "arraycopy", "(Ljava/lang/Object;ILjava/lang/Object;II)V", false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ReflectionProxiesQN, "classForName", String.format("(%s)Ljava/lang/Class;", Constants.TStringDesc), false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, stringConfig.getReflectionProxiesQN(), "classForName", String.format("(%s)Ljava/lang/Class;", stringConfig.getTStringDesc()), false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ReflectionProxiesQN, "classForName", String.format("(%sZLjava/lang/ClassLoader;)Ljava/lang/Class;", Constants.TStringDesc), false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, stringConfig.getReflectionProxiesQN(), "classForName", String.format("(%sZLjava/lang/ClassLoader;)Ljava/lang/Class;", stringConfig.getTStringDesc()), false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/net/URLEncoder", "encode", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, String.format("%sTURLEncoder", Constants.TPackage), "encode", String.format("(%s%s)%s", Constants.TStringDesc, Constants.TStringDesc, Constants.TStringDesc), false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, String.format("%sTURLEncoder", stringConfig.getTPackage()), "encode", String.format("(%s%s)%s", stringConfig.getTStringDesc(), stringConfig.getTStringDesc(), stringConfig.getTStringDesc()), false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/net/URLEncoder", "encode", "(Ljava/lang/String;)Ljava/lang/String;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, String.format("%sTURLEncoder", Constants.TPackage), "encode", String.format("(%s)%s", Constants.TStringDesc, Constants.TStringDesc), false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, String.format("%sTURLEncoder", stringConfig.getTPackage()), "encode", String.format("(%s)%s", stringConfig.getTStringDesc(), stringConfig.getTStringDesc()), false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/net/URLDecoder", "decode", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, String.format("%sTURLDecoder", Constants.TPackage), "decode", String.format("(%s%s)%s", Constants.TStringDesc, Constants.TStringDesc, Constants.TStringDesc), false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, String.format("%sTURLDecoder", stringConfig.getTPackage()), "decode", String.format("(%s%s)%s", stringConfig.getTStringDesc(), stringConfig.getTStringDesc(), stringConfig.getTStringDesc()), false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/net/URLDecoder", "decode", "(Ljava/lang/String;)Ljava/lang/String;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, String.format("%sTURLDecoder", Constants.TPackage), "decode", String.format("(%s)%s", Constants.TStringDesc, Constants.TStringDesc), false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, String.format("%sTURLDecoder", stringConfig.getTPackage()), "decode", String.format("(%s)%s", stringConfig.getTStringDesc(), stringConfig.getTStringDesc()), false));
     }
 
     @Override
@@ -130,10 +134,40 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.shouldRewriteCheckCast = false;
         // If we are in a "toString" method, we have to insert a call to the taint-check before returning.
         if (opcode == Opcodes.ARETURN && Constants.ToStringDesc.equals(this.methodDescriptor) && Constants.ToString.equals(this.name)) {
-            MethodTaintingUtils.callCheckTaint(this.getParentVisitor());
-            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Constants.TStringQN, Constants.TStringToStringName, Constants.ToStringDesc, false);
+            MethodTaintingUtils.callCheckTaint(this.getParentVisitor(), this.stringConfig);
+            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, stringConfig.getTStringQN(), Constants.TStringToStringName, Constants.ToStringDesc, false);
         }
         super.visitInsn(opcode);
+    }
+
+    /**
+     * If the method is in the list of sinks: call the taint check before call it. Return true in this case.
+     * Return false otherwise.
+     */
+    private boolean isSinkCall(FunctionCall fc) {
+        if (this.config.getSinkConfig().containsFunction(fc)) {
+            logger.info("{}.{}{} is a sink, so calling the check taint function before passing the value!", fc.getOwner(), fc.getName(), fc.getDescriptor());
+            // Call dup here to put the TString reference twice on the stack so the call can pop one without affecting further processing
+            MethodTaintingUtils.callCheckTaint(this.getParentVisitor(), this.stringConfig);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, stringConfig.getTStringQN(), Constants.AS_STRING, stringConfig.getAS_STRING_DESC(), false);
+            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.isInterface()); //TODO: Why is invokevirtual hardcoded in here?
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * If the method is in the list of sources: call it, mark the returned String as tainted. Return true in this case.
+     * Return false otherwise.
+     */
+    private boolean isSourceCall(FunctionCall fc) {
+        if (this.config.getSourceConfig().containsFunction(fc)) {
+            logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", fc.getOwner(), fc.getName(), fc.getDescriptor(), stringConfig.getTStringQN());
+            this.visitMethodInsn(fc);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, stringConfig.getTStringQN(), "tainted", stringConfig.getCreateTaintedStringDesc(), false);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -182,7 +216,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         // ToString wrapping
         if (name.equals(Constants.ToString) && descriptor.equals(Constants.ToStringDesc)) {
-            super.visitMethodInsn(opcode, owner, Constants.ToStringInstrumented, Constants.ToStringInstrumentedDesc, isInterface);
+            super.visitMethodInsn(opcode, owner, Constants.ToStringInstrumented, stringConfig.getToStringInstrumentedDesc(), isInterface);
             return;
         }
 
@@ -201,22 +235,22 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
 
     private boolean rewriteParametersAndReturnType(FunctionCall call) {
-        
+
         MethodParameterTransformer transformer = new MethodParameterTransformer(this, call);
 
         // Add JDK transformations
-	if (JdkClassesLookupTable.instance.isJdkClass(call.getOwner()) || InstrumentationState.instance.isAnnotation(call.getOwner(), this.resolver)) {
-	    logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-	    JdkMethodTransformer t = new JdkMethodTransformer(call, this.instrumentation, this.config);
-	    transformer.AddParameterTransformation(t);
-	    transformer.AddReturnTransformation(t);
+        if (JdkClassesLookupTable.instance.isJdkClass(call.getOwner()) || InstrumentationState.instance.isAnnotation(call.getOwner(), this.resolver)) {
+            logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+            JdkMethodTransformer t = new JdkMethodTransformer(call, this.instrumentation, this.config);
+            transformer.AddParameterTransformation(t);
+            transformer.AddReturnTransformation(t);
         }
 
         // Add Sink transformations
         Sink sink = this.config.getSinkConfig().getSinkForFunction(call);
         if (sink != null) {
             logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-            ParameterTransformation t = new SinkTransformer(sink);
+            SinkTransformer t = new SinkTransformer(sink, this.stringConfig);
             transformer.AddParameterTransformation(t);
         }
 
@@ -224,8 +258,8 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         Source source = this.config.getSourceConfig().getSourceForFunction(call);
         if (source != null) {
             logger.info("Adding source tainting for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-            ReturnTransformation t = new SourceTransformer(source);
-	        transformer.AddReturnTransformation(t);
+            SourceTransformer t = new SourceTransformer(source, this.stringConfig);
+            transformer.AddReturnTransformation(t);
         }
 
         // No transformations required
@@ -242,7 +276,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         transformer.ModifyReturnType();
         this.shouldRewriteCheckCast = transformer.rewriteCheckCast();
 
-	logger.info("Finished transforming parameters for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+        logger.info("Finished transforming parameters for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
         return true;
     }
 
@@ -290,7 +324,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     public void visitTypeInsn(final int opcode, final String type) {
         if (this.shouldRewriteCheckCast && opcode == Opcodes.CHECKCAST && Constants.StringQN.equals(type)) {
             logger.info("Rewriting checkcast to call to TString.fromObject(Object obj)");
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "fromObject", String.format("(%s)%s", Constants.ObjectDesc, Constants.TStringDesc), false);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, stringConfig.getTStringUtilsQN(), "fromObject", String.format("(%s)%s", Constants.ObjectDesc, stringConfig.getTStringDesc()), false);
             this.shouldRewriteCheckCast = false;
             return;
         }
@@ -317,7 +351,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         if ("java/lang/invoke/LambdaMetafactory".equals(bootstrapMethodHandle.getOwner()) &&
                 "metafactory".equals(bootstrapMethodHandle.getName())) {
-            MethodTaintingUtils.invokeVisitLambdaCall(this.getParentVisitor(), name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
+            MethodTaintingUtils.invokeVisitLambdaCall(this.stringConfig, this.getParentVisitor(), name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
             return;
         }
 
@@ -368,7 +402,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         // Load the param array
         super.visitVarInsn(Opcodes.ALOAD, currRegister);
         // Call our concat method
-        super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringUtilsQN, "concat", Constants.ConcatDesc, false);
+        super.visitMethodInsn(Opcodes.INVOKESTATIC, stringConfig.getTStringUtilsQN(), "concat", stringConfig.getConcatDesc(), false);
     }
 
     /**

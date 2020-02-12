@@ -2,6 +2,9 @@ package de.tubs.cs.ias.asm_test.strategies.method;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
+import de.tubs.cs.ias.asm_test.Utils;
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.strategies.DefaultInstrumentation;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -28,7 +31,8 @@ public class DefaultMethodInstrumentationStrategy extends DefaultInstrumentation
         return set;
     }
 
-    public DefaultMethodInstrumentationStrategy(MethodVisitor mv) {
+    public DefaultMethodInstrumentationStrategy(MethodVisitor mv, TaintStringConfig configuration) {
+        super(configuration);
         this.mv = mv;
     }
 
@@ -46,8 +50,13 @@ public class DefaultMethodInstrumentationStrategy extends DefaultInstrumentation
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         Type tOwner = Type.getObjectType(owner);
         if(isToString(name, descriptor) && requireValueOf.contains(tOwner)) {
-            logger.info("Replacing toString for {} with call to TString.valueOf",  owner);
-            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TStringQN, Constants.VALUE_OF, String.format("(%s)%s", Constants.ObjectDesc, Constants.TStringDesc), false);
+            int newOpcode = Opcodes.INVOKESTATIC;
+            String newOwner = this.stringConfig.getTStringQN();
+            String newDescriptor = "(" + Constants.ObjectDesc + ")" + this.stringConfig.getTStringDesc();
+            String newName = "valueOf";
+            boolean newIsInterface = false;
+            logger.info("Rewriting String invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, newDescriptor);
+            this.mv.visitMethodInsn(newOpcode, newOwner, newName, newDescriptor, newIsInterface);
             return true;
         }
         return false;

@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 
 import java.util.*;
@@ -98,19 +99,19 @@ public class Descriptor {
         return Objects.hash(this.parameters, this.returnType);
     }
 
-    /**
-     * Checks whether the parameter list contains String like Parameters that need conversion before calling.
-     *
-     * @return Whether on of the parameters is a String like type
-     */
-    boolean hasStringLikeParameters() {
-        for (String p : this.getParameters()) {
-            if (InstrumentationHelper.canHandleType(p)) {
-                return true;
-            }
-        }
-        return false;
-    }
+//    /**
+//     * Checks whether the parameter list contains String like Parameters that need conversion before calling.
+//     *
+//     * @return Whether on of the parameters is a String like type
+//     */
+//    boolean hasStringLikeParameters() {
+//        for (String p : this.getParameters()) {
+//            if (InstrumentationHelper.canHandleType(p)) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
     /**
      * Parses a textual Descriptor and disassembles it into its types

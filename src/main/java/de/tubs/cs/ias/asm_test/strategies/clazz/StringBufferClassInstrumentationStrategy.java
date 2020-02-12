@@ -2,6 +2,8 @@ package de.tubs.cs.ias.asm_test.strategies.clazz;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.TriConsumer;
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.strategies.StringBufferInstrumentation;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
@@ -18,7 +20,8 @@ public class StringBufferClassInstrumentationStrategy extends StringBufferInstru
 
     private final ClassVisitor visitor;
 
-    public StringBufferClassInstrumentationStrategy(ClassVisitor cv) {
+    public StringBufferClassInstrumentationStrategy(ClassVisitor cv, TaintStringConfig configuration) {
+        super(configuration);
         this.visitor = cv;
     }
 
@@ -26,7 +29,7 @@ public class StringBufferClassInstrumentationStrategy extends StringBufferInstru
     public Optional<FieldVisitor> instrumentFieldInstruction(int access, String name, String descriptor, String signature, Object value, TriConsumer tc) {
         Matcher descMatcher = Constants.strBufferPattern.matcher(descriptor);
         if (descMatcher.find()) {
-            String newDescriptor = descMatcher.replaceAll(Constants.TStringBufferDesc);
+            String newDescriptor = descMatcher.replaceAll(stringConfig.getTStringBufferDesc());
             logger.info("Replacing StringBuffer field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
             return Optional.of(this.visitor.visitField(access, name, newDescriptor, signature, value));
         }

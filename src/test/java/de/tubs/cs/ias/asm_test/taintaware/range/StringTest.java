@@ -99,6 +99,38 @@ public class StringTest {
 //    }
 
     @Test
+    void test_subSequence_1() {
+        IASString s = new IASString("Hello World!", true);
+        assert s.isTainted();
+
+        IASString s1 = (IASString) s.subSequence(2, 7);
+        IASString s2 = (IASString) s.subSequence(5, 5);
+
+        assertEquals("llo W", s1.toString());
+        assertThat(s1, taintEquals(range(0, 5, IASTaintSource.TS_CS_UNKNOWN_ORIGIN)));
+        assertEquals("", s2.toString());
+        assertTrue(s2.isUninitialized());
+    }
+
+    @Test
+    void test_subSequence_2() {
+        IASString s = new IASString("Hello World!", false);
+        assert !s.isTainted();
+
+        THelper.get(s).addRange(2, 7, (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
+
+        IASString s1 = (IASString) s.subSequence(0, 1);
+        IASString s2 = (IASString) s.subSequence(0, 5);
+        IASString s3 = (IASString) s.subSequence(5, 9);
+        IASString s4 = (IASString) s.subSequence(8, 12);
+
+        assertTrue(s1.isUninitialized());
+        assertThat(s2, taintEquals(range(2, 5, IASTaintSource.TS_CS_UNKNOWN_ORIGIN)));
+        assertThat(s3, taintEquals(range(0, 2, IASTaintSource.TS_CS_UNKNOWN_ORIGIN)));
+        assertTrue(s4.isUninitialized());
+    }
+
+    @Test
     public void substring_1() {
         // substring(int beginIndex)
 

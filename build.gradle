@@ -7,9 +7,6 @@ plugins {
 
 version '0.0.1-SNAPSHOT'
 
-def taintMethod = TaintMethods.BOOL
-def genOutputDir = file("$buildDir/generated-resources")
-
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
@@ -22,16 +19,18 @@ dependencies {
     compile 'org.ow2.asm:asm:7.2'
     compile 'org.ow2.asm:asm-analysis:7.2'
     compile 'org.ow2.asm:asm-util:7.2'
-    compile 'info.picocli:picocli:3.9.5'
+    compile 'info.picocli:picocli:4.1.4'
     compile 'org.slf4j:slf4j-api:1.7.25'
     // compile 'org.slf4j:slf4j-jdk14:1.7.25'
     compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.9'
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
     compile 'ch.qos.logback:logback-classic:1.2.3'
     compile group: 'org.mutabilitydetector', name: 'asm-nonclassloadingextensions', version: '1.0-rc2'
+    compile group: 'org.apache.commons', name: 'commons-text', version: '1.8'
     testCompile('org.junit.jupiter:junit-jupiter:5.4.2')
     testCompile('org.junit.jupiter:junit-jupiter-migrationsupport:5.4.2')
     testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
+
 }
 
 test {
@@ -51,61 +50,6 @@ test {
     }
 }
 
-task configureTaintType() {
-    def templates = file('template/')
-
-    def outputFolder = file(genOutputDir)
-    templates.eachFile { file ->
-        def outputFile = new File(outputFolder, file.getName())
-        outputs.file outputFile
-    }
-
-    outputs.upToDateWhen {
-        false
-    }
-
-    sourceSets.main.output.dir genOutputDir
-
-    doLast {
-        // change contents via cli options
-        def binding = [subpath: taintMethod.getSubPackage()]
-
-        templates.eachFile { template ->
-            def outputFile = new File (outputFolder, template.getName())
-            def tmp = new GStringTemplateEngine()
-                    .createTemplate(template)
-                    .make(binding)
-            outputFile.write(tmp.toString(), 'UTF-8')
-        }
-    }
-}
-
-task setRange() {
-    doFirst {
-        taintMethod = TaintMethods.RANGE
-    }
-}
-
-task setBool() {
-    doFirst {
-        taintMethod = TaintMethods.BOOL
-    }
-}
-
-task boolJar(dependsOn: setBool) {
-    dependsOn configureTaintType
-    dependsOn jar
-}
-
-task rangeJar(dependsOn: setRange) {
-    dependsOn configureTaintType
-    dependsOn jar
-}
-
-configureTaintType.mustRunAfter setRange
-configureTaintType.mustRunAfter setBool
-jar.mustRunAfter configureTaintType
-
 task utilJar(type: Jar) {
     from(sourceSets.main.output) {
         include "**/asm_test/taintaware/**"
@@ -113,7 +57,7 @@ task utilJar(type: Jar) {
         include "**/asm_test/Utils*"
         include "**/asm_test/Constants*"
         include "**/asm_test/config/TaintMethodConfig*"
-        include "**/application.properties"
+//        include "**/application.properties"
     }
     utilJar.baseName = "util"
 }
@@ -137,7 +81,6 @@ jar {
         configurations.compileClasspath.filter { it.exists() }.collect { it.isDirectory() ? it : zipTree(it) }
     }
     dependsOn utilJar
-    dependsOn configureTaintType
 }
 
 
@@ -159,34 +102,3 @@ publishing {
         }
     }
 }
-
-task publishRangeLocal() {
-    dependsOn rangeJar
-    dependsOn publishToMavenLocal
-}
-
-task publishBoolLocal() {
-    dependsOn boolJar
-    dependsOn publishToMavenLocal
-}
-
-enum TaintMethods {
-    BOOL("bool/"), RANGE("range/")
-
-    private final String subPackage;
-
-    TaintMethods(String subPackage) {
-        this.subPackage = subPackage;
-    }
-
-    public String getSubPackage() {
-        return this.subPackage;
-    }
-}
-task deleteLogs(type:Delete) {
-    delete fileTree('.') {
-        include '**/asm_test-*.log'
-    }
-}
-
-tasks.clean.dependsOn(tasks.deleteLogs)

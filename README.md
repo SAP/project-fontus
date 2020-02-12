@@ -12,7 +12,18 @@ cd ${BASE_DIR}/build/libs;
 java -jar asm_test-0.0.1-SNAPSHOT.jar -f ${BASE_DIR}/tests/TestString.class -o ${BASE_DIR}/tests/out/TestString.class
 ```
 This will instrument the byte code of the input file (path after the -f flag) and write the result into the output file, given after the -o flag.
+Input and output file must are not allowed to be the same (if so, it will fail).
 The instrumented file can then be executed by running ``java -classpath ".:asm_test-0.0.1-SNAPSHOT.jar" TestString``.
+
+### Select tainting method
+To distinguish between the two tainting methods (boolean and range) there are commandline parameters depending on which kind of tainting is used (offline or agent).
+
+For offline instrumentation add the following to the existing commandline arguments: ``--taintmethod range`` or ``--taintmethod boolean``
+
+For agent instrumentation add the following key-value pair to the agent arguments: ``taintmethod=boolean`` or ``taintmethod=range``.
+The agent definition in all in one looks then e.g. like this: ``-javaagent:asm_test-0.0.1-SNAPSHOT.jar=taintmethod=range``.
+
+If no taint method is specified, boolean is used as default.  
 
 ### Logging
 

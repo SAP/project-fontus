@@ -1,23 +1,34 @@
 package de.tubs.cs.ias.asm_test.strategies;
 
 import de.tubs.cs.ias.asm_test.Descriptor;
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
 public class InstrumentationHelper {
-    private static final Collection<InstrumentationStrategy> strategies = new ArrayList<>(4);
+    private final Collection<InstrumentationStrategy> strategies = new ArrayList<>(5);
+    private static InstrumentationHelper INSTANCE;
 
-    static {
-        strategies.add(new FormatterInstrumentation());
-        strategies.add(new StringInstrumentation());
-        strategies.add(new StringBuilderInstrumentation());
-        strategies.add(new StringBufferInstrumentation());
-        strategies.add(new DefaultInstrumentation());
+    public static InstrumentationHelper getInstance(TaintStringConfig configuration) {
+        if(INSTANCE == null) {
+            INSTANCE = new InstrumentationHelper(configuration);
+        }
+        return INSTANCE;
     }
 
-    public static String instrumentQN(String qn) {
+
+    private InstrumentationHelper(TaintStringConfig configuration) {
+        strategies.add(new FormatterInstrumentation(configuration));
+        strategies.add(new StringInstrumentation(configuration));
+        strategies.add(new StringBuilderInstrumentation(configuration));
+        strategies.add(new StringBufferInstrumentation(configuration));
+        strategies.add(new DefaultInstrumentation(configuration));
+    }
+
+    public String instrumentQN(String qn) {
         String newQN = qn;
         for (InstrumentationStrategy is : strategies) {
             newQN = is.instrumentQN(newQN);
@@ -25,7 +36,7 @@ public class InstrumentationHelper {
         return newQN;
     }
 
-    public static Descriptor instrument(Descriptor desc) {
+    public Descriptor instrument(Descriptor desc) {
         Descriptor newDesc = desc;
         for (InstrumentationStrategy is : strategies) {
             newDesc = is.instrument(newDesc);
@@ -33,7 +44,7 @@ public class InstrumentationHelper {
         return newDesc;
     }
 
-    public static String instrumentDesc(String desc) {
+    public String instrumentDesc(String desc) {
         String newDesc = desc;
         for (InstrumentationStrategy is : strategies) {
             newDesc = is.instrumentDesc(newDesc);
@@ -41,7 +52,7 @@ public class InstrumentationHelper {
         return newDesc;
     }
 
-    public static String translateClassName(String clazzName) {
+    public String translateClassName(String clazzName) {
 
         for (InstrumentationStrategy is : strategies) {
             Optional<String> os = is.translateClassName(clazzName);
@@ -52,7 +63,7 @@ public class InstrumentationHelper {
         return clazzName;
     }
 
-    public static boolean canHandleType(String type) {
+    public boolean canHandleType(String type) {
         for (InstrumentationStrategy is : strategies) {
             if (is.handlesType(type)) {
                 return true;

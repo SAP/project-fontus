@@ -3,6 +3,7 @@ package de.tubs.cs.ias.asm_test.config;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 
 import de.tubs.cs.ias.asm_test.FunctionCall;
+import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,12 +12,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @XmlRootElement(name = "configuration")
 public class Configuration {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private TaintMethod taintMethod;
+
+    private TaintStringConfig taintStringConfig;
 
     public Configuration() {
         this.verbose = false;
@@ -27,7 +32,7 @@ public class Configuration {
         this.takeGeneric = new ArrayList<>();
         this.blacklistedMainClasses = new ArrayList<>();
     }
-   
+
     public Configuration(boolean verbose, SourceConfig sourceConfig, SinkConfig sinkConfig, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> blacklistedMainClasses) {
 	    this.verbose = verbose;
         this.sourceConfig = sourceConfig;
@@ -48,6 +53,31 @@ public class Configuration {
             this.takeGeneric.addAll(other.takeGeneric);
             this.blacklistedMainClasses.addAll(other.blacklistedMainClasses);
         }
+    }
+
+    public void setTaintMethod(TaintMethod taintMethod) {
+        this.taintMethod = taintMethod;
+        this.taintStringConfig = new TaintStringConfig(taintMethod);
+    }
+
+    public void transformConverters() {
+        HashMap<String, String> replacements = new HashMap<>();
+        replacements.put("subpath", this.taintMethod.getSubPath());
+        StringSubstitutor sub = new StringSubstitutor(replacements);
+
+        List<FunctionCall> converted = this.converters.stream().map(functionCall -> {
+            String oldOwner = functionCall.getOwner();
+
+            String newOwner = sub.replace(oldOwner);
+            return new FunctionCall(functionCall.getOpcode(), newOwner, functionCall.getName(), functionCall.getDescriptor(), functionCall.isInterface());
+        }).collect(Collectors.toList());
+
+        this.converters.clear();
+        this.converters.addAll(converted);
+    }
+
+    public TaintStringConfig getTaintStringConfig() {
+        return taintStringConfig;
     }
 
     public void appendBlacklist(List<String> other) {
@@ -163,4 +193,8 @@ public class Configuration {
     @JacksonXmlElementWrapper(localName = "blacklistedMainClasses")
     @XmlElement(name = "class")
     private final List<String> blacklistedMainClasses;
+
+    public TaintMethod getTaintMethod() {
+        return this.taintMethod;
+    }
 }
