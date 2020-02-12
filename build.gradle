@@ -58,6 +58,7 @@ task utilJar(type: Jar) {
         include "**/asm_test/Constants*"
         include "**/asm_test/config/TaintMethodConfig*"
         include "**/asm_test/config/TaintStringConfig*"
+        include "**/asm_test/config/TaintMethod*"
     }
     utilJar.baseName = "util"
 }
