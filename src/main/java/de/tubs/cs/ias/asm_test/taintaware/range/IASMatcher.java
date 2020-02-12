@@ -1,8 +1,10 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 
 @SuppressWarnings("unused")
@@ -10,6 +12,19 @@ public class IASMatcher {
     private IASString input;
     private IASPattern pattern;
     private Matcher matcher;
+
+    public IASMatcher(Matcher matcher) {
+        // TODO Very hacky way, but original text of a matcher is only accessible though reflection
+        this(new IASPattern(matcher.pattern()), ((Function<Matcher, String>) origMatcher -> {
+            try {
+                Field textField = origMatcher.getClass().getDeclaredField("text");
+                textField.setAccessible(true);
+                return (String) textField.get(origMatcher);
+            } catch (IllegalAccessException | NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            }
+        }).apply(matcher));
+    }
 
     IASMatcher(IASPattern pattern, CharSequence input) {
         this.input = IASString.valueOf(input);
