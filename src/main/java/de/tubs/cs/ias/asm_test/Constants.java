@@ -171,6 +171,12 @@ public final class Constants {
     public static final String XML_FILE_SUFFIX = ".xml";
     public static final String CONFIGURATION_XML_FILENAME = "configuration.xml";
     public static final String VALUE_OF = "valueOf";
+    public static final String MatcherQN = "java/util/regex/Matcher";
+    public static final String MatcherDesc = java.lang.String.format("L%s;", MatcherQN);
+    public static final String TMatcherToMatcherName = "getMatcher";
+    public static final String PatternQN = "java/util/regex/Pattern";
+    public static final String PatternDesc = java.lang.String.format("L%s;", MatcherQN);
+    public static final String TPatternToPatternName = "getPattern";
 
     private Constants() {
     }

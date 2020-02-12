@@ -4,7 +4,7 @@ import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.Utils;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
-import de.tubs.cs.ias.asm_test.strategies.FormatterInstrumentation;
+import de.tubs.cs.ias.asm_test.strategies.AbstractInstrumentation;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -13,27 +13,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.util.Formatter;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 
-public class FormatterMethodInstrumentationStrategy extends FormatterInstrumentation implements MethodInstrumentationStrategy {
+public abstract class AbstractMethodInstrumentationStrategy extends AbstractInstrumentation implements MethodInstrumentationStrategy {
     private final MethodVisitor mv;
     private final HashMap<String, String> methodsToRename = new HashMap<>(1);
-    private static final Type formatterType = Type.getType(Formatter.class);
+    private final Type type;
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private final String taintedToOrig;
+    private final TaintStringConfig taintStringConfig;
 
-    public FormatterMethodInstrumentationStrategy(MethodVisitor parentVisitor, TaintStringConfig configuration) {
-        super(configuration);
+    public AbstractMethodInstrumentationStrategy(MethodVisitor parentVisitor, String origDesc, String taintedDesc, String origQN, String taintedQN, String taintedToOrig, Class<?> type, TaintStringConfig taintStringConfig) {
+        super(origDesc, taintedDesc, origQN, taintedQN);
         this.mv = parentVisitor;
+        this.taintedToOrig = taintedToOrig;
+        this.type = Type.getType(type);
+        this.taintStringConfig = taintStringConfig;
         this.methodsToRename.put(Constants.ToString, Constants.TO_TSTRING);
     }
 
     @Override
     public boolean instrumentFieldIns(int opcode, String owner, String name, String descriptor) {
-        Matcher matcher = Constants.formatterPattern.matcher(descriptor);
+        Matcher matcher = this.descPattern.matcher(descriptor);
         if (matcher.find()) {
-            String newDescriptor = matcher.replaceAll(this.taintStringConfig.getTFormatterDesc());
+            String newDescriptor = matcher.replaceAll(this.taintedDesc);
             this.mv.visitFieldInsn(opcode, owner, name, newDescriptor);
             return true;
         }
@@ -43,21 +47,21 @@ public class FormatterMethodInstrumentationStrategy extends FormatterInstrumenta
     @Override
     public void insertJdkMethodParameterConversion(String parameter) {
         Type paramType = Type.getType(parameter);
-        if (formatterType.equals(paramType)) {
-            logger.info("Converting taint-aware Formatter to Formatter in multi param method invocation");
-            this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.taintStringConfig.getTFormatterQN(), Constants.TFormatterToFormatterName, String.format("()%s", this.taintStringConfig.getTFormatterDesc()), false);
+        if (type.equals(paramType)) {
+            logger.info("Converting taint-aware " + this.origQN + " to " + this.origQN + " in multi param method invocation");
+            this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.taintedQN, this.taintedToOrig, String.format("()%s", this.taintedDesc), false);
         }
     }
 
     @Override
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        if (Type.getObjectType(owner).equals(formatterType)) {
+        if (Type.getObjectType(owner).equals(type)) {
             String newDescriptor = InstrumentationHelper.getInstance(this.taintStringConfig).instrumentDesc(descriptor);
             String newOwner = this.taintStringConfig.getTFormatterQN();
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up
             String newName = this.methodsToRename.getOrDefault(name, name);
 
-            logger.info("Rewriting Formatter invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, newDescriptor);
+            logger.info("Rewriting {} invoke [{}] {}.{}{} to {}.{}{}", this.origQN, Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, newDescriptor);
             this.mv.visitMethodInsn(opcode, newOwner, newName, newDescriptor, isInterface);
             return true;
         }
@@ -67,8 +71,8 @@ public class FormatterMethodInstrumentationStrategy extends FormatterInstrumenta
     @Override
     public void instrumentReturnType(String owner, String name, Descriptor desc) {
         Type returnType = Type.getReturnType(desc.toDescriptor());
-        if (formatterType.equals(returnType)) {
-            logger.info("Converting returned Formatter of {}.{}{}", owner, name, desc.toDescriptor());
+        if (type.equals(returnType)) {
+            logger.info("Converting returned {} of {}.{}{}", this.origQN, owner, name, desc.toDescriptor());
             this.formatterToTFormatter();
         }
     }
@@ -78,7 +82,7 @@ public class FormatterMethodInstrumentationStrategy extends FormatterInstrumenta
         this.mv.visitInsn(Opcodes.DUP);
         this.mv.visitInsn(Opcodes.DUP2_X1);
         this.mv.visitInsn(Opcodes.POP2);
-        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.taintStringConfig.getTFormatterQN(), Constants.Init, String.format("(%s)V", Constants.FormatterDesc), false);
+        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.taintStringConfig.getTFormatterQN(), Constants.Init, String.format("(%s)V", this.origDesc), false);
     }
 
     @Override
@@ -88,7 +92,7 @@ public class FormatterMethodInstrumentationStrategy extends FormatterInstrumenta
 
     @Override
     public boolean handleLdcType(Type type) {
-        if (formatterType.equals(type)) {
+        if (this.type.equals(type)) {
             this.mv.visitLdcInsn(Type.getObjectType(this.taintStringConfig.getTFormatterQN()));
             return true;
         }
@@ -103,7 +107,7 @@ public class FormatterMethodInstrumentationStrategy extends FormatterInstrumenta
     @Override
     public String rewriteTypeIns(String type) {
         boolean isArray = type.startsWith("[");
-        if (Type.getObjectType(type).equals(formatterType) || (isArray && type.endsWith(Constants.FormatterDesc))) {
+        if (Type.getObjectType(type).equals(this.type) || (isArray && type.endsWith(this.origDesc))) {
             return this.instrumentQN(type);
         }
         return type;

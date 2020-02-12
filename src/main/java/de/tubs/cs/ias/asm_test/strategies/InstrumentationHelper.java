@@ -22,6 +22,8 @@ public class InstrumentationHelper {
 
     private InstrumentationHelper(TaintStringConfig configuration) {
         strategies.add(new FormatterInstrumentation(configuration));
+        strategies.add(new MatcherInstrumentation(configuration));
+        strategies.add(new PatternInstrumentation(configuration));
         strategies.add(new StringInstrumentation(configuration));
         strategies.add(new StringBuilderInstrumentation(configuration));
         strategies.add(new StringBufferInstrumentation(configuration));
