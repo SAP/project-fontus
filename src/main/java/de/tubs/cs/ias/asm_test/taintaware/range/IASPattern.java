@@ -10,6 +10,10 @@ public class IASPattern {
     private final Pattern pattern;
     private final IASString patternString;
 
+    public IASPattern(Pattern pattern) {
+        this(IASString.valueOf(pattern.pattern()), pattern.flags());
+    }
+
     private IASPattern(IASString p, int f) {
         this.pattern = Pattern.compile(p.toString(), f);
         this.patternString = p;
