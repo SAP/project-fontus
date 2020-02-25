@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 
 import de.tubs.cs.ias.asm_test.FunctionCall;
@@ -19,8 +20,9 @@ import java.util.stream.Collectors;
 @XmlRootElement(name = "configuration")
 public class Configuration {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    @JsonIgnore
     private TaintMethod taintMethod;
-
+    @JsonIgnore
     private TaintStringConfig taintStringConfig;
 
     public Configuration() {
