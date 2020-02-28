@@ -3,7 +3,6 @@ package de.tubs.cs.ias.asm_test.strategies;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.Utils;
-import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 
 import java.util.Optional;
@@ -20,23 +19,23 @@ public class StringBufferInstrumentation implements InstrumentationStrategy {
 
     @Override
     public Descriptor instrument(Descriptor desc) {
-        return desc.replaceType(Constants.StringBufferDesc, stringConfig.getTStringBufferDesc());
+        return desc.replaceType(Constants.StringBufferDesc, this.stringConfig.getTStringBufferDesc());
     }
 
     @Override
     public String instrumentQN(String qn) {
-        return STRING_BUFFER_QN_MATCHER.matcher(qn).replaceAll(Matcher.quoteReplacement(stringConfig.getTStringBufferQN()));
+        return STRING_BUFFER_QN_MATCHER.matcher(qn).replaceAll(Matcher.quoteReplacement(this.stringConfig.getTStringBufferQN()));
     }
 
     @Override
     public String instrumentDesc(String desc) {
-        return Constants.strBufferPattern.matcher(desc).replaceAll(stringConfig.getTStringBufferDesc());
+        return Constants.strBufferPattern.matcher(desc).replaceAll(this.stringConfig.getTStringBufferDesc());
     }
 
     @Override
     public Optional<String> translateClassName(String className) {
         if (className.equals(Utils.fixup(Constants.StringBufferQN))) {
-            return Optional.of(Utils.fixup(stringConfig.getTStringBufferQN()));
+            return Optional.of(Utils.fixup(this.stringConfig.getTStringBufferQN()));
         }
         return Optional.empty();
     }

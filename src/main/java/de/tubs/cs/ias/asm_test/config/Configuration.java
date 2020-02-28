@@ -13,6 +13,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -79,10 +80,10 @@ public class Configuration {
     }
 
     public TaintStringConfig getTaintStringConfig() {
-        return taintStringConfig;
+        return this.taintStringConfig;
     }
 
-    public void appendBlacklist(List<String> other) {
+    void appendBlacklist(Collection<String> other) {
         if (this.blacklistedMainClasses != null) {
             this.blacklistedMainClasses.addAll(other);
         }

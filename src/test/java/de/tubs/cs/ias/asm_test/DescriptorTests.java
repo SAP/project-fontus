@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 @SuppressWarnings({"DuplicateStringLiteralInspection", "SpellCheckingInspection", "ClassIndependentOfModule", "ClassOnlyUsedInOneModule"})
 class DescriptorTests {
-    public final static TaintStringConfig taintStringConfig = new TaintStringConfig(TaintMethod.defaultTaintMethod());
+    private static final TaintStringConfig taintStringConfig = new TaintStringConfig(TaintMethod.defaultTaintMethod());
 
     @Test
     void parseToString() {
@@ -67,7 +67,7 @@ class DescriptorTests {
     @MethodSource("provideDescriptorData")
     void parseDescriptor(String descriptor, Descriptor d) {
         Descriptor pd = Descriptor.parseDescriptor(descriptor);
-        assertEquals(d, pd, String.format("%s and %s should be equal.", d.toString(), pd.toString()));
+        assertEquals(d, pd, String.format("%s and %s should be equal.", d, pd));
     }
 
     @ParameterizedTest

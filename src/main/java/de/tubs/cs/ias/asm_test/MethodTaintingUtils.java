@@ -1,6 +1,5 @@
 package de.tubs.cs.ias.asm_test;
 
-import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import org.objectweb.asm.*;
@@ -110,6 +109,5 @@ public class MethodTaintingUtils {
         String descr = InstrumentationHelper.getInstance(configuration).instrument(desc).toDescriptor();
         mv.visitInvokeDynamicInsn(name, descr, bootstrapMethodHandle, bsArgs);
     }
-
 
 }

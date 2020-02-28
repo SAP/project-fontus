@@ -2,7 +2,6 @@ package de.tubs.cs.ias.asm_test.strategies.clazz;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.TriConsumer;
-import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.strategies.StringBuilderInstrumentation;
 import org.objectweb.asm.ClassVisitor;
@@ -28,7 +27,7 @@ public class StringBuilderClassInstrumentationStrategy extends StringBuilderInst
     public Optional<FieldVisitor> instrumentFieldInstruction(int access, String name, String descriptor, String signature, Object value, TriConsumer tc) {
         Matcher descMatcher = Constants.strBuilderPattern.matcher(descriptor);
         if(descMatcher.find()) {
-            String newDescriptor = descMatcher.replaceAll(stringConfig.getTStringBuilderDesc());
+            String newDescriptor = descMatcher.replaceAll(this.stringConfig.getTStringBuilderDesc());
             logger.info("Replacing StringBuilder field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
             return Optional.of(this.visitor.visitField(access, name, newDescriptor, signature, value));
         }

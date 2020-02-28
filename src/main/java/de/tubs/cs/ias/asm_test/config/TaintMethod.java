@@ -1,9 +1,12 @@
 package de.tubs.cs.ias.asm_test.config;
 
-public enum TaintMethod {
-    BOOLEAN("boolean", "bool/"), RANGE("range", "range/");
+import de.tubs.cs.ias.asm_test.Constants;
 
-    public final static String defaultTaintMethodName = "boolean";
+public enum TaintMethod {
+    BOOLEAN(Constants.BOOLEAN_METHOD_NAME, Constants.BOOLEAN_METHOD_PATH), RANGE(Constants.RANGE_METHOD_NAME, Constants.RANGE_METHOD_PATH);
+
+    public static final String defaultTaintMethodName = Constants.BOOLEAN_METHOD_NAME;
+
     private final String path;
     private final String name;
 
@@ -21,15 +24,15 @@ public enum TaintMethod {
     }
 
     public String getSubPackage() {
-        return getSubPath().replace('/', '.');
+        return this.path.replace('/', '.');
     }
 
     public static TaintMethod getTaintMethodByPath(String path) {
         switch (path) {
-            case "bool/":
-                return TaintMethod.BOOLEAN;
-            case "range/":
-                return TaintMethod.RANGE;
+            case Constants.BOOLEAN_METHOD_PATH:
+                return BOOLEAN;
+            case Constants.RANGE_METHOD_PATH:
+                return RANGE;
             default:
                 throw new IllegalArgumentException("Taint method/path unknown:" + path);
         }
@@ -37,10 +40,10 @@ public enum TaintMethod {
 
     public static TaintMethod getTaintMethodByArgumentName(String argName) {
         switch (argName) {
-            case "boolean":
-                return TaintMethod.BOOLEAN;
-            case "range":
-                return TaintMethod.RANGE;
+            case Constants.BOOLEAN_METHOD_NAME:
+                return BOOLEAN;
+            case Constants.RANGE_METHOD_NAME:
+                return RANGE;
             default:
                 throw new IllegalArgumentException("Taint method unknown:" + argName);
         }

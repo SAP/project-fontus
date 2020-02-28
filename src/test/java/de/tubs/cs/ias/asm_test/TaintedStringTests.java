@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings({"DuplicateStringLiteralInspection", "ClassIndependentOfModule", "ClassOnlyUsedInOneModule", "ClassUnconnectedToPackage", "ClassOnlyUsedInOnePackage"})
-public class TaintedStringTests {
+class TaintedStringTests {
 
     @Test
     void regularlyCreatedStringIsUntainted() {

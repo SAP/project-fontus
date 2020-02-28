@@ -24,7 +24,7 @@ public abstract class AbstractMethodInstrumentationStrategy extends AbstractInst
     private final String taintedToOrig;
     private final TaintStringConfig taintStringConfig;
 
-    public AbstractMethodInstrumentationStrategy(MethodVisitor parentVisitor, String origDesc, String taintedDesc, String origQN, String taintedQN, String taintedToOrig, Class<?> type, TaintStringConfig taintStringConfig) {
+    AbstractMethodInstrumentationStrategy(MethodVisitor parentVisitor, String origDesc, String taintedDesc, String origQN, String taintedQN, String taintedToOrig, Class<?> type, TaintStringConfig taintStringConfig) {
         super(origDesc, taintedDesc, origQN, taintedQN);
         this.mv = parentVisitor;
         this.taintedToOrig = taintedToOrig;
@@ -47,15 +47,15 @@ public abstract class AbstractMethodInstrumentationStrategy extends AbstractInst
     @Override
     public void insertJdkMethodParameterConversion(String parameter) {
         Type paramType = Type.getType(parameter);
-        if (type.equals(paramType)) {
-            logger.info("Converting taint-aware " + this.origQN + " to " + this.origQN + " in multi param method invocation");
+        if (this.type.equals(paramType)) {
+            logger.info("Converting taint-aware {} to {} in multi param method invocation", this.origQN, this.origQN);
             this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.taintedQN, this.taintedToOrig, String.format("()%s", this.taintedDesc), false);
         }
     }
 
     @Override
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        if (Type.getObjectType(owner).equals(type)) {
+        if (Type.getObjectType(owner).equals(this.type)) {
             String newDescriptor = InstrumentationHelper.getInstance(this.taintStringConfig).instrumentDesc(descriptor);
             String newOwner = this.taintedQN;
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up
@@ -71,7 +71,7 @@ public abstract class AbstractMethodInstrumentationStrategy extends AbstractInst
     @Override
     public void instrumentReturnType(String owner, String name, Descriptor desc) {
         Type returnType = Type.getReturnType(desc.toDescriptor());
-        if (type.equals(returnType)) {
+        if (this.type.equals(returnType)) {
             logger.info("Converting returned {} of {}.{}{}", this.origQN, owner, name, desc.toDescriptor());
             this.origToTainted();
         }

@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SuppressWarnings({"ClassIndependentOfModule", "ClassOnlyUsedInOneModule", "ClassUnconnectedToPackage", "ClassOnlyUsedInOnePackage"})
-public class TaintAwareStringBufferTests {
+@SuppressWarnings({"ClassIndependentOfModule", "ClassOnlyUsedInOneModule", "ClassUnconnectedToPackage", "ClassOnlyUsedInOnePackage", "DuplicateStringLiteralInspection", "TypeMayBeWeakened"})
+class TaintAwareStringBufferTests {
 
     @Test
     void emptyStringBufferIsUntainted() {

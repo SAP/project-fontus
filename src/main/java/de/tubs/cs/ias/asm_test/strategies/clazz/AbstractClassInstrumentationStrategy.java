@@ -15,7 +15,7 @@ public class AbstractClassInstrumentationStrategy extends AbstractInstrumentatio
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final ClassVisitor visitor;
 
-    public AbstractClassInstrumentationStrategy(ClassVisitor visitor, String origDesc, String taintedDesc, String origQN, String taintedQN) {
+    AbstractClassInstrumentationStrategy(ClassVisitor visitor, String origDesc, String taintedDesc, String origQN, String taintedQN) {
         super(origDesc, taintedDesc, origQN, taintedQN);
         this.visitor = visitor;
     }

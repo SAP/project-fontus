@@ -8,14 +8,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class AbstractInstrumentation implements InstrumentationStrategy {
-    protected final Pattern qnMatcher;
+    private final Pattern qnMatcher;
     protected final String origDesc;
     protected final String taintedDesc;
     protected final String taintedQN;
     protected final String origQN;
     protected final Pattern descPattern;
 
-    public AbstractInstrumentation(String origDesc, String taintedDesc, String origQN, String taintedQN) {
+    protected AbstractInstrumentation(String origDesc, String taintedDesc, String origQN, String taintedQN) {
         this.origDesc = origDesc;
         this.taintedDesc = taintedDesc;
         this.taintedQN = taintedQN;
@@ -26,7 +26,7 @@ public abstract class AbstractInstrumentation implements InstrumentationStrategy
 
     @Override
     public Descriptor instrument(Descriptor desc) {
-        return desc.replaceType(origDesc, taintedDesc);
+        return desc.replaceType(this.origDesc, this.taintedDesc);
     }
 
     @Override

@@ -18,6 +18,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
 @EnableJUnit4MigrationSupport
+@SuppressWarnings("ALL")
+// David: As I didn't write this Code and don't want to mess with it I suppressed the warnings.
+// TODO: Work out whether we can adapt it to the style of the remaining project?
 public class StringTest {
     private final static IASTaintSource SAMPLE_SOURCE = IASTaintSource.TS_CS_UNKNOWN_ORIGIN;
     private IASString foo = null;

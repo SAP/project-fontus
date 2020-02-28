@@ -2,7 +2,6 @@ package de.tubs.cs.ias.asm_test.strategies.clazz;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.TriConsumer;
-import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.strategies.StringInstrumentation;
 import org.objectweb.asm.ClassVisitor;
@@ -30,7 +29,7 @@ public class StringClassInstrumentationStrategy extends StringInstrumentation im
         assert this.cv != null;
         Matcher descMatcher = Constants.strPattern.matcher(descriptor);
         if(descMatcher.find()) {
-            String newDescriptor = descMatcher.replaceAll(stringConfig.getTStringDesc());
+            String newDescriptor = descMatcher.replaceAll(this.stringConfig.getTStringDesc());
             logger.info("Replacing String field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
             if (value != null && access == (Opcodes.ACC_FINAL | Opcodes.ACC_STATIC)) {
                 tc.apply(name, descriptor, value);

@@ -80,10 +80,7 @@ public final class IASStringUtils {
 
     public static Hashtable<String, String> convertTStringToTStringHashTable(Hashtable<IASString, IASString> tbl) {
         Hashtable<String, String> result = new Hashtable<>();
-        for (IASString key : tbl.keySet()) {
-            IASString val = tbl.get(key);
-            result.put(key.getString(), val.getString());
-        }
+        tbl.forEach((key, value) -> result.put(key.getString(), value.getString()));
         return result;
     }
 

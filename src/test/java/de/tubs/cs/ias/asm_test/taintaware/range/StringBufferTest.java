@@ -23,6 +23,9 @@ import static org.junit.Assert.*;
  * return its own type for method chaining. Solely toString() is abstract and is therefore implemented in StringBuilder.java itself.
  */
 @EnableJUnit4MigrationSupport
+@SuppressWarnings("ALL")
+// David: As I didn't write this Code and don't want to mess with it I suppressed the warnings.
+// TODO: Work out whether we can adapt it to the style of the remaining project?
 public class StringBufferTest {
     private IASStringBuffer foo = null;
     private IASStringBuffer bar = null;

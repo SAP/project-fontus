@@ -7,7 +7,7 @@ public final class FieldData {
     private final String descriptor;
     private final Object value;
 
-    FieldData(String name, String descriptor, Object value) {
+    private FieldData(String name, String descriptor, Object value) {
         this.name = name;
         this.descriptor = descriptor;
         this.value = value;

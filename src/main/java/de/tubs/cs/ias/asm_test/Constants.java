@@ -181,7 +181,10 @@ public final class Constants {
     private Constants() {
     }
 
-
+    public static final String BOOLEAN_METHOD_NAME = "boolean";
+    public static final String BOOLEAN_METHOD_PATH = "bool/";
+    public static final String RANGE_METHOD_NAME = "range";
+    public static final String RANGE_METHOD_PATH = "range/";
     public static final int JAVA_VERSION = getVersion();
 
     private static int getVersion() {

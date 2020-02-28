@@ -1,8 +1,5 @@
 package de.tubs.cs.ias.asm_test;
 
-import de.tubs.cs.ias.asm_test.config.Configuration;
-import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
-
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

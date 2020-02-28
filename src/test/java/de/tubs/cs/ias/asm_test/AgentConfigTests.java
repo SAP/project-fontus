@@ -5,7 +5,6 @@ import de.tubs.cs.ias.asm_test.config.Configuration;
 
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -15,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings({ "DuplicateStringLiteralInspection", "SpellCheckingInspection", "ClassIndependentOfModule",
         "ClassOnlyUsedInOneModule" })
-public class AgentConfigTests {
+class AgentConfigTests {
     @Test
     void parseNull() {
         Configuration cfg = AgentConfig.parseConfig(null);
@@ -40,27 +39,27 @@ public class AgentConfigTests {
     }
 
     @Test
-    void parseConfig() throws IOException, URISyntaxException {
+    void parseConfig() throws URISyntaxException {
         URL url = AgentConfigTests.class.getResource("blacklist.json");
         String fname = Paths.get(url.toURI()).toString();
         Configuration cfg = AgentConfig.parseConfig("config=" + fname);
         assertFalse(cfg.isVerbose(), "parsing list only should result in verbose == false");
-        assertEquals(3, cfg.getBlacklistedMainClasses().size());
-        assertEquals("montypythonsflyingclass", cfg.getBlacklistedMainClasses().get(2));
+        assertEquals(3, cfg.getBlacklistedMainClasses().size(), "Should retrieve the correct number of blacklisted classes.");
+        assertEquals("montypythonsflyingclass", cfg.getBlacklistedMainClasses().get(2), "Should retrieve the correct blacklisted classes.");
     }
 
     @Test
-    void parseBlacklist() throws IOException, URISyntaxException {
+    void parseBlacklist() throws URISyntaxException {
         URL url = AgentConfigTests.class.getResource("TestList");
         String fname = Paths.get(url.toURI()).toString();
         Configuration cfg = AgentConfig.parseConfig("blacklisted_main_classes=" + fname);
         assertFalse(cfg.isVerbose(), "parsing list only should result in verbose == false");
-        assertEquals(2, cfg.getBlacklistedMainClasses().size());
-        assertEquals("world", cfg.getBlacklistedMainClasses().get(1));
+        assertEquals(2, cfg.getBlacklistedMainClasses().size(), "Should retrieve the correct number of blacklisted classes.");
+        assertEquals("world", cfg.getBlacklistedMainClasses().get(1), "Should retrieve the correct blacklisted classes.");
     }
 
     @Test
-    void parseConfigAndBlacklist() throws IOException, URISyntaxException {
+    void parseConfigAndBlacklist() throws URISyntaxException {
         URL url = AgentConfigTests.class.getResource("TestList");
         String fname = Paths.get(url.toURI()).toString();
         URL curl = AgentConfigTests.class.getResource(Constants.CONFIGURATION_XML_FILENAME);
@@ -69,16 +68,16 @@ public class AgentConfigTests {
         Configuration cfg = AgentConfig.parseConfig("blacklisted_main_classes=" + fname + ";config=" + cfname);
 
         assertTrue(cfg.isVerbose(), "parsing list only should result in verbose == true");
-        assertEquals(5, cfg.getBlacklistedMainClasses().size());
+        assertEquals(5, cfg.getBlacklistedMainClasses().size(), "Should retrieve the correct number of blacklisted classes.");
     }
 
     @Test
-    void parseCombined() throws IOException, URISyntaxException {
+    void parseCombined() throws URISyntaxException {
         URL url = AgentConfigTests.class.getResource("blacklist.json");
         String fname = Paths.get(url.toURI()).toString();
         Configuration cfg = AgentConfig.parseConfig("config=" + fname + ";verbose");
         assertTrue(cfg.isVerbose(), "parsing combined should result in verbose == true");
-        assertEquals(3, cfg.getBlacklistedMainClasses().size());
-        assertEquals("montypythonsflyingclass", cfg.getBlacklistedMainClasses().get(2));
+        assertEquals(3, cfg.getBlacklistedMainClasses().size(), "Should retrieve the correct number of blacklisted classes.");
+        assertEquals("montypythonsflyingclass", cfg.getBlacklistedMainClasses().get(2), "Should retrieve the correct blacklisted classes.");
     }
 }

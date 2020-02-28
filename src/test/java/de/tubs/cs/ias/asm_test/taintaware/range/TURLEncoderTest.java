@@ -7,7 +7,10 @@ import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertFalse;
 
-public class TURLEncoderTest {
+@SuppressWarnings("ALL")
+// David: As I didn't write this Code and don't want to mess with it I suppressed the warnings.
+// TODO: Work out whether we can adapt it to the style of the remaining project?
+class TURLEncoderTest {
     @Test
     void testUntainted() throws UnsupportedEncodingException {
         IASString s = new IASString("hello");

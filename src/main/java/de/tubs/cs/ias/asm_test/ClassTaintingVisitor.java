@@ -13,10 +13,11 @@ import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 
 
-public class ClassTaintingVisitor extends ClassVisitor {
+class ClassTaintingVisitor extends ClassVisitor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final TaintStringConfig stringConfig;
@@ -45,7 +46,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
         this.resolver = resolver;
         this.config = config;
         this.stringConfig = this.config.getTaintStringConfig();
-        this.newMainDescriptor = "(" + stringConfig.getTStringArrayDesc() + ")V";
+        this.newMainDescriptor = "(" + this.stringConfig.getTStringArrayDesc() + ")V";
         this.fillBlacklist();
         this.fillStrategies();
     }
@@ -158,9 +159,9 @@ public class ClassTaintingVisitor extends ClassVisitor {
     private void generateToStringProxy(MethodVisitor mv) {
         mv.visitCode();
         mv.visitVarInsn(Opcodes.ALOAD, 0);
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.owner, Constants.ToStringInstrumented, stringConfig.getToStringInstrumentedDesc(), false);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.owner, Constants.ToStringInstrumented, this.stringConfig.getToStringInstrumentedDesc(), false);
         mv.visitInsn(Opcodes.DUP);
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, stringConfig.getTStringQN(), Constants.TStringToStringName, Constants.ToStringDesc, false);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.stringConfig.getTStringQN(), Constants.TStringToStringName, Constants.ToStringDesc, false);
         mv.visitInsn(Opcodes.ARETURN);
         mv.visitMaxs(6, 3);
         mv.visitEnd();
@@ -204,16 +205,16 @@ public class ClassTaintingVisitor extends ClassVisitor {
             MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "main", Constants.MAIN_METHOD_DESC, signature, exceptions);
             this.createMainWrapperMethod(v);
             logger.info("Processing renamed main method.");
-            mv = super.visitMethod(access, Constants.MainWrapper, newMainDescriptor, signature, exceptions);
+            mv = super.visitMethod(access, Constants.MainWrapper, this.newMainDescriptor, signature, exceptions);
             newName = Constants.MainWrapper;
-            desc = newMainDescriptor;
+            desc = this.newMainDescriptor;
         } else if (access == Opcodes.ACC_PUBLIC && Constants.ToString.equals(name) && Constants.ToStringDesc.equals(descriptor)) {
             this.lacksToString = false;
             logger.info("Creating proxy toString method");
             MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC, Constants.ToString, Constants.ToStringDesc, signature, exceptions);
             this.generateToStringProxy(v);
             newName = Constants.ToStringInstrumented;
-            desc = stringConfig.getToStringInstrumentedDesc();
+            desc = this.stringConfig.getToStringInstrumentedDesc();
             mv = super.visitMethod(access, newName, desc, signature, exceptions);
         } else if (this.blacklist.contains(new BlackListEntry(name, descriptor, access))) {
             mv = super.visitMethod(access, name, descriptor, signature, exceptions);
@@ -251,7 +252,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
     public void visitEnd() {
         if (this.lacksToString) {
             logger.info("Adding missing toString method");
-            MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC, Constants.ToStringInstrumented, stringConfig.getToStringInstrumentedDesc(), null, null);
+            MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC, Constants.ToStringInstrumented, this.stringConfig.getToStringInstrumentedDesc(), null, null);
             this.createToString(v);
         }
         if (!this.hasClInit && !this.staticFinalFields.isEmpty()) {
@@ -270,11 +271,12 @@ public class ClassTaintingVisitor extends ClassVisitor {
     private void createToString(MethodVisitor mv) {
         mv.visitCode();
         mv.visitVarInsn(Opcodes.ALOAD, 0);
+        Objects.requireNonNull(this.superName);
         if (JdkClassesLookupTable.instance.isJdkClass(this.superName)) {
             mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superName, Constants.ToString, Constants.ToStringDesc, false);
-            mv.visitMethodInsn(Opcodes.INVOKESTATIC, stringConfig.getTStringQN(), Constants.FROM_STRING, stringConfig.getFROM_STRING_DESC(), false);
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringQN(), Constants.FROM_STRING, this.stringConfig.getFromStringDesc(), false);
         } else {
-            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superName, Constants.ToStringInstrumented, stringConfig.getToStringInstrumentedDesc(), false);
+            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superName, Constants.ToStringInstrumented, this.stringConfig.getToStringInstrumentedDesc(), false);
         }
         mv.visitInsn(Opcodes.ARETURN);
         mv.visitMaxs(6, 3);
@@ -294,7 +296,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
         mv.visitLabel(label0);
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitInsn(Opcodes.ARRAYLENGTH);
-        mv.visitTypeInsn(Opcodes.ANEWARRAY, stringConfig.getTStringQN());
+        mv.visitTypeInsn(Opcodes.ANEWARRAY, this.stringConfig.getTStringQN());
         mv.visitVarInsn(Opcodes.ASTORE, 1);
         Label label1 = new Label();
         mv.visitLabel(label1);
@@ -302,7 +304,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
         mv.visitVarInsn(Opcodes.ISTORE, 2);
         Label label2 = new Label();
         mv.visitLabel(label2);
-        mv.visitFrame(Opcodes.F_APPEND, 2, new Object[]{stringConfig.getTStringArrayDesc(), Opcodes.INTEGER}, 0, null);
+        mv.visitFrame(Opcodes.F_APPEND, 2, new Object[]{this.stringConfig.getTStringArrayDesc(), Opcodes.INTEGER}, 0, null);
         mv.visitVarInsn(Opcodes.ILOAD, 2);
         mv.visitVarInsn(Opcodes.ALOAD, 1);
         mv.visitInsn(Opcodes.ARRAYLENGTH);
@@ -312,12 +314,12 @@ public class ClassTaintingVisitor extends ClassVisitor {
         mv.visitLabel(label4);
         mv.visitVarInsn(Opcodes.ALOAD, 1);
         mv.visitVarInsn(Opcodes.ILOAD, 2);
-        mv.visitTypeInsn(Opcodes.NEW, stringConfig.getTStringQN());
+        mv.visitTypeInsn(Opcodes.NEW, this.stringConfig.getTStringQN());
         mv.visitInsn(Opcodes.DUP);
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitVarInsn(Opcodes.ILOAD, 2);
         mv.visitInsn(Opcodes.AALOAD);
-        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, stringConfig.getTStringQN(), Constants.Init, Constants.TStringInitUntaintedDesc, false);
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.stringConfig.getTStringQN(), Constants.Init, Constants.TStringInitUntaintedDesc, false);
         mv.visitInsn(Opcodes.AASTORE);
         Label label5 = new Label();
         mv.visitLabel(label5);
@@ -326,7 +328,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
         mv.visitLabel(label3);
         mv.visitFrame(Opcodes.F_CHOP, 1, null, 0, null);
         mv.visitVarInsn(Opcodes.ALOAD, 1);
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.owner, Constants.MainWrapper, newMainDescriptor, false);
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.owner, Constants.MainWrapper, this.newMainDescriptor, false);
         Label label6 = new Label();
         mv.visitLabel(label6);
         mv.visitInsn(Opcodes.RETURN);

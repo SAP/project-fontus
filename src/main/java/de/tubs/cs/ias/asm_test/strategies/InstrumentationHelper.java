@@ -1,14 +1,13 @@
 package de.tubs.cs.ias.asm_test.strategies;
 
 import de.tubs.cs.ias.asm_test.Descriptor;
-import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
-public class InstrumentationHelper {
+public final class InstrumentationHelper {
     private final Collection<InstrumentationStrategy> strategies = new ArrayList<>(5);
     private static InstrumentationHelper INSTANCE;
 
@@ -21,18 +20,18 @@ public class InstrumentationHelper {
 
 
     private InstrumentationHelper(TaintStringConfig configuration) {
-        strategies.add(new FormatterInstrumentation(configuration));
-        strategies.add(new MatcherInstrumentation(configuration));
-        strategies.add(new PatternInstrumentation(configuration));
-        strategies.add(new StringInstrumentation(configuration));
-        strategies.add(new StringBuilderInstrumentation(configuration));
-        strategies.add(new StringBufferInstrumentation(configuration));
-        strategies.add(new DefaultInstrumentation(configuration));
+        this.strategies.add(new FormatterInstrumentation(configuration));
+        this.strategies.add(new MatcherInstrumentation(configuration));
+        this.strategies.add(new PatternInstrumentation(configuration));
+        this.strategies.add(new StringInstrumentation(configuration));
+        this.strategies.add(new StringBuilderInstrumentation(configuration));
+        this.strategies.add(new StringBufferInstrumentation(configuration));
+        this.strategies.add(new DefaultInstrumentation(configuration));
     }
 
     public String instrumentQN(String qn) {
         String newQN = qn;
-        for (InstrumentationStrategy is : strategies) {
+        for (InstrumentationStrategy is : this.strategies) {
             newQN = is.instrumentQN(newQN);
         }
         return newQN;
@@ -40,7 +39,7 @@ public class InstrumentationHelper {
 
     public Descriptor instrument(Descriptor desc) {
         Descriptor newDesc = desc;
-        for (InstrumentationStrategy is : strategies) {
+        for (InstrumentationStrategy is : this.strategies) {
             newDesc = is.instrument(newDesc);
         }
         return newDesc;
@@ -48,7 +47,7 @@ public class InstrumentationHelper {
 
     public String instrumentDesc(String desc) {
         String newDesc = desc;
-        for (InstrumentationStrategy is : strategies) {
+        for (InstrumentationStrategy is : this.strategies) {
             newDesc = is.instrumentDesc(newDesc);
         }
         return newDesc;
@@ -56,7 +55,7 @@ public class InstrumentationHelper {
 
     public String translateClassName(String clazzName) {
 
-        for (InstrumentationStrategy is : strategies) {
+        for (InstrumentationStrategy is : this.strategies) {
             Optional<String> os = is.translateClassName(clazzName);
             if (os.isPresent()) {
                 return os.get();
@@ -66,7 +65,7 @@ public class InstrumentationHelper {
     }
 
     public boolean canHandleType(String type) {
-        for (InstrumentationStrategy is : strategies) {
+        for (InstrumentationStrategy is : this.strategies) {
             if (is.handlesType(type)) {
                 return true;
             }

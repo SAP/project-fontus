@@ -3,7 +3,6 @@ package de.tubs.cs.ias.asm_test.strategies;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.Utils;
-import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 
 import java.util.Optional;
@@ -20,23 +19,23 @@ public class StringInstrumentation implements InstrumentationStrategy {
 
     @Override
     public Descriptor instrument(Descriptor desc) {
-        return desc.replaceType(Constants.StringDesc, stringConfig.getTStringDesc());
+        return desc.replaceType(Constants.StringDesc, this.stringConfig.getTStringDesc());
     }
 
     @Override
     public String instrumentQN(String qn) {
-        return STRING_QN_MATCHER.matcher(qn).replaceAll(Matcher.quoteReplacement(stringConfig.getTStringQN()));
+        return STRING_QN_MATCHER.matcher(qn).replaceAll(Matcher.quoteReplacement(this.stringConfig.getTStringQN()));
     }
 
     @Override
     public String instrumentDesc(String desc) {
-        return Constants.strPattern.matcher(desc).replaceAll(stringConfig.getTStringDesc());
+        return Constants.strPattern.matcher(desc).replaceAll(this.stringConfig.getTStringDesc());
     }
 
     @Override
     public Optional<String> translateClassName(String className) {
         if (className.equals(Utils.fixup(Constants.StringQN))) {
-            return Optional.of(Utils.fixup(stringConfig.getTStringQN()));
+            return Optional.of(Utils.fixup(this.stringConfig.getTStringQN()));
         }
         return Optional.empty();
     }

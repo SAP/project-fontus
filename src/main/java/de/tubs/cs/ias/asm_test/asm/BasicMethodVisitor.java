@@ -6,7 +6,7 @@ public class BasicMethodVisitor extends MethodVisitor {
 
     private final MethodVisitor parent;
 
-    public BasicMethodVisitor(int api, MethodVisitor methodVisitor) {
+    protected BasicMethodVisitor(int api, MethodVisitor methodVisitor) {
         super(api, methodVisitor);
         this.parent = methodVisitor;
     }

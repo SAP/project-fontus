@@ -156,20 +156,20 @@ public final class IASStringBuffer
     }
 
     @Override
-    public synchronized IASStringBuffer append(CharSequence s) {
-        this.buffer.append(s);
-        if (s instanceof IASTaintAware) {
-            IASTaintAware ta = (IASTaintAware) s;
+    public synchronized IASStringBuffer append(CharSequence csq) {
+        this.buffer.append(csq);
+        if (csq instanceof IASTaintAware) {
+            IASTaintAware ta = (IASTaintAware) csq;
             this.mergeTaint(ta);
         }
         return this;
     }
 
     @Override
-    public synchronized IASStringBuffer append(CharSequence s, int start, int end) {
-        this.buffer.append(s, start, end);
-        if (s instanceof IASTaintAware) {
-            IASTaintAware ta = (IASTaintAware) s;
+    public synchronized IASStringBuffer append(CharSequence csq, int start, int end) {
+        this.buffer.append(csq, start, end);
+        if (csq instanceof IASTaintAware) {
+            IASTaintAware ta = (IASTaintAware) csq;
             this.mergeTaint(ta);
         }
         return this;

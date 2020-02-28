@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings({"ClassIndependentOfModule", "ClassOnlyUsedInOneModule", "ClassUnconnectedToPackage", "ClassOnlyUsedInOnePackage"})
-public class TaintStringUtilsTests {
+class TaintStringUtilsTests {
     @Test
-    public void testConcat() {
+    void testConcat() {
         String s1 = "x";
         IASString is1 = new IASString(s1);
         String s2 = "12";
@@ -21,7 +21,7 @@ public class TaintStringUtilsTests {
     }
 
     @Test
-    public void testConcatNull() {
+    void testConcatNull() {
         String s1 = "x";
         IASString is1 = new IASString(s1);
         String s2 = null;

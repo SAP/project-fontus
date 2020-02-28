@@ -3,7 +3,6 @@ package de.tubs.cs.ias.asm_test.strategies.method;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.Utils;
-import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.strategies.DefaultInstrumentation;
 import org.objectweb.asm.MethodVisitor;
@@ -53,10 +52,10 @@ public class DefaultMethodInstrumentationStrategy extends DefaultInstrumentation
             int newOpcode = Opcodes.INVOKESTATIC;
             String newOwner = this.stringConfig.getTStringQN();
             String newDescriptor = "(" + Constants.ObjectDesc + ")" + this.stringConfig.getTStringDesc();
-            String newName = "valueOf";
+            String newName = Constants.VALUE_OF;
             boolean newIsInterface = false;
-            logger.info("Rewriting String invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, newDescriptor);
-            this.mv.visitMethodInsn(newOpcode, newOwner, newName, newDescriptor, newIsInterface);
+            logger.info("Rewriting toString invoke [{}] {}.{}{} to valueOf call {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, newDescriptor);
+            this.mv.visitMethodInsn(newOpcode, newOwner, newName, newDescriptor, false);
             return true;
         }
         return false;

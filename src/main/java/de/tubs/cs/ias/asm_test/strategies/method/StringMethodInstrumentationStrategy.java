@@ -4,8 +4,6 @@ import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.Utils;
-import de.tubs.cs.ias.asm_test.config.Configuration;
-import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import de.tubs.cs.ias.asm_test.strategies.StringInstrumentation;
@@ -18,8 +16,10 @@ import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class StringMethodInstrumentationStrategy extends StringInstrumentation implements MethodInstrumentationStrategy {
+    private static final Pattern stringQNPattern = Pattern.compile(Constants.StringQN, Pattern.LITERAL);
     private final MethodVisitor mv;
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final JdkClassesLookupTable lookupTable = JdkClassesLookupTable.instance;
@@ -41,10 +41,10 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
      */
     private void handleLdcString(Object value) {
         logger.info("Rewriting String LDC to IASString LDC instruction");
-        this.mv.visitTypeInsn(Opcodes.NEW, stringConfig.getTStringQN());
+        this.mv.visitTypeInsn(Opcodes.NEW, this.stringConfig.getTStringQN());
         this.mv.visitInsn(Opcodes.DUP);
         this.mv.visitLdcInsn(value);
-        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, stringConfig.getTStringQN(), Constants.Init, Constants.TStringInitUntaintedDesc, false);
+        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.stringConfig.getTStringQN(), Constants.Init, Constants.TStringInitUntaintedDesc, false);
     }
 
     /**
@@ -70,22 +70,22 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
                                                                |IASString |
                                                                +----------+
         */
-        this.mv.visitTypeInsn(Opcodes.NEW, stringConfig.getTStringQN());
+        this.mv.visitTypeInsn(Opcodes.NEW, this.stringConfig.getTStringQN());
         this.mv.visitInsn(Opcodes.DUP);
         this.mv.visitInsn(Opcodes.DUP2_X1);
         this.mv.visitInsn(Opcodes.POP2);
-        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, stringConfig.getTStringQN(), Constants.Init, Constants.TStringInitUntaintedDesc, false);
+        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.stringConfig.getTStringQN(), Constants.Init, Constants.TStringInitUntaintedDesc, false);
     }
 
     private void stringToTStringBuilderBased() {
-        this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, stringConfig.getTStringQN(), Constants.FROM_STRING, stringConfig.getFROM_STRING_DESC(), false);
+        this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringQN(), Constants.FROM_STRING, this.stringConfig.getFromStringDesc(), false);
     }
 
     @Override
     public boolean instrumentFieldIns(int opcode, String owner, String name, String descriptor) {
         String newOwner = owner;
         if (Constants.StringQN.equals(owner)) {
-            newOwner = stringConfig.getTStringQN();
+            newOwner = this.stringConfig.getTStringQN();
         }
         Matcher matcher = Constants.strPattern.matcher(descriptor);
         if (matcher.find()) {
@@ -93,7 +93,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
                 this.mv.visitFieldInsn(opcode, newOwner, name, descriptor);
                 this.stringToTStringBuilderBased();
             } else {
-                String newDescriptor = matcher.replaceAll(stringConfig.getTStringDesc());
+                String newDescriptor = matcher.replaceAll(this.stringConfig.getTStringDesc());
                 this.mv.visitFieldInsn(opcode, newOwner, name, newDescriptor);
             }
             return true;
@@ -110,11 +110,11 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
         Type paramType = Type.getType(parameter);
         if (stringArrayType.equals(paramType)) {
             logger.info("Converting taint-aware String-Array to String-Array in JDK method invocation");
-            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, stringConfig.getTStringUtilsQN(), "convertTaintAwareStringArray", String.format("(%s)%s", stringConfig.getTStringArrayDesc(), Constants.StringArrayDesc), false);
+            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "convertTaintAwareStringArray", String.format("(%s)%s", this.stringConfig.getTStringArrayDesc(), Constants.StringArrayDesc), false);
         }
         if (stringType.equals(paramType)) {
             logger.info("Converting taint-aware String to String in JDK method invocation");
-            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, stringConfig.getTStringQN(), Constants.AS_STRING, stringConfig.getAS_STRING_DESC(), false);
+            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringQN(), Constants.AS_STRING, this.stringConfig.getAsStringDesc(), false);
         }
     }
 
@@ -122,7 +122,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         if (Type.getObjectType(owner).equals(stringType) || owner.endsWith(Constants.StringDesc)) {
             String newDescriptor = InstrumentationHelper.getInstance(this.stringConfig).instrumentDesc(descriptor);
-            String newOwner = owner.replace(Constants.StringQN, stringConfig.getTStringQN());
+            String newOwner = stringQNPattern.matcher(owner).replaceAll(Matcher.quoteReplacement(this.stringConfig.getTStringQN()));
             // TODO: this call is superfluous, TString.toTString is a NOP pretty much.. Maybe drop those calls?
             String newName = this.methodsToRename.getOrDefault(name, name);
             logger.info("Rewriting String invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, newDescriptor);
@@ -140,7 +140,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
             logger.info("Converting returned String of {}.{}{}", owner, name, desc.toDescriptor());
         } else if (stringArrayType.equals(returnType)) {
             logger.info("Converting returned String Array of {}.{}{}", owner, name, desc.toDescriptor());
-            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, stringConfig.getTStringUtilsQN(), "convertStringArray", String.format("(%s)%s", Constants.StringArrayDesc, stringConfig.getTStringArrayDesc()), false);
+            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "convertStringArray", String.format("(%s)%s", Constants.StringArrayDesc, this.stringConfig.getTStringArrayDesc()), false);
         }
     }
 
@@ -157,7 +157,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
     @Override
     public boolean handleLdcType(Type type) {
         if (stringType.equals(type)) {
-            this.mv.visitLdcInsn(Type.getObjectType(stringConfig.getTStringQN()));
+            this.mv.visitLdcInsn(Type.getObjectType(this.stringConfig.getTStringQN()));
             return true;
         }
         return false;
