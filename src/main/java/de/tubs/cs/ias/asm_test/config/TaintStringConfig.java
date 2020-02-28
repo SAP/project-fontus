@@ -147,7 +147,7 @@ public class TaintStringConfig {
         this.TStringBufferDesc = String.format("L%s;", TStringBufferQN);
         this.ConcatDesc = String.format("(%s[Ljava/lang/Object;)%s", StringDesc, TStringDesc);
         this.ToStringInstrumentedDesc = String.format("()%s", TStringDesc);
-        this.CreateTaintedStringDesc = String.format("(Ljava/lang/String;)%s", TStringDesc);
+        this.CreateTaintedStringDesc = String.format("(%s)%s", TStringDesc, TStringDesc);
         this.AS_STRING_DESC = String.format("(%s)%s", TStringDesc, StringDesc);
         this.FROM_STRING_DESC = String.format("(%s)%s", StringDesc, TStringDesc);
         this.TFormatterQN = TPackage + "IASFormatter";

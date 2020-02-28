@@ -41,10 +41,6 @@ public final class IASString implements IASRangeAware, Comparable<IASString>, Ch
         this.appendRangesFrom(ranges);
     }
 
-    public static IASString tainted(String str) {
-        return new IASString(str, true);
-    }
-
     @Override
     public boolean isTainted() {
         if (this.taintInformation == null) {

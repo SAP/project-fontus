@@ -35,10 +35,6 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         this.tainted = tainted;
     }
 
-    public static IASString tainted(String str) {
-        return new IASString(str, true);
-    }
-
     public static IASString tainted(IASString tstr) {
         tstr.tainted = true;
         return tstr;
