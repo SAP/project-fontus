@@ -4,15 +4,15 @@ name: default
 
 steps:
   - name: unit_tests
-    image: ubuntu:19.10
+    image: openjdk:11-jdk-buster
     commands:
-      - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y python3 openjdk-11-jdk-headless && rm -rf /var/lib/apt/lists/*
+      - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y python3 && rm -rf /var/lib/apt/lists/*
       - ./gradlew -s check
 
   - name: system_tests
-    image: ubuntu:19.10
+    image: openjdk:11-jdk-buster
     commands:
-      - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y python3 openjdk-11-jdk-headless && rm -rf /var/lib/apt/lists/*
+      - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y python3 && rm -rf /var/lib/apt/lists/*
       - ./gradlew -s assemble
       - ./gradlew publishToMavenLocal
       - cd tests
