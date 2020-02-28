@@ -4,13 +4,13 @@ name: default
 
 steps:
   - name: unit_tests
-    image: openjdk:11-jdk-buster
+    image: openjdk:11-jdk-slim-buster
     commands:
       - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y python3 && rm -rf /var/lib/apt/lists/*
       - ./gradlew -s check
 
   - name: system_tests
-    image: openjdk:11-jdk-buster
+    image: openjdk:11-jdk-slim-buster
     commands:
       - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y python3 && rm -rf /var/lib/apt/lists/*
       - ./gradlew -s assemble
