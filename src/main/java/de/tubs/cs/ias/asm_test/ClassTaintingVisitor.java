@@ -77,7 +77,7 @@ public class ClassTaintingVisitor extends ClassVisitor {
             final String superName,
             final String[] interfaces) {
         this.owner = name;
-        this.superName = superName;
+        this.superName = superName == null ? Type.getInternalName(Object.class) : superName;
         if ((access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE) {
             this.lacksToString = false;
         }
