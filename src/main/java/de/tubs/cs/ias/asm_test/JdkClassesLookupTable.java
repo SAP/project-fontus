@@ -13,11 +13,17 @@ import java.util.*;
 public final class JdkClassesLookupTable {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    public static final JdkClassesLookupTable instance = initializeLookupTable("openjdk12_classes.list"); // TODO: Make configurable
-
     private static int getJvmVersion() {
         String specVersion = System.getProperty("java.vm.specification.version");
         return Integer.parseInt(specVersion);
+    }
+
+    private static class LazyHolder {
+        private static final JdkClassesLookupTable INSTANCE = initializeLookupTable("openjdk12_classes.list"); // TODO: Make configurable
+    }
+
+    public static JdkClassesLookupTable getInstance() {
+        return JdkClassesLookupTable.LazyHolder.INSTANCE;
     }
 
 

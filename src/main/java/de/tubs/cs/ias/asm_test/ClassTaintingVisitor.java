@@ -88,13 +88,13 @@ class ClassTaintingVisitor extends ClassVisitor {
         if (Utils.contains(interfaces, Constants.AnnotationQN) ||
                 (Constants.ProxyQN.equals(superName)
                         && interfaces.length == 1
-                        && InstrumentationState.instance.isAnnotation(interfaces[0], this.resolver)
+                        && InstrumentationState.getInstance().isAnnotation(interfaces[0], this.resolver)
                 )
         ) {
             logger.info("{} is annotation or annotation proxy!", name);
             this.isAnnotation = true;
             this.lacksToString = false;
-            InstrumentationState.instance.addAnnotation(name);
+            InstrumentationState.getInstance().addAnnotation(name);
         }
 
         super.visit(version, access, name, signature, superName, interfaces);
@@ -272,7 +272,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitCode();
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         Objects.requireNonNull(this.superName);
-        if (JdkClassesLookupTable.instance.isJdkClass(this.superName)) {
+        if (JdkClassesLookupTable.getInstance().isJdkClass(this.superName)) {
             mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superName, Constants.ToString, Constants.ToStringDesc, false);
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringQN(), Constants.FROM_STRING, this.stringConfig.getFromStringDesc(), false);
         } else {

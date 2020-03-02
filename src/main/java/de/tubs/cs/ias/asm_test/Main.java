@@ -63,8 +63,6 @@ public final class Main implements Callable<Void> {
 
     private Configuration configuration;
 
-    private static final JdkClassesLookupTable jdkClasses = JdkClassesLookupTable.instance;
-
     private Main() {
         this.instrumenter = new Instrumenter();
     }
@@ -110,7 +108,7 @@ public final class Main implements Callable<Void> {
                 jos.putNextEntry(jeo);
 
                 if (jei.getName().endsWith(Constants.CLASS_FILE_SUFFIX) &&
-                        !jdkClasses.isJdkClass(jei.getName()) &&
+                        !JdkClassesLookupTable.getInstance().isJdkClass(jei.getName()) &&
                         !jei.getName().startsWith("de/tubs/cs/ias/asm_test/") &&
                         !jei.getName().startsWith("org/slf4j") &&
                         !jei.getName().startsWith("ch/qos/logback") &&
