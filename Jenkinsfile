@@ -41,7 +41,6 @@ node ('master') {
 
                 stage('Build') {
                     sh "./gradlew -s assemble"
-                    sh "./gradlew -s boolJar"
                     sh "./gradlew -s check"
                     sh "./gradlew -s publishToMavenLocal"
                 }
@@ -58,7 +57,7 @@ node ('master') {
                                 sh "bash build.sh"    
                             }
                             sh "chmod +x run_system_tests.py"
-                            sh "python3 run_system_tests.py --build-first --taint_type=bool"
+                            sh "python3 run_system_tests.py --build-first --taint_type=boolean"
                             sh "python3 run_system_tests.py --build-first --taint_type=range"
                         }
                     }
