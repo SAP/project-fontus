@@ -292,6 +292,10 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
         return super.getBuilder();
     }
 
+    public synchronized StringBuffer getBuffer() {
+        return new StringBuffer(super.getBuilder());
+    }
+
     @Override
     public synchronized void setLength(int newLength) {
         super.setLength(newLength);
