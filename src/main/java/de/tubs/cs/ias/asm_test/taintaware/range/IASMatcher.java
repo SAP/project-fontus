@@ -8,7 +8,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 
 @SuppressWarnings("unused")
-public class IASMatcher {
+public final class IASMatcher {
     private IASString input;
     private IASPattern pattern;
     private Matcher matcher;
