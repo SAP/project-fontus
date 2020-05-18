@@ -24,7 +24,7 @@ public final class JdkClassesLookupTable {
     private static JdkClassesLookupTable initializeLookupTable(String inputFile) {
         try (InputStream inputStream = JdkClassesLookupTable.class
                 .getClassLoader().getResourceAsStream(inputFile);
-             InputStreamReader isr = new InputStreamReader(inputStream, "UTF8");
+             InputStreamReader isr = new InputStreamReader(Objects.requireNonNull(inputStream), "UTF8");
              BufferedReader br = new BufferedReader(isr)
         ) {
             List<String> lines = new ArrayList<>();
@@ -47,9 +47,31 @@ public final class JdkClassesLookupTable {
         this.jdkClasses.addAll(classes);
     }
 
+    // TODO: Unify with Main
+    private static final String[] blacklistedPrefixes = {
+            "sun/",
+            "com/sun/proxy",
+            "jdk/",
+            "java/",
+            "sun/misc/",
+            "net/sf/jopt-simple/",
+            "org/objectweb/asm/",
+            "org/openjdk/jmh/",
+            "org/apache/commons/commons-math3"
+    };
+
     public boolean isJdkClass(String className) {
         if (className == null) return true;
-        if ((className.startsWith("sun/") || className.startsWith("com/sun/proxy") || className.startsWith("jdk/") || className.startsWith("java/") || className.startsWith("sun/misc/") || className.startsWith("org/objectweb/asm/") || className.startsWith("org/openjdk/jmh/") || className.startsWith("org/apache/commons/commons-math3") || className.startsWith("net/sf/jopt-simple/")) && !className.startsWith("javax/servlet")) {
+
+        boolean blacklisted = false;
+        for(String blacklistedPrefix : blacklistedPrefixes) {
+            if (className.startsWith(blacklistedPrefix)) {
+                blacklisted = true;
+                break;
+            }
+        }
+
+        if (blacklisted && !className.startsWith("javax/servlet")) {
             return true;
         }
         //TODO: is the split on $ the optimal way to only get the prefix? This is supposed to catch inner classes too

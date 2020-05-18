@@ -4,23 +4,21 @@ name: default
 
 steps:
   - name: unit_tests
-    image: ubuntu:19.10
+    image: openjdk:11-jdk-slim-buster
     commands:
-      - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y python3 openjdk-11-jdk-headless && rm -rf /var/lib/apt/lists/*
-      - ./gradlew -s setBool configureTaintType check
+      - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y python3 && rm -rf /var/lib/apt/lists/*
+      - ./gradlew -s check
 
   - name: system_tests
-    image: ubuntu:19.10
+    image: openjdk:11-jdk-slim-buster
     commands:
-      - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y python3 openjdk-11-jdk-headless && rm -rf /var/lib/apt/lists/*
+      - DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y python3 && rm -rf /var/lib/apt/lists/*
       - ./gradlew -s assemble
-      - ./gradlew -s boolJar
-      - ./gradlew -s setBool configureTaintType check
       - ./gradlew publishToMavenLocal
       - cd tests
       - chmod +x run_system_tests.py
       - cd jars
       - bash build.sh
       - cd ..
-      - python3 ./run_system_tests.py --build-first  --taint_type=bool
+      - python3 ./run_system_tests.py --build-first  --taint_type=boolean
       - python3 ./run_system_tests.py --build-first  --taint_type=range

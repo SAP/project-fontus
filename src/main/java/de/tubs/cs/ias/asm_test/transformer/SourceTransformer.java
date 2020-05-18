@@ -3,7 +3,6 @@ package de.tubs.cs.ias.asm_test.transformer;
 import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.FunctionCall;
 import de.tubs.cs.ias.asm_test.MethodTaintingVisitor;
-import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.Source;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import org.objectweb.asm.Opcodes;

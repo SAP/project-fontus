@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class ClassReaderWithLoaderSupport extends org.objectweb.asm.ClassReader {
+
+    private static final int FourKB = 4096;
+
     /**
      * Constructs a new {@link org.objectweb.asm.ClassReader} object.
      *
@@ -61,7 +64,7 @@ public class ClassReaderWithLoaderSupport extends org.objectweb.asm.ClassReader 
             throw new IOException(String.format("Class '%s' not found!", className));
         }
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            byte[] data = new byte[4096];
+            byte[] data = new byte[FourKB];
             int bytesRead;
             while ((bytesRead = inputStream.read(data, 0, data.length)) != -1) {
                 outputStream.write(data, 0, bytesRead);

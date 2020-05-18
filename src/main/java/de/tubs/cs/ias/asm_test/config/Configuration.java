@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 
 import de.tubs.cs.ias.asm_test.FunctionCall;
@@ -12,6 +13,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,8 +21,9 @@ import java.util.stream.Collectors;
 @XmlRootElement(name = "configuration")
 public class Configuration {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    @JsonIgnore
     private TaintMethod taintMethod;
-
+    @JsonIgnore
     private TaintStringConfig taintStringConfig;
 
     public Configuration() {
@@ -77,10 +80,10 @@ public class Configuration {
     }
 
     public TaintStringConfig getTaintStringConfig() {
-        return taintStringConfig;
+        return this.taintStringConfig;
     }
 
-    public void appendBlacklist(List<String> other) {
+    void appendBlacklist(Collection<String> other) {
         if (this.blacklistedMainClasses != null) {
             this.blacklistedMainClasses.addAll(other);
         }

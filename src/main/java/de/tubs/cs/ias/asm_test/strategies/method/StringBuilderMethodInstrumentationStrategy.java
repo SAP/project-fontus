@@ -3,7 +3,6 @@ package de.tubs.cs.ias.asm_test.strategies.method;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
 import de.tubs.cs.ias.asm_test.Utils;
-import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import de.tubs.cs.ias.asm_test.strategies.StringBuilderInstrumentation;
@@ -30,18 +29,18 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
     }
 
     private void stringBuilderToTStringBuilder() {
-        this.mv.visitTypeInsn(Opcodes.NEW, stringConfig.getTStringBuilderQN());
+        this.mv.visitTypeInsn(Opcodes.NEW, this.stringConfig.getTStringBuilderQN());
         this.mv.visitInsn(Opcodes.DUP);
         this.mv.visitInsn(Opcodes.DUP2_X1);
         this.mv.visitInsn(Opcodes.POP2);
-        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, stringConfig.getTStringBuilderQN(), Constants.Init, String.format("(%s)V", Constants.StringBuilderDesc), false);
+        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.stringConfig.getTStringBuilderQN(), Constants.Init, String.format("(%s)V", Constants.StringBuilderDesc), false);
     }
 
     @Override
     public boolean instrumentFieldIns(int opcode, String owner, String name, String descriptor) {
         Matcher matcher = Constants.strBuilderPattern.matcher(descriptor);
         if (matcher.find()) {
-            String newDescriptor = matcher.replaceAll(stringConfig.getTStringBuilderDesc());
+            String newDescriptor = matcher.replaceAll(this.stringConfig.getTStringBuilderDesc());
             this.mv.visitFieldInsn(opcode, owner, name, newDescriptor);
             return true;
         }
@@ -53,7 +52,7 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
         Type paramType = Type.getType(parameter);
         if (stringBuilderType.equals(paramType)) {
             logger.info("Converting taint-aware StringBuilder to StringBuilder in multi param method invocation");
-            this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, stringConfig.getTStringBuilderQN(), "getBuilder", String.format("()%s", Constants.StringBuilderDesc), false);
+            this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.stringConfig.getTStringBuilderQN(), "getBuilder", String.format("()%s", Constants.StringBuilderDesc), false);
         }
     }
 
@@ -61,7 +60,7 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         if (Type.getObjectType(owner).equals(stringBuilderType)) {
             String newDescriptor = InstrumentationHelper.getInstance(this.stringConfig).instrumentDesc(descriptor);
-            String newOwner = stringConfig.getTStringBuilderQN();
+            String newOwner = this.stringConfig.getTStringBuilderQN();
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up
             String newName = this.methodsToRename.getOrDefault(name, name);
 
@@ -89,7 +88,7 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
     @Override
     public boolean handleLdcType(Type type) {
         if (stringBuilderType.equals(type)) {
-            this.mv.visitLdcInsn(Type.getObjectType(stringConfig.getTStringBuilderQN()));
+            this.mv.visitLdcInsn(Type.getObjectType(this.stringConfig.getTStringBuilderQN()));
             return true;
         }
         return false;

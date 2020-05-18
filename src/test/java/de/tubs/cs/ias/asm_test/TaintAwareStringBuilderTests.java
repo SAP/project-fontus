@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SuppressWarnings("ALL")
-public class TaintAwareStringBuilderTests {
+@SuppressWarnings({"ClassIndependentOfModule", "ClassOnlyUsedInOneModule", "ClassUnconnectedToPackage", "ClassOnlyUsedInOnePackage", "DuplicateStringLiteralInspection", "TypeMayBeWeakened"})
+class TaintAwareStringBuilderTests {
     @Test
     void emptyStringBuilderIsUntainted() {
         IASStringBuilder sb = new IASStringBuilder();

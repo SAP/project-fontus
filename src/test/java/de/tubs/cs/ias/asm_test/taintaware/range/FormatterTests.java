@@ -8,6 +8,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+@SuppressWarnings("ALL")
+// David: As I didn't write this Code and don't want to mess with it I suppressed the warnings.
+// TODO: Work out whether we can adapt it to the style of the remaining project?
 public class FormatterTests {
     @Test
     public void format_1() {

@@ -8,7 +8,9 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
 import java.util.List;
-
+@SuppressWarnings("ALL")
+// David: As I didn't write this Code and don't want to mess with it I suppressed the warnings.
+// TODO: Work out whether we can adapt it to the style of the remaining project?
 public class TaintMatcher {
     public static Matcher<Object> taintEquals(List<IASTaintRange> ranges) {
         return new BaseMatcher<Object>() {

@@ -1,12 +1,20 @@
 package de.tubs.cs.ias.asm_test.config;
 
+import de.tubs.cs.ias.asm_test.Constants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.invoke.MethodHandles;
 import java.util.Properties;
 
 public class TaintMethodConfig {
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     private static final Properties properties;
     private static TaintMethod taintMethod;
+    private static final String PATH = "taintpath";
 
     static {
         properties = new Properties();
@@ -17,47 +25,24 @@ public class TaintMethodConfig {
             try {
                 properties.load(is);
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Failed to load properties!", e);
             }
         } else {
-            properties.put("taintpath", "bool/");
+            properties.setProperty(PATH, Constants.BOOLEAN_METHOD_PATH);
         }
     }
 
     public static String getTaintSubPackage() {
-        return getTaintMethod().getPath();
+        return getTaintMethod().getSubPath();
     }
 
-    public static TaintMethod getTaintMethod() {
+    private static TaintMethod getTaintMethod() {
         if (taintMethod == null) {
-            String path = (String) properties.getOrDefault("taintpath", "");
+            String path = (String) properties.getOrDefault(PATH, "");
             taintMethod = TaintMethod.getTaintMethodByPath(path);
         }
         return taintMethod;
     }
 
-    public enum TaintMethod {
-        BOOLEAN("bool/"), RANGE("range/");
 
-        private final String path;
-
-        TaintMethod(String path) {
-            this.path = path;
-        }
-
-        public String getPath() {
-            return this.path;
-        }
-
-        public static TaintMethod getTaintMethodByPath(String path) {
-            switch (path) {
-                case "bool/":
-                    return TaintMethod.BOOLEAN;
-                case "range/":
-                    return TaintMethod.RANGE;
-                default:
-                    throw new IllegalArgumentException("Taint method/path unknown:" + path);
-            }
-        }
-    }
 }

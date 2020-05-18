@@ -1,7 +1,6 @@
 package de.tubs.cs.ias.asm_test.strategies.clazz;
 
 import de.tubs.cs.ias.asm_test.TriConsumer;
-import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.strategies.DefaultInstrumentation;
 import org.objectweb.asm.ClassVisitor;

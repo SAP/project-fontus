@@ -62,8 +62,8 @@ public class TaintStringConfig {
      * Descriptor of the 'tainted' method that turns a regular String into a tainted one
      */
     private final String CreateTaintedStringDesc;
-    private final String AS_STRING_DESC;
-    private final String FROM_STRING_DESC;
+    private final String asStringDesc;
+    private final String fromStringDesc;
     private final String TFormatterDesc;
     private final String TFormatterQN;
     private final String TMatcherDesc;
@@ -72,63 +72,63 @@ public class TaintStringConfig {
     private final String TPatternQN;
 
     public String getTPackage() {
-        return TPackage;
+        return this.TPackage;
     }
 
     public String getTStringQN() {
-        return TStringQN;
+        return this.TStringQN;
     }
 
     public String getTStringBufferQN() {
-        return TStringBufferQN;
+        return this.TStringBufferQN;
     }
 
     public String getTStringUtilsQN() {
-        return TStringUtilsQN;
+        return this.TStringUtilsQN;
     }
 
     public String getReflectionProxiesQN() {
-        return ReflectionProxiesQN;
+        return this.ReflectionProxiesQN;
     }
 
     public String getTStringDesc() {
-        return TStringDesc;
+        return this.TStringDesc;
     }
 
     public String getTStringArrayDesc() {
-        return TStringArrayDesc;
+        return this.TStringArrayDesc;
     }
 
     public String getTStringBuilderQN() {
-        return TStringBuilderQN;
+        return this.TStringBuilderQN;
     }
 
     public String getTStringBuilderDesc() {
-        return TStringBuilderDesc;
+        return this.TStringBuilderDesc;
     }
 
     public String getTStringBufferDesc() {
-        return TStringBufferDesc;
+        return this.TStringBufferDesc;
     }
 
     public String getConcatDesc() {
-        return ConcatDesc;
+        return this.ConcatDesc;
     }
 
     public String getToStringInstrumentedDesc() {
-        return ToStringInstrumentedDesc;
+        return this.ToStringInstrumentedDesc;
     }
 
     public String getCreateTaintedStringDesc() {
-        return CreateTaintedStringDesc;
+        return this.CreateTaintedStringDesc;
     }
 
-    public String getAS_STRING_DESC() {
-        return AS_STRING_DESC;
+    public String getAsStringDesc() {
+        return this.asStringDesc;
     }
 
-    public String getFROM_STRING_DESC() {
-        return FROM_STRING_DESC;
+    public String getFromStringDesc() {
+        return this.fromStringDesc;
     }
 
     private final TaintMethod taintMethod;
@@ -136,26 +136,26 @@ public class TaintStringConfig {
     public TaintStringConfig(TaintMethod taintMethod) {
         this.taintMethod = taintMethod;
         this.TPackage = "de/tubs/cs/ias/asm_test/taintaware/" + taintMethod.getSubPath();
-        this.TStringQN = TPackage + "IASString";
-        this.TStringBufferQN = TPackage + "IASStringBuffer";
-        this.TStringUtilsQN = TPackage + "IASStringUtils";
-        this.ReflectionProxiesQN = TPackage + "IASReflectionProxies";
-        this.TStringDesc = java.lang.String.format("L%s;", TStringQN);
-        this.TStringArrayDesc = "[" + TStringDesc;
-        this.TStringBuilderQN = TPackage + "IASStringBuilder";
-        this.TStringBuilderDesc = String.format("L%s;", TStringBuilderQN);
-        this.TStringBufferDesc = String.format("L%s;", TStringBufferQN);
-        this.ConcatDesc = String.format("(%s[Ljava/lang/Object;)%s", StringDesc, TStringDesc);
-        this.ToStringInstrumentedDesc = String.format("()%s", TStringDesc);
-        this.CreateTaintedStringDesc = String.format("(Ljava/lang/String;)%s", TStringDesc);
-        this.AS_STRING_DESC = String.format("(%s)%s", TStringDesc, StringDesc);
-        this.FROM_STRING_DESC = String.format("(%s)%s", StringDesc, TStringDesc);
-        this.TFormatterQN = TPackage + "IASFormatter";
-        this.TFormatterDesc = java.lang.String.format("L%s;", TFormatterQN);
-        this.TMatcherQN = TPackage + "IASMatcher";
-        this.TMatcherDesc = java.lang.String.format("L%s;", TMatcherQN);
-        this.TPatternQN = TPackage + "IASPattern";
-        this.TPatternDesc = java.lang.String.format("L%s;", TPatternQN);
+        this.TStringQN = this.TPackage + "IASString";
+        this.TStringBufferQN = this.TPackage + "IASStringBuffer";
+        this.TStringUtilsQN = this.TPackage + "IASStringUtils";
+        this.ReflectionProxiesQN = this.TPackage + "IASReflectionProxies";
+        this.TStringDesc = java.lang.String.format("L%s;", this.TStringQN);
+        this.TStringArrayDesc = "[" + this.TStringDesc;
+        this.TStringBuilderQN = this.TPackage + "IASStringBuilder";
+        this.TStringBuilderDesc = String.format("L%s;", this.TStringBuilderQN);
+        this.TStringBufferDesc = String.format("L%s;", this.TStringBufferQN);
+        this.ConcatDesc = String.format("(%s[Ljava/lang/Object;)%s", StringDesc, this.TStringDesc);
+        this.ToStringInstrumentedDesc = String.format("()%s", this.TStringDesc);
+        this.CreateTaintedStringDesc = String.format("(%s)%s", this.TStringDesc, this.TStringDesc);
+        this.asStringDesc = String.format("(%s)%s", this.TStringDesc, StringDesc);
+        this.fromStringDesc = String.format("(%s)%s", StringDesc, this.TStringDesc);
+        this.TFormatterQN = this.TPackage + "IASFormatter";
+        this.TFormatterDesc = java.lang.String.format("L%s;", this.TFormatterQN);
+        this.TMatcherQN = this.TPackage + "IASMatcher";
+        this.TMatcherDesc = java.lang.String.format("L%s;", this.TMatcherQN);
+        this.TPatternQN = this.TPackage + "IASPattern";
+        this.TPatternDesc = java.lang.String.format("L%s;", this.TPatternQN);
     }
 
     public String getTFormatterDesc() {

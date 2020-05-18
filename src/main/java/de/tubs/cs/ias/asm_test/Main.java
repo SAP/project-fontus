@@ -24,8 +24,9 @@ import de.tubs.cs.ias.asm_test.config.ConfigurationLoader;
 )
 public final class Main implements Callable<Void> {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final int OneKB = 1024;
     private final Instrumenter instrumenter;
-    private static final String defaultTaint = "boolean";
+    private static final String defaultTaint = Constants.BOOLEAN_METHOD_NAME;
 
     @CommandLine.Option(
             names = {"-f", "--file"},
@@ -76,7 +77,7 @@ public final class Main implements Callable<Void> {
 
     private static void copySingleEntry(InputStream i, OutputStream o) throws IOException {
         int len = 0;
-        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[OneKB];
 
         while ((len = i.read(buffer, 0, buffer.length)) != -1) {
             o.write(buffer, 0, len);
@@ -163,7 +164,7 @@ public final class Main implements Callable<Void> {
         }
     }
 
-    private void loadConfiguration() throws IOException {
+    private void loadConfiguration() {
         this.configuration = ConfigurationLoader.loadAndMergeConfiguration(this.configFile, this.taintMethod);
     }
 

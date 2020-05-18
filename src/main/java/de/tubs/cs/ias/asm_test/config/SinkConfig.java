@@ -25,7 +25,7 @@ public class SinkConfig {
     }
 
     public Sink getSinkForFunction(FunctionCall fc) {
-        for (Sink s : sinks) {
+        for (Sink s : this.sinks) {
             if (s.getFunction().equals(fc)) {
                 return s;
             }
