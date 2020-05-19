@@ -211,7 +211,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         MethodParameterTransformer transformer = new MethodParameterTransformer(this, call);
 
         // Add JDK transformations
-        if (JdkClassesLookupTable.instance.isJdkClass(call.getOwner()) || InstrumentationState.instance.isAnnotation(call.getOwner(), this.resolver)) {
+        if (JdkClassesLookupTable.getInstance().isJdkClass(call.getOwner()) || InstrumentationState.getInstance().isAnnotation(call.getOwner(), this.resolver)) {
             logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
             JdkMethodTransformer t = new JdkMethodTransformer(call, this.instrumentation, this.config);
             transformer.AddParameterTransformation(t);

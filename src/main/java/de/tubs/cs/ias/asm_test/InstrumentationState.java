@@ -17,15 +17,17 @@ public final class InstrumentationState {
 
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    public static final InstrumentationState instance = initializeState();
-
-    private static InstrumentationState initializeState() {
-        return new InstrumentationState();
-    }
-
     private InstrumentationState() {
         this.annotations = new HashSet<>();
         this.noAnnotations = new HashSet<>();
+    }
+
+    private static class LazyHolder {
+        private static final InstrumentationState INSTANCE = new InstrumentationState();
+    }
+
+    public static InstrumentationState getInstance() {
+        return InstrumentationState.LazyHolder.INSTANCE;
     }
 
     public void addAnnotation(String name) {

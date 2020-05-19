@@ -9,7 +9,6 @@ install: true
 
 script:
 - ./gradlew -s assemble
-- ./gradlew -s boolJar
 - ./gradlew -s check
 - ./gradlew publishToMavenLocal
 - cd tests
@@ -17,4 +16,4 @@ script:
 - cd jars
 - bash build.sh
 - cd ..
-- python3 ./run_system_tests.py --build-first  --taint_type=bool
+- python3 ./run_system_tests.py --build-first  --taint_type=boolean

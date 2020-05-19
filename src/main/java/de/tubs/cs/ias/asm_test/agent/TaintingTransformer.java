@@ -21,7 +21,6 @@ class TaintingTransformer implements ClassFileTransformer {
 
     private final Configuration config;
     private final Instrumenter instrumenter;
-    private static final JdkClassesLookupTable jdkClasses = JdkClassesLookupTable.instance;
 
     TaintingTransformer(Configuration config) {
         this.instrumenter = new Instrumenter();
@@ -31,7 +30,7 @@ class TaintingTransformer implements ClassFileTransformer {
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-        if (isJdkClass(className)) {
+        if (JdkClassesLookupTable.getInstance().isJdkClass(className)) {
             logger.info("Skipping JDK class: {}", className);
             return classfileBuffer;
         }
@@ -58,7 +57,4 @@ class TaintingTransformer implements ClassFileTransformer {
         return outArray;
     }
 
-    static boolean isJdkClass(String className) {
-        return jdkClasses.isJdkClass(className);
-    }
 }

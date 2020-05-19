@@ -19,10 +19,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class StringMethodInstrumentationStrategy extends StringInstrumentation implements MethodInstrumentationStrategy {
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     private static final Pattern stringQNPattern = Pattern.compile(Constants.StringQN, Pattern.LITERAL);
     private final MethodVisitor mv;
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final JdkClassesLookupTable lookupTable = JdkClassesLookupTable.instance;
     private final HashMap<String, String> methodsToRename = new HashMap<>(1);
     private static final Type stringType = Type.getType(String.class);
     private static final Type stringArrayType = Type.getType(String[].class);
@@ -89,7 +89,7 @@ public class StringMethodInstrumentationStrategy extends StringInstrumentation i
         }
         Matcher matcher = Constants.strPattern.matcher(descriptor);
         if (matcher.find()) {
-            if (lookupTable.isJdkClass(newOwner)) {
+            if (JdkClassesLookupTable.getInstance().isJdkClass(newOwner)) {
                 this.mv.visitFieldInsn(opcode, newOwner, name, descriptor);
                 this.stringToTStringBuilderBased();
             } else {
