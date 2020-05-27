@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 
 @SuppressWarnings("ALL")
-public final class IASString implements IASTaintAware, Comparable<IASString>, CharSequence {
+public final class IASString implements IASArrayAware, Comparable<IASString>, CharSequence {
 
     private String str;
     private IASTaintInformation taintInformation;
@@ -625,6 +625,11 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     public static final Comparator<IASString> CASE_INSENSITIVE_ORDER
             = new CaseInsensitiveComparator();
+
+    @Override
+    public int[] getTaints() {
+        return this.taintInformation.getTaints();
+    }
 
     private static class CaseInsensitiveComparator
             implements Comparator<IASString>, java.io.Serializable {

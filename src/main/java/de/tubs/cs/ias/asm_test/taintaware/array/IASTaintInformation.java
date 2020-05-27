@@ -151,4 +151,12 @@ public class IASTaintInformation {
     public void removeAll() {
         this.taints = new int[this.length];
     }
+
+    public void insertTaint(int start, int[] taints) {
+        int newStart = start + taints.length;
+        int[] buffer = new int[this.length - newStart];
+        System.arraycopy(this.taints, newStart, buffer, 0, buffer.length);
+        this.append(newStart, buffer);
+        this.setTaint(start, taints);
+    }
 }

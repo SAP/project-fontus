@@ -5,7 +5,7 @@ import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("unused")
-public abstract class IASAbstractStringBuilder implements java.io.Serializable, CharSequence, IASTaintAware, Appendable {
+public abstract class IASAbstractStringBuilder implements java.io.Serializable, CharSequence, IASArrayAware, Appendable {
     protected final StringBuilder builder;
     protected IASTaintInformation taintInformation;
 
@@ -49,6 +49,11 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
     }
 
     @Override
+    public int[] getTaints() {
+        return this.taintInformation.getTaints();
+    }
+
+    @Override
     public boolean isTainted() {
         if (isUninitialized()) {
             return false;
@@ -63,7 +68,7 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
     }
 
     public IASAbstractStringBuilder append(IASString str) {
-        int[] taints = str.getTaintInformation().getTaints();
+        int[] taints = str.getTaints();
         this.taintInformation.append(this.length(), taints);
 
         this.builder.append(str.toString());
@@ -78,7 +83,7 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
     public IASAbstractStringBuilder append(IASStringBuffer strb) {
         this.builder.append(strb.toString());
 
-        this.taintInformation.append(this.length(), strb.getTaintInformation().getTaints());
+        this.taintInformation.append(this.length(), strb.getTaints());
         return this;
     }
 
@@ -159,7 +164,7 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
             this.initialize();
         }
         if (this.isTainted() || str.isTainted()) {
-            this.taintInformation.setTaint(start, str.getTaintInformation().getTaints());
+            this.taintInformation.setTaint(start, str.getTaints());
         }
         return this;
     }
@@ -182,7 +187,7 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
             this.initialize();
         }
         if (this.isTainted() || str.isTainted()) {
-            this.taintInformation.setTaint(offset, str.getTaintInformation().getTaints());
+            this.taintInformation.setTaint(offset, str.getTaints());
         }
         this.builder.insert(offset, str.toString());
         return this;
@@ -283,7 +288,7 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
     }
 
     public IASString toIASString() {
-        return new IASString(this.builder.toString(), this.getTaintInformation().getTaints());
+        return new IASString(this.builder.toString(), this.getTaints());
     }
 
     public int capacity() {

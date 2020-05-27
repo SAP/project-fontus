@@ -3,7 +3,7 @@ package de.tubs.cs.ias.asm_test.config;
 import de.tubs.cs.ias.asm_test.Constants;
 
 public enum TaintMethod {
-    BOOLEAN(Constants.BOOLEAN_METHOD_NAME, Constants.BOOLEAN_METHOD_PATH), RANGE(Constants.RANGE_METHOD_NAME, Constants.RANGE_METHOD_PATH);
+    BOOLEAN(Constants.BOOLEAN_METHOD_NAME, Constants.BOOLEAN_METHOD_PATH), RANGE(Constants.RANGE_METHOD_NAME, Constants.RANGE_METHOD_PATH), ARRAY(Constants.ARRAY_METHOD_NAME, Constants.ARRAY_METHOD_PATH);
 
     public static final String defaultTaintMethodName = Constants.BOOLEAN_METHOD_NAME;
 
