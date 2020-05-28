@@ -134,13 +134,9 @@ public class IASTaintInformation {
         }
         if (leftShiftRangesAfterClearedArea) {
             int length = end - start;
-            for (int i = this.length; i <= start; i--) {
-                int old = 0;
-                if (i + length < this.length) {
-                    old = this.taints[i + length];
-                }
-                this.taints[i] = old;
-            }
+            int remainder = this.length - end;
+            System.arraycopy(this.taints, end, this.taints, start, remainder);
+            System.arraycopy(new int[length], 0, this.taints, start + remainder, length);
         } else {
             for (int i = start; i < end; i++) {
                 this.taints[i] = 0;
@@ -181,7 +177,7 @@ public class IASTaintInformation {
     public void insertTaint(int start, int[] taints) {
         initialize();
         int newStart = start + taints.length;
-        if(start < this.length) {
+        if (start < this.length) {
             int[] buffer = new int[this.length - start];
             System.arraycopy(this.taints, start, buffer, 0, this.taints.length - start);
             this.setTaint(newStart, buffer);

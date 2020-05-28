@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.array;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -230,7 +231,7 @@ public class TaintInformationTest {
 
     @Test
     public void testInsert2() {
-        IASTaintInformation ti = new IASTaintInformation(new int[] {0, 0, 0, 0, 0});
+        IASTaintInformation ti = new IASTaintInformation(new int[]{0, 0, 0, 0, 0});
 
         ti.insertTaint(5, new int[]{1, 2, 3});
 
@@ -239,10 +240,60 @@ public class TaintInformationTest {
 
     @Test
     public void testInsert3() {
-        IASTaintInformation ti = new IASTaintInformation(new int[] {0, 0, 0});
+        IASTaintInformation ti = new IASTaintInformation(new int[]{0, 0, 0});
 
         ti.insertTaint(2, new int[]{1, 2, 3});
 
         assertArrayEquals(new int[]{0, 0, 1, 2, 3, 0}, ti.getTaints());
+    }
+
+    @Test
+    public void testRemoveTaintFor1() {
+        IASTaintInformation ti = new IASTaintInformation(new int[]{1, 2, 3, 4, 5});
+
+        ti.removeTaintFor(1, 4, false);
+
+        assertArrayEquals(new int[]{1, 0, 0, 0, 5}, ti.getTaints());
+    }
+
+    @Test
+    public void testRemoveTaintFor2() {
+        IASTaintInformation ti = new IASTaintInformation(new int[]{1, 2, 3, 4, 5});
+
+        ti.removeTaintFor(1, 4, true);
+
+        assertArrayEquals(new int[]{1, 5, 0, 0, 0}, ti.getTaints());
+    }
+
+    @Test
+    public void testRemoveTaintFor3() {
+        IASTaintInformation ti = new IASTaintInformation(5);
+
+        ti.removeTaintFor(1, 4, false);
+
+        assertTrue(ti.isUninitialized());
+    }
+
+    @Test
+    public void testRemoveTaintFor4() {
+        IASTaintInformation ti = new IASTaintInformation(5);
+
+        ti.removeTaintFor(1, 4, true);
+
+        assertTrue(ti.isUninitialized());
+    }
+
+    @Test
+    public void testRemoveTaintFor5() {
+        IASTaintInformation ti = new IASTaintInformation(0);
+
+        assertThrows(IndexOutOfBoundsException.class, () -> ti.removeTaintFor(1, 4, false));
+    }
+
+    @Test
+    public void testRemoveTaintFor6() {
+        IASTaintInformation ti = new IASTaintInformation(0);
+
+        assertThrows(IndexOutOfBoundsException.class, () -> ti.removeTaintFor(1, 4, true));
     }
 }
