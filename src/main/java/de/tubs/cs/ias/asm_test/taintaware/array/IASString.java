@@ -37,6 +37,9 @@ public final class IASString implements IASArrayAware, Comparable<IASString>, Ch
     }
 
     private void setTaints(int[] taints) {
+        if(taints.length != this.length()) {
+            throw new IllegalArgumentException("Taint array size must match string length!");
+        }
         this.taintInformation = new IASTaintInformation(taints);
     }
 

@@ -49,9 +49,7 @@ public class IASTaintInformation {
     }
 
     public int[] getTaints(int start, int end) {
-        if (end > length || start < 0) {
-            throw new IndexOutOfBoundsException();
-        }
+        this.checkBounds(start, end);
         if (isUninitialized()) {
             return new int[end - start];
         }
@@ -130,6 +128,7 @@ public class IASTaintInformation {
     }
 
     public void removeTaintFor(int start, int end, boolean leftShiftRangesAfterClearedArea) {
+        this.checkBounds(start, end);
         if (isUninitialized()) {
             return;
         }
@@ -157,6 +156,7 @@ public class IASTaintInformation {
     }
 
     public void switchTaint(int first, int second) {
+        this.checkBounds(first, second);
         if (isUninitialized()) {
             return;
         }
@@ -167,9 +167,7 @@ public class IASTaintInformation {
 
     public void resize(int size) {
         this.length = size;
-        if (isUninitialized()) {
-            initialize();
-        } else {
+        if (isInitialized()) {
             int[] old = this.taints;
             this.taints = new int[size];
             System.arraycopy(old, 0, this.taints, 0, old.length);
@@ -177,7 +175,7 @@ public class IASTaintInformation {
     }
 
     public void removeAll() {
-        this.taints = new int[this.length];
+        this.taints = null;
     }
 
     public void insertTaint(int start, int[] taints) {
@@ -187,5 +185,15 @@ public class IASTaintInformation {
         System.arraycopy(this.taints, start, buffer, 0, this.taints.length - start);
         this.setTaint(newStart, buffer);
         this.setTaint(start, taints);
+    }
+
+    private void checkBounds(int start, int end) {
+        if (end > length || start < 0) {
+            throw new IndexOutOfBoundsException();
+        }
+    }
+
+    public int getLength() {
+        return this.length;
     }
 }

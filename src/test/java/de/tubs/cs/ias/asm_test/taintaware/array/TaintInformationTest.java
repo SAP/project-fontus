@@ -146,4 +146,46 @@ public class TaintInformationTest {
 
         assertArrayEquals(new int[]{2, 3, 4}, taint);
     }
+
+    @Test
+    public void testResize1() {
+        IASTaintInformation ti = new IASTaintInformation(0);
+
+        ti.resize(5);
+
+        assertTrue(ti.isUninitialized());
+        assertEquals(5, ti.getLength());
+    }
+
+    @Test
+    public void testResize2() {
+        IASTaintInformation ti = new IASTaintInformation(2);
+
+        ti.resize(5);
+
+        assertTrue(ti.isUninitialized());
+        assertEquals(5, ti.getLength());
+    }
+
+    @Test
+    public void testResize3() {
+        IASTaintInformation ti = new IASTaintInformation(new int[]{0, 0});
+
+        ti.resize(5);
+
+        assertTrue(ti.isInitialized());
+        assertEquals(5, ti.getLength());
+        assertArrayEquals(new int[]{0, 0, 0, 0, 0}, ti.getTaints());
+    }
+
+    @Test
+    public void testResize4() {
+        IASTaintInformation ti = new IASTaintInformation(new int[]{1, 2});
+
+        ti.resize(5);
+
+        assertTrue(ti.isInitialized());
+        assertEquals(5, ti.getLength());
+        assertArrayEquals(new int[]{1, 2, 0, 0, 0}, ti.getTaints());
+    }
 }
