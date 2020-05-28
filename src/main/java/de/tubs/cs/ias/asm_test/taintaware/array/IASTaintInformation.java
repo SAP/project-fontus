@@ -49,6 +49,9 @@ public class IASTaintInformation {
     }
 
     public int[] getTaints(int start, int end) {
+        if (end > length || start < 0) {
+            throw new IndexOutOfBoundsException();
+        }
         if (isUninitialized()) {
             return new int[end - start];
         }
