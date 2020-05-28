@@ -42,7 +42,7 @@ public class IASTaintInformation {
             this.resize(size);
         }
 
-        System.arraycopy(taints, offset, this.taints, offset, taints.length);
+        System.arraycopy(taints, 0, this.taints, offset, taints.length);
     }
 
     public int[] getTaints(int start, int end) {
@@ -166,7 +166,7 @@ public class IASTaintInformation {
         } else {
             int[] old = this.taints;
             this.taints = new int[size];
-            System.arraycopy(old, 0, this.taints, 0, this.length);
+            System.arraycopy(old, 0, this.taints, 0, old.length);
         }
     }
 
@@ -177,8 +177,8 @@ public class IASTaintInformation {
     public void insertTaint(int start, int[] taints) {
         initialize();
         int newStart = start + taints.length;
-        int[] buffer = new int[this.length - newStart];
-        System.arraycopy(this.taints, newStart, buffer, 0, buffer.length);
+        int[] buffer = new int[this.length - start];
+        System.arraycopy(this.taints, start, buffer, 0, this.taints.length - start);
         this.setTaint(newStart, buffer);
         this.setTaint(start, taints);
     }

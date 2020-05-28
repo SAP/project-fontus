@@ -37,7 +37,7 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
         if (taint) {
             if (!this.isTainted()) {
                 this.initialize();
-                this.taintInformation.setTaint(0, this.length(), (short) 0);
+                this.taintInformation.setTaint(0, this.length(), (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
             }
         } else {
             this.taintInformation = null;
