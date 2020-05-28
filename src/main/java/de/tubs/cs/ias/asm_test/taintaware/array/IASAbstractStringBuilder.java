@@ -1,7 +1,5 @@
 package de.tubs.cs.ias.asm_test.taintaware.array;
 
-import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
-
 import java.util.stream.IntStream;
 
 @SuppressWarnings("unused")
@@ -38,9 +36,7 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
     public void setTaint(boolean taint) {
         if (taint) {
             if (!this.isTainted()) {
-                if (isUninitialized()) {
-                    this.taintInformation = new IASTaintInformation(this.length());
-                }
+                this.initialize();
                 this.taintInformation.setTaint(0, this.length(), (short) 0);
             }
         } else {
@@ -50,6 +46,9 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
 
     @Override
     public int[] getTaints() {
+        if (this.isUninitialized()) {
+            return new int[this.length()];
+        }
         return this.taintInformation.getTaints();
     }
 
@@ -68,8 +67,15 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
     }
 
     public IASAbstractStringBuilder append(IASString str) {
-        int[] taints = str.getTaints();
-        this.taintInformation.append(this.length(), taints);
+        if (!str.isUninitialized()) {
+            int[] taints = str.getTaints();
+            this.initialize();
+            this.taintInformation.setTaint(this.length(), taints);
+        } else {
+            if (!this.isUninitialized()) {
+                this.taintInformation.resize(this.length() + str.length());
+            }
+        }
 
         this.builder.append(str.toString());
         return this;
@@ -77,13 +83,14 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
 
     public IASAbstractStringBuilder append(StringBuffer strb) {
         this.builder.append(strb);
+        if (isInitialized()) {
+            this.taintInformation.resize(this.length());
+        }
         return this;
     }
 
     public IASAbstractStringBuilder append(IASStringBuffer strb) {
-        this.builder.append(strb.toString());
-
-        this.taintInformation.append(this.length(), strb.getTaints());
+        this.append(strb.toIASString());
         return this;
     }
 
@@ -99,55 +106,86 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
 
     public IASAbstractStringBuilder append(char[] s, int start, int end) {
         this.builder.append(s, start, end);
+        if (isInitialized()) {
+            this.taintInformation.resize(this.length());
+        }
         return this;
     }
 
     public IASAbstractStringBuilder append(char[] str) {
         this.builder.append(str);
+        if (isInitialized()) {
+            this.taintInformation.resize(this.length());
+        }
         return this;
     }
 
     public IASAbstractStringBuilder append(boolean b) {
         this.builder.append(b);
+        if (isInitialized()) {
+            this.taintInformation.resize(this.length());
+        }
         return this;
     }
 
     public IASAbstractStringBuilder append(char c) {
         this.builder.append(c);
+        if (isInitialized()) {
+            this.taintInformation.resize(this.length());
+        }
         return this;
     }
 
     public IASAbstractStringBuilder append(int i) {
         this.builder.append(i);
+        if (isInitialized()) {
+            this.taintInformation.resize(this.length());
+        }
         return this;
     }
 
     public IASAbstractStringBuilder append(long lng) {
         this.builder.append(lng);
+        if (isInitialized()) {
+            this.taintInformation.resize(this.length());
+        }
         return this;
     }
 
     public IASAbstractStringBuilder append(float f) {
         this.builder.append(f);
+        if (isInitialized()) {
+            this.taintInformation.resize(this.length());
+        }
         return this;
     }
 
     public IASAbstractStringBuilder append(double d) {
         this.builder.append(d);
+        if (isInitialized()) {
+            this.taintInformation.resize(this.length());
+        }
         return this;
     }
 
     public IASAbstractStringBuilder appendCodePoint(int codePoint) {
         this.builder.appendCodePoint(codePoint);
+        if (isInitialized()) {
+            this.taintInformation.resize(this.length());
+        }
         return this;
     }
 
     public IASAbstractStringBuilder delete(int start, int end) {
         this.builder.delete(start, end);
-        if (isTainted()) {
+        if (isInitialized()) {
             this.taintInformation.removeTaintFor(start, end, true);
         }
         return this;
+    }
+
+    private boolean isInitialized() {
+        return !isUninitialized();
     }
 
     public IASAbstractStringBuilder deleteCharAt(int index) {

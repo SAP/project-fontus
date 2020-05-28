@@ -13,6 +13,14 @@ public class IASTaintInformation {
         this.length = taints.length;
     }
 
+    public boolean isInitialized() {
+        return !isUninitialized();
+    }
+
+    public boolean isUninitialized() {
+        return this.taints == null;
+    }
+
     /**
      * Sets the taint for a specific range. If a taint already exists it will be overwritten.
      *
@@ -28,14 +36,19 @@ public class IASTaintInformation {
     }
 
     public void setTaint(int offset, int[] taints) {
+        initialize();
         if (offset + taints.length > this.length) {
-            throw new IndexOutOfBoundsException();
+            int size = offset + taints.length;
+            this.resize(size);
         }
 
         System.arraycopy(taints, offset, this.taints, offset, taints.length);
     }
 
     public int[] getTaints(int start, int end) {
+        if (isUninitialized()) {
+            return new int[end - start];
+        }
         int length = end - start;
         int[] dst = new int[length];
         System.arraycopy(this.taints, start, dst, start, length);
@@ -43,6 +56,7 @@ public class IASTaintInformation {
     }
 
     public void mergeTaint(int offset, int[] taints) {
+        initialize();
         if (offset + taints.length > this.length) {
             throw new IndexOutOfBoundsException();
         }
@@ -67,20 +81,13 @@ public class IASTaintInformation {
     }
 
     public void mergeTaint(IASTaintInformation information) {
+        initialize();
         if (this.length != information.length) {
             throw new IllegalArgumentException("Different taint information lengths are not mergable");
         }
         for (int i = 0; i < this.length; i++) {
             this.taints[i] |= information.taints[i];
         }
-    }
-
-    public void append(int offset, int[] taints) {
-        if (offset + taints.length > this.length) {
-            int size = offset + taints.length;
-            this.resize(size);
-        }
-        this.setTaint(offset, taints);
     }
 
     public boolean isTainted() {
@@ -96,22 +103,30 @@ public class IASTaintInformation {
     }
 
     private void initialize() {
-        if (this.taints == null) {
+        if (isUninitialized()) {
             this.taints = new int[this.length];
         }
     }
 
     public IASTaintInformation clone() {
+        if (isUninitialized()) {
+            return new IASTaintInformation(this.length);
+        }
         return new IASTaintInformation(this.taints.clone());
     }
 
     public int[] getTaints() {
         int[] dst = new int[this.length];
-        System.arraycopy(this.taints, 0, dst, 0, this.length);
+        if (isInitialized()) {
+            System.arraycopy(this.taints, 0, dst, 0, this.length);
+        }
         return dst;
     }
 
     public void removeTaintFor(int start, int end, boolean leftShiftRangesAfterClearedArea) {
+        if (isUninitialized()) {
+            return;
+        }
         if (leftShiftRangesAfterClearedArea) {
             int length = end - start;
             for (int i = this.length; i <= start; i--) {
@@ -129,12 +144,16 @@ public class IASTaintInformation {
     }
 
     public void reversed() {
+        if (isUninitialized()) return;
         for (int i = 0; i < this.length / 2; i++) {
             this.switchTaint(i, this.length - i - 1);
         }
     }
 
     public void switchTaint(int first, int second) {
+        if (isUninitialized()) {
+            return;
+        }
         int buffer = this.taints[first];
         this.taints[first] = this.taints[second];
         this.taints[second] = buffer;
@@ -142,10 +161,13 @@ public class IASTaintInformation {
 
     public void resize(int size) {
         this.length = size;
-        int[] old = this.taints;
-        this.taints = null;
-        this.initialize();
-        System.arraycopy(old, 0, this.taints, 0, this.length);
+        if (isUninitialized()) {
+            initialize();
+        } else {
+            int[] old = this.taints;
+            this.taints = new int[size];
+            System.arraycopy(old, 0, this.taints, 0, this.length);
+        }
     }
 
     public void removeAll() {
@@ -153,10 +175,11 @@ public class IASTaintInformation {
     }
 
     public void insertTaint(int start, int[] taints) {
+        initialize();
         int newStart = start + taints.length;
         int[] buffer = new int[this.length - newStart];
         System.arraycopy(this.taints, newStart, buffer, 0, buffer.length);
-        this.append(newStart, buffer);
+        this.setTaint(newStart, buffer);
         this.setTaint(start, taints);
     }
 }

@@ -8,7 +8,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
 
     public IASStringBuffer(StringBuffer sb, IASTaintInformation taintInformation) {
         super();
-        this.taintInformation.append(this.length(), taintInformation.getTaints());
+        this.taintInformation.setTaint(this.length(), taintInformation.getTaints());
         this.builder.append(sb);
     }
 

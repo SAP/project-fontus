@@ -6,7 +6,7 @@ public final class IASStringBuilder extends IASAbstractStringBuilder implements 
 
     public IASStringBuilder(StringBuilder sb, IASTaintInformation taintInformation) {
         super();
-        this.taintInformation.append(this.length(), taintInformation.getTaints());
+        this.taintInformation.setTaint(this.length(), taintInformation.getTaints());
         this.builder.append(sb);
     }
 

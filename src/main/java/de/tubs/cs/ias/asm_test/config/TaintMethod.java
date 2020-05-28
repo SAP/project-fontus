@@ -44,6 +44,8 @@ public enum TaintMethod {
                 return BOOLEAN;
             case Constants.RANGE_METHOD_NAME:
                 return RANGE;
+            case Constants.ARRAY_METHOD_NAME:
+                return ARRAY;
             default:
                 throw new IllegalArgumentException("Taint method unknown:" + argName);
         }

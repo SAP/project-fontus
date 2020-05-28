@@ -303,6 +303,9 @@ public final class IASString implements IASArrayAware, Comparable<IASString>, Ch
     }
 
     private int[] getSubstringTaint(int beginIndex, int endIndex) {
+        if(this.isUninitialized()) {
+            return new int[endIndex - beginIndex];
+        }
         return this.taintInformation.getTaints(beginIndex, endIndex);
     }
 
@@ -329,8 +332,8 @@ public final class IASString implements IASArrayAware, Comparable<IASString>, Ch
     }
 
     public IASString concat(IASString str) {
-        int[] firstTaint = this.taintInformation.getTaints();
-        int[] secondTaint = str.taintInformation.getTaints();
+        int[] firstTaint = this.getTaints();
+        int[] secondTaint = str.getTaints();
         int[] newTaint = new int[firstTaint.length + secondTaint.length];
         System.arraycopy(firstTaint, 0, newTaint, 0, firstTaint.length);
         System.arraycopy(secondTaint, 0, newTaint, firstTaint.length, secondTaint.length);
@@ -347,7 +350,7 @@ public final class IASString implements IASArrayAware, Comparable<IASString>, Ch
      * @return
      */
     public IASString replace(char oldChar, char newChar) {
-        return new IASString(this.str.replace(oldChar, newChar), taintInformation.getTaints());
+        return new IASString(this.str.replace(oldChar, newChar), getTaints());
     }
 
     public boolean matches(IASString regex) {
@@ -417,19 +420,19 @@ public final class IASString implements IASArrayAware, Comparable<IASString>, Ch
     }
 
     public IASString toLowerCase(Locale locale) {
-        return new IASString(this.str.toLowerCase(locale), this.taintInformation.getTaints());
+        return new IASString(this.str.toLowerCase(locale), this.getTaints());
     }
 
     public IASString toLowerCase() {
-        return new IASString(this.str.toLowerCase(), this.taintInformation.getTaints());
+        return new IASString(this.str.toLowerCase(), this.getTaints());
     }
 
     public IASString toUpperCase(Locale locale) {
-        return new IASString(this.str.toUpperCase(locale), this.taintInformation.getTaints());
+        return new IASString(this.str.toUpperCase(locale), this.getTaints());
     }
 
     public IASString toUpperCase() {
-        return new IASString(this.str.toUpperCase(), this.taintInformation.getTaints());
+        return new IASString(this.str.toUpperCase(), this.getTaints());
     }
 
     public IASString trim() {
@@ -628,6 +631,9 @@ public final class IASString implements IASArrayAware, Comparable<IASString>, Ch
 
     @Override
     public int[] getTaints() {
+        if(this.isUninitialized()) {
+            return new int[this.length()];
+        }
         return this.taintInformation.getTaints();
     }
 
