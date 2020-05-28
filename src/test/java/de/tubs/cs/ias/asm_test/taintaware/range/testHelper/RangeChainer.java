@@ -1,7 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.range.testHelper;
 
-import de.tubs.cs.ias.asm_test.taintaware.range.IASTaintRange;
-import de.tubs.cs.ias.asm_test.taintaware.range.IASTaintSource;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,10 +1,11 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
-
-import static de.tubs.cs.ias.asm_test.taintaware.range.IASTaintRangeUtils.adjustRanges;
 
 @SuppressWarnings("unused")
 public abstract class IASAbstractStringBuilder implements java.io.Serializable, CharSequence, IASRangeAware, Appendable {

@@ -1,4 +1,4 @@
-package de.tubs.cs.ias.asm_test.taintaware.range;
+package de.tubs.cs.ias.asm_test.taintaware.shared;
 
 public enum IASTaintSourceSeverityLevel {
     ACTUAL_SOURCE("A source that might be used by an attacker to inject possibly harmful strings into the application"),
