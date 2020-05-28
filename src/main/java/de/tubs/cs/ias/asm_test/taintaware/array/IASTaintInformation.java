@@ -59,40 +59,40 @@ public class IASTaintInformation {
         return dst;
     }
 
-    public void mergeTaint(int offset, int[] taints) {
-        initialize();
-        if (offset + taints.length > this.length) {
-            throw new IndexOutOfBoundsException();
-        }
-
-        for (int i = offset; i < offset + taints.length; i++) {
-            this.taints[i] |= taints[i];
-        }
-    }
-
-    /**
-     * Merges the taint for a specific range by a bitwise OR-Operation. If a taint does not exist, it will be set to the passed taint
-     *
-     * @param start Inclusive start index. 0 <= start < length
-     * @param end   Exclusive end index. start < end <= length
-     * @param taint Taint information to set
-     */
-    public void mergeTaint(int start, int end, int taint) {
-        initialize();
-        for (int i = start; i < end && i < this.length && i >= 0; i++) {
-            this.taints[i] |= taint;
-        }
-    }
-
-    public void mergeTaint(IASTaintInformation information) {
-        initialize();
-        if (this.length != information.length) {
-            throw new IllegalArgumentException("Different taint information lengths are not mergable");
-        }
-        for (int i = 0; i < this.length; i++) {
-            this.taints[i] |= information.taints[i];
-        }
-    }
+//    public void mergeTaint(int offset, int[] taints) {
+//        initialize();
+//        if (offset + taints.length > this.length) {
+//            throw new IndexOutOfBoundsException();
+//        }
+//
+//        for (int i = offset; i < offset + taints.length; i++) {
+//            this.taints[i] |= taints[i];
+//        }
+//    }
+//
+//    /**
+//     * Merges the taint for a specific range by a bitwise OR-Operation. If a taint does not exist, it will be set to the passed taint
+//     *
+//     * @param start Inclusive start index. 0 <= start < length
+//     * @param end   Exclusive end index. start < end <= length
+//     * @param taint Taint information to set
+//     */
+//    public void mergeTaint(int start, int end, int taint) {
+//        initialize();
+//        for (int i = start; i < end && i < this.length && i >= 0; i++) {
+//            this.taints[i] |= taint;
+//        }
+//    }
+//
+//    public void mergeTaint(IASTaintInformation information) {
+//        initialize();
+//        if (this.length != information.length) {
+//            throw new IllegalArgumentException("Different taint information lengths are not mergable");
+//        }
+//        for (int i = 0; i < this.length; i++) {
+//            this.taints[i] |= information.taints[i];
+//        }
+//    }
 
     public boolean isTainted() {
         if (this.taints == null) {
