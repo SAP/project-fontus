@@ -30,6 +30,9 @@ public class IASTaintInformation {
      */
     public void setTaint(int start, int end, int taint) {
         initialize();
+        if (end > this.length) {
+            this.resize(end);
+        }
         for (int i = start; i < end && i < this.length && i >= 0; i++) {
             this.taints[i] = taint;
         }
@@ -51,7 +54,7 @@ public class IASTaintInformation {
         }
         int length = end - start;
         int[] dst = new int[length];
-        System.arraycopy(this.taints, start, dst, start, length);
+        System.arraycopy(this.taints, start, dst, 0, length);
         return dst;
     }
 

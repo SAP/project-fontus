@@ -303,7 +303,7 @@ public final class IASString implements IASArrayAware, Comparable<IASString>, Ch
     }
 
     private int[] getSubstringTaint(int beginIndex, int endIndex) {
-        if(this.isUninitialized()) {
+        if (this.isUninitialized()) {
             return new int[endIndex - beginIndex];
         }
         return this.taintInformation.getTaints(beginIndex, endIndex);
@@ -619,6 +619,10 @@ public final class IASString implements IASArrayAware, Comparable<IASString>, Ch
         return this.taintInformation == null;
     }
 
+    public boolean isInitialized() {
+        return !this.isUninitialized();
+    }
+
     public void abortIfTainted() {
         if (this.isTainted()) {
             System.err.printf("String %s is tainted!\nAborting..!\n", this.str);
@@ -631,7 +635,7 @@ public final class IASString implements IASArrayAware, Comparable<IASString>, Ch
 
     @Override
     public int[] getTaints() {
-        if(this.isUninitialized()) {
+        if (this.isUninitialized()) {
             return new int[this.length()];
         }
         return this.taintInformation.getTaints();

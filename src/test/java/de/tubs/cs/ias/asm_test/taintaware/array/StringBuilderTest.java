@@ -6,6 +6,29 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class StringBuilderTest {
     private static final int TAINT = IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId();
+
+    @Test
+    public void testConstructor1() {
+        IASString string = new IASString("Hello World");
+
+        IASStringBuilder sb = new IASStringBuilder(string);
+
+        assertTrue(sb.isUninitialized());
+        assertFalse(sb.isTainted());
+        assertEquals("Hello World", sb.toString());
+    }
+
+    @Test
+    public void testConstructor2() {
+        IASString string = new IASString("Hello World", true);
+
+        IASStringBuilder sb = new IASStringBuilder(string);
+
+        assertTrue(sb.isInitialized());
+        assertTrue(sb.isTainted());
+        assertEquals("Hello World", sb.toString());
+    }
+
     @Test
     public void testAppend1() {
         IASStringBuilder sb = new IASStringBuilder();
