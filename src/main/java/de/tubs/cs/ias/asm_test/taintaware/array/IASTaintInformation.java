@@ -181,9 +181,11 @@ public class IASTaintInformation {
     public void insertTaint(int start, int[] taints) {
         initialize();
         int newStart = start + taints.length;
-        int[] buffer = new int[this.length - start];
-        System.arraycopy(this.taints, start, buffer, 0, this.taints.length - start);
-        this.setTaint(newStart, buffer);
+        if(start < this.length) {
+            int[] buffer = new int[this.length - start];
+            System.arraycopy(this.taints, start, buffer, 0, this.taints.length - start);
+            this.setTaint(newStart, buffer);
+        }
         this.setTaint(start, taints);
     }
 

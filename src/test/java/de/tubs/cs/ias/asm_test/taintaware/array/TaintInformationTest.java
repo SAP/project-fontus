@@ -188,4 +188,61 @@ public class TaintInformationTest {
         assertEquals(5, ti.getLength());
         assertArrayEquals(new int[]{1, 2, 0, 0, 0}, ti.getTaints());
     }
+
+    @Test
+    public void testRemoveAll1() {
+        IASTaintInformation ti = new IASTaintInformation(0);
+
+        ti.removeAll();
+
+        assertFalse(ti.isTainted());
+        assertTrue(ti.isUninitialized());
+    }
+
+    @Test
+    public void testRemoveAll2() {
+        IASTaintInformation ti = new IASTaintInformation(3);
+
+        ti.removeAll();
+
+        assertFalse(ti.isTainted());
+        assertTrue(ti.isUninitialized());
+    }
+
+    @Test
+    public void testRemoveAll3() {
+        IASTaintInformation ti = new IASTaintInformation(new int[]{1, 2, 3});
+
+        ti.removeAll();
+
+        assertFalse(ti.isTainted());
+        assertTrue(ti.isUninitialized());
+    }
+
+    @Test
+    public void testInsert1() {
+        IASTaintInformation ti = new IASTaintInformation(0);
+
+        ti.insertTaint(5, new int[]{1, 2, 3});
+
+        assertArrayEquals(new int[]{0, 0, 0, 0, 0, 1, 2, 3}, ti.getTaints());
+    }
+
+    @Test
+    public void testInsert2() {
+        IASTaintInformation ti = new IASTaintInformation(new int[] {0, 0, 0, 0, 0});
+
+        ti.insertTaint(5, new int[]{1, 2, 3});
+
+        assertArrayEquals(new int[]{0, 0, 0, 0, 0, 1, 2, 3}, ti.getTaints());
+    }
+
+    @Test
+    public void testInsert3() {
+        IASTaintInformation ti = new IASTaintInformation(new int[] {0, 0, 0});
+
+        ti.insertTaint(2, new int[]{1, 2, 3});
+
+        assertArrayEquals(new int[]{0, 0, 1, 2, 3, 0}, ti.getTaints());
+    }
 }
