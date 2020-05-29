@@ -17,7 +17,7 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
 
     public IASAbstractStringBuilder(IASString str) {
         this.builder = new StringBuilder(str.getString());
-        if(str.isInitialized()) {
+        if (str.isInitialized()) {
             this.taintInformation = str.getTaintInformation().clone();
         }
     }
@@ -51,6 +51,7 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
         if (this.isUninitialized()) {
             return new int[this.length()];
         }
+        this.taintInformation.resize(this.length());
         return this.taintInformation.getTaints();
     }
 

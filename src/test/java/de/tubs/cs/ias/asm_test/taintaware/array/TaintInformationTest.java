@@ -191,6 +191,27 @@ public class TaintInformationTest {
     }
 
     @Test
+    public void testResize5() {
+        IASTaintInformation ti = new IASTaintInformation(new int[]{1, 2, 3, 4, 5});
+
+        ti.resize(2);
+
+        assertTrue(ti.isInitialized());
+        assertEquals(2, ti.getLength());
+        assertArrayEquals(new int[]{1, 2}, ti.getTaints());
+    }
+
+    @Test
+    public void testResize6() {
+        IASTaintInformation ti = new IASTaintInformation(5);
+
+        ti.resize(2);
+
+        assertTrue(ti.isUninitialized());
+        assertEquals(2, ti.getLength());
+    }
+
+    @Test
     public void testRemoveAll1() {
         IASTaintInformation ti = new IASTaintInformation(0);
 

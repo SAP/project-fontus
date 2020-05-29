@@ -127,11 +127,15 @@ public class IASTaintInformation {
     }
 
     public void resize(int size) {
+        if (this.length == size) {
+            return;
+        }
         this.length = size;
         if (isInitialized()) {
             int[] old = this.taints;
             this.taints = new int[size];
-            System.arraycopy(old, 0, this.taints, 0, old.length);
+            int copyLength = Math.min(old.length, size);
+            System.arraycopy(old, 0, this.taints, 0, copyLength);
         }
     }
 
