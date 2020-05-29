@@ -1,13 +1,12 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
+import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations.*;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringPool;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
+import de.tubs.cs.ias.asm_test.taintaware.shared.*;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.IntStream;
@@ -34,6 +33,98 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
     public IASString(String string, IASOperation operation) {
         this(string, new IASTaintInformation(operation));
     }
+
+    public IASString(String s, boolean tainted) {
+        this(s);
+        setTaint(tainted);
+    }
+
+    public IASString(String s, List<IASTaintRange> ranges) {
+        this(s, new BaseOperation(ranges));
+    }
+
+    public IASString(CharSequence sequence, List<IASTaintRange> ranges) {
+        this(sequence.toString(), new BaseOperation(ranges));
+    }
+
+    public static IASString tainted(IASString tstr) {
+        tstr.setTaint(true);
+        return tstr;
+    }
+
+    public IASString(char value[]) {
+        this(new String(value));
+    }
+
+    public IASString(char value[], int offset, int count) {
+        this(new String(value, offset, count));
+    }
+
+    public IASString(int[] codePoints, int offset, int count) {
+        this(new String(codePoints, offset, count));
+    }
+
+    public IASString(byte ascii[], int hibyte, int offset, int count) {
+        this(new String(ascii, hibyte, offset, count));
+    }
+
+    public IASString(byte ascii[], int hibyte) {
+        this(new String(ascii, hibyte));
+    }
+
+    public IASString(byte bytes[], int offset, int length, String charsetName)
+            throws UnsupportedEncodingException {
+        this(new String(bytes, offset, length, charsetName));
+    }
+
+    public IASString(byte bytes[], int offset, int length, Charset charset) {
+        this(new String(bytes, offset, length, charset));
+    }
+
+    public IASString(byte bytes[], String charsetName) throws UnsupportedEncodingException {
+        this(new String(bytes, charsetName));
+    }
+
+    public IASString(byte bytes[], Charset charset) {
+        this(new String(bytes, charset));
+    }
+
+    public IASString(byte bytes[], int offset, int length) {
+        this(new String(bytes, offset, length));
+    }
+
+    public IASString(byte[] bytes) {
+        this(new String(bytes));
+    }
+
+    public IASString(StringBuffer buffer) {
+        this(new String(buffer));
+    }
+
+    public IASString(IASStringBuilder builder) {
+        this(builder.toString(), new BaseOperation(builder.getTaintRanges()));
+    }
+
+    public IASString(IASStringBuffer buffer) {
+        this(buffer.toString(), new BaseOperation(buffer.getTaintRanges()));
+    }
+
+    public IASString(IASString string) {
+        this(string.string, string.taintInformation);
+    }
+
+    /**
+     * Creates a new taintable String from a charsequence.
+     * If it's marked as tainted, the whole string will be marked as tainted
+     *
+     * @param cs
+     * @param tainted
+     */
+    private IASString(CharSequence cs, boolean tainted) {
+        this(cs.toString());
+        this.setTaint(tainted);
+    }
+
 
     @Override
     public List<IASTaintRange> getTaintRanges() {
@@ -106,8 +197,11 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
     }
 
     @Override
+
     public boolean equals(Object anObject) {
-        return;
+        if (!(anObject instanceof IASString)) return false;
+        IASString other = (IASString) anObject;
+        return this.string.equals(other.string);
     }
 
     @Override
@@ -157,7 +251,7 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
 
     @Override
     public int hashCode() {
-        return;
+        return this.string.hashCode();
     }
 
     @Override
@@ -226,7 +320,7 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
 
     @Override
     public IASStringable replace(char oldChar, char newChar) {
-        return;
+        return new IASString(this.string.replace(oldChar, newChar), new ReplaceCharacterOperation(this, oldChar));
     }
 
     @Override
@@ -371,4 +465,132 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
     public int compareTo(IASString o) {
         return this.string.compareTo(o.getString());
     }
+
+    public static IASString join(CharSequence delimiter, CharSequence... elements) {
+        if (elements == null || elements.length == 0) {
+            return new IASString();
+        } else if (elements.length == 1) {
+            return IASString.valueOf(elements[0]);
+        } else {
+            IASString iasDelimiter = IASString.valueOf(delimiter);
+            IASStringBuilder sb = new IASStringBuilder(elements[0]);
+
+            for (int i = 1; i < elements.length; i++) {
+                sb.append(iasDelimiter);
+                sb.append(IASString.valueOf(elements[i]));
+            }
+            return (IASString) sb.toIASString();
+        }
+    }
+
+
+    public static IASString join(CharSequence delimiter,
+                                 Iterable<? extends CharSequence> elements) {
+        ArrayList<CharSequence> l = new ArrayList();
+        for (CharSequence s : elements) {
+            l.add(s);
+        }
+        return IASString.join(delimiter, l.toArray(new CharSequence[l.size()]));
+    }
+
+    private static boolean isTainted(Object[] args) {
+        boolean isTainted = false;
+        if (args != null) {
+            for (Object o : args) {
+                if (o instanceof IASTaintAware) {
+                    IASTaintAware ta = (IASTaintAware) o;
+                    isTainted |= ta.isTainted();
+                }
+            }
+        }
+        return isTainted;
+    }
+
+    public static IASString format(IASString format, Object... args) {
+        // TODO Implement rainting
+//        return new IASString(String.format(format.toString(), args), isTainted(args));
+        return new IASFormatter().format(format, args).toIASString();
+    }
+
+
+    public static IASString format(Locale l, IASString format, Object... args) {
+        // TODO Implement rainting
+//        return new IASString(String.format(l, format.toString(), args), isTainted(args));
+        return new IASFormatter(l).format(format, args).toIASString();
+    }
+
+    public static IASString valueOf(Object obj) {
+        if (obj instanceof IASString) {
+            return (IASString) obj;
+        } else if (obj instanceof IASStringBuffer) {
+            return (IASString) ((IASStringBuffer) obj).toIASString();
+        } else if (obj instanceof IASStringBuilder) {
+            return (IASString) ((IASStringBuilder) obj).toIASString();
+        } else {
+            return new IASString(String.valueOf(obj));
+        }
+    }
+
+    public static IASString valueOf(CharSequence s, int start, int end) {
+        if (s instanceof IASString) {
+            return (IASString) ((IASString) s).substring(start, end);
+        } else {
+            return IASString.valueOf(s.subSequence(start, end));
+        }
+    }
+
+    public static IASString valueOf(char data[]) {
+        return new IASString(String.valueOf(data));
+    }
+
+    public static IASString valueOf(char data[], int offset, int count) {
+        return new IASString(String.valueOf(data, offset, count));
+    }
+
+    public static IASString copyValueOf(char data[], int offset, int count) {
+        return new IASString(String.copyValueOf(data, offset, count));
+    }
+
+    public static IASString copyValueOf(char data[]) {
+        return new IASString(String.copyValueOf(data));
+    }
+
+    public static IASString valueOf(boolean b) {
+        return new IASString(String.valueOf(b));
+    }
+
+    public static IASString valueOf(char c) {
+        return new IASString(String.valueOf(c));
+    }
+
+    public static IASString valueOf(int i) {
+        return new IASString(String.valueOf(i));
+    }
+
+    public static IASString valueOf(long l) {
+        return new IASString(String.valueOf(l));
+    }
+
+    public static IASString valueOf(float f) {
+        return new IASString(String.valueOf(f));
+    }
+
+    public static IASString valueOf(double d) {
+        return new IASString(String.valueOf(d));
+    }
+
+    public static IASString fromString(String str) {
+        if (str == null) {
+            return null;
+        }
+        return new IASString(str);
+    }
+
+    public static String asString(IASString str) {
+        if (str == null) {
+            return null;
+        }
+        return str.string;
+    }
+
 }
