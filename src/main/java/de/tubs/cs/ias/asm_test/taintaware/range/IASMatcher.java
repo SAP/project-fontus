@@ -1,9 +1,8 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASMatcherReplacement;
+
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 
@@ -34,12 +33,12 @@ public class IASMatcher {
     }
 
     public IASMatcher appendReplacement(IASStringBuffer sb, IASString replacement) {
-        Replacement replacer = Replacement.createReplacement(replacement);
+        IASMatcherReplacement replacer = IASMatcherReplacement.createReplacement(replacement, new IASStringBuilder());
         int end = this.start();
 
         IASString first = this.input.substring(appendPos, end);
         sb.append(first, true);
-        IASString currRepl = replacer.doReplacement(this.matcher, this.input);
+        IASString currRepl = (IASString) replacer.doReplacement(this.matcher, this.input, new IASStringBuilder());
         sb.append(currRepl, true);
         appendPos = this.end();
 
@@ -258,130 +257,4 @@ public class IASMatcher {
 
     }
 
-    private static final class Replacement {
-        /**
-         * Mapping von group name or group index to index in string
-         */
-        private final Map<Object, Integer> groups;
-
-        /**
-         * Replacement string without the group insertions
-         */
-        private final IASString clearedReplacementString;
-
-        private Replacement(IASString clearedReplacementString, HashMap<Object, Integer> groups) {
-            this.clearedReplacementString = clearedReplacementString;
-            this.groups = groups;
-        }
-
-        public IASString doReplacement(Matcher m, IASString orig) {
-            int lastIndex = -1;
-            int shift = 0;
-            IASStringBuffer stringBuffer = new IASStringBuffer(this.clearedReplacementString);
-
-            for (Object key : this.groups.keySet()) {
-                int start;
-                int end;
-                if (key instanceof String) {
-                    start = m.start((String) key);
-                    end = m.end((String) key);
-                } else if (key instanceof Integer) {
-                    start = m.start((Integer) key);
-                    end = m.end((Integer) key);
-                } else {
-                    throw new IllegalStateException("Group map must not contain something else as strinngs and ints");
-                }
-
-                IASString insert = orig.substring(start, end);
-
-                int index = groups.get(key);
-                if (index < lastIndex) {
-                    throw new IllegalStateException("Map not sorted ascending");
-                }
-                lastIndex = index;
-
-                stringBuffer.insert(index + shift, insert);
-                shift += insert.length();
-            }
-            return stringBuffer.toIASString();
-        }
-
-        public static Replacement createReplacement(IASString repl) {
-            LinkedHashMap<Object, Integer> groups = new LinkedHashMap<>();
-
-            boolean escaped = false;
-            boolean groupParsing = false;
-            boolean indexedParsing = false;
-            boolean namedParsing = false;
-
-            int groupIndex = -1;
-            String groupName = "";
-
-            IASStringBuilder clearedStringBuilder = new IASStringBuilder();
-
-            for (int i = 0; i < repl.length(); i++) {
-                char c = repl.charAt(i);
-
-                if (!escaped) {
-                    if (groupParsing) {
-                        if (indexedParsing) {
-                            if (Character.isDigit(c)) {
-                                groupIndex = groupIndex * 10 + Character.getNumericValue(c);
-                            } else {
-                                groupParsing = false;
-                                indexedParsing = false;
-
-                                groups.put(groupIndex, clearedStringBuilder.length());
-
-                                // Analyse character again
-                                i--;
-                                continue;
-                            }
-                        } else if (namedParsing) {
-                            if (isAlphanum(c)) {
-                                groupName += c;
-                            } else if (c == '}') {
-                                if (groupName.isEmpty()) {
-                                    throw new IllegalStateException("Groupname cannot be empty!");
-                                }
-                                groups.put(groupName, clearedStringBuilder.length());
-
-                                groupName = "";
-                                namedParsing = false;
-                                groupParsing = false;
-                            }
-                        } else {
-                            if (Character.isDigit(c)) {
-                                indexedParsing = true;
-                                groupIndex = Character.getNumericValue(c);
-                            } else if (c == '{') {
-                                namedParsing = true;
-                            } else {
-                                throw new IllegalStateException("After $ there mus be a group index or a named capture group name");
-                            }
-                        }
-                    } else {
-                        if (c == '\\') {
-                            escaped = true;
-                        } else if (c == '$') {
-                            groupParsing = true;
-                        } else {
-                            IASString charStr = repl.substring(i, i + 1);
-                            clearedStringBuilder.append(charStr);
-                        }
-                    }
-                } else {
-                    IASString charStr = repl.substring(i, i + 1);
-                    clearedStringBuilder.append(charStr);
-                    escaped = false;
-                }
-            }
-
-            return new Replacement(clearedStringBuilder.toIASString(), groups);
-        }
-
-        private static boolean isAlphanum(char c) {
-            return Character.isDigit(c) || Character.isLetter(c);
-        }
-    }
 }

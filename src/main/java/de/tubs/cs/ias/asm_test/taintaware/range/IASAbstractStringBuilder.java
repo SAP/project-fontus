@@ -1,5 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeUtils;
 
@@ -8,7 +10,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("unused")
-public abstract class IASAbstractStringBuilder implements java.io.Serializable, CharSequence, IASRangeAware, Appendable {
+public abstract class IASAbstractStringBuilder implements IASStringBuilderable, IASRangeAware {
     protected final StringBuilder builder;
     private IASTaintInformation taintInformation;
 
@@ -22,7 +24,7 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
 
     public IASAbstractStringBuilder(IASString str) {
         this.builder = new StringBuilder(str.getString());
-        if(str.isTainted()) {
+        if (str.isTainted()) {
             this.taintInformation = new IASTaintInformation(str.getAllRangesAdjusted());
         }
     }
@@ -48,14 +50,14 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
 
     @Override
     public void initialize() {
-        if(isUninitialized()) {
+        if (isUninitialized()) {
             this.taintInformation = new IASTaintInformation();
         }
     }
 
     @Override
     public void setTaint(boolean taint) {
-        if(taint) {
+        if (taint) {
             if (!this.isTainted()) {
                 if (isUninitialized()) {
                     this.taintInformation = new IASTaintInformation();
@@ -81,13 +83,13 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
         return this;
     }
 
-    public IASAbstractStringBuilder append(IASString str) {
+    public IASAbstractStringBuilder append(IASStringable str) {
         return this.append(str, true);
     }
 
 
-    public IASAbstractStringBuilder append(IASString str, boolean merge) {
-        List<IASTaintRange> ranges = str.getAllRangesAdjusted();
+    public IASAbstractStringBuilder append(IASStringable str, boolean merge) {
+        List<IASTaintRange> ranges = ((IASString) str).getAllRangesAdjusted();
         this.appendShifted(ranges, merge);
 
         this.builder.append(str.toString());
@@ -194,13 +196,13 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
         return this;
     }
 
-    public IASAbstractStringBuilder replace(int start, int end, IASString str) {
+    public IASAbstractStringBuilder replace(int start, int end, IASStringable str) {
         this.builder.replace(start, end, str.toString());
         if (isUninitialized() && str.isTainted()) {
             this.taintInformation = new IASTaintInformation();
         }
         if (this.isTainted() || str.isTainted()) {
-            this.taintInformation.replaceTaintInformation(start, end, str.getAllRangesAdjusted(), str.length(), true);
+            this.taintInformation.replaceTaintInformation(start, end, ((IASString) str).getAllRangesAdjusted(), str.length(), true);
         }
         return this;
     }
@@ -218,12 +220,12 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
         return this;
     }
 
-    public IASAbstractStringBuilder insert(int offset, IASString str) {
+    public IASAbstractStringBuilder insert(int offset, IASStringable str) {
         if (isUninitialized() && str.isTainted()) {
             this.taintInformation = new IASTaintInformation();
         }
         if (this.isTainted() || str.isTainted()) {
-            this.taintInformation.insert(offset, str.getAllRangesAdjusted(), str.length());
+            this.taintInformation.insert(offset, ((IASString) str).getAllRangesAdjusted(), str.length());
         }
         this.builder.insert(offset, str.toString());
         return this;
@@ -277,19 +279,19 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
         return this.insert(offset, s);
     }
 
-    public int indexOf(String str) {
-        return this.builder.indexOf(str);
+    public int indexOf(IASStringable str) {
+        return this.builder.indexOf(str.getString());
     }
 
-    public int indexOf(IASString str, int fromIndex) {
+    public int indexOf(IASStringable str, int fromIndex) {
         return this.builder.indexOf(str.toString(), fromIndex);
     }
 
-    public int lastIndexOf(IASString str) {
+    public int lastIndexOf(IASStringable str) {
         return this.builder.lastIndexOf(str.toString());
     }
 
-    public int lastIndexOf(IASString str, int fromIndex) {
+    public int lastIndexOf(IASStringable str, int fromIndex) {
         return this.builder.lastIndexOf(str.toString(), fromIndex);
     }
 

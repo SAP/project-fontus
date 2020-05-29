@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
 import de.tubs.cs.ias.asm_test.Constants;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
 import java.util.stream.IntStream;
 
@@ -48,12 +49,12 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
     }
 
     @Override
-    public synchronized IASStringBuffer append(IASString str) {
+    public synchronized IASStringBuffer append(IASStringable str) {
         return (IASStringBuffer) super.append(str);
     }
 
     @Override
-    public synchronized IASStringBuffer append(IASString str, boolean merge) {
+    public synchronized IASStringBuffer append(IASStringable str, boolean merge) {
         return (IASStringBuffer) super.append(str, merge);
     }
 
@@ -133,7 +134,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
     }
 
     @Override
-    public synchronized IASStringBuffer replace(int start, int end, IASString str) {
+    public synchronized IASStringBuffer replace(int start, int end, IASStringable str) {
         return (IASStringBuffer) super.replace(start, end, str);
     }
 
@@ -148,7 +149,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
     }
 
     @Override
-    public synchronized IASStringBuffer insert(int offset, IASString str) {
+    public synchronized IASStringBuffer insert(int offset, IASStringable str) {
         return (IASStringBuffer) super.insert(offset, str);
     }
 
@@ -198,22 +199,22 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
     }
 
     @Override
-    public synchronized int indexOf(String str) {
+    public synchronized int indexOf(IASStringable str) {
         return super.indexOf(str);
     }
 
     @Override
-    public synchronized int indexOf(IASString str, int fromIndex) {
+    public synchronized int indexOf(IASStringable str, int fromIndex) {
         return super.indexOf(str, fromIndex);
     }
 
     @Override
-    public synchronized int lastIndexOf(IASString str) {
+    public synchronized int lastIndexOf(IASStringable str) {
         return super.lastIndexOf(str);
     }
 
     @Override
-    public synchronized int lastIndexOf(IASString str, int fromIndex) {
+    public synchronized int lastIndexOf(IASStringable str, int fromIndex) {
         return super.lastIndexOf(str, fromIndex);
     }
 

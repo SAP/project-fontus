@@ -8,7 +8,7 @@ import java.util.List;
 import static de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeUtils.adjustRanges;
 
 public class IASTaintRanges {
-    private List<IASTaintRange> ranges;
+    protected List<IASTaintRange> ranges;
 
     public IASTaintRanges() {
         this.ranges = new ArrayList<>(1);

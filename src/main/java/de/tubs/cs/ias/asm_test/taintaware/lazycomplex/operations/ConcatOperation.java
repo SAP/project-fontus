@@ -11,7 +11,7 @@ import java.util.Objects;
 public class ConcatOperation extends IASOperation {
     private final IASLazyComplexAware second;
 
-    protected ConcatOperation(IASLazyComplexAware previous, IASLazyComplexAware second) {
+    public ConcatOperation(IASLazyComplexAware previous, IASLazyComplexAware second) {
         super(Objects.requireNonNull(previous));
         this.second = Objects.requireNonNull(second);
     }
