@@ -143,6 +143,11 @@ public class IASTaintInformation {
         this.taints = null;
     }
 
+    public void replaceTaint(int start, int end, int[] taints) {
+        this.removeTaintFor(start, end, true);
+        this.insertTaint(start, taints);
+    }
+
     public void insertTaint(int start, int[] taints) {
         initialize();
         int newStart = start + taints.length;

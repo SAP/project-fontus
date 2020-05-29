@@ -108,4 +108,21 @@ public class StringBuilderTest {
         assertArrayEquals(new int[]{0, 0, 0, 0, 0, 0, TAINT, TAINT, TAINT, TAINT, TAINT}, sb1.getTaints());
         assertArrayEquals(new int[]{0, 0, 0, 0, 0, 0, TAINT, TAINT, TAINT, TAINT, TAINT}, sb2.getTaints());
     }
+
+    @Test
+    public void testReplace1() {
+        IASStringBuffer sb1 = new IASStringBuffer("hello");
+        IASString s = new IASString("HELLO");
+
+        sb1.setTaint(true);
+        s.setTaint(false);
+
+        IASStringBuffer sb2 = sb1.replace(0, 2, s);
+
+        assertEquals("HELLOllo", sb1.toString());
+        assertEquals("HELLOllo", sb2.toString());
+        assertFalse(s.isTainted());
+        assertArrayEquals(new int[]{0, 0, 0, 0, 0, TAINT, TAINT, TAINT}, sb1.getTaints());
+        assertArrayEquals(new int[]{0, 0, 0, 0, 0, TAINT, TAINT, TAINT}, sb2.getTaints());
+    }
 }
