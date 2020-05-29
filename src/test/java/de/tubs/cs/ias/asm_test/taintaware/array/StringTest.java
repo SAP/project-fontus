@@ -2,6 +2,9 @@ package de.tubs.cs.ias.asm_test.taintaware.array;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class StringTest {
@@ -59,5 +62,19 @@ public class StringTest {
         assertEquals("Hello World", ts.getString());
         assertTrue(ts.isUninitialized());
         assertFalse(ts.isTainted());
+    }
+    @Test
+    // Assumption: empty strings have always a negative taint
+    public void testReplaceFirst_15() {
+        IASString s1 = new IASString(new IASString("hello"));
+
+        s1.setTaint(true);
+
+        IASString s = s1.replaceFirst(new IASString("hello"), new IASString(new String()));
+
+        assertEquals("hello", s1.toString());
+        assertEquals("", s.toString());
+        assertTrue(s1.isTainted());
+        assertFalse(s.isTainted());
     }
 }
