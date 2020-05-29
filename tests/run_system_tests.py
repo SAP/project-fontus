@@ -699,7 +699,8 @@ if __name__ == "__main__":
     ARG_PARSER.add_argument("--safe", action="store_true",
                             help="Runs all tests in safe mode.")
     ARG_PARSER.add_argument("--config", default=CONFIG_FILE)
-    ARG_PARSER.add_argument("--taint_type", choices=['boolean', 'range'],
+    ARG_PARSER.add_argument("--taint_type", choices=['boolean', 'range',
+                                                     'array'],
                             default='boolean')
 
     main(ARG_PARSER.parse_args())
