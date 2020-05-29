@@ -228,7 +228,7 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
             this.initialize();
         }
         if (this.isTainted() || str.isTainted()) {
-            this.taintInformation.setTaint(offset, str.getTaints());
+            this.taintInformation.insertTaint(offset, str.getTaints());
         }
         this.builder.insert(offset, str.toString());
         return this;

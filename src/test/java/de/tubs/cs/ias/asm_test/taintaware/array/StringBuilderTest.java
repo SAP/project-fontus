@@ -2,6 +2,9 @@ package de.tubs.cs.ias.asm_test.taintaware.array;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class StringBuilderTest {
@@ -84,5 +87,25 @@ public class StringBuilderTest {
 
         assertEquals("Hello World", sb.toString());
         assertArrayEquals(new int[]{TAINT, TAINT, TAINT, TAINT, TAINT, 0, 0, 0, 0, 0, 0}, sb.getTaints());
+    }
+
+    @Test
+    public void testInsert() {
+        IASString s2 = new IASString("World");
+        IASString s1 = new IASString("Hello ");
+        IASStringBuffer sb1 = new IASStringBuffer(s2);
+
+        sb1.setTaint(true);
+
+        IASStringBuffer sb2 = sb1.insert(0, s1);
+
+        assertEquals("Hello World", sb1.toString());
+        assertEquals("Hello World", sb2.toString());
+        assertFalse(s1.isTainted());
+        assertFalse(s2.isTainted());
+        assertTrue(sb1.isTainted());
+        assertTrue(sb2.isTainted());
+        assertArrayEquals(new int[]{0, 0, 0, 0, 0, 0, TAINT, TAINT, TAINT, TAINT, TAINT}, sb1.getTaints());
+        assertArrayEquals(new int[]{0, 0, 0, 0, 0, 0, TAINT, TAINT, TAINT, TAINT, TAINT}, sb2.getTaints());
     }
 }
