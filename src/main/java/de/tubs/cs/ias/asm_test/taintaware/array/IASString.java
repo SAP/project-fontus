@@ -37,7 +37,7 @@ public final class IASString implements IASArrayAware, Comparable<IASString>, Ch
     }
 
     private void setTaints(int[] taints) {
-        if(taints.length != this.length()) {
+        if (taints.length != this.length()) {
             throw new IllegalArgumentException("Taint array size must match string length!");
         }
         this.taintInformation = new IASTaintInformation(taints);
@@ -144,17 +144,23 @@ public final class IASString implements IASArrayAware, Comparable<IASString>, Ch
 
     public IASString(IASStringBuilder builder) {
         this(builder.toString());
-        this.taintInformation = builder.getTaintInformation().clone();
+        if (builder.isInitialized()) {
+            this.taintInformation = builder.getTaintInformation().clone();
+        }
     }
 
     public IASString(IASStringBuffer buffer) {
         this(buffer.toString());
-        this.taintInformation = buffer.getTaintInformation().clone();
+        if (buffer.isInitialized()) {
+            this.taintInformation = buffer.getTaintInformation().clone();
+        }
     }
 
     public IASString(IASString string) {
         this(string.str);
-        this.taintInformation = string.taintInformation.clone();
+        if (string.isInitialized()) {
+            this.taintInformation = string.taintInformation.clone();
+        }
     }
 
     /**
