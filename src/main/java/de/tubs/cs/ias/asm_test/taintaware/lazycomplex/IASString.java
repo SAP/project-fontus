@@ -31,7 +31,7 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
     }
 
     public IASString(String string, IASOperation operation) {
-        this(string, new IASTaintInformation(operation));
+        this(string, new IASTaintInformation(string, new IASTaintInformation(), operation));
     }
 
     public IASString(String s, boolean tainted) {
@@ -41,6 +41,10 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
 
     public IASString(String s, List<IASTaintRange> ranges) {
         this(s, new BaseOperation(ranges));
+    }
+
+    public IASString(CharSequence sequence) {
+        this(sequence.toString());
     }
 
     public IASString(CharSequence sequence, List<IASTaintRange> ranges) {
@@ -297,30 +301,30 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
     @Override
     public IASStringable substring(int beginIndex) {
         String substringed = this.string.substring(beginIndex);
-        return new IASString(substringed, new SubstringOperation(this, beginIndex));
+        return this.derive(substringed, new SubstringOperation(beginIndex, this.length()));
     }
 
     @Override
     public IASStringable substring(int beginIndex, int endIndex) {
         String substringed = this.string.substring(beginIndex, endIndex);
-        return new IASString(substringed, new SubstringOperation(this, beginIndex, endIndex));
+        return this.derive(substringed, new SubstringOperation(beginIndex, endIndex));
     }
 
     @Override
     public CharSequence subSequence(int beginIndex, int endIndex) {
         String substringed = this.string.substring(beginIndex, endIndex);
-        return new IASString(substringed, new SubstringOperation(this, beginIndex, endIndex));
+        return this.derive(substringed, new SubstringOperation(beginIndex, endIndex));
     }
 
     @Override
     public IASStringable concat(IASStringable str) {
         String substringed = this.string.concat(str.getString());
-        return new IASString(substringed, new ConcatOperation(this, (IASLazyComplexAware) str));
+        return this.derive(substringed, new ConcatOperation((IASLazyComplexAware) str));
     }
 
     @Override
     public IASStringable replace(char oldChar, char newChar) {
-        return new IASString(this.string.replace(oldChar, newChar), new ReplaceCharacterOperation(this, oldChar));
+        return this.derive(this.string.replace(oldChar, newChar), new ReplaceCharacterOperation(oldChar));
     }
 
     @Override
@@ -336,18 +340,18 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
     @Override
     public IASStringable replaceFirst(IASStringable regex, IASStringable replacement) {
         String replaced = this.string.replaceFirst(regex.getString(), replacement.getString());
-        return new IASString(replaced, new ReplaceFirstOperation(this, (IASString) regex, (IASString) replacement));
+        return this.derive(replaced, new ReplaceFirstOperation((IASString) regex, (IASString) replacement));
     }
 
     @Override
     public IASStringable replaceAll(IASStringable regex, IASStringable replacement) {
         String replaced = this.string.replaceAll(regex.getString(), replacement.getString());
-        return new IASString(replaced, new ReplaceAllOperation(this, (IASString) regex, (IASString) replacement));
+        return this.derive(replaced, new ReplaceAllOperation((IASString) regex, (IASString) replacement));
     }
 
     @Override
     public IASStringable replace(CharSequence target, CharSequence replacement) {
-        return new IASString(this.string.replace(target, replacement), new ReplaceCharSequenceOperation(this, new IASString(target), new IASString(replacement)));
+        return this.derive(this.string.replace(target, replacement), new ReplaceCharSequenceOperation(IASString.valueOf(target), IASString.valueOf(replacement)));
     }
 
     @Override
@@ -355,7 +359,7 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
         String[] splitted = this.string.split(regex.getString(), limit);
         IASString[] strings = new IASString[splitted.length];
         for (int i = 0; i < splitted.length; i++) {
-            strings[i] = new IASString(splitted[i], new SplitOperation(this, regex.getString(), i));
+            strings[i] = this.derive(splitted[i], new SplitOperation(regex.getString(), i));
         }
         return strings;
     }
@@ -365,7 +369,7 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
         String[] splitted = this.string.split(regex.getString());
         IASString[] strings = new IASString[splitted.length];
         for (int i = 0; i < splitted.length; i++) {
-            strings[i] = new IASString(splitted[i], new SplitOperation(this, regex.getString(), i));
+            strings[i] = this.derive(splitted[i], new SplitOperation(regex.getString(), i));
         }
         return strings;
     }
@@ -393,22 +397,22 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
     @Override
     public IASStringable trim() {
         String trimmed = this.string.trim();
-        return new IASString(trimmed, new TrimOperation(this));
+        return this.derive(trimmed, new TrimOperation());
     }
 
     @Override
     public IASStringable strip() {
-        return new IASString(this.string.strip(), new StripOperation(this, true, true));
+        return this.derive(this.string.strip(), new StripOperation(true, true));
     }
 
     @Override
     public IASStringable stripLeading() {
-        return new IASString(this.string.stripLeading(), new StripOperation(this, true, false));
+        return this.derive(this.string.stripLeading(), new StripOperation(true, false));
     }
 
     @Override
     public IASStringable stripTrailing() {
-        return new IASString(this.string.stripTrailing(), new StripOperation(this, false, true));
+        return this.derive(this.string.stripTrailing(), new StripOperation(false, true));
     }
 
     @Override
@@ -418,7 +422,7 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
 
     @Override
     public IASStringable repeat(int count) {
-        return new IASString(this.string.repeat(count), new RepeatOperation(this, count));
+        return this.derive(this.string.repeat(count), new RepeatOperation(count));
     }
 
     @Override
@@ -472,8 +476,9 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
         } else if (elements.length == 1) {
             return IASString.valueOf(elements[0]);
         } else {
+            IASString begin = IASString.valueOf(elements[0]);
             IASString iasDelimiter = IASString.valueOf(delimiter);
-            IASStringBuilder sb = new IASStringBuilder(elements[0]);
+            IASStringBuilder sb = new IASStringBuilder(begin);
 
             for (int i = 1; i < elements.length; i++) {
                 sb.append(iasDelimiter);
@@ -508,14 +513,12 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
 
     public static IASString format(IASString format, Object... args) {
         // TODO Implement rainting
-//        return new IASString(String.format(format.toString(), args), isTainted(args));
         return new IASFormatter().format(format, args).toIASString();
     }
 
 
     public static IASString format(Locale l, IASString format, Object... args) {
         // TODO Implement rainting
-//        return new IASString(String.format(l, format.toString(), args), isTainted(args));
         return new IASFormatter(l).format(format, args).toIASString();
     }
 
@@ -593,4 +596,8 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
         return str.string;
     }
 
+
+    private IASString derive(String newString, IASOperation operation) {
+        return new IASString(newString, new IASTaintInformation(this.getString(), this.taintInformation, operation));
+    }
 }

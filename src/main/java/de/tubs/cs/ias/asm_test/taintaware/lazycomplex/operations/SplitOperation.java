@@ -9,32 +9,30 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SplitOperation extends IASOperation {
+public class SplitOperation implements IASOperation {
     private final String regex;
     /**
      * Index of the splitted string
      */
     private final int index;
 
-    public SplitOperation(IASLazyComplexAware previous, String regex, int index) {
-        super(previous);
+    public SplitOperation(String regex, int index) {
         this.regex = regex;
         this.index = index;
     }
 
     @Override
-    public List<IASTaintRange> apply() {
+    public List<IASTaintRange> apply(String previousString, List<IASTaintRange> previousRanges) {
         Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher((CharSequence) previous);
+        Matcher matcher = pattern.matcher(previousString);
         int start = 0;
         for (int counter = 0; matcher.find() && counter < index; counter++) {
             start = matcher.end();
         }
         int end = matcher.start();
 
-        List<IASTaintRange> taintRanges = this.previous.getTaintRanges();
-        IASTaintRangeUtils.adjustRanges(taintRanges, start, end, start);
+        IASTaintRangeUtils.adjustRanges(previousRanges, start, end, start);
 
-        return taintRanges;
+        return previousRanges;
     }
 }

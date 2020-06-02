@@ -8,20 +8,18 @@ import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeUtils;
 import java.util.List;
 import java.util.Objects;
 
-public class ConcatOperation extends IASOperation {
+public class ConcatOperation implements IASOperation {
     private final IASLazyComplexAware second;
 
-    public ConcatOperation(IASLazyComplexAware previous, IASLazyComplexAware second) {
-        super(Objects.requireNonNull(previous));
+    public ConcatOperation(IASLazyComplexAware second) {
         this.second = Objects.requireNonNull(second);
     }
 
     @Override
-    public List<IASTaintRange> apply() {
-        List<IASTaintRange> firstTaint = this.previous.getTaintRanges();
+    public List<IASTaintRange> apply(String previousString, List<IASTaintRange> previousRanges) {
         List<IASTaintRange> secondTaint = this.second.getTaintRanges();
-        IASTaintRangeUtils.shiftRight(secondTaint, this.previous.length());
-        firstTaint.addAll(secondTaint);
-        return firstTaint;
+        IASTaintRangeUtils.shiftRight(secondTaint, previousString.length());
+        previousRanges.addAll(secondTaint);
+        return previousRanges;
     }
 }

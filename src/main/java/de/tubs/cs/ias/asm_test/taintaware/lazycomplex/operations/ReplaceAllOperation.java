@@ -14,19 +14,18 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ReplaceAllOperation extends IASOperation {
+public class ReplaceAllOperation implements IASOperation {
     private final IASString regex;
     private final IASString replacement;
 
-    public ReplaceAllOperation(IASLazyComplexAware previous, IASString regex, IASString replacement) {
-        super(previous);
+    public ReplaceAllOperation(IASString regex, IASString replacement) {
         this.regex = regex;
         this.replacement = replacement;
     }
 
     @Override
-    public List<IASTaintRange> apply() {
-        Matcher matcher = Pattern.compile(this.regex.toString()).matcher(this.previous.toString());
+    public List<IASTaintRange> apply(String previousString, List<IASTaintRange> previousRanges) {
+        Matcher matcher = Pattern.compile(this.regex.toString()).matcher(previousString);
         int appendPos = 0;
         int length = 0;
         int previousEnd = 0;
@@ -35,14 +34,14 @@ public class ReplaceAllOperation extends IASOperation {
             IASMatcherReplacement replacer = IASMatcherReplacement.createReplacement(replacement, new IASStringBuilder());
             int end = matcher.start();
 
-            List<IASTaintRange> currRanges = this.previous.getTaintRanges();
+            List<IASTaintRange> currRanges = new ArrayList<>(previousRanges);
             IASTaintRangeUtils.adjustRanges(currRanges, appendPos, end, appendPos - length);
             ranges.addAll(currRanges);
 
             length += end - previousEnd;
             previousEnd = matcher.end();
 
-            IASString repl = (IASString) replacer.doReplacement(matcher, (IASStringable) this.previous, new IASStringBuilder());
+            IASString repl = (IASString) replacer.doReplacement(matcher, new IASString(previousString, previousRanges), new IASStringBuilder());
             int currReplLength = repl.length();
 
             List<IASTaintRange> replRanges = repl.getTaintRanges();
@@ -52,8 +51,8 @@ public class ReplaceAllOperation extends IASOperation {
             length += currReplLength;
             appendPos = matcher.end();
         }
-        List<IASTaintRange> currRanges = this.previous.getTaintRanges();
-        IASTaintRangeUtils.adjustRanges(currRanges, appendPos, this.previous.length(), appendPos - length);
+        List<IASTaintRange> currRanges = new ArrayList<>();
+        IASTaintRangeUtils.adjustRanges(currRanges, appendPos, previousString.length(), appendPos - length);
         ranges.addAll(currRanges);
         return ranges;
     }

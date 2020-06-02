@@ -6,21 +6,19 @@ import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BaseOperation extends IASOperation {
+public class BaseOperation implements IASOperation {
     private final List<IASTaintRange> ranges;
 
     public BaseOperation() {
-        super(null);
         this.ranges = new ArrayList<>(0);
     }
 
     public BaseOperation(List<IASTaintRange> ranges) {
-        super(null);
         this.ranges = ranges;
     }
 
     @Override
-    public List<IASTaintRange> apply() {
+    public List<IASTaintRange> apply(String before, List<IASTaintRange> beforeTaintRange) {
         return new ArrayList<>(ranges);
     }
 }
