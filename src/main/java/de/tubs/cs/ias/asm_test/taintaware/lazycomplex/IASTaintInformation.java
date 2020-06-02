@@ -31,6 +31,12 @@ public class IASTaintInformation {
         this.operation = new BaseOperation();
     }
 
+    public IASTaintInformation(List<IASTaintRange> taintRanges) {
+        this.previousString = null;
+        this.previousInformation = null;
+        this.operation = new BaseOperation(taintRanges);
+    }
+
     public boolean isTainted() {
         return this.evaluate().size() > 0;
     }

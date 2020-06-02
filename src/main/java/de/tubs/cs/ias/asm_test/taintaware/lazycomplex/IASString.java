@@ -301,7 +301,7 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
     @Override
     public IASStringable substring(int beginIndex) {
         String substringed = this.string.substring(beginIndex);
-        return this.derive(substringed, new SubstringOperation(beginIndex, this.length()));
+        return this.derive(substringed, new SubstringOperation(beginIndex));
     }
 
     @Override

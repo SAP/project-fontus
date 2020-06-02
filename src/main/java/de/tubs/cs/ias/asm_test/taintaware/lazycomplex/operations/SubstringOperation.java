@@ -15,6 +15,11 @@ public class SubstringOperation implements IASOperation {
         this.end = end;
     }
 
+    public SubstringOperation(int start) {
+        this.start = start;
+        this.end = Integer.MAX_VALUE;
+    }
+
     @Override
     public List<IASTaintRange> apply(String previousString, List<IASTaintRange> previousRanges) {
         IASTaintRangeUtils.adjustRanges(previousRanges, this.start, this.end, this.start);

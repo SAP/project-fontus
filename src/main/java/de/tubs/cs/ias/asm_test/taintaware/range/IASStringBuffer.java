@@ -79,8 +79,8 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
     }
 
     @Override
-    public synchronized IASStringBuffer append(char[] s, int start, int end) {
-        return (IASStringBuffer) super.append(s, start, end);
+    public synchronized IASStringBuffer append(char[] s, int offset, int len) {
+        return (IASStringBuffer) super.append(s, offset, len);
     }
 
     @Override

@@ -135,8 +135,8 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         return this.append(iasString.substring(start, end));
     }
 
-    public IASAbstractStringBuilder append(char[] s, int start, int end) {
-        this.builder.append(s, start, end);
+    public IASAbstractStringBuilder append(char[] s, int offset, int len) {
+        this.builder.append(s, offset, len);
         return this;
     }
 

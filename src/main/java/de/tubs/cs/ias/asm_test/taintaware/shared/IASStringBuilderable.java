@@ -4,7 +4,7 @@ import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 
 import java.io.Serializable;
 
-public interface IASStringBuilderable extends Serializable, Comparable<IASStringBuilderable>, CharSequence, Appendable, IASTaintAware {
+public interface IASStringBuilderable extends Serializable, Comparable<IASStringBuilderable>, Appendable, CharSequence, IASTaintAware {
     IASStringBuilderable append(Object obj);
 
     IASStringBuilderable append(IASStringable str);
@@ -13,7 +13,7 @@ public interface IASStringBuilderable extends Serializable, Comparable<IASString
 
 //    public IASStringBuilderable append(IASStringBuffer strb);
 
-    IASStringBuilderable append(char[] s, int start, int end);
+    IASStringBuilderable append(char[] s, int offset, int len);
 
     IASStringBuilderable append(char[] str);
 

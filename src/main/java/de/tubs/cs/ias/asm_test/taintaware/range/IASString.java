@@ -232,7 +232,7 @@ public final class IASString implements IASRangeAware, IASStringable {
         return this.str.equals(other.str);
     }
 
-    public boolean contentEquals(IASStringBuffer sb) {
+    public boolean contentEquals(IASStringBuilderable sb) {
         return this.str.contentEquals(sb);
     }
 

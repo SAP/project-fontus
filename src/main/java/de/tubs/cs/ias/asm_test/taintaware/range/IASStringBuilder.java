@@ -60,8 +60,8 @@ public final class IASStringBuilder extends IASAbstractStringBuilder implements 
         return (IASStringBuilder) super.append(s, start, end);
     }
 
-    public IASStringBuilder append(char[] s, int start, int end) {
-        return (IASStringBuilder) super.append(s, start, end);
+    public IASStringBuilder append(char[] s, int offset, int len) {
+        return (IASStringBuilder) super.append(s, offset, len);
     }
 
     public IASStringBuilder append(char[] str) {
