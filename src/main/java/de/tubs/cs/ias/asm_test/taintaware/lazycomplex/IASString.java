@@ -17,21 +17,17 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
 
     public IASString() {
         this.string = "";
-        this.taintInformation = new IASTaintInformation(new BaseOperation());
+        this.taintInformation = null;
     }
 
     public IASString(String string) {
         this.string = string;
-        this.taintInformation = new IASTaintInformation(new BaseOperation());
+        this.taintInformation = null;
     }
 
     public IASString(String string, IASTaintInformation taintInformation) {
         this.string = string;
         this.taintInformation = taintInformation;
-    }
-
-    public IASString(String string, IASOperation operation) {
-        this(string, new IASTaintInformation(string, new IASTaintInformation(), operation));
     }
 
     public IASString(String s, boolean tainted) {
@@ -40,7 +36,7 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
     }
 
     public IASString(String s, List<IASTaintRange> ranges) {
-        this(s, new BaseOperation(ranges));
+        this(s, new IASTaintInformation(new BaseOperation(ranges)));
     }
 
     public IASString(CharSequence sequence) {
@@ -48,7 +44,7 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
     }
 
     public IASString(CharSequence sequence, List<IASTaintRange> ranges) {
-        this(sequence.toString(), new BaseOperation(ranges));
+        this(sequence.toString(), new IASTaintInformation(new BaseOperation(ranges)));
     }
 
     public static IASString tainted(IASString tstr) {
@@ -106,11 +102,11 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
     }
 
     public IASString(IASStringBuilder builder) {
-        this(builder.toString(), new BaseOperation(builder.getTaintRanges()));
+        this(builder.toString(), new IASTaintInformation(new BaseOperation(builder.getTaintRanges())));
     }
 
     public IASString(IASStringBuffer buffer) {
-        this(buffer.toString(), new BaseOperation(buffer.getTaintRanges()));
+        this(buffer.toString(), new IASTaintInformation(new BaseOperation(buffer.getTaintRanges())));
     }
 
     public IASString(IASString string) {
@@ -129,9 +125,19 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
         this.setTaint(tainted);
     }
 
+    public boolean isInitialized() {
+        return this.taintInformation != null;
+    }
+
+    public boolean isUninitialized() {
+        return !this.isInitialized();
+    }
 
     @Override
     public List<IASTaintRange> getTaintRanges() {
+        if (isUninitialized()) {
+            return new ArrayList<>();
+        }
         return this.taintInformation.evaluate();
     }
 
@@ -457,6 +463,9 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
 
     @Override
     public boolean isTainted() {
+        if (isUninitialized()) {
+            return false;
+        }
         return this.taintInformation.isTainted();
     }
 
@@ -598,6 +607,9 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
 
 
     private IASString derive(String newString, IASOperation operation) {
-        return new IASString(newString, new IASTaintInformation(this.getString(), this.taintInformation, operation));
+        if (this.isInitialized()) {
+            return new IASString(newString, new IASTaintInformation(this.getString(), this.taintInformation, operation));
+        }
+        return new IASString(newString);
     }
 }
