@@ -185,6 +185,8 @@ public final class Constants {
     public static final String BOOLEAN_METHOD_PATH = "bool/";
     public static final String RANGE_METHOD_NAME = "range";
     public static final String RANGE_METHOD_PATH = "range/";
+    public static final String LAZY_COMPLEX_METHOD_NAME = "lazycomplex";
+    public static final String LAZY_COMPLEX_METHOD_PATH = "lazycomplex/";
     public static final int JAVA_VERSION = getVersion();
 
     private static int getVersion() {

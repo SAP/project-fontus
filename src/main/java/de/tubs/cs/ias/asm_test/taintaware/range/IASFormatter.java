@@ -1738,7 +1738,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             // out.
             if (formatToken.isFlagSet(FormatToken.FLAG_SHARP)
                     && 0 == formatToken.getPrecision()) {
-                int indexOfE = result.indexOf("e"); //$NON-NLS-1$
+                int indexOfE = result.indexOf(IASString.fromString("e")); //$NON-NLS-1$
                 char dot = decimalFormat.getDecimalFormatSymbols()
                         .getDecimalSeparator();
                 result.insert(indexOfE, dot);
@@ -1866,8 +1866,8 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
 
             int precision = formatToken.getPrecision();
             precision = (0 == precision ? 1 : precision);
-            int indexOfFirstFracitoanlDigit = result.indexOf(".") + 1; //$NON-NLS-1$
-            int indexOfP = result.indexOf("p"); //$NON-NLS-1$
+            int indexOfFirstFracitoanlDigit = result.indexOf(IASString.fromString(".")) + 1; //$NON-NLS-1$
+            int indexOfP = result.indexOf(IASString.fromString("p")); //$NON-NLS-1$
             int fractionalLength = indexOfP - indexOfFirstFracitoanlDigit;
 
             if (fractionalLength == precision) {

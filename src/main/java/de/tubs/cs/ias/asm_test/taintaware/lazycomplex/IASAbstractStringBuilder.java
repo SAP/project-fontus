@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
+@SuppressWarnings("Since15")
 public abstract class IASAbstractStringBuilder implements IASStringBuilderable, IASLazyComplexAware, Comparable<IASStringBuilderable> {
     private final StringBuilder stringBuilder;
     private IASTaintInformation taintInformation;
@@ -371,7 +372,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         return this.taintInformation == null;
     }
 
-    private void derive(IASOperation operation, boolean initializeIfNecessary) {
+    public void derive(IASOperation operation, boolean initializeIfNecessary) {
         if (this.isInitialized()) {
             this.taintInformation = new IASTaintInformation(this.stringBuilder.toString(), this.taintInformation, operation);
         } else if(initializeIfNecessary) {

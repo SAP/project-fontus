@@ -363,7 +363,7 @@ public final class IASString implements IASRangeAware, IASStringable {
         return isTainted() ? this.taintInformation.getAllRanges() : new ArrayList<>(0);
     }
 
-    List<IASTaintRange> getAllRangesAdjusted() {
+    public List<IASTaintRange> getAllRangesAdjusted() {
         List<IASTaintRange> ranges = getAllRanges();
         IASTaintRangeUtils.adjustRanges(ranges, 0, this.length(), 0);
         return ranges;
@@ -618,7 +618,7 @@ public final class IASString implements IASRangeAware, IASStringable {
 
     public IASString intern() {
         this.str = this.str.intern();
-        return IASStringPool.intern(this);
+        return (IASString) IASStringPool.intern(this);
     }
 
     public static IASString fromString(String str) {

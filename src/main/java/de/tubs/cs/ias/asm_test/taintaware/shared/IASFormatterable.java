@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.Formatter;
 import java.util.Locale;
 
-public interface IASFormatterable extends IASTaintAware, Closeable, Flushable, AutoCloseable {
+public interface IASFormatterable extends Closeable, Flushable, AutoCloseable {
     IASFormatterable format(IASStringable format, Object... args);
 
     IASFormatterable format(Locale l, IASStringable format, Object... args);

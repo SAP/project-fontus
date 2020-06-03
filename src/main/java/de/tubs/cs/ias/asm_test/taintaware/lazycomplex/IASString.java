@@ -11,7 +11,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.IntStream;
 
-public class IASString implements IASStringable, IASLazyComplexAware, Comparable<IASString> {
+@SuppressWarnings("Since15")
+public class IASString implements IASStringable, IASLazyComplexAware {
     private final String string;
     private final IASTaintInformation taintInformation;
 
@@ -362,22 +363,12 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
 
     @Override
     public IASStringable[] split(IASStringable regex, int limit) {
-        String[] splitted = this.string.split(regex.getString(), limit);
-        IASString[] strings = new IASString[splitted.length];
-        for (int i = 0; i < splitted.length; i++) {
-            strings[i] = this.derive(splitted[i], new SplitOperation(regex.getString(), i));
-        }
-        return strings;
+        return IASPattern.compile((IASString) regex).split(this, limit);
     }
 
     @Override
     public IASStringable[] split(IASStringable regex) {
-        String[] splitted = this.string.split(regex.getString());
-        IASString[] strings = new IASString[splitted.length];
-        for (int i = 0; i < splitted.length; i++) {
-            strings[i] = this.derive(splitted[i], new SplitOperation(regex.getString(), i));
-        }
-        return strings;
+        return this.split(regex, 0);
     }
 
     @Override
@@ -475,7 +466,7 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
     }
 
     @Override
-    public int compareTo(IASString o) {
+    public int compareTo(IASStringable o) {
         return this.string.compareTo(o.getString());
     }
 
@@ -606,7 +597,7 @@ public class IASString implements IASStringable, IASLazyComplexAware, Comparable
     }
 
 
-    private IASString derive(String newString, IASOperation operation) {
+    IASString derive(String newString, IASOperation operation) {
         if (this.isInitialized()) {
             return new IASString(newString, new IASTaintInformation(this.getString(), this.taintInformation, operation));
         }
