@@ -336,7 +336,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         return this.builder.toString();
     }
 
-    public IASStringable toIASString() {
+    public IASString toIASString() {
         return new IASString(this.builder.toString(), this.getTaints());
     }
 
@@ -344,11 +344,11 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         return this.builder.capacity();
     }
 
-    public IASStringable substring(int start) {
+    public IASString substring(int start) {
         return (IASString) this.toIASString().substring(start);
     }
 
-    public IASStringable substring(int start, int end) {
+    public IASString substring(int start, int end) {
         return (IASString) this.toIASString().substring(start, end);
     }
 

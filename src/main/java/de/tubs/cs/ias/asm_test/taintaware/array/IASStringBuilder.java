@@ -157,13 +157,4 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
     public IASStringBuilder reverse() {
         return (IASStringBuilder) super.reverse();
     }
-
-    @Override
-    public int compareTo(IASStringBuilderable o) {
-        if (Constants.JAVA_VERSION < 11) {
-            return this.toIASString().compareTo(IASString.valueOf(o));
-        } else {
-            return this.builder.compareTo(o.getBuilder());
-        }
-    }
 }

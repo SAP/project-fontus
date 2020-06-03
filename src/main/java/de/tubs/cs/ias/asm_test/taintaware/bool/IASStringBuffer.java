@@ -109,108 +109,107 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder append(Object obj) {
-        return super.append(obj);
+    public synchronized IASStringBuffer append(Object obj) {
+        return (IASStringBuffer) super.append(obj);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder append(IASStringable str) {
-        return super.append(str);
+    public synchronized IASStringBuffer append(IASStringable str) {
+        return (IASStringBuffer) super.append(str);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder append(String str) {
-        return super.append(str);
+    public synchronized IASStringBuffer append(String str) {
+        return (IASStringBuffer) super.append(str);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder append(StringBuffer sb) {
-        return super.append(sb);
+    public synchronized IASStringBuffer append(StringBuffer sb) {
+        return (IASStringBuffer) super.append(sb);
+    }
+
+    public synchronized IASStringBuffer append(IASStringBuffer sb) {
+        return (IASStringBuffer) super.append(sb);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder append(IASAbstractStringBuilder sb) {
-        return super.append(sb);
+    IASStringBuffer append(IASStringBuilder asb) {
+        return (IASStringBuffer) super.append(asb);
     }
 
     @Override
-    IASAbstractStringBuilder append(IASStringBuilder asb) {
-        return super.append(asb);
+    public synchronized IASStringBuffer append(CharSequence csq) {
+        return (IASStringBuffer) super.append(csq);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder append(CharSequence csq) {
-        return super.append(csq);
+    public synchronized IASStringBuffer append(CharSequence csq, int start, int end) {
+        return (IASStringBuffer) super.append(csq, start, end);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder append(CharSequence csq, int start, int end) {
-        return super.append(csq, start, end);
+    public synchronized IASStringBuffer append(char[] str) {
+        return (IASStringBuffer) super.append(str);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder append(char[] str) {
-        return super.append(str);
+    public synchronized IASStringBuffer append(char[] str, int offset, int len) {
+        return (IASStringBuffer) super.append(str, offset, len);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder append(char[] str, int offset, int len) {
-        return super.append(str, offset, len);
+    public synchronized IASStringBuffer append(boolean b) {
+        return (IASStringBuffer) super.append(b);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder append(boolean b) {
-        return super.append(b);
+    public synchronized IASStringBuffer append(char c) {
+        return (IASStringBuffer) super.append(c);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder append(char c) {
-        return super.append(c);
+    public synchronized IASStringBuffer append(int i) {
+        return (IASStringBuffer) super.append(i);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder append(int i) {
-        return super.append(i);
+    public synchronized IASStringBuffer appendCodePoint(int codePoint) {
+        return (IASStringBuffer) super.appendCodePoint(codePoint);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder appendCodePoint(int codePoint) {
-        return super.appendCodePoint(codePoint);
+    public synchronized IASStringBuffer append(long lng) {
+        return (IASStringBuffer) super.append(lng);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder append(long lng) {
-        return super.append(lng);
+    public synchronized IASStringBuffer append(float f) {
+        return (IASStringBuffer) super.append(f);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder append(float f) {
-        return super.append(f);
+    public synchronized IASStringBuffer append(double d) {
+        return (IASStringBuffer) super.append(d);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder append(double d) {
-        return super.append(d);
+    public synchronized IASStringBuffer delete(int start, int end) {
+        return (IASStringBuffer) super.delete(start, end);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder delete(int start, int end) {
-        return super.delete(start, end);
+    public synchronized IASStringBuffer deleteCharAt(int index) {
+        return (IASStringBuffer) super.deleteCharAt(index);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder deleteCharAt(int index) {
-        return super.deleteCharAt(index);
+    public synchronized IASStringBuffer replace(int start, int end, IASStringable str) {
+        return (IASStringBuffer) super.replace(start, end, str);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder replace(int start, int end, IASStringable str) {
-        return super.replace(start, end, str);
-    }
-
-    @Override
-    public synchronized IASStringable substring(int start) {
-        return super.substring(start);
+    public synchronized IASString substring(int start) {
+        return (IASString) super.substring(start);
     }
 
     @Override
@@ -219,68 +218,68 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
-    public synchronized IASStringable substring(int start, int end) {
-        return super.substring(start, end);
+    public synchronized IASString substring(int start, int end) {
+        return (IASString) super.substring(start, end);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder insert(int index, char[] str, int offset, int len) {
-        return super.insert(index, str, offset, len);
+    public synchronized IASStringBuffer insert(int index, char[] str, int offset, int len) {
+        return (IASStringBuffer) super.insert(index, str, offset, len);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder insert(int offset, Object obj) {
-        return super.insert(offset, obj);
+    public synchronized IASStringBuffer insert(int offset, Object obj) {
+        return (IASStringBuffer) super.insert(offset, obj);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder insert(int offset, IASStringable str) {
-        return super.insert(offset, str);
+    public synchronized IASStringBuffer insert(int offset, IASStringable str) {
+        return (IASStringBuffer) super.insert(offset, str);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder insert(int offset, char[] str) {
-        return super.insert(offset, str);
+    public synchronized IASStringBuffer insert(int offset, char[] str) {
+        return (IASStringBuffer) super.insert(offset, str);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder insert(int dstOffset, CharSequence s) {
-        return super.insert(dstOffset, s);
+    public synchronized IASStringBuffer insert(int dstOffset, CharSequence s) {
+        return (IASStringBuffer) super.insert(dstOffset, s);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder insert(int dstOffset, CharSequence s, int start, int end) {
-        return super.insert(dstOffset, s, start, end);
+    public synchronized IASStringBuffer insert(int dstOffset, CharSequence s, int start, int end) {
+        return (IASStringBuffer) super.insert(dstOffset, s, start, end);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder insert(int offset, boolean b) {
-        return super.insert(offset, b);
+    public synchronized IASStringBuffer insert(int offset, boolean b) {
+        return (IASStringBuffer) super.insert(offset, b);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder insert(int offset, char c) {
-        return super.insert(offset, c);
+    public synchronized IASStringBuffer insert(int offset, char c) {
+        return (IASStringBuffer) super.insert(offset, c);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder insert(int offset, int i) {
-        return super.insert(offset, i);
+    public synchronized IASStringBuffer insert(int offset, int i) {
+        return (IASStringBuffer) super.insert(offset, i);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder insert(int offset, long l) {
-        return super.insert(offset, l);
+    public synchronized IASStringBuffer insert(int offset, long l) {
+        return (IASStringBuffer) super.insert(offset, l);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder insert(int offset, float f) {
-        return super.insert(offset, f);
+    public synchronized IASStringBuffer insert(int offset, float f) {
+        return (IASStringBuffer) super.insert(offset, f);
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder insert(int offset, double d) {
-        return super.insert(offset, d);
+    public synchronized IASStringBuffer insert(int offset, double d) {
+        return (IASStringBuffer) super.insert(offset, d);
     }
 
     @Override
@@ -304,13 +303,13 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
-    public synchronized IASAbstractStringBuilder reverse() {
-        return super.reverse();
+    public synchronized IASStringBuffer reverse() {
+        return (IASStringBuffer) super.reverse();
     }
 
     @Override
-    public synchronized IASStringable toIASString() {
-        return super.toIASString();
+    public synchronized IASString toIASString() {
+        return (IASString) super.toIASString();
     }
 
     @Override

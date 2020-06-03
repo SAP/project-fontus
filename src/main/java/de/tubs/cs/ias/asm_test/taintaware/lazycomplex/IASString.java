@@ -306,13 +306,13 @@ public class IASString implements IASStringable, IASLazyComplexAware {
     }
 
     @Override
-    public IASStringable substring(int beginIndex) {
+    public IASString substring(int beginIndex) {
         String substringed = this.string.substring(beginIndex);
         return this.derive(substringed, new SubstringOperation(beginIndex));
     }
 
     @Override
-    public IASStringable substring(int beginIndex, int endIndex) {
+    public IASString substring(int beginIndex, int endIndex) {
         String substringed = this.string.substring(beginIndex, endIndex);
         return this.derive(substringed, new SubstringOperation(beginIndex, endIndex));
     }
@@ -324,13 +324,13 @@ public class IASString implements IASStringable, IASLazyComplexAware {
     }
 
     @Override
-    public IASStringable concat(IASStringable str) {
+    public IASString concat(IASStringable str) {
         String substringed = this.string.concat(str.getString());
         return this.derive(substringed, new ConcatOperation((IASLazyComplexAware) str));
     }
 
     @Override
-    public IASStringable replace(char oldChar, char newChar) {
+    public IASString replace(char oldChar, char newChar) {
         return this.derive(this.string.replace(oldChar, newChar), new ReplaceCharacterOperation(oldChar));
     }
 
@@ -345,70 +345,70 @@ public class IASString implements IASStringable, IASLazyComplexAware {
     }
 
     @Override
-    public IASStringable replaceFirst(IASStringable regex, IASStringable replacement) {
+    public IASString replaceFirst(IASStringable regex, IASStringable replacement) {
         String replaced = this.string.replaceFirst(regex.getString(), replacement.getString());
         return this.derive(replaced, new ReplaceFirstOperation((IASString) regex, (IASString) replacement));
     }
 
     @Override
-    public IASStringable replaceAll(IASStringable regex, IASStringable replacement) {
+    public IASString replaceAll(IASStringable regex, IASStringable replacement) {
         String replaced = this.string.replaceAll(regex.getString(), replacement.getString());
         return this.derive(replaced, new ReplaceAllOperation((IASString) regex, (IASString) replacement));
     }
 
     @Override
-    public IASStringable replace(CharSequence target, CharSequence replacement) {
+    public IASString replace(CharSequence target, CharSequence replacement) {
         return this.derive(this.string.replace(target, replacement), new ReplaceCharSequenceOperation(IASString.valueOf(target), IASString.valueOf(replacement)));
     }
 
     @Override
-    public IASStringable[] split(IASStringable regex, int limit) {
+    public IASString[] split(IASStringable regex, int limit) {
         return IASPattern.compile((IASString) regex).split(this, limit);
     }
 
     @Override
-    public IASStringable[] split(IASStringable regex) {
+    public IASString[] split(IASStringable regex) {
         return this.split(regex, 0);
     }
 
     @Override
-    public IASStringable toLowerCase(Locale locale) {
+    public IASString toLowerCase(Locale locale) {
         return new IASString(this.string.toLowerCase(locale), this.taintInformation);
     }
 
     @Override
-    public IASStringable toLowerCase() {
+    public IASString toLowerCase() {
         return new IASString(this.string.toLowerCase(), this.taintInformation);
     }
 
     @Override
-    public IASStringable toUpperCase(Locale locale) {
+    public IASString toUpperCase(Locale locale) {
         return new IASString(this.string.toUpperCase(locale), this.taintInformation);
     }
 
     @Override
-    public IASStringable toUpperCase() {
+    public IASString toUpperCase() {
         return new IASString(this.string.toUpperCase(), this.taintInformation);
     }
 
     @Override
-    public IASStringable trim() {
+    public IASString trim() {
         String trimmed = this.string.trim();
         return this.derive(trimmed, new TrimOperation());
     }
 
     @Override
-    public IASStringable strip() {
+    public IASString strip() {
         return this.derive(this.string.strip(), new StripOperation(true, true));
     }
 
     @Override
-    public IASStringable stripLeading() {
+    public IASString stripLeading() {
         return this.derive(this.string.stripLeading(), new StripOperation(true, false));
     }
 
     @Override
-    public IASStringable stripTrailing() {
+    public IASString stripTrailing() {
         return this.derive(this.string.stripTrailing(), new StripOperation(false, true));
     }
 
@@ -418,12 +418,12 @@ public class IASString implements IASStringable, IASLazyComplexAware {
     }
 
     @Override
-    public IASStringable repeat(int count) {
+    public IASString repeat(int count) {
         return this.derive(this.string.repeat(count), new RepeatOperation(count));
     }
 
     @Override
-    public IASStringable toIASString() {
+    public IASString toIASString() {
         return this;
     }
 
@@ -443,8 +443,8 @@ public class IASString implements IASStringable, IASLazyComplexAware {
     }
 
     @Override
-    public IASStringable intern() {
-        return IASStringPool.intern(this);
+    public IASString intern() {
+        return (IASString) IASStringPool.intern(this);
     }
 
     @Override

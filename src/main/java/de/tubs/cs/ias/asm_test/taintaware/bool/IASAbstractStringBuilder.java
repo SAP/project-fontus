@@ -259,7 +259,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         return this;
     }
 
-    public IASStringable substring(int start) {
+    public IASString substring(int start) {
         return this.substring(start, this.builder.length());
     }
 
@@ -269,7 +269,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     }
 
 
-    public IASStringable substring(int start, int end) {
+    public IASString substring(int start, int end) {
         return new IASString(this.builder.substring(start, end), this.tainted);
     }
 
@@ -280,8 +280,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     }
 
     public IASAbstractStringBuilder insert(int offset, Object obj) {
-        this.builder.insert(offset, String.valueOf(obj));
-        return this;
+        return this.insert(offset, IASString.valueOf(obj));
     }
 
     public IASAbstractStringBuilder insert(int offset, IASStringable str) {
@@ -385,7 +384,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         return this;
     }
 
-    public IASStringable toIASString() {
+    public IASString toIASString() {
         return new IASString(this.builder.toString(), this.tainted);
     }
 

@@ -322,12 +322,12 @@ public final class IASString implements IASArrayAware, IASStringable {
         return this.taintInformation.getTaints(beginIndex, endIndex);
     }
 
-    public IASStringable substring(int beginIndex) {
+    public IASString substring(int beginIndex) {
         int[] taints = this.getSubstringTaint(beginIndex, this.length());
         return new IASString(this.str.substring(beginIndex), taints);
     }
 
-    public IASStringable substring(int beginIndex, int endIndex) {
+    public IASString substring(int beginIndex, int endIndex) {
         if (beginIndex < 0 || this.length() < endIndex || endIndex < beginIndex) {
             throw new IllegalArgumentException("startIndex: " + beginIndex + ", endIndex: " + endIndex);
         }
@@ -344,7 +344,7 @@ public final class IASString implements IASArrayAware, IASStringable {
         return new IASString(this.str.subSequence(beginIndex, endIndex), taints);
     }
 
-    public IASStringable concat(IASStringable str) {
+    public IASString concat(IASStringable str) {
         int[] firstTaint = this.getTaints();
         int[] secondTaint = ((IASString) str).getTaints();
         int[] newTaint = new int[firstTaint.length + secondTaint.length];
@@ -362,7 +362,7 @@ public final class IASString implements IASArrayAware, IASStringable {
      * @param newChar
      * @return
      */
-    public IASStringable replace(char oldChar, char newChar) {
+    public IASString replace(char oldChar, char newChar) {
         return new IASString(this.str.replace(oldChar, newChar), getTaints());
     }
 
@@ -374,15 +374,15 @@ public final class IASString implements IASArrayAware, IASStringable {
         return this.str.contains(s);
     }
 
-    public IASStringable replaceFirst(IASStringable regex, IASStringable replacement) {
+    public IASString replaceFirst(IASStringable regex, IASStringable replacement) {
         return IASPattern.compile((IASString) regex).matcher(this).replaceFirst((IASString) replacement);
     }
 
-    public IASStringable replaceAll(IASStringable regex, IASStringable replacement) {
+    public IASString replaceAll(IASStringable regex, IASStringable replacement) {
         return IASPattern.compile((IASString) regex).matcher(this).replaceAll((IASString) replacement);
     }
 
-    public IASStringable replace(CharSequence target, CharSequence replacement) {
+    public IASString replace(CharSequence target, CharSequence replacement) {
         int start = this.str.indexOf(target.toString());
         if (start < 0) {
             return this;
@@ -396,12 +396,12 @@ public final class IASString implements IASArrayAware, IASStringable {
     }
 
     // TODO: this propagates the taint for the whole string
-    public IASStringable[] split(IASStringable regex, int limit) {
+    public IASString[] split(IASStringable regex, int limit) {
         return IASPattern.compile((IASString) regex).split(this, limit);
     }
 
     // TODO: this propagates the taint for the whole string
-    public IASStringable[] split(IASStringable regex) {
+    public IASString[] split(IASStringable regex) {
         return this.split(regex, 0);
     }
 
@@ -432,23 +432,23 @@ public final class IASString implements IASArrayAware, IASStringable {
         return IASString.join(delimiter, l.toArray(new CharSequence[l.size()]));
     }
 
-    public IASStringable toLowerCase(Locale locale) {
+    public IASString toLowerCase(Locale locale) {
         return new IASString(this.str.toLowerCase(locale), this.getTaints());
     }
 
-    public IASStringable toLowerCase() {
+    public IASString toLowerCase() {
         return new IASString(this.str.toLowerCase(), this.getTaints());
     }
 
-    public IASStringable toUpperCase(Locale locale) {
+    public IASString toUpperCase(Locale locale) {
         return new IASString(this.str.toUpperCase(locale), this.getTaints());
     }
 
-    public IASStringable toUpperCase() {
+    public IASString toUpperCase() {
         return new IASString(this.str.toUpperCase(), this.getTaints());
     }
 
-    public IASStringable trim() {
+    public IASString trim() {
         String newStr = this.str.trim();
         int start = this.str.indexOf(newStr);
         int end = start + newStr.length();
@@ -456,21 +456,21 @@ public final class IASString implements IASArrayAware, IASStringable {
     }
 
     /* JDK 11 BEGIN */
-    public IASStringable strip() {
+    public IASString strip() {
         String newStr = this.str.strip();
         int start = this.str.indexOf(newStr);
         int end = start + newStr.length();
         return this.substring(start, end);
     }
 
-    public IASStringable stripLeading() {
+    public IASString stripLeading() {
         String newStr = this.str.stripLeading();
         int start = this.str.indexOf(newStr);
         int end = start + newStr.length();
         return this.substring(start, end);
     }
 
-    public IASStringable stripTrailing() {
+    public IASString stripTrailing() {
         String newStr = this.str.stripTrailing();
         int start = this.str.indexOf(newStr);
         int end = start + newStr.length();
@@ -485,7 +485,7 @@ public final class IASString implements IASArrayAware, IASStringable {
         return Arrays.stream(this.split(new IASString("\\n")));
     }
 
-    public IASStringable repeat(int count) {
+    public IASString repeat(int count) {
         IASStringBuilder stringBuilder = new IASStringBuilder();
         for (int i = 0; i < count; i++) {
             stringBuilder.append(this);
@@ -499,7 +499,7 @@ public final class IASString implements IASArrayAware, IASStringable {
         return this.str.toString();
     }
 
-    public IASStringable toIASString() {
+    public IASString toIASString() {
         return this;
     }
 
@@ -601,9 +601,9 @@ public final class IASString implements IASArrayAware, IASStringable {
         return new IASString(String.valueOf(d));
     }
 
-    public IASStringable intern() {
+    public IASString intern() {
         this.str = this.str.intern();
-        return IASStringPool.intern(this);
+        return (IASString) IASStringPool.intern(this);
     }
 
     public static IASString fromString(String str) {

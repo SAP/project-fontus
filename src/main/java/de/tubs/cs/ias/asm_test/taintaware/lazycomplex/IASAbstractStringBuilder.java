@@ -276,7 +276,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     }
 
     @Override
-    public IASStringable toIASString() {
+    public IASString toIASString() {
         return new IASString(this.stringBuilder.toString(), this.taintInformation);
     }
 
@@ -286,12 +286,12 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     }
 
     @Override
-    public IASStringable substring(int start) {
+    public IASString substring(int start) {
         return this.deriveString(this.stringBuilder.substring(start), new SubstringOperation(start));
     }
 
     @Override
-    public IASStringable substring(int start, int end) {
+    public IASString substring(int start, int end) {
         return this.deriveString(this.stringBuilder.substring(start), new SubstringOperation(start, end));
     }
 

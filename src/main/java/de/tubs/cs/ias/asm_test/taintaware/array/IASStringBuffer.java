@@ -224,7 +224,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
-    public synchronized IASStringable toIASString() {
+    public synchronized IASString toIASString() {
         return super.toIASString();
     }
 
@@ -234,12 +234,12 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
-    public synchronized IASStringable substring(int start) {
+    public synchronized IASString substring(int start) {
         return super.substring(start);
     }
 
     @Override
-    public synchronized IASStringable substring(int start, int end) {
+    public synchronized IASString substring(int start, int end) {
         return super.substring(start, end);
     }
 
