@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 
+@SuppressWarnings("Since15")
 public class IASMatcher {
     private IASString input;
     private IASPattern pattern;
@@ -29,14 +30,14 @@ public class IASMatcher {
     }
 
     public IASMatcher appendReplacement(IASStringBuffer sb, IASString replacement) {
-        matcher.appendReplacement(sb.getBuffer(), replacement.getString());
+        matcher.appendReplacement(sb.getBuilder(), replacement.getString());
         boolean tainted = sb.isTainted() || replacement.isTainted() || input.isTainted();
         sb.setTaint(tainted);
         return this;
     }
 
     public IASStringBuffer appendTail(IASStringBuffer sb) {
-        matcher.appendTail(sb.getBuffer());
+        matcher.appendTail(sb.getBuilder());
         boolean tainted = sb.isTainted() || input.isTainted();
         sb.setTaint(tainted);
         return sb;
@@ -63,15 +64,15 @@ public class IASMatcher {
     }
 
     public IASString group() {
-        return this.input.substring(this.start(), this.end());
+        return (IASString) this.input.substring(this.start(), this.end());
     }
 
     public IASString group(int group) {
-        return this.input.substring(this.start(group), this.end(group));
+        return (IASString) this.input.substring(this.start(group), this.end(group));
     }
 
     public IASString group(IASString name) {
-        return this.input.substring(this.start(name), this.end(name));
+        return (IASString) this.input.substring(this.start(name), this.end(name));
     }
 
     public int groupCount() {

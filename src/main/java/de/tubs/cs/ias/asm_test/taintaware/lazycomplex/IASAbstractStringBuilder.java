@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("Since15")
-public abstract class IASAbstractStringBuilder implements IASStringBuilderable, IASLazyComplexAware, Comparable<IASStringBuilderable> {
+public abstract class IASAbstractStringBuilder implements IASStringBuilderable, IASLazyComplexAware {
     private final StringBuilder stringBuilder;
     private IASTaintInformation taintInformation;
 

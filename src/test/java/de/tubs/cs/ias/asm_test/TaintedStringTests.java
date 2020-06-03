@@ -18,7 +18,7 @@ class TaintedStringTests {
     void concatUntainted() {
         IASString lhs = new IASString("hello ");
         IASString rhs = new IASString("world");
-        IASString result = lhs.concat(rhs);
+        IASString result = (IASString) lhs.concat(rhs);
         assertFalse(result.isTainted(), "Concatenation of two untainted String should be untainted");
     }
 
@@ -26,7 +26,7 @@ class TaintedStringTests {
     void concatTaintedWithUntainted() {
         IASString lhs = new IASString("hello ", true);
         IASString rhs = new IASString("world");
-        IASString result = lhs.concat(rhs);
+        IASString result = (IASString) lhs.concat(rhs);
         assertTrue(result.isTainted(), "Concatenation of a tainted with an untainted String should be tainted");
     }
 
@@ -34,7 +34,7 @@ class TaintedStringTests {
     void concatUntaintedWithTainted() {
         IASString lhs = new IASString("hello ", true);
         IASString rhs = new IASString("world");
-        IASString result = lhs.concat(rhs);
+        IASString result = (IASString) lhs.concat(rhs);
         assertTrue(result.isTainted(), "Concatenation of an untainted with a tainted String should be tainted");
     }
 
@@ -43,7 +43,7 @@ class TaintedStringTests {
         IASString base = new IASString("Hello welt");
         IASString regex = new IASString("welt");
         IASString replacement = new IASString("world");
-        IASString result = base.replaceFirst(regex, replacement);
+        IASString result = (IASString) base.replaceFirst(regex, replacement);
         assertFalse(result.isTainted(), "Replacing a part of an untainted string with an untainted string should not be tainted");
     }
 
@@ -52,7 +52,7 @@ class TaintedStringTests {
         IASString base = new IASString("Hello welt", true);
         IASString regex = new IASString("welt");
         IASString replacement = new IASString("world");
-        IASString result = base.replaceFirst(regex, replacement);
+        IASString result = (IASString) base.replaceFirst(regex, replacement);
         assertTrue(result.isTainted(), "Replacing a part of an tainted string with an untainted string should be tainted");
     }
 
@@ -61,7 +61,7 @@ class TaintedStringTests {
         IASString base = new IASString("Hello welt");
         IASString regex = new IASString("welt");
         IASString replacement = new IASString("world", true);
-        IASString result = base.replaceFirst(regex, replacement);
+        IASString result = (IASString) base.replaceFirst(regex, replacement);
         assertTrue(result.isTainted(), "Replacing a part of an untainted string with a tainted string should be tainted");
     }
 
@@ -70,7 +70,7 @@ class TaintedStringTests {
         IASString base = new IASString("Hello welt");
         IASString regex = new IASString("Welt");
         IASString replacement = new IASString("world", true);
-        IASString result = base.replaceFirst(regex, replacement);
+        IASString result = (IASString) base.replaceFirst(regex, replacement);
         assertFalse(result.isTainted(), "Trying to replace a part of an untainted string with a tainted string that does not match should not be tainted");
     }
 
@@ -79,7 +79,7 @@ class TaintedStringTests {
         IASString base = new IASString("Hello welt");
         IASString regex = new IASString("welt");
         IASString replacement = new IASString("world");
-        IASString result = base.replaceAll(regex, replacement);
+        IASString result = (IASString) base.replaceAll(regex, replacement);
         assertFalse(result.isTainted(), "Replacing a part of an untainted string with an untainted string should not be tainted");
     }
 
@@ -88,7 +88,7 @@ class TaintedStringTests {
         IASString base = new IASString("Hello welt", true);
         IASString regex = new IASString("welt");
         IASString replacement = new IASString("world");
-        IASString result = base.replaceAll(regex, replacement);
+        IASString result = (IASString) base.replaceAll(regex, replacement);
         assertTrue(result.isTainted(), "Replacing a part of an tainted string with an untainted string should be tainted");
     }
 
@@ -97,7 +97,7 @@ class TaintedStringTests {
         IASString base = new IASString("Hello welt");
         IASString regex = new IASString("welt");
         IASString replacement = new IASString("world", true);
-        IASString result = base.replaceAll(regex, replacement);
+        IASString result = (IASString) base.replaceAll(regex, replacement);
         assertTrue(result.isTainted(), "Replacing a part of an untainted string with a tainted string should be tainted");
     }
 
@@ -106,7 +106,7 @@ class TaintedStringTests {
         IASString base = new IASString("Hello welt");
         IASString regex = new IASString("Welt");
         IASString replacement = new IASString("world", true);
-        IASString result = base.replaceAll(regex, replacement);
+        IASString result = (IASString) base.replaceAll(regex, replacement);
         assertFalse(result.isTainted(), "Trying to replace a part of an untainted string with a tainted string that does not match should not be tainted");
     }
 }

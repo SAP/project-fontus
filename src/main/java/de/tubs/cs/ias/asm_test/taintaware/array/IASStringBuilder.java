@@ -1,4 +1,4 @@
-package de.tubs.cs.ias.asm_test.taintaware.range;
+package de.tubs.cs.ias.asm_test.taintaware.array;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
@@ -8,7 +8,7 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
 
     public IASStringBuilder(StringBuilder sb, IASTaintInformation taintInformation) {
         super();
-        this.appendShifted(taintInformation.getAllRanges());
+        this.taintInformation.setTaint(this.length(), taintInformation.getTaints());
         this.builder.append(sb);
     }
 
@@ -37,12 +37,7 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
     }
 
     public IASStringBuilder append(IASString str) {
-        return (IASStringBuilder) super.append(str, false);
-    }
-
-
-    public IASStringBuilder append(IASString str, boolean merge) {
-        return (IASStringBuilder) super.append(str, merge);
+        return (IASStringBuilder) super.append(str);
     }
 
     public IASStringBuilder append(StringBuffer strb) {
@@ -61,8 +56,8 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
         return (IASStringBuilder) super.append(s, start, end);
     }
 
-    public IASStringBuilder append(char[] s, int offset, int len) {
-        return (IASStringBuilder) super.append(s, offset, len);
+    public IASStringBuilder append(char[] s, int start, int end) {
+        return (IASStringBuilder) super.append(s, start, end);
     }
 
     public IASStringBuilder append(char[] str) {
@@ -161,5 +156,14 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
 
     public IASStringBuilder reverse() {
         return (IASStringBuilder) super.reverse();
+    }
+
+    @Override
+    public int compareTo(IASStringBuilderable o) {
+        if (Constants.JAVA_VERSION < 11) {
+            return this.toIASString().compareTo(IASString.valueOf(o));
+        } else {
+            return this.builder.compareTo(o.getBuilder());
+        }
     }
 }

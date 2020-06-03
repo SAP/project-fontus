@@ -3,7 +3,10 @@ package de.tubs.cs.ias.asm_test.config;
 import de.tubs.cs.ias.asm_test.Constants;
 
 public enum TaintMethod {
-    BOOLEAN(Constants.BOOLEAN_METHOD_NAME, Constants.BOOLEAN_METHOD_PATH), RANGE(Constants.RANGE_METHOD_NAME, Constants.RANGE_METHOD_PATH), LAZY_COMPLEX(Constants.LAZY_COMPLEX_METHOD_NAME, Constants.LAZY_COMPLEX_METHOD_PATH);
+    BOOLEAN(Constants.BOOLEAN_METHOD_NAME, Constants.BOOLEAN_METHOD_PATH),
+    RANGE(Constants.RANGE_METHOD_NAME, Constants.RANGE_METHOD_PATH),
+    LAZY_COMPLEX(Constants.LAZY_COMPLEX_METHOD_NAME, Constants.LAZY_COMPLEX_METHOD_PATH),
+    ARRAY(Constants.ARRAY_METHOD_NAME, Constants.ARRAY_METHOD_PATH);
 
     public static final String defaultTaintMethodName = Constants.BOOLEAN_METHOD_NAME;
 
@@ -28,29 +31,21 @@ public enum TaintMethod {
     }
 
     public static TaintMethod getTaintMethodByPath(String path) {
-        switch (path) {
-            case Constants.BOOLEAN_METHOD_PATH:
-                return BOOLEAN;
-            case Constants.RANGE_METHOD_PATH:
-                return RANGE;
-            case Constants.LAZY_COMPLEX_METHOD_PATH:
-                return LAZY_COMPLEX;
-            default:
-                throw new IllegalArgumentException("Taint method/path unknown:" + path);
+        for (TaintMethod tm : TaintMethod.values()) {
+            if (tm.path.equals(path)) {
+                return tm;
+            }
         }
+        throw new IllegalArgumentException("Taint method/path unknown:" + path);
     }
 
     public static TaintMethod getTaintMethodByArgumentName(String argName) {
-        switch (argName) {
-            case Constants.BOOLEAN_METHOD_NAME:
-                return BOOLEAN;
-            case Constants.RANGE_METHOD_NAME:
-                return RANGE;
-            case Constants.LAZY_COMPLEX_METHOD_NAME:
-                return LAZY_COMPLEX;
-            default:
-                throw new IllegalArgumentException("Taint method unknown:" + argName);
+        for (TaintMethod tm : TaintMethod.values()) {
+            if (tm.name.equals(argName)) {
+                return tm;
+            }
         }
+        throw new IllegalArgumentException("Taint method unknown:" + argName);
     }
 
     public static TaintMethod defaultTaintMethod() {

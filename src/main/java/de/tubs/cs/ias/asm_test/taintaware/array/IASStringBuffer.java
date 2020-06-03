@@ -1,17 +1,15 @@
-package de.tubs.cs.ias.asm_test.taintaware.range;
+package de.tubs.cs.ias.asm_test.taintaware.array;
 
 import de.tubs.cs.ias.asm_test.Constants;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
 import java.util.stream.IntStream;
 
-@SuppressWarnings("Since15")
 public final class IASStringBuffer extends IASAbstractStringBuilder {
 
     public IASStringBuffer(StringBuffer sb, IASTaintInformation taintInformation) {
         super();
-        this.appendShifted(taintInformation.getAllRanges());
+        this.taintInformation.setTaint(this.length(), taintInformation.getTaints());
         this.builder.append(sb);
     }
 
@@ -56,11 +54,6 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
-    public synchronized IASStringBuffer append(IASStringable str, boolean merge) {
-        return (IASStringBuffer) super.append(str, merge);
-    }
-
-    @Override
     public synchronized IASStringBuffer append(StringBuffer strb) {
         return (IASStringBuffer) super.append(strb);
     }
@@ -81,8 +74,8 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
-    public synchronized IASStringBuffer append(char[] s, int offset, int len) {
-        return (IASStringBuffer) super.append(s, offset, len);
+    public synchronized IASStringBuffer append(char[] s, int start, int end) {
+        return (IASStringBuffer) super.append(s, start, end);
     }
 
     @Override
@@ -201,7 +194,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
-    public synchronized int indexOf(IASStringable str) {
+    public synchronized int indexOf(String str) {
         return super.indexOf(str);
     }
 
@@ -231,7 +224,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
-    public synchronized IASString toIASString() {
+    public synchronized IASStringable toIASString() {
         return super.toIASString();
     }
 
@@ -241,12 +234,12 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
-    public synchronized IASString substring(int start) {
+    public synchronized IASStringable substring(int start) {
         return super.substring(start);
     }
 
     @Override
-    public synchronized IASString substring(int start, int end) {
+    public synchronized IASStringable substring(int start, int end) {
         return super.substring(start, end);
     }
 
