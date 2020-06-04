@@ -11,8 +11,6 @@ public interface IASStringBuilderable extends Serializable, Comparable<IASString
 
     IASStringBuilderable append(StringBuffer strb);
 
-//    public IASStringBuilderable append(IASStringBuffer strb);
-
     IASStringBuilderable append(char[] s, int offset, int len);
 
     IASStringBuilderable append(char[] str);
@@ -20,6 +18,8 @@ public interface IASStringBuilderable extends Serializable, Comparable<IASString
     IASStringBuilderable append(boolean b);
 
     IASStringBuilderable append(int i);
+
+    IASStringBuilderable append(char c);
 
     IASStringBuilderable append(long lng);
 

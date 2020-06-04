@@ -17,7 +17,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
         super(capacity);
     }
 
-    public IASStringBuffer(IASString str) {
+    public IASStringBuffer(IASStringable str) {
         super(str);
     }
 

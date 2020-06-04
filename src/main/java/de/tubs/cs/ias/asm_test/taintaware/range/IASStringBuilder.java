@@ -2,6 +2,7 @@ package de.tubs.cs.ias.asm_test.taintaware.range;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
 @SuppressWarnings("Since15")
 public final class IASStringBuilder extends IASAbstractStringBuilder {
@@ -24,7 +25,7 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
         super(capacity);
     }
 
-    public IASStringBuilder(IASString str) {
+    public IASStringBuilder(IASStringable str) {
         super(str);
     }
 
@@ -36,12 +37,12 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
         return (IASStringBuilder) super.append(obj);
     }
 
-    public IASStringBuilder append(IASString str) {
+    public IASStringBuilder append(IASStringable str) {
         return (IASStringBuilder) super.append(str, false);
     }
 
 
-    public IASStringBuilder append(IASString str, boolean merge) {
+    public IASStringBuilder append(IASStringable str, boolean merge) {
         return (IASStringBuilder) super.append(str, merge);
     }
 
@@ -105,7 +106,7 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
         return (IASStringBuilder) super.deleteCharAt(index);
     }
 
-    public IASStringBuilder replace(int start, int end, IASString str) {
+    public IASStringBuilder replace(int start, int end, IASStringable str) {
         return (IASStringBuilder) super.replace(start, end, str);
     }
 
@@ -118,7 +119,7 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
         return (IASStringBuilder) super.insert(offset, obj);
     }
 
-    public IASStringBuilder insert(int offset, IASString str) {
+    public IASStringBuilder insert(int offset, IASStringable str) {
         return (IASStringBuilder) super.insert(offset, str);
     }
 

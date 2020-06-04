@@ -2,6 +2,7 @@ package de.tubs.cs.ias.asm_test.taintaware.array;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASFormatterable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
 import java.io.*;
@@ -44,11 +45,11 @@ public class IASFormatter implements IASFormatterable {
         this(file, IASString.fromString(Charset.defaultCharset().name()));
     }
 
-    public IASFormatter(File file, IASString csn) throws FileNotFoundException {
+    public IASFormatter(File file, IASStringable csn) throws FileNotFoundException {
         this(file, csn, Locale.getDefault());
     }
 
-    public IASFormatter(File file, IASString csn, Locale l) throws FileNotFoundException {
+    public IASFormatter(File file, IASStringable csn, Locale l) throws FileNotFoundException {
         this(new FileOutputStream(file), csn, l);
     }
 
@@ -60,11 +61,11 @@ public class IASFormatter implements IASFormatterable {
         this(o, IASString.fromString(Charset.defaultCharset().name()));
     }
 
-    public IASFormatter(OutputStream o, IASString csn) {
+    public IASFormatter(OutputStream o, IASStringable csn) {
         this(o, csn, Locale.getDefault());
     }
 
-    public IASFormatter(OutputStream o, IASString csn, Locale l) {
+    public IASFormatter(OutputStream o, IASStringable csn, Locale l) {
         this(new PrintWriter(new OutputStreamWriter(o, Charset.forName(csn.getString()))), l);
     }
 
@@ -72,16 +73,16 @@ public class IASFormatter implements IASFormatterable {
         this((Appendable) o);
     }
 
-    public IASFormatter(IASString fileName) throws FileNotFoundException {
+    public IASFormatter(IASStringable fileName) throws FileNotFoundException {
         this(new File(fileName.getString()));
     }
 
-    public IASFormatter(IASString fileName, IASString csn) throws FileNotFoundException {
+    public IASFormatter(IASStringable fileName, IASStringable csn) throws FileNotFoundException {
         this(new File(fileName.getString()), csn);
 
     }
 
-    public IASFormatter(IASString fileName, IASString csn, Locale l) throws FileNotFoundException {
+    public IASFormatter(IASStringable fileName, IASStringable csn, Locale l) throws FileNotFoundException {
         this(new File(fileName.getString()), csn, l);
 
     }
@@ -448,8 +449,8 @@ public class IASFormatter implements IASFormatterable {
         }
 
         void transform(FormatToken formatToken, Calendar aCalendar,
-                       IASStringBuilder aResult) {
-            this.result = aResult;
+                       IASStringBuilderable aResult) {
+            this.result = (IASStringBuilder) aResult;
             this.calendar = aCalendar;
             char suffix = formatToken.getDateSuffix();
 
@@ -798,7 +799,7 @@ public class IASFormatter implements IASFormatterable {
                 Arrays.fill(zeros, '0');
                 result.insert(startIndex, zeros);
             }
-            return (IASString) result.toIASString();
+            return result.toIASString();
         }
 
         private DateFormatSymbols getDateFormatSymbols() {
@@ -923,7 +924,7 @@ public class IASFormatter implements IASFormatterable {
 
             if (Character.isUpperCase(token.getConversionType())) {
                 if (null != result) {
-                    result = (IASString) result.toUpperCase(Locale.US);
+                    result = result.toUpperCase(Locale.US);
                 }
             }
             return result;
@@ -1171,7 +1172,7 @@ public class IASFormatter implements IASFormatterable {
         /*
          * Pads characters to the formatted string.
          */
-        private IASString padding(IASStringBuilder source, int startIndex) {
+        private IASString padding(IASStringBuilderable source, int startIndex) {
             int start = startIndex;
             boolean paddingRight = formatToken
                     .isFlagSet(FormatToken.FLAG_MINUS);
@@ -1330,7 +1331,7 @@ public class IASFormatter implements IASFormatterable {
             if (isNegative
                     && formatToken.isFlagSet(FormatToken.FLAG_PARENTHESIS)) {
                 result = wrapParentheses(result);
-                return (IASString) result.toIASString();
+                return result.toIASString();
 
             }
             if (isNegative && formatToken.isFlagSet(FormatToken.FLAG_ZERO)) {
@@ -1344,7 +1345,7 @@ public class IASFormatter implements IASFormatterable {
          * formatToken.FLAG_PARENTHESIS is set. 'result' is used as an in-out
          * parameter.
          */
-        private IASStringBuilder wrapParentheses(IASStringBuilder result) {
+        private IASStringBuilder wrapParentheses(IASStringBuilderable result) {
             // delete the '-'
             result.deleteCharAt(0);
             result.insert(0, '(');
@@ -1356,7 +1357,7 @@ public class IASFormatter implements IASFormatterable {
                 result.append(')');
                 padding(result, 0);
             }
-            return result;
+            return (IASStringBuilder) result;
         }
 
         private IASString transformFromSpecialNumber() {
@@ -1496,7 +1497,7 @@ public class IASFormatter implements IASFormatterable {
             if (isNegative
                     && formatToken.isFlagSet(FormatToken.FLAG_PARENTHESIS)) {
                 result = wrapParentheses(result);
-                return (IASString) result.toIASString();
+                return result.toIASString();
 
             }
             if (isNegative && formatToken.isFlagSet(FormatToken.FLAG_ZERO)) {
@@ -1583,7 +1584,7 @@ public class IASFormatter implements IASFormatterable {
             if (getDecimalFormatSymbols().getMinusSign() == result.charAt(0)) {
                 if (formatToken.isFlagSet(FormatToken.FLAG_PARENTHESIS)) {
                     result = wrapParentheses(result);
-                    return (IASString) result.toIASString();
+                    return result.toIASString();
                 }
             } else {
                 if (formatToken.isFlagSet(FormatToken.FLAG_SPACE)) {
@@ -1674,9 +1675,9 @@ public class IASFormatter implements IASFormatterable {
 
         private char minusSign;
 
-        FloatUtil(IASStringBuilder result, FormatToken formatToken,
+        FloatUtil(IASStringBuilderable result, FormatToken formatToken,
                   DecimalFormat decimalFormat, Object argument) {
-            this.result = result;
+            this.result = (IASStringBuilder) result;
             this.formatToken = formatToken;
             this.decimalFormat = decimalFormat;
             this.argument = argument;
@@ -1684,8 +1685,8 @@ public class IASFormatter implements IASFormatterable {
                     .getMinusSign();
         }
 
-        void transform(FormatToken aFormatToken, IASStringBuilder aResult) {
-            this.result = aResult;
+        void transform(FormatToken aFormatToken, IASStringBuilderable aResult) {
+            this.result = (IASStringBuilder) aResult;
             this.formatToken = aFormatToken;
             switch (formatToken.getConversionType()) {
                 case 'e':
@@ -1961,8 +1962,8 @@ public class IASFormatter implements IASFormatterable {
             return plainText;
         }
 
-        void setPlainText(IASString plainText) {
-            this.plainText = plainText;
+        void setPlainText(IASStringable plainText) {
+            this.plainText = (IASString) plainText;
         }
 
         int getWidth() {
@@ -1982,7 +1983,7 @@ public class IASFormatter implements IASFormatterable {
         }
 
         IASString getStrFlags() {
-            return (IASString) strFlags.toIASString();
+            return strFlags.toIASString();
         }
 
         int getFlags() {

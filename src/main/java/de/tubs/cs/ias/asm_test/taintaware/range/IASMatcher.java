@@ -1,6 +1,8 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASMatchResult;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASMatcherReplacement;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
 import java.lang.reflect.Field;
 import java.util.function.Function;
@@ -32,7 +34,7 @@ public class IASMatcher {
         this.matcher = pattern.getPattern().matcher(input);
     }
 
-    public IASMatcher appendReplacement(IASStringBuffer sb, IASString replacement) {
+    public IASMatcher appendReplacement(IASStringBuffer sb, IASStringable replacement) {
         IASMatcherReplacement replacer = IASMatcherReplacement.createReplacement(replacement, new IASStringBuilder());
         int end = this.start();
 
@@ -61,7 +63,7 @@ public class IASMatcher {
         return this.matcher.end(group);
     }
 
-    public int end(IASString name) {
+    public int end(IASStringable name) {
         return this.matcher.end(name.toString());
     }
 
@@ -81,7 +83,7 @@ public class IASMatcher {
         return this.input.substring(this.start(group), this.end(group));
     }
 
-    public IASString group(IASString name) {
+    public IASString group(IASStringable name) {
         return this.input.substring(this.start(name), this.end(name));
     }
 
@@ -113,11 +115,11 @@ public class IASMatcher {
         return this.pattern;
     }
 
-    public static IASString quoteReplacement(IASString s) {
+    public static IASString quoteReplacement(IASStringable s) {
         // From Apache Harmony
         // first check whether we have smth to quote
         if (s.indexOf('\\') < 0 && s.indexOf('$') < 0)
-            return s;
+            return (IASString) s;
         IASStringBuilder res = new IASStringBuilder(s.length() * 2);
         IASString charString;
         int len = s.length();
@@ -134,7 +136,7 @@ public class IASMatcher {
                     res.append('\\');
                     break;
                 default:
-                    charString = s.substring(i, i + 1);
+                    charString = (IASString) s.substring(i, i + 1);
                     res.append(charString);
             }
         }
@@ -155,7 +157,7 @@ public class IASMatcher {
         return this.matcher.regionStart();
     }
 
-    public IASString replaceAll(IASString replacement) {
+    public IASString replaceAll(IASStringable replacement) {
         IASStringBuffer sb = new IASStringBuffer();
         this.reset();
         while (this.find()) {
@@ -164,7 +166,7 @@ public class IASMatcher {
         return this.appendTail(sb).toIASString();
     }
 
-    public IASString replaceFirst(IASString replacement) {
+    public IASString replaceFirst(IASStringable replacement) {
         String replacedStr = this.input.getString().replaceFirst(this.pattern.pattern().getString(), replacement.getString());
         IASString newStr = new IASString(replacedStr, this.input.getAllRangesAdjusted());
 
@@ -175,7 +177,7 @@ public class IASMatcher {
                 final int end = this.end();
 
                 newStr.initialize();
-                newStr.getTaintInformation().replaceTaintInformation(start, end, replacement.getAllRangesAdjusted(), replacement.length(), true);
+                newStr.getTaintInformation().replaceTaintInformation(start, end, ((IASString) replacement).getAllRangesAdjusted(), replacement.length(), true);
             }
         }
         if (!newStr.isTainted()) {
@@ -208,7 +210,7 @@ public class IASMatcher {
         return this.matcher.start(group);
     }
 
-    public int start(IASString name) {
+    public int start(IASStringable name) {
         return this.matcher.start(name.toString());
     }
 

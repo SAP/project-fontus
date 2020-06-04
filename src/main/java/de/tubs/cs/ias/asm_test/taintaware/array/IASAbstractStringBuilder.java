@@ -19,10 +19,10 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         this.builder = new StringBuilder(capacity);
     }
 
-    public IASAbstractStringBuilder(IASString str) {
+    public IASAbstractStringBuilder(IASStringable str) {
         this.builder = new StringBuilder(str.getString());
-        if (str.isInitialized()) {
-            this.taintInformation = str.getTaintInformation().clone();
+        if (((IASString) str).isInitialized()) {
+            this.taintInformation = ((IASString) str).getTaintInformation().clone();
         }
     }
 
@@ -96,7 +96,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         return this;
     }
 
-    public IASAbstractStringBuilder append(IASStringBuffer strb) {
+    public IASAbstractStringBuilder append(IASStringBuilderable strb) {
         this.append(strb.toIASString());
         return this;
     }
@@ -349,7 +349,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     }
 
     public IASString substring(int start, int end) {
-        return (IASString) this.toIASString().substring(start, end);
+        return this.toIASString().substring(start, end);
     }
 
     public void setCharAt(int index, char c) {

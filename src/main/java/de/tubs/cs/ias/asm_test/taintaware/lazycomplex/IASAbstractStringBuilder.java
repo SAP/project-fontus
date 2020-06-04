@@ -34,10 +34,10 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         }
     }
 
-    public IASAbstractStringBuilder(IASString string) {
+    public IASAbstractStringBuilder(IASStringable string) {
         this.stringBuilder = new StringBuilder(string.getString());
-        if (string.isInitialized()) {
-            this.taintInformation = new IASTaintInformation(string.getTaintRanges());
+        if (((IASString) string).isInitialized()) {
+            this.taintInformation = new IASTaintInformation(((IASString) string).getTaintRanges());
         }
     }
 
@@ -375,7 +375,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     public void derive(IASOperation operation, boolean initializeIfNecessary) {
         if (this.isInitialized()) {
             this.taintInformation = new IASTaintInformation(this.stringBuilder.toString(), this.taintInformation, operation);
-        } else if(initializeIfNecessary) {
+        } else if (initializeIfNecessary) {
             this.taintInformation = new IASTaintInformation(this.stringBuilder.toString(), new IASTaintInformation(), operation);
         }
     }

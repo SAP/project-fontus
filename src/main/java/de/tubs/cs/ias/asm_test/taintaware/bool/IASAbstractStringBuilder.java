@@ -36,7 +36,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         this.builder = new StringBuilder(capacity);
     }
 
-    public IASAbstractStringBuilder(IASString str) {
+    public IASAbstractStringBuilder(IASStringable str) {
         this.builder = new StringBuilder(str.length() + 16);
         this.builder.append(str);
         this.mergeTaint(str);

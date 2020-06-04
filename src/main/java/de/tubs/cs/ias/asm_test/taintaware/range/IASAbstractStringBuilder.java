@@ -23,10 +23,10 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         this.builder = new StringBuilder(capacity);
     }
 
-    public IASAbstractStringBuilder(IASString str) {
+    public IASAbstractStringBuilder(IASStringable str) {
         this.builder = new StringBuilder(str.getString());
         if (str.isTainted()) {
-            this.taintInformation = new IASTaintInformation(str.getAllRangesAdjusted());
+            this.taintInformation = new IASTaintInformation(((IASString) str).getAllRangesAdjusted());
         }
     }
 

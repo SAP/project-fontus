@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.array;
 
 import de.tubs.cs.ias.asm_test.Constants;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
 import java.util.stream.IntStream;
@@ -59,7 +60,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
-    public synchronized IASStringBuffer append(IASStringBuffer strb) {
+    public synchronized IASStringBuffer append(IASStringBuilderable strb) {
         return (IASStringBuffer) super.append(strb);
     }
 

@@ -27,11 +27,11 @@ public class IASFormatter implements IASFormatterable {
         this.formatter = new Formatter(file);
     }
 
-    public IASFormatter(File file, IASString csn) throws FileNotFoundException, UnsupportedEncodingException {
+    public IASFormatter(File file, IASStringable csn) throws FileNotFoundException, UnsupportedEncodingException {
         this.formatter = new Formatter(file, csn.getString());
     }
 
-    public IASFormatter(File file, IASString csn, Locale l) throws FileNotFoundException, UnsupportedEncodingException {
+    public IASFormatter(File file, IASStringable csn, Locale l) throws FileNotFoundException, UnsupportedEncodingException {
         this.formatter = new Formatter(file, csn.getString(), l);
     }
 
@@ -43,11 +43,11 @@ public class IASFormatter implements IASFormatterable {
         this.formatter = new Formatter(o);
     }
 
-    public IASFormatter(OutputStream o, IASString csn) throws UnsupportedEncodingException {
+    public IASFormatter(OutputStream o, IASStringable csn) throws UnsupportedEncodingException {
         this.formatter = new Formatter(o, csn.getString());
     }
 
-    public IASFormatter(OutputStream o, IASString csn, Locale l) throws UnsupportedEncodingException {
+    public IASFormatter(OutputStream o, IASStringable csn, Locale l) throws UnsupportedEncodingException {
         this.formatter = new Formatter(o, csn.getString(), l);
     }
 
@@ -55,16 +55,16 @@ public class IASFormatter implements IASFormatterable {
         this.formatter = new Formatter(o);
     }
 
-    public IASFormatter(IASString fileName) throws FileNotFoundException {
+    public IASFormatter(IASStringable fileName) throws FileNotFoundException {
         this.formatter = new Formatter(fileName.getString());
     }
 
-    public IASFormatter(IASString fileName, IASString csn) throws UnsupportedEncodingException, FileNotFoundException {
+    public IASFormatter(IASStringable fileName, IASStringable csn) throws UnsupportedEncodingException, FileNotFoundException {
         this.formatter = new Formatter(fileName.getString(), csn.getString());
 
     }
 
-    public IASFormatter(IASString fileName, IASString csn, Locale l) throws FileNotFoundException, UnsupportedEncodingException {
+    public IASFormatter(IASStringable fileName, IASStringable csn, Locale l) throws FileNotFoundException, UnsupportedEncodingException {
         this.formatter = new Formatter(fileName.getString(), csn.getString(), l);
 
     }

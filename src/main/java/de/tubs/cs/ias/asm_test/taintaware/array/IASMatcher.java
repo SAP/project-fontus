@@ -1,5 +1,8 @@
 package de.tubs.cs.ias.asm_test.taintaware.array;
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASMatchResult;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
+
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -32,11 +35,11 @@ public class IASMatcher {
         this.matcher = pattern.getPattern().matcher(input);
     }
 
-    public IASMatcher appendReplacement(IASStringBuffer sb, IASString replacement) {
+    public IASMatcher appendReplacement(IASStringBuffer sb, IASStringable replacement) {
         IASMatcher.Replacement replacer = IASMatcher.Replacement.createReplacement(replacement);
         int end = this.start();
 
-        IASString first = (IASString) this.input.substring(appendPos, end);
+        IASString first = this.input.substring(appendPos, end);
         sb.append(first);
         IASString currRepl = replacer.doReplacement(this.matcher, this.input);
         sb.append(currRepl);
@@ -47,7 +50,7 @@ public class IASMatcher {
 
     public IASStringBuffer appendTail(IASStringBuffer sb) {
         if (appendPos < this.input.length()) {
-            IASString last = (IASString) this.input.substring(appendPos);
+            IASString last = this.input.substring(appendPos);
             sb.append(last);
         }
         return sb;
@@ -61,7 +64,7 @@ public class IASMatcher {
         return this.matcher.end(group);
     }
 
-    public int end(IASString name) {
+    public int end(IASStringable name) {
         return this.matcher.end(name.toString());
     }
 
@@ -74,15 +77,15 @@ public class IASMatcher {
     }
 
     public IASString group() {
-        return (IASString) this.input.substring(this.start(), this.end());
+        return this.input.substring(this.start(), this.end());
     }
 
     public IASString group(int group) {
-        return (IASString) this.input.substring(this.start(group), this.end(group));
+        return this.input.substring(this.start(group), this.end(group));
     }
 
-    public IASString group(IASString name) {
-        return (IASString) this.input.substring(this.start(name), this.end(name));
+    public IASString group(IASStringable name) {
+        return this.input.substring(this.start(name), this.end(name));
     }
 
     public int groupCount() {
@@ -113,11 +116,11 @@ public class IASMatcher {
         return this.pattern;
     }
 
-    public static IASString quoteReplacement(IASString s) {
+    public static IASString quoteReplacement(IASStringable s) {
         // From Apache Harmony
         // first check whether we have smth to quote
         if (s.indexOf('\\') < 0 && s.indexOf('$') < 0)
-            return s;
+            return (IASString) s;
         IASStringBuilder res = new IASStringBuilder(s.length() * 2);
         IASString charString;
         int len = s.length();
@@ -139,7 +142,7 @@ public class IASMatcher {
             }
         }
 
-        return (IASString) res.toIASString();
+        return res.toIASString();
     }
 
     public IASMatcher region(int start, int end) {
@@ -155,16 +158,16 @@ public class IASMatcher {
         return this.matcher.regionStart();
     }
 
-    public IASString replaceAll(IASString replacement) {
+    public IASString replaceAll(IASStringable replacement) {
         IASStringBuffer sb = new IASStringBuffer();
         this.reset();
         while (this.find()) {
             this.appendReplacement(sb, replacement);
         }
-        return (IASString) this.appendTail(sb).toIASString();
+        return this.appendTail(sb).toIASString();
     }
 
-    public IASString replaceFirst(IASString replacement) {
+    public IASString replaceFirst(IASStringable replacement) {
         String replacedStr = this.input.getString().replaceFirst(this.pattern.pattern().getString(), replacement.getString());
         IASTaintInformation ti = new IASTaintInformation(this.input.getTaints());
 
@@ -175,7 +178,7 @@ public class IASMatcher {
                 final int end = this.end();
 
                 ti.removeTaintFor(start, end, true);
-                ti.insertTaint(start, replacement.getTaints());
+                ti.insertTaint(start, ((IASString) replacement).getTaints());
             }
         }
         IASString newStr;
@@ -211,7 +214,7 @@ public class IASMatcher {
         return this.matcher.start(group);
     }
 
-    public int start(IASString name) {
+    public int start(IASStringable name) {
         return this.matcher.start(name.toString());
     }
 
@@ -271,12 +274,12 @@ public class IASMatcher {
          */
         private final IASString clearedReplacementString;
 
-        private Replacement(IASString clearedReplacementString, HashMap<Object, Integer> groups) {
-            this.clearedReplacementString = clearedReplacementString;
+        private Replacement(IASStringable clearedReplacementString, HashMap<Object, Integer> groups) {
+            this.clearedReplacementString = (IASString) clearedReplacementString;
             this.groups = groups;
         }
 
-        public IASString doReplacement(Matcher m, IASString orig) {
+        public IASString doReplacement(Matcher m, IASStringable orig) {
             int lastIndex = -1;
             int shift = 0;
             IASStringBuffer stringBuffer = new IASStringBuffer(this.clearedReplacementString);
@@ -305,10 +308,10 @@ public class IASMatcher {
                 stringBuffer.insert(index + shift, insert);
                 shift += insert.length();
             }
-            return (IASString) stringBuffer.toIASString();
+            return stringBuffer.toIASString();
         }
 
-        public static IASMatcher.Replacement createReplacement(IASString repl) {
+        public static IASMatcher.Replacement createReplacement(IASStringable repl) {
             LinkedHashMap<Object, Integer> groups = new LinkedHashMap<>();
 
             boolean escaped = false;
@@ -379,7 +382,7 @@ public class IASMatcher {
                 }
             }
 
-            return new IASMatcher.Replacement((IASString) clearedStringBuilder.toIASString(), groups);
+            return new IASMatcher.Replacement(clearedStringBuilder.toIASString(), groups);
         }
 
         private static boolean isAlphanum(char c) {

@@ -1,5 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.array;
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,20 +17,20 @@ public class IASPattern {
         this(IASString.valueOf(pattern.pattern()), pattern.flags());
     }
 
-    private IASPattern(IASString p, int f) {
-        this.pattern = Pattern.compile(p.toString(), f);
-        this.patternString = p;
+    private IASPattern(IASStringable p, int f) {
+        this.pattern = Pattern.compile(p.getString(), f);
+        this.patternString = (IASString) p;
     }
 
     public Predicate<IASString> asPredicate() {
         return string -> this.pattern.asPredicate().test(string.getString());
     }
 
-    public static IASPattern compile(IASString string) {
+    public static IASPattern compile(IASStringable string) {
         return compile(string, 0);
     }
 
-    public static IASPattern compile(IASString string, int flags) {
+    public static IASPattern compile(IASStringable string, int flags) {
         return new IASPattern(string, flags);
     }
 
@@ -40,7 +42,7 @@ public class IASPattern {
         return new IASMatcher(this, input);
     }
 
-    public static boolean matches(IASString regex, CharSequence input) {
+    public static boolean matches(IASStringable regex, CharSequence input) {
         return Pattern.matches(regex.getString(), input);
     }
 
@@ -48,7 +50,7 @@ public class IASPattern {
         return this.patternString;
     }
 
-    public static IASString quote(IASString s) throws IOException {
+    public static IASString quote(IASStringable s) throws IOException {
         // From Apache Harmony
         IASStringBuilder sb = new IASStringBuilder().append("\\Q"); //$NON-NLS-1$
         int apos = 0;
@@ -58,7 +60,7 @@ public class IASPattern {
             apos = k + 2;
         }
 
-        return (IASString) ((IASStringBuilder) sb.append(s.substring(apos)).append("\\E")).toIASString(); //$NON-NLS-1$
+        return sb.append(s.substring(apos)).append("\\E").toIASString(); //$NON-NLS-1$
     }
 
     public IASString[] split(CharSequence input) {
@@ -81,7 +83,7 @@ public class IASPattern {
             if (result.size() != 0 || matchSize > 0) {
                 int end = matcher.start();
 
-                IASString part = (IASString) string.substring(start, end);
+                IASString part = string.substring(start, end);
                 result.add(part);
 
             }
@@ -89,7 +91,7 @@ public class IASPattern {
         }
 
         if (start < string.length() || limit < 0) {
-            IASString endPart = (IASString) string.substring(start);
+            IASString endPart = string.substring(start);
             result.add(endPart);
         } else if (start == 0 && string.length() == 0) {
             result.add(string);
