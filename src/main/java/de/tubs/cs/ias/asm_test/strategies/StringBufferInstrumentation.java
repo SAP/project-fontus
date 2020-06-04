@@ -29,7 +29,11 @@ public class StringBufferInstrumentation implements InstrumentationStrategy {
 
     @Override
     public String instrumentDesc(String desc) {
-        return Constants.strBufferPattern.matcher(desc).replaceAll(this.stringConfig.getTStringBufferDesc());
+        String parameters = desc.substring(desc.indexOf("(") + 1, desc.indexOf(")"));
+        parameters = Constants.strBufferPattern.matcher(parameters).replaceAll(this.stringConfig.getMethodTStringBufferDesc());
+        String returnType = desc.substring(desc.indexOf(")") + 1);
+        returnType = Constants.strBufferPattern.matcher(returnType).replaceAll(this.stringConfig.getTStringBufferDesc());
+        return desc.substring(0, desc.indexOf("(") + 1) + parameters + ")" + returnType;
     }
 
     @Override
