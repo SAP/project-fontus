@@ -53,7 +53,7 @@ public class IASPattern {
 
     public static IASString quote(IASStringable s) throws IOException {
         // From Apache Harmony
-        IASStringBuilder sb = (IASStringBuilder) new IASStringBuilder().append("\\Q"); //$NON-NLS-1$
+        IASStringBuilder sb = new IASStringBuilder().append("\\Q"); //$NON-NLS-1$
         int apos = 0;
         int k;
         while ((k = s.indexOf(new IASString("\\E"), apos)) >= 0) { //$NON-NLS-1$
@@ -61,7 +61,7 @@ public class IASPattern {
             apos = k + 2;
         }
 
-        return (IASString) ((IASStringBuilder) sb.append(s.substring(apos)).append("\\E")).toIASString(); //$NON-NLS-1$
+        return sb.append(s.substring(apos)).append("\\E").toIASString(); //$NON-NLS-1$
     }
 
     public IASString[] split(CharSequence input) {

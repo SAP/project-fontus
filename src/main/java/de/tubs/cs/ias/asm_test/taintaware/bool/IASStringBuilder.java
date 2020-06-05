@@ -119,17 +119,7 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
     }
 
     @Override
-    public IASStringBuilder append(StringBuffer sb) {
-        return (IASStringBuilder) super.append(sb);
-    }
-
-    @Override
-    public IASStringBuilder append(IASAbstractStringBuilder sb) {
-        return (IASStringBuilder) super.append(sb);
-    }
-
-    @Override
-    public IASStringBuilder append(IASStringBuilder asb) {
+    public IASStringBuilder append(IASStringBuilderable asb) {
         return (IASStringBuilder) super.append(asb);
     }
 

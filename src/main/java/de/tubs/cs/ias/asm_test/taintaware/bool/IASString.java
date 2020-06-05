@@ -28,9 +28,19 @@ public final class IASString implements IASTaintAware, IASStringable {
         this.tainted = false;
     }
 
+    public IASString(IASStringable s) {
+        this.str = s.getString();
+        this.tainted = s.isTainted();
+    }
+
     public IASString(String s) {
         this.str = s;
         this.tainted = false;
+    }
+
+    public IASString(IASStringBuilderable strb) {
+        this.str = strb.toString();
+        this.tainted = strb.isTainted();
     }
 
     public IASString(String s, boolean tainted) {
@@ -566,13 +576,13 @@ public final class IASString implements IASTaintAware, IASStringable {
     }
 
     //TODO: sound?
-    public static IASString format(IASString format, Object... args) {
+    public static IASString format(IASStringable format, Object... args) {
         //return new IASString(String.format(format.toString(), args), isTainted(args));
         return new IASFormatter().format(format, args).toIASString();
     }
 
     //TODO: sound?
-    public static IASString format(Locale l, IASString format, Object... args) {
+    public static IASString format(Locale l, IASStringable format, Object... args) {
         //return new IASString(String.format(l, format.toString(), args), isTainted(args));
         return new IASFormatter(l).format(format, args).toIASString();
     }

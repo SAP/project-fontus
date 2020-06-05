@@ -25,12 +25,12 @@ public class IASMatchResultImpl implements IASMatchResult {
 
     @Override
     public IASString group() {
-        return (IASString) this.string.substring(this.start(), this.end());
+        return this.string.substring(this.start(), this.end());
     }
 
     @Override
     public IASString group(int group) {
-        return (IASString) this.string.substring(this.start(group), this.end(group));
+        return this.string.substring(this.start(group), this.end(group));
     }
 
     @Override

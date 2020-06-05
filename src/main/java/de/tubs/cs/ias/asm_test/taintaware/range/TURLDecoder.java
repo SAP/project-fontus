@@ -1,5 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 

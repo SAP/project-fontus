@@ -53,11 +53,11 @@ public class IASString implements IASStringable, IASLazyComplexAware {
         return tstr;
     }
 
-    public IASString(char value[]) {
+    public IASString(char[] value) {
         this(new String(value));
     }
 
-    public IASString(char value[], int offset, int count) {
+    public IASString(char[] value, int offset, int count) {
         this(new String(value, offset, count));
     }
 
@@ -65,32 +65,32 @@ public class IASString implements IASStringable, IASLazyComplexAware {
         this(new String(codePoints, offset, count));
     }
 
-    public IASString(byte ascii[], int hibyte, int offset, int count) {
+    public IASString(byte[] ascii, int hibyte, int offset, int count) {
         this(new String(ascii, hibyte, offset, count));
     }
 
-    public IASString(byte ascii[], int hibyte) {
+    public IASString(byte[] ascii, int hibyte) {
         this(new String(ascii, hibyte));
     }
 
-    public IASString(byte bytes[], int offset, int length, String charsetName)
+    public IASString(byte[] bytes, int offset, int length, String charsetName)
             throws UnsupportedEncodingException {
         this(new String(bytes, offset, length, charsetName));
     }
 
-    public IASString(byte bytes[], int offset, int length, Charset charset) {
+    public IASString(byte[] bytes, int offset, int length, Charset charset) {
         this(new String(bytes, offset, length, charset));
     }
 
-    public IASString(byte bytes[], String charsetName) throws UnsupportedEncodingException {
+    public IASString(byte[] bytes, String charsetName) throws UnsupportedEncodingException {
         this(new String(bytes, charsetName));
     }
 
-    public IASString(byte bytes[], Charset charset) {
+    public IASString(byte[] bytes, Charset charset) {
         this(new String(bytes, charset));
     }
 
-    public IASString(byte bytes[], int offset, int length) {
+    public IASString(byte[] bytes, int offset, int length) {
         this(new String(bytes, offset, length));
     }
 
@@ -363,7 +363,7 @@ public class IASString implements IASStringable, IASLazyComplexAware {
 
     @Override
     public IASString[] split(IASStringable regex, int limit) {
-        return IASPattern.compile((IASString) regex).split(this, limit);
+        return IASPattern.compile(regex).split(this, limit);
     }
 
     @Override
@@ -484,7 +484,7 @@ public class IASString implements IASStringable, IASLazyComplexAware {
                 sb.append(iasDelimiter);
                 sb.append(IASString.valueOf(elements[i]));
             }
-            return (IASString) sb.toIASString();
+            return sb.toIASString();
         }
     }
 
@@ -511,13 +511,13 @@ public class IASString implements IASStringable, IASLazyComplexAware {
         return isTainted;
     }
 
-    public static IASString format(IASString format, Object... args) {
+    public static IASString format(IASStringable format, Object... args) {
         // TODO Implement rainting
         return new IASFormatter().format(format, args).toIASString();
     }
 
 
-    public static IASString format(Locale l, IASString format, Object... args) {
+    public static IASString format(Locale l, IASStringable format, Object... args) {
         // TODO Implement rainting
         return new IASFormatter(l).format(format, args).toIASString();
     }
@@ -526,9 +526,9 @@ public class IASString implements IASStringable, IASLazyComplexAware {
         if (obj instanceof IASString) {
             return (IASString) obj;
         } else if (obj instanceof IASStringBuffer) {
-            return (IASString) ((IASStringBuffer) obj).toIASString();
+            return ((IASStringBuffer) obj).toIASString();
         } else if (obj instanceof IASStringBuilder) {
-            return (IASString) ((IASStringBuilder) obj).toIASString();
+            return ((IASStringBuilder) obj).toIASString();
         } else {
             return new IASString(String.valueOf(obj));
         }
@@ -536,25 +536,25 @@ public class IASString implements IASStringable, IASLazyComplexAware {
 
     public static IASString valueOf(CharSequence s, int start, int end) {
         if (s instanceof IASString) {
-            return (IASString) ((IASString) s).substring(start, end);
+            return ((IASString) s).substring(start, end);
         } else {
             return IASString.valueOf(s.subSequence(start, end));
         }
     }
 
-    public static IASString valueOf(char data[]) {
+    public static IASString valueOf(char[] data) {
         return new IASString(String.valueOf(data));
     }
 
-    public static IASString valueOf(char data[], int offset, int count) {
+    public static IASString valueOf(char[] data, int offset, int count) {
         return new IASString(String.valueOf(data, offset, count));
     }
 
-    public static IASString copyValueOf(char data[], int offset, int count) {
+    public static IASString copyValueOf(char[] data, int offset, int count) {
         return new IASString(String.copyValueOf(data, offset, count));
     }
 
-    public static IASString copyValueOf(char data[]) {
+    public static IASString copyValueOf(char[] data) {
         return new IASString(String.copyValueOf(data));
     }
 

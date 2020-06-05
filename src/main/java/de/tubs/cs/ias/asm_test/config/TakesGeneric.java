@@ -14,7 +14,7 @@ import java.util.List;
 public class TakesGeneric {
 
     @XmlElement(name = "function")
-    private FunctionCall functionCall;
+    private final FunctionCall functionCall;
 
     @JacksonXmlElementWrapper(localName = "conversions")
     //@XmlElement(name = "conversion")

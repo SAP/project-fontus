@@ -9,10 +9,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Source {
 
     @XmlElement
-    private String name;
+    private final String name;
 
     @XmlElement
-    private FunctionCall function;
+    private final FunctionCall function;
 
     public Source() {
         this.name = "";

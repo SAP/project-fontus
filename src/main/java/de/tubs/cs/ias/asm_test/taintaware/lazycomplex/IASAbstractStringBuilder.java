@@ -61,13 +61,13 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     }
 
     @Override
-    public IASStringBuilderable append(IASStringable str) {
+    public IASStringBuilderable append(IASStringBuilderable str) {
         return this.append((Object) str);
     }
 
     @Override
-    public IASStringBuilderable append(StringBuffer strb) {
-        return this.append((Object) strb);
+    public IASStringBuilderable append(IASStringable str) {
+        return this.append((Object) str);
     }
 
     @Override
@@ -101,7 +101,8 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
 
     @Override
     public IASStringBuilderable append(int i) {
-        return null;
+        IASString str = IASString.valueOf(i);
+        return this.append((Object) str);
     }
 
     @Override

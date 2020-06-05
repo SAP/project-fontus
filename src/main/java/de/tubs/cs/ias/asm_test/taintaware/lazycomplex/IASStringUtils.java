@@ -83,7 +83,7 @@ public final class IASStringUtils {
                 IASString strArg = (IASString) a;
             }
             IASString arg = a == null ? new IASString("null") : IASString.valueOf(a);
-            ret = (IASString) ret.replaceFirst(CONCAT_PLACEHOLDER, arg);
+            ret = ret.replaceFirst(CONCAT_PLACEHOLDER, arg);
         }
         return ret;
 

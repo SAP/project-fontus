@@ -15,10 +15,10 @@ import java.util.List;
 public class Sink {
 
     @XmlElement
-    private String name;
+    private final String name;
 
     @XmlElement
-    private FunctionCall function;
+    private final FunctionCall function;
 
     @JacksonXmlElementWrapper(localName = "parameters")
     @XmlElement(name = "parameter")

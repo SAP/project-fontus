@@ -31,7 +31,7 @@ public class IASStringBuilder extends IASAbstractStringBuilder {
     }
 
     @Override
-    public IASStringBuilder append(StringBuffer strb) {
+    public IASStringBuilder append(IASStringBuilderable strb) {
         return (IASStringBuilder) super.append(strb);
     }
 

@@ -90,24 +90,20 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
 
 
     public IASAbstractStringBuilder append(IASStringable str, boolean merge) {
-        List<IASTaintRange> ranges = ((IASString) str).getAllRangesAdjusted();
+        IASString string = IASString.valueOf(str);
+        List<IASTaintRange> ranges = string.getAllRangesAdjusted();
         this.appendShifted(ranges, merge);
 
-        this.builder.append(str.toString());
+        this.builder.append(string.getString());
         return this;
     }
 
-    public IASAbstractStringBuilder append(StringBuffer strb) {
-        this.builder.append(strb);
-        return this;
-    }
-
-    public IASAbstractStringBuilder append(IASStringBuffer strb) {
-
-        List<IASTaintRange> ranges = strb.getAllRangesAdjusted();
+    public IASAbstractStringBuilder append(IASStringBuilderable strb) {
+        IASString string = (IASString) strb.toIASString();
+        List<IASTaintRange> ranges = string.getAllRangesAdjusted();
         this.appendShifted(ranges);
 
-        this.builder.append(strb.toString());
+        this.builder.append(string.getString());
 
         return this;
     }

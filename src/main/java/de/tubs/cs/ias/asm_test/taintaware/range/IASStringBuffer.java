@@ -61,12 +61,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
-    public synchronized IASStringBuffer append(StringBuffer strb) {
-        return (IASStringBuffer) super.append(strb);
-    }
-
-    @Override
-    public synchronized IASStringBuffer append(IASStringBuffer strb) {
+    public synchronized IASStringBuffer append(IASStringBuilderable strb) {
         return (IASStringBuffer) super.append(strb);
     }
 

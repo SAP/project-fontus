@@ -7,7 +7,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class SinkParameter {
 
     @XmlElement
-    private int index;
+    private final int index;
 
     public SinkParameter() {
         this.index = -1;

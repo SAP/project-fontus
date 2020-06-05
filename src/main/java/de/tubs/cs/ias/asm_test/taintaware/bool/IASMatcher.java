@@ -11,7 +11,7 @@ import java.util.regex.Matcher;
 public class IASMatcher {
     private IASString input;
     private IASPattern pattern;
-    private Matcher matcher;
+    private final Matcher matcher;
 
     public IASMatcher(Matcher matcher) {
         // TODO Very hacky way, but original text of a matcher is only accessible though reflection
@@ -67,7 +67,7 @@ public class IASMatcher {
     }
 
     public IASString group() {
-        return (IASString) this.input.substring(this.start(), this.end());
+        return this.input.substring(this.start(), this.end());
     }
 
     public IASString group(int group) {
@@ -75,7 +75,7 @@ public class IASMatcher {
     }
 
     public IASString group(IASStringable name) {
-        return (IASString) this.input.substring(this.start(name), this.end(name));
+        return this.input.substring(this.start(name), this.end(name));
     }
 
     public int groupCount() {

@@ -29,10 +29,10 @@ public final class IASStringUtils {
             return (IASString) obj;
         } else if(obj instanceof IASStringBuilder) {
             IASStringBuilder b = (IASStringBuilder) obj;
-            return new IASString((IASString) b.toIASString());
+            return new IASString(b.toIASString());
         } else if(obj instanceof IASStringBuffer) {
             IASStringBuffer b = (IASStringBuffer) obj;
-            return new IASString((IASString) b.toIASString());
+            return new IASString(b.toIASString());
         } else {
 
             throw new IllegalArgumentException(String.format("Obj is of type %s, but only String or TString are allowed!", obj.getClass().getName()));
@@ -84,7 +84,7 @@ public final class IASStringUtils {
                 IASString strArg = (IASString) a;
             }
             IASString arg = a == null ? new IASString("null") : IASString.valueOf(a);
-            ret = (IASString) ret.replaceFirst(CONCAT_PLACEHOLDER, arg);
+            ret = ret.replaceFirst(CONCAT_PLACEHOLDER, arg);
         }
         return ret;
 

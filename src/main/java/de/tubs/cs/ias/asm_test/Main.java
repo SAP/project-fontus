@@ -53,7 +53,7 @@ public final class Main implements Callable<Void> {
     private File configFile;
 
     @CommandLine.Option(
-            names = {"-t", "taintmethod"},
+            names = {"-t", "--taintmethod"},
             required = false,
             paramLabel = "Taint method",
             description = "Taint method, which should be used. Valid values:  ${COMPLETION-CANDIDATES}",

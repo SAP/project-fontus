@@ -528,14 +528,14 @@ public final class IASString implements IASArrayAware, IASStringable {
         return isTainted;
     }
 
-    public static IASStringable format(IASStringable format, Object... args) {
+    public static IASString format(IASStringable format, Object... args) {
         // TODO Implement rainting
 //        return new IASString(String.format(format.toString(), args), isTainted(args));
         return new IASFormatter().format((IASString) format, args).toIASString();
     }
 
 
-    public static IASStringable format(Locale l, IASStringable format, Object... args) {
+    public static IASString format(Locale l, IASStringable format, Object... args) {
         // TODO Implement rainting
 //        return new IASString(String.format(l, format.toString(), args), isTainted(args));
         return new IASFormatter(l).format((IASString) format, args).toIASString();

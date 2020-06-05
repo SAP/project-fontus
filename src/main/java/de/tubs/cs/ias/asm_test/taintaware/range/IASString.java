@@ -32,6 +32,17 @@ public final class IASString implements IASRangeAware, IASStringable {
         setTaint(tainted);
     }
 
+    public IASString(IASStringable s) {
+        this.str = s.getString();
+        this.taintInformation = new IASTaintInformation(((IASString) s).getAllRangesAdjusted());
+    }
+
+    public IASString(IASStringBuilderable strb) {
+        IASString s = (IASString) strb.toIASString();
+        this.str = s.getString();
+        this.taintInformation = new IASTaintInformation(s.getAllRangesAdjusted());
+    }
+
     public IASString(String s, List<IASTaintRange> ranges) {
         this(s);
         this.appendRangesFrom(ranges);
@@ -543,14 +554,14 @@ public final class IASString implements IASRangeAware, IASStringable {
         return isTainted;
     }
 
-    public static IASString format(IASString format, Object... args) {
+    public static IASString format(IASStringable format, Object... args) {
         // TODO Implement rainting
 //        return new IASString(String.format(format.toString(), args), isTainted(args));
         return new IASFormatter().format(format, args).toIASString();
     }
 
 
-    public static IASString format(Locale l, IASString format, Object... args) {
+    public static IASString format(Locale l, IASStringable format, Object... args) {
         // TODO Implement rainting
 //        return new IASString(String.format(l, format.toString(), args), isTainted(args));
         return new IASFormatter(l).format(format, args).toIASString();

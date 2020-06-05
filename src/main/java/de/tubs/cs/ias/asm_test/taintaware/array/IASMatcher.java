@@ -13,7 +13,7 @@ import java.util.regex.Matcher;
 public class IASMatcher {
     private IASString input;
     private IASPattern pattern;
-    private Matcher matcher;
+    private final Matcher matcher;
     private int appendPos = 0;
 
     public IASMatcher(Matcher matcher) {

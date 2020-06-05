@@ -9,7 +9,7 @@ public interface IASStringBuilderable extends Serializable, Comparable<IASString
 
     IASStringBuilderable append(IASStringable str);
 
-    IASStringBuilderable append(StringBuffer strb);
+    IASStringBuilderable append(IASStringBuilderable str);
 
     IASStringBuilderable append(char[] s, int offset, int len);
 

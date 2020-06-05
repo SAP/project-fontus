@@ -129,7 +129,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
 
     public IASAbstractStringBuilder append(Object obj) {
         // TODO: fix?
-        this.builder.append(String.valueOf(obj));
+        this.builder.append(obj);
         return this;
     }
 
@@ -149,21 +149,15 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         return this;
     }
 
-    public IASAbstractStringBuilder append(StringBuffer sb) {
-        this.builder.append(sb);
-        return this;
-    }
-
-    public IASAbstractStringBuilder append(IASAbstractStringBuilder sb) {
-        this.builder.append(sb);
+    public IASAbstractStringBuilder append(IASStringBuilderable sb) {
+        this.builder.append(sb.getBuilder());
         this.mergeTaint(sb);
         return this;
     }
 
-    // TODO: Add the abstract base class
-    IASAbstractStringBuilder append(IASStringBuilder asb) {
-        this.builder.append(asb);
-        this.mergeTaint(asb);
+    public IASAbstractStringBuilder append(IASAbstractStringBuilder sb) {
+        this.builder.append(sb.getBuilder());
+        this.mergeTaint(sb);
         return this;
     }
 

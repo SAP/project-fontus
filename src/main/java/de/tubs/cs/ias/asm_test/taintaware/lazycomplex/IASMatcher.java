@@ -38,7 +38,7 @@ public class IASMatcher {
         IASMatcherReplacement replacer = IASMatcherReplacement.createReplacement(replacement, new IASStringBuilder());
         int end = this.start();
 
-        IASString first = (IASString) this.input.substring(appendPos, end);
+        IASString first = this.input.substring(appendPos, end);
         sb.append(first);
         IASString currRepl = (IASString) replacer.doReplacement(this.matcher, this.input, new IASStringBuilder());
         sb.append(currRepl);
@@ -49,7 +49,7 @@ public class IASMatcher {
 
     public IASStringBuffer appendTail(IASStringBuffer sb) {
         if (appendPos < this.input.length()) {
-            IASString last = (IASString) this.input.substring(appendPos);
+            IASString last = this.input.substring(appendPos);
             sb.append(last);
         }
         return sb;
@@ -76,15 +76,15 @@ public class IASMatcher {
     }
 
     public IASString group() {
-        return (IASString) this.input.substring(this.start(), this.end());
+        return this.input.substring(this.start(), this.end());
     }
 
     public IASString group(int group) {
-        return (IASString) this.input.substring(this.start(group), this.end(group));
+        return this.input.substring(this.start(group), this.end(group));
     }
 
     public IASString group(IASStringable name) {
-        return (IASString) this.input.substring(this.start(name), this.end(name));
+        return this.input.substring(this.start(name), this.end(name));
     }
 
     public int groupCount() {
@@ -141,7 +141,7 @@ public class IASMatcher {
             }
         }
 
-        return (IASString) res.toIASString();
+        return res.toIASString();
     }
 
     public IASMatcher region(int start, int end) {
@@ -159,12 +159,12 @@ public class IASMatcher {
 
     public IASString replaceAll(IASStringable replacement) {
         this.reset();
-        return (IASString) this.input.replaceAll(this.pattern.pattern(), replacement);
+        return this.input.replaceAll(this.pattern.pattern(), replacement);
     }
 
     public IASString replaceFirst(IASStringable replacement) {
         this.reset();
-        return (IASString) this.input.replaceFirst(this.pattern.pattern(), replacement);
+        return this.input.replaceFirst(this.pattern.pattern(), replacement);
     }
 
     public boolean requireEnd() {

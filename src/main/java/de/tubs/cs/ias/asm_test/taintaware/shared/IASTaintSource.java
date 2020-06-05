@@ -16,8 +16,8 @@ public class IASTaintSource {
         this.level = level;
     }
 
-    private static Map<String, IASTaintSource> map = new HashMap<>();
-    private static List<IASTaintSource> arr = new ArrayList<>();
+    private static final Map<String, IASTaintSource> map = new HashMap<>();
+    private static final List<IASTaintSource> arr = new ArrayList<>();
     public static final IASTaintSource TS_STRING_CREATED_FROM_CHAR_ARRAY = getOrCreateInstance("StringCreatedFromCharArray", IASTaintSourceSeverityLevel.POTENTIAL_LAUNDRY);
     public static final IASTaintSource TS_CHAR_UNKNOWN_ORIGIN = getOrCreateInstance("CharUnknownOrigin", IASTaintSourceSeverityLevel.POTENTIAL_LAUNDRY);
     public static final IASTaintSource TS_CS_UNKNOWN_ORIGIN = getOrCreateInstance("CharSequenceUnknownOrigin", IASTaintSourceSeverityLevel.POTENTIAL_LAUNDRY);

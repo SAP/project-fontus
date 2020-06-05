@@ -32,7 +32,7 @@ public class IASCharBuffer {
     }
 
     public IASString subSequence(int start, int end) {
-        return (IASString) stringBuffer.substring(start, end);
+        return stringBuffer.substring(start, end);
     }
 
     public IASCharBuffer position(int newPosition) {

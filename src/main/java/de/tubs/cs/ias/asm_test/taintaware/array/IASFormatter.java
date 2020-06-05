@@ -108,7 +108,7 @@ public class IASFormatter implements IASFormatterable {
             if (token.getConversionType() == (char) FormatToken.UNSET) {
                 result = plainText;
             } else {
-                plainText = (IASString) plainText.substring(0, plainText.indexOf('%'));
+                plainText = plainText.substring(0, plainText.indexOf('%'));
                 Object argument = null;
                 if (token.requireArgument()) {
                     int index = token.getArgIndex() == FormatToken.UNSET ? currentObjectIndex++
@@ -119,7 +119,7 @@ public class IASFormatter implements IASFormatterable {
                     hasLastArgumentSet = true;
                 }
                 result = transformer.transform(token, argument);
-                result = (null == result ? plainText : (IASString) plainText.concat(result));
+                result = (null == result ? plainText : plainText.concat(result));
             }
             // if output is made by formattable callback
             if (null != result) {
@@ -438,7 +438,7 @@ public class IASFormatter implements IASFormatterable {
     private static class DateTimeUtil {
         private Calendar calendar;
 
-        private Locale locale;
+        private final Locale locale;
 
         private IASStringBuilder result;
 
@@ -678,7 +678,7 @@ public class IASFormatter implements IASFormatterable {
             int i = calendar.get(Calendar.AM_PM);
             IASString s = IASString.valueOf(getDateFormatSymbols().getAmPmStrings()[i]);
             if (isLowerCase) {
-                s = (IASString) s.toLowerCase(locale);
+                s = s.toLowerCase(locale);
             }
             result.append(s);
         }
@@ -815,13 +815,13 @@ public class IASFormatter implements IASFormatterable {
 
     private static class Transformer {
 
-        private IASFormatter formatter;
+        private final IASFormatter formatter;
 
         private FormatToken formatToken;
 
         private Object arg;
 
-        private Locale locale;
+        private final Locale locale;
 
         private static IASString lineSeparator;
 
@@ -1289,11 +1289,7 @@ public class IASFormatter implements IASFormatterable {
 
             if ('d' == currentConversionType) {
                 NumberFormat numberFormat = getNumberFormat();
-                if (formatToken.isFlagSet(FormatToken.FLAG_COMMA)) {
-                    numberFormat.setGroupingUsed(true);
-                } else {
-                    numberFormat.setGroupingUsed(false);
-                }
+                numberFormat.setGroupingUsed(formatToken.isFlagSet(FormatToken.FLAG_COMMA));
                 result.append(numberFormat.format(arg));
             } else {
                 long BYTE_MASK = 0x00000000000000FFL;
@@ -1667,13 +1663,13 @@ public class IASFormatter implements IASFormatterable {
     private static class FloatUtil {
         private IASStringBuilder result;
 
-        private DecimalFormat decimalFormat;
+        private final DecimalFormat decimalFormat;
 
         private FormatToken formatToken;
 
-        private Object argument;
+        private final Object argument;
 
-        private char minusSign;
+        private final char minusSign;
 
         FloatUtil(IASStringBuilderable result, FormatToken formatToken,
                   DecimalFormat decimalFormat, Object argument) {
@@ -1879,7 +1875,7 @@ public class IASFormatter implements IASFormatterable {
             }
 
             if (fractionalLength < precision) {
-                char zeros[] = new char[precision - fractionalLength];
+                char[] zeros = new char[precision - fractionalLength];
                 Arrays.fill(zeros, '0');
                 result.insert(indexOfP, zeros);
                 return;
@@ -1932,7 +1928,7 @@ public class IASFormatter implements IASFormatterable {
 
         private int precision = UNSET;
 
-        private IASStringBuilder strFlags = new IASStringBuilder(FLAGT_TYPE_COUNT);
+        private final IASStringBuilder strFlags = new IASStringBuilder(FLAGT_TYPE_COUNT);
 
         private char dateSuffix;// will be used in new feature.
 

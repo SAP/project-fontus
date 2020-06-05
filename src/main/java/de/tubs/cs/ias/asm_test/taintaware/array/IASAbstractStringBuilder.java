@@ -74,17 +74,18 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     }
 
     public IASAbstractStringBuilder append(IASStringable str) {
-        if (!((IASString) str).isUninitialized()) {
-            int[] taints = ((IASString) str).getTaints();
+        IASString string = IASString.valueOf(str);
+        if (string.isInitialized()) {
+            int[] taints = string.getTaints();
             this.initialize();
             this.taintInformation.setTaint(this.length(), taints);
         } else {
             if (!this.isUninitialized()) {
-                this.taintInformation.resize(this.length() + str.length());
+                this.taintInformation.resize(this.length() + string.length());
             }
         }
 
-        this.builder.append(str.toString());
+        this.builder.append(string.getString());
         return this;
     }
 
@@ -108,7 +109,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
 
     public IASAbstractStringBuilder append(CharSequence s, int start, int end) {
         IASString iasString = IASString.valueOf(s);
-        return (IASAbstractStringBuilder) this.append(iasString.substring(start, end));
+        return this.append(iasString.substring(start, end));
     }
 
     public IASAbstractStringBuilder append(char[] s, int start, int end) {
@@ -251,7 +252,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     public IASAbstractStringBuilder insert(int dstOffset, CharSequence s,
                                            int start, int end) {
         IASString iasString = IASString.valueOf(s);
-        iasString = (IASString) iasString.substring(start, end);
+        iasString = iasString.substring(start, end);
         this.insert(dstOffset, iasString);
         return this;
     }
@@ -345,7 +346,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     }
 
     public IASString substring(int start) {
-        return (IASString) this.toIASString().substring(start);
+        return this.toIASString().substring(start);
     }
 
     public IASString substring(int start, int end) {
