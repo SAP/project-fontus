@@ -32,6 +32,11 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         this.append(str);
     }
 
+    public IASAbstractStringBuilder(IASStringBuilderable s) {
+        this.builder = new StringBuilder(s.getBuilder());
+        this.taintInformation = new IASTaintInformation(((IASAbstractStringBuilder) s).getTaints());
+    }
+
     public void initialize() {
         if (isUninitialized()) {
             this.taintInformation = new IASTaintInformation(this.length());

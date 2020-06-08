@@ -98,20 +98,12 @@ public class IASString implements IASStringable, IASLazyComplexAware {
         this(new String(bytes));
     }
 
-    public IASString(StringBuffer buffer) {
-        this(new String(buffer));
+    public IASString(IASStringBuilderable builder) {
+        this(builder.toString(), new IASTaintInformation(new BaseOperation(((IASAbstractStringBuilder) builder).getTaintRanges())));
     }
 
-    public IASString(IASStringBuilder builder) {
-        this(builder.toString(), new IASTaintInformation(new BaseOperation(builder.getTaintRanges())));
-    }
-
-    public IASString(IASStringBuffer buffer) {
-        this(buffer.toString(), new IASTaintInformation(new BaseOperation(buffer.getTaintRanges())));
-    }
-
-    public IASString(IASString string) {
-        this(string.string, string.taintInformation);
+    public IASString(IASStringable string) {
+        this(string.getString(), ((IASString) string).taintInformation);
     }
 
     /**

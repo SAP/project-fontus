@@ -20,8 +20,12 @@ public class IASStringBuffer extends IASAbstractStringBuilder {
         super(seq);
     }
 
-    public IASStringBuffer(IASString string) {
+    public IASStringBuffer(IASStringable string) {
         super(string);
+    }
+
+    public IASStringBuffer(IASStringBuilderable strb) {
+        super(strb);
     }
 
     @Override

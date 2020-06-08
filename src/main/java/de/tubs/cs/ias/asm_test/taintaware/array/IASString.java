@@ -35,6 +35,14 @@ public final class IASString implements IASArrayAware, IASStringable {
         setTaint(tainted);
     }
 
+    public IASString(IASStringable s) {
+        this((IASString) s);
+    }
+
+    public IASString(IASStringBuilderable s) {
+        this(s.toIASString());
+    }
+
     public IASString(String s, int[] taints) {
         this(s);
         this.setTaints(taints);

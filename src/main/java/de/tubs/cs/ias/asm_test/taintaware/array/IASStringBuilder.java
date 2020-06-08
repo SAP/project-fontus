@@ -35,6 +35,10 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
         super(seq);
     }
 
+    public IASStringBuilder(IASStringBuilderable s) {
+        super(s);
+    }
+
     @Override
     public IASStringBuilder append(Object obj) {
         return (IASStringBuilder) super.append(obj);

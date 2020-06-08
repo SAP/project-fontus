@@ -16,8 +16,12 @@ public class IASStringBuilder extends IASAbstractStringBuilder {
         super(seq);
     }
 
-    public IASStringBuilder(IASString string) {
+    public IASStringBuilder(IASStringable string) {
         super(string);
+    }
+
+    public IASStringBuilder(IASStringBuilderable strb) {
+        super(strb);
     }
 
     @Override
