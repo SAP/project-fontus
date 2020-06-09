@@ -18,13 +18,20 @@ public final class IASStringBuffer
 
     @Override
     public void setTaint(boolean taint) {
-        this.tainted = taint;
+        if(this.buffer.length() > 0) {
+            this.tainted = taint;
+        }
     }
 
     private void mergeTaint(IASTaintAware other) {
         this.tainted |= other.isTainted();
     }
 
+    private void clearTaintIfEmpty() {
+        if (this.buffer.length() == 0) {
+            this.tainted = false;
+        }
+    }
 
     public IASStringBuffer() {
         this.buffer = new StringBuffer();
@@ -225,18 +232,14 @@ public final class IASStringBuffer
 
     public synchronized IASStringBuffer delete(int start, int end) {
         this.buffer.delete(start, end);
-        if (this.buffer.length() == 0) {
-            this.tainted = false;
-        }
+        this.clearTaintIfEmpty();
         return this;
     }
 
 
     public synchronized IASStringBuffer deleteCharAt(int index) {
         this.buffer.deleteCharAt(index);
-        if (this.buffer.length() == 0) {
-            this.tainted = false;
-        }
+        this.clearTaintIfEmpty();
         return this;
     }
 
@@ -244,6 +247,7 @@ public final class IASStringBuffer
     public synchronized IASStringBuffer replace(int start, int end, IASString str) {
         this.buffer.replace(start, end, str.getString());
         this.mergeTaint(str);
+        this.clearTaintIfEmpty();
         return this;
     }
 
@@ -253,7 +257,7 @@ public final class IASStringBuffer
 
     @Override
     public synchronized CharSequence subSequence(int start, int end) {
-        IASStringBuffer sb = new IASStringBuffer(this.buffer.substring(start, end));
+        IASStringBuffer sb = new IASStringBuffer(this.buffer.subSequence(start, end));
         sb.tainted = this.tainted;
         return sb;
     }

@@ -17,11 +17,19 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
 
     @Override
     public void setTaint(boolean taint) {
-        this.tainted = taint;
+        if(this.builder.length() > 0) {
+            this.tainted = taint;
+        }
     }
 
     private void mergeTaint(IASTaintAware str) {
         this.tainted |= str.isTainted();
+    }
+
+    private void clearTaintIfEmpty() {
+        if (this.builder.length() == 0) {
+            this.tainted = false;
+        }
     }
 
     public IASStringBuilder() {
@@ -165,15 +173,14 @@ public final class IASStringBuilder implements java.io.Serializable, Comparable<
 
     public IASStringBuilder deleteCharAt(int index) {
         this.builder.deleteCharAt(index);
-        if (this.builder.length() == 0) {
-            this.tainted = false;
-        }
+        this.clearTaintIfEmpty();
         return this;
     }
 
     public IASStringBuilder replace(int start, int end, IASString str) {
-        this.mergeTaint(str);
         this.builder.replace(start, end, str.getString());
+        this.mergeTaint(str);
+        this.clearTaintIfEmpty();
         return this;
     }
 
