@@ -20,6 +20,10 @@ public class IASStringBuffer extends IASAbstractStringBuilder {
         super(seq);
     }
 
+    public IASStringBuffer(StringBuffer stringBuffer) {
+        this((CharSequence) stringBuffer);
+    }
+
     public IASStringBuffer(IASStringable string) {
         super(string);
     }

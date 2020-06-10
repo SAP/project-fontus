@@ -16,6 +16,10 @@ public class IASStringBuilder extends IASAbstractStringBuilder {
         super(seq);
     }
 
+    public IASStringBuilder(StringBuilder stringBuilder) {
+        this((CharSequence) stringBuilder);
+    }
+
     public IASStringBuilder(IASStringable string) {
         super(string);
     }

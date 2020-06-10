@@ -335,12 +335,21 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
 
     @Override
     public boolean isTainted() {
+        if (isUninitialized()) {
+            return false;
+        }
         return this.taintInformation.isTainted();
     }
 
     @Override
     public void setTaint(boolean taint) {
-        this.derive(new BaseOperation(Collections.singletonList(new IASTaintRange(0, this.length(), (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId()))), true);
+        if(taint != this.isTainted()) {
+            if(taint) {
+                this.derive(new BaseOperation(Collections.singletonList(new IASTaintRange(0, this.length(), (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId()))), true);
+            } else {
+                this.derive(new BaseOperation(), false);
+            }
+        }
     }
 
     @Override

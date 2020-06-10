@@ -6,15 +6,13 @@ import de.tubs.cs.ias.asm_test.taintaware.shared.*;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("Since15")
 public class IASString implements IASStringable, IASLazyComplexAware {
     private final String string;
-    private final IASTaintInformation taintInformation;
+    private IASTaintInformation taintInformation;
 
     public IASString() {
         this.string = "";
@@ -312,30 +310,30 @@ public class IASString implements IASStringable, IASLazyComplexAware {
     @Override
     public IASString substring(int beginIndex) {
         String substringed = this.string.substring(beginIndex);
-        return this.derive(substringed, new SubstringOperation(beginIndex));
+        return this.derive(substringed, new SubstringOperation(beginIndex), false);
     }
 
     @Override
     public IASString substring(int beginIndex, int endIndex) {
         String substringed = this.string.substring(beginIndex, endIndex);
-        return this.derive(substringed, new SubstringOperation(beginIndex, endIndex));
+        return this.derive(substringed, new SubstringOperation(beginIndex, endIndex), false);
     }
 
     @Override
     public CharSequence subSequence(int beginIndex, int endIndex) {
         String substringed = this.string.substring(beginIndex, endIndex);
-        return this.derive(substringed, new SubstringOperation(beginIndex, endIndex));
+        return this.derive(substringed, new SubstringOperation(beginIndex, endIndex), false);
     }
 
     @Override
     public IASString concat(IASStringable str) {
         String substringed = this.string.concat(str.getString());
-        return this.derive(substringed, new ConcatOperation((IASLazyComplexAware) str));
+        return this.derive(substringed, new ConcatOperation((IASLazyComplexAware) str), ((IASString) str).isInitialized());
     }
 
     @Override
     public IASString replace(char oldChar, char newChar) {
-        return this.derive(this.string.replace(oldChar, newChar), new ReplaceCharacterOperation(oldChar));
+        return this.derive(this.string.replace(oldChar, newChar), new ReplaceCharacterOperation(oldChar), false);
     }
 
     @Override
@@ -351,18 +349,18 @@ public class IASString implements IASStringable, IASLazyComplexAware {
     @Override
     public IASString replaceFirst(IASStringable regex, IASStringable replacement) {
         String replaced = this.string.replaceFirst(regex.getString(), replacement.getString());
-        return this.derive(replaced, new ReplaceFirstOperation((IASString) regex, (IASString) replacement));
+        return this.derive(replaced, new ReplaceFirstOperation((IASString) regex, (IASString) replacement), ((IASString) replacement).isInitialized());
     }
 
     @Override
     public IASString replaceAll(IASStringable regex, IASStringable replacement) {
         String replaced = this.string.replaceAll(regex.getString(), replacement.getString());
-        return this.derive(replaced, new ReplaceAllOperation((IASString) regex, (IASString) replacement));
+        return this.derive(replaced, new ReplaceAllOperation((IASString) regex, (IASString) replacement), ((IASString) replacement).isInitialized());
     }
 
     @Override
     public IASString replace(CharSequence target, CharSequence replacement) {
-        return this.derive(this.string.replace(target, replacement), new ReplaceCharSequenceOperation(IASString.valueOf(target), IASString.valueOf(replacement)));
+        return this.derive(this.string.replace(target, replacement), new ReplaceCharSequenceOperation(IASString.valueOf(target), IASString.valueOf(replacement)), ((IASString) replacement).isInitialized());
     }
 
     @Override
@@ -398,22 +396,22 @@ public class IASString implements IASStringable, IASLazyComplexAware {
     @Override
     public IASString trim() {
         String trimmed = this.string.trim();
-        return this.derive(trimmed, new TrimOperation());
+        return this.derive(trimmed, new TrimOperation(), false);
     }
 
     @Override
     public IASString strip() {
-        return this.derive(this.string.strip(), new StripOperation(true, true));
+        return this.derive(this.string.strip(), new StripOperation(true, true), false);
     }
 
     @Override
     public IASString stripLeading() {
-        return this.derive(this.string.stripLeading(), new StripOperation(true, false));
+        return this.derive(this.string.stripLeading(), new StripOperation(true, false), false);
     }
 
     @Override
     public IASString stripTrailing() {
-        return this.derive(this.string.stripTrailing(), new StripOperation(false, true));
+        return this.derive(this.string.stripTrailing(), new StripOperation(false, true), false);
     }
 
     @Override
@@ -423,7 +421,7 @@ public class IASString implements IASStringable, IASLazyComplexAware {
 
     @Override
     public IASString repeat(int count) {
-        return this.derive(this.string.repeat(count), new RepeatOperation(count));
+        return this.derive(this.string.repeat(count), new RepeatOperation(count), false);
     }
 
     @Override
@@ -466,7 +464,13 @@ public class IASString implements IASStringable, IASLazyComplexAware {
 
     @Override
     public void setTaint(boolean taint) {
-        // TODO
+        if (taint != this.isTainted()) {
+            if (taint) {
+                this.taintInformation = new IASTaintInformation(new BaseOperation(Collections.singletonList(new IASTaintRange(0, this.length(), (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId()))));
+            } else {
+                this.taintInformation = new IASTaintInformation();
+            }
+        }
     }
 
     @Override
@@ -605,9 +609,11 @@ public class IASString implements IASStringable, IASLazyComplexAware {
         return this.string;
     }
 
-    IASString derive(String newString, IASOperation operation) {
+    IASString derive(String newString, IASOperation operation, boolean initializeIfNecessary) {
         if (this.isInitialized()) {
             return new IASString(newString, new IASTaintInformation(this.getString(), this.taintInformation, operation));
+        } else if (initializeIfNecessary) {
+            return new IASString(newString, new IASTaintInformation(this.getString(), new IASTaintInformation(), operation));
         }
         return new IASString(newString);
     }

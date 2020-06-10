@@ -1,11 +1,9 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations;
 
-import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.IASLazyComplexAware;
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.IASOperation;
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.IASString;
-import de.tubs.cs.ias.asm_test.taintaware.range.IASStringBuilder;
+import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.IASStringBuilder;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASMatcherReplacement;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeUtils;
 
@@ -51,7 +49,7 @@ public class ReplaceAllOperation implements IASOperation {
             length += currReplLength;
             appendPos = matcher.end();
         }
-        List<IASTaintRange> currRanges = new ArrayList<>();
+        List<IASTaintRange> currRanges = new ArrayList<>(previousRanges);
         IASTaintRangeUtils.adjustRanges(currRanges, appendPos, previousString.length(), appendPos - length);
         ranges.addAll(currRanges);
         return ranges;

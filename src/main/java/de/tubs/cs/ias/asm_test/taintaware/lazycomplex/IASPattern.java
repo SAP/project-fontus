@@ -73,7 +73,7 @@ public class IASPattern {
         String[] splitted = this.pattern.split(input, limit);
         IASString[] strings = new IASString[splitted.length];
         for (int i = 0; i < splitted.length; i++) {
-            strings[i] = inputString.derive(splitted[i], new SplitOperation(this.patternString.getString(), i));
+            strings[i] = inputString.derive(splitted[i], new SplitOperation(this.patternString.getString(), i), false);
         }
         return strings;
     }
