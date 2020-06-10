@@ -76,6 +76,7 @@ public class TaintStringConfig {
     private final String TMatcherQN;
     private final String TPatternDesc;
     private final String TPatternQN;
+    private final String ReflectionMethodProxyQN;
 
     public String getTPackage() {
         return this.TPackage;
@@ -141,13 +142,16 @@ public class TaintStringConfig {
 
     public TaintStringConfig(TaintMethod taintMethod) {
         this.taintMethod = taintMethod;
-        this.TPackage = "de/tubs/cs/ias/asm_test/taintaware/" + taintMethod.getSubPath();
+        String taintawarePackage = "de/tubs/cs/ias/asm_test/taintaware/";
+        String sharedPackage = taintawarePackage + "shared/";
+        this.TPackage = taintawarePackage + taintMethod.getSubPath();
         this.TStringQN = this.TPackage + "IASString";
         this.TStringBufferQN = this.TPackage + "IASStringBuffer";
         this.TStringUtilsQN = this.TPackage + "IASStringUtils";
         this.ReflectionProxiesQN = this.TPackage + "IASReflectionProxies";
+        this.ReflectionMethodProxyQN = sharedPackage + "IASReflectionMethodProxy";
         this.TStringDesc = java.lang.String.format("L%s;", this.TStringQN);
-        this.MethodTStringDesc = "Lde/tubs/cs/ias/asm_test/taintaware/shared/IASStringable;";
+        this.MethodTStringDesc = String.format("L%sIASStringable;", sharedPackage);
         this.TStringArrayDesc = "[" + this.TStringDesc;
         this.TStringBuilderQN = this.TPackage + "IASStringBuilder";
         this.TStringBuilderDesc = String.format("L%s;", this.TStringBuilderQN);
@@ -210,5 +214,9 @@ public class TaintStringConfig {
 
     public String getMethodTFormatterDesc() {
         return this.MethodTFormatterDesc;
+    }
+
+    public String getReflectionMethodProxyQN() {
+        return this.ReflectionMethodProxyQN;
     }
 }

@@ -29,6 +29,10 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
         super(str);
     }
 
+    public IASStringBuilder(IASString str) {
+        super(str);
+    }
+
     public IASStringBuilder(CharSequence seq) {
         super(seq);
     }
@@ -46,11 +50,7 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
         return (IASStringBuilder) super.append(str, merge);
     }
 
-    public IASStringBuilder append(StringBuffer strb) {
-        return (IASStringBuilder) super.append(strb);
-    }
-
-    public IASStringBuilder append(IASStringBuffer strb) {
+    public IASStringBuilder append(IASStringBuilderable strb) {
         return (IASStringBuilder) super.append(strb);
     }
 

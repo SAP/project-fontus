@@ -28,6 +28,14 @@ public class IASStringBuffer extends IASAbstractStringBuilder {
         super(strb);
     }
 
+    public IASStringBuffer(IASString string) {
+        super(string);
+    }
+
+    public IASStringBuffer(IASStringBuffer strb) {
+        super(strb);
+    }
+
     @Override
     public synchronized List<IASTaintRange> getTaintRanges() {
         return super.getTaintRanges();

@@ -26,6 +26,10 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
         super(str);
     }
 
+    public IASStringBuilder(IASString str) {
+        super(str);
+    }
+
     public IASStringBuilder(String str) {
         super(str);
     }

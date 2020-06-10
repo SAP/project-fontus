@@ -5,9 +5,9 @@ import java.lang.reflect.Method;
 
 public class StringTest {
     public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        testInstrumentationConcat();
-        testInstrumentationStartsWith();
-        testInstrumentationNull2(null);
+//        testInstrumentationConcat();
+//        testInstrumentationStartsWith();
+//        testInstrumentationNull2(null);
         testReflection();
     }
 
@@ -41,6 +41,10 @@ public class StringTest {
         System.out.println(getString(s + 1));
     }
 
+    public static void testArray() {
+        Class<?> clz = Object[].class;
+    }
+
     public static String getString(String s) {
         return null;
     }
@@ -48,6 +52,7 @@ public class StringTest {
     public static void testReflection() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Class<?> string = Class.forName("java.lang.String");
         Method m = string.getMethod("concat", String.class);
+//        m = string.getDeclaredMethod("concat", String.class);
         String res = (String) m.invoke("Hallo ", "Welt");
         System.out.println(res);
     }

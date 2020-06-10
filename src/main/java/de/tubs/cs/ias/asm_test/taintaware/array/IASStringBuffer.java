@@ -30,11 +30,19 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
         super(str);
     }
 
+    public IASStringBuffer(IASString str) {
+        super(str);
+    }
+
     public IASStringBuffer(CharSequence seq) {
         super(seq);
     }
 
     public IASStringBuffer(IASStringBuilderable s) {
+        super(s);
+    }
+
+    public IASStringBuffer(IASStringBuffer s) {
         super(s);
     }
 

@@ -31,11 +31,19 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
         super(str);
     }
 
+    public IASStringBuilder(IASString str) {
+        super(str);
+    }
+
     public IASStringBuilder(CharSequence seq) {
         super(seq);
     }
 
     public IASStringBuilder(IASStringBuilderable s) {
+        super(s);
+    }
+
+    public IASStringBuilder(IASStringBuilder s) {
         super(s);
     }
 

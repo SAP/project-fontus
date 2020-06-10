@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Objects;
 
 public class IASTaintInformation {
-    private final String previousString;
-    private final IASTaintInformation previousInformation;
-    private final IASOperation operation;
-    private List<IASTaintRange> cache;
+    private String previousString;
+    private IASTaintInformation previousInformation;
+    private IASOperation operation;
+    private volatile List<IASTaintRange> cache;
 
     public IASTaintInformation(String previousString, IASTaintInformation previousInformation, IASOperation operation) {
         this.previousString = previousString;
@@ -37,17 +37,20 @@ public class IASTaintInformation {
         this.operation = new BaseOperation(taintRanges);
     }
 
-    public boolean isTainted() {
+    public synchronized boolean isTainted() {
         return this.evaluate().size() > 0;
     }
 
-    public List<IASTaintRange> evaluate() {
+    public synchronized List<IASTaintRange> evaluate() {
         if (this.cache == null) {
             List<IASTaintRange> ranges = null;
             if(this.previousInformation != null) {
                 ranges = new ArrayList<>(this.previousInformation.evaluate());
             }
             this.cache = new ArrayList<>(this.operation.apply(this.previousString, ranges));
+//            this.previousString = null;
+//            this.previousInformation = null;
+//            this.operation = null;
         }
         return this.cache;
     }

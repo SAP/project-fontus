@@ -20,6 +20,9 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     public IASStringBuffer(IASStringable str) {
         super(str);
     }
+    public IASStringBuffer(IASString str) {
+        super(str);
+    }
 
     public IASStringBuffer(String str) {
         super(str);

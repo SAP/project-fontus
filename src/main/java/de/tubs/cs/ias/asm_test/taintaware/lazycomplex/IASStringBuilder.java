@@ -24,6 +24,14 @@ public class IASStringBuilder extends IASAbstractStringBuilder {
         super(strb);
     }
 
+    public IASStringBuilder(IASString string) {
+        super(string);
+    }
+
+    public IASStringBuilder(IASStringBuilder strb) {
+        super(strb);
+    }
+
     @Override
     public IASStringBuilder append(Object obj) {
         return (IASStringBuilder) super.append(obj);

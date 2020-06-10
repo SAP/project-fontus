@@ -102,8 +102,20 @@ public class IASString implements IASStringable, IASLazyComplexAware {
         this(builder.toString(), new IASTaintInformation(new BaseOperation(((IASAbstractStringBuilder) builder).getTaintRanges())));
     }
 
+    public IASString(IASStringBuilder builder) {
+        this(builder.toString(), new IASTaintInformation(new BaseOperation(builder.getTaintRanges())));
+    }
+
+    public IASString(IASStringBuffer builder) {
+        this(builder.toString(), new IASTaintInformation(new BaseOperation(((IASAbstractStringBuilder) builder).getTaintRanges())));
+    }
+
     public IASString(IASStringable string) {
         this(string.getString(), ((IASString) string).taintInformation);
+    }
+
+    public IASString(IASString string) {
+        this(string.getString(), string.taintInformation);
     }
 
     /**
@@ -588,6 +600,10 @@ public class IASString implements IASStringable, IASLazyComplexAware {
         return str.string;
     }
 
+    @Override
+    public String toString() {
+        return this.string;
+    }
 
     IASString derive(String newString, IASOperation operation) {
         if (this.isInitialized()) {

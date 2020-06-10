@@ -389,6 +389,11 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         }
     }
 
+    @Override
+    public String toString() {
+        return this.stringBuilder.toString();
+    }
+
     private IASString deriveString(String newString, IASOperation operation) {
         return new IASString(newString, new IASTaintInformation(this.stringBuilder.toString(), this.taintInformation, operation));
     }
