@@ -15,17 +15,19 @@ public class ReplaceCharacterOperation implements IASOperation {
 
     @Override
     public List<IASTaintRange> apply(String previousString, List<IASTaintRange> previousRanges) {
-        if (previousString.indexOf(this.toReplace) < 0) {
-            return previousRanges;
-        }
-
-        IASTaintRanges ti = new IASTaintRanges(previousRanges);
-
-        int index = previousString.indexOf(this.toReplace);
-        do {
-            ti.removeTaintFor(index, index + 1, false);
-        } while ((index = previousString.indexOf(this.toReplace, index + 1)) >= 0);
-
-        return ti.getAllRanges();
+        // TODO How to replace?
+        return previousRanges;
+//        if (previousString.indexOf(this.toReplace) < 0) {
+//            return previousRanges;
+//        }
+//
+//        IASTaintRanges ti = new IASTaintRanges(previousRanges);
+//
+//        int index = previousString.indexOf(this.toReplace);
+//        do {
+//            ti.removeTaintFor(index, index + 1, false);
+//        } while ((index = previousString.indexOf(this.toReplace, index + 1)) >= 0);
+//
+//        return ti.getAllRanges();
     }
 }
