@@ -22,7 +22,7 @@ public abstract class AbstractTrimOperation implements IASOperation {
         int start = 0;
         if (this.leading) {
             for (int i = 0; i < previousString.length() && this.isWhitespace(previousString.codePointAt(i)); i++) {
-                start = i;
+                start = i + 1;
             }
         }
 

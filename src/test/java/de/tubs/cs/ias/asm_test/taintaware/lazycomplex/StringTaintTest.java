@@ -108,6 +108,20 @@ public class StringTaintTest {
     }
 
     @Test
+    public void testStripLeading_5() {
+        IASString s = new IASString("                     ");
+
+        this.getTaintChecker().setTaint(s, true);
+
+        IASString s2 = s.stripLeading();
+
+        assertEquals("                     ", s.getString());
+        assertEquals("", s2.getString());
+        assertTrue(this.getTaintChecker().getTaint(s));
+        assertFalse(this.getTaintChecker().getTaint(s2));
+    }
+
+    @Test
     public void testConcat_2() {
         IASString s1 = new IASString("hello", true);
 
