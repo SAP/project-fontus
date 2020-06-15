@@ -1,6 +1,5 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations;
 
-import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.IASLazyComplexAware;
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.IASOperation;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeUtils;
@@ -25,13 +24,21 @@ public class SplitOperation implements IASOperation {
     public List<IASTaintRange> apply(String previousString, List<IASTaintRange> previousRanges) {
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(previousString);
+
         int start = 0;
-        for (int counter = 0; matcher.find() && counter < index; counter++) {
+        boolean found;
+        for (int counter = 0; (found = matcher.find()) && counter < this.index; counter++) {
             start = matcher.end();
         }
-        int end = matcher.start();
 
-        IASTaintRangeUtils.adjustRanges(previousRanges, start, end, start);
+        int end;
+        if (found) {
+            end = matcher.start();
+        } else {
+            end = previousString.length();
+        }
+
+        IASTaintRangeUtils.adjustAndRemoveRanges(previousRanges, start, end, start);
 
         return previousRanges;
     }

@@ -131,4 +131,6 @@ public interface IASStringable extends IASTaintAware, Comparable<IASStringable>,
     IASStringable intern();
 
     String getString();
+
+    Stream<? extends IASStringable> lines();
 }

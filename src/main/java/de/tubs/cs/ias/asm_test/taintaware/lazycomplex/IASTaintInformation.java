@@ -2,6 +2,7 @@ package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations.BaseOperation;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,16 +39,25 @@ public class IASTaintInformation {
     }
 
     public synchronized boolean isTainted() {
-        return this.evaluate().size() > 0;
+        List<IASTaintRange> ranges = this.evaluate();
+        if (ranges.size() == 0) {
+            return false;
+        } else if (ranges.size() == 1) {
+            IASTaintRange range = ranges.get(0);
+            return !(range.getStart() == range.getEnd());
+        } else {
+            return true;
+        }
     }
 
     public synchronized List<IASTaintRange> evaluate() {
         if (this.cache == null) {
             List<IASTaintRange> ranges = null;
-            if(this.previousInformation != null) {
+            if (this.previousInformation != null) {
                 ranges = new ArrayList<>(this.previousInformation.evaluate());
             }
             this.cache = new ArrayList<>(this.operation.apply(this.previousString, ranges));
+            IASTaintRangeUtils.merge(this.cache);
 //            this.previousString = null;
 //            this.previousInformation = null;
 //            this.operation = null;

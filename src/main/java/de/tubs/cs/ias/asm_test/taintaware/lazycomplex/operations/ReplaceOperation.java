@@ -26,10 +26,10 @@ public class ReplaceOperation implements IASOperation {
         List<IASTaintRange> end = new ArrayList<>(previousTaint);
 
 
-        IASTaintRangeUtils.adjustRanges(begin, 0, this.start, 0);
+        IASTaintRangeUtils.adjustAndRemoveRanges(begin, 0, this.start, 0);
         IASTaintRangeUtils.shiftRight(replacementRanges, start);
         int leftShift = (this.end - this.start) - this.replacement.length();
-        IASTaintRangeUtils.adjustRanges(end, this.end, Integer.MAX_VALUE, leftShift);
+        IASTaintRangeUtils.adjustAndRemoveRanges(end, this.end, Integer.MAX_VALUE, leftShift);
 
         begin.addAll(replacementRanges);
         begin.addAll(end);

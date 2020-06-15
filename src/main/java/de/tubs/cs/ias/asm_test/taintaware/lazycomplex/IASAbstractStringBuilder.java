@@ -44,8 +44,8 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     public IASAbstractStringBuilder(IASStringBuilderable strb) {
         IASString string = (IASString) strb.toIASString();
         this.stringBuilder = new StringBuilder(string.getString());
-        if (((IASString) string).isInitialized()) {
-            this.taintInformation = new IASTaintInformation(((IASString) string).getTaintRanges());
+        if (string.isInitialized()) {
+            this.taintInformation = new IASTaintInformation(string.getTaintRanges());
         }
     }
 
@@ -159,7 +159,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     public IASStringBuilderable replace(int start, int end, IASStringable str) {
         this.derive(new ReplaceOperation(start, end, (IASString) str), false);
         this.stringBuilder.replace(start, end, str.getString());
-        return null;
+        return this;
     }
 
     @Override
@@ -343,8 +343,8 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
 
     @Override
     public void setTaint(boolean taint) {
-        if(taint != this.isTainted()) {
-            if(taint) {
+        if (taint != this.isTainted()) {
+            if (taint) {
                 this.derive(new BaseOperation(Collections.singletonList(new IASTaintRange(0, this.length(), (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId()))), true);
             } else {
                 this.derive(new BaseOperation(), false);
@@ -404,6 +404,9 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     }
 
     private IASString deriveString(String newString, IASOperation operation) {
-        return new IASString(newString, new IASTaintInformation(this.stringBuilder.toString(), this.taintInformation, operation));
+        if (this.isInitialized()) {
+            return new IASString(newString, new IASTaintInformation(this.stringBuilder.toString(), this.taintInformation, operation));
+        }
+        return new IASString(newString);
     }
 }

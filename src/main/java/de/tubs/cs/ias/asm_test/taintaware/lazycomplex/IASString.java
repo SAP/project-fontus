@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @SuppressWarnings("Since15")
 public class IASString implements IASStringable, IASLazyComplexAware {
@@ -455,6 +456,11 @@ public class IASString implements IASStringable, IASLazyComplexAware {
     }
 
     @Override
+    public Stream<IASString> lines() {
+        return Arrays.stream(this.split(new IASString("(\\n|\\r)")));
+    }
+
+    @Override
     public boolean isTainted() {
         if (isUninitialized()) {
             return false;
@@ -466,7 +472,7 @@ public class IASString implements IASStringable, IASLazyComplexAware {
     public void setTaint(boolean taint) {
         if (taint != this.isTainted()) {
             if (taint) {
-                this.taintInformation = new IASTaintInformation(new BaseOperation(Collections.singletonList(new IASTaintRange(0, this.length(), (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId()))));
+                this.taintInformation = new IASTaintInformation(new BaseOperation(0, this.length(), IASTaintSource.TS_CS_UNKNOWN_ORIGIN));
             } else {
                 this.taintInformation = new IASTaintInformation();
             }

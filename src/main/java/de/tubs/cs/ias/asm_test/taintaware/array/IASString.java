@@ -490,7 +490,7 @@ public final class IASString implements IASArrayAware, IASStringable {
     }
 
     public Stream<IASStringable> lines() {
-        return Arrays.stream(this.split(new IASString("\\n")));
+        return Arrays.stream(this.split(new IASString("(\\n|\\r)")));
     }
 
     public IASString repeat(int count) {

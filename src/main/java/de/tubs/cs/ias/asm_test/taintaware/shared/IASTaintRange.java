@@ -12,7 +12,7 @@ public class IASTaintRange implements Cloneable {
     private final short source;
 
     public IASTaintRange(int start, int end, short source) {
-        if(end < start) {
+        if (end < start) {
             throw new IllegalArgumentException("TaintRange size cannot be smaller than 0");
         }
         this.start = start;
@@ -20,8 +20,12 @@ public class IASTaintRange implements Cloneable {
         this.source = source;
     }
 
+    public IASTaintRange(int start, int end, IASTaintSource source) {
+        this(start, end, (short) source.getId());
+    }
+
     public IASTaintRange shiftRight(int shift) {
-        if(start + shift < 0) {
+        if (start + shift < 0) {
             throw new IllegalArgumentException("Illegal shift argument. Through shifting start index would be negative!");
         }
         return new IASTaintRange(start + shift, end + shift, source);

@@ -41,12 +41,82 @@ public class IASTaintRangeUtils {
         }
     }
 
+    /**
+     * Cuts the ranges at the beginning and the end so that it's within the specified bounds. Afterwords it will be shifted.
+     * Ranges which are completely out of bounds will be cut out
+     *
+     * @param ranges     Ranges to adjust (operates on the list directly)
+     * @param startIndex inclusive
+     * @param endIndex   exclusive (the same as for ranges)
+     */
+    public static void adjustAndRemoveRanges(List<IASTaintRange> ranges, int startIndex, int endIndex, int leftShift) {
+        if (endIndex < startIndex || startIndex < 0) {
+            throw new IllegalArgumentException("startIndex: " + startIndex + ", endIndex: " + endIndex);
+        } else if (endIndex == startIndex) {
+            ranges.clear();
+            return;
+        }
+
+        if (ranges.isEmpty()) {
+            return;
+        }
+
+        for (int i = 0; i < ranges.size(); i++) {
+            IASTaintRange tr = ranges.get(i);
+            if (tr.getEnd() <= startIndex || endIndex < tr.getStart() || Math.max(tr.getStart(), startIndex) == Math.min(tr.getEnd(), endIndex)) {
+                ranges.remove(i);
+                i--;
+            } else {
+                ranges.set(i, new IASTaintRange(Math.max(tr.getStart(), startIndex) - leftShift, Math.min(tr.getEnd(), endIndex) - leftShift, tr.getSource()));
+            }
+        }
+    }
+
+    /**
+     * Ensures that only ranges within an on the bounds will remain.
+     * Ranges on the bound will not be adjusted
+     *
+     * @param taintRanges Ranges to adjust (operates on the list directly)
+     * @param start       inclusive
+     * @param end         exclusive
+     */
+    public static void removeOutOfBounds(List<IASTaintRange> taintRanges, int start, int end) {
+        for (int i = 0; i < taintRanges.size(); i++) {
+            IASTaintRange tr = taintRanges.get(i);
+            if (!(tr.getStart() < end && start <= tr.getEnd())) {
+                taintRanges.remove(i);
+                i--;
+            }
+        }
+    }
+
+    public static void merge(List<IASTaintRange> taintRanges) {
+        for (int i = 0; i < taintRanges.size() - 1; i++) {
+            IASTaintRange first = taintRanges.get(i);
+            IASTaintRange second = taintRanges.get(i + 1);
+
+            // Remove zero length ranges
+            if (first.getStart() == first.getEnd()) {
+                taintRanges.remove(i);
+                i--;
+                continue;
+            }
+
+            if (first.getSource() == second.getSource()) {
+                IASTaintRange merged = new IASTaintRange(first.getStart(), second.getEnd(), first.getSource());
+                taintRanges.set(i, merged);
+                taintRanges.remove(i + 1);
+                i--;
+            }
+        }
+    }
+
     public static void shiftRight(List<IASTaintRange> ranges, int shift) {
         if (shift == 0) {
             return;
         }
 
-        for(int i = 0; i < ranges.size(); i++) {
+        for (int i = 0; i < ranges.size(); i++) {
             IASTaintRange range = ranges.get(i);
             ranges.set(i, range.shiftRight(shift));
         }
