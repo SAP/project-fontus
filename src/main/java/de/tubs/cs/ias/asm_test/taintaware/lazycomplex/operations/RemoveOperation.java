@@ -23,8 +23,8 @@ public abstract class RemoveOperation implements IASOperation {
         List<IASTaintRange> head = new ArrayList<>(previousTaint);
         List<IASTaintRange> tail = new ArrayList<>(previousTaint);
 
-        IASTaintRangeUtils.adjustRanges(head, 0, this.start, 0);
-        IASTaintRangeUtils.adjustRanges(tail, this.end, Integer.MAX_VALUE, this.leftShift());
+        IASTaintRangeUtils.adjustAndRemoveRanges(head, 0, this.start, 0);
+        IASTaintRangeUtils.adjustAndRemoveRanges(tail, this.end, Integer.MAX_VALUE, this.leftShift());
         head.addAll(tail);
         return head;
     }

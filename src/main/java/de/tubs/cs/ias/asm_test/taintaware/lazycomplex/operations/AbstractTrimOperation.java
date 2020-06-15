@@ -35,7 +35,7 @@ public abstract class AbstractTrimOperation implements IASOperation {
 
         if (start < end) {
             List<IASTaintRange> ranges = new ArrayList<>(previousRanges);
-            IASTaintRangeUtils.adjustRanges(ranges, start, end, start);
+            IASTaintRangeUtils.adjustAndRemoveRanges(ranges, start, end, start);
             return ranges;
         } else {
             return new ArrayList<>(0);

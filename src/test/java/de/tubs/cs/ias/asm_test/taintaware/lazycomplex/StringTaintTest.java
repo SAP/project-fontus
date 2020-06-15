@@ -3,6 +3,8 @@ package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Locale;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -87,6 +89,22 @@ public class StringTaintTest {
         assertTrue(this.getTaintChecker().getTaint(s3));
         assertFalse(this.getTaintChecker().getTaint(t[0]));
         assertTrue(this.getTaintChecker().getTaint(t[1]));
+    }
+
+    @Test
+    public void testFormatWithLocale_2() {
+        IASString s = new IASString("hello");
+
+        this.getTaintChecker().setTaint(s, true);
+
+        for (Locale locale : Locale.getAvailableLocales()) {
+            IASString t = IASString.format(locale, new IASString("%s"), s);
+
+            assertEquals("hello", t.getString());
+            assertTrue(this.getTaintChecker().getTaint(t));
+        }
+        assertEquals("hello", s.getString());
+        assertTrue(this.getTaintChecker().getTaint(s));
     }
 
     @Test

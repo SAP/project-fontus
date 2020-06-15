@@ -1,17 +1,15 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
 import de.tubs.cs.ias.asm_test.Constants;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeUtils;
+import de.tubs.cs.ias.asm_test.taintaware.shared.*;
+import de.tubs.cs.ias.asm_test.taintaware.shared.range.IASTaintRangeStringBuilderable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
 @SuppressWarnings({"unused", "Since15"})
-public abstract class IASAbstractStringBuilder implements IASStringBuilderable, IASRangeAware {
+public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBuilderable, IASExtendedTaintRangeAware {
     protected final StringBuilder builder;
     private IASTaintInformation taintInformation;
 
@@ -26,7 +24,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     public IASAbstractStringBuilder(IASStringable str) {
         this.builder = new StringBuilder(str.getString());
         if (str.isTainted()) {
-            this.taintInformation = new IASTaintInformation(((IASString) str).getAllRangesAdjusted());
+            this.taintInformation = new IASTaintInformation(((IASString) str).getTaintRanges());
         }
     }
 
@@ -91,7 +89,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
 
     public IASAbstractStringBuilder append(IASStringable str, boolean merge) {
         IASString string = IASString.valueOf(str);
-        List<IASTaintRange> ranges = string.getAllRangesAdjusted();
+        List<IASTaintRange> ranges = string.getTaintRanges();
         this.appendShifted(ranges, merge);
 
         this.builder.append(string.getString());
@@ -100,7 +98,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
 
     public IASAbstractStringBuilder append(IASStringBuilderable strb) {
         IASString string = (IASString) strb.toIASString();
-        List<IASTaintRange> ranges = string.getAllRangesAdjusted();
+        List<IASTaintRange> ranges = string.getTaintRanges();
         this.appendShifted(ranges);
 
         this.builder.append(string.getString());
@@ -116,7 +114,8 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         return isTainted() ? this.taintInformation.getAllRanges() : new ArrayList<>(0);
     }
 
-    protected List<IASTaintRange> getAllRangesAdjusted() {
+    @Override
+    public List<IASTaintRange> getTaintRanges() {
         List<IASTaintRange> ranges = getAllRanges();
         IASTaintRangeUtils.adjustRanges(ranges, 0, this.length(), 0);
         return ranges;
@@ -199,7 +198,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
             this.taintInformation = new IASTaintInformation();
         }
         if (this.isTainted() || str.isTainted()) {
-            this.taintInformation.replaceTaintInformation(start, end, ((IASString) str).getAllRangesAdjusted(), str.length(), true);
+            this.taintInformation.replaceTaintInformation(start, end, ((IASString) str).getTaintRanges(), str.length(), true);
         }
         return this;
     }
@@ -222,7 +221,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
             this.taintInformation = new IASTaintInformation();
         }
         if (this.isTainted() || str.isTainted()) {
-            this.taintInformation.insert(offset, ((IASString) str).getAllRangesAdjusted(), str.length());
+            this.taintInformation.insert(offset, ((IASString) str).getTaintRanges(), str.length());
         }
         this.builder.insert(offset, str.toString());
         return this;
@@ -337,7 +336,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     }
 
     public IASString toIASString() {
-        return new IASString(this.builder.toString(), this.getAllRangesAdjusted());
+        return new IASString(this.builder.toString(), this.getTaintRanges());
     }
 
     public int capacity() {

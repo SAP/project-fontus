@@ -22,7 +22,7 @@ public class SubstringOperation implements IASOperation {
 
     @Override
     public List<IASTaintRange> apply(String previousString, List<IASTaintRange> previousRanges) {
-        IASTaintRangeUtils.adjustRanges(previousRanges, this.start, this.end, this.start);
+        IASTaintRangeUtils.adjustAndRemoveRanges(previousRanges, this.start, this.end, this.start);
         return previousRanges;
     }
 }

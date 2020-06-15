@@ -3,6 +3,7 @@ package de.tubs.cs.ias.asm_test.taintaware.range;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeAware;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -987,8 +988,8 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             } else {
                 String hexString = Integer.toHexString(arg.hashCode());
                 IASString taintedHexString = new IASString(hexString);
-                if (arg instanceof IASRangeAware && ((IASTaintAware) arg).isTainted()) {
-                    List<IASTaintRange> ranges = ((IASRangeAware) arg).getTaintInformation().getAllRanges();
+                if (arg instanceof IASTaintRangeAware && ((IASTaintAware) arg).isTainted()) {
+                    List<IASTaintRange> ranges = ((IASTaintRangeAware) arg).getTaintRanges();
                     taintedHexString.initialize();
                     if (ranges.size() == 1) {
                         taintedHexString.getTaintInformation().addRange(0, taintedHexString.length(), ranges.get(0).getSource());

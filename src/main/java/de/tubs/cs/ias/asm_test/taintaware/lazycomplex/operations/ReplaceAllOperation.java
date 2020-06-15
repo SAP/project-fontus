@@ -33,7 +33,7 @@ public class ReplaceAllOperation implements IASOperation {
             int end = matcher.start();
 
             List<IASTaintRange> currRanges = new ArrayList<>(previousRanges);
-            IASTaintRangeUtils.adjustRanges(currRanges, appendPos, end, appendPos - length);
+            IASTaintRangeUtils.adjustAndRemoveRanges(currRanges, appendPos, end, appendPos - length);
             ranges.addAll(currRanges);
 
             length += end - previousEnd;
@@ -50,7 +50,7 @@ public class ReplaceAllOperation implements IASOperation {
             appendPos = matcher.end();
         }
         List<IASTaintRange> currRanges = new ArrayList<>(previousRanges);
-        IASTaintRangeUtils.adjustRanges(currRanges, appendPos, previousString.length(), appendPos - length);
+        IASTaintRangeUtils.adjustAndRemoveRanges(currRanges, appendPos, previousString.length(), appendPos - length);
         ranges.addAll(currRanges);
         return ranges;
     }

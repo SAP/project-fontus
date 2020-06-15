@@ -3,6 +3,7 @@ package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations.*;
 import de.tubs.cs.ias.asm_test.taintaware.shared.*;
+import de.tubs.cs.ias.asm_test.taintaware.shared.range.IASTaintRangeStringable;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -11,7 +12,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @SuppressWarnings("Since15")
-public class IASString implements IASStringable, IASLazyComplexAware {
+public class IASString implements IASTaintRangeStringable, IASLazyComplexAware {
     private final String string;
     private IASTaintInformation taintInformation;
 
@@ -135,6 +136,13 @@ public class IASString implements IASStringable, IASLazyComplexAware {
 
     public boolean isUninitialized() {
         return !this.isInitialized();
+    }
+
+    @Override
+    public void initialize() {
+        if (this.isUninitialized()) {
+            this.taintInformation = new IASTaintInformation();
+        }
     }
 
     @Override
@@ -474,7 +482,7 @@ public class IASString implements IASStringable, IASLazyComplexAware {
             if (taint) {
                 this.taintInformation = new IASTaintInformation(new BaseOperation(0, this.length(), IASTaintSource.TS_CS_UNKNOWN_ORIGIN));
             } else {
-                this.taintInformation = new IASTaintInformation();
+                this.taintInformation = null;
             }
         }
     }

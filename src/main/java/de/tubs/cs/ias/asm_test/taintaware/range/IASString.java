@@ -2,6 +2,7 @@ package de.tubs.cs.ias.asm_test.taintaware.range;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.shared.*;
+import de.tubs.cs.ias.asm_test.taintaware.shared.range.IASTaintRangeStringable;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -11,7 +12,7 @@ import java.util.stream.Stream;
 
 
 @SuppressWarnings("ALL")
-public final class IASString implements IASRangeAware, IASStringable {
+public final class IASString implements IASTaintRangeStringable, IASExtendedTaintRangeAware {
 
     private String str;
     private IASTaintInformation taintInformation;
@@ -34,13 +35,13 @@ public final class IASString implements IASRangeAware, IASStringable {
 
     public IASString(IASStringable s) {
         this.str = s.getString();
-        this.taintInformation = new IASTaintInformation(((IASString) s).getAllRangesAdjusted());
+        this.taintInformation = new IASTaintInformation(((IASString) s).getTaintRanges());
     }
 
     public IASString(IASStringBuilderable strb) {
         IASString s = (IASString) strb.toIASString();
         this.str = s.getString();
-        this.taintInformation = new IASTaintInformation(s.getAllRangesAdjusted());
+        this.taintInformation = new IASTaintInformation(s.getTaintRanges());
     }
 
     public IASString(String s, List<IASTaintRange> ranges) {
@@ -360,9 +361,9 @@ public final class IASString implements IASRangeAware, IASStringable {
     }
 
     public IASString concat(IASStringable str) {
-        IASString newStr = new IASString(this.str.concat(str.getString()), this.getAllRangesAdjusted());
+        IASString newStr = new IASString(this.str.concat(str.getString()), this.getTaintRanges());
 
-        List<IASTaintRange> otherRanges = ((IASString) str).getAllRangesAdjusted();
+        List<IASTaintRange> otherRanges = ((IASString) str).getTaintRanges();
         IASTaintRangeUtils.adjustRanges(otherRanges, 0, str.length(), -this.length());
 
         newStr.appendRangesFrom(otherRanges);
@@ -374,9 +375,11 @@ public final class IASString implements IASRangeAware, IASStringable {
         return isTainted() ? this.taintInformation.getAllRanges() : new ArrayList<>(0);
     }
 
-    public List<IASTaintRange> getAllRangesAdjusted() {
+    @Override
+    public List<IASTaintRange> getTaintRanges() {
         List<IASTaintRange> ranges = getAllRanges();
-        IASTaintRangeUtils.adjustRanges(ranges, 0, this.length(), 0);
+        IASTaintRangeUtils.adjustAndRemoveRanges(ranges, 0, this.length(), 0);
+        IASTaintRangeUtils.merge(ranges);
         return ranges;
     }
 
@@ -389,7 +392,7 @@ public final class IASString implements IASRangeAware, IASStringable {
      * @return
      */
     public IASString replace(char oldChar, char newChar) {
-        return new IASString(this.str.replace(oldChar, newChar), this.getAllRangesAdjusted());
+        return new IASString(this.str.replace(oldChar, newChar), this.getTaintRanges());
     }
 
     public boolean matches(IASStringable regex) {
@@ -459,19 +462,19 @@ public final class IASString implements IASRangeAware, IASStringable {
     }
 
     public IASString toLowerCase(Locale locale) {
-        return new IASString(this.str.toLowerCase(locale), this.getAllRangesAdjusted());
+        return new IASString(this.str.toLowerCase(locale), this.getTaintRanges());
     }
 
     public IASString toLowerCase() {
-        return new IASString(this.str.toLowerCase(), this.getAllRangesAdjusted());
+        return new IASString(this.str.toLowerCase(), this.getTaintRanges());
     }
 
     public IASString toUpperCase(Locale locale) {
-        return new IASString(this.str.toUpperCase(locale), this.getAllRangesAdjusted());
+        return new IASString(this.str.toUpperCase(locale), this.getTaintRanges());
     }
 
     public IASString toUpperCase() {
-        return new IASString(this.str.toUpperCase(), this.getAllRangesAdjusted());
+        return new IASString(this.str.toUpperCase(), this.getTaintRanges());
     }
 
     public IASString trim() {

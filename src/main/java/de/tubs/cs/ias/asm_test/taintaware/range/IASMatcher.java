@@ -168,7 +168,7 @@ public class IASMatcher {
 
     public IASString replaceFirst(IASStringable replacement) {
         String replacedStr = this.input.getString().replaceFirst(this.pattern.pattern().getString(), replacement.getString());
-        IASString newStr = new IASString(replacedStr, this.input.getAllRangesAdjusted());
+        IASString newStr = new IASString(replacedStr, this.input.getTaintRanges());
 
         // Is one of both Strings tainted? If not, it's irrelevant if one happened for the tainting
         if (this.input.isTainted() || replacement.isTainted()) {
@@ -177,7 +177,7 @@ public class IASMatcher {
                 final int end = this.end();
 
                 newStr.initialize();
-                newStr.getTaintInformation().replaceTaintInformation(start, end, ((IASString) replacement).getAllRangesAdjusted(), replacement.length(), true);
+                newStr.getTaintInformation().replaceTaintInformation(start, end, ((IASString) replacement).getTaintRanges(), replacement.length(), true);
             }
         }
         if (!newStr.isTainted()) {

@@ -1,11 +1,8 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
-import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeAware;
 
-import java.util.List;
-
-public interface IASLazyComplexAware extends IASTaintAware {
-    List<IASTaintRange> getTaintRanges();
+public interface IASLazyComplexAware extends IASTaintRangeAware {
     int length();
+    IASString toIASString();
 }

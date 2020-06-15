@@ -5,6 +5,7 @@ import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+import de.tubs.cs.ias.asm_test.taintaware.shared.range.IASTaintRangeStringBuilderable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("Since15")
-public abstract class IASAbstractStringBuilder implements IASStringBuilderable, IASLazyComplexAware {
+public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBuilderable, IASLazyComplexAware {
     private final StringBuilder stringBuilder;
     private IASTaintInformation taintInformation;
 
@@ -46,6 +47,13 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         this.stringBuilder = new StringBuilder(string.getString());
         if (string.isInitialized()) {
             this.taintInformation = new IASTaintInformation(string.getTaintRanges());
+        }
+    }
+
+    @Override
+    public void initialize() {
+        if(this.isUninitialized()) {
+            this.taintInformation = new IASTaintInformation();
         }
     }
 
@@ -157,7 +165,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
 
     @Override
     public IASStringBuilderable replace(int start, int end, IASStringable str) {
-        this.derive(new ReplaceOperation(start, end, (IASString) str), false);
+        this.derive(new ReplaceOperation(start, end, (IASString) str), ((IASString) str).isInitialized());
         this.stringBuilder.replace(start, end, str.getString());
         return this;
     }

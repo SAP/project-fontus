@@ -36,7 +36,7 @@ public class IASFormatter implements IASFormatterable {
     }
 
     public IASFormatter(Locale l) {
-        this.formatter = new Formatter(l);
+        this.formatter = new Formatter(new IASStringBuilder(), l);
     }
 
     public IASFormatter(OutputStream o) {
@@ -72,7 +72,7 @@ public class IASFormatter implements IASFormatterable {
     public IASFormatter format(IASStringable format, Object... args) {
         this.formatter.format(format.getString(), args);
         if (this.formatter.out() instanceof IASAbstractStringBuilder) {
-            ((IASAbstractStringBuilder) this.formatter.out()).derive(new FormatOperation(Locale.getDefault(), (IASString) format, args), true);
+            ((IASAbstractStringBuilder) this.formatter.out()).derive(new FormatOperation(this.locale(), (IASString) format, args), true);
         }
         return this;
     }

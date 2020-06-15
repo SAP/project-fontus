@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations;
 
+import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.IASLazyComplexAware;
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.IASOperation;
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.IASString;
 import de.tubs.cs.ias.asm_test.taintaware.range.IASFormatter;
@@ -18,15 +19,15 @@ public class FormatOperation implements IASOperation {
         this.format = format;
         this.args = new Object[args.length];
         for (int i = 0; i < args.length; i++) {
-            this.args[i] = args[i];
-            if (!this.isPrimitiveOrWrapper(args[i]) && !this.isString(args[i])) {
-                this.args[i] = this.args[i].toString();
+            if (args[i] instanceof IASLazyComplexAware) {
+                IASString str = ((IASLazyComplexAware) args[i]).toIASString();
+                this.args[i] = new de.tubs.cs.ias.asm_test.taintaware.range.IASString(str.getString(), str.getTaintRanges());
+            } else if (this.isPrimitiveOrWrapper(args[i])) {
+                this.args[i] = args[i];
+            } else {
+                this.args[i] = args[i].toString();
             }
         }
-    }
-
-    public boolean isString(Object obj) {
-        return obj instanceof IASString || obj instanceof String;
     }
 
     public boolean isPrimitiveOrWrapper(Object obj) {
@@ -39,6 +40,6 @@ public class FormatOperation implements IASOperation {
     @Override
     public List<IASTaintRange> apply(String previousString, List<IASTaintRange> previousTaint) {
         de.tubs.cs.ias.asm_test.taintaware.range.IASString string = new de.tubs.cs.ias.asm_test.taintaware.range.IASString(this.format.getString(), this.format.getTaintRanges());
-        return new IASFormatter().format(this.locale, string, this.args).toIASString().getAllRangesAdjusted();
+        return new IASFormatter(this.locale).format(string, this.args).toIASString().getTaintRanges();
     }
 }
