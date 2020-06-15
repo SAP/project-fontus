@@ -5,6 +5,7 @@ import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -23,7 +24,7 @@ public class IASTaintInformation {
     public IASTaintInformation(BaseOperation operation) {
         this.previousString = null;
         this.previousInformation = null;
-        this.operation = operation;
+        this.operation = Objects.requireNonNull(operation);
     }
 
     public IASTaintInformation() {
@@ -50,18 +51,23 @@ public class IASTaintInformation {
         }
     }
 
-    public synchronized List<IASTaintRange> evaluate() {
+    private synchronized List<IASTaintRange> evaluate() {
         if (this.cache == null) {
             List<IASTaintRange> ranges = null;
             if (this.previousInformation != null) {
                 ranges = new ArrayList<>(this.previousInformation.evaluate());
             }
-            this.cache = new ArrayList<>(this.operation.apply(this.previousString, ranges));
+            this.cache = this.operation.apply(this.previousString, ranges);
             IASTaintRangeUtils.merge(this.cache);
+            this.cache = Collections.unmodifiableList(this.cache);
 //            this.previousString = null;
 //            this.previousInformation = null;
 //            this.operation = null;
         }
         return this.cache;
+    }
+
+    public synchronized List<IASTaintRange> getTaintRanges() {
+        return new ArrayList<>(this.evaluate());
     }
 }

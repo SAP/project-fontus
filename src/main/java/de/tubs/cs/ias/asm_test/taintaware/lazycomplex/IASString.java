@@ -142,7 +142,7 @@ public class IASString implements IASStringable, IASLazyComplexAware {
         if (isUninitialized()) {
             return new ArrayList<>();
         }
-        return this.taintInformation.evaluate();
+        return this.taintInformation.getTaintRanges();
     }
 
     @Override

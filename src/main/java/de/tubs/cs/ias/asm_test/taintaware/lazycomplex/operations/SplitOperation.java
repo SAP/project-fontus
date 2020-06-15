@@ -14,10 +14,12 @@ public class SplitOperation implements IASOperation {
      * Index of the splitted string
      */
     private final int index;
+    private final int limit;
 
-    public SplitOperation(String regex, int index) {
+    public SplitOperation(String regex, int index, int limit) {
         this.regex = regex;
         this.index = index;
+        this.limit = limit;
     }
 
     @Override
@@ -27,12 +29,13 @@ public class SplitOperation implements IASOperation {
 
         int start = 0;
         boolean found;
+        boolean isNotEnd;
         for (int counter = 0; (found = matcher.find()) && counter < this.index; counter++) {
             start = matcher.end();
         }
 
         int end;
-        if (found) {
+        if (found && this.index != this.limit - 1) {
             end = matcher.start();
         } else {
             end = previousString.length();

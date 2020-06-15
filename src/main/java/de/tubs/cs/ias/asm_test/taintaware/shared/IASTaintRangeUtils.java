@@ -102,7 +102,7 @@ public class IASTaintRangeUtils {
                 continue;
             }
 
-            if (first.getSource() == second.getSource()) {
+            if (first.getSource() == second.getSource() && first.getEnd() == second.getStart()) {
                 IASTaintRange merged = new IASTaintRange(first.getStart(), second.getEnd(), first.getSource());
                 taintRanges.set(i, merged);
                 taintRanges.remove(i + 1);

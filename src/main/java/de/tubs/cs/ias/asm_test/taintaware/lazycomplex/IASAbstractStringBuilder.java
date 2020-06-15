@@ -54,7 +54,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         if (this.taintInformation == null) {
             return new ArrayList<>(0);
         }
-        return this.taintInformation.evaluate();
+        return this.taintInformation.getTaintRanges();
     }
 
     @Override
@@ -301,7 +301,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
 
     @Override
     public IASString substring(int start, int end) {
-        return this.deriveString(this.stringBuilder.substring(start), new SubstringOperation(start, end));
+        return this.deriveString(this.stringBuilder.substring(start, end), new SubstringOperation(start, end));
     }
 
     @Override
