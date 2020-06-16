@@ -282,9 +282,6 @@ public abstract class IASAbstractStringBuilder implements Serializable, Appendab
     }
 
     public IASAbstractStringBuilder insert(int dstOffset, CharSequence s) {
-        // Note, synchronization achieved via invocations of other StringBuffer methods
-        // after narrowing of s to specific type
-        // Ditto for toStringCache clearing
         if (s instanceof IASTaintAware) {
             IASTaintAware ta = (IASTaintAware) s;
             this.mergeTaint(ta);
@@ -304,9 +301,6 @@ public abstract class IASAbstractStringBuilder implements Serializable, Appendab
     }
 
     public IASAbstractStringBuilder insert(int offset, boolean b) {
-        // Note, synchronization achieved via invocation of StringBuffer insert(int, String)
-        // after conversion of b to String by super class method
-        // Ditto for toStringCache clearing
         this.builder.insert(offset, b);
         return this;
     }
@@ -317,39 +311,26 @@ public abstract class IASAbstractStringBuilder implements Serializable, Appendab
     }
 
     public IASAbstractStringBuilder insert(int offset, int i) {
-        // Note, synchronization achieved via invocation of StringBuffer insert(int, String)
-        // after conversion of i to String by super class method
-        // Ditto for toStringCache clearing
         this.builder.insert(offset, i);
         return this;
     }
 
     public IASAbstractStringBuilder insert(int offset, long l) {
-        // Note, synchronization achieved via invocation of StringBuffer insert(int, String)
-        // after conversion of l to String by super class method
-        // Ditto for toStringCache clearing
         this.builder.insert(offset, l);
         return this;
     }
 
     public IASAbstractStringBuilder insert(int offset, float f) {
-        // Note, synchronization achieved via invocation of StringBuffer insert(int, String)
-        // after conversion of f to String by super class method
-        // Ditto for toStringCache clearing
         this.builder.insert(offset, f);
         return this;
     }
 
     public IASAbstractStringBuilder insert(int offset, double d) {
-        // Note, synchronization achieved via invocation of StringBuffer insert(int, String)
-        // after conversion of d to String by super class method
-        // Ditto for toStringCache clearing
         this.builder.insert(offset, d);
         return this;
     }
 
     public int indexOf(IASString str) {
-        // Note, synchronization achieved via invocations of other StringBuffer methods
         return this.builder.indexOf(str.getString());
     }
 
@@ -358,7 +339,6 @@ public abstract class IASAbstractStringBuilder implements Serializable, Appendab
     }
 
     public int lastIndexOf(IASString str) {
-        // Note, synchronization achieved via invocations of other StringBuffer methods
         return this.lastIndexOf(str, this.builder.length()); //TODO: correct?
     }
 

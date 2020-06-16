@@ -4,7 +4,6 @@ import java.util.stream.IntStream;
 
 @SuppressWarnings({"SynchronizedMethod", "ReturnOfThis", "WeakerAccess", "ClassWithTooManyConstructors", "ClassWithTooManyMethods"})
 public final class IASStringBuffer extends IASAbstractStringBuilder implements Comparable<IASStringBuffer> {
-
     public IASStringBuffer() {
         super();
     }
@@ -310,11 +309,11 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
 
     @Override
     public synchronized IntStream chars() {
-        return null;
+        return super.chars();
     }
 
     @Override
     public synchronized IntStream codePoints() {
-        return null;
+        return super.codePoints();
     }
 }
