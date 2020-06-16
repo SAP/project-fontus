@@ -318,11 +318,11 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
 
     @Override
     public synchronized IntStream chars() {
-        return null;
+        return super.chars();
     }
 
     @Override
     public synchronized IntStream codePoints() {
-        return null;
+        return super.codePoints();
     }
 }
