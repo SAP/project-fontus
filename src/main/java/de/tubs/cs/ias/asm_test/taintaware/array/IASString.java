@@ -1,138 +1,178 @@
-package de.tubs.cs.ias.asm_test.taintaware.bool;
+package de.tubs.cs.ias.asm_test.taintaware.array;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.util.Comparator;
-import java.util.Locale;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.*;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 
 @SuppressWarnings("ALL")
-public final class IASString implements IASTaintAware, Comparable<IASString>, CharSequence {
+public final class IASString implements IASArrayAware, Comparable<IASString>, CharSequence {
 
     private String str;
-    private boolean tainted = false;
-    private static ConcurrentHashMap<String, IASString> internPool = new ConcurrentHashMap<>();
+    private IASTaintInformation taintInformation;
 
     public IASString() {
         this.str = "";
-        this.tainted = false;
     }
 
     public IASString(String s) {
+        if (s == null) {
+            throw new IllegalArgumentException("String cannot be null");
+        }
         this.str = s;
-        this.tainted = false;
     }
 
     public IASString(String s, boolean tainted) {
-        this.str = s;
-        this.tainted = tainted;
+        this(s);
+        setTaint(tainted);
     }
 
-    public static IASString tainted(IASString tstr) {
-        tstr.tainted = true;
-        return tstr;
+    public IASString(String s, int[] taints) {
+        this(s);
+        this.setTaints(taints);
+    }
+
+    private void setTaints(int[] taints) {
+        if (taints.length != this.length()) {
+            throw new IllegalArgumentException("Taint array size must match string length!");
+        }
+        this.taintInformation = new IASTaintInformation(taints);
+    }
+
+    public IASString(CharSequence sequence, int[] taints) {
+        this(sequence.toString());
+        this.taintInformation = new IASTaintInformation(taints);
     }
 
     @Override
     public boolean isTainted() {
-        return this.tainted;
+        if (this.taintInformation == null) {
+            return false;
+        }
+        return this.taintInformation.isTainted();
     }
 
+    public static IASString tainted(IASString tstr) {
+        tstr.setTaint(true);
+        return tstr;
+    }
+
+    /**
+     * Marks the whole string as tainted.
+     * If the string already has tainted parts, they will be removed and replaced with one range tainting all.
+     *
+     * @param taint
+     */
     @Override
-    public void setTaint(boolean b) {
-        // Prevent tainting of empty strings
-        if (str.length() > 0) {
-            this.tainted = b;
+    public void setTaint(boolean taint) {
+        if (isTainted()) {
+            this.taintInformation.removeAll();
+        }
+        if (taint) {
+            if (isUninitialized()) {
+                this.initialize();
+            }
+            this.taintInformation.setTaint(0, this.str.length(), (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
+        } else {
+            this.taintInformation = null;
         }
     }
 
-    private void mergeTaint(IASTaintAware other) {
-        this.tainted |= other.isTainted();
+    public void initialize() {
+        if (isUninitialized()) {
+            this.taintInformation = new IASTaintInformation(this.length());
+        }
     }
 
-    public void abortIfTainted() {
-        if (this.tainted) {
-            System.err.printf("String %s is tainted!\nAborting..!\n", this.str);
-            System.exit(1);
-        }
+    public IASString(String s, IASTaintInformation iasTaintInformation) {
+        this(s);
+        this.taintInformation = iasTaintInformation.clone();
     }
 
     public IASString(char value[]) {
-        this.str = new String(value);
+        this(new String(value));
     }
 
     public IASString(char value[], int offset, int count) {
-        this.str = new String(value, offset, count);
+        this(new String(value, offset, count));
     }
 
     public IASString(int[] codePoints, int offset, int count) {
-        this.str = new String(codePoints, offset, count);
+        this(new String(codePoints, offset, count));
     }
 
     public IASString(byte ascii[], int hibyte, int offset, int count) {
-        this.str = new String(ascii, hibyte, offset, count);
+        this(new String(ascii, hibyte, offset, count));
     }
 
     public IASString(byte ascii[], int hibyte) {
-        this.str = new String(ascii, hibyte);
+        this(new String(ascii, hibyte));
     }
 
-    public IASString(byte bytes[], int offset, int length, IASString charsetName)
+    public IASString(byte bytes[], int offset, int length, String charsetName)
             throws UnsupportedEncodingException {
-        this.str = new String(bytes, offset, length, charsetName.str);
+        this(new String(bytes, offset, length, charsetName));
     }
 
     public IASString(byte bytes[], int offset, int length, Charset charset) {
-        // TODO: howto handle this? Does the charset affect tainting?
-        this.str = new String(bytes, offset, length, charset);
+        this(new String(bytes, offset, length, charset));
     }
 
-    public IASString(byte bytes[], IASString charsetName) throws UnsupportedEncodingException {
-        // TODO: howto handle this? Does the charset affect tainting?
-        this.str = new String(bytes, charsetName.str);
+    public IASString(byte bytes[], String charsetName) throws UnsupportedEncodingException {
+        this(new String(bytes, charsetName));
     }
 
     public IASString(byte bytes[], Charset charset) {
-        this.str = new String(bytes, charset);
+        this(new String(bytes, charset));
     }
 
     public IASString(byte bytes[], int offset, int length) {
-        this.str = new String(bytes, offset, length);
+        this(new String(bytes, offset, length));
     }
 
     public IASString(byte[] bytes) {
-        this.str = new String(bytes);
+        this(new String(bytes));
     }
 
     public IASString(StringBuffer buffer) {
-        this.str = new String(buffer);
+        this(new String(buffer));
     }
 
     public IASString(IASStringBuilder builder) {
-        this.str = builder.toString();
-        this.tainted = builder.isTainted();
+        this(builder.toString());
+        if (builder.isInitialized()) {
+            this.taintInformation = builder.getTaintInformation().clone();
+        }
     }
 
     public IASString(IASStringBuffer buffer) {
-        this.str = buffer.toString();
-        this.tainted = buffer.isTainted();
+        this(buffer.toString());
+        if (buffer.isInitialized()) {
+            this.taintInformation = buffer.getTaintInformation().clone();
+        }
     }
 
     public IASString(IASString string) {
-        this.str = string.str;
-        this.tainted = string.tainted;
+        this(string.str);
+        if (string.isInitialized()) {
+            this.taintInformation = string.taintInformation.clone();
+        }
     }
 
+    /**
+     * Creates a new taintable String from a charsequence.
+     * If it's marked as tainted, the whole string will be marked as tainted
+     *
+     * @param cs
+     * @param tainted
+     */
     private IASString(CharSequence cs, boolean tainted) {
-        this.str = cs.toString();
-        this.tainted = tainted;
+        this(cs.toString());
+        this.setTaint(tainted);
     }
 
     public int length() {
@@ -190,7 +230,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public boolean contentEquals(IASStringBuffer sb) {
-        return this.str.contentEquals(sb.getBuilder());
+        return this.str.contentEquals(sb);
     }
 
     public boolean contentEquals(StringBuffer sb) {
@@ -271,36 +311,55 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         return this.str.lastIndexOf(str.str, fromIndex);
     }
 
-    public IASString substring(int beginIndex) {
-        boolean taint = this.tainted;
-        if (beginIndex == this.str.length()) {
-            taint = false;
+    private int[] getSubstringTaint(int beginIndex, int endIndex) {
+        if (this.isUninitialized()) {
+            return new int[endIndex - beginIndex];
         }
-        return new IASString(this.str.substring(beginIndex), taint);
+        return this.taintInformation.getTaints(beginIndex, endIndex);
+    }
+
+    public IASString substring(int beginIndex) {
+        int[] taints = this.getSubstringTaint(beginIndex, this.length());
+        return new IASString(this.str.substring(beginIndex), taints);
     }
 
     public IASString substring(int beginIndex, int endIndex) {
-        boolean taint = this.tainted;
-        if (beginIndex == endIndex) {
-            taint = false;
+        if (beginIndex < 0 || this.length() < endIndex || endIndex < beginIndex) {
+            throw new IllegalArgumentException("startIndex: " + beginIndex + ", endIndex: " + endIndex);
         }
-        return new IASString(this.str.substring(beginIndex, endIndex), taint);
+
+        if (beginIndex == endIndex) {
+            return new IASString();
+        }
+        int[] taints = this.getSubstringTaint(beginIndex, endIndex);
+        return new IASString(this.str.substring(beginIndex, endIndex), taints);
     }
 
     public CharSequence subSequence(int beginIndex, int endIndex) {
-        boolean taint = this.tainted;
-        if (beginIndex == endIndex) {
-            taint = false;
-        }
-        return new IASString(this.str.subSequence(beginIndex, endIndex), taint);
+        int[] taints = this.getSubstringTaint(beginIndex, endIndex);
+        return new IASString(this.str.subSequence(beginIndex, endIndex), taints);
     }
 
     public IASString concat(IASString str) {
-        return new IASString(this.str.concat(str.str), this.tainted || str.tainted);
+        int[] firstTaint = this.getTaints();
+        int[] secondTaint = str.getTaints();
+        int[] newTaint = new int[firstTaint.length + secondTaint.length];
+        System.arraycopy(firstTaint, 0, newTaint, 0, firstTaint.length);
+        System.arraycopy(secondTaint, 0, newTaint, firstTaint.length, secondTaint.length);
+        IASString newStr = new IASString(this.str.concat(str.str), newTaint);
+        return newStr;
     }
 
+    /**
+     * Same behaviour like {@link String#replace(char, char)}
+     * The new string gets the same taint ranges as the original one
+     *
+     * @param oldChar
+     * @param newChar
+     * @return
+     */
     public IASString replace(char oldChar, char newChar) {
-        return new IASString(this.str.replace(oldChar, newChar), this.tainted);
+        return new IASString(this.str.replace(oldChar, newChar), getTaints());
     }
 
     public boolean matches(IASString regex) {
@@ -312,147 +371,106 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public IASString replaceFirst(IASString regex, IASString replacement) {
-        // TODO: this seems pretty expensive..
-        boolean taint = this.tainted;
-        Pattern p = Pattern.compile(regex.str);
-        Matcher m = p.matcher(this.str);
-        if (m.find()) {
-            taint |= replacement.tainted;
-        }
-        String result = this.str.replaceFirst(regex.str, replacement.str);
-        if (result.isEmpty()) {
-            taint = false;
-        }
-        return new IASString(result, taint);
+        return IASPattern.compile(regex).matcher(this).replaceFirst(replacement);
     }
 
     public IASString replaceAll(IASString regex, IASString replacement) {
-        // TODO: this seems pretty expensive..
-        boolean taint = this.tainted;
-        Pattern p = Pattern.compile(regex.str);
-        Matcher m = p.matcher(this.str);
-        if (m.find()) {
-            taint |= replacement.tainted;
-        }
-        String result = this.str.replaceAll(regex.str, replacement.str);
-        if (result.isEmpty()) {
-            taint = false;
-        }
-        return new IASString(result, taint);
+        return IASPattern.compile(regex).matcher(this).replaceAll(replacement);
     }
 
     public IASString replace(CharSequence target, CharSequence replacement) {
-        boolean taint = this.tainted;
-        if (this.str.contains(target)) {
-            if (replacement instanceof IASTaintAware) {
-                IASTaintAware t = (IASTaintAware) replacement;
-                taint |= t.isTainted();
-            }
+        int start = this.str.indexOf(target.toString());
+        if (start < 0) {
+            return this;
         }
-        return new IASString(this.str.replace(target, replacement), taint);
+        IASString beginStr = this.substring(0, start);
+
+        int end = start + target.length();
+        IASString endStr = this.substring(end).replace(target, replacement);
+
+        return beginStr.concat(IASString.valueOf(replacement)).concat(endStr);
     }
 
     // TODO: this propagates the taint for the whole string
     public IASString[] split(IASString regex, int limit) {
-        String[] split = this.str.split(regex.str, limit);
-        IASString[] splitted = new IASString[split.length];
-        for (int i = 0; i < split.length; i++) {
-            splitted[i] = new IASString(split[i], this.tainted);
-        }
-        return splitted;
+        return IASPattern.compile(regex).split(this, limit);
     }
 
     // TODO: this propagates the taint for the whole string
     public IASString[] split(IASString regex) {
-        String[] split = this.str.split(regex.str);
-        IASString[] splitted = new IASString[split.length];
-        for (int i = 0; i < split.length; i++) {
-            splitted[i] = new IASString(split[i], this.tainted);
-        }
-        return splitted;
+        return this.split(regex, 0);
     }
 
     public static IASString join(CharSequence delimiter, CharSequence... elements) {
-        boolean taint = false;
-        for (CharSequence cs : elements) {
-            if (cs instanceof IASTaintAware) {
-                IASTaintAware t = (IASTaintAware) cs;
-                taint |= t.isTainted();
+        if (elements == null || elements.length == 0) {
+            return new IASString();
+        } else if (elements.length == 1) {
+            return IASString.valueOf(elements[0]);
+        } else {
+            IASString iasDelimiter = IASString.valueOf(delimiter);
+            IASStringBuilder sb = new IASStringBuilder(elements[0]);
+
+            for (int i = 1; i < elements.length; i++) {
+                sb.append(iasDelimiter);
+                sb.append(IASString.valueOf(elements[i]));
             }
+            return sb.toIASString();
         }
-        // Don't forget the delimiter!
-        if (delimiter instanceof IASTaintAware) {
-            IASTaintAware t = (IASTaintAware) delimiter;
-            taint |= t.isTainted();
-        }
-        return new IASString(String.join(delimiter, elements), taint);
     }
 
 
     public static IASString join(CharSequence delimiter,
                                  Iterable<? extends CharSequence> elements) {
-        boolean taint = false;
-        for (CharSequence cs : elements) {
-            if (cs instanceof IASTaintAware) {
-                IASTaintAware t = (IASTaintAware) cs;
-                taint |= t.isTainted();
-            }
+        ArrayList<CharSequence> l = new ArrayList();
+        for (CharSequence s : elements) {
+            l.add(s);
         }
-        // Don't forget the delimiter!
-        if (delimiter instanceof IASTaintAware) {
-            IASTaintAware t = (IASTaintAware) delimiter;
-            taint |= t.isTainted();
-        }
-        return new IASString(String.join(delimiter, elements), taint);
+        return IASString.join(delimiter, l.toArray(new CharSequence[l.size()]));
     }
 
     public IASString toLowerCase(Locale locale) {
-        return new IASString(this.str.toLowerCase(locale), this.tainted);
+        return new IASString(this.str.toLowerCase(locale), this.getTaints());
     }
 
     public IASString toLowerCase() {
-        return new IASString(this.str.toLowerCase(), this.tainted);
+        return new IASString(this.str.toLowerCase(), this.getTaints());
     }
 
     public IASString toUpperCase(Locale locale) {
-        return new IASString(this.str.toUpperCase(locale), this.tainted);
+        return new IASString(this.str.toUpperCase(locale), this.getTaints());
     }
 
     public IASString toUpperCase() {
-        return new IASString(this.str.toUpperCase(), this.tainted);
+        return new IASString(this.str.toUpperCase(), this.getTaints());
     }
 
     public IASString trim() {
-        String trimmed = this.str.trim();
-        if (trimmed.isEmpty()) {
-            return new IASString("");
-        }
-        return new IASString(trimmed, this.tainted);
+        String newStr = this.str.trim();
+        int start = this.str.indexOf(newStr);
+        int end = start + newStr.length();
+        return this.substring(start, end);
     }
 
     /* JDK 11 BEGIN */
     public IASString strip() {
-        String stripped = this.str.strip();
-        if (stripped.isEmpty()) {
-            return new IASString("");
-        }
-        return new IASString(stripped, this.tainted);
+        String newStr = this.str.strip();
+        int start = this.str.indexOf(newStr);
+        int end = start + newStr.length();
+        return this.substring(start, end);
     }
 
     public IASString stripLeading() {
-        String stripped = this.str.stripLeading();
-        if (stripped.isEmpty()) {
-            return new IASString("");
-        }
-        return new IASString(stripped, this.tainted);
+        String newStr = this.str.stripLeading();
+        int start = this.str.indexOf(newStr);
+        int end = start + newStr.length();
+        return this.substring(start, end);
     }
 
     public IASString stripTrailing() {
-        String stripped = this.str.stripTrailing();
-        if (stripped.isEmpty()) {
-            return new IASString("");
-        }
-        return new IASString(stripped, this.tainted);
+        String newStr = this.str.stripTrailing();
+        int start = this.str.indexOf(newStr);
+        int end = start + newStr.length();
+        return this.substring(start, end);
     }
 
     public boolean isBlank() {
@@ -460,14 +478,15 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public Stream<IASString> lines() {
-        return this.str.lines().map(s -> new IASString(s, this.tainted));
+        return Arrays.stream(this.split(new IASString("\\n")));
     }
 
     public IASString repeat(int count) {
-        if (count == 0) {
-            return new IASString("");
+        IASStringBuilder stringBuilder = new IASStringBuilder();
+        for (int i = 0; i < count; i++) {
+            stringBuilder.append(this);
         }
-        return new IASString(this.str.repeat(count), this.tainted);
+        return stringBuilder.toIASString();
     }
     /* JDK 11 END */
 
@@ -492,26 +511,29 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         return this.str.toCharArray();
     }
 
-    static boolean isTainted(Object[] args) {
-        boolean tainted = false;
-        for (Object obj : args) {
-            if (obj instanceof IASTaintAware) {
-                IASTaintAware ta = (IASTaintAware) obj;
-                tainted |= ta.isTainted();
+    private static boolean isTainted(Object[] args) {
+        boolean isTainted = false;
+        if (args != null) {
+            for (Object o : args) {
+                if (o instanceof IASTaintAware) {
+                    IASTaintAware ta = (IASTaintAware) o;
+                    isTainted |= ta.isTainted();
+                }
             }
         }
-        return tainted;
+        return isTainted;
     }
 
-    //TODO: sound?
     public static IASString format(IASString format, Object... args) {
-        //return new IASString(String.format(format.toString(), args), isTainted(args));
+        // TODO Implement rainting
+//        return new IASString(String.format(format.toString(), args), isTainted(args));
         return new IASFormatter().format(format, args).toIASString();
     }
 
-    //TODO: sound?
+
     public static IASString format(Locale l, IASString format, Object... args) {
-        //return new IASString(String.format(l, format.toString(), args), isTainted(args));
+        // TODO Implement rainting
+//        return new IASString(String.format(l, format.toString(), args), isTainted(args));
         return new IASFormatter(l).format(format, args).toIASString();
     }
 
@@ -524,6 +546,14 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
             return ((IASStringBuilder) obj).toIASString();
         } else {
             return new IASString(String.valueOf(obj));
+        }
+    }
+
+    public static IASString valueOf(CharSequence s, int start, int end) {
+        if (s instanceof IASString) {
+            return ((IASString) s).substring(start, end);
+        } else {
+            return IASString.valueOf(s.subSequence(start, end));
         }
     }
 
@@ -567,55 +597,64 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         return new IASString(String.valueOf(d));
     }
 
-    //TODO: sound?
     public IASString intern() {
-        /*if(this.internPool.containsKey(this.str)) {
-            return this.internPool.get(this.str);
-        } else {
-            this.internPool.put(this.str, this);
-            return this;
-        }*/
-        /*IASString current = this.internPool.get(this.str);
-        if(current == null) {
-            this.internPool.put(this.str, this);
-            return this;
-        }
-        return current;*/
-        IASString rv = internPool.putIfAbsent(this.str, this);
-        if (rv == null) {
-            return internPool.get(this.str);
-        } else {
-            return rv;
-        }
-        //return new IASString(this.str.intern(), this.tainted);
+        this.str = this.str.intern();
+        return IASStringPool.intern(this);
     }
 
-
     public static IASString fromString(String str) {
-        if (str == null) return null;
-
+        if (str == null) {
+            return null;
+        }
         return new IASString(str);
     }
 
     public static String asString(IASString str) {
-        if (str == null) return null;
-        return str.getString();
+        if (str == null) {
+            return null;
+        }
+        return str.str;
     }
 
     public String getString() {
         return this.str;
     }
 
+    public IASTaintInformation getTaintInformation() {
+        return taintInformation;
+    }
+
+    public boolean isUninitialized() {
+        return this.taintInformation == null;
+    }
+
+    public boolean isInitialized() {
+        return !this.isUninitialized();
+    }
+
+    public void abortIfTainted() {
+        if (this.isTainted()) {
+            System.err.printf("String %s is tainted!\nAborting..!\n", this.str);
+            System.exit(1);
+        }
+    }
+
     public static final Comparator<IASString> CASE_INSENSITIVE_ORDER
             = new CaseInsensitiveComparator();
 
+    @Override
+    public int[] getTaints() {
+        if (this.isUninitialized()) {
+            return new int[this.length()];
+        }
+        return this.taintInformation.getTaints();
+    }
+
     private static class CaseInsensitiveComparator
             implements Comparator<IASString>, java.io.Serializable {
-        private static final long serialVersionUID = 8575799808933029326L;
 
         public int compare(IASString s1, IASString s2) {
             return s1.compareToIgnoreCase(s2);
         }
     }
-
 }
