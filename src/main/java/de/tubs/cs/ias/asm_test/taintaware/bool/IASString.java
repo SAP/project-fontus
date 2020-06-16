@@ -190,7 +190,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public boolean contentEquals(IASStringBuffer sb) {
-        return this.str.contentEquals(sb.getBuffer());
+        return this.str.contentEquals(sb.getBuilder());
     }
 
     public boolean contentEquals(StringBuffer sb) {

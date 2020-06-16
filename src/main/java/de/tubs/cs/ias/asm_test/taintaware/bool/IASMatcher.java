@@ -29,14 +29,14 @@ public class IASMatcher {
     }
 
     public IASMatcher appendReplacement(IASStringBuffer sb, IASString replacement) {
-        matcher.appendReplacement(sb.getBuffer(), replacement.getString());
+        matcher.appendReplacement(sb.getBuilder(), replacement.getString());
         boolean tainted = sb.isTainted() || replacement.isTainted() || input.isTainted();
         sb.setTaint(tainted);
         return this;
     }
 
     public IASStringBuffer appendTail(IASStringBuffer sb) {
-        matcher.appendTail(sb.getBuffer());
+        matcher.appendTail(sb.getBuilder());
         boolean tainted = sb.isTainted() || input.isTainted();
         sb.setTaint(tainted);
         return sb;
