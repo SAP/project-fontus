@@ -20,7 +20,9 @@ public abstract class IASAbstractStringBuilder implements Serializable, Appendab
 
     @Override
     public void setTaint(boolean taint) {
-        this.tainted = taint;
+        if (this.builder.length() > 0 || !taint) {
+            this.tainted = taint;
+        }
     }
 
     private void mergeTaint(IASTaintAware other) {
