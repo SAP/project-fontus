@@ -56,7 +56,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
 
     @Override
     public void setTaint(boolean taint) {
-        this.setTaint(IASTaintSource.TS_CS_UNKNOWN_ORIGIN);
+        this.setTaint(taint ? IASTaintSource.TS_CS_UNKNOWN_ORIGIN : null);
     }
 
     @Override
