@@ -30,6 +30,10 @@ class TaintingTransformer implements ClassFileTransformer {
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
+        if(loader == null) {
+            return classfileBuffer;
+        }
+
         if (JdkClassesLookupTable.getInstance().isJdkClass(className)) {
             logger.info("Skipping JDK class: {}", className);
             return classfileBuffer;
