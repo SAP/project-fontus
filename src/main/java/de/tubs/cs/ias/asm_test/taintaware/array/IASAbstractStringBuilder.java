@@ -45,10 +45,15 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
 
     @Override
     public void setTaint(boolean taint) {
-        if (taint) {
+        setTaint(taint ? IASTaintSource.TS_CS_UNKNOWN_ORIGIN : null);
+    }
+
+    @Override
+    public void setTaint(IASTaintSource source) {
+        if (source != null) {
             if (!this.isTainted()) {
                 this.initialize();
-                this.taintInformation.setTaint(0, this.length(), (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
+                this.taintInformation.setTaint(0, this.length(), source);
             }
         } else {
             this.taintInformation = null;

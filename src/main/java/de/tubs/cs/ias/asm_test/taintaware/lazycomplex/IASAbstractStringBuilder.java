@@ -1,10 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations.*;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+import de.tubs.cs.ias.asm_test.taintaware.shared.*;
 import de.tubs.cs.ias.asm_test.taintaware.shared.range.IASTaintRangeStringBuilderable;
 
 import java.util.ArrayList;
@@ -47,6 +44,24 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
         this.stringBuilder = new StringBuilder(string.getString());
         if (string.isInitialized()) {
             this.taintInformation = new IASTaintInformation(string.getTaintRanges());
+        }
+    }
+
+    @Override
+    public boolean isTaintedAt(int index) {
+        if (isUninitialized()) {
+            return false;
+        }
+        IASTaintRanges trs = new IASTaintRanges(this.taintInformation.getTaintRanges());
+        return trs.isTaintedAt(index);
+    }
+
+    @Override
+    public void setTaint(IASTaintSource source) {
+        if (source == null) {
+            this.taintInformation = null;
+        } else {
+            this.taintInformation = new IASTaintInformation(new BaseOperation(0, this.length(), source));
         }
     }
 

@@ -4,6 +4,7 @@ import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringPool;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -527,6 +528,11 @@ public final class IASString implements IASTaintAware, IASStringable {
 
     public Stream<IASString> lines() {
         return this.str.lines().map(s -> new IASString(s, this.tainted));
+    }
+
+    @Override
+    public IASTaintSource getTaintFor(int position) {
+        return this.tainted ? IASTaintSource.TS_CS_UNKNOWN_ORIGIN : null;
     }
 
     @Override

@@ -8,4 +8,6 @@ public interface IASTaintRangeAware extends IASTaintAware {
     List<IASTaintRange> getTaintRanges();
     boolean isUninitialized();
     void initialize();
+    boolean isTaintedAt(int index);
+    void setTaint(IASTaintSource source);
 }

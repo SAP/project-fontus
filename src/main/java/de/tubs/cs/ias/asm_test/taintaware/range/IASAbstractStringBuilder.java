@@ -56,12 +56,17 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
 
     @Override
     public void setTaint(boolean taint) {
-        if (taint) {
+        this.setTaint(IASTaintSource.TS_CS_UNKNOWN_ORIGIN);
+    }
+
+    @Override
+    public void setTaint(IASTaintSource source) {
+        if (source != null) {
             if (!this.isTainted()) {
                 if (isUninitialized()) {
                     this.taintInformation = new IASTaintInformation();
                 }
-                this.taintInformation.addRange(0, this.length(), (short) 0);
+                this.taintInformation.addRange(0, this.length(), source);
             }
         } else {
             this.taintInformation = null;
@@ -417,5 +422,13 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
         } else {
             return this.builder.compareTo(o.getBuilder());
         }
+    }
+
+    @Override
+    public boolean isTaintedAt(int index) {
+        if (isUninitialized()) {
+            return false;
+        }
+        return this.taintInformation.isTaintedAt(index);
     }
 }

@@ -146,6 +146,24 @@ public class IASString implements IASTaintRangeStringable, IASLazyComplexAware {
     }
 
     @Override
+    public boolean isTaintedAt(int index) {
+        if (isUninitialized()) {
+            return false;
+        }
+        IASTaintRanges trs = new IASTaintRanges(this.taintInformation.getTaintRanges());
+        return trs.isTaintedAt(index);
+    }
+
+    @Override
+    public void setTaint(IASTaintSource source) {
+        if (source == null) {
+            this.taintInformation = null;
+        } else {
+            this.taintInformation = new IASTaintInformation(new BaseOperation(0, this.length(), source));
+        }
+    }
+
+    @Override
     public List<IASTaintRange> getTaintRanges() {
         if (isUninitialized()) {
             return new ArrayList<>();
@@ -466,6 +484,11 @@ public class IASString implements IASTaintRangeStringable, IASLazyComplexAware {
     @Override
     public Stream<IASString> lines() {
         return Arrays.stream(this.split(new IASString("(\\n|\\r)")));
+    }
+
+    @Override
+    public IASTaintSource getTaintFor(int position) {
+        return new IASTaintRanges(this.getTaintRanges()).getTaintFor(position);
     }
 
     @Override

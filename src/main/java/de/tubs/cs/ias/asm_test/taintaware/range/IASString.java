@@ -75,23 +75,37 @@ public final class IASString implements IASTaintRangeStringable, IASExtendedTain
      */
     @Override
     public void setTaint(boolean taint) {
+        setTaint(taint ? IASTaintSource.TS_CS_UNKNOWN_ORIGIN : null);
+    }
+
+    @Override
+    public void setTaint(IASTaintSource source) {
         if (isTainted()) {
             this.taintInformation.removeAll();
         }
-        if (taint) {
+        if (source != null) {
             if (isUninitialized()) {
                 this.taintInformation = new IASTaintInformation();
             }
-            this.taintInformation.addRange(0, this.str.length(), (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
+            this.taintInformation.addRange(0, this.str.length(), source);
         } else {
             this.taintInformation = null;
         }
+
     }
 
     public void initialize() {
         if (isUninitialized()) {
             this.taintInformation = new IASTaintInformation();
         }
+    }
+
+    @Override
+    public boolean isTaintedAt(int index) {
+        if (isUninitialized()) {
+            return false;
+        }
+        return this.taintInformation.isTaintedAt(index);
     }
 
     private void appendRangesFrom(IASTaintInformation iasTaintInformation) {
@@ -670,6 +684,13 @@ public final class IASString implements IASTaintRangeStringable, IASExtendedTain
 
     public static final Comparator<IASString> CASE_INSENSITIVE_ORDER
             = new CaseInsensitiveComparator();
+
+    public IASTaintSource getTaintFor(int position) {
+        if (isUninitialized()) {
+            return null;
+        }
+        return this.taintInformation.getTaintFor(position);
+    }
 
     private static class CaseInsensitiveComparator
             implements Comparator<IASString>, java.io.Serializable {

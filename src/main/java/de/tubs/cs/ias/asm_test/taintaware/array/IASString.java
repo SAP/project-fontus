@@ -493,6 +493,14 @@ public final class IASString implements IASArrayAware, IASStringable {
         return Arrays.stream(this.split(new IASString("(\\n|\\r)")));
     }
 
+    @Override
+    public IASTaintSource getTaintFor(int position) {
+        if(isUninitialized()) {
+            return null;
+        }
+        return this.taintInformation.getTaintFor(position);
+    }
+
     public IASString repeat(int count) {
         IASStringBuilder stringBuilder = new IASStringBuilder();
         for (int i = 0; i < count; i++) {

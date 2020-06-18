@@ -133,4 +133,6 @@ public interface IASStringable extends IASTaintAware, Comparable<IASStringable>,
     String getString();
 
     Stream<? extends IASStringable> lines();
+
+    IASTaintSource getTaintFor(int i);
 }

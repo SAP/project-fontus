@@ -3,6 +3,7 @@ package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -298,5 +299,40 @@ public class IASStringBuffer extends IASAbstractStringBuilder {
     @Override
     public synchronized int compareTo(IASStringBuilderable o) {
         return super.compareTo(o);
+    }
+
+    @Override
+    public synchronized boolean isTaintedAt(int index) {
+        return super.isTaintedAt(index);
+    }
+
+    @Override
+    public synchronized void setTaint(IASTaintSource source) {
+        super.setTaint(source);
+    }
+
+    @Override
+    public synchronized void initialize() {
+        super.initialize();
+    }
+
+    @Override
+    public synchronized boolean isInitialized() {
+        return super.isInitialized();
+    }
+
+    @Override
+    public synchronized boolean isUninitialized() {
+        return super.isUninitialized();
+    }
+
+    @Override
+    public synchronized void derive(IASOperation operation, boolean initializeIfNecessary) {
+        super.derive(operation, initializeIfNecessary);
+    }
+
+    @Override
+    public synchronized String toString() {
+        return super.toString();
     }
 }

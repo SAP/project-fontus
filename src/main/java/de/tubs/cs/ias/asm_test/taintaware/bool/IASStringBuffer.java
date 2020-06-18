@@ -3,6 +3,7 @@ package de.tubs.cs.ias.asm_test.taintaware.bool;
 
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 
 import java.util.stream.IntStream;
 
@@ -324,5 +325,15 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     @Override
     public synchronized IntStream codePoints() {
         return super.codePoints();
+    }
+
+    @Override
+    public synchronized void setTaint(IASTaintSource source) {
+        super.setTaint(source);
+    }
+
+    @Override
+    public synchronized IASStringBuilder append(IASAbstractStringBuilder sb) {
+        return (IASStringBuilder) super.append(sb);
     }
 }

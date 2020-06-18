@@ -88,4 +88,6 @@ public interface IASStringBuilderable extends Serializable, Comparable<IASString
     StringBuilder getBuilder();
 
     void setLength(int newLength);
+
+    void setTaint(IASTaintSource source);
 }

@@ -5,6 +5,7 @@ import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 
 @SuppressWarnings({"SynchronizedMethod", "ReturnOfThis", "WeakerAccess", "ClassWithTooManyConstructors", "ClassWithTooManyMethods", "Since15"})
 public abstract class IASAbstractStringBuilder implements IASStringBuilderable, IASTaintAware {
@@ -22,6 +23,13 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     public void setTaint(boolean taint) {
         if (this.builder.length() > 0 || !taint) {
             this.tainted = taint;
+        }
+    }
+
+    @Override
+    public void setTaint(IASTaintSource source) {
+        if (this.builder.length() > 0 || source == null) {
+            this.tainted = source != null;
         }
     }
 

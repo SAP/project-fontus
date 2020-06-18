@@ -18,6 +18,10 @@ public class IASTaintRanges {
         this.ranges = new ArrayList<>(ranges);
     }
 
+    public synchronized IASTaintRanges addRange(int start, int end, IASTaintSource source) {
+        return this.addRange(start, end, (short) source.getId());
+    }
+
     public synchronized IASTaintRanges addRange(int start, int end, short sourceId) {
         if (start == end) {
             // No need to process ranges with length 0
@@ -364,6 +368,10 @@ public class IASTaintRanges {
             return null;
         }
         return ranges.get(0);
+    }
+
+    public boolean isTaintedAt(int index) {
+        return getTaintFor(index) != null;
     }
 
     public IASTaintSource getTaintFor(int position) {

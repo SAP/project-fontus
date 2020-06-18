@@ -3,6 +3,7 @@ package de.tubs.cs.ias.asm_test.taintaware.range;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 
 @SuppressWarnings("Since15")
 public final class IASStringBuilder extends IASAbstractStringBuilder {

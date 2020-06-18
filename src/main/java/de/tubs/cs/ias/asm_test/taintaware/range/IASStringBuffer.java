@@ -3,7 +3,10 @@ package de.tubs.cs.ias.asm_test.taintaware.range;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 
+import java.util.List;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("Since15")
@@ -311,5 +314,40 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     @Override
     public synchronized boolean isUninitialized() {
         return super.isUninitialized();
+    }
+
+    @Override
+    public synchronized boolean isTaintedAt(int index) {
+        return super.isTaintedAt(index);
+    }
+
+    @Override
+    public synchronized void initialize() {
+        super.initialize();
+    }
+
+    @Override
+    public synchronized void setTaint(IASTaintSource source) {
+        super.setTaint(source);
+    }
+
+    @Override
+    protected synchronized void appendShifted(List<IASTaintRange> ranges) {
+        super.appendShifted(ranges);
+    }
+
+    @Override
+    protected synchronized List<IASTaintRange> getAllRanges() {
+        return super.getAllRanges();
+    }
+
+    @Override
+    public synchronized List<IASTaintRange> getTaintRanges() {
+        return super.getTaintRanges();
+    }
+
+    @Override
+    public synchronized int compareTo(IASStringBuilderable o) {
+        return super.compareTo(o);
     }
 }
