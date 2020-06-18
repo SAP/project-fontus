@@ -4,8 +4,11 @@ import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.Formatter;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class IASFormatter implements IASTaintAware, Closeable, Flushable, AutoCloseable {
     private final Formatter formatter;
@@ -72,8 +75,19 @@ public class IASFormatter implements IASTaintAware, Closeable, Flushable, AutoCl
 
     }
 
+    private int countSpecifier(String format) {
+        String formatSpecifier
+                = "%(\\d+\\$)?([-#+ 0,(\\<]*)?(\\d+)?(\\.\\d+)?([tT])?([a-zA-Z%])";
+        Matcher m = Pattern.compile(formatSpecifier).matcher(format);
+        int i = 0;
+        while(m.find()) {
+            i++;
+        }
+        return i;
+    }
+
     public IASFormatter format(IASStringable format, Object... args) {
-        boolean taintedArgs = IASString.isTainted(args);
+        boolean taintedArgs = IASString.isTainted(Arrays.copyOfRange(args, 0, this.countSpecifier(format.getString())));
         this.formatter.format(format.getString(), args);
         Appendable internal = this.formatter.out();
         if (internal instanceof IASTaintAware) {
@@ -84,7 +98,7 @@ public class IASFormatter implements IASTaintAware, Closeable, Flushable, AutoCl
     }
 
     public IASFormatter format(Locale l, IASStringable format, Object... args) {
-        boolean taintedArgs = IASString.isTainted(args);
+        boolean taintedArgs = IASString.isTainted(Arrays.copyOfRange(args, 0, this.countSpecifier(format.getString())));
         this.formatter.format(l, format.getString(), args);
         Appendable internal = this.formatter.out();
         if (internal instanceof IASTaintAware) {
