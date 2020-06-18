@@ -81,14 +81,16 @@ public final class IASString implements IASArrayAware, IASStringable {
      */
     @Override
     public void setTaint(boolean taint) {
-        if (isTainted()) {
-            this.taintInformation.removeAll();
-        }
-        if (taint) {
+        setTaint(taint ? IASTaintSource.TS_CS_UNKNOWN_ORIGIN : null);
+    }
+
+    @Override
+    public void setTaint(IASTaintSource source) {
+        if (source != null) {
             if (isUninitialized()) {
                 this.initialize();
             }
-            this.taintInformation.setTaint(0, this.str.length(), (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
+            this.taintInformation.setTaint(0, this.str.length(), source);
         } else {
             this.taintInformation = null;
         }

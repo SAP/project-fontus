@@ -67,6 +67,14 @@ public final class IASString implements IASTaintAware, IASStringable {
         }
     }
 
+    @Override
+    public void setTaint(IASTaintSource source) {
+        // Prevent tainting of empty strings
+        if (str.length() > 0) {
+            this.tainted = source != null;
+        }
+    }
+
     private void mergeTaint(IASTaintAware other) {
         this.tainted |= other.isTainted();
     }

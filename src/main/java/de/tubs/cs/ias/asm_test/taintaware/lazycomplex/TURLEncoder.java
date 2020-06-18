@@ -1,19 +1,18 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
+import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations.URLEncodingOperation;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 
 public class TURLEncoder {
     @Deprecated
     public static IASString encode(IASString url) {
-        boolean taint = url.isTainted();
-        String encoded = URLEncoder.encode(url.getString());
-        return new IASString(encoded, taint);
+        return url.derive(URLEncoder.encode(url.getString()), new URLEncodingOperation(), false);
     }
 
     public static IASString encode(IASString url, IASString enc) throws UnsupportedEncodingException {
-        boolean taint = url.isTainted();
-        String encoded = URLEncoder.encode(url.getString(), enc.getString());
-        return new IASString(encoded, taint);
+        return url.derive(URLEncoder.encode(url.getString(), enc.getString()), new URLEncodingOperation(Charset.forName(enc.getString())), false);
     }
 }

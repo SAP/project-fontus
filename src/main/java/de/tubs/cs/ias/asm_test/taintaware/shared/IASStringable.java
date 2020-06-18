@@ -135,4 +135,6 @@ public interface IASStringable extends IASTaintAware, Comparable<IASStringable>,
     Stream<? extends IASStringable> lines();
 
     IASTaintSource getTaintFor(int i);
+
+    void setTaint(IASTaintSource source);
 }
