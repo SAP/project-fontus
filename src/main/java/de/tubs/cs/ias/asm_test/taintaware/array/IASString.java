@@ -140,6 +140,10 @@ public final class IASString implements IASArrayAware, IASStringable {
         this(new String(bytes, charsetName));
     }
 
+    public IASString(byte bytes[], IASStringable charsetName) throws UnsupportedEncodingException {
+        this(new String(bytes, charsetName.getString()));
+    }
+
     public IASString(byte bytes[], Charset charset) {
         this(new String(bytes, charset));
     }

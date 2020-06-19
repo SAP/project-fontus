@@ -157,8 +157,8 @@ public final class IASString implements IASTaintRangeStringable, IASExtendedTain
         this(new String(bytes, offset, length, charset));
     }
 
-    public IASString(byte bytes[], String charsetName) throws UnsupportedEncodingException {
-        this(new String(bytes, charsetName));
+    public IASString(byte bytes[], IASStringable charsetName) throws UnsupportedEncodingException {
+        this(new String(bytes, charsetName.getString()));
     }
 
     public IASString(byte bytes[], Charset charset) {

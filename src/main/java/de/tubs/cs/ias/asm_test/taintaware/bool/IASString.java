@@ -117,9 +117,9 @@ public final class IASString implements IASTaintAware, IASStringable {
         this.str = new String(bytes, offset, length, charset);
     }
 
-    public IASString(byte bytes[], IASString charsetName) throws UnsupportedEncodingException {
+    public IASString(byte bytes[], IASStringable charsetName) throws UnsupportedEncodingException {
         // TODO: howto handle this? Does the charset affect tainting?
-        this.str = new String(bytes, charsetName.str);
+        this.str = new String(bytes, charsetName.getString());
     }
 
     public IASString(byte bytes[], Charset charset) {
