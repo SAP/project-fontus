@@ -35,6 +35,7 @@ public final class InstrumentationState {
     }
 
     public boolean isAnnotation(String name, ClassResolver resolver) {
+        if(name.startsWith("[")) { return false; } // Arrays ain't annotations
         if (this.annotations.contains(name)) {
             return true;
         } else if (this.noAnnotations.contains(name)) {
