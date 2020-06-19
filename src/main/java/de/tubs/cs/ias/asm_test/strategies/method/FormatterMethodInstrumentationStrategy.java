@@ -33,7 +33,7 @@ public class FormatterMethodInstrumentationStrategy extends FormatterInstrumenta
     public boolean instrumentFieldIns(int opcode, String owner, String name, String descriptor) {
         Matcher matcher = Constants.formatterPattern.matcher(descriptor);
         if (matcher.find()) {
-            String newDescriptor = matcher.replaceAll(this.taintStringConfig.getTFormatterDesc());
+            String newDescriptor = matcher.replaceAll(this.stringConfig.getTFormatterDesc());
             this.mv.visitFieldInsn(opcode, owner, name, newDescriptor);
             return true;
         }
@@ -45,15 +45,15 @@ public class FormatterMethodInstrumentationStrategy extends FormatterInstrumenta
         Type paramType = Type.getType(parameter);
         if (formatterType.equals(paramType)) {
             logger.info("Converting taint-aware Formatter to Formatter in multi param method invocation");
-            this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.taintStringConfig.getTFormatterQN(), Constants.TFormatterToFormatterName, String.format("()%s", this.taintStringConfig.getTFormatterDesc()), false);
+            this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.stringConfig.getTFormatterQN(), Constants.TFormatterToFormatterName, String.format("()%s", this.stringConfig.getTFormatterDesc()), false);
         }
     }
 
     @Override
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         if (Type.getObjectType(owner).equals(formatterType)) {
-            String newDescriptor = InstrumentationHelper.getInstance(this.taintStringConfig).instrumentDesc(descriptor);
-            String newOwner = this.taintStringConfig.getTFormatterQN();
+            String newDescriptor = InstrumentationHelper.getInstance(this.stringConfig).instrumentDesc(descriptor);
+            String newOwner = this.stringConfig.getTFormatterQN();
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up
             String newName = this.methodsToRename.getOrDefault(name, name);
 
@@ -74,11 +74,11 @@ public class FormatterMethodInstrumentationStrategy extends FormatterInstrumenta
     }
 
     private void formatterToTFormatter() {
-        this.mv.visitTypeInsn(Opcodes.NEW, this.taintStringConfig.getTFormatterQN());
+        this.mv.visitTypeInsn(Opcodes.NEW, this.stringConfig.getTFormatterQN());
         this.mv.visitInsn(Opcodes.DUP);
         this.mv.visitInsn(Opcodes.DUP2_X1);
         this.mv.visitInsn(Opcodes.POP2);
-        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.taintStringConfig.getTFormatterQN(), Constants.Init, String.format("(%s)V", Constants.FormatterDesc), false);
+        this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.stringConfig.getTFormatterQN(), Constants.Init, String.format("(%s)V", Constants.FormatterDesc), false);
     }
 
     @Override
@@ -89,7 +89,7 @@ public class FormatterMethodInstrumentationStrategy extends FormatterInstrumenta
     @Override
     public boolean handleLdcType(Type type) {
         if (formatterType.equals(type)) {
-            this.mv.visitLdcInsn(Type.getObjectType(this.taintStringConfig.getTFormatterQN()));
+            this.mv.visitLdcInsn(Type.getObjectType(this.stringConfig.getTFormatterQN()));
             return true;
         }
         return false;

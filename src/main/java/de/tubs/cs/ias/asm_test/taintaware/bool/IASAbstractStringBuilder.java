@@ -3,11 +3,12 @@ package de.tubs.cs.ias.asm_test.taintaware.bool;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
-
-import java.io.Serializable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 
 @SuppressWarnings({"SynchronizedMethod", "ReturnOfThis", "WeakerAccess", "ClassWithTooManyConstructors", "ClassWithTooManyMethods", "Since15"})
-public abstract class IASAbstractStringBuilder implements Serializable, Appendable, CharSequence, IASTaintAware {
+public abstract class IASAbstractStringBuilder implements IASStringBuilderable, IASTaintAware {
 
     // TODO: accessed in both  and unsynchronized methods
     private final StringBuilder builder;
@@ -25,6 +26,13 @@ public abstract class IASAbstractStringBuilder implements Serializable, Appendab
         }
     }
 
+    @Override
+    public void setTaint(IASTaintSource source) {
+        if (this.builder.length() > 0 || source == null) {
+            this.tainted = source != null;
+        }
+    }
+
     private void mergeTaint(IASTaintAware other) {
         this.tainted |= other.isTainted();
     }
@@ -38,7 +46,7 @@ public abstract class IASAbstractStringBuilder implements Serializable, Appendab
         this.builder = new StringBuilder(capacity);
     }
 
-    public IASAbstractStringBuilder(IASString str) {
+    public IASAbstractStringBuilder(IASStringable str) {
         this.builder = new StringBuilder(str.length() + 16);
         this.builder.append(str);
         this.mergeTaint(str);
@@ -84,6 +92,7 @@ public abstract class IASAbstractStringBuilder implements Serializable, Appendab
         this.builder.trimToSize();
     }
 
+    @Override
     public StringBuilder getBuilder() {
         return new StringBuilder(this.builder);
     }
@@ -134,7 +143,7 @@ public abstract class IASAbstractStringBuilder implements Serializable, Appendab
         return this;
     }
 
-    public IASAbstractStringBuilder append(IASString str) {
+    public IASAbstractStringBuilder append(IASStringable str) {
         if (str == null) {
             String s = null;
             this.builder.append(s);
@@ -147,6 +156,12 @@ public abstract class IASAbstractStringBuilder implements Serializable, Appendab
 
     public IASAbstractStringBuilder append(String str) {
         this.builder.append(str);
+        return this;
+    }
+
+    public IASAbstractStringBuilder append(IASStringBuilderable sb) {
+        this.builder.append(sb.getBuilder());
+        this.mergeTaint(sb);
         return this;
     }
 
@@ -242,7 +257,7 @@ public abstract class IASAbstractStringBuilder implements Serializable, Appendab
     }
 
 
-    public IASAbstractStringBuilder replace(int start, int end, IASString str) {
+    public IASAbstractStringBuilder replace(int start, int end, IASStringable str) {
         this.builder.replace(start, end, str.getString());
         this.mergeTaint(str);
         return this;
@@ -272,7 +287,7 @@ public abstract class IASAbstractStringBuilder implements Serializable, Appendab
         return this.insert(offset, IASString.valueOf(obj));
     }
 
-    public IASAbstractStringBuilder insert(int offset, IASString str) {
+    public IASAbstractStringBuilder insert(int offset, IASStringable str) {
         this.builder.insert(offset, str);
         this.mergeTaint(str);
         return this;
@@ -332,19 +347,21 @@ public abstract class IASAbstractStringBuilder implements Serializable, Appendab
         return this;
     }
 
-    public int indexOf(IASString str) {
+    public int indexOf(IASStringable str) {
+        // Note, synchronization achieved via invocations of other StringBuffer methods
         return this.builder.indexOf(str.getString());
     }
 
-    public int indexOf(IASString str, int fromIndex) {
+    public int indexOf(IASStringable str, int fromIndex) {
         return this.builder.indexOf(str.getString(), fromIndex);
     }
 
-    public int lastIndexOf(IASString str) {
+    public int lastIndexOf(IASStringable str) {
+        // Note, synchronization achieved via invocations of other StringBuffer methods
         return this.lastIndexOf(str, this.builder.length()); //TODO: correct?
     }
 
-    public int lastIndexOf(IASString str, int fromIndex) {
+    public int lastIndexOf(IASStringable str, int fromIndex) {
         return this.builder.lastIndexOf(str.getString(), fromIndex);
     }
 
@@ -361,7 +378,8 @@ public abstract class IASAbstractStringBuilder implements Serializable, Appendab
         return this.builder.toString();
     }
 
-    public int compareTo(IASAbstractStringBuilder o) {
+    @Override
+    public int compareTo(IASStringBuilderable o) {
         if (Constants.JAVA_VERSION < 11) {
             return this.toIASString().compareTo(IASString.valueOf(o));
         } else {

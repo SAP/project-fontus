@@ -1,7 +1,10 @@
 package de.tubs.cs.ias.asm_test.taintaware.bool;
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 
-public final class IASStringBuilder extends IASAbstractStringBuilder implements Comparable<IASStringBuilder> {
+public final class IASStringBuilder extends IASAbstractStringBuilder {
     @Override
     public boolean isTainted() {
         return super.isTainted();
@@ -18,6 +21,10 @@ public final class IASStringBuilder extends IASAbstractStringBuilder implements 
 
     public IASStringBuilder(int capacity) {
         super(capacity);
+    }
+
+    public IASStringBuilder(IASStringable str) {
+        super(str);
     }
 
     public IASStringBuilder(IASString str) {
@@ -107,7 +114,7 @@ public final class IASStringBuilder extends IASAbstractStringBuilder implements 
     }
 
     @Override
-    public IASStringBuilder append(IASString str) {
+    public IASStringBuilder append(IASStringable str) {
         return (IASStringBuilder) super.append(str);
     }
 
@@ -116,11 +123,8 @@ public final class IASStringBuilder extends IASAbstractStringBuilder implements 
         return (IASStringBuilder) super.append(str);
     }
 
-    public IASStringBuilder append(IASStringBuilder asb) {
-        return (IASStringBuilder) super.append(asb);
-    }
-
-    public IASStringBuilder append(IASStringBuffer asb) {
+    @Override
+    public IASStringBuilder append(IASStringBuilderable asb) {
         return (IASStringBuilder) super.append(asb);
     }
 
@@ -190,7 +194,7 @@ public final class IASStringBuilder extends IASAbstractStringBuilder implements 
     }
 
     @Override
-    public IASStringBuilder replace(int start, int end, IASString str) {
+    public IASStringBuilder replace(int start, int end, IASStringable str) {
         return (IASStringBuilder) super.replace(start, end, str);
     }
 
@@ -220,7 +224,7 @@ public final class IASStringBuilder extends IASAbstractStringBuilder implements 
     }
 
     @Override
-    public IASStringBuilder insert(int offset, IASString str) {
+    public IASStringBuilder insert(int offset, IASStringable str) {
         return (IASStringBuilder) super.insert(offset, str);
     }
 
@@ -270,22 +274,22 @@ public final class IASStringBuilder extends IASAbstractStringBuilder implements 
     }
 
     @Override
-    public int indexOf(IASString str) {
+    public int indexOf(IASStringable str) {
         return super.indexOf(str);
     }
 
     @Override
-    public int indexOf(IASString str, int fromIndex) {
+    public int indexOf(IASStringable str, int fromIndex) {
         return super.indexOf(str, fromIndex);
     }
 
     @Override
-    public int lastIndexOf(IASString str) {
+    public int lastIndexOf(IASStringable str) {
         return super.lastIndexOf(str);
     }
 
     @Override
-    public int lastIndexOf(IASString str, int fromIndex) {
+    public int lastIndexOf(IASStringable str, int fromIndex) {
         return super.lastIndexOf(str, fromIndex);
     }
 
@@ -305,7 +309,7 @@ public final class IASStringBuilder extends IASAbstractStringBuilder implements 
     }
 
     @Override
-    public int compareTo(IASStringBuilder o) {
+    public int compareTo(IASStringBuilderable o) {
         return super.compareTo(o);
     }
 }

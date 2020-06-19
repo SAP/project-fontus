@@ -70,7 +70,7 @@ public class StringTest {
 
         s1.setTaint(true);
 
-        IASString s = s1.replaceFirst(new IASString("hello"), new IASString(new String()));
+        IASString s = s1.replaceFirst(new IASString("hello"), new IASString(""));
 
         assertEquals("hello", s1.toString());
         assertEquals("", s.toString());

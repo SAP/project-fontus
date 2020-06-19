@@ -1,9 +1,13 @@
 package de.tubs.cs.ias.asm_test.taintaware.array;
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+
 import java.util.stream.IntStream;
 
-@SuppressWarnings("unused")
-public abstract class IASAbstractStringBuilder implements java.io.Serializable, CharSequence, IASArrayAware, Appendable {
+@SuppressWarnings({"unused", "Since15"})
+public abstract class IASAbstractStringBuilder implements IASStringBuilderable, IASArrayAware {
     protected final StringBuilder builder;
     protected IASTaintInformation taintInformation;
 
@@ -15,10 +19,10 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
         this.builder = new StringBuilder(capacity);
     }
 
-    public IASAbstractStringBuilder(IASString str) {
+    public IASAbstractStringBuilder(IASStringable str) {
         this.builder = new StringBuilder(str.getString());
-        if (str.isInitialized()) {
-            this.taintInformation = str.getTaintInformation().clone();
+        if (((IASString) str).isInitialized()) {
+            this.taintInformation = ((IASString) str).getTaintInformation().clone();
         }
     }
 
@@ -26,6 +30,11 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
         IASString str = IASString.valueOf(seq);
         this.builder = new StringBuilder(str.length() + 16);
         this.append(str);
+    }
+
+    public IASAbstractStringBuilder(IASStringBuilderable s) {
+        this.builder = new StringBuilder(s.getBuilder());
+        this.taintInformation = new IASTaintInformation(((IASAbstractStringBuilder) s).getTaints());
     }
 
     public void initialize() {
@@ -36,10 +45,15 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
 
     @Override
     public void setTaint(boolean taint) {
-        if (taint) {
+        setTaint(taint ? IASTaintSource.TS_CS_UNKNOWN_ORIGIN : null);
+    }
+
+    @Override
+    public void setTaint(IASTaintSource source) {
+        if (source != null) {
             if (!this.isTainted()) {
                 this.initialize();
-                this.taintInformation.setTaint(0, this.length(), (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
+                this.taintInformation.setTaint(0, this.length(), source);
             }
         } else {
             this.taintInformation = null;
@@ -69,18 +83,19 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
         return this;
     }
 
-    public IASAbstractStringBuilder append(IASString str) {
-        if (!str.isUninitialized()) {
-            int[] taints = str.getTaints();
+    public IASAbstractStringBuilder append(IASStringable str) {
+        IASString string = IASString.valueOf(str);
+        if (string.isInitialized()) {
+            int[] taints = string.getTaints();
             this.initialize();
             this.taintInformation.setTaint(this.length(), taints);
         } else {
             if (!this.isUninitialized()) {
-                this.taintInformation.resize(this.length() + str.length());
+                this.taintInformation.resize(this.length() + string.length());
             }
         }
 
-        this.builder.append(str.toString());
+        this.builder.append(string.getString());
         return this;
     }
 
@@ -92,7 +107,7 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
         return this;
     }
 
-    public IASAbstractStringBuilder append(IASStringBuffer strb) {
+    public IASAbstractStringBuilder append(IASStringBuilderable strb) {
         this.append(strb.toIASString());
         return this;
     }
@@ -199,13 +214,13 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
         return this;
     }
 
-    public IASAbstractStringBuilder replace(int start, int end, IASString str) {
+    public IASAbstractStringBuilder replace(int start, int end, IASStringable str) {
         this.builder.replace(start, end, str.toString());
         if (isUninitialized() && str.isTainted()) {
             this.initialize();
         }
         if (this.isTainted() || str.isTainted()) {
-            this.taintInformation.replaceTaint(start, end, str.getTaints());
+            this.taintInformation.replaceTaint(start, end, ((IASString) str).getTaints());
         }
         return this;
     }
@@ -223,12 +238,12 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
         return this;
     }
 
-    public IASAbstractStringBuilder insert(int offset, IASString str) {
+    public IASAbstractStringBuilder insert(int offset, IASStringable str) {
         if (isUninitialized() && str.isTainted()) {
             this.initialize();
         }
         if (this.isTainted() || str.isTainted()) {
-            this.taintInformation.insertTaint(offset, str.getTaints());
+            this.taintInformation.insertTaint(offset, ((IASString) str).getTaints());
         }
         this.builder.insert(offset, str.toString());
         return this;
@@ -286,15 +301,19 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
         return this.builder.indexOf(str);
     }
 
-    public int indexOf(IASString str, int fromIndex) {
+    public int indexOf(IASStringable str) {
+        return this.builder.indexOf(str.getString());
+    }
+
+    public int indexOf(IASStringable str, int fromIndex) {
         return this.builder.indexOf(str.toString(), fromIndex);
     }
 
-    public int lastIndexOf(IASString str) {
+    public int lastIndexOf(IASStringable str) {
         return this.builder.lastIndexOf(str.toString());
     }
 
-    public int lastIndexOf(IASString str, int fromIndex) {
+    public int lastIndexOf(IASStringable str, int fromIndex) {
         return this.builder.lastIndexOf(str.toString(), fromIndex);
     }
 
@@ -382,6 +401,11 @@ public abstract class IASAbstractStringBuilder implements java.io.Serializable, 
     @Override
     public IntStream codePoints() {
         return this.builder.codePoints();
+    }
+
+    @Override
+    public int compareTo(IASStringBuilderable o) {
+        return this.builder.compareTo(o.getBuilder());
     }
 
     public StringBuilder getBuilder() {

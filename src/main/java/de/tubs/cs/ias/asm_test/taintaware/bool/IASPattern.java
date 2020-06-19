@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.bool;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
 import java.util.regex.Pattern;
 
@@ -12,16 +13,16 @@ public class IASPattern {
         this(pattern, IASString.valueOf(pattern.pattern()));
     }
 
-    public IASPattern(Pattern pattern, IASString patternString) {
+    public IASPattern(Pattern pattern, IASStringable patternString) {
         this.pattern = pattern;
-        this.patternString = patternString;
+        this.patternString = (IASString) patternString;
     }
 
-    public static IASPattern compile(IASString regex) {
+    public static IASPattern compile(IASStringable regex) {
         return new IASPattern(Pattern.compile(regex.getString()), regex);
     }
 
-    public static IASPattern compile(IASString regex, int flags) {
+    public static IASPattern compile(IASStringable regex, int flags) {
         return new IASPattern(Pattern.compile(regex.getString(), flags), regex);
     }
 
@@ -33,7 +34,7 @@ public class IASPattern {
         return new IASMatcher(this, input);
     }
 
-    public static boolean matches(IASString regex, CharSequence input) {
+    public static boolean matches(IASStringable regex, CharSequence input) {
         return compile(regex).matcher(input).matches();
     }
 
@@ -41,7 +42,7 @@ public class IASPattern {
         return this.patternString;
     }
 
-    public static IASString quote(IASString s) {
+    public static IASString quote(IASStringable s) {
         return new IASString(Pattern.quote(s.getString()), s.isTainted());
     }
 

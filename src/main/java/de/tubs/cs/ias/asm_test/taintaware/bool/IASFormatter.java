@@ -1,10 +1,14 @@
 package de.tubs.cs.ias.asm_test.taintaware.bool;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.Formatter;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class IASFormatter implements IASTaintAware, Closeable, Flushable, AutoCloseable {
     private final Formatter formatter;
@@ -29,11 +33,11 @@ public class IASFormatter implements IASTaintAware, Closeable, Flushable, AutoCl
         this(new Formatter(file));
     }
 
-    public IASFormatter(File file, IASString csn) throws FileNotFoundException, UnsupportedEncodingException {
+    public IASFormatter(File file, IASStringable csn) throws FileNotFoundException, UnsupportedEncodingException {
         this(new Formatter(file, csn.getString()));
     }
 
-    public IASFormatter(File file, IASString csn, Locale l) throws FileNotFoundException, UnsupportedEncodingException {
+    public IASFormatter(File file, IASStringable csn, Locale l) throws FileNotFoundException, UnsupportedEncodingException {
         this(new Formatter(file, csn.getString(), l));
     }
 
@@ -45,11 +49,11 @@ public class IASFormatter implements IASTaintAware, Closeable, Flushable, AutoCl
         this(new Formatter(o));
     }
 
-    public IASFormatter(OutputStream o, IASString csn) throws UnsupportedEncodingException {
+    public IASFormatter(OutputStream o, IASStringable csn) throws UnsupportedEncodingException {
         this(new Formatter(o, csn.getString()));
     }
 
-    public IASFormatter(OutputStream o, IASString csn, Locale l) throws UnsupportedEncodingException {
+    public IASFormatter(OutputStream o, IASStringable csn, Locale l) throws UnsupportedEncodingException {
         this(new Formatter(o, csn.getString(), l));
     }
 
@@ -57,22 +61,33 @@ public class IASFormatter implements IASTaintAware, Closeable, Flushable, AutoCl
         this(new Formatter(o));
     }
 
-    public IASFormatter(IASString fileName) throws FileNotFoundException {
+    public IASFormatter(IASStringable fileName) throws FileNotFoundException {
         this(new Formatter(fileName.getString()));
     }
 
-    public IASFormatter(IASString fileName, IASString csn) throws FileNotFoundException, UnsupportedEncodingException {
+    public IASFormatter(IASStringable fileName, IASStringable csn) throws FileNotFoundException, UnsupportedEncodingException {
         this(new Formatter(fileName.getString(), csn.getString()));
 
     }
 
-    public IASFormatter(IASString fileName, IASString csn, Locale l) throws FileNotFoundException, UnsupportedEncodingException {
+    public IASFormatter(IASStringable fileName, IASStringable csn, Locale l) throws FileNotFoundException, UnsupportedEncodingException {
         this(new Formatter(fileName.getString(), csn.getString(), l));
 
     }
 
-    public IASFormatter format(IASString format, Object... args) {
-        boolean taintedArgs = IASString.isTainted(args);
+    private int countSpecifier(String format) {
+        String formatSpecifier
+                = "%(\\d+\\$)?([-#+ 0,(\\<]*)?(\\d+)?(\\.\\d+)?([tT])?([a-zA-Z%])";
+        Matcher m = Pattern.compile(formatSpecifier).matcher(format);
+        int i = 0;
+        while(m.find()) {
+            i++;
+        }
+        return i;
+    }
+
+    public IASFormatter format(IASStringable format, Object... args) {
+        boolean taintedArgs = IASString.isTainted(Arrays.copyOfRange(args, 0, this.countSpecifier(format.getString())));
         this.formatter.format(format.getString(), args);
         Appendable internal = this.formatter.out();
         if (internal instanceof IASTaintAware) {
@@ -82,8 +97,8 @@ public class IASFormatter implements IASTaintAware, Closeable, Flushable, AutoCl
         return this;
     }
 
-    public IASFormatter format(Locale l, IASString format, Object... args) {
-        boolean taintedArgs = IASString.isTainted(args);
+    public IASFormatter format(Locale l, IASStringable format, Object... args) {
+        boolean taintedArgs = IASString.isTainted(Arrays.copyOfRange(args, 0, this.countSpecifier(format.getString())));
         this.formatter.format(l, format.getString(), args);
         Appendable internal = this.formatter.out();
         if (internal instanceof IASTaintAware) {

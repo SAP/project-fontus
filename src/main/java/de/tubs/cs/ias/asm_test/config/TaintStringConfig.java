@@ -29,6 +29,8 @@ public class TaintStringConfig {
      * The bytecode descriptor of our taint aware string
      */
     private final String TStringDesc;
+
+    private final String MethodTStringDesc;
     /**
      * The bytecode descriptor of an array of our taint aware string
      */
@@ -43,10 +45,13 @@ public class TaintStringConfig {
      * The bytecode descriptor of our taint aware StringBuilder
      */
     private final String TStringBuilderDesc;
+    private final String MethodTStringBuilderDesc;
     /**
      * The bytecode descriptor of our taint aware StringBuffer
      */
     private final String TStringBufferDesc;
+
+    private final String MethodTStringBufferDesc;
 
     /**
      * Descriptor of the concat method
@@ -65,11 +70,13 @@ public class TaintStringConfig {
     private final String asStringDesc;
     private final String fromStringDesc;
     private final String TFormatterDesc;
+    private final String MethodTFormatterDesc;
     private final String TFormatterQN;
     private final String TMatcherDesc;
     private final String TMatcherQN;
     private final String TPatternDesc;
     private final String TPatternQN;
+    private final String ReflectionMethodProxyQN;
 
     public String getTPackage() {
         return this.TPackage;
@@ -135,16 +142,22 @@ public class TaintStringConfig {
 
     public TaintStringConfig(TaintMethod taintMethod) {
         this.taintMethod = taintMethod;
-        this.TPackage = "de/tubs/cs/ias/asm_test/taintaware/" + taintMethod.getSubPath();
+        String taintawarePackage = "de/tubs/cs/ias/asm_test/taintaware/";
+        String sharedPackage = taintawarePackage + "shared/";
+        this.TPackage = taintawarePackage + taintMethod.getSubPath();
         this.TStringQN = this.TPackage + "IASString";
         this.TStringBufferQN = this.TPackage + "IASStringBuffer";
         this.TStringUtilsQN = this.TPackage + "IASStringUtils";
         this.ReflectionProxiesQN = this.TPackage + "IASReflectionProxies";
+        this.ReflectionMethodProxyQN = sharedPackage + "IASReflectionMethodProxy";
         this.TStringDesc = java.lang.String.format("L%s;", this.TStringQN);
+        this.MethodTStringDesc = String.format("L%sIASStringable;", sharedPackage);
         this.TStringArrayDesc = "[" + this.TStringDesc;
         this.TStringBuilderQN = this.TPackage + "IASStringBuilder";
         this.TStringBuilderDesc = String.format("L%s;", this.TStringBuilderQN);
+        this.MethodTStringBuilderDesc = "Lde/tubs/cs/ias/asm_test/taintaware/shared/IASStringBuilderable;";
         this.TStringBufferDesc = String.format("L%s;", this.TStringBufferQN);
+        this.MethodTStringBufferDesc = "Lde/tubs/cs/ias/asm_test/taintaware/shared/IASStringBuilderable;";
         this.ConcatDesc = String.format("(%s[Ljava/lang/Object;)%s", StringDesc, this.TStringDesc);
         this.ToStringInstrumentedDesc = String.format("()%s", this.TStringDesc);
         this.CreateTaintedStringDesc = String.format("(%s)%s", this.TStringDesc, this.TStringDesc);
@@ -152,6 +165,7 @@ public class TaintStringConfig {
         this.fromStringDesc = String.format("(%s)%s", StringDesc, this.TStringDesc);
         this.TFormatterQN = this.TPackage + "IASFormatter";
         this.TFormatterDesc = java.lang.String.format("L%s;", this.TFormatterQN);
+        this.MethodTFormatterDesc = "Lde/tubs/cs/ias/asm_test/taintaware/shared/IASFormatterable;";
         this.TMatcherQN = this.TPackage + "IASMatcher";
         this.TMatcherDesc = java.lang.String.format("L%s;", this.TMatcherQN);
         this.TPatternQN = this.TPackage + "IASPattern";
@@ -184,5 +198,25 @@ public class TaintStringConfig {
 
     public String getTPatternQN() {
         return this.TPatternQN;
+    }
+
+    public String getMethodTStringDesc() {
+        return this.MethodTStringDesc;
+    }
+
+    public String getMethodTStringBuilderDesc() {
+        return this.MethodTStringBuilderDesc;
+    }
+
+    public String getMethodTStringBufferDesc() {
+        return MethodTStringBufferDesc;
+    }
+
+    public String getMethodTFormatterDesc() {
+        return this.MethodTFormatterDesc;
+    }
+
+    public String getReflectionMethodProxyQN() {
+        return this.ReflectionMethodProxyQN;
     }
 }

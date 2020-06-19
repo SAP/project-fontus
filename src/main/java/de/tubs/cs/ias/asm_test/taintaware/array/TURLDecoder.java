@@ -1,19 +1,17 @@
 package de.tubs.cs.ias.asm_test.taintaware.array;
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASURLDecoder;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
 public class TURLDecoder {
     @Deprecated
     public static IASString decode(IASString url) {
-        boolean taint = url.isTainted();
-        String decoded = URLDecoder.decode(url.getString());
-        return new IASString(decoded, taint);
+        return (IASString) IASURLDecoder.decode(url, new IASFactoryImpl());
     }
 
     public static IASString decode(IASString url, IASString enc) throws UnsupportedEncodingException {
-        boolean taint = url.isTainted();
-        String decoded = URLDecoder.decode(url.getString(), enc.getString());
-        return new IASString(decoded, taint);
+        return (IASString) IASURLDecoder.decode(url, enc, new IASFactoryImpl());
     }
 }

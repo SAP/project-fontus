@@ -1,13 +1,17 @@
 package de.tubs.cs.ias.asm_test.taintaware.bool;
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASMatchResult;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
+
 import java.lang.reflect.Field;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 
+@SuppressWarnings("Since15")
 public class IASMatcher {
     private IASString input;
     private IASPattern pattern;
-    private Matcher matcher;
+    private final Matcher matcher;
 
     public IASMatcher(Matcher matcher) {
         // TODO Very hacky way, but original text of a matcher is only accessible though reflection
@@ -28,7 +32,7 @@ public class IASMatcher {
         this.matcher = pattern.getPattern().matcher(input);
     }
 
-    public IASMatcher appendReplacement(IASStringBuffer sb, IASString replacement) {
+    public IASMatcher appendReplacement(IASStringBuffer sb, IASStringable replacement) {
         matcher.appendReplacement(sb.getBuilder(), replacement.getString());
         boolean tainted = sb.isTainted() || replacement.isTainted() || input.isTainted();
         sb.setTaint(tainted);
@@ -50,7 +54,7 @@ public class IASMatcher {
         return this.matcher.end(group);
     }
 
-    public int end(IASString name) {
+    public int end(IASStringable name) {
         return this.matcher.end(name.toString());
     }
 
@@ -73,7 +77,7 @@ public class IASMatcher {
         return this.input.substring(this.start(group), this.end(group));
     }
 
-    public IASString group(IASString name) {
+    public IASString group(IASStringable name) {
         return this.input.substring(this.start(name), this.end(name));
     }
 
@@ -105,7 +109,7 @@ public class IASMatcher {
         return this.pattern;
     }
 
-    public static IASString quoteReplacement(IASString s) {
+    public static IASString quoteReplacement(IASStringable s) {
         return new IASString(Matcher.quoteReplacement(s.getString()), s.isTainted());
     }
 
@@ -122,13 +126,13 @@ public class IASMatcher {
         return this.matcher.regionStart();
     }
 
-    public IASString replaceAll(IASString replacement) {
+    public IASString replaceAll(IASStringable replacement) {
         this.reset();
         boolean tainted = this.input.isTainted() || (this.matcher.find() && replacement.isTainted());
         return new IASString(this.matcher.replaceAll(replacement.getString()), tainted);
     }
 
-    public IASString replaceFirst(IASString replacement) {
+    public IASString replaceFirst(IASStringable replacement) {
         this.reset();
         boolean tainted = this.input.isTainted() || (this.matcher.find() && replacement.isTainted());
         return new IASString(this.matcher.replaceFirst(replacement.getString()), tainted);
@@ -157,7 +161,7 @@ public class IASMatcher {
         return this.matcher.start(group);
     }
 
-    public int start(IASString name) {
+    public int start(IASStringable name) {
         return this.matcher.start(name.toString());
     }
 

@@ -1,8 +1,9 @@
 package de.tubs.cs.ias.asm_test.taintaware.range.testHelper;
 
+import de.tubs.cs.ias.asm_test.taintaware.range.IASExtendedTaintRangeAware;
 import de.tubs.cs.ias.asm_test.taintaware.range.IASTaintInformation;
-import de.tubs.cs.ias.asm_test.taintaware.range.IASTaintRange;
-import de.tubs.cs.ias.asm_test.taintaware.range.IASRangeAware;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeAware;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -29,21 +30,21 @@ public class TaintMatcher {
                     return;
                 }
 
-                mismatchDescription.appendText("was ").appendValue(((IASRangeAware) s).getTaintInformation().getAllRanges());
+                mismatchDescription.appendText("was ").appendValue(((IASExtendedTaintRangeAware) s).getTaintInformation().getAllRanges());
             }
 
             @Override
             public boolean matches(Object s) {
-                assert s instanceof IASRangeAware;
+                assert s instanceof IASTaintRangeAware;
 
                 operand = s;
-                taintNotInitialized = THelper.isUninitialized((IASRangeAware) s);
+                taintNotInitialized = THelper.isUninitialized((IASTaintRangeAware) s);
 
                 if (taintNotInitialized) {
                     return false;
                 }
 
-                IASTaintInformation tI = THelper.get((IASRangeAware) s);
+                IASTaintInformation tI = THelper.get((IASExtendedTaintRangeAware) s);
 
                 return tI.getAllRanges().equals(ranges);
             }
@@ -62,7 +63,7 @@ public class TaintMatcher {
             public boolean matches(Object item) {
                 operand = item;
 
-                return THelper.isUninitialized((IASRangeAware) item);
+                return THelper.isUninitialized((IASTaintRangeAware) item);
             }
 
             @Override

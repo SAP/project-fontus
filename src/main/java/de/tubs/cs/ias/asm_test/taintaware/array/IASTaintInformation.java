@@ -1,5 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.array;
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+
 public class IASTaintInformation {
     private int length;
     private int[] taints;
@@ -36,6 +38,17 @@ public class IASTaintInformation {
         for (int i = start; i < end && i < this.length && i >= 0; i++) {
             this.taints[i] = taint;
         }
+    }
+
+    /**
+     * Sets the taint for a specific range. If a taint already exists it will be overwritten.
+     *
+     * @param start Inclusive start index. 0 <= start < length
+     * @param end   Exclusive end index. start < end <= length
+     * @param source Taint information to set
+     */
+    public void setTaint(int start, int end, IASTaintSource source) {
+        setTaint(start, end, source.getId());
     }
 
     public void setTaint(int offset, int[] taints) {
@@ -167,5 +180,12 @@ public class IASTaintInformation {
 
     public int getLength() {
         return this.length;
+    }
+
+    public IASTaintSource getTaintFor(int position) {
+        if (isUninitialized()) {
+            return null;
+        }
+        return IASTaintSource.getInstanceById((short) this.taints[position]);
     }
 }

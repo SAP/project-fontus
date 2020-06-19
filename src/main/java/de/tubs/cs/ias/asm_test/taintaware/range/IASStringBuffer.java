@@ -1,10 +1,16 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
 import de.tubs.cs.ias.asm_test.Constants;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 
+import java.util.List;
 import java.util.stream.IntStream;
 
-public final class IASStringBuffer extends IASAbstractStringBuilder implements Comparable<IASStringBuffer> {
+@SuppressWarnings("Since15")
+public final class IASStringBuffer extends IASAbstractStringBuilder {
 
     public IASStringBuffer(StringBuffer sb, IASTaintInformation taintInformation) {
         super();
@@ -22,6 +28,10 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
 
     public IASStringBuffer(int capacity) {
         super(capacity);
+    }
+
+    public IASStringBuffer(IASStringable str) {
+        super(str);
     }
 
     public IASStringBuffer(IASString str) {
@@ -48,22 +58,17 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
     }
 
     @Override
-    public synchronized IASStringBuffer append(IASString str) {
+    public synchronized IASStringBuffer append(IASStringable str) {
         return (IASStringBuffer) super.append(str);
     }
 
     @Override
-    public synchronized IASStringBuffer append(IASString str, boolean merge) {
+    public synchronized IASStringBuffer append(IASStringable str, boolean merge) {
         return (IASStringBuffer) super.append(str, merge);
     }
 
     @Override
-    public synchronized IASStringBuffer append(StringBuffer strb) {
-        return (IASStringBuffer) super.append(strb);
-    }
-
-    @Override
-    public synchronized IASStringBuffer append(IASStringBuffer strb) {
+    public synchronized IASStringBuffer append(IASStringBuilderable strb) {
         return (IASStringBuffer) super.append(strb);
     }
 
@@ -78,8 +83,8 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
     }
 
     @Override
-    public synchronized IASStringBuffer append(char[] s, int start, int end) {
-        return (IASStringBuffer) super.append(s, start, end);
+    public synchronized IASStringBuffer append(char[] s, int offset, int len) {
+        return (IASStringBuffer) super.append(s, offset, len);
     }
 
     @Override
@@ -133,7 +138,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
     }
 
     @Override
-    public synchronized IASStringBuffer replace(int start, int end, IASString str) {
+    public synchronized IASStringBuffer replace(int start, int end, IASStringable str) {
         return (IASStringBuffer) super.replace(start, end, str);
     }
 
@@ -148,7 +153,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
     }
 
     @Override
-    public synchronized IASStringBuffer insert(int offset, IASString str) {
+    public synchronized IASStringBuffer insert(int offset, IASStringable str) {
         return (IASStringBuffer) super.insert(offset, str);
     }
 
@@ -198,22 +203,22 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
     }
 
     @Override
-    public synchronized int indexOf(String str) {
+    public synchronized int indexOf(IASStringable str) {
         return super.indexOf(str);
     }
 
     @Override
-    public synchronized int indexOf(IASString str, int fromIndex) {
+    public synchronized int indexOf(IASStringable str, int fromIndex) {
         return super.indexOf(str, fromIndex);
     }
 
     @Override
-    public synchronized int lastIndexOf(IASString str) {
+    public synchronized int lastIndexOf(IASStringable str) {
         return super.lastIndexOf(str);
     }
 
     @Override
-    public synchronized int lastIndexOf(IASString str, int fromIndex) {
+    public synchronized int lastIndexOf(IASStringable str, int fromIndex) {
         return super.lastIndexOf(str, fromIndex);
     }
 
@@ -302,15 +307,6 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
     }
 
     @Override
-    public int compareTo(IASStringBuffer o) {
-        if (Constants.JAVA_VERSION < 11) {
-            return this.toIASString().compareTo(IASString.valueOf(o));
-        } else {
-            return this.builder.compareTo(o.builder);
-        }
-    }
-
-    @Override
     public synchronized IASTaintInformation getTaintInformation() {
         return super.getTaintInformation();
     }
@@ -318,5 +314,40 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
     @Override
     public synchronized boolean isUninitialized() {
         return super.isUninitialized();
+    }
+
+    @Override
+    public synchronized boolean isTaintedAt(int index) {
+        return super.isTaintedAt(index);
+    }
+
+    @Override
+    public synchronized void initialize() {
+        super.initialize();
+    }
+
+    @Override
+    public synchronized void setTaint(IASTaintSource source) {
+        super.setTaint(source);
+    }
+
+    @Override
+    protected synchronized void appendShifted(List<IASTaintRange> ranges) {
+        super.appendShifted(ranges);
+    }
+
+    @Override
+    protected synchronized List<IASTaintRange> getAllRanges() {
+        return super.getAllRanges();
+    }
+
+    @Override
+    public synchronized List<IASTaintRange> getTaintRanges() {
+        return super.getTaintRanges();
+    }
+
+    @Override
+    public synchronized int compareTo(IASStringBuilderable o) {
+        return super.compareTo(o);
     }
 }

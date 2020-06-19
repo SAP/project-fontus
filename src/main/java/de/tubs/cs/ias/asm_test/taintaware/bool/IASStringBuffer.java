@@ -1,9 +1,15 @@
 package de.tubs.cs.ias.asm_test.taintaware.bool;
 
+
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+
 import java.util.stream.IntStream;
 
 @SuppressWarnings({"SynchronizedMethod", "ReturnOfThis", "WeakerAccess", "ClassWithTooManyConstructors", "ClassWithTooManyMethods"})
-public final class IASStringBuffer extends IASAbstractStringBuilder implements Comparable<IASStringBuffer> {
+public final class IASStringBuffer extends IASAbstractStringBuilder {
+
     public IASStringBuffer() {
         super();
     }
@@ -12,6 +18,9 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
         super(capacity);
     }
 
+    public IASStringBuffer(IASStringable str) {
+        super(str);
+    }
     public IASStringBuffer(IASString str) {
         super(str);
     }
@@ -109,7 +118,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
     }
 
     @Override
-    public synchronized IASStringBuffer append(IASString str) {
+    public synchronized IASStringBuffer append(IASStringable str) {
         return (IASStringBuffer) super.append(str);
     }
 
@@ -118,7 +127,8 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
         return (IASStringBuffer) super.append(str);
     }
 
-    public synchronized IASStringBuffer append(IASStringBuffer sb) {
+    @Override
+    public synchronized IASStringBuffer append(IASStringBuilderable sb) {
         return (IASStringBuffer) super.append(sb);
     }
 
@@ -188,7 +198,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
     }
 
     @Override
-    public synchronized IASStringBuffer replace(int start, int end, IASString str) {
+    public synchronized IASStringBuffer replace(int start, int end, IASStringable str) {
         return (IASStringBuffer) super.replace(start, end, str);
     }
 
@@ -218,7 +228,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
     }
 
     @Override
-    public synchronized IASStringBuffer insert(int offset, IASString str) {
+    public synchronized IASStringBuffer insert(int offset, IASStringable str) {
         return (IASStringBuffer) super.insert(offset, str);
     }
 
@@ -268,22 +278,22 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
     }
 
     @Override
-    public synchronized int indexOf(IASString str) {
+    public synchronized int indexOf(IASStringable str) {
         return super.indexOf(str);
     }
 
     @Override
-    public synchronized int indexOf(IASString str, int fromIndex) {
+    public synchronized int indexOf(IASStringable str, int fromIndex) {
         return super.indexOf(str, fromIndex);
     }
 
     @Override
-    public synchronized int lastIndexOf(IASString str) {
+    public synchronized int lastIndexOf(IASStringable str) {
         return super.lastIndexOf(str);
     }
 
     @Override
-    public synchronized int lastIndexOf(IASString str, int fromIndex) {
+    public synchronized int lastIndexOf(IASStringable str, int fromIndex) {
         return super.lastIndexOf(str, fromIndex);
     }
 
@@ -303,7 +313,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
     }
 
     @Override
-    public synchronized int compareTo(IASStringBuffer o) {
+    public synchronized int compareTo(IASStringBuilderable o) {
         return super.compareTo(o);
     }
 
@@ -315,5 +325,15 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements C
     @Override
     public synchronized IntStream codePoints() {
         return super.codePoints();
+    }
+
+    @Override
+    public synchronized void setTaint(IASTaintSource source) {
+        super.setTaint(source);
+    }
+
+    @Override
+    public synchronized IASStringBuilder append(IASAbstractStringBuilder sb) {
+        return (IASStringBuilder) super.append(sb);
     }
 }

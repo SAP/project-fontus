@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test.taintaware.array;
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.Assert.assertEquals;

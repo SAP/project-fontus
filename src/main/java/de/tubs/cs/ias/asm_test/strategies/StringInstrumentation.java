@@ -29,7 +29,11 @@ public class StringInstrumentation implements InstrumentationStrategy {
 
     @Override
     public String instrumentDesc(String desc) {
-        return Constants.strPattern.matcher(desc).replaceAll(this.stringConfig.getTStringDesc());
+        String parameters = desc.substring(desc.indexOf("(") + 1, desc.indexOf(")"));
+        parameters = Constants.strPattern.matcher(parameters).replaceAll(this.stringConfig.getMethodTStringDesc());
+        String returnType = desc.substring(desc.indexOf(")") + 1);
+        returnType = Constants.strPattern.matcher(returnType).replaceAll(this.stringConfig.getTStringDesc());
+        return desc.substring(0, desc.indexOf("(") + 1) + parameters + ")" + returnType;
     }
 
     @Override

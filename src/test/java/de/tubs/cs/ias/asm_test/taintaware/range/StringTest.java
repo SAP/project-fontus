@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
 import de.tubs.cs.ias.asm_test.taintaware.range.testHelper.THelper;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

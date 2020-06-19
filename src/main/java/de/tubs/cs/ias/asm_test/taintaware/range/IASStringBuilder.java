@@ -1,8 +1,12 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
 import de.tubs.cs.ias.asm_test.Constants;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 
-public final class IASStringBuilder extends IASAbstractStringBuilder implements Comparable<IASStringBuilder> {
+@SuppressWarnings("Since15")
+public final class IASStringBuilder extends IASAbstractStringBuilder {
 
     public IASStringBuilder(StringBuilder sb, IASTaintInformation taintInformation) {
         super();
@@ -22,6 +26,10 @@ public final class IASStringBuilder extends IASAbstractStringBuilder implements 
         super(capacity);
     }
 
+    public IASStringBuilder(IASStringable str) {
+        super(str);
+    }
+
     public IASStringBuilder(IASString str) {
         super(str);
     }
@@ -34,20 +42,16 @@ public final class IASStringBuilder extends IASAbstractStringBuilder implements 
         return (IASStringBuilder) super.append(obj);
     }
 
-    public IASStringBuilder append(IASString str) {
+    public IASStringBuilder append(IASStringable str) {
         return (IASStringBuilder) super.append(str, false);
     }
 
 
-    public IASStringBuilder append(IASString str, boolean merge) {
+    public IASStringBuilder append(IASStringable str, boolean merge) {
         return (IASStringBuilder) super.append(str, merge);
     }
 
-    public IASStringBuilder append(StringBuffer strb) {
-        return (IASStringBuilder) super.append(strb);
-    }
-
-    public IASStringBuilder append(IASStringBuffer strb) {
+    public IASStringBuilder append(IASStringBuilderable strb) {
         return (IASStringBuilder) super.append(strb);
     }
 
@@ -59,8 +63,8 @@ public final class IASStringBuilder extends IASAbstractStringBuilder implements 
         return (IASStringBuilder) super.append(s, start, end);
     }
 
-    public IASStringBuilder append(char[] s, int start, int end) {
-        return (IASStringBuilder) super.append(s, start, end);
+    public IASStringBuilder append(char[] s, int offset, int len) {
+        return (IASStringBuilder) super.append(s, offset, len);
     }
 
     public IASStringBuilder append(char[] str) {
@@ -103,7 +107,7 @@ public final class IASStringBuilder extends IASAbstractStringBuilder implements 
         return (IASStringBuilder) super.deleteCharAt(index);
     }
 
-    public IASStringBuilder replace(int start, int end, IASString str) {
+    public IASStringBuilder replace(int start, int end, IASStringable str) {
         return (IASStringBuilder) super.replace(start, end, str);
     }
 
@@ -116,7 +120,7 @@ public final class IASStringBuilder extends IASAbstractStringBuilder implements 
         return (IASStringBuilder) super.insert(offset, obj);
     }
 
-    public IASStringBuilder insert(int offset, IASString str) {
+    public IASStringBuilder insert(int offset, IASStringable str) {
         return (IASStringBuilder) super.insert(offset, str);
     }
 
@@ -159,14 +163,5 @@ public final class IASStringBuilder extends IASAbstractStringBuilder implements 
 
     public IASStringBuilder reverse() {
         return (IASStringBuilder) super.reverse();
-    }
-
-    @Override
-    public int compareTo(IASStringBuilder o) {
-        if (Constants.JAVA_VERSION < 11) {
-            return this.toIASString().compareTo(IASString.valueOf(o));
-        } else {
-            return this.builder.compareTo(o.builder);
-        }
     }
 }

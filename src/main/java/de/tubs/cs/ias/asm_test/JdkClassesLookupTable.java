@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandles;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public final class JdkClassesLookupTable {
@@ -30,7 +31,7 @@ public final class JdkClassesLookupTable {
     private static JdkClassesLookupTable initializeLookupTable(String inputFile) {
         try (InputStream inputStream = JdkClassesLookupTable.class
                 .getClassLoader().getResourceAsStream(inputFile);
-             InputStreamReader isr = new InputStreamReader(Objects.requireNonNull(inputStream), "UTF8");
+             InputStreamReader isr = new InputStreamReader(Objects.requireNonNull(inputStream), StandardCharsets.UTF_8);
              BufferedReader br = new BufferedReader(isr)
         ) {
             List<String> lines = new ArrayList<>();

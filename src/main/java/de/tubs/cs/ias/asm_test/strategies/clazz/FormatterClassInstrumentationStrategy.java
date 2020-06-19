@@ -26,7 +26,7 @@ public class FormatterClassInstrumentationStrategy extends FormatterInstrumentat
     public Optional<FieldVisitor> instrumentFieldInstruction(int access, String name, String descriptor, String signature, Object value, TriConsumer tc) {
         Matcher descMatcher = Constants.formatterPattern.matcher(descriptor);
         if (descMatcher.find()) {
-            String newDescriptor = descMatcher.replaceAll(this.taintStringConfig.getTFormatterDesc());
+            String newDescriptor = descMatcher.replaceAll(this.stringConfig.getTFormatterDesc());
             logger.info("Replacing Formatter field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
             return Optional.of(this.visitor.visitField(access, name, newDescriptor, signature, value));
         }

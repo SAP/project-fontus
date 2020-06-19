@@ -1,6 +1,8 @@
 package de.tubs.cs.ias.asm_test.taintaware.bool;
 
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASMatchResult;
+
 import java.util.regex.MatchResult;
 
 public class IASMatchResultImpl implements IASMatchResult {

@@ -1,12 +1,14 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeAware;
 
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -43,11 +45,11 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         this(file, IASString.fromString(Charset.defaultCharset().name()));
     }
 
-    public IASFormatter(File file, IASString csn) throws FileNotFoundException {
+    public IASFormatter(File file, IASStringable csn) throws FileNotFoundException {
         this(file, csn, Locale.getDefault());
     }
 
-    public IASFormatter(File file, IASString csn, Locale l) throws FileNotFoundException {
+    public IASFormatter(File file, IASStringable csn, Locale l) throws FileNotFoundException {
         this(new FileOutputStream(file), csn, l);
     }
 
@@ -59,11 +61,11 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         this(o, IASString.fromString(Charset.defaultCharset().name()));
     }
 
-    public IASFormatter(OutputStream o, IASString csn) {
+    public IASFormatter(OutputStream o, IASStringable csn) {
         this(o, csn, Locale.getDefault());
     }
 
-    public IASFormatter(OutputStream o, IASString csn, Locale l) {
+    public IASFormatter(OutputStream o, IASStringable csn, Locale l) {
         this(new PrintWriter(new OutputStreamWriter(o, Charset.forName(csn.getString()))), l);
     }
 
@@ -71,27 +73,27 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         this((Appendable) o);
     }
 
-    public IASFormatter(IASString fileName) throws FileNotFoundException {
+    public IASFormatter(IASStringable fileName) throws FileNotFoundException {
         this(new File(fileName.getString()));
     }
 
-    public IASFormatter(IASString fileName, IASString csn) throws FileNotFoundException {
+    public IASFormatter(IASStringable fileName, IASStringable csn) throws FileNotFoundException {
         this(new File(fileName.getString()), csn);
 
     }
 
-    public IASFormatter(IASString fileName, IASString csn, Locale l) throws FileNotFoundException {
+    public IASFormatter(IASStringable fileName, IASStringable csn, Locale l) throws FileNotFoundException {
         this(new File(fileName.getString()), csn, l);
 
     }
 
-    public IASFormatter format(IASString format, Object... args) {
+    public IASFormatter format(IASStringable format, Object... args) {
         return format(this.locale, format, args);
     }
 
-    public IASFormatter format(Locale l, IASString format, Object... args) {
+    public IASFormatter format(Locale l, IASStringable format, Object... args) {
         checkClosed();
-        IASCharBuffer formatBuffer = new IASCharBuffer(format);
+        IASCharBuffer formatBuffer = new IASCharBuffer((IASString) format);
         ParserStateMachine parser = new ParserStateMachine(formatBuffer);
         Transformer transformer = new Transformer(this, l);
 
@@ -436,7 +438,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
     private static class DateTimeUtil {
         private Calendar calendar;
 
-        private Locale locale;
+        private final Locale locale;
 
         private IASStringBuilder result;
 
@@ -813,13 +815,13 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
 
     private static class Transformer {
 
-        private IASFormatter formatter;
+        private final IASFormatter formatter;
 
         private FormatToken formatToken;
 
         private Object arg;
 
-        private Locale locale;
+        private final Locale locale;
 
         private static IASString lineSeparator;
 
@@ -986,8 +988,8 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             } else {
                 String hexString = Integer.toHexString(arg.hashCode());
                 IASString taintedHexString = new IASString(hexString);
-                if (arg instanceof IASRangeAware && ((IASTaintAware) arg).isTainted()) {
-                    List<IASTaintRange> ranges = ((IASRangeAware) arg).getTaintInformation().getAllRanges();
+                if (arg instanceof IASTaintRangeAware && ((IASTaintAware) arg).isTainted()) {
+                    List<IASTaintRange> ranges = ((IASTaintRangeAware) arg).getTaintRanges();
                     taintedHexString.initialize();
                     if (ranges.size() == 1) {
                         taintedHexString.getTaintInformation().addRange(0, taintedHexString.length(), ranges.get(0).getSource());
@@ -1285,11 +1287,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
 
             if ('d' == currentConversionType) {
                 NumberFormat numberFormat = getNumberFormat();
-                if (formatToken.isFlagSet(FormatToken.FLAG_COMMA)) {
-                    numberFormat.setGroupingUsed(true);
-                } else {
-                    numberFormat.setGroupingUsed(false);
-                }
+                numberFormat.setGroupingUsed(formatToken.isFlagSet(FormatToken.FLAG_COMMA));
                 result.append(numberFormat.format(arg));
             } else {
                 long BYTE_MASK = 0x00000000000000FFL;
@@ -1663,13 +1661,13 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
     private static class FloatUtil {
         private IASStringBuilder result;
 
-        private DecimalFormat decimalFormat;
+        private final DecimalFormat decimalFormat;
 
         private FormatToken formatToken;
 
-        private Object argument;
+        private final Object argument;
 
-        private char minusSign;
+        private final char minusSign;
 
         FloatUtil(IASStringBuilder result, FormatToken formatToken,
                   DecimalFormat decimalFormat, Object argument) {
@@ -1738,7 +1736,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             // out.
             if (formatToken.isFlagSet(FormatToken.FLAG_SHARP)
                     && 0 == formatToken.getPrecision()) {
-                int indexOfE = result.indexOf("e"); //$NON-NLS-1$
+                int indexOfE = result.indexOf(IASString.fromString("e")); //$NON-NLS-1$
                 char dot = decimalFormat.getDecimalFormatSymbols()
                         .getDecimalSeparator();
                 result.insert(indexOfE, dot);
@@ -1866,8 +1864,8 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
 
             int precision = formatToken.getPrecision();
             precision = (0 == precision ? 1 : precision);
-            int indexOfFirstFracitoanlDigit = result.indexOf(".") + 1; //$NON-NLS-1$
-            int indexOfP = result.indexOf("p"); //$NON-NLS-1$
+            int indexOfFirstFracitoanlDigit = result.indexOf(IASString.fromString(".")) + 1; //$NON-NLS-1$
+            int indexOfP = result.indexOf(IASString.fromString("p")); //$NON-NLS-1$
             int fractionalLength = indexOfP - indexOfFirstFracitoanlDigit;
 
             if (fractionalLength == precision) {
@@ -1875,7 +1873,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             }
 
             if (fractionalLength < precision) {
-                char zeros[] = new char[precision - fractionalLength];
+                char[] zeros = new char[precision - fractionalLength];
                 Arrays.fill(zeros, '0');
                 result.insert(indexOfP, zeros);
                 return;
@@ -1928,7 +1926,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
 
         private int precision = UNSET;
 
-        private IASStringBuilder strFlags = new IASStringBuilder(FLAGT_TYPE_COUNT);
+        private final IASStringBuilder strFlags = new IASStringBuilder(FLAGT_TYPE_COUNT);
 
         private char dateSuffix;// will be used in new feature.
 
@@ -1958,8 +1956,8 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             return plainText;
         }
 
-        void setPlainText(IASString plainText) {
-            this.plainText = plainText;
+        void setPlainText(IASStringable plainText) {
+            this.plainText = (IASString) plainText;
         }
 
         int getWidth() {
