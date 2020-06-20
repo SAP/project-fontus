@@ -1,11 +1,15 @@
-package de.tubs.cs.ias.asm_test.taintaware.range;
+package de.tubs.cs.ias.asm_test.taintaware.lazybasic;
 
+import de.tubs.cs.ias.asm_test.taintaware.lazybasic.operation.DeleteLayer;
+import de.tubs.cs.ias.asm_test.taintaware.lazybasic.operation.InsertLayer;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASMatchResult;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASMatcherReplacement;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRanges;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 
@@ -40,9 +44,9 @@ public class IASMatcher {
         int end = this.start();
 
         IASString first = this.input.substring(appendPos, end);
-        sb.append(first, true);
+        sb.append(first);
         IASString currRepl = (IASString) replacer.doReplacement(this.matcher, this.input, new IASStringBuilder());
-        sb.append(currRepl, true);
+        sb.append(currRepl);
         appendPos = this.end();
 
         return this;
@@ -51,7 +55,7 @@ public class IASMatcher {
     public IASStringBuffer appendTail(IASStringBuffer sb) {
         if (appendPos < this.input.length()) {
             IASString last = this.input.substring(appendPos);
-            sb.append(last, true);
+            sb.append(last);
         }
         return sb;
     }
@@ -169,7 +173,7 @@ public class IASMatcher {
 
     public IASString replaceFirst(IASStringable replacement) {
         String replacedStr = this.input.getString().replaceFirst(this.pattern.pattern().getString(), replacement.getString());
-        IASTaintRanges taintRanges = new IASTaintRanges(this.input.getTaintRanges());
+        List<IASLayer> layers = new ArrayList<>(2);
 
         // Is one of both Strings tainted? If not, it's irrelevant if one happened for the tainting
         if (this.input.isTainted() || replacement.isTainted()) {
@@ -177,10 +181,11 @@ public class IASMatcher {
                 final int start = this.start();
                 final int end = this.end();
 
-                taintRanges.replaceTaintInformation(start, end, ((IASString) replacement).getTaintRanges(), replacement.length(), true);
+                layers.add(new DeleteLayer(start, end));
+                layers.add(new InsertLayer(start, start + replacement.length(), ((IASString) replacement).getTaintInformation()));
             }
         }
-        return new IASString(replacedStr, taintRanges.getAllRanges());
+        return this.input.derive(replacedStr, layers);
     }
 
     public boolean requireEnd() {
@@ -235,7 +240,7 @@ public class IASMatcher {
     }
 
     public IASString toIASString() {
-        return IASString.fromString(this.toString());
+        return new IASString(this.toString());
     }
 
     public IASMatcher useAnchoringBounds(boolean b) {

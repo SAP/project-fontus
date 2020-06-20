@@ -2,6 +2,7 @@ package de.tubs.cs.ias.asm_test.taintaware.shared;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 public interface IASStringBuilderable extends Serializable, Comparable<IASStringBuilderable>, Appendable, CharSequence, IASTaintAware {
@@ -26,6 +27,10 @@ public interface IASStringBuilderable extends Serializable, Comparable<IASString
     IASStringBuilderable append(float f);
 
     IASStringBuilderable append(double d);
+
+    IASStringBuilderable append(CharSequence charSequence);
+
+    IASStringBuilderable append(CharSequence charSequence, int start, int end);
 
     IASStringBuilderable appendCodePoint(int codePoint);
 

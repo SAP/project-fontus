@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASLazyAware;
 import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
@@ -8,17 +9,16 @@ import java.util.Locale;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.*;
 
 public class StringTaintTest {
     private Tainter tainter = new Tainter();
 
     private static class Tainter {
-        public void setTaint(IASLazyComplexAware str, boolean taint) {
+        public void setTaint(IASLazyAware str, boolean taint) {
             str.setTaint(taint);
         }
 
-        public boolean getTaint(IASLazyComplexAware str) {
+        public boolean getTaint(IASLazyAware str) {
             return str.isTainted();
         }
     }

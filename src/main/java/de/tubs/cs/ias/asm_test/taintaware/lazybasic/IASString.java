@@ -1,9 +1,9 @@
-package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
+package de.tubs.cs.ias.asm_test.taintaware.lazybasic;
 
-import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
-import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations.*;
+import de.tubs.cs.ias.asm_test.taintaware.lazybasic.operation.BaseLayer;
+import de.tubs.cs.ias.asm_test.taintaware.lazybasic.operation.DeleteLayer;
+import de.tubs.cs.ias.asm_test.taintaware.lazybasic.operation.InsertLayer;
 import de.tubs.cs.ias.asm_test.taintaware.shared.*;
-import de.tubs.cs.ias.asm_test.taintaware.shared.range.IASTaintRangeStringable;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -12,9 +12,14 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @SuppressWarnings("Since15")
-public class IASString implements IASTaintRangeStringable, IASLazyAware {
+public final class IASString implements IASStringable, IASLazyAware {
     private final String string;
     private IASTaintInformation taintInformation;
+
+    public IASString(String string, IASTaintInformation taintInformation) {
+        this.string = string;
+        this.taintInformation = taintInformation;
+    }
 
     public IASString() {
         this.string = "";
@@ -26,18 +31,13 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
         this.taintInformation = null;
     }
 
-    public IASString(String string, IASTaintInformation taintInformation) {
-        this.string = string;
-        this.taintInformation = taintInformation;
-    }
-
     public IASString(String s, boolean tainted) {
         this(s);
         setTaint(tainted);
     }
 
     public IASString(String s, List<IASTaintRange> ranges) {
-        this(s, new IASTaintInformation(new BaseOperation(ranges)));
+        this(s, new IASTaintInformation(new BaseLayer(ranges)));
     }
 
     public IASString(CharSequence sequence) {
@@ -45,7 +45,7 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
     }
 
     public IASString(CharSequence sequence, List<IASTaintRange> ranges) {
-        this(sequence.toString(), new IASTaintInformation(new BaseOperation(ranges)));
+        this(sequence.toString(), new IASTaintInformation(new BaseLayer(ranges)));
     }
 
     public static IASString tainted(IASString tstr) {
@@ -82,7 +82,7 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
         this(new String(bytes, offset, length, charset));
     }
 
-    public IASString(byte bytes[], IASStringable charsetName) throws UnsupportedEncodingException {
+    public IASString(byte[] bytes, IASStringable charsetName) throws UnsupportedEncodingException {
         this(new String(bytes, charsetName.getString()));
     }
 
@@ -99,15 +99,15 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
     }
 
     public IASString(IASStringBuilderable builder) {
-        this(builder.toString(), new IASTaintInformation(new BaseOperation(((IASAbstractStringBuilder) builder).getTaintRanges())));
+        this(builder.toString(), ((IASAbstractStringBuilder) builder).getTaintInformation());
     }
 
     public IASString(IASStringBuilder builder) {
-        this(builder.toString(), new IASTaintInformation(new BaseOperation(builder.getTaintRanges())));
+        this(builder.toString(), builder.getTaintInformation());
     }
 
     public IASString(IASStringBuffer builder) {
-        this(builder.toString(), new IASTaintInformation(new BaseOperation(((IASAbstractStringBuilder) builder).getTaintRanges())));
+        this(builder.toString(), builder.getTaintInformation());
     }
 
     public IASString(IASStringable string) {
@@ -118,57 +118,8 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
         this(string.getString(), string.taintInformation);
     }
 
-    /**
-     * Creates a new taintable String from a charsequence.
-     * If it's marked as tainted, the whole string will be marked as tainted
-     *
-     * @param cs
-     * @param tainted
-     */
-    private IASString(CharSequence cs, boolean tainted) {
-        this(cs.toString());
-        this.setTaint(tainted);
-    }
-
-    public boolean isInitialized() {
-        return this.taintInformation != null;
-    }
-
-    public boolean isUninitialized() {
-        return !this.isInitialized();
-    }
-
-    @Override
-    public void initialize() {
-        if (this.isUninitialized()) {
-            this.taintInformation = new IASTaintInformation();
-        }
-    }
-
-    @Override
-    public boolean isTaintedAt(int index) {
-        if (isUninitialized()) {
-            return false;
-        }
-        IASTaintRanges trs = new IASTaintRanges(this.taintInformation.getTaintRanges());
-        return trs.isTaintedAt(index);
-    }
-
-    @Override
-    public void setTaint(IASTaintSource source) {
-        if (source == null) {
-            this.taintInformation = null;
-        } else {
-            this.taintInformation = new IASTaintInformation(new BaseOperation(0, this.length(), source));
-        }
-    }
-
-    @Override
-    public List<IASTaintRange> getTaintRanges() {
-        if (isUninitialized()) {
-            return new ArrayList<>();
-        }
-        return this.taintInformation.getTaintRanges();
+    public static IASString fromString(String name) {
+        return new IASString(name);
     }
 
     @Override
@@ -198,7 +149,7 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
 
     @Override
     public int codePointBefore(int index) {
-        return this.string.codePointAt(index);
+        return this.string.codePointBefore(index);
     }
 
     @Override
@@ -237,14 +188,6 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
     }
 
     @Override
-
-    public boolean equals(Object anObject) {
-        if (!(anObject instanceof IASString)) return false;
-        IASString other = (IASString) anObject;
-        return this.string.equals(other.string);
-    }
-
-    @Override
     public boolean contentEquals(IASStringBuilderable sb) {
         return this.string.contentEquals(sb.getBuilder());
     }
@@ -266,7 +209,7 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
 
     @Override
     public boolean regionMatches(int toffset, IASStringable other, int ooffset, int len) {
-        return this.string.regionMatches(ooffset, other.getString(), ooffset, len);
+        return this.string.regionMatches(toffset, other.getString(), ooffset, len);
     }
 
     @Override
@@ -287,11 +230,6 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
     @Override
     public boolean endsWith(IASStringable suffix) {
         return this.string.endsWith(suffix.getString());
-    }
-
-    @Override
-    public int hashCode() {
-        return this.string.hashCode();
     }
 
     @Override
@@ -326,7 +264,7 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
 
     @Override
     public int lastIndexOf(IASStringable str) {
-        return this.string.indexOf(str.getString());
+        return this.string.lastIndexOf(str.getString());
     }
 
     @Override
@@ -334,33 +272,47 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
         return this.string.lastIndexOf(str.getString(), fromIndex);
     }
 
+    private IASString derive(String newString, IASLayer layer) {
+        return this.derive(newString, Collections.singletonList(layer));
+    }
+
+    IASString derive(String newString, List<IASLayer> layers) {
+        if (layers == null || layers.isEmpty()) {
+            return new IASString(newString, this.taintInformation);
+        }
+        return new IASString(newString, new IASTaintInformation(layers, this.taintInformation));
+    }
+
     @Override
     public IASString substring(int beginIndex) {
-        String substringed = this.string.substring(beginIndex);
-        return this.derive(substringed, new SubstringOperation(beginIndex), false);
+        return this.derive(this.string.substring(beginIndex), new DeleteLayer(0, beginIndex));
     }
 
     @Override
     public IASString substring(int beginIndex, int endIndex) {
-        String substringed = this.string.substring(beginIndex, endIndex);
-        return this.derive(substringed, new SubstringOperation(beginIndex, endIndex), false);
+        return this.derive(this.string.substring(beginIndex, endIndex), Arrays.asList(new DeleteLayer(0, beginIndex), new DeleteLayer(endIndex)));
     }
 
     @Override
     public CharSequence subSequence(int beginIndex, int endIndex) {
-        String substringed = this.string.substring(beginIndex, endIndex);
-        return this.derive(substringed, new SubstringOperation(beginIndex, endIndex), false);
+        return this.derive(this.string.substring(beginIndex, endIndex), Arrays.asList(new DeleteLayer(0, beginIndex), new DeleteLayer(endIndex)));
     }
 
     @Override
     public IASString concat(IASStringable str) {
-        String substringed = this.string.concat(str.getString());
-        return this.derive(substringed, new ConcatOperation((IASLazyAware) str), ((IASString) str).isInitialized());
+        return this.derive(this.string.concat(str.getString()), new InsertLayer(this.string.length(), this.string.length() + str.length(), ((IASString) str).taintInformation));
     }
 
     @Override
     public IASString replace(char oldChar, char newChar) {
-        return this.derive(this.string.replace(oldChar, newChar), new ReplaceCharacterOperation(oldChar), false);
+        String newString = this.string.replace(oldChar, newChar);
+        int i = 0;
+        List<IASLayer> layers = new LinkedList<>();
+        while ((i = this.string.indexOf(oldChar, i)) >= 0) {
+            layers.add(new DeleteLayer(i, i + 1));
+            layers.add(new InsertLayer(i, i + 1, IASTaintSource.TS_CHAR_UNKNOWN_ORIGIN));
+        }
+        return this.derive(newString, layers);
     }
 
     @Override
@@ -375,19 +327,39 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
 
     @Override
     public IASString replaceFirst(IASStringable regex, IASStringable replacement) {
-        String replaced = this.string.replaceFirst(regex.getString(), replacement.getString());
-        return this.derive(replaced, new ReplaceFirstOperation((IASString) regex, (IASString) replacement), ((IASString) replacement).isInitialized());
+        return IASPattern.compile(regex).matcher(this).replaceFirst(replacement);
     }
 
     @Override
     public IASString replaceAll(IASStringable regex, IASStringable replacement) {
-        String replaced = this.string.replaceAll(regex.getString(), replacement.getString());
-        return this.derive(replaced, new ReplaceAllOperation((IASString) regex, (IASString) replacement), ((IASString) replacement).isInitialized());
+        return IASPattern.compile(regex).matcher(this).replaceAll(replacement);
     }
 
     @Override
     public IASString replace(CharSequence target, CharSequence replacement) {
-        return this.derive(this.string.replace(target, replacement), new ReplaceCharSequenceOperation(IASString.valueOf(target), IASString.valueOf(replacement)), ((IASString) replacement).isInitialized());
+        String newString = this.string.replace(target, replacement);
+        int i = 0;
+        List<IASLayer> layers = new LinkedList<>();
+        final int difference = replacement.length() - target.length();
+        int diffSum = 0;
+        while ((i = this.string.indexOf(target.toString(), i)) >= 0) {
+            layers.add(new DeleteLayer(diffSum + i, diffSum + i + target.length()));
+            layers.add(new InsertLayer(diffSum + i, diffSum + i + replacement.length(), IASString.valueOf(replacement).taintInformation));
+            diffSum += difference;
+        }
+        return this.derive(newString, layers);
+    }
+
+    public static IASString valueOf(Object obj) {
+        if (obj instanceof IASString) {
+            return (IASString) obj;
+        } else if (obj instanceof IASStringBuffer) {
+            return ((IASStringBuffer) obj).toIASString();
+        } else if (obj instanceof IASStringBuilder) {
+            return ((IASStringBuilder) obj).toIASString();
+        } else {
+            return new IASString(String.valueOf(obj));
+        }
     }
 
     @Override
@@ -397,48 +369,59 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
 
     @Override
     public IASString[] split(IASStringable regex) {
-        return this.split(regex, 0);
+        return IASPattern.compile(regex).split(this);
     }
 
     @Override
     public IASString toLowerCase(Locale locale) {
-        return new IASString(this.string.toLowerCase(locale), this.taintInformation);
+        return this.derive(this.string.toLowerCase(locale), (List<IASLayer>) null);
     }
 
     @Override
     public IASString toLowerCase() {
-        return new IASString(this.string.toLowerCase(), this.taintInformation);
+        return this.derive(this.string.toLowerCase(), (List<IASLayer>) null);
     }
 
     @Override
     public IASString toUpperCase(Locale locale) {
-        return new IASString(this.string.toUpperCase(locale), this.taintInformation);
+        return this.derive(this.string.toUpperCase(locale), (List<IASLayer>) null);
     }
 
     @Override
     public IASString toUpperCase() {
-        return new IASString(this.string.toUpperCase(), this.taintInformation);
+        return this.derive(this.string.toUpperCase(), (List<IASLayer>) null);
     }
 
     @Override
     public IASString trim() {
-        String trimmed = this.string.trim();
-        return this.derive(trimmed, new TrimOperation(), false);
+        String newStr = this.string.trim();
+        int start = this.string.indexOf(newStr);
+        int end = start + newStr.length();
+        return this.derive(newStr, Arrays.asList(new DeleteLayer(0, start), new DeleteLayer(end)));
     }
 
     @Override
     public IASString strip() {
-        return this.derive(this.string.strip(), new StripOperation(true, true), false);
+        String newStr = this.string.strip();
+        int start = this.string.indexOf(newStr);
+        int end = start + newStr.length();
+        return this.derive(newStr, Arrays.asList(new DeleteLayer(0, start), new DeleteLayer(end)));
     }
 
     @Override
     public IASString stripLeading() {
-        return this.derive(this.string.stripLeading(), new StripOperation(true, false), false);
+        String newStr = this.string.stripLeading();
+        int start = this.string.indexOf(newStr);
+        int end = start + newStr.length();
+        return this.derive(newStr, Arrays.asList(new DeleteLayer(0, start), new DeleteLayer(end)));
     }
 
     @Override
     public IASString stripTrailing() {
-        return this.derive(this.string.stripTrailing(), new StripOperation(false, true), false);
+        String newStr = this.string.stripTrailing();
+        int start = this.string.indexOf(newStr);
+        int end = start + newStr.length();
+        return this.derive(newStr, Arrays.asList(new DeleteLayer(0, start), new DeleteLayer(end)));
     }
 
     @Override
@@ -448,7 +431,15 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
 
     @Override
     public IASString repeat(int count) {
-        return this.derive(this.string.repeat(count), new RepeatOperation(count), false);
+        if (count == 0) {
+            return new IASString();
+        }
+        String newStr = this.string.repeat(count);
+        List<IASLayer> layers = new ArrayList<>();
+        for (int i = 1; i <= count; i++) {
+            layers.add(new InsertLayer(i * this.string.length(), (i + 1) * this.string.length(), this.taintInformation));
+        }
+        return this.derive(newStr, layers);
     }
 
     @Override
@@ -482,7 +473,7 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
     }
 
     @Override
-    public Stream<IASString> lines() {
+    public Stream<? extends IASStringable> lines() {
         return Arrays.stream(this.split(new IASString(IASStringable.SPLIT_LINE_REGEX)));
     }
 
@@ -492,8 +483,43 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
     }
 
     @Override
-    public boolean isTainted() {
+    public List<IASTaintRange> getTaintRanges() {
+        if (this.taintInformation == null) {
+            return new ArrayList<>(0);
+        }
+        return this.taintInformation.getTaintRanges();
+    }
+
+    @Override
+    public boolean isUninitialized() {
+        return this.taintInformation == null;
+    }
+
+    @Override
+    public void initialize() {
+        this.taintInformation = new IASTaintInformation();
+    }
+
+    @Override
+    public boolean isTaintedAt(int index) {
         if (isUninitialized()) {
+            return false;
+        }
+        return this.taintInformation.isTaintedAt(index);
+    }
+
+    @Override
+    public void setTaint(IASTaintSource source) {
+        if (source == null) {
+            this.taintInformation = null;
+        } else {
+            this.taintInformation = new IASTaintInformation(new BaseLayer(0, this.string.length(), source));
+        }
+    }
+
+    @Override
+    public boolean isTainted() {
+        if (this.taintInformation == null) {
             return false;
         }
         return this.taintInformation.isTainted();
@@ -501,105 +527,39 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
 
     @Override
     public void setTaint(boolean taint) {
-        if (taint != this.isTainted()) {
-            if (taint) {
-                this.taintInformation = new IASTaintInformation(new BaseOperation(0, this.length(), IASTaintSource.TS_CS_UNKNOWN_ORIGIN));
-            } else {
-                this.taintInformation = null;
-            }
-        }
+        this.setTaint(taint ? IASTaintSource.TS_CS_UNKNOWN_ORIGIN : null);
     }
 
     @Override
-    public int compareTo(IASStringable o) {
-        return this.string.compareTo(o.getString());
+    public int compareTo(IASStringable iasStringable) {
+        return this.string.compareTo(iasStringable.getString());
     }
 
-    public static IASString join(CharSequence delimiter, CharSequence... elements) {
-        if (elements == null || elements.length == 0) {
-            return new IASString();
-        } else if (elements.length == 1) {
-            return IASString.valueOf(elements[0]);
-        } else {
-            IASString begin = IASString.valueOf(elements[0]);
-            IASString iasDelimiter = IASString.valueOf(delimiter);
-            IASStringBuilder sb = new IASStringBuilder(begin);
-
-            for (int i = 1; i < elements.length; i++) {
-                sb.append(iasDelimiter);
-                sb.append(IASString.valueOf(elements[i]));
-            }
-            return sb.toIASString();
-        }
-    }
-
-
-    public static IASString join(CharSequence delimiter,
-                                 Iterable<? extends CharSequence> elements) {
-        ArrayList<CharSequence> l = new ArrayList();
-        for (CharSequence s : elements) {
-            l.add(s);
-        }
-        return IASString.join(delimiter, l.toArray(new CharSequence[l.size()]));
-    }
-
-    private static boolean isTainted(Object[] args) {
-        boolean isTainted = false;
-        if (args != null) {
-            for (Object o : args) {
-                if (o instanceof IASTaintAware) {
-                    IASTaintAware ta = (IASTaintAware) o;
-                    isTainted |= ta.isTainted();
-                }
-            }
-        }
-        return isTainted;
-    }
-
-    public static IASString format(IASStringable format, Object... args) {
-        // TODO Implement rainting
-        return new IASFormatter().format(format, args).toIASString();
-    }
-
-
-    public static IASString format(Locale l, IASStringable format, Object... args) {
-        // TODO Implement rainting
-        return new IASFormatter(l).format(format, args).toIASString();
-    }
-
-    public static IASString valueOf(Object obj) {
-        if (obj instanceof IASString) {
-            return (IASString) obj;
-        } else if (obj instanceof IASStringBuffer) {
-            return ((IASStringBuffer) obj).toIASString();
-        } else if (obj instanceof IASStringBuilder) {
-            return ((IASStringBuilder) obj).toIASString();
-        } else {
-            return new IASString(String.valueOf(obj));
-        }
+    public IASTaintInformation getTaintInformation() {
+        return this.taintInformation;
     }
 
     public static IASString valueOf(CharSequence s, int start, int end) {
         if (s instanceof IASString) {
-            return ((IASString) s).substring(start, end);
+            return (IASString) ((IASString) s).substring(start, end);
         } else {
             return IASString.valueOf(s.subSequence(start, end));
         }
     }
 
-    public static IASString valueOf(char[] data) {
+    public static IASString valueOf(char data[]) {
         return new IASString(String.valueOf(data));
     }
 
-    public static IASString valueOf(char[] data, int offset, int count) {
+    public static IASString valueOf(char data[], int offset, int count) {
         return new IASString(String.valueOf(data, offset, count));
     }
 
-    public static IASString copyValueOf(char[] data, int offset, int count) {
+    public static IASString copyValueOf(char data[], int offset, int count) {
         return new IASString(String.copyValueOf(data, offset, count));
     }
 
-    public static IASString copyValueOf(char[] data) {
+    public static IASString copyValueOf(char data[]) {
         return new IASString(String.copyValueOf(data));
     }
 
@@ -627,31 +587,7 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
         return new IASString(String.valueOf(d));
     }
 
-    public static IASString fromString(String str) {
-        if (str == null) {
-            return null;
-        }
-        return new IASString(str);
-    }
-
-    public static String asString(IASString str) {
-        if (str == null) {
-            return null;
-        }
-        return str.string;
-    }
-
-    @Override
-    public String toString() {
-        return this.string;
-    }
-
-    IASString derive(String newString, IASOperation operation, boolean initializeIfNecessary) {
-        if (this.isInitialized()) {
-            return new IASString(newString, new IASTaintInformation(this.getString(), this.taintInformation, operation));
-        } else if (initializeIfNecessary) {
-            return new IASString(newString, new IASTaintInformation(this.getString(), new IASTaintInformation(), operation));
-        }
-        return new IASString(newString);
+    public boolean isInitialized() {
+        return !isUninitialized();
     }
 }

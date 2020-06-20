@@ -10,41 +10,32 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("Since15")
-public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBuilderable, IASLazyComplexAware {
+public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBuilderable, IASLazyAware {
     private final StringBuilder stringBuilder;
     private IASTaintInformation taintInformation;
 
     public IASAbstractStringBuilder() {
         this.stringBuilder = new StringBuilder();
-        this.taintInformation = new IASTaintInformation();
     }
 
     public IASAbstractStringBuilder(int capacity) {
         this.stringBuilder = new StringBuilder(capacity);
-        this.taintInformation = new IASTaintInformation();
     }
 
     public IASAbstractStringBuilder(CharSequence seq) {
         IASString str = IASString.valueOf(seq);
-        this.stringBuilder = new StringBuilder(seq);
-        if (str.isInitialized()) {
-            this.taintInformation = new IASTaintInformation(str.getTaintRanges());
-        }
+        this.stringBuilder = new StringBuilder();
+        this.append(str);
     }
 
     public IASAbstractStringBuilder(IASStringable string) {
-        this.stringBuilder = new StringBuilder(string.getString());
-        if (((IASString) string).isInitialized()) {
-            this.taintInformation = new IASTaintInformation(((IASString) string).getTaintRanges());
-        }
+        this.stringBuilder = new StringBuilder();
+        this.append(string);
     }
 
     public IASAbstractStringBuilder(IASStringBuilderable strb) {
-        IASString string = (IASString) strb.toIASString();
-        this.stringBuilder = new StringBuilder(string.getString());
-        if (string.isInitialized()) {
-            this.taintInformation = new IASTaintInformation(string.getTaintRanges());
-        }
+        this.stringBuilder = new StringBuilder();
+        this.append(strb);
     }
 
     @Override

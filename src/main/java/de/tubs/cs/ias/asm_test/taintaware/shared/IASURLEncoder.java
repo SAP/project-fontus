@@ -66,10 +66,7 @@ public class IASURLEncoder {
                 IASStringBuilderable toAppend = factory.createStringBuilder();
                 for (byte aByte : bytes) {
                     toAppend.append('%');
-                    try {
-                        toAppend.append(String.format("%02X", aByte));
-                    } catch (IOException ignored) {
-                    }
+                    toAppend.append(String.format("%02X", aByte));
                 }
                 toAppend.setTaint(source);
                 strb.append(toAppend);

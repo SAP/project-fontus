@@ -1,14 +1,16 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASLazyAware;
+
 public abstract class AbstractTest {
     private Tainter tainter = new Tainter();
 
     public static class Tainter {
-        public void setTaint(IASLazyComplexAware str, boolean taint) {
+        public void setTaint(IASLazyAware str, boolean taint) {
             str.setTaint(taint);
         }
 
-        public boolean getTaint(IASLazyComplexAware str) {
+        public boolean getTaint(IASLazyAware str) {
             return str.isTainted();
         }
     }

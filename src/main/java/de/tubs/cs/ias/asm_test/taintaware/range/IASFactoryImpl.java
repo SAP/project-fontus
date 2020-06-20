@@ -15,4 +15,9 @@ public class IASFactoryImpl implements IASFactory {
         return new IASString(s);
     }
 
+    @Override
+    public IASStringBuilderable createStringBuilder(IASStringable string) {
+        return new IASStringBuilder(string);
+    }
+
 }

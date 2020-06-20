@@ -6,6 +6,7 @@ public enum TaintMethod {
     BOOLEAN(Constants.BOOLEAN_METHOD_NAME, Constants.BOOLEAN_METHOD_PATH),
     RANGE(Constants.RANGE_METHOD_NAME, Constants.RANGE_METHOD_PATH),
     LAZY_COMPLEX(Constants.LAZY_COMPLEX_METHOD_NAME, Constants.LAZY_COMPLEX_METHOD_PATH),
+    LAZY_BASIC(Constants.LAZY_BASIC_METHOD_NAME, Constants.LAZY_BASIC_METHOD_PATH),
     ARRAY(Constants.ARRAY_METHOD_NAME, Constants.ARRAY_METHOD_PATH);
 
     public static final String defaultTaintMethodName = Constants.BOOLEAN_METHOD_NAME;

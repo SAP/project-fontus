@@ -496,7 +496,7 @@ public final class IASString implements IASArrayAware, IASStringable {
     }
 
     public Stream<IASStringable> lines() {
-        return Arrays.stream(this.split(new IASString("(\\n|\\r)")));
+        return Arrays.stream(this.split(new IASString(IASStringable.SPLIT_LINE_REGEX)));
     }
 
     @Override
