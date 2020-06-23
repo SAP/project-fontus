@@ -43,8 +43,8 @@ public class IASTaintInformation {
     /**
      * Sets the taint for a specific range. If a taint already exists it will be overwritten.
      *
-     * @param start Inclusive start index. 0 <= start < length
-     * @param end   Exclusive end index. start < end <= length
+     * @param start  Inclusive start index. 0 <= start < length
+     * @param end    Exclusive end index. start < end <= length
      * @param source Taint information to set
      */
     public void setTaint(int start, int end, IASTaintSource source) {
@@ -184,6 +184,9 @@ public class IASTaintInformation {
 
     public IASTaintSource getTaintFor(int position) {
         if (isUninitialized()) {
+            return null;
+        }
+        if (this.taints[position] == 0) {
             return null;
         }
         return IASTaintSource.getInstanceById((short) this.taints[position]);
