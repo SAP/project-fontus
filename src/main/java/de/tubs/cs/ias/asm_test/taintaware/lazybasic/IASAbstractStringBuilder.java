@@ -32,26 +32,29 @@ public class IASAbstractStringBuilder implements IASStringBuilderable, IASLazyAw
 
     public IASAbstractStringBuilder(int capacity) {
         this.builder = new StringBuilder(capacity);
-        this.taintInformation = new IASTaintInformation();
     }
 
     public IASAbstractStringBuilder(CharSequence seq) {
-        this.builder = new StringBuilder();
+        this.builder = new StringBuilder(seq.length() + 16);
         this.append(IASString.valueOf(seq));
     }
 
     public IASAbstractStringBuilder(IASStringable string) {
-        this.builder = new StringBuilder();
+        this.builder = new StringBuilder(string.length() + 16);
         this.append(IASString.valueOf(string));
     }
 
     public IASAbstractStringBuilder(IASStringBuilderable strb) {
-        this.builder = new StringBuilder();
+        this.builder = new StringBuilder(strb.length() + 16);
         this.append(strb);
     }
 
     public IASAbstractStringBuilder(StringBuffer buffer) {
         this.builder = new StringBuilder(buffer);
+    }
+
+    public IASAbstractStringBuilder(IASString string) {
+        this((IASStringable) string);
     }
 
     @Override
