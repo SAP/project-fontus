@@ -17,7 +17,7 @@ public final class IASString implements IASStringable, IASLazyAware {
     private IASTaintInformation taintInformation;
 
     public IASString(String string, IASTaintInformation taintInformation) {
-        this.string = string;
+        this.string = Objects.requireNonNull(string);
         this.taintInformation = taintInformation;
     }
 
@@ -27,7 +27,7 @@ public final class IASString implements IASStringable, IASLazyAware {
     }
 
     public IASString(String string) {
-        this.string = string;
+        this.string = Objects.requireNonNull(string);
         this.taintInformation = null;
     }
 
@@ -122,8 +122,11 @@ public final class IASString implements IASStringable, IASLazyAware {
         this(strb.toString());
     }
 
-    public static IASString fromString(String name) {
-        return new IASString(name);
+    public static IASString fromString(String s) {
+        if (s == null) {
+            return null;
+        }
+        return new IASString(s);
     }
 
     public static String asString(IASString string) {
@@ -303,12 +306,12 @@ public final class IASString implements IASStringable, IASLazyAware {
 
     @Override
     public IASString substring(int beginIndex, int endIndex) {
-        return this.derive(this.string.substring(beginIndex, endIndex), Arrays.asList(new DeleteLayer(0, beginIndex), new DeleteLayer(endIndex)));
+        return this.derive(this.string.substring(beginIndex, endIndex), Arrays.asList(new DeleteLayer(endIndex), new DeleteLayer(0, beginIndex)));
     }
 
     @Override
     public CharSequence subSequence(int beginIndex, int endIndex) {
-        return this.derive(this.string.substring(beginIndex, endIndex), Arrays.asList(new DeleteLayer(0, beginIndex), new DeleteLayer(endIndex)));
+        return this.derive(this.string.substring(beginIndex, endIndex), Arrays.asList(new DeleteLayer(endIndex), new DeleteLayer(0, beginIndex)));
     }
 
     @Override
@@ -322,9 +325,10 @@ public final class IASString implements IASStringable, IASLazyAware {
         int i = 0;
         List<IASLayer> layers = new ArrayList<>();
         while ((i = this.string.indexOf(oldChar, i + 1)) >= 0) {
-            layers.add(new DeleteLayer(i, i + 1));
             layers.add(new InsertLayer(i, i + 1));
+            layers.add(new DeleteLayer(i, i + 1));
         }
+        Collections.reverse(layers);
         return this.derive(newString, layers);
     }
 
@@ -356,10 +360,11 @@ public final class IASString implements IASStringable, IASLazyAware {
         final int difference = replacement.length() - target.length();
         int diffSum = 0;
         while ((i = this.string.indexOf(target.toString(), i + 1)) >= 0) {
-            layers.add(new DeleteLayer(diffSum + i, diffSum + i + target.length()));
             layers.add(new InsertLayer(diffSum + i, diffSum + i + replacement.length(), IASString.valueOf(replacement).taintInformation));
+            layers.add(new DeleteLayer(diffSum + i, diffSum + i + target.length()));
             diffSum += difference;
         }
+        Collections.reverse(layers);
         return this.derive(newString, layers);
     }
 
@@ -410,7 +415,7 @@ public final class IASString implements IASStringable, IASLazyAware {
         String newStr = this.string.trim();
         int start = this.string.indexOf(newStr);
         int end = start + newStr.length();
-        return this.derive(newStr, Arrays.asList(new DeleteLayer(0, start), new DeleteLayer(end)));
+        return this.derive(newStr, Arrays.asList(new DeleteLayer(end), new DeleteLayer(0, start)));
     }
 
     @Override
@@ -418,7 +423,7 @@ public final class IASString implements IASStringable, IASLazyAware {
         String newStr = this.string.strip();
         int start = this.string.indexOf(newStr);
         int end = start + newStr.length();
-        return this.derive(newStr, Arrays.asList(new DeleteLayer(0, start), new DeleteLayer(end)));
+        return this.derive(newStr, Arrays.asList(new DeleteLayer(end), new DeleteLayer(0, start)));
     }
 
     @Override
@@ -426,7 +431,7 @@ public final class IASString implements IASStringable, IASLazyAware {
         String newStr = this.string.stripLeading();
         int start = this.string.indexOf(newStr);
         int end = start + newStr.length();
-        return this.derive(newStr, Arrays.asList(new DeleteLayer(0, start), new DeleteLayer(end)));
+        return this.derive(newStr, Arrays.asList(new DeleteLayer(end), new DeleteLayer(0, start)));
     }
 
     @Override
@@ -434,7 +439,7 @@ public final class IASString implements IASStringable, IASLazyAware {
         String newStr = this.string.stripTrailing();
         int start = this.string.indexOf(newStr);
         int end = start + newStr.length();
-        return this.derive(newStr, Arrays.asList(new DeleteLayer(0, start), new DeleteLayer(end)));
+        return this.derive(newStr, Arrays.asList(new DeleteLayer(end), new DeleteLayer(0, start)));
     }
 
     @Override
@@ -523,9 +528,8 @@ public final class IASString implements IASStringable, IASLazyAware {
 
     @Override
     public void setTaint(IASTaintSource source) {
-        if (source == null) {
-            this.taintInformation = null;
-        } else {
+        this.taintInformation = null;
+        if (source != null && this.string.length() > 0) {
             this.taintInformation = new IASTaintInformation(new BaseLayer(0, this.string.length(), source));
         }
     }
@@ -585,6 +589,8 @@ public final class IASString implements IASStringable, IASLazyAware {
             int length = begin.length();
             for (int i = 1; i < elements.length; i++) {
                 IASString string = IASString.valueOf(elements[i]);
+                layers.add(new InsertLayer(length, length + iasDelimiter.length(), iasDelimiter.getTaintInformation()));
+                length += iasDelimiter.length();
                 layers.add(new InsertLayer(length, length + string.length(), string.getTaintInformation()));
                 length += string.length();
             }

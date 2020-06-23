@@ -1,27 +1,13 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazybasic;
 
+import de.tubs.cs.ias.asm_test.AbstractTest;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASLazyAware;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class StringReplaceTaintTest {
-    private Tainter tainter = new Tainter();
-
-    private static class Tainter {
-        public void setTaint(IASLazyAware str, boolean taint) {
-            str.setTaint(taint);
-        }
-
-        public boolean getTaint(IASLazyAware str) {
-            return str.isTainted();
-        }
-    }
-
-    protected Tainter getTaintChecker() {
-        return tainter;
-    }
+public class StringReplaceTaintTest extends AbstractTest {
 
     @Test
     public void testReplace_1() {

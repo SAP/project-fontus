@@ -35,8 +35,9 @@ public class IASAbstractStringBuilder implements IASStringBuilderable, IASLazyAw
     }
 
     public IASAbstractStringBuilder(CharSequence seq) {
-        this.builder = new StringBuilder(seq.length() + 16);
-        this.append(IASString.valueOf(seq));
+        IASString string = IASString.valueOf(seq);
+        this.builder = new StringBuilder(string.length() + 16);
+        this.append(string);
     }
 
     public IASAbstractStringBuilder(IASStringable string) {
@@ -60,6 +61,9 @@ public class IASAbstractStringBuilder implements IASStringBuilderable, IASLazyAw
     @Override
     public IASAbstractStringBuilder append(Object obj) {
         IASString toAppend = IASString.valueOf(obj);
+        if (obj == null) {
+            toAppend = new IASString("null");
+        }
         this.derive(new InsertLayer(this.builder.length(), this.builder.length() + toAppend.length(), toAppend.getTaintInformation()));
         this.builder.append(toAppend.getString());
         return this;
@@ -75,16 +79,12 @@ public class IASAbstractStringBuilder implements IASStringBuilderable, IASLazyAw
 
     @Override
     public IASAbstractStringBuilder append(IASStringable toAppend) {
-        this.derive(new InsertLayer(this.builder.length(), this.builder.length() + toAppend.length(), ((IASString) toAppend).getTaintInformation()));
-        this.builder.append(toAppend.getString());
-        return this;
+        return this.append((Object) toAppend);
     }
 
     @Override
     public IASAbstractStringBuilder append(IASStringBuilderable toAppend) {
-        this.derive(new InsertLayer(this.builder.length(), this.builder.length() + toAppend.length(), ((IASAbstractStringBuilder) toAppend).getTaintInformation()));
-        this.builder.append(toAppend);
-        return this;
+        return this.append((Object) toAppend);
     }
 
     public IASTaintInformation getTaintInformation() {
@@ -117,8 +117,7 @@ public class IASAbstractStringBuilder implements IASStringBuilderable, IASLazyAw
 
     @Override
     public IASAbstractStringBuilder append(CharSequence charSequence) {
-        IASString string = IASString.valueOf(charSequence);
-        return this.append(string);
+        return this.append((Object) charSequence);
     }
 
     @Override
@@ -301,8 +300,8 @@ public class IASAbstractStringBuilder implements IASStringBuilderable, IASLazyAw
         for (int i = 0; i < this.length(); i++) {
             int swap = this.length() - i - 1;
             IASTaintInformation other = new IASTaintInformation(Arrays.asList(
-                    new DeleteLayer(0, swap),
-                    new DeleteLayer(swap + 1)
+                    new DeleteLayer(swap + 1),
+                    new DeleteLayer(0, swap)
             ), this.taintInformation);
 
             InsertLayer layer = new InsertLayer(i, i + 1, other);
@@ -340,7 +339,7 @@ public class IASAbstractStringBuilder implements IASStringBuilderable, IASLazyAw
     @Override
     public IASString substring(int start, int end) {
         String newStr = this.builder.substring(start, end);
-        return this.deriveString(newStr, Arrays.asList(new DeleteLayer(0, start), new DeleteLayer(end)));
+        return this.deriveString(newStr, Arrays.asList(new DeleteLayer(end), new DeleteLayer(0, start)));
     }
 
     @Override
@@ -399,9 +398,8 @@ public class IASAbstractStringBuilder implements IASStringBuilderable, IASLazyAw
 
     @Override
     public void setTaint(IASTaintSource source) {
-        if (source == null) {
-            this.taintInformation = null;
-        } else {
+        this.taintInformation = null;
+        if (this.length() > 0 && source != null) {
             this.taintInformation = new IASTaintInformation(new BaseLayer(0, this.length(), source));
         }
     }

@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DeletionLayerTest {
     @Test
@@ -94,5 +95,15 @@ public class DeletionLayerTest {
                 },
                 result.toArray()
         );
+    }
+
+    @Test
+    public void testDeleteInTR5() {
+        List<IASTaintRange> previous = Arrays.asList(new IASTaintRange(0, 5, IASTaintSource.TS_CS_UNKNOWN_ORIGIN));
+        DeleteLayer deleteLayer = new DeleteLayer(0, 5);
+
+        List<IASTaintRange> result = deleteLayer.apply(previous);
+
+        assertEquals(0, result.size());
     }
 }

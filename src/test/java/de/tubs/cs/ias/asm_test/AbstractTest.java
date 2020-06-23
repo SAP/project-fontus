@@ -1,4 +1,4 @@
-package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
+package de.tubs.cs.ias.asm_test;
 
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASLazyAware;
 

@@ -1,9 +1,12 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazybasic;
 
+import de.tubs.cs.ias.asm_test.taintaware.lazybasic.operation.DeleteLayer;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -70,33 +73,30 @@ public class IASPattern {
         IASString string = IASString.valueOf(input);
         IASMatcher matcher = matcher(string);
 
-        ArrayList<IASString> result = new ArrayList<>();
-        boolean isLimited = limit > 0;
+        String[] strings = string.getString().split(this.patternString.getString(), limit);
+        IASString[] result = new IASString[strings.length];
         int start = 0;
-        while (matcher.find()) {
-            if (isLimited && result.size() >= limit - 1) {
-                break;
+        for (int i = 0; i < strings.length; i++) {
+            boolean found = matcher.find();
+
+            int end = Integer.MAX_VALUE;
+            if (found && i != strings.length - 1) {
+                end = matcher.start();
             }
 
-            int matchSize = matcher.end() - matcher.start();
-            if (result.size() != 0 || matchSize > 0) {
-                int end = matcher.start();
+            List<IASLayer> layers = Arrays.asList(
+                    new DeleteLayer(end),
+                    new DeleteLayer(0, start)
+            );
 
-                IASString part = string.substring(start, end);
-                result.add(part);
-
+            if (found) {
+                start = matcher.end();
             }
-            start = matcher.end();
+
+            result[i] = string.derive(strings[i], layers);
         }
 
-        if (start < string.length() || limit < 0) {
-            IASString endPart = string.substring(start);
-            result.add(endPart);
-        } else if (start == 0 && string.length() == 0) {
-            result.add(string);
-        }
-
-        return result.toArray(new IASString[0]);
+        return result;
     }
 
     public Stream<IASString> splitAsStream(CharSequence input) {
