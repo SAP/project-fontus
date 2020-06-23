@@ -29,6 +29,10 @@ public final class IASStringBuilder extends IASAbstractStringBuilder{
         super(strb);
     }
 
+    public IASStringBuilder(StringBuffer buffer) {
+        super(buffer);
+    }
+
     @Override
     public IASStringBuilder append(Object obj) {
         return (IASStringBuilder) super.append(obj);
@@ -301,12 +305,12 @@ public final class IASStringBuilder extends IASAbstractStringBuilder{
 
     @Override
     public IntStream chars() {
-        return null;
+        return super.chars();
     }
 
     @Override
     public IntStream codePoints() {
-        return null;
+        return super.codePoints();
     }
 
     @Override

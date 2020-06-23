@@ -118,13 +118,26 @@ public final class IASString implements IASStringable, IASLazyAware {
         this(string.getString(), string.taintInformation);
     }
 
+    public IASString(StringBuffer strb) {
+        this(strb.toString());
+    }
+
     public static IASString fromString(String name) {
         return new IASString(name);
     }
 
+    public static String asString(IASString string) {
+        if (string == null) {
+            return null;
+        }
+        return string.string;
+    }
+
     @Override
     public void abortIfTainted() {
-
+        if (isTainted()) {
+            throw new IllegalStateException("String is tainted");
+        }
     }
 
     @Override
@@ -307,10 +320,10 @@ public final class IASString implements IASStringable, IASLazyAware {
     public IASString replace(char oldChar, char newChar) {
         String newString = this.string.replace(oldChar, newChar);
         int i = 0;
-        List<IASLayer> layers = new LinkedList<>();
-        while ((i = this.string.indexOf(oldChar, i)) >= 0) {
+        List<IASLayer> layers = new ArrayList<>();
+        while ((i = this.string.indexOf(oldChar, i + 1)) >= 0) {
             layers.add(new DeleteLayer(i, i + 1));
-            layers.add(new InsertLayer(i, i + 1, IASTaintSource.TS_CHAR_UNKNOWN_ORIGIN));
+            layers.add(new InsertLayer(i, i + 1));
         }
         return this.derive(newString, layers);
     }
@@ -338,11 +351,11 @@ public final class IASString implements IASStringable, IASLazyAware {
     @Override
     public IASString replace(CharSequence target, CharSequence replacement) {
         String newString = this.string.replace(target, replacement);
-        int i = 0;
-        List<IASLayer> layers = new LinkedList<>();
+        int i = -1;
+        List<IASLayer> layers = new ArrayList<>();
         final int difference = replacement.length() - target.length();
         int diffSum = 0;
-        while ((i = this.string.indexOf(target.toString(), i)) >= 0) {
+        while ((i = this.string.indexOf(target.toString(), i + 1)) >= 0) {
             layers.add(new DeleteLayer(diffSum + i, diffSum + i + target.length()));
             layers.add(new InsertLayer(diffSum + i, diffSum + i + replacement.length(), IASString.valueOf(replacement).taintInformation));
             diffSum += difference;
@@ -549,6 +562,60 @@ public final class IASString implements IASStringable, IASLazyAware {
 
     public static IASString valueOf(char data[]) {
         return new IASString(String.valueOf(data));
+    }
+
+    public static IASString format(IASStringable toFormat, Object[] parameters) {
+        return (IASString) new IASFormatter().format(toFormat, parameters).toIASString();
+    }
+
+    public static IASString format(Locale l, IASStringable toFormat, Object[] parameters) {
+        return (IASString) new IASFormatter(l).format(toFormat, parameters).toIASString();
+    }
+
+    public static IASString join(CharSequence delimiter, CharSequence... elements) {
+        if (elements == null || elements.length == 0) {
+            return new IASString();
+        } else if (elements.length == 1) {
+            return IASString.valueOf(elements[0]);
+        } else {
+            IASString begin = IASString.valueOf(elements[0]);
+            IASString iasDelimiter = IASString.valueOf(delimiter);
+
+            List<IASLayer> layers = new ArrayList<>((elements.length - 1) * 2);
+            int length = begin.length();
+            for (int i = 1; i < elements.length; i++) {
+                IASString string = IASString.valueOf(elements[i]);
+                layers.add(new InsertLayer(length, length + string.length(), string.getTaintInformation()));
+                length += string.length();
+            }
+            return begin.derive(String.join(delimiter, elements), layers);
+        }
+    }
+
+
+    public static IASString join(CharSequence delimiter, Iterable<? extends CharSequence> elements) {
+        ArrayList<CharSequence> l = new ArrayList<>();
+        for (CharSequence s : elements) {
+            l.add(s);
+        }
+        return IASString.join(delimiter, l.toArray(new CharSequence[0]));
+    }
+
+    @Override
+    public int hashCode() {
+        return this.string.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof IASString)) return false;
+        IASString other = (IASString) obj;
+        return this.string.equals(other.string);
+    }
+
+    @Override
+    public String toString() {
+        return this.string;
     }
 
     public static IASString valueOf(char data[], int offset, int count) {

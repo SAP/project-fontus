@@ -13,17 +13,17 @@ public class IASTaintInformation {
     private IASTaintInformation previous;
 
     public IASTaintInformation(List<IASLayer> layers, IASTaintInformation previous) {
-        this.layers = new LinkedList<>();
+        this.layers = new ArrayList<>();
         this.appendLayers(layers);
         this.previous = previous;
     }
 
     public IASTaintInformation(BaseLayer baseLayer) {
-        this.layers = Collections.singletonList(baseLayer);
+        this.layers = new ArrayList<>(Collections.singletonList(baseLayer));
     }
 
     public IASTaintInformation() {
-        this.layers = Collections.emptyList();
+        this.layers = new ArrayList<>();
     }
 
     private void appendLayers(List<IASLayer> layers) {
@@ -40,7 +40,7 @@ public class IASTaintInformation {
     }
 
     public List<IASTaintRange> getTaintRanges() {
-        return this.evaluate();
+        return new ArrayList<>(this.evaluate());
     }
 
     private int getLayerDepth() {

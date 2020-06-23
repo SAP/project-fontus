@@ -22,6 +22,11 @@ public class InsertLayer extends IASLayer {
         this.incomingTaintInformation = new IASTaintInformation(new BaseLayer(0, end - start, taintSource));
     }
 
+    public InsertLayer(int start, int end) {
+        super(start, end);
+        this.incomingTaintInformation = new IASTaintInformation();
+    }
+
     private List<IASTaintRange> getIncomingTaint() {
         if(this.incomingTaintInformation == null) {
             return new ArrayList<>(0);

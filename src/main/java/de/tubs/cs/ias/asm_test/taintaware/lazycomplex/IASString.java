@@ -654,4 +654,8 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
         }
         return new IASString(newString);
     }
+
+    public IASTaintInformation getTaintInformation() {
+        return this.taintInformation;
+    }
 }

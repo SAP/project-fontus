@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.IntStream;
 
 @SuppressWarnings("Since15")
 public class IASAbstractStringBuilder implements IASStringBuilderable, IASLazyAware {
@@ -17,6 +18,16 @@ public class IASAbstractStringBuilder implements IASStringBuilderable, IASLazyAw
 
     public IASAbstractStringBuilder() {
         this.builder = new StringBuilder();
+    }
+
+    @Override
+    public int hashCode() {
+        return this.builder.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return this.builder.toString();
     }
 
     public IASAbstractStringBuilder(int capacity) {
@@ -37,6 +48,10 @@ public class IASAbstractStringBuilder implements IASStringBuilderable, IASLazyAw
     public IASAbstractStringBuilder(IASStringBuilderable strb) {
         this.builder = new StringBuilder();
         this.append(strb);
+    }
+
+    public IASAbstractStringBuilder(StringBuffer buffer) {
+        this.builder = new StringBuilder(buffer);
     }
 
     @Override
@@ -414,6 +429,16 @@ public class IASAbstractStringBuilder implements IASStringBuilderable, IASLazyAw
     @Override
     public CharSequence subSequence(int start, int end) {
         return this.substring(start, end);
+    }
+
+    @Override
+    public IntStream chars() {
+        return this.builder.chars();
+    }
+
+    @Override
+    public IntStream codePoints() {
+        return this.builder.codePoints();
     }
 
     @Override

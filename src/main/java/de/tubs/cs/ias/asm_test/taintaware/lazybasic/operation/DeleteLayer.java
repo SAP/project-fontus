@@ -23,7 +23,7 @@ public class DeleteLayer extends IASLayer {
     @Override
     protected List<IASTaintRange> apply(List<IASTaintRange> previousRanges) {
         IASTaintRanges trs = new IASTaintRanges(previousRanges);
-        trs.removeTaintFor(start, end, true);
+        trs.removeTaintFor(this.start, this.end, true);
         List<IASTaintRange> taintRanges = trs.getAllRanges();
         IASTaintRangeUtils.merge(taintRanges);
         return taintRanges;

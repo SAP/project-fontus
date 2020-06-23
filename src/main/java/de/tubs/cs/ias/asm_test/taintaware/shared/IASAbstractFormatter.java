@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.shared;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
+import de.tubs.cs.ias.asm_test.taintaware.lazybasic.IASString;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -117,6 +118,13 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
 
     public Formatter getFormatter() {
         return new Formatter(this.output, this.locale);
+    }
+
+    public IASStringable toIASString() {
+        if (this.output instanceof IASStringBuilderable) {
+            return ((IASStringBuilderable) this.output).toIASString();
+        }
+        return new IASString(this.output.toString());
     }
 
     private class ParserStateMachine {

@@ -5,7 +5,7 @@ import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 
 public class IASReflectionProxies {
-    private static final TaintStringConfig tsc = new TaintStringConfig(TaintMethod.LAZY_COMPLEX);
+    private static final TaintStringConfig tsc = new TaintStringConfig(TaintMethod.LAZYCOMPLEX);
 
     public static Class<?> classForName(IASString str) throws ClassNotFoundException {
         String s = str.getString();

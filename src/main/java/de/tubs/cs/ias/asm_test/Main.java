@@ -26,7 +26,6 @@ public final class Main implements Callable<Void> {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final int OneKB = 1024;
     private final Instrumenter instrumenter;
-    private static final String defaultTaint = Constants.BOOLEAN_METHOD_NAME;
 
     @CommandLine.Option(
             names = {"-f", "--file"},

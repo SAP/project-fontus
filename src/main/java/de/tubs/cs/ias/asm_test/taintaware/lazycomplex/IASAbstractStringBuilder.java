@@ -24,18 +24,18 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
 
     public IASAbstractStringBuilder(CharSequence seq) {
         IASString str = IASString.valueOf(seq);
-        this.stringBuilder = new StringBuilder();
-        this.append(str);
+        this.stringBuilder = new StringBuilder(seq);
+        this.taintInformation = str.getTaintInformation();
     }
 
     public IASAbstractStringBuilder(IASStringable string) {
-        this.stringBuilder = new StringBuilder();
-        this.append(string);
+        this.stringBuilder = new StringBuilder(string.getString());
+        this.taintInformation = ((IASString) string).getTaintInformation();
     }
 
     public IASAbstractStringBuilder(IASStringBuilderable strb) {
-        this.stringBuilder = new StringBuilder();
-        this.append(strb);
+        this.stringBuilder = new StringBuilder(strb);
+        this.taintInformation = ((IASAbstractStringBuilder) strb).taintInformation;
     }
 
     @Override
@@ -58,7 +58,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
 
     @Override
     public void initialize() {
-        if(this.isUninitialized()) {
+        if (this.isUninitialized()) {
             this.taintInformation = new IASTaintInformation();
         }
     }

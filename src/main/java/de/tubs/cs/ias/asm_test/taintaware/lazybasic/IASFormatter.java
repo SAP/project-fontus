@@ -69,4 +69,19 @@ public class IASFormatter extends IASAbstractFormatter {
     public IASFormatter(IASStringable fileName, IASStringable csn, Locale l) throws FileNotFoundException {
         this(new File(fileName.getString()), csn, l);
     }
+
+    @Override
+    public IASString toIASString() {
+        return (IASString) super.toIASString();
+    }
+
+    @Override
+    public IASFormatter format(IASStringable format, Object... args) {
+        return (IASFormatter) super.format(format, args);
+    }
+
+    @Override
+    public IASFormatter format(Locale l, IASStringable format, Object... args) {
+        return (IASFormatter) super.format(l, format, args);
+    }
 }

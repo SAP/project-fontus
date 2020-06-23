@@ -11,7 +11,7 @@ import java.util.List;
 public class BaseLayer extends IASLayer {
     private final List<IASTaintRange> base;
     public BaseLayer(List<IASTaintRange> base) {
-        super(-1, -1);
+        super(0, 0);
         this.base = Collections.unmodifiableList(base);
     }
 

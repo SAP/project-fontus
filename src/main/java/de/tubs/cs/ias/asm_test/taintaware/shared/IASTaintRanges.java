@@ -270,11 +270,11 @@ public class IASTaintRanges {
     }
 
     public synchronized void removeTaintFor(int start, int end, boolean leftShiftRangesAfterClearedArea) {
-        if (end <= start || start < 0) {
+        if (end < start || start < 0) {
             throw new IllegalArgumentException("start: " + start + ", end: " + end);
         }
 
-        if (ranges.isEmpty()) {
+        if (ranges.isEmpty() || start == end) {
             return;
         }
 

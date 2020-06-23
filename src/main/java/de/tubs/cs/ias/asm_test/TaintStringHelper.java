@@ -92,6 +92,18 @@ public class TaintStringHelper {
         taintAware.setTaint(b);
     }
 
+    public static void setTaint(de.tubs.cs.ias.asm_test.taintaware.lazybasic.IASString taintAware, Boolean b) {
+        taintAware.setTaint(b);
+    }
+
+    public static void setTaint(de.tubs.cs.ias.asm_test.taintaware.lazybasic.IASStringBuilder taintAware, Boolean b) {
+        taintAware.setTaint(b);
+    }
+
+    public static void setTaint(de.tubs.cs.ias.asm_test.taintaware.lazybasic.IASStringBuffer taintAware, Boolean b) {
+        taintAware.setTaint(b);
+    }
+
     public static Boolean isTainted(IASString taintAware) {
         return taintAware.isTainted();
     }
@@ -137,6 +149,18 @@ public class TaintStringHelper {
     }
 
     public static Boolean isTainted(de.tubs.cs.ias.asm_test.taintaware.lazycomplex.IASStringBuilder taintAware) {
+        return taintAware.isTainted();
+    }
+
+    public static Boolean isTainted(de.tubs.cs.ias.asm_test.taintaware.lazybasic.IASString taintAware) {
+        return taintAware.isTainted();
+    }
+
+    public static Boolean isTainted(de.tubs.cs.ias.asm_test.taintaware.lazybasic.IASStringBuffer taintAware) {
+        return taintAware.isTainted();
+    }
+
+    public static Boolean isTainted(de.tubs.cs.ias.asm_test.taintaware.lazybasic.IASStringBuilder taintAware) {
         return taintAware.isTainted();
     }
 }
