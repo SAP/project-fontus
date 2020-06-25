@@ -36,7 +36,7 @@ public class TaintMethodConfig {
         return getTaintMethod().getSubPath();
     }
 
-    private static TaintMethod getTaintMethod() {
+    public static TaintMethod getTaintMethod() {
         if (taintMethod == null) {
             String path = (String) properties.getOrDefault(PATH, "");
             taintMethod = TaintMethod.getTaintMethodByPath(path);
