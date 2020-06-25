@@ -3,8 +3,10 @@ package de.tubs.cs.ias.asm_test.taintaware.array;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 
+import java.util.List;
 import java.util.stream.IntStream;
 
 public final class IASStringBuffer extends IASAbstractStringBuilder {
@@ -349,5 +351,20 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     @Override
     public synchronized boolean isUninitialized() {
         return super.isUninitialized();
+    }
+
+    @Override
+    public synchronized List<IASTaintRange> getTaintRanges() {
+        return super.getTaintRanges();
+    }
+
+    @Override
+    public synchronized boolean isTaintedAt(int index) {
+        return super.isTaintedAt(index);
+    }
+
+    @Override
+    public synchronized void setTaint(List<IASTaintRange> ranges) {
+        super.setTaint(ranges);
     }
 }

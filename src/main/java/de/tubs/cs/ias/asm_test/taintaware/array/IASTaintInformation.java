@@ -191,4 +191,8 @@ public class IASTaintInformation {
         }
         return IASTaintSource.getInstanceById((short) this.taints[position]);
     }
+
+    public boolean isTaintedAt(int index) {
+        return this.taints[index] != 0;
+    }
 }

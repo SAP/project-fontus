@@ -1,5 +1,8 @@
 package de.tubs.cs.ias.asm_test.taintaware.shared;
 
+import de.tubs.cs.ias.asm_test.Constants;
+import de.tubs.cs.ias.asm_test.JdkClassesLookupTable;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -17,22 +20,38 @@ public class IASReflectionMethodProxy {
     }
 
     public static Method getMethodProxied(Class<?> clazz, IASStringable methodName, Class[] parameters) throws NoSuchMethodException {
-        transformParameters(parameters);
-        return clazz.getMethod(methodName.getString(), parameters);
+        parameters = transformParameters(parameters);
+        String methodNameString = transformMethodName(clazz, methodName.getString(), parameters);
+        return clazz.getMethod(methodNameString, parameters);
     }
 
-    private static void transformParameters(Class[] parameters) {
+    private static String transformMethodName(Class<?> clazz, String methodName, Class[] parameters) {
+        boolean isJdk = JdkClassesLookupTable.getInstance().isJdkClass(clazz.getName().replace('.', '/'));
+        if (!isJdk && methodName.equals(Constants.ToString) && (parameters == null || parameters.length == 0)) {
+            return Constants.ToStringInstrumented;
+        }
+        return methodName;
+    }
+
+    private static Class[] transformParameters(Class[] parameters) {
+        if(parameters == null) {
+            return null;
+        }
+
+        Class[] classes = new Class[parameters.length];
         for (int i = 0; i < parameters.length; i++) {
             Class parameter = parameters[i];
             if (isInPackage(parameter)) {
-                parameters[i] = replaceParameter(parameter);
+                classes[i] = replaceParameter(parameter);
             }
         }
+        return classes;
     }
 
     public static Method getDeclaredMethodProxied(Class<?> clazz, IASStringable methodName, Class[] parameters) throws NoSuchMethodException {
-        transformParameters(parameters);
-        return clazz.getDeclaredMethod(methodName.getString(), parameters);
+        parameters = transformParameters(parameters);
+        String methodNameString = transformMethodName(clazz, methodName.getString(), parameters);
+        return clazz.getDeclaredMethod(methodNameString, parameters);
     }
 
     private static Class replaceParameter(Class parameter) {

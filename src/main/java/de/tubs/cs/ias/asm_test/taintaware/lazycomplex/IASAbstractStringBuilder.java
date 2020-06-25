@@ -57,6 +57,15 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
     }
 
     @Override
+    public void setTaint(List<IASTaintRange> ranges) {
+        if (ranges == null || ranges.size() == 0) {
+            this.taintInformation = null;
+        } else {
+            this.taintInformation = new IASTaintInformation(new BaseOperation(ranges));
+        }
+    }
+
+    @Override
     public void initialize() {
         if (this.isUninitialized()) {
             this.taintInformation = new IASTaintInformation();

@@ -535,6 +535,15 @@ public final class IASString implements IASStringable, IASLazyAware {
     }
 
     @Override
+    public void setTaint(List<IASTaintRange> ranges) {
+        if (ranges == null || ranges.size() == 0) {
+            this.taintInformation = null;
+        } else {
+            this.taintInformation = new IASTaintInformation(new BaseLayer(ranges));
+        }
+    }
+
+    @Override
     public boolean isTainted() {
         if (this.taintInformation == null) {
             return false;

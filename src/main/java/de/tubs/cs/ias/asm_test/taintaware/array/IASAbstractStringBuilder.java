@@ -2,8 +2,11 @@ package de.tubs.cs.ias.asm_test.taintaware.array;
 
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.IntStream;
 
 @SuppressWarnings({"unused", "Since15"})
@@ -40,6 +43,32 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     public void initialize() {
         if (isUninitialized()) {
             this.taintInformation = new IASTaintInformation(this.length());
+        }
+    }
+
+    @Override
+    public List<IASTaintRange> getTaintRanges() {
+        if (isUninitialized()) {
+            return new ArrayList<>(0);
+        }
+        return TaintConverter.toTaintRanges(this.taintInformation.getTaints());
+    }
+
+    @Override
+    public boolean isTaintedAt(int index) {
+        if (isUninitialized()) {
+            return false;
+        }
+        return this.taintInformation.isTaintedAt(index);
+    }
+
+    @Override
+    public void setTaint(List<IASTaintRange> ranges) {
+        if (ranges == null || ranges.size() == 0) {
+            this.taintInformation = null;
+        } else {
+            int[] taint = TaintConverter.toTaintArray(this.length(), ranges);
+            this.taintInformation = new IASTaintInformation(taint);
         }
     }
 

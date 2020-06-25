@@ -314,12 +314,12 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
 
     @Override
     public synchronized IntStream chars() {
-        return null;
+        return super.chars();
     }
 
     @Override
     public synchronized IntStream codePoints() {
-        return null;
+        return super.codePoints();
     }
 
     @Override
@@ -333,17 +333,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
-    protected Object clone() throws CloneNotSupportedException {
-        return super.clone();
-    }
-
-    @Override
-    public synchronized String toString() {
-        return super.toString();
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
+    public synchronized void setTaint(List<IASTaintRange> ranges) {
+        super.setTaint(ranges);
     }
 }

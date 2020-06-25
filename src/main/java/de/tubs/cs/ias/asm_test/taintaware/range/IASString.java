@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
+import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations.BaseOperation;
 import de.tubs.cs.ias.asm_test.taintaware.shared.*;
 import de.tubs.cs.ias.asm_test.taintaware.shared.range.IASTaintRangeStringable;
 
@@ -91,7 +92,15 @@ public final class IASString implements IASTaintRangeStringable, IASExtendedTain
         } else {
             this.taintInformation = null;
         }
+    }
 
+    @Override
+    public void setTaint(List<IASTaintRange> ranges) {
+        if (ranges == null || ranges.size() == 0) {
+            this.taintInformation = null;
+        } else {
+            this.taintInformation = new IASTaintInformation(ranges);
+        }
     }
 
     public void initialize() {

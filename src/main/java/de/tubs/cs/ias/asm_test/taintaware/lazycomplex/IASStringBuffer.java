@@ -327,6 +327,11 @@ public class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
+    public synchronized void setTaint(List<IASTaintRange> ranges) {
+        super.setTaint(ranges);
+    }
+
+    @Override
     public synchronized void derive(IASOperation operation, boolean initializeIfNecessary) {
         super.derive(operation, initializeIfNecessary);
     }

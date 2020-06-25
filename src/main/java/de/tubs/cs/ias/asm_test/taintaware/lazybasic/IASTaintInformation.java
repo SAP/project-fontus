@@ -8,6 +8,7 @@ import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 import java.util.*;
 
 public class IASTaintInformation {
+    public static boolean USE_CACHING = true;
     private static final int THRESHOLD = 30;
     private final List<IASLayer> layers;
     private IASTaintInformation previous;
@@ -34,7 +35,7 @@ public class IASTaintInformation {
 
     private void appendLayer(IASLayer layer) {
         if (this.getLayerDepth() >= THRESHOLD) {
-            this.evaluate();
+            this.cache(this.evaluate());
         }
         this.layers.add(layer);
     }
@@ -75,10 +76,16 @@ public class IASTaintInformation {
         for (IASLayer layer : this.layers) {
             previousRanges = layer.apply(previousRanges);
         }
-        this.layers.clear();
-        this.layers.add(new BaseLayer(previousRanges));
-        this.previous = null;
+        if (USE_CACHING) {
+            this.cache(previousRanges);
+        }
         return previousRanges;
+    }
+
+    private void cache(List<IASTaintRange> ranges) {
+        this.layers.clear();
+        this.layers.add(new BaseLayer(ranges));
+        this.previous = null;
     }
 
     public boolean isTainted() {

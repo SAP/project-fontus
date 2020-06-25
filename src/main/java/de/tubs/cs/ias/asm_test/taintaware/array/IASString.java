@@ -1,10 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.array;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringPool;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+import de.tubs.cs.ias.asm_test.taintaware.shared.*;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -96,10 +93,28 @@ public final class IASString implements IASArrayAware, IASStringable {
         }
     }
 
+    @Override
+    public void setTaint(List<IASTaintRange> ranges) {
+        if (ranges == null || ranges.size() == 0) {
+            this.taintInformation = null;
+        } else {
+            int[] taint = TaintConverter.toTaintArray(this.length(), ranges);
+            this.taintInformation = new IASTaintInformation(taint);
+        }
+    }
+
     public void initialize() {
         if (isUninitialized()) {
             this.taintInformation = new IASTaintInformation(this.length());
         }
+    }
+
+    @Override
+    public boolean isTaintedAt(int index) {
+        if (isUninitialized()) {
+            return false;
+        }
+        return this.taintInformation.isTaintedAt(index);
     }
 
     public IASString(String s, IASTaintInformation iasTaintInformation) {
@@ -501,7 +516,7 @@ public final class IASString implements IASArrayAware, IASStringable {
 
     @Override
     public IASTaintSource getTaintFor(int position) {
-        if(isUninitialized()) {
+        if (isUninitialized()) {
             return null;
         }
         return this.taintInformation.getTaintFor(position);
@@ -648,6 +663,14 @@ public final class IASString implements IASArrayAware, IASStringable {
 
     public IASTaintInformation getTaintInformation() {
         return taintInformation;
+    }
+
+    @Override
+    public List<IASTaintRange> getTaintRanges() {
+        if (isUninitialized()) {
+            return Collections.emptyList();
+        }
+        return TaintConverter.toTaintRanges(this.taintInformation.getTaints());
     }
 
     public boolean isUninitialized() {

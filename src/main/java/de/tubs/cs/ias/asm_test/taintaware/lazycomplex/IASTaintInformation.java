@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class IASTaintInformation {
+    public static boolean USE_CACHING = true;
     private String previousString;
     private IASTaintInformation previousInformation;
     private IASOperation operation;
@@ -57,9 +58,14 @@ public class IASTaintInformation {
             if (this.previousInformation != null) {
                 ranges = new ArrayList<>(this.previousInformation.evaluate());
             }
-            this.cache = this.operation.apply(this.previousString, ranges);
-            IASTaintRangeUtils.merge(this.cache);
-            this.cache = Collections.unmodifiableList(this.cache);
+            List<IASTaintRange> cache = this.operation.apply(this.previousString, ranges);
+            IASTaintRangeUtils.merge(cache);
+            cache = Collections.unmodifiableList(cache);
+
+            if(USE_CACHING) {
+                this.cache = cache;
+            }
+            return cache;
 //            this.previousString = null;
 //            this.previousInformation = null;
 //            this.operation = null;
