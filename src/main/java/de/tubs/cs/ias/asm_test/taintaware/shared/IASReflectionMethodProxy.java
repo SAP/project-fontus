@@ -2,6 +2,7 @@ package de.tubs.cs.ias.asm_test.taintaware.shared;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.JdkClassesLookupTable;
+import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
@@ -27,14 +28,21 @@ public class IASReflectionMethodProxy {
 
     private static String transformMethodName(Class<?> clazz, String methodName, Class[] parameters) {
         boolean isJdk = JdkClassesLookupTable.getInstance().isJdkClass(clazz.getName().replace('.', '/'));
-        if (!isJdk && methodName.equals(Constants.ToString) && (parameters == null || parameters.length == 0)) {
+        boolean isToString = methodName.equals(Constants.ToString) && (parameters == null || parameters.length == 0);
+        boolean isTaintAware = IASTaintAware.class.isAssignableFrom(clazz);
+
+
+        if (!isJdk && !isInPackage(clazz) && isToString) {
             return Constants.ToStringInstrumented;
+        } else if (isTaintAware && isToString) {
+            return Constants.TO_TSTRING;
         }
+
         return methodName;
     }
 
     private static Class[] transformParameters(Class[] parameters) {
-        if(parameters == null) {
+        if (parameters == null) {
             return null;
         }
 
@@ -43,6 +51,8 @@ public class IASReflectionMethodProxy {
             Class parameter = parameters[i];
             if (isInPackage(parameter)) {
                 classes[i] = replaceParameter(parameter);
+            } else {
+                classes[i] = parameter;
             }
         }
         return classes;
@@ -72,7 +82,7 @@ public class IASReflectionMethodProxy {
         return parameter.getName().endsWith("." + name);
     }
 
-    private static boolean isInPackage(Class parameter) {
-        return parameter.getName().startsWith(packageName);
+    private static boolean isInPackage(Class clazz) {
+        return clazz.getName().startsWith(packageName);
     }
 }
