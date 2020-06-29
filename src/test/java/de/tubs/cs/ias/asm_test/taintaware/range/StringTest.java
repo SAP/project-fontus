@@ -34,6 +34,56 @@ public class StringTest {
         this.bar = new IASString("bar");
     }
 
+    @Test
+    public void replaceRegression1() {
+        IASString source = new IASString("Hello, Hello, Hello");
+        IASString target = new IASString("Hello");
+        IASString replacement = new IASString("World");
+
+        IASString result = source.replace(target, replacement);
+
+        assertEquals("World, World, World", result.getString());
+        assertFalse(result.isTainted());
+    }
+
+    @Test
+    public void replaceRegression2() {
+        IASString source = new IASString("Hello, Hello, Hello", true);
+        IASString target = new IASString("Hello");
+        IASString replacement = new IASString("World");
+
+        IASString result = source.replace(target, replacement);
+
+        assertEquals("World, World, World", result.getString());
+        assertTrue(result.isTainted());
+    }
+
+    @Test
+    public void replaceRegression3() {
+        IASString source = new IASString("Hello, Hello, Hello");
+        IASString target = new IASString("Hello", true);
+        IASString replacement = new IASString("World");
+
+        IASString result = source.replace(target, replacement);
+
+        assertEquals("World, World, World", result.getString());
+        assertFalse(result.isTainted());
+    }
+
+    @Test
+    public void replaceRegression4() {
+        IASString source = new IASString("Hello, Hello, Hello");
+        IASString target = new IASString("Hello");
+        IASString replacement = new IASString("World", true);
+
+        IASString result = source.replace(target, replacement);
+
+        assertEquals("World, World, World", result.getString());
+        assertTrue(result.isTainted());
+    }
+
+
+
 //    @Test
 //    public void constructor_fromOtherString() {
 //        IASString s = new IASString(new char[]{'f', 'o', 'o'});

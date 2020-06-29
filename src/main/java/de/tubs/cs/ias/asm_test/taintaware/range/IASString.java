@@ -435,16 +435,28 @@ public final class IASString implements IASTaintRangeStringable, IASExtendedTain
     }
 
     public IASString replace(CharSequence target, CharSequence replacement) {
-        int start = this.str.indexOf(target.toString());
-        if (start < 0) {
-            return this;
+        IASString replString = IASString.valueOf(replacement);
+
+        if (!this.isTainted() && !replString.isTainted()) {
+            return new IASString(this.str.replace(target, replacement));
         }
-        IASString beginStr = this.substring(0, start);
 
-        int end = start + target.length();
-        IASString endStr = this.substring(end).replace(target, replacement);
+        IASStringBuilder builder = new IASStringBuilder();
 
-        return beginStr.concat(IASString.valueOf(replacement)).concat(endStr);
+        int end = 0;
+        int start = 0;
+        for (start = this.str.indexOf(target.toString()); start >= 0; start = this.str.indexOf(target.toString(), start + 1)) {
+            IASString beginStr = this.substring(end, start);
+            builder.append(beginStr);
+            end = start + target.length();
+            builder.append(replString);
+        }
+
+        if (end < this.length()) {
+            builder.append(this.substring(end));
+        }
+
+        return builder.toIASString();
     }
 
     // TODO: this propagates the taint for the whole string
