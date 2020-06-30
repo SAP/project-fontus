@@ -510,7 +510,7 @@ class TestRunner:
             "java",
             "-cp",
             '{}:{}'.format(format_jar_filename(
-                "util", self._config.version), name),
+                "asm_test", self._config.version), name),
             entry_point
         ] + additional_arguments
         return await run_command(cwd, arguments, input_file)
@@ -562,7 +562,7 @@ class TestRunner:
             "java",
             "-classpath",
             '.:{}'.format(format_jar_filename(
-                "util", self._config.version)),
+                "asm_test", self._config.version)),
             name
         ] + additional_arguments
         return await run_command(cwd, arguments)
