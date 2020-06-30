@@ -81,7 +81,10 @@ public final class IASMatcher {
     }
 
     public IASString group(int group) {
-        return this.input.substring(this.start(group), this.end(group));
+        int start = this.start(group);
+        int end = this.end(group);
+        if(start == -1 || end == -1) { return null; }
+        return this.input.substring(start, end);
     }
 
     public IASString group(IASStringable name) {
