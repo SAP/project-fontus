@@ -26,6 +26,34 @@ public class Configuration {
     @JsonIgnore
     private TaintStringConfig taintStringConfig;
 
+    private boolean useCaching;
+
+    private int layerThreshold;
+
+    public static boolean defaultUseCaching() {
+        return true;
+    }
+
+    public static int defaultLayerThreshold() {
+        return 30;
+    }
+
+    public boolean useCaching() {
+        return useCaching;
+    }
+
+    public void setUseCaching(boolean useCaching) {
+        this.useCaching = useCaching;
+    }
+
+    public int getLayerThreshold() {
+        return layerThreshold;
+    }
+
+    public void setLayerThreshold(int layerThreshold) {
+        this.layerThreshold = layerThreshold;
+    }
+
     public Configuration() {
         this.verbose = false;
         this.sourceConfig = new SourceConfig();

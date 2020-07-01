@@ -10,9 +10,14 @@ import java.lang.invoke.MethodHandles;
 
 public class TaintAgent {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static Configuration configuration;
 
     public static void premain(String args, Instrumentation inst) {
-        Configuration c = AgentConfig.parseConfig(args);
-        inst.addTransformer(new TaintingTransformer(c));
+        configuration = AgentConfig.parseConfig(args);
+        inst.addTransformer(new TaintingTransformer(configuration));
+    }
+
+    public static Configuration getConfiguration() {
+        return configuration;
     }
 }
