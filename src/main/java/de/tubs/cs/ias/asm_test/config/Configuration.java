@@ -30,12 +30,22 @@ public class Configuration {
 
     private int layerThreshold;
 
+    private boolean countRanges;
+
     public static boolean defaultUseCaching() {
         return true;
     }
 
     public static int defaultLayerThreshold() {
         return 30;
+    }
+
+    public static boolean defaultCountRanges() {
+        return false;
+    }
+
+    public void setCountRanges(boolean countRanges) {
+        this.countRanges = countRanges;
     }
 
     public boolean useCaching() {
@@ -227,5 +237,9 @@ public class Configuration {
 
     public TaintMethod getTaintMethod() {
         return this.taintMethod;
+    }
+
+    public boolean countRanges() {
+        return this.countRanges;
     }
 }

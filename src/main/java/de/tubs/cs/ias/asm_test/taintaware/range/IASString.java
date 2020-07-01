@@ -1,5 +1,8 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
+import de.tubs.cs.ias.asm_test.Statistics;
+import de.tubs.cs.ias.asm_test.agent.TaintAgent;
+import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations.BaseOperation;
 import de.tubs.cs.ias.asm_test.taintaware.shared.*;
@@ -20,6 +23,9 @@ public final class IASString implements IASTaintRangeStringable, IASExtendedTain
 
     public IASString() {
         this.str = "";
+        if (TaintAgent.getConfiguration().countRanges()) {
+            Statistics.INSTANCE.addRangeCount(0);
+        }
     }
 
     public IASString(String s) {
@@ -27,32 +33,50 @@ public final class IASString implements IASTaintRangeStringable, IASExtendedTain
             throw new IllegalArgumentException("String cannot be null");
         }
         this.str = s;
+        if (TaintAgent.getConfiguration().countRanges()) {
+            Statistics.INSTANCE.addRangeCount(0);
+        }
     }
 
     public IASString(String s, boolean tainted) {
         this(s);
         setTaint(tainted);
+        if (TaintAgent.getConfiguration().countRanges()) {
+            Statistics.INSTANCE.addRangeCount(1);
+        }
     }
 
     public IASString(IASStringable s) {
         this.str = s.getString();
         this.taintInformation = new IASTaintInformation(((IASString) s).getTaintRanges());
+        if (TaintAgent.getConfiguration().countRanges()) {
+            Statistics.INSTANCE.addRangeCount(this.taintInformation.getAllRanges().size());
+        }
     }
 
     public IASString(IASStringBuilderable strb) {
         IASString s = (IASString) strb.toIASString();
         this.str = s.getString();
         this.taintInformation = new IASTaintInformation(s.getTaintRanges());
+        if (TaintAgent.getConfiguration().countRanges()) {
+            Statistics.INSTANCE.addRangeCount(this.taintInformation.getAllRanges().size());
+        }
     }
 
     public IASString(String s, List<IASTaintRange> ranges) {
         this(s);
         this.appendRangesFrom(ranges);
+        if (TaintAgent.getConfiguration().countRanges()) {
+            Statistics.INSTANCE.addRangeCount(ranges.size());
+        }
     }
 
     public IASString(CharSequence sequence, List<IASTaintRange> ranges) {
         this(sequence.toString());
         this.appendRangesFrom(ranges);
+        if (TaintAgent.getConfiguration().countRanges()) {
+            Statistics.INSTANCE.addRangeCount(ranges.size());
+        }
     }
 
     @Override
@@ -187,18 +211,15 @@ public final class IASString implements IASTaintRangeStringable, IASExtendedTain
     }
 
     public IASString(IASStringBuilder builder) {
-        this(builder.toString());
-        this.appendRangesFrom(builder.getTaintInformation());
+        this(builder.toString(), builder.getAllRanges());
     }
 
     public IASString(IASStringBuffer buffer) {
-        this(buffer.toString());
-        this.appendRangesFrom(buffer.getTaintInformation());
+        this(buffer.toString(), buffer.getAllRanges());
     }
 
     public IASString(IASString string) {
-        this(string.str);
-        this.appendRangesFrom(string.getTaintInformation());
+        this(string.str, string.getTaintInformation());
     }
 
     /**
@@ -209,8 +230,7 @@ public final class IASString implements IASTaintRangeStringable, IASExtendedTain
      * @param tainted
      */
     private IASString(CharSequence cs, boolean tainted) {
-        this(cs.toString());
-        this.setTaint(tainted);
+        this(cs.toString(), tainted);
     }
 
     public int length() {
