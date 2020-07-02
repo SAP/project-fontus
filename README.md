@@ -61,12 +61,12 @@ java -jar your-application.jar -javaagent:asm_test-0.0.1-SNAPSHOT.jar
 
 ### Parameters
 It is also possible to pass multiple parameters to the agent
-- *taintmethod*: Specifying the used taint method. For all options see [Available Tainting Methods](#Available Tainting Methods). The default is *boolean*
-- *use_caching*: Possible values: *true* or *false*. Default is true. Enables/Disables caching of taint evaluation results for lazy tainting methods
-- *layer_threshold*: Specifies a maximum depth of layers for lazybasic tainting. If this threshold is exceeded the taint is calculated and new layers will be stacked on top again. Default value is *30*. If caching is disabled, the threshold is also disabled.
-- *count_ranges*: Possible values: *true* or *false*. Default is false. If this option is enabled, the number of taint ranges per created string is saved and every 100 created strings statistics will be printed out in stdout. This only applies if taintmethod *range* is used.
-- *config*: Specifies a path for a config file
-- *blacklisted_main_classes*: Specifies a filepath to a file which contains blacklisted main classes
+- **taintmethod**: Specifying the used taint method. For all options see [Available Tainting Methods](#Available Tainting Methods). The default is *boolean*
+- **use_caching**: Possible values: *true* or *false*. Default is true. Enables/Disables caching of taint evaluation results for lazy tainting methods
+- **layer_threshold**: Specifies a maximum depth of layers for lazybasic tainting. If this threshold is exceeded the taint is calculated and new layers will be stacked on top again. Default value is *30*. If caching is disabled, the threshold is also disabled.
+- **count_ranges**: Possible values: *true* or *false*. Default is false. If this option is enabled, the number of taint ranges per created string is saved and every 100 created strings statistics will be printed out in stdout. This only applies if taintmethod *range* is used.
+- **config**: Specifies a path for a config file
+- **blacklisted_main_classes**: Specifies a filepath to a file which contains blacklisted main classes
 
 The arguments are appended to the agent path like this: ``-javaagent:jarpath[=options]``. Therefore options are defined as ``key=value`` pair and ``;`` is used as delimiter between key-value-pairs.
 

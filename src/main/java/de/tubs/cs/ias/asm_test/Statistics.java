@@ -1,49 +1,46 @@
 package de.tubs.cs.ias.asm_test;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public enum Statistics {
     INSTANCE;
 
-    private final List<Integer> rangeCount;
+    private static final int PRINT_INTERVAL = 1000;
+
+    private long stringCount;
+    private long taintRangeSum;
+    private long untaintedStringCount;
 
     Statistics() {
-        rangeCount = new ArrayList<>();
     }
 
-    public void addRangeCount(int rangeCount) {
-        this.rangeCount.add(rangeCount);
-        if (this.rangeCount.size() % 100 == 0) {
+    public synchronized void addRangeCount(int rangeCount) {
+        stringCount++;
+        taintRangeSum += rangeCount;
+        if (rangeCount == 0) {
+            untaintedStringCount++;
+        }
+        if (stringCount % PRINT_INTERVAL == 0) {
             printStatistics();
         }
     }
 
-    public double getRangeCountAverage() {
-        return rangeCount.stream().mapToInt(Integer::intValue).average().orElse(0);
+    public synchronized double getRangeCountAverage() {
+        return ((double) taintRangeSum) / stringCount;
     }
 
-    public double getZeroTaintRangeShare() {
-        return ((double) rangeCount.stream().filter(integer -> integer == 0).count()) / rangeCount.size();
+    public synchronized double getZeroTaintRangeShare() {
+        return ((double) untaintedStringCount) / stringCount;
     }
 
-    public double getRangeCountMedian() {
-        rangeCount.sort(Integer::compareTo);
-        if (rangeCount.size() == 0) {
-            return 0;
-        }
-        return rangeCount.get(rangeCount.size() / 2);
-    }
-
-    public void printStatistics() {
+    public synchronized void printStatistics() {
         System.out.println(String.format(
                 "Total IASString count: %d\n" +
+                        "Untainted IASString count %d\n" +
                         "Share of IASStrings with zero taint ranges: %f\n" +
-                        "Average number of taint ranges per String: %f\n" +
-                        "Median number of taint ranges per String: %f",
-                rangeCount.size(),
+                        "Average number of taint ranges per String: %f\n",
+                stringCount,
+                untaintedStringCount,
                 getZeroTaintRangeShare(),
-                getRangeCountAverage(),
-                getRangeCountMedian()));
+                getRangeCountAverage()
+        ));
     }
 }
