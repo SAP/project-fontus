@@ -26,11 +26,11 @@ public class Configuration {
     @JsonIgnore
     private TaintStringConfig taintStringConfig;
 
-    private boolean useCaching;
+    private boolean useCaching = defaultUseCaching();
 
-    private int layerThreshold;
+    private int layerThreshold = defaultLayerThreshold();
 
-    private boolean countRanges;
+    private boolean countRanges = defaultCountRanges();
 
     public static boolean defaultUseCaching() {
         return true;
