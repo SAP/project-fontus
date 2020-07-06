@@ -12,19 +12,18 @@ import java.util.stream.Stream;
 
 @SuppressWarnings("ALL")
 public final class IASString implements IASArrayAware, IASStringable {
-
-    private String str;
+    private String string;
     private IASTaintInformation taintInformation;
 
     public IASString() {
-        this.str = "";
+        this.string = "";
     }
 
     public IASString(String s) {
         if (s == null) {
             throw new IllegalArgumentException("String cannot be null");
         }
-        this.str = s;
+        this.string = s;
     }
 
     public IASString(String s, boolean tainted) {
@@ -87,7 +86,7 @@ public final class IASString implements IASArrayAware, IASStringable {
             if (isUninitialized()) {
                 this.initialize();
             }
-            this.taintInformation.setTaint(0, this.str.length(), source);
+            this.taintInformation.setTaint(0, this.string.length(), source);
         } else {
             this.taintInformation = null;
         }
@@ -190,7 +189,7 @@ public final class IASString implements IASArrayAware, IASStringable {
     }
 
     public IASString(IASString string) {
-        this(string.str);
+        this(string.string);
         if (string.isInitialized()) {
             this.taintInformation = string.taintInformation.clone();
         }
@@ -209,139 +208,139 @@ public final class IASString implements IASArrayAware, IASStringable {
     }
 
     public int length() {
-        return this.str.length();
+        return this.string.length();
     }
 
     public boolean isEmpty() {
-        return this.str.isEmpty();
+        return this.string.isEmpty();
     }
 
     public char charAt(int index) {
-        return this.str.charAt(index);
+        return this.string.charAt(index);
     }
 
     public int codePointAt(int index) {
-        return this.str.codePointAt(index);
+        return this.string.codePointAt(index);
     }
 
     public int codePointBefore(int index) {
-        return this.str.codePointBefore(index);
+        return this.string.codePointBefore(index);
     }
 
     public int codePointCount(int beginIndex, int endIndex) {
-        return this.str.codePointCount(beginIndex, endIndex);
+        return this.string.codePointCount(beginIndex, endIndex);
     }
 
     public int offsetByCodePoints(int index, int codePointOffset) {
-        return this.str.offsetByCodePoints(index, codePointOffset);
+        return this.string.offsetByCodePoints(index, codePointOffset);
     }
 
     public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {
-        this.str.getChars(srcBegin, srcEnd, dst, dstBegin);
+        this.string.getChars(srcBegin, srcEnd, dst, dstBegin);
     }
 
     public void getBytes(int srcBegin, int srcEnd, byte dst[], int dstBegin) {
-        this.str.getBytes(srcBegin, srcEnd, dst, dstBegin);
+        this.string.getBytes(srcBegin, srcEnd, dst, dstBegin);
     }
 
     public byte[] getBytes(IASStringable charsetName) throws UnsupportedEncodingException {
-        return this.str.getBytes(charsetName.getString());
+        return this.string.getBytes(charsetName.getString());
     }
 
     public byte[] getBytes(Charset charset) {
-        return this.str.getBytes(charset);
+        return this.string.getBytes(charset);
     }
 
     public byte[] getBytes() {
-        return this.str.getBytes();
+        return this.string.getBytes();
     }
 
     public boolean equals(Object anObject) {
         if (!(anObject instanceof IASString)) return false;
         IASString other = (IASString) anObject;
-        return this.str.equals(other.str);
+        return this.string.equals(other.string);
     }
 
     public boolean contentEquals(IASStringBuilderable sb) {
-        return this.str.contentEquals(sb);
+        return this.string.contentEquals(sb);
     }
 
     public boolean contentEquals(StringBuffer sb) {
-        return this.str.contentEquals(sb);
+        return this.string.contentEquals(sb);
     }
 
     public boolean contentEquals(CharSequence cs) {
-        return this.str.contentEquals(cs);
+        return this.string.contentEquals(cs);
     }
 
     public boolean equalsIgnoreCase(IASStringable anotherString) {
-        return this.str.equalsIgnoreCase(anotherString.getString());
+        return this.string.equalsIgnoreCase(anotherString.getString());
     }
 
     @Override
     public int compareTo(IASStringable anotherString) {
-        return this.str.compareTo(anotherString.getString());
+        return this.string.compareTo(anotherString.getString());
     }
 
     public int compareToIgnoreCase(IASStringable str) {
-        return this.str.compareToIgnoreCase(str.getString());
+        return this.string.compareToIgnoreCase(str.getString());
     }
 
     public boolean regionMatches(int toffset, IASStringable other, int ooffset, int len) {
-        return this.str.regionMatches(toffset, other.getString(), ooffset, len);
+        return this.string.regionMatches(toffset, other.getString(), ooffset, len);
     }
 
     public boolean regionMatches(boolean ignoreCase, int toffset, IASStringable other, int ooffset, int len) {
-        return this.str.regionMatches(ignoreCase, toffset, other.getString(), ooffset, len);
+        return this.string.regionMatches(ignoreCase, toffset, other.getString(), ooffset, len);
     }
 
     public boolean startsWith(IASStringable prefix, int toffset) {
-        return this.str.startsWith(prefix.getString(), toffset);
+        return this.string.startsWith(prefix.getString(), toffset);
     }
 
     public boolean startsWith(IASStringable prefix) {
-        return this.str.startsWith(prefix.getString());
+        return this.string.startsWith(prefix.getString());
     }
 
     public boolean endsWith(IASStringable suffix) {
-        return this.str.endsWith(suffix.getString());
+        return this.string.endsWith(suffix.getString());
     }
 
     //TODO: sound?
     public int hashCode() {
-        return this.str.hashCode();
+        return this.string.hashCode();
     }
 
     public int indexOf(int ch) {
-        return this.str.indexOf(ch);
+        return this.string.indexOf(ch);
     }
 
     public int indexOf(int ch, int fromIndex) {
-        return this.str.indexOf(ch, fromIndex);
+        return this.string.indexOf(ch, fromIndex);
     }
 
     public int lastIndexOf(int ch) {
-        return this.str.lastIndexOf(ch);
+        return this.string.lastIndexOf(ch);
     }
 
     public int lastIndexOf(int ch, int fromIndex) {
-        return this.str.lastIndexOf(ch, fromIndex);
+        return this.string.lastIndexOf(ch, fromIndex);
     }
 
     public int indexOf(IASStringable str) {
-        return this.str.indexOf(str.getString());
+        return this.string.indexOf(str.getString());
     }
 
     public int indexOf(IASStringable str, int fromIndex) {
-        return this.str.indexOf(str.getString(), fromIndex);
+        return this.string.indexOf(str.getString(), fromIndex);
     }
 
     public int lastIndexOf(IASStringable str) {
-        return this.str.lastIndexOf(str.getString());
+        return this.string.lastIndexOf(str.getString());
     }
 
     public int lastIndexOf(IASStringable str, int fromIndex) {
-        return this.str.lastIndexOf(str.getString(), fromIndex);
+        return this.string.lastIndexOf(str.getString(), fromIndex);
     }
 
     private int[] getSubstringTaint(int beginIndex, int endIndex) {
@@ -353,7 +352,7 @@ public final class IASString implements IASArrayAware, IASStringable {
 
     public IASString substring(int beginIndex) {
         int[] taints = this.getSubstringTaint(beginIndex, this.length());
-        return new IASString(this.str.substring(beginIndex), taints);
+        return new IASString(this.string.substring(beginIndex), taints);
     }
 
     public IASString substring(int beginIndex, int endIndex) {
@@ -365,12 +364,12 @@ public final class IASString implements IASArrayAware, IASStringable {
             return new IASString();
         }
         int[] taints = this.getSubstringTaint(beginIndex, endIndex);
-        return new IASString(this.str.substring(beginIndex, endIndex), taints);
+        return new IASString(this.string.substring(beginIndex, endIndex), taints);
     }
 
     public CharSequence subSequence(int beginIndex, int endIndex) {
         int[] taints = this.getSubstringTaint(beginIndex, endIndex);
-        return new IASString(this.str.subSequence(beginIndex, endIndex), taints);
+        return new IASString(this.string.subSequence(beginIndex, endIndex), taints);
     }
 
     public IASString concat(IASStringable str) {
@@ -379,7 +378,7 @@ public final class IASString implements IASArrayAware, IASStringable {
         int[] newTaint = new int[firstTaint.length + secondTaint.length];
         System.arraycopy(firstTaint, 0, newTaint, 0, firstTaint.length);
         System.arraycopy(secondTaint, 0, newTaint, firstTaint.length, secondTaint.length);
-        IASString newStr = new IASString(this.str.concat(str.getString()), newTaint);
+        IASString newStr = new IASString(this.string.concat(str.getString()), newTaint);
         return newStr;
     }
 
@@ -392,15 +391,15 @@ public final class IASString implements IASArrayAware, IASStringable {
      * @return
      */
     public IASString replace(char oldChar, char newChar) {
-        return new IASString(this.str.replace(oldChar, newChar), getTaints());
+        return new IASString(this.string.replace(oldChar, newChar), getTaints());
     }
 
     public boolean matches(IASStringable regex) {
-        return this.str.matches(regex.getString());
+        return this.string.matches(regex.getString());
     }
 
     public boolean contains(CharSequence s) {
-        return this.str.contains(s);
+        return this.string.contains(s);
     }
 
     public IASString replaceFirst(IASStringable regex, IASStringable replacement) {
@@ -412,7 +411,7 @@ public final class IASString implements IASArrayAware, IASStringable {
     }
 
     public IASString replace(CharSequence target, CharSequence replacement) {
-        int start = this.str.indexOf(target.toString());
+        int start = this.string.indexOf(target.toString());
         if (start < 0) {
             return this;
         }
@@ -462,52 +461,52 @@ public final class IASString implements IASArrayAware, IASStringable {
     }
 
     public IASString toLowerCase(Locale locale) {
-        return new IASString(this.str.toLowerCase(locale), this.getTaints());
+        return new IASString(this.string.toLowerCase(locale), this.getTaints());
     }
 
     public IASString toLowerCase() {
-        return new IASString(this.str.toLowerCase(), this.getTaints());
+        return new IASString(this.string.toLowerCase(), this.getTaints());
     }
 
     public IASString toUpperCase(Locale locale) {
-        return new IASString(this.str.toUpperCase(locale), this.getTaints());
+        return new IASString(this.string.toUpperCase(locale), this.getTaints());
     }
 
     public IASString toUpperCase() {
-        return new IASString(this.str.toUpperCase(), this.getTaints());
+        return new IASString(this.string.toUpperCase(), this.getTaints());
     }
 
     public IASString trim() {
-        String newStr = this.str.trim();
-        int start = this.str.indexOf(newStr);
+        String newStr = this.string.trim();
+        int start = this.string.indexOf(newStr);
         int end = start + newStr.length();
         return this.substring(start, end);
     }
 
     /* JDK 11 BEGIN */
     public IASString strip() {
-        String newStr = this.str.strip();
-        int start = this.str.indexOf(newStr);
+        String newStr = this.string.strip();
+        int start = this.string.indexOf(newStr);
         int end = start + newStr.length();
         return this.substring(start, end);
     }
 
     public IASString stripLeading() {
-        String newStr = this.str.stripLeading();
-        int start = this.str.indexOf(newStr);
+        String newStr = this.string.stripLeading();
+        int start = this.string.indexOf(newStr);
         int end = start + newStr.length();
         return this.substring(start, end);
     }
 
     public IASString stripTrailing() {
-        String newStr = this.str.stripTrailing();
-        int start = this.str.indexOf(newStr);
+        String newStr = this.string.stripTrailing();
+        int start = this.string.indexOf(newStr);
         int end = start + newStr.length();
         return this.substring(start, end);
     }
 
     public boolean isBlank() {
-        return this.str.isBlank();
+        return this.string.isBlank();
     }
 
     public Stream<IASStringable> lines() {
@@ -533,7 +532,7 @@ public final class IASString implements IASArrayAware, IASStringable {
 
     //TODO: sound?
     public String toString() {
-        return this.str.toString();
+        return this.string.toString();
     }
 
     public IASString toIASString() {
@@ -541,15 +540,15 @@ public final class IASString implements IASArrayAware, IASStringable {
     }
 
     public IntStream chars() {
-        return this.str.chars();
+        return this.string.chars();
     }
 
     public IntStream codePoints() {
-        return this.str.codePoints();
+        return this.string.codePoints();
     }
 
     public char[] toCharArray() {
-        return this.str.toCharArray();
+        return this.string.toCharArray();
     }
 
     private static boolean isTainted(Object[] args) {
@@ -639,7 +638,7 @@ public final class IASString implements IASArrayAware, IASStringable {
     }
 
     public IASString intern() {
-        this.str = this.str.intern();
+        this.string = this.string.intern();
         return (IASString) IASStringPool.intern(this);
     }
 
@@ -654,11 +653,11 @@ public final class IASString implements IASArrayAware, IASStringable {
         if (str == null) {
             return null;
         }
-        return str.str;
+        return str.string;
     }
 
     public String getString() {
-        return this.str;
+        return this.string;
     }
 
     public IASTaintInformation getTaintInformation() {
@@ -683,7 +682,7 @@ public final class IASString implements IASArrayAware, IASStringable {
 
     public void abortIfTainted() {
         if (this.isTainted()) {
-            System.err.printf("String %s is tainted!\nAborting..!\n", this.str);
+            System.err.printf("String %s is tainted!\nAborting..!\n", this.string);
             System.exit(1);
         }
     }

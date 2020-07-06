@@ -18,6 +18,10 @@ public class TaintAgent {
     }
 
     public static Configuration getConfiguration() {
+        // TODO Temporary fix for offline instrumentation
+        if (configuration == null) {
+            return new Configuration();
+        }
         return configuration;
     }
 }

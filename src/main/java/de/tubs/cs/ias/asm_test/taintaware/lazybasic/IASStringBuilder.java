@@ -248,8 +248,8 @@ public final class IASStringBuilder extends IASAbstractStringBuilder{
     }
 
     @Override
-    public StringBuilder getBuilder() {
-        return super.getBuilder();
+    public StringBuilder getStringBuilder() {
+        return super.getStringBuilder();
     }
 
     @Override

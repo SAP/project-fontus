@@ -33,14 +33,14 @@ public class IASMatcher {
     }
 
     public IASMatcher appendReplacement(IASStringBuffer sb, IASStringable replacement) {
-        matcher.appendReplacement(sb.getBuilder(), replacement.getString());
+        matcher.appendReplacement(sb.getStringBuilder(), replacement.getString());
         boolean tainted = sb.isTainted() || replacement.isTainted() || input.isTainted();
         sb.setTaint(tainted);
         return this;
     }
 
     public IASStringBuffer appendTail(IASStringBuffer sb) {
-        matcher.appendTail(sb.getBuilder());
+        matcher.appendTail(sb.getStringBuilder());
         boolean tainted = sb.isTainted() || input.isTainted();
         sb.setTaint(tainted);
         return sb;

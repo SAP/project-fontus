@@ -12,7 +12,6 @@ public class TaintInformationTest {
 
         ti.setTaint(0, 5, 1);
 
-        assertTrue(ti.isInitialized());
         assertTrue(ti.isTainted());
         assertArrayEquals(new int[]{1, 1, 1, 1, 1}, ti.getTaints());
     }
@@ -23,7 +22,6 @@ public class TaintInformationTest {
 
         ti.setTaint(1, 4, 1);
 
-        assertTrue(ti.isInitialized());
         assertTrue(ti.isTainted());
         assertArrayEquals(new int[]{0, 1, 1, 1, 0}, ti.getTaints());
     }
@@ -34,7 +32,6 @@ public class TaintInformationTest {
 
         ti.setTaint(0, 5, 1);
 
-        assertTrue(ti.isInitialized());
         assertTrue(ti.isTainted());
         assertArrayEquals(new int[]{1, 1, 1, 1, 1}, ti.getTaints());
     }
@@ -45,7 +42,6 @@ public class TaintInformationTest {
 
         ti.setTaint(1, 4, 1);
 
-        assertTrue(ti.isInitialized());
         assertTrue(ti.isTainted());
         assertArrayEquals(new int[]{0, 1, 1, 1}, ti.getTaints());
     }
@@ -56,7 +52,6 @@ public class TaintInformationTest {
 
         ti.setTaint(0, 5, 1);
 
-        assertTrue(ti.isInitialized());
         assertTrue(ti.isTainted());
         assertArrayEquals(new int[]{1, 1, 1, 1, 1}, ti.getTaints());
     }
@@ -67,7 +62,6 @@ public class TaintInformationTest {
 
         ti.setTaint(1, 4, 1);
 
-        assertTrue(ti.isInitialized());
         assertTrue(ti.isTainted());
         assertArrayEquals(new int[]{0, 1, 1, 1}, ti.getTaints());
     }
@@ -78,7 +72,6 @@ public class TaintInformationTest {
 
         ti.setTaint(0, 5, 1);
 
-        assertTrue(ti.isInitialized());
         assertTrue(ti.isTainted());
         assertArrayEquals(new int[]{1, 1, 1, 1, 1}, ti.getTaints());
     }
@@ -89,7 +82,6 @@ public class TaintInformationTest {
 
         ti.setTaint(1, 4, 1);
 
-        assertTrue(ti.isInitialized());
         assertTrue(ti.isTainted());
         assertArrayEquals(new int[]{2, 1, 1, 1, 2}, ti.getTaints());
     }
@@ -154,7 +146,6 @@ public class TaintInformationTest {
 
         ti.resize(5);
 
-        assertTrue(ti.isUninitialized());
         assertEquals(5, ti.getLength());
     }
 
@@ -164,7 +155,6 @@ public class TaintInformationTest {
 
         ti.resize(5);
 
-        assertTrue(ti.isUninitialized());
         assertEquals(5, ti.getLength());
     }
 
@@ -174,7 +164,6 @@ public class TaintInformationTest {
 
         ti.resize(5);
 
-        assertTrue(ti.isInitialized());
         assertEquals(5, ti.getLength());
         assertArrayEquals(new int[]{0, 0, 0, 0, 0}, ti.getTaints());
     }
@@ -185,7 +174,6 @@ public class TaintInformationTest {
 
         ti.resize(5);
 
-        assertTrue(ti.isInitialized());
         assertEquals(5, ti.getLength());
         assertArrayEquals(new int[]{1, 2, 0, 0, 0}, ti.getTaints());
     }
@@ -196,7 +184,6 @@ public class TaintInformationTest {
 
         ti.resize(2);
 
-        assertTrue(ti.isInitialized());
         assertEquals(2, ti.getLength());
         assertArrayEquals(new int[]{1, 2}, ti.getTaints());
     }
@@ -207,7 +194,6 @@ public class TaintInformationTest {
 
         ti.resize(2);
 
-        assertTrue(ti.isUninitialized());
         assertEquals(2, ti.getLength());
     }
 
@@ -218,7 +204,6 @@ public class TaintInformationTest {
         ti.removeAll();
 
         assertFalse(ti.isTainted());
-        assertTrue(ti.isUninitialized());
     }
 
     @Test
@@ -228,7 +213,6 @@ public class TaintInformationTest {
         ti.removeAll();
 
         assertFalse(ti.isTainted());
-        assertTrue(ti.isUninitialized());
     }
 
     @Test
@@ -238,7 +222,6 @@ public class TaintInformationTest {
         ti.removeAll();
 
         assertFalse(ti.isTainted());
-        assertTrue(ti.isUninitialized());
     }
 
     @Test
@@ -292,7 +275,7 @@ public class TaintInformationTest {
 
         ti.removeTaintFor(1, 4, false);
 
-        assertTrue(ti.isUninitialized());
+        assertFalse(ti.isTainted());
     }
 
     @Test
@@ -301,7 +284,7 @@ public class TaintInformationTest {
 
         ti.removeTaintFor(1, 4, true);
 
-        assertTrue(ti.isUninitialized());
+        assertFalse(ti.isTainted());
     }
 
     @Test

@@ -205,7 +205,7 @@ public final class IASString implements IASStringable, IASLazyAware {
 
     @Override
     public boolean contentEquals(IASStringBuilderable sb) {
-        return this.string.contentEquals(sb.getBuilder());
+        return this.string.contentEquals(sb.getStringBuilder());
     }
 
     @Override

@@ -1,6 +1,5 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
-import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
@@ -15,7 +14,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     public IASStringBuffer(StringBuffer sb, IASTaintInformation taintInformation) {
         super();
         this.appendShifted(taintInformation.getAllRanges());
-        this.builder.append(sb);
+        this.stringBuilder.append(sb);
     }
 
     public IASStringBuffer(StringBuffer sb) {
@@ -298,12 +297,12 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
-    public synchronized StringBuilder getBuilder() {
-        return super.getBuilder();
+    public synchronized StringBuilder getStringBuilder() {
+        return super.getStringBuilder();
     }
 
     public synchronized StringBuffer getBuffer() {
-        return new StringBuffer(super.getBuilder());
+        return new StringBuffer(super.getStringBuilder());
     }
 
     @Override

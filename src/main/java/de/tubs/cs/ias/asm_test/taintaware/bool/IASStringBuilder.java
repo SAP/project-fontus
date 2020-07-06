@@ -2,7 +2,6 @@ package de.tubs.cs.ias.asm_test.taintaware.bool;
 
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 
 public final class IASStringBuilder extends IASAbstractStringBuilder {
     @Override
@@ -64,8 +63,8 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
     }
 
     @Override
-    public StringBuilder getBuilder() {
-        return super.getBuilder();
+    public StringBuilder getStringBuilder() {
+        return super.getStringBuilder();
     }
 
     @Override
