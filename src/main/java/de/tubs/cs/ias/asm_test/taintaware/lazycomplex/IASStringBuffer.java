@@ -252,8 +252,8 @@ public class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
-    public synchronized StringBuilder getBuilder() {
-        return super.getBuilder();
+    public synchronized StringBuilder getStringBuilder() {
+        return super.getStringBuilder();
     }
 
     @Override

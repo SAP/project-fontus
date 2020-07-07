@@ -90,7 +90,7 @@ public interface IASStringBuilderable extends Serializable, Comparable<IASString
 
     void trimToSize();
 
-    StringBuilder getBuilder();
+    StringBuilder getStringBuilder();
 
     void setLength(int newLength);
 

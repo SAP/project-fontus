@@ -1,9 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
-import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 
 @SuppressWarnings("Since15")
 public final class IASStringBuilder extends IASAbstractStringBuilder {
@@ -11,7 +9,7 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
     public IASStringBuilder(StringBuilder sb, IASTaintInformation taintInformation) {
         super();
         this.appendShifted(taintInformation.getAllRanges());
-        this.builder.append(sb);
+        this.stringBuilder.append(sb);
     }
 
     public IASStringBuilder(StringBuilder sb) {

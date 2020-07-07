@@ -1,7 +1,6 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
-import de.tubs.cs.ias.asm_test.taintaware.lazybasic.operation.BaseLayer;
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations.*;
 import de.tubs.cs.ias.asm_test.taintaware.shared.*;
 import de.tubs.cs.ias.asm_test.taintaware.shared.range.IASTaintRangeStringable;
@@ -256,7 +255,7 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
 
     @Override
     public boolean contentEquals(IASStringBuilderable sb) {
-        return this.string.contentEquals(sb.getBuilder());
+        return this.string.contentEquals(sb.getStringBuilder());
     }
 
     @Override

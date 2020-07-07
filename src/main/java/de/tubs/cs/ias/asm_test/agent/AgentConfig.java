@@ -44,7 +44,7 @@ public class AgentConfig {
     }
 
     public static Configuration parseConfig(String args) {
-        if(args == null) {
+        if (args == null) {
             Configuration c = ConfigurationLoader.defaultConfiguration();
             c.setTaintMethod(TaintMethod.defaultTaintMethod());
             c.transformConverters();
@@ -65,13 +65,29 @@ public class AgentConfig {
         Configuration c = ConfigurationLoader.defaultConfiguration();
         boolean verbose = false;
         TaintMethod taintMethod = TaintMethod.defaultTaintMethod();
-        for(String part : parts) {
-            if("verbose".equals(part)) {
+        Boolean useCaching = null;
+        Integer layerThreshold = null;
+        Boolean countRanges = null;
+
+        for (String part : parts) {
+            if ("verbose".equals(part)) {
                 verbose = true;
             }
-            if(part.startsWith("taintmethod=")) {
+            if (part.startsWith("taintmethod=")) {
                 String taintMethodArgName = afterEquals(part);
                 taintMethod = TaintMethod.getTaintMethodByArgumentName(taintMethodArgName);
+            }
+            if (part.startsWith("use_caching=")) {
+                String useCachingString = afterEquals(part);
+                useCaching = Boolean.parseBoolean(useCachingString);
+            }
+            if (part.startsWith("layer_threshold=")) {
+                String layerThresholdString = afterEquals(part);
+                layerThreshold = Integer.parseInt(layerThresholdString);
+            }
+            if (part.startsWith("count_ranges=")) {
+                String countRangesString = afterEquals(part);
+                countRanges = Boolean.parseBoolean(countRangesString);
             }
             if (part.startsWith("config=")) {
                 String filename = afterEquals(part);
@@ -89,6 +105,17 @@ public class AgentConfig {
         }
         c.setVerbose(verbose || c.isVerbose());
         c.setTaintMethod(taintMethod);
+
+        if (useCaching != null) {
+            c.setUseCaching(useCaching);
+        }
+        if (layerThreshold != null) {
+            c.setLayerThreshold(layerThreshold);
+        }
+        if (countRanges != null) {
+            c.setCountRanges(countRanges);
+        }
+
         c.transformConverters();
         return c;
     }

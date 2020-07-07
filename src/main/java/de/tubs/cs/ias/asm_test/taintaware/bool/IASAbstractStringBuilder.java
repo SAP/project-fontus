@@ -11,7 +11,7 @@ import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 public abstract class IASAbstractStringBuilder implements IASStringBuilderable, IASTaintAware {
 
     // TODO: accessed in both  and unsynchronized methods
-    private final StringBuilder builder;
+    private final StringBuilder stringBuilder;
     private boolean tainted = false;
 
     @Override
@@ -21,14 +21,14 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
 
     @Override
     public void setTaint(boolean taint) {
-        if (this.builder.length() > 0 || !taint) {
+        if (this.stringBuilder.length() > 0 || !taint) {
             this.tainted = taint;
         }
     }
 
     @Override
     public void setTaint(IASTaintSource source) {
-        if (this.builder.length() > 0 || source == null) {
+        if (this.stringBuilder.length() > 0 || source == null) {
             this.tainted = source != null;
         }
     }
@@ -39,28 +39,28 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
 
 
     public IASAbstractStringBuilder() {
-        this.builder = new StringBuilder();
+        this.stringBuilder = new StringBuilder();
     }
 
     public IASAbstractStringBuilder(int capacity) {
-        this.builder = new StringBuilder(capacity);
+        this.stringBuilder = new StringBuilder(capacity);
     }
 
     public IASAbstractStringBuilder(IASStringable str) {
-        this.builder = new StringBuilder(str.length() + 16);
-        this.builder.append(str);
+        this.stringBuilder = new StringBuilder(str.length() + 16);
+        this.stringBuilder.append(str);
         this.mergeTaint(str);
     }
 
     public IASAbstractStringBuilder(String str) {
-        this.builder = new StringBuilder(str.length() + 16);
-        this.builder.append(str);
+        this.stringBuilder = new StringBuilder(str.length() + 16);
+        this.stringBuilder.append(str);
     }
 
 
     public IASAbstractStringBuilder(CharSequence seq) {
-        this.builder = new StringBuilder(seq.length() + 16);
-        this.builder.append(seq);
+        this.stringBuilder = new StringBuilder(seq.length() + 16);
+        this.stringBuilder.append(seq);
         if (seq instanceof IASTaintAware) {
             IASTaintAware ta = (IASTaintAware) seq;
             this.mergeTaint(ta);
@@ -68,112 +68,112 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     }
 
     public IASAbstractStringBuilder(StringBuffer buffer) {
-        this.builder = new StringBuilder(buffer); //TODO: do a deep copy? Can something mess us up as this is shared?
+        this.stringBuilder = new StringBuilder(buffer); //TODO: do a deep copy? Can something mess us up as this is shared?
         this.tainted = false;
     }
 
     @Override
     public int length() {
-        return this.builder.length();
+        return this.stringBuilder.length();
     }
 
 
     public int capacity() {
-        return this.builder.capacity();
+        return this.stringBuilder.capacity();
     }
 
 
     public void ensureCapacity(int minimumCapacity) {
-        this.builder.ensureCapacity(minimumCapacity);
+        this.stringBuilder.ensureCapacity(minimumCapacity);
     }
 
 
     public void trimToSize() {
-        this.builder.trimToSize();
+        this.stringBuilder.trimToSize();
     }
 
     @Override
-    public StringBuilder getBuilder() {
-        return new StringBuilder(this.builder);
+    public StringBuilder getStringBuilder() {
+        return new StringBuilder(this.stringBuilder);
     }
 
 
     public void setLength(int newLength) {
-        this.builder.setLength(newLength);
+        this.stringBuilder.setLength(newLength);
     }
 
     @Override
     public char charAt(int index) {
-        return this.builder.charAt(index);
+        return this.stringBuilder.charAt(index);
     }
 
 
     public int codePointAt(int index) {
-        return this.builder.codePointAt(index);
+        return this.stringBuilder.codePointAt(index);
     }
 
 
     public int codePointBefore(int index) {
-        return this.builder.codePointBefore(index);
+        return this.stringBuilder.codePointBefore(index);
     }
 
 
     public int codePointCount(int beginIndex, int endIndex) {
-        return this.builder.codePointCount(beginIndex, endIndex);
+        return this.stringBuilder.codePointCount(beginIndex, endIndex);
     }
 
 
     public int offsetByCodePoints(int index, int codePointOffset) {
-        return this.builder.offsetByCodePoints(index, codePointOffset);
+        return this.stringBuilder.offsetByCodePoints(index, codePointOffset);
     }
 
 
     public void getChars(int srcBegin, int srcEnd, char[] dst,
                          int dstBegin) {
-        this.builder.getChars(srcBegin, srcEnd, dst, dstBegin);
+        this.stringBuilder.getChars(srcBegin, srcEnd, dst, dstBegin);
     }
 
     public void setCharAt(int index, char ch) {
-        this.builder.setCharAt(index, ch);
+        this.stringBuilder.setCharAt(index, ch);
     }
 
     public IASAbstractStringBuilder append(Object obj) {
         // TODO: fix?
-        this.builder.append(obj);
+        this.stringBuilder.append(obj);
         return this;
     }
 
     public IASAbstractStringBuilder append(IASStringable str) {
         if (str == null) {
             String s = null;
-            this.builder.append(s);
+            this.stringBuilder.append(s);
             return this;
         }
-        this.builder.append(str.toIASString());
+        this.stringBuilder.append(str.toIASString());
         this.mergeTaint(str);
         return this;
     }
 
     public IASAbstractStringBuilder append(String str) {
-        this.builder.append(str);
+        this.stringBuilder.append(str);
         return this;
     }
 
     public IASAbstractStringBuilder append(IASStringBuilderable sb) {
-        this.builder.append(sb.getBuilder());
+        this.stringBuilder.append(sb.getStringBuilder());
         this.mergeTaint(sb);
         return this;
     }
 
     public IASAbstractStringBuilder append(IASAbstractStringBuilder sb) {
-        this.builder.append(sb.getBuilder());
+        this.stringBuilder.append(sb.getStringBuilder());
         this.mergeTaint(sb);
         return this;
     }
 
     @Override
     public IASAbstractStringBuilder append(CharSequence csq) {
-        this.builder.append(csq);
+        this.stringBuilder.append(csq);
         if (csq instanceof IASTaintAware) {
             IASTaintAware ta = (IASTaintAware) csq;
             this.mergeTaint(ta);
@@ -183,7 +183,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
 
     @Override
     public IASAbstractStringBuilder append(CharSequence csq, int start, int end) {
-        this.builder.append(csq, start, end);
+        this.stringBuilder.append(csq, start, end);
         if (csq instanceof IASTaintAware) {
             IASTaintAware ta = (IASTaintAware) csq;
             this.mergeTaint(ta);
@@ -192,56 +192,56 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     }
 
     public IASAbstractStringBuilder append(char[] str) {
-        this.builder.append(str);
+        this.stringBuilder.append(str);
         return this;
     }
 
     public IASAbstractStringBuilder append(char[] str, int offset, int len) {
-        this.builder.append(str, offset, len);
+        this.stringBuilder.append(str, offset, len);
         return this;
     }
 
     public IASAbstractStringBuilder append(boolean b) {
-        this.builder.append(b);
+        this.stringBuilder.append(b);
         return this;
     }
 
     @Override
     public IASAbstractStringBuilder append(char c) {
-        this.builder.append(c);
+        this.stringBuilder.append(c);
         return this;
     }
 
     public IASAbstractStringBuilder append(int i) {
-        this.builder.append(i);
+        this.stringBuilder.append(i);
         return this;
     }
 
     public IASAbstractStringBuilder appendCodePoint(int codePoint) {
-        this.builder.appendCodePoint(codePoint);
+        this.stringBuilder.appendCodePoint(codePoint);
         return this;
     }
 
 
     public IASAbstractStringBuilder append(long lng) {
-        this.builder.append(lng);
+        this.stringBuilder.append(lng);
         return this;
     }
 
     public IASAbstractStringBuilder append(float f) {
-        this.builder.append(f);
+        this.stringBuilder.append(f);
         return this;
     }
 
     public IASAbstractStringBuilder append(double d) {
-        this.builder.append(d);
+        this.stringBuilder.append(d);
         return this;
     }
 
 
     public IASAbstractStringBuilder delete(int start, int end) {
-        this.builder.delete(start, end);
-        if (this.builder.length() == 0) {
+        this.stringBuilder.delete(start, end);
+        if (this.stringBuilder.length() == 0) {
             this.tainted = false;
         }
         return this;
@@ -249,8 +249,8 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
 
 
     public IASAbstractStringBuilder deleteCharAt(int index) {
-        this.builder.deleteCharAt(index);
-        if (this.builder.length() == 0) {
+        this.stringBuilder.deleteCharAt(index);
+        if (this.stringBuilder.length() == 0) {
             this.tainted = false;
         }
         return this;
@@ -258,28 +258,28 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
 
 
     public IASAbstractStringBuilder replace(int start, int end, IASStringable str) {
-        this.builder.replace(start, end, str.getString());
+        this.stringBuilder.replace(start, end, str.getString());
         this.mergeTaint(str);
         return this;
     }
 
     public IASString substring(int start) {
-        return this.substring(start, this.builder.length());
+        return this.substring(start, this.stringBuilder.length());
     }
 
     @Override
     public CharSequence subSequence(int start, int end) {
-        return new IASString(this.builder.substring(start, end), this.tainted);
+        return new IASString(this.stringBuilder.substring(start, end), this.tainted);
     }
 
 
     public IASString substring(int start, int end) {
-        return new IASString(this.builder.substring(start, end), this.tainted);
+        return new IASString(this.stringBuilder.substring(start, end), this.tainted);
     }
 
     public IASAbstractStringBuilder insert(int index, char[] str, int offset,
                                            int len) {
-        this.builder.insert(index, str, offset, len);
+        this.stringBuilder.insert(index, str, offset, len);
         return this;
     }
 
@@ -288,13 +288,13 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     }
 
     public IASAbstractStringBuilder insert(int offset, IASStringable str) {
-        this.builder.insert(offset, str);
+        this.stringBuilder.insert(offset, str);
         this.mergeTaint(str);
         return this;
     }
 
     public IASAbstractStringBuilder insert(int offset, char[] str) {
-        this.builder.insert(offset, str);
+        this.stringBuilder.insert(offset, str);
         return this;
     }
 
@@ -303,7 +303,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
             IASTaintAware ta = (IASTaintAware) s;
             this.mergeTaint(ta);
         }
-        this.builder.insert(dstOffset, s);
+        this.stringBuilder.insert(dstOffset, s);
         return this;
     }
 
@@ -313,69 +313,69 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
             IASTaintAware ta = (IASTaintAware) s;
             this.mergeTaint(ta);
         }
-        this.builder.insert(dstOffset, s, start, end);
+        this.stringBuilder.insert(dstOffset, s, start, end);
         return this;
     }
 
     public IASAbstractStringBuilder insert(int offset, boolean b) {
-        this.builder.insert(offset, b);
+        this.stringBuilder.insert(offset, b);
         return this;
     }
 
     public IASAbstractStringBuilder insert(int offset, char c) {
-        this.builder.insert(offset, c);
+        this.stringBuilder.insert(offset, c);
         return this;
     }
 
     public IASAbstractStringBuilder insert(int offset, int i) {
-        this.builder.insert(offset, i);
+        this.stringBuilder.insert(offset, i);
         return this;
     }
 
     public IASAbstractStringBuilder insert(int offset, long l) {
-        this.builder.insert(offset, l);
+        this.stringBuilder.insert(offset, l);
         return this;
     }
 
     public IASAbstractStringBuilder insert(int offset, float f) {
-        this.builder.insert(offset, f);
+        this.stringBuilder.insert(offset, f);
         return this;
     }
 
     public IASAbstractStringBuilder insert(int offset, double d) {
-        this.builder.insert(offset, d);
+        this.stringBuilder.insert(offset, d);
         return this;
     }
 
     public int indexOf(IASStringable str) {
         // Note, synchronization achieved via invocations of other StringBuffer methods
-        return this.builder.indexOf(str.getString());
+        return this.stringBuilder.indexOf(str.getString());
     }
 
     public int indexOf(IASStringable str, int fromIndex) {
-        return this.builder.indexOf(str.getString(), fromIndex);
+        return this.stringBuilder.indexOf(str.getString(), fromIndex);
     }
 
     public int lastIndexOf(IASStringable str) {
         // Note, synchronization achieved via invocations of other StringBuffer methods
-        return this.lastIndexOf(str, this.builder.length()); //TODO: correct?
+        return this.lastIndexOf(str, this.stringBuilder.length()); //TODO: correct?
     }
 
     public int lastIndexOf(IASStringable str, int fromIndex) {
-        return this.builder.lastIndexOf(str.getString(), fromIndex);
+        return this.stringBuilder.lastIndexOf(str.getString(), fromIndex);
     }
 
     public IASAbstractStringBuilder reverse() {
-        this.builder.reverse();
+        this.stringBuilder.reverse();
         return this;
     }
 
     public IASString toIASString() {
-        return new IASString(this.builder.toString(), this.tainted);
+        return new IASString(this.stringBuilder.toString(), this.tainted);
     }
 
     public String toString() {
-        return this.builder.toString();
+        return this.stringBuilder.toString();
     }
 
     @Override
@@ -383,7 +383,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         if (Constants.JAVA_VERSION < 11) {
             return this.toIASString().compareTo(IASString.valueOf(o));
         } else {
-            return this.builder.compareTo(o.getBuilder());
+            return this.stringBuilder.compareTo(o.getStringBuilder());
         }
     }
 }

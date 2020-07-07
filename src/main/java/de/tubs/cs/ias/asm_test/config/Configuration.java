@@ -26,6 +26,44 @@ public class Configuration {
     @JsonIgnore
     private TaintStringConfig taintStringConfig;
 
+    private boolean useCaching = defaultUseCaching();
+
+    private int layerThreshold = defaultLayerThreshold();
+
+    private boolean countRanges = defaultCountRanges();
+
+    public static boolean defaultUseCaching() {
+        return true;
+    }
+
+    public static int defaultLayerThreshold() {
+        return 30;
+    }
+
+    public static boolean defaultCountRanges() {
+        return false;
+    }
+
+    public void setCountRanges(boolean countRanges) {
+        this.countRanges = countRanges;
+    }
+
+    public boolean useCaching() {
+        return useCaching;
+    }
+
+    public void setUseCaching(boolean useCaching) {
+        this.useCaching = useCaching;
+    }
+
+    public int getLayerThreshold() {
+        return layerThreshold;
+    }
+
+    public void setLayerThreshold(int layerThreshold) {
+        this.layerThreshold = layerThreshold;
+    }
+
     public Configuration() {
         this.verbose = false;
         this.sourceConfig = new SourceConfig();
@@ -199,5 +237,9 @@ public class Configuration {
 
     public TaintMethod getTaintMethod() {
         return this.taintMethod;
+    }
+
+    public boolean countRanges() {
+        return this.countRanges;
     }
 }

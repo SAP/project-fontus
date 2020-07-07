@@ -344,7 +344,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
     }
 
     @Override
-    public StringBuilder getBuilder() {
+    public StringBuilder getStringBuilder() {
         return this.stringBuilder;
     }
 
@@ -402,7 +402,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
 
     @Override
     public int compareTo(IASStringBuilderable o) {
-        return this.stringBuilder.compareTo(o.getBuilder());
+        return this.stringBuilder.compareTo(o.getStringBuilder());
     }
 
     public boolean isInitialized() {

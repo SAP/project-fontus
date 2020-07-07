@@ -32,17 +32,15 @@ public class TaintMethodConfig {
         }
     }
 
-    public static String getTaintSubPackage() {
-        return getTaintMethod().getSubPath();
-    }
-
-    public static TaintMethod getTaintMethod() {
-        if (taintMethod == null) {
-            String path = (String) properties.getOrDefault(PATH, "");
-            taintMethod = TaintMethod.getTaintMethodByPath(path);
-        }
-        return taintMethod;
-    }
-
-
+//    public static String getTaintSubPackage() {
+//        return getTaintMethod().getSubPath();
+//    }
+//
+//    public static TaintMethod getTaintMethod() {
+//        if (taintMethod == null) {
+//            String path = (String) properties.getOrDefault(PATH, "");
+//            taintMethod = TaintMethod.getTaintMethodByPath(path);
+//        }
+//        return taintMethod;
+//    }
 }

@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazybasic;
 
+import de.tubs.cs.ias.asm_test.agent.TaintAgent;
 import de.tubs.cs.ias.asm_test.taintaware.lazybasic.operation.BaseLayer;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRanges;
@@ -8,8 +9,6 @@ import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 import java.util.*;
 
 public class IASTaintInformation {
-    public static boolean USE_CACHING = true;
-    private static final int THRESHOLD = 30;
     private final List<IASLayer> layers;
     private IASTaintInformation previous;
 
@@ -34,7 +33,7 @@ public class IASTaintInformation {
     }
 
     private void appendLayer(IASLayer layer) {
-        if (this.getLayerDepth() >= THRESHOLD) {
+        if (this.getLayerDepth() >= TaintAgent.getConfiguration().getLayerThreshold()) {
             this.cache(this.evaluate());
         }
         this.layers.add(layer);
@@ -76,7 +75,7 @@ public class IASTaintInformation {
         for (IASLayer layer : this.layers) {
             previousRanges = layer.apply(previousRanges);
         }
-        if (USE_CACHING) {
+        if (TaintAgent.getConfiguration().useCaching()) {
             this.cache(previousRanges);
         }
         return previousRanges;
