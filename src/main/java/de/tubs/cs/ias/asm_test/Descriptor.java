@@ -111,6 +111,46 @@ public class Descriptor {
 //    }
 
     /**
+     * @param className Class name in the format "java.lang.Object"
+     * @return Descriptor name in the format "Ljava/lang/Object;"
+     */
+    public static String classNameToDescriptorName(final String className) {
+        if ("int".equals(className)) {
+            return "I";
+        } else if ("byte".equals(className)) {
+            return "B";
+        } else if ("char".equals(className)) {
+            return "C";
+        } else if ("double".equals(className)) {
+            return "D";
+        } else if ("float".equals(className)) {
+            return "F";
+        } else if ("long".equals(className)) {
+            return "J";
+        } else if ("short".equals(className)) {
+            return "S";
+        } else if ("boolean".equals(className)) {
+            return "Z";
+        } else if ("void".equals(className)) {
+            return "V";
+        } else {
+            String trimmedClassName = className;
+            if (trimmedClassName.endsWith("[]")) {
+                trimmedClassName = trimmedClassName.substring(0, trimmedClassName.indexOf('['));
+            }
+
+            StringBuilder descriptor = new StringBuilder(String.format("L%s;", Utils.fixupReverse(trimmedClassName)));
+
+            int i = 0;
+            while ((i = className.indexOf("[", i + 1)) >= 0) {
+                descriptor.insert(0, "[");
+            }
+
+            return descriptor.toString();
+        }
+    }
+
+    /**
      * Parses a textual Descriptor and disassembles it into its types
      * TODO: maybe remove the ';'s?
      * TODO: throw exception on invalid descriptor

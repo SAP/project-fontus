@@ -22,4 +22,9 @@ public class DefaultClassInstrumentationStrategy extends DefaultInstrumentation 
         FieldVisitor fv = this.visitor.visitField(access, name, descriptor, signature, value);
         return Optional.of(fv);
     }
+
+    @Override
+    public String getGetOriginalTypeMethod() {
+        throw new UnsupportedOperationException();
+    }
 }

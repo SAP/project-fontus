@@ -38,4 +38,9 @@ public class StringClassInstrumentationStrategy extends StringInstrumentation im
         }
         return Optional.empty();
     }
+
+    @Override
+    public String getGetOriginalTypeMethod() {
+        return Constants.TStringToStringName;
+    }
 }

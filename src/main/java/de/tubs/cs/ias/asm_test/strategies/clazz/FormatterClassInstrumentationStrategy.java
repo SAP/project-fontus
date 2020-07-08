@@ -32,4 +32,9 @@ public class FormatterClassInstrumentationStrategy extends FormatterInstrumentat
         }
         return Optional.empty();
     }
+
+    @Override
+    public String getGetOriginalTypeMethod() {
+        return Constants.TMatcherToMatcherName;
+    }
 }

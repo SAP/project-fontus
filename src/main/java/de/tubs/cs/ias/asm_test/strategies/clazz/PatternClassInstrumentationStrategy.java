@@ -8,4 +8,9 @@ public class PatternClassInstrumentationStrategy extends AbstractClassInstrument
     public PatternClassInstrumentationStrategy(ClassVisitor visitor, TaintStringConfig taintStringConfig) {
         super(visitor, Constants.PatternDesc, taintStringConfig.getTPatternDesc(), Constants.PatternQN, taintStringConfig.getTPatternQN());
     }
+
+    @Override
+    public String getGetOriginalTypeMethod() {
+        return Constants.TPatternToPatternName;
+    }
 }

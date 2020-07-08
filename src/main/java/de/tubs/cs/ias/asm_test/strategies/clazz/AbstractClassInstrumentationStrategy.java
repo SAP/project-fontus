@@ -11,7 +11,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import java.util.regex.Matcher;
 
-public class AbstractClassInstrumentationStrategy extends AbstractInstrumentation implements ClassInstrumentationStrategy {
+public abstract class AbstractClassInstrumentationStrategy extends AbstractInstrumentation implements ClassInstrumentationStrategy {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final ClassVisitor visitor;
 

@@ -437,6 +437,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         return this.stringBuilder.compareTo(o.getStringBuilder());
     }
 
+    @Override
     public StringBuilder getStringBuilder() {
         return this.stringBuilder;
     }
