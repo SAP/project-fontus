@@ -34,4 +34,9 @@ public class StringBufferClassInstrumentationStrategy extends StringBufferInstru
         }
         return Optional.empty();
     }
+
+    @Override
+    public String getGetOriginalTypeMethod() {
+        return Constants.TStringBufferToStringBufferName;
+    }
 }

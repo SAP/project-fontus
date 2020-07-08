@@ -11,10 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.*;
 
 
 class ClassTaintingVisitor extends ClassVisitor {
@@ -30,7 +29,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private boolean isAnnotation = false;
     private MethodVisitRecording recording;
     private final ClassVisitor visitor;
-    private final Collection<ClassInstrumentationStrategy> instrumentation = new ArrayList<>(4);
+    private final List<ClassInstrumentationStrategy> instrumentation = new ArrayList<>(4);
     private final Configuration config;
     private final ClassResolver resolver;
     /**
@@ -216,6 +215,15 @@ class ClassTaintingVisitor extends ClassVisitor {
             newName = Constants.ToStringInstrumented;
             desc = this.stringConfig.getToStringInstrumentedDesc();
             mv = super.visitMethod(access, newName, desc, signature, exceptions);
+        } else if (overridesJdkSuperMethod(access, name, descriptor) && shouldBeInstrumented(descriptor)) {
+            logger.info("Creating proxy method for JDK inheritance");
+            MethodVisitor v = super.visitMethod(access, name, descriptor, signature, exceptions);
+            newName = this.rewriteMethodNameForJdkInheritanceProxy(name);
+
+            this.generateJdkInheritanceProxy(v, newName, descriptor);
+
+            desc = this.instrumentDescriptor(descriptor);
+            mv = super.visitMethod(access, newName, desc, signature, exceptions);
         } else if (this.blacklist.contains(new BlackListEntry(name, descriptor, access))) {
             mv = super.visitMethod(access, name, descriptor, signature, exceptions);
         } else {
@@ -231,6 +239,91 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
 
         return new MethodTaintingVisitor(access, newName, desc, mv, this.resolver, this.config);
+    }
+
+    private void generateJdkInheritanceProxy(MethodVisitor mv, String instrumentedName, String descriptor) {
+        Descriptor d = Descriptor.parseDescriptor(descriptor);
+        String instrumentedDescriptor = this.instrumentDescriptor(descriptor);
+        mv.visitCode();
+        // TODO Labels
+        mv.visitVarInsn(Opcodes.ALOAD, 0);
+        int i = 1;
+        for (String param : d.getParameters()) {
+
+            // Creating new Object if necessary and duplicating it for initialization
+            if (isQNToInstrument(param)) {
+                String instrumentedParam = this.instrumentQN(param);
+                mv.visitTypeInsn(Opcodes.NEW, instrumentedParam);
+                mv.visitInsn(Opcodes.DUP);
+            }
+
+            // Loading parameter on stack, either to call constructor or just for the final method call
+            mv.visitVarInsn(Opcodes.ALOAD, i);
+
+            // Calling the constructor if necessary
+            if (isQNToInstrument(param)) {
+                String instrumentedParam = this.instrumentQN(param);
+                mv.visitMethodInsn(Opcodes.INVOKESPECIAL, instrumentedParam, Constants.Init, new Descriptor(new String[]{param}, "V").toDescriptor(), false);
+            }
+            i++;
+        }
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.owner, instrumentedName, instrumentedDescriptor, false);
+        if (isQNToInstrument(d.getReturnType())) {
+            String returnType = this.instrumentQN(d.getReturnType());
+            String toOriginalMethod = this.getToOriginalMethod(returnType);
+            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, returnType, toOriginalMethod, new Descriptor(d.getReturnType()).toDescriptor(), false);
+        }
+
+        mv.visitInsn(returnCodeByReturnType(d.getReturnType()));
+        mv.visitMaxs(d.parameterCount() + 1, d.parameterCount() + 1);
+        mv.visitEnd();
+    }
+
+    private int returnCodeByReturnType(String returnType) {
+        switch (returnType) {
+            case "V":
+                return Opcodes.RETURN;
+            case "I":
+            case "B":
+            case "S":
+            case "Z":
+                return Opcodes.IRETURN;
+            case "J":
+                return Opcodes.LRETURN;
+            case "F":
+                return Opcodes.FRETURN;
+            case "D":
+                return Opcodes.DRETURN;
+            default:
+                return Opcodes.ARETURN;
+        }
+    }
+
+    private String getToOriginalMethod(String qn) {
+        for (ClassInstrumentationStrategy instrumentationStrategy : this.instrumentation) {
+            if (instrumentationStrategy.handlesType(qn)) {
+                return instrumentationStrategy.getGetOriginalTypeMethod();
+            }
+        }
+        throw new IllegalArgumentException("Trying to get cast method for non instrumented type: " + qn);
+    }
+
+    private boolean isQNToInstrument(String qn) {
+        for (ClassInstrumentationStrategy instrumentationStrategy : this.instrumentation) {
+            if (instrumentationStrategy.handlesType(qn)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String instrumentQN(String qn) {
+        for (ClassInstrumentationStrategy instrumentationStrategy : this.instrumentation) {
+            if (instrumentationStrategy.handlesType(qn)) {
+                return instrumentationStrategy.instrumentQN(qn);
+            }
+        }
+        return qn;
     }
 
 
@@ -336,4 +429,66 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitEnd();
     }
 
+    private Descriptor instrumentDescriptor(Descriptor d) {
+        for (ClassInstrumentationStrategy is : this.instrumentation) {
+            d = is.instrument(d);
+        }
+        return d;
+    }
+
+    private String instrumentDescriptor(String descriptor) {
+        Descriptor d = Descriptor.parseDescriptor(descriptor);
+        d = this.instrumentDescriptor(d);
+        return d.toDescriptor();
+    }
+
+    private boolean shouldBeInstrumented(String descriptorString) {
+        String instrumented = this.instrumentDescriptor(descriptorString);
+        return !instrumented.equals(descriptorString);
+    }
+
+    private boolean inheritsFromJdkClass() {
+        return !isAnnotation && JdkClassesLookupTable.getInstance().isJdkClass(superName);
+    }
+
+    // TODO What if not the class does not inherit directly from JDK?
+    private boolean overridesJdkSuperMethod(int access, String name, String descriptor) {
+        boolean instrAccPublic = (access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC;
+        boolean instrAccProtected = (access & Opcodes.ACC_PROTECTED) == Opcodes.ACC_PROTECTED;
+        if (!(instrAccPublic || instrAccProtected)) {
+            return false;
+        }
+        if (inheritsFromJdkClass()) {
+            Class<?> superClass;
+            try {
+                superClass = Class.forName(superName.replace('/', '.'));
+            } catch (ClassNotFoundException e) {
+                return false;
+            }
+            Method[] methods = superClass.getDeclaredMethods();
+            for (Method m : methods) {
+                boolean nameEquals = m.getName().equals(name);
+                boolean isPublicOrProtected = Modifier.isPublic(m.getModifiers()) || Modifier.isProtected(m.getModifiers());
+                boolean descriptorEquals = Descriptor.parseDescriptor(descriptor).equals(getMethodDescriptor(m));
+                if (nameEquals && isPublicOrProtected && descriptorEquals) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private String rewriteMethodNameForJdkInheritanceProxy(String name) {
+        // TODO is another name necessary?
+        return name;
+    }
+
+    private Descriptor getMethodDescriptor(Method m) {
+        String[] params = new String[m.getParameterCount()];
+        for (int i = 0; i < params.length; i++) {
+            params[i] = Descriptor.classNameToDescriptorName(m.getParameters()[i].getAnnotatedType().getType().getTypeName());
+        }
+        String returnType = Descriptor.classNameToDescriptorName(m.getAnnotatedReturnType().getType().toString());
+        return new Descriptor(params, returnType);
+    }
 }

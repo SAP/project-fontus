@@ -33,4 +33,9 @@ public class StringBuilderClassInstrumentationStrategy extends StringBuilderInst
         }
         return Optional.empty();
     }
+
+    @Override
+    public String getGetOriginalTypeMethod() {
+        return Constants.TStringBuilderToStringBuilderName;
+    }
 }

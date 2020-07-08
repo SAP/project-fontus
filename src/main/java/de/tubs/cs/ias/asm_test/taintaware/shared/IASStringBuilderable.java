@@ -92,6 +92,10 @@ public interface IASStringBuilderable extends Serializable, Comparable<IASString
 
     StringBuilder getStringBuilder();
 
+    default StringBuffer getStringBuffer() {
+        return new StringBuffer(getStringBuilder());
+    }
+
     void setLength(int newLength);
 
     void setTaint(IASTaintSource source);

@@ -10,4 +10,6 @@ public interface ClassInstrumentationStrategy extends InstrumentationStrategy {
 
     Optional<FieldVisitor> instrumentFieldInstruction(int access, String name, String descriptor,
                                                       String signature, Object value, TriConsumer tc);
+
+    String getGetOriginalTypeMethod();
 }

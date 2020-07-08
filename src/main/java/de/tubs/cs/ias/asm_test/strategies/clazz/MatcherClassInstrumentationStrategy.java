@@ -8,4 +8,9 @@ public class MatcherClassInstrumentationStrategy extends AbstractClassInstrument
     public MatcherClassInstrumentationStrategy(ClassVisitor visitor, TaintStringConfig taintStringConfig) {
         super(visitor, Constants.MatcherDesc, taintStringConfig.getTMatcherDesc(), Constants.MatcherQN, taintStringConfig.getTMatcherQN());
     }
+
+    @Override
+    public String getGetOriginalTypeMethod() {
+        return Constants.TMatcherToMatcherName;
+    }
 }

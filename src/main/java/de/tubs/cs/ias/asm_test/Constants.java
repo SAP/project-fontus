@@ -90,6 +90,16 @@ public final class Constants {
     public static final String TFormatterToFormatterName = "getFormatter";
 
     /**
+     * Name of the method that converts taint-aware StringBuilders to regular ones
+     */
+    public static final String TStringBuilderToStringBuilderName = "getStringBuilder";
+
+    /**
+     * Name of the method that converts taint-aware StringBuffers to regular ones
+     */
+    public static final String TStringBufferToStringBufferName = "getStringBuffer";
+
+    /**
      * Descriptor of an object to regular String conversion method
      */
     public static final String ToStringDesc = "()Ljava/lang/String;";
