@@ -1,5 +1,7 @@
 package de.tubs.cs.ias.asm_test;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -8,10 +10,10 @@ import java.util.stream.Collectors;
 public class Descriptor {
 
     private static final Pattern PRIMITIVE_DATA_TYPES = Pattern.compile("[ZBCSIFDJ]");
-    private final Collection<String> parameters;
+    private final List<String> parameters;
     private final String returnType;
 
-    private Descriptor(Collection<String> parameters, String returnType) {
+    private Descriptor(List<String> parameters, String returnType) {
         this.parameters = parameters;
         this.returnType = returnType;
     }
@@ -48,7 +50,7 @@ public class Descriptor {
     }
 
     public Descriptor replaceType(String from, String to) {
-        Collection<String> replaced = this.parameters.stream().map(str -> replaceSuffix(str, from, to)).collect(Collectors.toList());
+        List<String> replaced = this.parameters.stream().map(str -> replaceSuffix(str, from, to)).collect(Collectors.toList());
         String ret = replaceSuffix(this.returnType, from, to);
         return new Descriptor(replaced, ret);
     }
@@ -63,8 +65,8 @@ public class Descriptor {
         return pStack;
     }
 
-    Collection<String> getParameters() {
-        return Collections.unmodifiableCollection(this.parameters);
+    List<String> getParameters() {
+        return Collections.unmodifiableList(this.parameters);
     }
 
     public String getReturnType() {
@@ -278,6 +280,27 @@ public class Descriptor {
         }
 
         return new Descriptor(out, returnType.toString());
+    }
+
+    public static String getSignature(Method m) {
+        // Hacky but better than generating it by hand
+        try {
+            Method getGenericSignature = Method.class.getDeclaredMethod("getGenericSignature");
+            getGenericSignature.setAccessible(true);
+            return (String) getGenericSignature.invoke(m);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            e.printStackTrace();
+            throw new UnsupportedOperationException("Cannot generate signature, because Method.getGenericSignature is not available");
+        }
+    }
+
+    public static Descriptor parseMethod(Method m) {
+        String[] params = new String[m.getParameterCount()];
+        for (int i = 0; i < params.length; i++) {
+            params[i] = Descriptor.classNameToDescriptorName(m.getParameters()[i].getAnnotatedType().getType().getTypeName());
+        }
+        String returnType = Descriptor.classNameToDescriptorName(m.getAnnotatedReturnType().getType().toString());
+        return new Descriptor(params, returnType);
     }
 
 }
