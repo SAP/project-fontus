@@ -135,18 +135,104 @@ public class Descriptor {
             return "V";
         } else {
             String trimmedClassName = className;
-            if (trimmedClassName.endsWith("[]")) {
+            int arrayDimensions = 0;
+            for (; trimmedClassName.endsWith("[]"); arrayDimensions++) {
                 trimmedClassName = trimmedClassName.substring(0, trimmedClassName.indexOf('['));
             }
 
-            StringBuilder descriptor = new StringBuilder(String.format("L%s;", Utils.fixupReverse(trimmedClassName)));
+            StringBuilder descriptor = new StringBuilder();
 
-            int i = 0;
-            while ((i = className.indexOf("[", i + 1)) >= 0) {
+            if (isPrimitiveQN(trimmedClassName)) {
+                descriptor.append(classNameToDescriptorName(trimmedClassName));
+            } else {
+                descriptor.append(String.format("L%s;", Utils.fixupReverse(trimmedClassName)));
+            }
+
+            for (int i = 0; i < arrayDimensions; i++) {
                 descriptor.insert(0, "[");
             }
 
             return descriptor.toString();
+        }
+    }
+
+    private static boolean isPrimitiveQN(String qn) {
+        switch (qn) {
+            case "int":
+            case "byte":
+            case "char":
+            case "double":
+            case "float":
+            case "long":
+            case "short":
+            case "boolean":
+            case "void":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static boolean isPrimitiveDescriptorName(String descriptorName) {
+        switch (descriptorName) {
+            case "I":
+            case "B":
+            case "C":
+            case "D":
+            case "F":
+            case "S":
+            case "J":
+            case "Z":
+            case "V":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * @param descriptorName Descriptor name in the format "Ljava/lang/Object;"
+     * @return Class name in the format "java/lang/Object"
+     */
+    public static String descriptorNameToQN(String descriptorName) {
+        switch (descriptorName) {
+            case "I":
+                return "int";
+            case "B":
+                return "byte";
+            case "C":
+                return "char";
+            case "D":
+                return "double";
+            case "F":
+                return "float";
+            case "S":
+                return "short";
+            case "J":
+                return "long";
+            case "Z":
+                return "boolean";
+            case "V":
+                throw new IllegalArgumentException("Descriptor name V cannot be cast to a qualified name");
+            default:
+                int arrayCount = 0;
+                for (; descriptorName.startsWith("["); arrayCount++) {
+                    descriptorName = descriptorName.substring(1);
+                }
+
+                if (isPrimitiveDescriptorName(descriptorName)) {
+                    descriptorName = descriptorNameToQN(descriptorName);
+                } else {
+                    // Remove "L" [...] ";"
+                    descriptorName = descriptorName.substring(1, descriptorName.length() - 1);
+                }
+
+                StringBuilder descriptorNameBuilder = new StringBuilder(descriptorName);
+                for (int i = 0; i < arrayCount; i++) {
+                    descriptorNameBuilder.append("[]");
+                }
+                descriptorName = descriptorNameBuilder.toString();
+                return descriptorName;
         }
     }
 
