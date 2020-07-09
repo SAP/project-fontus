@@ -252,24 +252,19 @@ class ClassTaintingVisitor extends ClassVisitor {
 
             // Creating new Object if necessary and duplicating it for initialization
             if (isQNToInstrument(param)) {
-                String instrumentedParam = this.instrumentQN(param);
+                String instrumentedParam = Descriptor.descriptorNameToQN(this.instrumentQN(param));
                 mv.visitTypeInsn(Opcodes.NEW, instrumentedParam);
                 mv.visitInsn(Opcodes.DUP);
-            }
-
-            // Loading parameter on stack, either to call constructor or just for the final method call
-            mv.visitVarInsn(Opcodes.ALOAD, i);
-
-            // Calling the constructor if necessary
-            if (isQNToInstrument(param)) {
-                String instrumentedParam = this.instrumentQN(param);
+                mv.visitVarInsn(loadCodeByType(param), i);
                 mv.visitMethodInsn(Opcodes.INVOKESPECIAL, instrumentedParam, Constants.Init, new Descriptor(new String[]{param}, "V").toDescriptor(), false);
+            } else {
+                mv.visitVarInsn(loadCodeByType(param), i);
             }
             i++;
         }
         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.owner, instrumentedName, instrumentedDescriptor, false);
         if (isQNToInstrument(d.getReturnType())) {
-            String returnType = this.instrumentQN(d.getReturnType());
+            String returnType = Descriptor.descriptorNameToQN(this.instrumentQN(d.getReturnType()));
             String toOriginalMethod = this.getToOriginalMethod(returnType);
             mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, returnType, toOriginalMethod, new Descriptor(d.getReturnType()).toDescriptor(), false);
         }
@@ -277,6 +272,24 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitInsn(returnCodeByReturnType(d.getReturnType()));
         mv.visitMaxs(d.parameterCount() + 1, d.parameterCount() + 1);
         mv.visitEnd();
+    }
+
+    private int loadCodeByType(String type) {
+        switch (type) {
+            case "I":
+            case "B":
+            case "S":
+            case "Z":
+                return Opcodes.ILOAD;
+            case "J":
+                return Opcodes.LLOAD;
+            case "F":
+                return Opcodes.FLOAD;
+            case "D":
+                return Opcodes.DLOAD;
+            default:
+                return Opcodes.ALOAD;
+        }
     }
 
     private int returnCodeByReturnType(String returnType) {
