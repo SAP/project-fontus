@@ -1,7 +1,9 @@
-package de.tubs.cs.ias.asm_test;
+package de.tubs.cs.ias.asm_test.utils;
 
+import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
+import de.tubs.cs.ias.asm_test.utils.Utils;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;

@@ -2,7 +2,7 @@ package de.tubs.cs.ias.asm_test.strategies;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.Descriptor;
-import de.tubs.cs.ias.asm_test.Utils;
+import de.tubs.cs.ias.asm_test.utils.Utils;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 
 import java.util.Optional;

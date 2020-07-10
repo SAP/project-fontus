@@ -2,6 +2,7 @@ package de.tubs.cs.ias.asm_test;
 
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
+import de.tubs.cs.ias.asm_test.utils.Utils;
 import org.objectweb.asm.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
