@@ -1,7 +1,7 @@
 package de.tubs.cs.ias.asm_test.strategies;
 
 import de.tubs.cs.ias.asm_test.Descriptor;
-import de.tubs.cs.ias.asm_test.Utils;
+import de.tubs.cs.ias.asm_test.utils.Utils;
 
 import java.util.Optional;
 import java.util.regex.Matcher;

@@ -6,6 +6,8 @@ import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.asm.MethodVisitRecording;
 import de.tubs.cs.ias.asm_test.asm.RecordingMethodVisitor;
 import de.tubs.cs.ias.asm_test.strategies.clazz.*;
+import de.tubs.cs.ias.asm_test.utils.ClassUtils;
+import de.tubs.cs.ias.asm_test.utils.Utils;
 import org.objectweb.asm.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +17,8 @@ import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
-import java.util.stream.Collectors;
+
+import static de.tubs.cs.ias.asm_test.utils.ClassUtils.getAllMethods;
 
 
 class ClassTaintingVisitor extends ClassVisitor {
@@ -387,7 +390,8 @@ class ClassTaintingVisitor extends ClassVisitor {
     private void overrideMissingJdkMethods() {
         if (this.inheritsFromJdkClass) {
             Class<?> scl = this.loadSuperClass();
-            Arrays.stream(scl.getMethods())
+            getAllMethods(scl)
+                    .stream()
                     .filter(method -> !overriddenJdkMethods.contains(method))
                     .filter(method -> shouldBeInstrumented(Descriptor.parseMethod(method).toDescriptor()))
                     .filter(method -> !Modifier.isStatic(method.getModifiers()))
@@ -407,7 +411,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             i++;
         }
         String signature = null;
-        if (hasGenericInformation(m)) {
+        if (ClassUtils.hasGenericInformation(m)) {
             signature = Descriptor.getSignature(m);
             signature = this.instrumentDescriptorStringlike(signature);
         }
@@ -455,16 +459,6 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitInsn(returnCodeByReturnType(instrumentedDescriptor.getReturnType()));
         mv.visitMaxs(instrumentedDescriptor.parameterCount() + 1, instrumentedDescriptor.parameterCount() + 2);
         mv.visitEnd();
-    }
-
-    private boolean hasGenericInformation(Method m) {
-        try {
-            Method hasGenericInformation = Method.class.getDeclaredMethod("hasGenericInformation");
-            hasGenericInformation.setAccessible(true);
-            return (boolean) hasGenericInformation.invoke(m);
-        } catch (Exception ex) {
-            throw new UnsupportedOperationException("Cannot evaluate if method is generic signature, because Method.hasGenericInformation is not available");
-        }
     }
 
     private Class<?> loadSuperClass() {
@@ -595,12 +589,11 @@ class ClassTaintingVisitor extends ClassVisitor {
             } catch (ClassNotFoundException e) {
                 return null;
             }
-            Method[] methods = superClass.getDeclaredMethods();
+            List<Method> methods = getAllMethods(superClass);
             for (Method m : methods) {
                 boolean nameEquals = m.getName().equals(name);
-                boolean isPublicOrProtected = Modifier.isPublic(m.getModifiers()) || Modifier.isProtected(m.getModifiers());
                 boolean descriptorEquals = Descriptor.parseDescriptor(descriptor).equals(Descriptor.parseMethod(m));
-                if (nameEquals && isPublicOrProtected && descriptorEquals) {
+                if (nameEquals && descriptorEquals) {
                     return m;
                 }
             }

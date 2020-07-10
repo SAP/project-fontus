@@ -1,5 +1,7 @@
-package de.tubs.cs.ias.asm_test;
+package de.tubs.cs.ias.asm_test.utils;
 
+import de.tubs.cs.ias.asm_test.Descriptor;
+import de.tubs.cs.ias.asm_test.FieldData;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
 import org.objectweb.asm.Handle;
@@ -87,13 +89,13 @@ public final class Utils {
         }
     }
 
-    static Type instrumentType(Type t, TaintStringConfig config) {
+    public static Type instrumentType(Type t, TaintStringConfig config) {
         Descriptor desc = Descriptor.parseDescriptor(t.getDescriptor());
         desc = InstrumentationHelper.getInstance(config).instrument(desc);
         return Type.getType(desc.toDescriptor());
     }
 
-    static Handle instrumentHandle(Handle h, TaintStringConfig config) {
+    public static Handle instrumentHandle(Handle h, TaintStringConfig config) {
         Descriptor desc = Descriptor.parseDescriptor(h.getDesc());
         desc = InstrumentationHelper.getInstance(config).instrument(desc);
         String owner = InstrumentationHelper.getInstance(config).instrumentQN(h.getOwner());
