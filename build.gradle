@@ -17,6 +17,7 @@ repositories {
 
 dependencies {
     compile 'org.ow2.asm:asm:7.2'
+    compile 'org.ow2.asm:asm-commons:7.2'
     compile 'org.ow2.asm:asm-analysis:7.2'
     compile 'org.ow2.asm:asm-util:7.2'
     compile 'info.picocli:picocli:4.1.4'

@@ -271,7 +271,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.owner, instrumentedName, instrumentedDescriptor, false);
         if (isQNToInstrument(d.getReturnType())) {
             String returnType = Descriptor.descriptorNameToQN(this.instrumentQN(d.getReturnType()));
-            String toOriginalMethod = this.getToOriginalMethod(returnType);
+            String toOriginalMethod = this.getToOriginalMethod(d.getReturnType());
             mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, returnType, toOriginalMethod, new Descriptor(d.getReturnType()).toDescriptor(), false);
         }
 
@@ -586,7 +586,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         boolean instrAccPublic = (access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC;
         boolean instrAccProtected = (access & Opcodes.ACC_PROTECTED) == Opcodes.ACC_PROTECTED;
         boolean instrAccStatic = (access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC;
-        if (!(instrAccPublic || instrAccProtected || instrAccStatic)) {
+        if (!(instrAccPublic || instrAccProtected) || instrAccStatic) {
             return null;
         }
         if (this.inheritsFromJdkClass) {
