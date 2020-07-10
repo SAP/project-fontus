@@ -295,12 +295,12 @@ public class Descriptor {
     }
 
     public static Descriptor parseMethod(Method m) {
-        String[] params = new String[m.getParameterCount()];
-        for (int i = 0; i < params.length; i++) {
-            params[i] = Descriptor.classNameToDescriptorName(m.getParameters()[i].getAnnotatedType().getType().getTypeName());
-        }
-        String returnType = Descriptor.classNameToDescriptorName(m.getAnnotatedReturnType().getType().toString());
-        return new Descriptor(params, returnType);
+        return Descriptor
+                .parseDescriptor(
+                        org.objectweb.asm.commons.Method
+                                .getMethod(m)
+                                .getDescriptor()
+                );
     }
 
 }
