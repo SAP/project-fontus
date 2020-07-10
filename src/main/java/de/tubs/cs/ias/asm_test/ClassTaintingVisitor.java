@@ -223,7 +223,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             desc = this.stringConfig.getToStringInstrumentedDesc();
             mv = super.visitMethod(access, newName, desc, signature, exceptions);
         } else if (overridesJdkSuperMethod(access, name, descriptor) && shouldBeInstrumented(descriptor)) {
-            logger.info("Creating proxy method for JDK inheritance");
+            logger.info("Creating proxy method for JDK inheritance for method: {}{}", name, descriptor);
             MethodVisitor v = super.visitMethod(access, name, descriptor, signature, exceptions);
             newName = this.rewriteMethodNameForJdkInheritanceProxy(name);
 
@@ -248,7 +248,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 
     private void generateJdkInheritanceProxy(MethodVisitor mv, String instrumentedName, String descriptor) {
         Descriptor d = Descriptor.parseDescriptor(descriptor);
-        String instrumentedDescriptor = this.instrumentDescriptorStringlike(descriptor);
+        Descriptor instrumentedDescriptor = this.instrumentDescriptor(d);
         mv.visitCode();
         // TODO Labels
         // TODO Handle arrays/lists
@@ -268,7 +268,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             }
             i++;
         }
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.owner, instrumentedName, instrumentedDescriptor, false);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.owner, instrumentedName, instrumentedDescriptor.toDescriptor(), false);
         if (isQNToInstrument(d.getReturnType())) {
             String returnType = Descriptor.descriptorNameToQN(this.instrumentQN(d.getReturnType()));
             String toOriginalMethod = this.getToOriginalMethod(d.getReturnType());
@@ -386,18 +386,16 @@ class ClassTaintingVisitor extends ClassVisitor {
     private void overrideMissingJdkMethods() {
         if (this.inheritsFromJdkClass) {
             Class<?> scl = this.loadSuperClass();
-            List<Method> methods = Arrays.stream(scl.getMethods())
+            Arrays.stream(scl.getMethods())
                     .filter(method -> !overriddenJdkMethods.contains(method))
                     .filter(method -> shouldBeInstrumented(Descriptor.parseMethod(method).toDescriptor()))
                     .filter(method -> !Modifier.isStatic(method.getModifiers()))
-                    .collect(Collectors.toList());
-            for (Method m : methods) {
-                this.createInstrumentedJdkProxy(m);
-            }
+                    .forEach(this::createInstrumentedJdkProxy);
         }
     }
 
     private void createInstrumentedJdkProxy(Method m) {
+        logger.info("Creating proxy for inherited, but not overridden JDK method " + m);
         Descriptor originalDescriptor = Descriptor.parseMethod(m);
         Descriptor instrumentedDescriptor = this.instrumentDescriptor(originalDescriptor);
         AnnotatedType[] anEx = m.getAnnotatedExceptionTypes();
