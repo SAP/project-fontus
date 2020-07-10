@@ -367,6 +367,10 @@ class ClassTaintingVisitor extends ClassVisitor {
             MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC, Constants.ToStringInstrumented, this.stringConfig.getToStringInstrumentedDesc(), null, null);
             this.createToString(v);
         }
+        if (this.inheritsFromJdkClass) {
+            logger.info("Overriding not overridden JDK methods which have to be instrumented");
+            this.overrideMissingJdkMethods();
+        }
         if (!this.hasClInit && !this.staticFinalFields.isEmpty()) {
             logger.info("Adding a new static initializer to initialize static final String fields");
             MethodVisitor mv = this.visitMethod(Opcodes.ACC_STATIC, Constants.ClInit, "()V", null, null);
@@ -376,9 +380,6 @@ class ClassTaintingVisitor extends ClassVisitor {
             MethodVisitor mv = this.visitMethod(Opcodes.ACC_STATIC, Constants.ClInit, "()V", null, null);
             ClassInitializerAugmentingVisitor augmentingVisitor = new ClassInitializerAugmentingVisitor(mv, this.owner, this.staticFinalFields);
             this.recording.replay(augmentingVisitor);
-        } else if (this.inheritsFromJdkClass) {
-            logger.info("Overriding not overridden JDK methods which have to be instrumented");
-            this.overrideMissingJdkMethods();
         }
         super.visitEnd();
     }
