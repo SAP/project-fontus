@@ -3,7 +3,7 @@ package de.tubs.cs.ias.asm_test.config;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-import de.tubs.cs.ias.asm_test.FunctionCall;
+import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;

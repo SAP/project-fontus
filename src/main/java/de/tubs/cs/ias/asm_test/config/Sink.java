@@ -1,6 +1,6 @@
 package de.tubs.cs.ias.asm_test.config;
 
-import de.tubs.cs.ias.asm_test.FunctionCall;
+import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 

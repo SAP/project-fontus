@@ -1,9 +1,9 @@
 package de.tubs.cs.ias.asm_test.agent;
 
-import de.tubs.cs.ias.asm_test.ClassResolver;
+import de.tubs.cs.ias.asm_test.asm.ClassResolver;
 import de.tubs.cs.ias.asm_test.Constants;
-import de.tubs.cs.ias.asm_test.Instrumenter;
-import de.tubs.cs.ias.asm_test.JdkClassesLookupTable;
+import de.tubs.cs.ias.asm_test.instrumentation.Instrumenter;
+import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

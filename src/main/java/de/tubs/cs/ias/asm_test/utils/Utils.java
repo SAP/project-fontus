@@ -1,9 +1,9 @@
 package de.tubs.cs.ias.asm_test.utils;
 
-import de.tubs.cs.ias.asm_test.Descriptor;
-import de.tubs.cs.ias.asm_test.FieldData;
+import de.tubs.cs.ias.asm_test.asm.Descriptor;
+import de.tubs.cs.ias.asm_test.asm.FieldData;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
-import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
+import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;

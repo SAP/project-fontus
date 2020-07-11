@@ -1,7 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.shared;
 
 import de.tubs.cs.ias.asm_test.Constants;
-import de.tubs.cs.ias.asm_test.JdkClassesLookupTable;
+import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 
 import java.lang.reflect.Array;
