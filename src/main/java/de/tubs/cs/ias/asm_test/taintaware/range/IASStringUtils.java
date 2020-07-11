@@ -1,7 +1,6 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public final class IASStringUtils {
     private static final IASString CONCAT_PLACEHOLDER = new IASString("\u0001");
@@ -88,6 +87,18 @@ public final class IASStringUtils {
         }
         return ret;
 
+    }
+
+    public static Map<IASString, IASString> convertStringMapToTStringMap(Map<String, String> tbl) {
+        Hashtable<IASString, IASString> result = new Hashtable<>();
+        tbl.forEach((key, value) -> result.put(IASString.valueOf(key), IASString.valueOf(value)));
+        return result;
+    }
+
+    public static Map<IASString, IASString> getenv() {
+        Map<String, String> origEnv = System.getenv();
+        Map<IASString, IASString> convertedEnv = convertStringMapToTStringMap(origEnv);
+        return Collections.unmodifiableMap(convertedEnv);
     }
 
     private IASStringUtils() {

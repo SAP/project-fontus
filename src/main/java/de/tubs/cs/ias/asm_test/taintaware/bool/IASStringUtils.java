@@ -1,8 +1,6 @@
 package de.tubs.cs.ias.asm_test.taintaware.bool;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public final class IASStringUtils {
@@ -98,6 +96,18 @@ public final class IASStringUtils {
         }
         return new IASString(ret, taint);
 
+    }
+
+    public static Map<IASString, IASString> convertStringMapToTStringMap(Map<String, String> tbl) {
+        Hashtable<IASString, IASString> result = new Hashtable<>();
+        tbl.forEach((key, value) -> result.put(IASString.valueOf(key), IASString.valueOf(value)));
+        return result;
+    }
+
+    public static Map<IASString, IASString> getenv() {
+        Map<String, String> origEnv = System.getenv();
+        Map<IASString, IASString> convertedEnv = convertStringMapToTStringMap(origEnv);
+        return Collections.unmodifiableMap(convertedEnv);
     }
 
     private IASStringUtils() {

@@ -18,7 +18,6 @@ import org.objectweb.asm.*;
 import de.tubs.cs.ias.asm_test.utils.Logger;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
-import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -140,6 +139,8 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "getMethodProxied", String.format("(Ljava/lang/Class;%s[Ljava/lang/Class;)Ljava/lang/reflect/Method;", this.stringConfig.getMethodTStringDesc()), false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getDeclaredMethod", "(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;", false),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "getDeclaredMethodProxied", String.format("(Ljava/lang/Class;%s[Ljava/lang/Class;)Ljava/lang/reflect/Method;", this.stringConfig.getMethodTStringDesc()), false));
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/System", "getenv", "()Ljava/util/Map;", false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "getenv", "()Ljava/util/Map;", false));
     }
 
     @Override

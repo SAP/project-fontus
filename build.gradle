@@ -53,12 +53,14 @@ test {
 task utilJar(type: Jar) {
     from(sourceSets.main.output) {
         include "**/asm_test/taintaware/**"
-        include "**/asm_test/strategies/*"
-        include "**/asm_test/Utils*"
+        include "**/asm_test/instrumentation/strategies/*"
+        include "**/asm_test/utils/**"
         include "**/asm_test/Constants*"
-        include "**/asm_test/config/TaintMethodConfig*"
         include "**/asm_test/config/TaintStringConfig*"
         include "**/asm_test/config/TaintMethod*"
+        include "**/asm_test/config/**"
+        include "**/asm_test/asm/FunctionCall*" // Because of Configuration class
+        include "**/asm_test/agent/AgentConfig*" // Because of Configuration class
     }
     utilJar.baseName = "util"
 }

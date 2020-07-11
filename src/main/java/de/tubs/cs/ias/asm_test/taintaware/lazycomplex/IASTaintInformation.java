@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
 import de.tubs.cs.ias.asm_test.agent.TaintAgent;
+import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations.BaseOperation;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeUtils;
@@ -62,7 +63,7 @@ public class IASTaintInformation {
             IASTaintRangeUtils.merge(cache);
             cache = Collections.unmodifiableList(cache);
 
-            if (TaintAgent.getConfiguration().useCaching()) {
+            if (Configuration.getConfiguration().useCaching()) {
                 this.cache = cache;
                 this.previousString = null;
                 this.previousInformation = null;
