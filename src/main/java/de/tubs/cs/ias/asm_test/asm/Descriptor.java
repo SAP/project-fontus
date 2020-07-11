@@ -35,7 +35,7 @@ public class Descriptor {
     }
 
     @SuppressWarnings("OverloadedVarargsMethod")
-    Descriptor(String... args) {
+    public Descriptor(String... args) {
         List<String> arguments = Arrays.asList(args);
         int lastIndex = arguments.size() - 1;
         this.returnType = arguments.get(lastIndex);

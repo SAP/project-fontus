@@ -5,8 +5,7 @@ import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.instrumentation.Instrumenter;
 import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.config.Configuration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,9 +14,10 @@ import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.ProtectionDomain;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 
 class TaintingTransformer implements ClassFileTransformer {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LogUtils.getLogger();
 
     private final Configuration config;
     private final Instrumenter instrumenter;

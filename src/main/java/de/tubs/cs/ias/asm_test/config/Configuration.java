@@ -4,23 +4,22 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 
 import de.tubs.cs.ias.asm_test.asm.FunctionCall;
+import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import org.apache.commons.text.StringSubstitutor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 import java.util.stream.Collectors;
 
 @XmlRootElement(name = "configuration")
 public class Configuration {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LogUtils.getLogger();
     @JsonIgnore
     private TaintMethod taintMethod;
     @JsonIgnore

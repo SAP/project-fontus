@@ -1,4 +1,4 @@
-import java.util.logging.Logger;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 
 class LoggerTest {
 

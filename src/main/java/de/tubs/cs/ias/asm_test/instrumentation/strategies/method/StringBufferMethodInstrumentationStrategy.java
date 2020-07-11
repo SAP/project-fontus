@@ -9,8 +9,8 @@ import de.tubs.cs.ias.asm_test.instrumentation.strategies.StringBufferInstrument
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.tubs.cs.ias.asm_test.utils.Logger;
+import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
@@ -19,7 +19,7 @@ import java.util.regex.Matcher;
 
 public class StringBufferMethodInstrumentationStrategy extends StringBufferInstrumentation implements MethodInstrumentationStrategy {
     private final MethodVisitor mv;
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LogUtils.getLogger();
     private final HashMap<String, String> methodsToRename = new HashMap<>(1);
     private static final Type stringBufferType = Type.getType(StringBuffer.class);
 

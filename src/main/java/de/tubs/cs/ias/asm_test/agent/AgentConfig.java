@@ -1,20 +1,19 @@
 package de.tubs.cs.ias.asm_test.agent;
 
 import de.tubs.cs.ias.asm_test.config.TaintMethod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.ConfigurationLoader;
+import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.util.*;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 
 public class AgentConfig {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LogUtils.getLogger();
     private final boolean verbose;
     private final List<String> blacklist;
     private final TaintMethod taintMethod;

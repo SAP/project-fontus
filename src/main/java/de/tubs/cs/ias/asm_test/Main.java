@@ -4,8 +4,8 @@ import de.tubs.cs.ias.asm_test.asm.ClassResolver;
 import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import de.tubs.cs.ias.asm_test.instrumentation.Instrumenter;
 import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.tubs.cs.ias.asm_test.utils.LogUtils;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 import picocli.CommandLine;
 
 import java.io.*;
@@ -26,7 +26,7 @@ import de.tubs.cs.ias.asm_test.config.ConfigurationLoader;
         version = "asm_taint 0.0.1"
 )
 public final class Main implements Callable<Void> {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LogUtils.getLogger();
     private static final int OneKB = 1024;
     private final Instrumenter instrumenter;
 
