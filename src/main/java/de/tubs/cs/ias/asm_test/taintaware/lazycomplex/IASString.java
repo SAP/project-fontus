@@ -265,6 +265,9 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
 
     @Override
     public boolean equalsIgnoreCase(IASStringable anotherString) {
+        if(anotherString == null) {
+            return false;
+        }
         return this.string.equalsIgnoreCase(anotherString.getString());
     }
 
