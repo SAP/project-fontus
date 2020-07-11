@@ -274,6 +274,9 @@ public final class IASString implements IASArrayAware, IASStringable {
     }
 
     public boolean equalsIgnoreCase(IASStringable anotherString) {
+        if(anotherString == null) {
+            return false;
+        }
         return this.string.equalsIgnoreCase(anotherString.getString());
     }
 

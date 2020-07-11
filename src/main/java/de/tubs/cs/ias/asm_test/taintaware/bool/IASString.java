@@ -241,6 +241,9 @@ public final class IASString implements IASTaintAware, IASStringable {
 
     @Override
     public boolean equalsIgnoreCase(IASStringable anotherString) {
+        if(anotherString == null) {
+            return false;
+        }
         return this.string.equalsIgnoreCase(anotherString.getString());
     }
 
