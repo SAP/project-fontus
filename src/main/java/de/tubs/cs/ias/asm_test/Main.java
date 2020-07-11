@@ -166,6 +166,7 @@ public final class Main implements Callable<Void> {
 
     private void loadConfiguration() {
         this.configuration = ConfigurationLoader.loadAndMergeConfiguration(this.configFile, this.taintMethod);
+        Configuration.setConfiguration(configuration);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test.instrumentation;
 
 import de.tubs.cs.ias.asm_test.Constants;
+import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.asm.*;
 import de.tubs.cs.ias.asm_test.config.Configuration;
@@ -496,6 +497,27 @@ class ClassTaintingVisitor extends ClassVisitor {
     @SuppressWarnings("OverlyLongMethod")
     private void createMainWrapperMethod(MethodVisitor mv) {
         mv.visitCode();
+
+        // Setup configuration if offline instrumentation
+        if (config.isOfflineInstrumentation()) {
+            org.objectweb.asm.commons.Method parseOffline;
+            try {
+                parseOffline = org.objectweb.asm.commons.Method.getMethod(Configuration.class.getMethod("parseOffline", TaintMethod.class));
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+            String parseOfflineOwner = Utils.fixupReverse(Configuration.class.getName());
+            String parseOfflineName = parseOffline.getName();
+            String parseOfflineDescriptor = parseOffline.getDescriptor();
+            String taintMethodOwner = Utils.fixupReverse(TaintMethod.class.getName());
+            String taintMethodName = Configuration.getConfiguration().getTaintMethod().name();
+            String taintMethodDescriptor = Descriptor.classNameToDescriptorName(taintMethodOwner);
+
+
+            mv.visitFieldInsn(Opcodes.GETSTATIC, taintMethodOwner, taintMethodName, taintMethodDescriptor);
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, parseOfflineOwner, parseOfflineName, parseOfflineDescriptor, false);
+        }
+
         Label label0 = new Label();
         mv.visitLabel(label0);
         mv.visitVarInsn(Opcodes.ALOAD, 0);

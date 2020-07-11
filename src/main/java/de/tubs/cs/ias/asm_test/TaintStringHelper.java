@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test;
 
 import de.tubs.cs.ias.asm_test.agent.TaintAgent;
+import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.range.IASString;
 import de.tubs.cs.ias.asm_test.taintaware.range.IASStringBuffer;
@@ -15,11 +16,11 @@ import java.util.List;
 public class TaintStringHelper {
 
     public static char[] getTaintMethodName() {
-        return TaintAgent.getConfiguration().getTaintMethod().getName().toCharArray();
+        return Configuration.getConfiguration().getTaintMethod().getName().toCharArray();
     }
 
     public static void setCaching(boolean enabled) {
-        TaintAgent.getConfiguration().setUseCaching(enabled);
+        Configuration.getConfiguration().setUseCaching(enabled);
     }
 
     public static void setTaintRanges(String s, int count) {

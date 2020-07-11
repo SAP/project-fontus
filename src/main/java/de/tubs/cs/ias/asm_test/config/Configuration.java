@@ -3,6 +3,7 @@ package de.tubs.cs.ias.asm_test.config;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 
+import de.tubs.cs.ias.asm_test.agent.AgentConfig;
 import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import org.apache.commons.text.StringSubstitutor;
@@ -14,11 +15,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+
 import de.tubs.cs.ias.asm_test.utils.Logger;
+
 import java.util.stream.Collectors;
 
 @XmlRootElement(name = "configuration")
 public class Configuration {
+    private static Configuration configuration;
+
     private static final Logger logger = LogUtils.getLogger();
     @JsonIgnore
     private TaintMethod taintMethod;
@@ -30,6 +35,16 @@ public class Configuration {
     private int layerThreshold = defaultLayerThreshold();
 
     private boolean countRanges = defaultCountRanges();
+
+    private boolean isOfflineInstrumentation = true;
+
+    public boolean isOfflineInstrumentation() {
+        return isOfflineInstrumentation;
+    }
+
+    public void setOfflineInstrumentation(boolean offlineInstrumentation) {
+        isOfflineInstrumentation = offlineInstrumentation;
+    }
 
     public static boolean defaultUseCaching() {
         return true;
@@ -240,5 +255,66 @@ public class Configuration {
 
     public boolean countRanges() {
         return this.countRanges;
+    }
+
+    public static Configuration getConfiguration() {
+        if (configuration == null) {
+            throw new IllegalStateException("Configuration not initialized! This should never happen!");
+        }
+        return configuration;
+    }
+
+    public static void parseAgent(String args) {
+        Configuration configuration = AgentConfig.parseConfig(args);
+        configuration.setOfflineInstrumentation(false);
+
+        setConfiguration(configuration);
+    }
+
+    public static void parseOffline(TaintMethod method) {
+        Configuration configuration = new Configuration();
+        configuration.setTaintMethod(method);
+
+        String countRangesString = System.getenv("ASM_COUNT_RANGES");
+        if(countRangesString != null) {
+            try {
+                boolean countRanges = Boolean.parseBoolean(countRangesString);
+                configuration.setCountRanges(countRanges);
+                logger.info("Set count_ranges to {}", countRanges);
+            } catch (Exception ex) {
+                logger.error("Couldn't parse ASM_COUNT_RANGES environment variable: {}", countRangesString);
+            }
+        }
+
+        String useCachingString = System.getenv("ASM_USE_CACHING");
+        if(useCachingString != null) {
+            try {
+                boolean useCaching = Boolean.parseBoolean(useCachingString);
+                configuration.setUseCaching(useCaching);
+                logger.info("Set use_caching to {}", useCaching);
+            } catch (Exception ex) {
+                logger.error("Couldn't parse ASM_USE_CACHING environment variable: {}", countRangesString);
+            }
+        }
+
+        String layerThresholdString = System.getenv("ASM_LAYER_THRESHOLD");
+        if(layerThresholdString != null) {
+            try {
+                int layerThreshold = Integer.parseInt(layerThresholdString);
+                configuration.setLayerThreshold(layerThreshold);
+                logger.info("Set layer_threshold to {}", layerThreshold);
+            } catch (Exception ex) {
+                logger.error("Couldn't parse ASM_LAYER_THRESHOLD environment variable: {}", countRangesString);
+            }
+        }
+
+        setConfiguration(configuration);
+    }
+
+    public static void setConfiguration(Configuration configuration) {
+        if (Configuration.configuration != null) {
+            throw new IllegalStateException("Configuration already initialized");
+        }
+        Configuration.configuration = configuration;
     }
 }
