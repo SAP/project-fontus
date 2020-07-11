@@ -1,6 +1,5 @@
 package de.tubs.cs.ias.asm_test.asm;
 
-import de.tubs.cs.ias.asm_test.FieldData;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;

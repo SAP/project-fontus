@@ -1,10 +1,10 @@
 package de.tubs.cs.ias.asm_test.transformer;
 
-import de.tubs.cs.ias.asm_test.Descriptor;
-import de.tubs.cs.ias.asm_test.FunctionCall;
-import de.tubs.cs.ias.asm_test.MethodTaintingVisitor;
+import de.tubs.cs.ias.asm_test.asm.Descriptor;
+import de.tubs.cs.ias.asm_test.asm.FunctionCall;
+import de.tubs.cs.ias.asm_test.instrumentation.MethodTaintingVisitor;
 import de.tubs.cs.ias.asm_test.config.Configuration;
-import de.tubs.cs.ias.asm_test.strategies.method.MethodInstrumentationStrategy;
+import de.tubs.cs.ias.asm_test.instrumentation.strategies.method.MethodInstrumentationStrategy;
 
 import java.util.Collection;
 

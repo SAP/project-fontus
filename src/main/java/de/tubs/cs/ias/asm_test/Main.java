@@ -1,6 +1,9 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.asm.ClassResolver;
 import de.tubs.cs.ias.asm_test.config.TaintMethod;
+import de.tubs.cs.ias.asm_test.instrumentation.Instrumenter;
+import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;

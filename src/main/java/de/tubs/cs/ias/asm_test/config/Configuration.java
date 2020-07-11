@@ -3,7 +3,7 @@ package de.tubs.cs.ias.asm_test.config;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 
-import de.tubs.cs.ias.asm_test.FunctionCall;
+import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

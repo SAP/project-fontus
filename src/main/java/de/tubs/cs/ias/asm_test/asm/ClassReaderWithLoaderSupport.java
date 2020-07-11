@@ -1,7 +1,5 @@
 package de.tubs.cs.ias.asm_test.asm;
 
-import de.tubs.cs.ias.asm_test.ClassResolver;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;

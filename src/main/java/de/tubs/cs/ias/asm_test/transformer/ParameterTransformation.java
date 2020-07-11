@@ -1,6 +1,6 @@
 package de.tubs.cs.ias.asm_test.transformer;
 
-import de.tubs.cs.ias.asm_test.MethodTaintingVisitor;
+import de.tubs.cs.ias.asm_test.instrumentation.MethodTaintingVisitor;
 
 public interface ParameterTransformation {
 

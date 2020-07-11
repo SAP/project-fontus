@@ -1,10 +1,10 @@
 package de.tubs.cs.ias.asm_test.transformer;
 
-import de.tubs.cs.ias.asm_test.MethodTaintingUtils;
-import de.tubs.cs.ias.asm_test.MethodTaintingVisitor;
+import de.tubs.cs.ias.asm_test.instrumentation.MethodTaintingUtils;
+import de.tubs.cs.ias.asm_test.instrumentation.MethodTaintingVisitor;
 import de.tubs.cs.ias.asm_test.config.Sink;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
-import de.tubs.cs.ias.asm_test.strategies.InstrumentationHelper;
+import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

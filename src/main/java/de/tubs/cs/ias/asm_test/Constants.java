@@ -132,7 +132,7 @@ public final class Constants {
     /**
      * Descriptor of the Java main method
      */
-    static final String MAIN_METHOD_DESC = "([Ljava/lang/String;)V";
+    public static final String MAIN_METHOD_DESC = "([Ljava/lang/String;)V";
 
     /**
      * Method to return taint-aware string representation from instrumented class.

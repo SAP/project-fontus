@@ -1,6 +1,9 @@
 package de.tubs.cs.ias.asm_test.transformer;
 
 import de.tubs.cs.ias.asm_test.*;
+import de.tubs.cs.ias.asm_test.asm.Descriptor;
+import de.tubs.cs.ias.asm_test.asm.FunctionCall;
+import de.tubs.cs.ias.asm_test.instrumentation.MethodTaintingVisitor;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 import org.objectweb.asm.Type;
 import org.slf4j.Logger;

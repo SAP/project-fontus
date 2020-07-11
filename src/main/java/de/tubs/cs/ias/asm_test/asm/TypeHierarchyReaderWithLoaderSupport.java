@@ -1,6 +1,5 @@
 package de.tubs.cs.ias.asm_test.asm;
 
-import de.tubs.cs.ias.asm_test.ClassResolver;
 import org.mutabilitydetector.asm.typehierarchy.TypeHierarchyReader;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
