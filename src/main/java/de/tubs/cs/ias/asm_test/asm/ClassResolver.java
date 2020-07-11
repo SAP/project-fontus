@@ -1,16 +1,15 @@
 package de.tubs.cs.ias.asm_test.asm;
 
 import de.tubs.cs.ias.asm_test.Constants;
+import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import de.tubs.cs.ias.asm_test.utils.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
-import java.lang.invoke.MethodHandles;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 
 public class ClassResolver {
     private final ClassLoader loader;
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LogUtils.getLogger();
 
     public ClassResolver(ClassLoader loader) {
         this.loader = loader;

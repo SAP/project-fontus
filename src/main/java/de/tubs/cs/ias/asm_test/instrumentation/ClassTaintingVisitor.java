@@ -9,8 +9,8 @@ import de.tubs.cs.ias.asm_test.instrumentation.strategies.clazz.*;
 import de.tubs.cs.ias.asm_test.utils.ClassUtils;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 import org.objectweb.asm.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.tubs.cs.ias.asm_test.utils.Logger;
+import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.AnnotatedType;
@@ -22,7 +22,7 @@ import static de.tubs.cs.ias.asm_test.utils.ClassUtils.getAllMethods;
 
 
 class ClassTaintingVisitor extends ClassVisitor {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LogUtils.getLogger();
 
     private final TaintStringConfig stringConfig;
 

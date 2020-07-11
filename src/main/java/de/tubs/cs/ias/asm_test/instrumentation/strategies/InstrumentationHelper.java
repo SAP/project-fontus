@@ -18,7 +18,6 @@ public final class InstrumentationHelper {
         return INSTANCE;
     }
 
-
     private InstrumentationHelper(TaintStringConfig configuration) {
         this.strategies.add(new FormatterInstrumentation(configuration));
         this.strategies.add(new MatcherInstrumentation(configuration));

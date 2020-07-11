@@ -4,18 +4,18 @@ import de.tubs.cs.ias.asm_test.*;
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 import de.tubs.cs.ias.asm_test.instrumentation.MethodTaintingVisitor;
+import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 import org.objectweb.asm.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 
 public class MethodParameterTransformer {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LogUtils.getLogger();
 
     private final MethodTaintingVisitor visitor;
     private final FunctionCall function;

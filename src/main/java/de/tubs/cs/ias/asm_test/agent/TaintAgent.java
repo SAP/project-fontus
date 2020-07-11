@@ -1,15 +1,13 @@
 package de.tubs.cs.ias.asm_test.agent;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
 import java.lang.instrument.Instrumentation;
-import java.lang.invoke.MethodHandles;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 
 public class TaintAgent {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LogUtils.getLogger();
     private static Configuration configuration;
 
     public static void premain(String args, Instrumentation inst) {

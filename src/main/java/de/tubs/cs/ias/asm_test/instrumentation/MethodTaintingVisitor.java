@@ -1,7 +1,7 @@
 package de.tubs.cs.ias.asm_test.instrumentation;
 
 import de.tubs.cs.ias.asm_test.Constants;
-import de.tubs.cs.ias.asm_test.ProxiedDynamicFunctionEntry;
+import de.tubs.cs.ias.asm_test.asm.ProxiedDynamicFunctionEntry;
 import de.tubs.cs.ias.asm_test.asm.ClassResolver;
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.asm.FunctionCall;
@@ -15,8 +15,8 @@ import de.tubs.cs.ias.asm_test.instrumentation.strategies.method.*;
 import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 import org.objectweb.asm.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.tubs.cs.ias.asm_test.utils.Logger;
+import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ import java.util.Stack;
 
 @SuppressWarnings("deprecation")
 public class MethodTaintingVisitor extends BasicMethodVisitor {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LogUtils.getLogger();
 
     private boolean shouldRewriteCheckCast;
     private final String name;

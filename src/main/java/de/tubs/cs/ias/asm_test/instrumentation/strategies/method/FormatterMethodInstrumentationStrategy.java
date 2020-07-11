@@ -9,8 +9,8 @@ import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.tubs.cs.ias.asm_test.utils.Logger;
+import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Formatter;
@@ -21,7 +21,7 @@ public class FormatterMethodInstrumentationStrategy extends FormatterInstrumenta
     private final MethodVisitor mv;
     private final HashMap<String, String> methodsToRename = new HashMap<>(1);
     private static final Type formatterType = Type.getType(Formatter.class);
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LogUtils.getLogger();
 
     public FormatterMethodInstrumentationStrategy(MethodVisitor parentVisitor, TaintStringConfig configuration) {
         super(configuration);

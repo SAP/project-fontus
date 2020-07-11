@@ -1,8 +1,8 @@
 package de.tubs.cs.ias.asm_test.config;
 
 import de.tubs.cs.ias.asm_test.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.tubs.cs.ias.asm_test.utils.Logger;
+import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,7 +10,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.Properties;
 
 public class TaintMethodConfig {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LogUtils.getLogger();
 
     private static final Properties properties;
     private static TaintMethod taintMethod;

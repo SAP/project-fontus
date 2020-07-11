@@ -4,15 +4,15 @@ import de.tubs.cs.ias.asm_test.TriConsumer;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.AbstractInstrumentation;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.tubs.cs.ias.asm_test.utils.Logger;
+import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import java.util.regex.Matcher;
 
 public abstract class AbstractClassInstrumentationStrategy extends AbstractInstrumentation implements ClassInstrumentationStrategy {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LogUtils.getLogger();
     private final ClassVisitor visitor;
 
     AbstractClassInstrumentationStrategy(ClassVisitor visitor, String origDesc, String taintedDesc, String origQN, String taintedQN) {

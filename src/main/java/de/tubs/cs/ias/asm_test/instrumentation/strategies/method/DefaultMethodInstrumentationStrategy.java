@@ -2,23 +2,22 @@ package de.tubs.cs.ias.asm_test.instrumentation.strategies.method;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
+import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.DefaultInstrumentation;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
 import java.util.Set;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 
 public class DefaultMethodInstrumentationStrategy extends DefaultInstrumentation implements MethodInstrumentationStrategy {
     private final MethodVisitor mv;
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LogUtils.getLogger();
     private static final Set<Type> requireValueOf = fillRequireValueOfSet();
 
     private static Set<Type> fillRequireValueOfSet() {
