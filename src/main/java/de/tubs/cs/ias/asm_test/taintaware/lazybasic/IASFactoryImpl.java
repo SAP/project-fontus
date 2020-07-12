@@ -16,6 +16,11 @@ public class IASFactoryImpl implements IASFactory {
     }
 
     @Override
+    public IASStringable valueOf(Object o) {
+        return IASString.valueOf(o);
+    }
+
+    @Override
     public IASStringBuilderable createStringBuilder(IASStringable string) {
         return new IASStringBuilder(string);
     }
