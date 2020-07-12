@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.bool;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringUtils;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
 import java.util.regex.Pattern;
@@ -48,7 +49,7 @@ public class IASPattern {
 
     public IASString[] split(CharSequence input) {
         boolean tainted = (input instanceof IASTaintAware) && ((IASTaintAware) input).isTainted();
-        IASString[] result = IASStringUtils.convertStringArray(this.pattern.split(input));
+        IASString[] result = (IASString[]) IASStringUtils.convertStringArray(this.pattern.split(input));
         if (result != null && tainted) {
             for (IASString s : result) {
                 s.setTaint(true);
@@ -59,7 +60,7 @@ public class IASPattern {
 
     public IASString[] split(CharSequence input, int limit) {
         boolean tainted = (input instanceof IASTaintAware) && ((IASTaintAware) input).isTainted();
-        IASString[] result = IASStringUtils.convertStringArray(this.pattern.split(input, limit));
+        IASString[] result = (IASString[]) IASStringUtils.convertStringArray(this.pattern.split(input, limit));
         if (result != null && tainted) {
             for (IASString s : result) {
                 s.setTaint(true);

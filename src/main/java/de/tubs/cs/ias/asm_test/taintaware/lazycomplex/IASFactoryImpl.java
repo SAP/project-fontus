@@ -1,4 +1,4 @@
-package de.tubs.cs.ias.asm_test.taintaware.range;
+package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASFactory;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
@@ -24,5 +24,4 @@ public class IASFactoryImpl implements IASFactory {
     public IASStringBuilderable createStringBuilder(IASStringable string) {
         return new IASStringBuilder(string);
     }
-
 }

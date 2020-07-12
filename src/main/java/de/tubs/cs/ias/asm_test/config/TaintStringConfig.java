@@ -147,8 +147,8 @@ public class TaintStringConfig {
         this.TPackage = taintawarePackage + taintMethod.getSubPath();
         this.TStringQN = this.TPackage + "IASString";
         this.TStringBufferQN = this.TPackage + "IASStringBuffer";
-        this.TStringUtilsQN = this.TPackage + "IASStringUtils";
-        this.ReflectionProxiesQN = this.TPackage + "IASReflectionProxies";
+        this.TStringUtilsQN = sharedPackage + "IASStringUtils";
+        this.ReflectionProxiesQN = sharedPackage + "IASReflectionProxies";
         this.ReflectionMethodProxyQN = sharedPackage + "IASReflectionMethodProxy";
         this.TStringDesc = java.lang.String.format("L%s;", this.TStringQN);
         this.MethodTStringDesc = String.format("L%sIASStringable;", sharedPackage);
