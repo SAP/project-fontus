@@ -2,14 +2,22 @@ package de.tubs.cs.ias.asm_test.taintaware.shared;
 
 import de.tubs.cs.ias.asm_test.config.Configuration;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.stream.Collectors;
+import java.util.List;
 
 public class IASToArrayProxy {
     private static final IASFactory factory = Configuration.getConfiguration().getTaintMethod().getFactory();
 
-    public static IASStringable[] toArray(Collection<String> list, IASStringable[] array) {
-        return list.stream().map(factory::valueOf).collect(Collectors.toList()).toArray(array);
+    public static IASStringable[] toArray(Collection<?> list, IASStringable[] array) {
+        List<IASStringable> converted = new ArrayList<>(list.size());
+        for(Object s : list) {
+            if (s instanceof IASStringable) {
+                break;
+            }
+            converted.add(factory.valueOf(s));
+        }
+        return converted.toArray(array);
     }
 
     public static Object[] toArray(Collection<?> list) {

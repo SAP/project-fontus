@@ -149,10 +149,10 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
     private void fillInterfaceProxies() {
-        this.methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Collection", "toArray", "([Ljava/lang/Object;)[java/lang/Object;", true),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getToArrayProxyQN(), "toArray", String.format("(L%s;[%s)[%s", Utils.fixup(Collection.class.getName()), this.stringConfig.getMethodTStringDesc(), this.stringConfig.getMethodTStringDesc())));
-        this.methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Collection", "toArray", "()[java/lang/Object;", true),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getToArrayProxyQN(), "toArray", String.format("(L%s;)[%s", Utils.fixup(Collection.class.getName()), this.stringConfig.getMethodTStringDesc())));
+        this.methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/util/Collection", "toArray", "([Ljava/lang/Object;)[Ljava/lang/Object;", true),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getToArrayProxyQN(), "toArray", String.format("(L%s;[%s)[%s", Utils.fixupReverse(Collection.class.getName()), this.stringConfig.getMethodTStringDesc(), this.stringConfig.getMethodTStringDesc())));
+        this.methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/util/Collection", "toArray", "()[Ljava/lang/Object;", true),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getToArrayProxyQN(), "toArray", String.format("(L%s;)[%s", Utils.fixupReverse(Collection.class.getName()), this.stringConfig.getMethodTStringDesc())));
     }
 
     @Override
@@ -432,6 +432,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
                 for (FunctionCall mip : this.methodInterfaceProxies.keySet()) {
                     if (pfe.getName().equals(mip.getName()) && pfe.getDescriptor().equals(mip.getDescriptor())) {
                         if (thisOrSuperQNEquals(pfe.getOwner(), mip.getOwner())) {
+                            logger.info("Proxying interface call to {}.{}{}", pfe.getOwner(), pfe.getName(), pfe.getDescriptor());
                             Runnable pf = this.methodInterfaceProxies.get(mip);
                             pf.run();
                             return true;
@@ -453,7 +454,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             return true;
         }
         try {
-            for (Class cls = Class.forName(Utils.fixupReverse(thisQn)); cls.getSuperclass() != null; cls = cls.getSuperclass()) {
+            for (Class cls = Class.forName(Utils.fixup(thisQn)); cls.getSuperclass() != null; cls = cls.getSuperclass()) {
                 for (Class interf : cls.getInterfaces()) {
                     if (Utils.fixupReverse(interf.getName()).equals(requiredQn)) {
                         return true;
