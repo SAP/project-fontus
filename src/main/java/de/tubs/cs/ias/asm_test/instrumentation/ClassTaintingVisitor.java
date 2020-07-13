@@ -264,10 +264,16 @@ class ClassTaintingVisitor extends ClassVisitor {
             // Creating new Object if necessary and duplicating it for initialization
             if (isQNToInstrument(param)) {
                 String instrumentedParam = Descriptor.descriptorNameToQN(this.instrumentQN(param));
-                mv.visitTypeInsn(Opcodes.NEW, instrumentedParam);
-                mv.visitInsn(Opcodes.DUP);
-                mv.visitVarInsn(loadCodeByType(param), i);
-                mv.visitMethodInsn(Opcodes.INVOKESPECIAL, instrumentedParam, Constants.Init, new Descriptor(new String[]{param}, "V").toDescriptor(), false);
+                int arrayDimensions = calculateDescArrayDimensions(param);
+                if (arrayDimensions == 0) {
+                    mv.visitTypeInsn(Opcodes.NEW, instrumentedParam);
+                    mv.visitInsn(Opcodes.DUP);
+                    mv.visitVarInsn(loadCodeByType(param), i);
+                    mv.visitMethodInsn(Opcodes.INVOKESPECIAL, instrumentedParam, Constants.Init, new Descriptor(new String[]{param}, "V").toDescriptor(), false);
+                } else {
+                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "convertStringArray", String.format("([L%s;)[%s", String.class.getName(), this.stringConfig.getMethodTStringDesc()), false);
+                    mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedParam);
+                }
             } else {
                 mv.visitVarInsn(loadCodeByType(param), i);
             }
@@ -283,6 +289,14 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitInsn(returnCodeByReturnType(d.getReturnType()));
         mv.visitMaxs(d.parameterCount() + 1, d.parameterCount() + 1);
         mv.visitEnd();
+    }
+
+    private int calculateDescArrayDimensions(String descriptor) {
+        int counter = 0;
+        for (int i = descriptor.indexOf('['); i >= 0; i = descriptor.indexOf('[', i + 1)) {
+            counter++;
+        }
+        return counter;
     }
 
     private int loadCodeByType(String type) {
