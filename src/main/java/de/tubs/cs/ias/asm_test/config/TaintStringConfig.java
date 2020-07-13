@@ -77,6 +77,7 @@ public class TaintStringConfig {
     private final String TPatternDesc;
     private final String TPatternQN;
     private final String ReflectionMethodProxyQN;
+    private final String ToArrayProxyQN;
 
     public String getTPackage() {
         return this.TPackage;
@@ -150,7 +151,8 @@ public class TaintStringConfig {
         this.TStringUtilsQN = sharedPackage + "IASStringUtils";
         this.ReflectionProxiesQN = sharedPackage + "IASReflectionProxies";
         this.ReflectionMethodProxyQN = sharedPackage + "IASReflectionMethodProxy";
-        this.TStringDesc = java.lang.String.format("L%s;", this.TStringQN);
+        this.ToArrayProxyQN = sharedPackage + "IASToArrayProxy";
+        this.TStringDesc = String.format("L%s;", this.TStringQN);
         this.MethodTStringDesc = String.format("L%sIASStringable;", sharedPackage);
         this.TStringArrayDesc = "[" + this.TStringDesc;
         this.TStringBuilderQN = this.TPackage + "IASStringBuilder";
@@ -164,12 +166,12 @@ public class TaintStringConfig {
         this.asStringDesc = String.format("(%s)%s", this.TStringDesc, StringDesc);
         this.fromStringDesc = String.format("(%s)%s", StringDesc, this.TStringDesc);
         this.TFormatterQN = this.TPackage + "IASFormatter";
-        this.TFormatterDesc = java.lang.String.format("L%s;", this.TFormatterQN);
+        this.TFormatterDesc = String.format("L%s;", this.TFormatterQN);
         this.MethodTFormatterDesc = "Lde/tubs/cs/ias/asm_test/taintaware/shared/IASFormatterable;";
         this.TMatcherQN = this.TPackage + "IASMatcher";
-        this.TMatcherDesc = java.lang.String.format("L%s;", this.TMatcherQN);
+        this.TMatcherDesc = String.format("L%s;", this.TMatcherQN);
         this.TPatternQN = this.TPackage + "IASPattern";
-        this.TPatternDesc = java.lang.String.format("L%s;", this.TPatternQN);
+        this.TPatternDesc = String.format("L%s;", this.TPatternQN);
     }
 
     public String getTFormatterDesc() {
@@ -218,5 +220,9 @@ public class TaintStringConfig {
 
     public String getReflectionMethodProxyQN() {
         return this.ReflectionMethodProxyQN;
+    }
+
+    public String getToArrayProxyQN() {
+        return ToArrayProxyQN;
     }
 }

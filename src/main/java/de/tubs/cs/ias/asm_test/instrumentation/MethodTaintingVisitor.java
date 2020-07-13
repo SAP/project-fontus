@@ -18,10 +18,7 @@ import org.objectweb.asm.*;
 import de.tubs.cs.ias.asm_test.utils.Logger;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Stack;
+import java.util.*;
 
 
 @SuppressWarnings("deprecation")
@@ -50,6 +47,12 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
     private final TaintStringConfig stringConfig;
 
+    /**
+     * If a method which is part of an interface should be proxied, place it here
+     * The owner should be the interface
+     */
+    private final Map<FunctionCall, Runnable> methodInterfaceProxies;
+
     public MethodTaintingVisitor(int acc, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver, Configuration config) {
         super(Opcodes.ASM7, methodVisitor);
         this.resolver = resolver;
@@ -61,8 +64,10 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.name = name;
         this.methodDescriptor = methodDescriptor;
         this.methodProxies = new HashMap<>();
+        this.methodInterfaceProxies = new HashMap<>();
         this.dynProxies = new HashMap<>();
         this.fillProxies();
+        this.fillInterfaceProxies();
         this.config = config;
         this.stringConfig = config.getTaintStringConfig();
         this.instrumentation.add(new StringMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
@@ -124,9 +129,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/System", "arraycopy", "(Ljava/lang/Object;ILjava/lang/Object;II)V", false),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "arraycopy", "(Ljava/lang/Object;ILjava/lang/Object;II)V", false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionProxiesQN(), "classForName", String.format("(%s)Ljava/lang/Class;", this.stringConfig.getTStringDesc()), false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionProxiesQN(), "classForName", String.format("(%s)Ljava/lang/Class;", this.stringConfig.getMethodTStringDesc()), false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionProxiesQN(), "classForName", String.format("(%sZLjava/lang/ClassLoader;)Ljava/lang/Class;", this.stringConfig.getTStringDesc()), false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionProxiesQN(), "classForName", String.format("(%sZLjava/lang/ClassLoader;)Ljava/lang/Class;", this.stringConfig.getMethodTStringDesc()), false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/net/URLEncoder", "encode", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", false),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, String.format("%sTURLEncoder", this.stringConfig.getTPackage()), "encode", String.format("(%s%s)%s", this.stringConfig.getTStringDesc(), this.stringConfig.getTStringDesc(), this.stringConfig.getTStringDesc()), false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/net/URLEncoder", "encode", "(Ljava/lang/String;)Ljava/lang/String;", false),
@@ -141,6 +146,13 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "getDeclaredMethodProxied", String.format("(Ljava/lang/Class;%s[Ljava/lang/Class;)Ljava/lang/reflect/Method;", this.stringConfig.getMethodTStringDesc()), false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/System", "getenv", "()Ljava/util/Map;", false),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "getenv", "()Ljava/util/Map;", false));
+    }
+
+    private void fillInterfaceProxies() {
+        this.methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Collection", "toArray", "([Ljava/lang/Object;)[java/lang/Object;", true),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getToArrayProxyQN(), "toArray", String.format("(L%s;[%s)[%s", Utils.fixup(Collection.class.getName()), this.stringConfig.getMethodTStringDesc(), this.stringConfig.getMethodTStringDesc())));
+        this.methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Collection", "toArray", "()[java/lang/Object;", true),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getToArrayProxyQN(), "toArray", String.format("(L%s;)[%s", Utils.fixup(Collection.class.getName()), this.stringConfig.getMethodTStringDesc())));
     }
 
     @Override
@@ -309,7 +321,8 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         // TODO All instrumented classes not only strings
         if (/*this.shouldRewriteCheckCast &&*/ opcode == Opcodes.CHECKCAST && Constants.StringQN.equals(type)) {
             logger.info("Rewriting checkcast to call to TString.fromObject(Object obj)");
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "fromObject", String.format("(%s)%s", Constants.ObjectDesc, this.stringConfig.getTStringDesc()), false);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "fromObject", String.format("(%s)%s", Constants.ObjectDesc, this.stringConfig.getMethodTStringDesc()), false);
+            super.visitTypeInsn(Opcodes.CHECKCAST, this.stringConfig.getTStringQN());
             this.shouldRewriteCheckCast = false;
             return;
         }
@@ -413,6 +426,42 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             Runnable pf = this.methodProxies.get(pfe);
             pf.run();
             return true;
+        }
+        if (pfe.getOpcode() == Opcodes.INVOKEVIRTUAL || pfe.getOpcode() == Opcodes.INVOKEINTERFACE) {
+            if (isQNJdk(pfe.getOwner())) {
+                for (FunctionCall mip : this.methodInterfaceProxies.keySet()) {
+                    if (pfe.getName().equals(mip.getName()) && pfe.getDescriptor().equals(mip.getDescriptor())) {
+                        if (thisOrSuperQNEquals(pfe.getOwner(), mip.getOwner())) {
+                            Runnable pf = this.methodInterfaceProxies.get(mip);
+                            pf.run();
+                            return true;
+                        }
+                    }
+                }
+
+            }
+        }
+        return false;
+    }
+
+    private boolean isQNJdk(String qn) {
+        return JdkClassesLookupTable.getInstance().isJdkClass(Utils.fixupReverse(qn));
+    }
+
+    private boolean thisOrSuperQNEquals(String thisQn, final String requiredQn) {
+        if (thisQn.equals(requiredQn)) {
+            return true;
+        }
+        try {
+            for (Class cls = Class.forName(Utils.fixupReverse(thisQn)); cls.getSuperclass() != null; cls = cls.getSuperclass()) {
+                for (Class interf : cls.getInterfaces()) {
+                    if (Utils.fixupReverse(interf.getName()).equals(requiredQn)) {
+                        return true;
+                    }
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
         return false;
     }
