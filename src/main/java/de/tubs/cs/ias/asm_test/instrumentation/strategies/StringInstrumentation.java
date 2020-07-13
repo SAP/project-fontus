@@ -46,6 +46,6 @@ public class StringInstrumentation implements InstrumentationStrategy {
 
     @Override
     public boolean handlesType(String typeName) {
-        return Constants.StringDesc.endsWith(typeName);
+        return typeName.endsWith(Constants.StringDesc);
     }
 }

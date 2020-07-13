@@ -34,7 +34,9 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     }
 
     private void mergeTaint(IASTaintAware other) {
-        this.tainted |= other.isTainted();
+        if (other != null) {
+            this.tainted |= other.isTainted();
+        }
     }
 
 
@@ -47,9 +49,10 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     }
 
     public IASAbstractStringBuilder(IASStringable str) {
-        this.stringBuilder = new StringBuilder(str.length() + 16);
+        this.stringBuilder = new StringBuilder();
         this.stringBuilder.append(str);
         this.mergeTaint(str);
+        this.stringBuilder.ensureCapacity(this.stringBuilder.length() + 16);
     }
 
     public IASAbstractStringBuilder(String str) {

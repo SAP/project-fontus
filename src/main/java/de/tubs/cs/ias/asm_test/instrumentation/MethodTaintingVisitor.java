@@ -150,9 +150,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
     private void fillInterfaceProxies() {
         this.methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/util/Collection", "toArray", "([Ljava/lang/Object;)[Ljava/lang/Object;", true),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getToArrayProxyQN(), "toArray", String.format("(L%s;[%s)[%s", Utils.fixupReverse(Collection.class.getName()), this.stringConfig.getMethodTStringDesc(), this.stringConfig.getMethodTStringDesc())));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getToArrayProxyQN(), "toArray", String.format("(L%s;[Ljava/lang/Object;)[Ljava/lang/Object;", Utils.fixupReverse(Collection.class.getName()))));
         this.methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/util/Collection", "toArray", "()[Ljava/lang/Object;", true),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getToArrayProxyQN(), "toArray", String.format("(L%s;)[%s", Utils.fixupReverse(Collection.class.getName()), this.stringConfig.getMethodTStringDesc())));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getToArrayProxyQN(), "toArray", String.format("(L%s;)[Ljava/lang/Object;", Utils.fixupReverse(Collection.class.getName()))));
     }
 
     @Override

@@ -46,6 +46,6 @@ public class FormatterInstrumentation implements InstrumentationStrategy {
 
     @Override
     public boolean handlesType(String typeName) {
-        return Constants.FormatterDesc.endsWith(typeName);
+        return typeName.endsWith(Constants.FormatterDesc);
     }
 }
