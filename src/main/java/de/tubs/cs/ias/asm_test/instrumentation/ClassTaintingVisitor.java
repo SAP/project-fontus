@@ -13,7 +13,6 @@ import org.objectweb.asm.*;
 import de.tubs.cs.ias.asm_test.utils.Logger;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -262,7 +261,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         for (String param : d.getParameters()) {
 
             // Creating new Object if necessary and duplicating it for initialization
-            if (isQNToInstrument(param)) {
+            if (isDescriptorNameToInstrument(param)) {
                 String instrumentedParam = Descriptor.descriptorNameToQN(this.instrumentQN(param));
                 int arrayDimensions = calculateDescArrayDimensions(param);
                 if (arrayDimensions == 0) {
@@ -271,7 +270,7 @@ class ClassTaintingVisitor extends ClassVisitor {
                     mv.visitVarInsn(loadCodeByType(param), i);
                     mv.visitMethodInsn(Opcodes.INVOKESPECIAL, instrumentedParam, Constants.Init, new Descriptor(new String[]{param}, "V").toDescriptor(), false);
                 } else {
-                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "convertStringArray", String.format("([L%s;)[%s", String.class.getName(), this.stringConfig.getMethodTStringDesc()), false);
+                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "convertStringArray", String.format("([L%s;)[%s", Utils.fixupReverse(String.class.getName()), this.stringConfig.getMethodTStringDesc()), false);
                     mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedParam);
                 }
             } else {
@@ -280,7 +279,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             i++;
         }
         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.owner, instrumentedName, instrumentedDescriptor.toDescriptor(), false);
-        if (isQNToInstrument(d.getReturnType())) {
+        if (isDescriptorNameToInstrument(d.getReturnType())) {
             String returnType = Descriptor.descriptorNameToQN(this.instrumentQN(d.getReturnType()));
             String toOriginalMethod = this.getToOriginalMethod(d.getReturnType());
             mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, returnType, toOriginalMethod, new Descriptor(d.getReturnType()).toDescriptor(), false);
@@ -346,7 +345,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         throw new IllegalArgumentException("Trying to get cast method for non instrumented type: " + qn);
     }
 
-    private boolean isQNToInstrument(String qn) {
+    private boolean isDescriptorNameToInstrument(String qn) {
         for (ClassInstrumentationStrategy instrumentationStrategy : this.instrumentation) {
             if (instrumentationStrategy.handlesType(qn)) {
                 return true;
@@ -444,11 +443,17 @@ class ClassTaintingVisitor extends ClassVisitor {
         for (int i = 0; i < origDescriptor.parameterCount(); i++) {
             String param = origDescriptor.getParameters().get(i);
             // Creating new Object if necessary and duplicating it for initialization
-            if (isQNToInstrument(param)) {
+            if (isDescriptorNameToInstrument(param)) {
                 mv.visitVarInsn(loadCodeByType(param), i + 1);
                 String instrumentedParam = Descriptor.descriptorNameToQN(this.instrumentQN(param));
-                mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedParam);
-                mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, instrumentedParam, this.getToOriginalMethod(param), new Descriptor(param).toDescriptor(), false);
+                int arrayDimensions = calculateDescArrayDimensions(param);
+                if (arrayDimensions == 0) {
+                    mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedParam);
+                    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, instrumentedParam, this.getToOriginalMethod(param), new Descriptor(param).toDescriptor(), false);
+                } else {
+                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "convertTaintAwareStringArray", String.format("([%s)[L%s;", this.stringConfig.getMethodTStringDesc(), Utils.fixupReverse(String.class.getName())), false);
+//                    mv.visitTypeInsn(Opcodes.CHECKCAST, param);
+                }
             } else {
                 mv.visitVarInsn(loadCodeByType(param), i + 1);
             }
@@ -458,18 +463,25 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superName, m.getName(), origDescriptor.toDescriptor(), false);
 
         // Converting the return type back
-        if (isQNToInstrument(origDescriptor.getReturnType())) {
+        if (isDescriptorNameToInstrument(origDescriptor.getReturnType())) {
             // TODO Handle Arrays/Lists
             String returnType = Descriptor.descriptorNameToQN(this.instrumentQN(origDescriptor.getReturnType()));
 
-            int resultLocalAddress = origDescriptor.parameterCount() + 1;
-            mv.visitVarInsn(Opcodes.ASTORE, resultLocalAddress); // this, params, free storage => 0 indexed
 
-            mv.visitTypeInsn(Opcodes.NEW, returnType);
-            mv.visitInsn(Opcodes.DUP);
-            mv.visitVarInsn(Opcodes.ALOAD, resultLocalAddress);
+            int arrayDimensions = calculateDescArrayDimensions(returnType);
+            if(arrayDimensions == 0) {
+                int resultLocalAddress = origDescriptor.parameterCount() + 1;
+                mv.visitVarInsn(Opcodes.ASTORE, resultLocalAddress); // this, params, free storage => 0 indexed
 
-            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, returnType, Constants.Init, new Descriptor(new String[]{origDescriptor.getReturnType()}, "V").toDescriptor(), false);
+                mv.visitTypeInsn(Opcodes.NEW, returnType);
+                mv.visitInsn(Opcodes.DUP);
+                mv.visitVarInsn(Opcodes.ALOAD, resultLocalAddress);
+
+                mv.visitMethodInsn(Opcodes.INVOKESPECIAL, returnType, Constants.Init, new Descriptor(new String[]{origDescriptor.getReturnType()}, "V").toDescriptor(), false);
+            } else {
+                mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "convertStringArray", String.format("([L%s;)[%s", Utils.fixupReverse(String.class.getName()), this.stringConfig.getMethodTStringDesc()), false);
+                mv.visitTypeInsn(Opcodes.CHECKCAST, Descriptor.classNameToDescriptorName(Utils.fixup(returnType)));
+            }
         }
 
         mv.visitInsn(returnCodeByReturnType(instrumentedDescriptor.getReturnType()));

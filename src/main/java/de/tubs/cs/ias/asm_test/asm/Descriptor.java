@@ -217,7 +217,7 @@ public class Descriptor {
             case "Z":
                 return "boolean";
             case "V":
-                throw new IllegalArgumentException("Descriptor name V cannot be cast to a qualified name");
+                return "void";
             default:
                 int arrayCount = 0;
                 for (; descriptorName.startsWith("["); arrayCount++) {

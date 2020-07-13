@@ -46,6 +46,6 @@ public class StringBufferInstrumentation implements InstrumentationStrategy {
 
     @Override
     public boolean handlesType(String typeName) {
-        return Constants.StringBufferDesc.endsWith(typeName);
+        return typeName.endsWith(Constants.StringBufferDesc);
     }
 }
