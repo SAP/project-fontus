@@ -5,4 +5,6 @@ public interface IASFactory {
     IASStringable valueOf(Object o);
     IASStringBuilderable createStringBuilder();
     IASStringBuilderable createStringBuilder(IASStringable string);
+    Class<? extends IASStringable> getStringClass();
+    Class<? extends IASStringable[]> getStringArrayClass();
 }
