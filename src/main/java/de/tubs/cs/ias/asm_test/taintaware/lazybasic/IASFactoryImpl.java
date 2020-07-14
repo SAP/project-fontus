@@ -24,4 +24,14 @@ public class IASFactoryImpl implements IASFactory {
     public IASStringBuilderable createStringBuilder(IASStringable string) {
         return new IASStringBuilder(string);
     }
+
+    @Override
+    public Class<? extends IASStringable> getStringClass() {
+        return IASString.class;
+    }
+
+    @Override
+    public Class<? extends IASStringable[]> getStringArrayClass() {
+        return IASString[].class;
+    }
 }

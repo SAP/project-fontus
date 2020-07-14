@@ -1,15 +1,19 @@
 package de.tubs.cs.ias.asm_test.taintaware.shared;
 
 import de.tubs.cs.ias.asm_test.Constants;
+import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public class IASReflectionMethodProxy {
+    private static final IASFactory factory = Configuration.getConfiguration().getTaintMethod().getFactory();
     private static final String packageName = "de.tubs.cs.ias.asm_test.taintaware.";
     private static final Map<String, Class<?>> replacements = new HashMap<>();
 
@@ -18,6 +22,36 @@ public class IASReflectionMethodProxy {
         replacements.put("IASStringBuilder", IASStringBuilderable.class);
         replacements.put("IASStringBuffer", IASStringBuilderable.class);
         replacements.put("IASFormatter", IASFormatterable.class);
+    }
+
+    public static Object invoke(Method method, Object instance, Object... parameters) throws InvocationTargetException, IllegalAccessException {
+        if (method.getDeclaringClass().isAnnotation()) {
+            if (method.getReturnType().isAssignableFrom(String.class)) {
+                String result = (String) method.invoke(instance, parameters);
+                IASStringable converted = factory.createString(result);
+                return factory.getStringClass().cast(converted);
+            } else if (method.getReturnType().isArray() && method.getReturnType().getComponentType().isAssignableFrom(String.class)) {
+                String[] result = (String[]) method.invoke(instance, parameters);
+                IASStringable[] converted = IASStringUtils.convertStringArray(result);
+                return Arrays.copyOf(converted, converted.length, factory.getStringArrayClass());
+            }
+        }
+        return method.invoke(instance, parameters);
+    }
+
+    public static Object getDefaultValue(Method method) {
+        if (method.getDeclaringClass().isAnnotation()) {
+            if (method.getReturnType().isAssignableFrom(String.class)) {
+                String result = (String) method.getDefaultValue();
+                IASStringable converted = factory.createString(result);
+                return factory.getStringClass().cast(converted);
+            } else if (method.getReturnType().isArray() && method.getReturnType().getComponentType().isAssignableFrom(String.class)) {
+                String[] result = (String[]) method.getDefaultValue();
+                IASStringable[] converted = IASStringUtils.convertStringArray(result);
+                return Arrays.copyOf(converted, converted.length, factory.getStringArrayClass());
+            }
+        }
+        return method.getDefaultValue();
     }
 
     public static Method getMethodProxied(Class<?> clazz, IASStringable methodName, Class[] parameters) throws NoSuchMethodException {

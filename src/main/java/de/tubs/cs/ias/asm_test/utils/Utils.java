@@ -96,6 +96,9 @@ public final class Utils {
     }
 
     public static Handle instrumentHandle(Handle h, TaintStringConfig config) {
+        if (JdkClassesLookupTable.getInstance().isJdkClass(h.getOwner())) {
+            return h;
+        }
         Descriptor desc = Descriptor.parseDescriptor(h.getDesc());
         desc = InstrumentationHelper.getInstance(config).instrument(desc);
         String owner = InstrumentationHelper.getInstance(config).instrumentQN(h.getOwner());

@@ -12,6 +12,9 @@ import de.tubs.cs.ias.asm_test.utils.Utils;
 import org.objectweb.asm.*;
 import de.tubs.cs.ias.asm_test.utils.Logger;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
+import org.objectweb.asm.signature.SignatureReader;
+import org.objectweb.asm.signature.SignatureVisitor;
+import org.objectweb.asm.signature.SignatureWriter;
 
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Method;
@@ -107,7 +110,8 @@ class ClassTaintingVisitor extends ClassVisitor {
             InstrumentationState.getInstance().addAnnotation(name);
         }
 
-        super.visit(version, access, name, signature, superName, interfaces);
+        String instrumentedSignature = this.instrumentSignature(signature);
+        super.visit(version, access, name, instrumentedSignature, superName, interfaces);
     }
 
     /**
@@ -469,7 +473,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 
 
             int arrayDimensions = calculateDescArrayDimensions(returnType);
-            if(arrayDimensions == 0) {
+            if (arrayDimensions == 0) {
                 int resultLocalAddress = origDescriptor.parameterCount() + 1;
                 mv.visitVarInsn(Opcodes.ASTORE, resultLocalAddress); // this, params, free storage => 0 indexed
 
@@ -589,6 +593,18 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitEnd();
     }
 
+    private String instrumentSignature(final String signature) {
+        logger.info("Instrumenting signature {}", signature);
+        if (signature == null) {
+            return null;
+        }
+        SignatureWriter sw = new SignatureWriter();
+        SignatureVisitor sv = new SignatureTaintingVisitor(this.api, this.instrumentation, sw);
+        SignatureReader sr = new SignatureReader(signature);
+        sr.accept(sv);
+        return sw.toString();
+    }
+
     /**
      * This instruments the descriptor to call the taintaware string classes (uses the interface types (e.g. IASStringable) for replacement)
      */
@@ -615,7 +631,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private boolean inheritsFromJdkClass() {
-        return !isAnnotation && JdkClassesLookupTable.getInstance().isJdkClass(superName);
+        return !isAnnotation && !superName.equals("java/lang/Object") && JdkClassesLookupTable.getInstance().isJdkClass(superName);
     }
 
     private boolean overridesJdkSuperMethod(int access, String name, String descriptor) {
