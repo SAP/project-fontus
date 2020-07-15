@@ -9,7 +9,7 @@ public class IASURLEncoder {
     @Deprecated
     public static IASStringable encode(IASStringable url, IASFactory factory) {
         try {
-            return encode(url, ((IASStringBuilderable) factory.createStringBuilder().append(Charset.defaultCharset().toString())).toIASString(), factory);
+            return encode(url, ((IASAbstractStringBuilderable) factory.createStringBuilder().append(Charset.defaultCharset().toString())).toIASString(), factory);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -20,7 +20,7 @@ public class IASURLEncoder {
     }
 
     public static IASStringable encode(IASStringable url, IASStringable enc, IASFactory factory) throws UnsupportedEncodingException {
-        IASStringBuilderable strb = factory.createStringBuilder();
+        IASAbstractStringBuilderable strb = factory.createStringBuilder();
         boolean isValid = false;
         int start = 0;
         for (int i = 0; i < url.length(); i++) {
@@ -47,23 +47,23 @@ public class IASURLEncoder {
         return strb.toIASString();
     }
 
-    private static void encodeValid(IASStringable url, IASStringBuilderable strb, int start, int end) {
+    private static void encodeValid(IASStringable url, IASAbstractStringBuilderable strb, int start, int end) {
         strb.append(url.substring(start, end));
     }
 
-    private static void encodeNonValid(IASStringable url, IASStringBuilderable strb, int start, int end, IASStringable enc, IASFactory factory) throws UnsupportedEncodingException {
+    private static void encodeNonValid(IASStringable url, IASAbstractStringBuilderable strb, int start, int end, IASStringable enc, IASFactory factory) throws UnsupportedEncodingException {
         for (int i = start; i < end; i++) {
             IASStringable s = url.substring(i, i + 1);
             IASTaintSource source = s.getTaintFor(0);
             if (s.getString().equals(" ")) {
-                IASStringBuilderable toAppend = factory.createStringBuilder();
+                IASAbstractStringBuilderable toAppend = factory.createStringBuilder();
                 toAppend.append('+');
                 toAppend.setTaint(source);
                 strb.append(toAppend);
             } else {
                 byte[] bytes = s.getBytes(enc);
 
-                IASStringBuilderable toAppend = factory.createStringBuilder();
+                IASAbstractStringBuilderable toAppend = factory.createStringBuilder();
                 for (byte aByte : bytes) {
                     toAppend.append('%');
                     toAppend.append(String.format("%02X", aByte));

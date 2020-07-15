@@ -52,7 +52,7 @@ public class StringBuilderMethodInstrumentationStrategy extends StringBuilderIns
         Type paramType = Type.getType(parameter);
         if (stringBuilderType.equals(paramType)) {
             logger.info("Converting taint-aware StringBuilder to StringBuilder in multi param method invocation");
-            this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.stringConfig.getTStringBuilderQN(), "getBuilder", String.format("()%s", Constants.StringBuilderDesc), false);
+            this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.stringConfig.getTStringBuilderQN(), Constants.TStringBuilderToStringBuilderName, String.format("()%s", Constants.StringBuilderDesc), false);
         }
     }
 

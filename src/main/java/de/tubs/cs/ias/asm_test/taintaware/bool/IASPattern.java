@@ -28,7 +28,7 @@ public final class IASPattern implements IASPatternable {
         return new IASPattern(Pattern.compile(regex.getString(), flags), regex);
     }
 
-    public static IASPatternable fromPattern(Pattern param) {
+    public static IASPattern fromPattern(Pattern param) {
         if (param == null) {
             return null;
         }

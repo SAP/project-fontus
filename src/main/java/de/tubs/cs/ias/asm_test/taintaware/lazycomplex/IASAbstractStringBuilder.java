@@ -33,7 +33,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
         this.taintInformation = ((IASString) string).getTaintInformation();
     }
 
-    public IASAbstractStringBuilder(IASStringBuilderable strb) {
+    public IASAbstractStringBuilder(IASAbstractStringBuilderable strb) {
         this.stringBuilder = new StringBuilder(strb);
         this.taintInformation = ((IASAbstractStringBuilder) strb).taintInformation;
     }
@@ -81,7 +81,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
     }
 
     @Override
-    public IASStringBuilderable append(Object obj) {
+    public IASAbstractStringBuilderable append(Object obj) {
         IASString string = IASString.valueOf(obj);
         if (obj == null) {
             string = new IASString("null");
@@ -92,101 +92,101 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
     }
 
     @Override
-    public IASStringBuilderable append(IASStringBuilderable str) {
+    public IASAbstractStringBuilderable append(IASAbstractStringBuilderable str) {
         return this.append((Object) str);
     }
 
     @Override
-    public IASStringBuilderable append(IASStringable str) {
+    public IASAbstractStringBuilderable append(IASStringable str) {
         return this.append((Object) str);
     }
 
     @Override
-    public IASStringBuilderable append(CharSequence seq) {
+    public IASAbstractStringBuilderable append(CharSequence seq) {
         return this.append((Object) seq);
     }
 
     @Override
-    public IASStringBuilderable append(CharSequence seq, int start, int end) {
+    public IASAbstractStringBuilderable append(CharSequence seq, int start, int end) {
         IASString s = IASString.valueOf(seq, start, end);
         return this.append((Object) s);
     }
 
     @Override
-    public IASStringBuilderable append(char[] s, int offset, int len) {
+    public IASAbstractStringBuilderable append(char[] s, int offset, int len) {
         IASString str = IASString.valueOf(s, offset, len);
         return this.append((Object) str);
     }
 
     @Override
-    public IASStringBuilderable append(char[] chars) {
+    public IASAbstractStringBuilderable append(char[] chars) {
         IASString str = IASString.valueOf(chars);
         return this.append((Object) str);
     }
 
     @Override
-    public IASStringBuilderable append(boolean b) {
+    public IASAbstractStringBuilderable append(boolean b) {
         IASString str = IASString.valueOf(b);
         return this.append((Object) str);
     }
 
     @Override
-    public IASStringBuilderable append(int i) {
+    public IASAbstractStringBuilderable append(int i) {
         IASString str = IASString.valueOf(i);
         return this.append((Object) str);
     }
 
     @Override
-    public IASStringBuilderable append(long lng) {
+    public IASAbstractStringBuilderable append(long lng) {
         IASString str = IASString.valueOf(lng);
         return this.append((Object) str);
     }
 
     @Override
-    public IASStringBuilderable append(float f) {
+    public IASAbstractStringBuilderable append(float f) {
         IASString str = IASString.valueOf(f);
         return this.append((Object) str);
     }
 
     @Override
-    public IASStringBuilderable append(char c) {
+    public IASAbstractStringBuilderable append(char c) {
         IASString str = IASString.valueOf(c);
         return this.append((Object) str);
     }
 
     @Override
-    public IASStringBuilderable append(double d) {
+    public IASAbstractStringBuilderable append(double d) {
         IASString str = IASString.valueOf(d);
         return this.append((Object) str);
     }
 
     @Override
-    public IASStringBuilderable appendCodePoint(int codePoint) {
+    public IASAbstractStringBuilderable appendCodePoint(int codePoint) {
         IASString str = IASString.valueOf(Character.toChars(codePoint));
         return this.append((Object) str);
     }
 
     @Override
-    public IASStringBuilderable delete(int start, int end) {
+    public IASAbstractStringBuilderable delete(int start, int end) {
         this.derive(new DeleteOperation(start, end), false);
         this.stringBuilder.delete(start, end);
         return this;
     }
 
     @Override
-    public IASStringBuilderable deleteCharAt(int index) {
+    public IASAbstractStringBuilderable deleteCharAt(int index) {
         return this.delete(index, index + 1);
     }
 
     @Override
-    public IASStringBuilderable replace(int start, int end, IASStringable str) {
+    public IASAbstractStringBuilderable replace(int start, int end, IASStringable str) {
         this.derive(new ReplaceOperation(start, end, (IASString) str), ((IASString) str).isInitialized());
         this.stringBuilder.replace(start, end, str.getString());
         return this;
     }
 
     @Override
-    public IASStringBuilderable insert(int index, char[] str, int offset, int len) {
+    public IASAbstractStringBuilderable insert(int index, char[] str, int offset, int len) {
         IASString insertion = IASString.valueOf(str, offset, len);
         this.derive(new InsertOperation(index, insertion), false);
         this.stringBuilder.insert(index, str, offset, len);
@@ -194,7 +194,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
     }
 
     @Override
-    public IASStringBuilderable insert(int offset, Object obj) {
+    public IASAbstractStringBuilderable insert(int offset, Object obj) {
         IASString insertion = IASString.valueOf(obj);
         this.derive(new InsertOperation(offset, insertion), insertion.isInitialized());
         this.stringBuilder.insert(offset, obj);
@@ -202,14 +202,14 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
     }
 
     @Override
-    public IASStringBuilderable insert(int offset, IASStringable str) {
+    public IASAbstractStringBuilderable insert(int offset, IASStringable str) {
         this.derive(new InsertOperation(offset, (IASString) str), ((IASString) str).isInitialized());
         this.stringBuilder.insert(offset, str.getString());
         return this;
     }
 
     @Override
-    public IASStringBuilderable insert(int offset, char[] str) {
+    public IASAbstractStringBuilderable insert(int offset, char[] str) {
         IASString insertion = IASString.valueOf(str);
         this.derive(new InsertOperation(offset, insertion), false);
         this.stringBuilder.insert(offset, str);
@@ -217,7 +217,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
     }
 
     @Override
-    public IASStringBuilderable insert(int dstOffset, CharSequence s) {
+    public IASAbstractStringBuilderable insert(int dstOffset, CharSequence s) {
         IASString insertion = IASString.valueOf(s);
         this.derive(new InsertOperation(dstOffset, insertion), insertion.isInitialized());
         this.stringBuilder.insert(dstOffset, s);
@@ -225,7 +225,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
     }
 
     @Override
-    public IASStringBuilderable insert(int dstOffset, CharSequence s, int start, int end) {
+    public IASAbstractStringBuilderable insert(int dstOffset, CharSequence s, int start, int end) {
         IASString insertion = IASString.valueOf(s, start, end);
         this.derive(new InsertOperation(dstOffset, insertion), insertion.isInitialized());
         this.stringBuilder.insert(dstOffset, s, start, end);
@@ -233,7 +233,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
     }
 
     @Override
-    public IASStringBuilderable insert(int offset, boolean b) {
+    public IASAbstractStringBuilderable insert(int offset, boolean b) {
         IASString insertion = IASString.valueOf(b);
         this.derive(new InsertOperation(offset, insertion), false);
         this.stringBuilder.insert(offset, b);
@@ -241,7 +241,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
     }
 
     @Override
-    public IASStringBuilderable insert(int offset, char c) {
+    public IASAbstractStringBuilderable insert(int offset, char c) {
         IASString insertion = IASString.valueOf(c);
         this.derive(new InsertOperation(offset, insertion), false);
         this.stringBuilder.insert(offset, c);
@@ -249,7 +249,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
     }
 
     @Override
-    public IASStringBuilderable insert(int offset, int i) {
+    public IASAbstractStringBuilderable insert(int offset, int i) {
         IASString insertion = IASString.valueOf(i);
         this.derive(new InsertOperation(offset, insertion), false);
         this.stringBuilder.insert(offset, i);
@@ -257,7 +257,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
     }
 
     @Override
-    public IASStringBuilderable insert(int offset, long l) {
+    public IASAbstractStringBuilderable insert(int offset, long l) {
         IASString insertion = IASString.valueOf(l);
         this.derive(new InsertOperation(offset, insertion), false);
         this.stringBuilder.insert(offset, l);
@@ -265,7 +265,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
     }
 
     @Override
-    public IASStringBuilderable insert(int offset, float f) {
+    public IASAbstractStringBuilderable insert(int offset, float f) {
         IASString insertion = IASString.valueOf(f);
         this.derive(new InsertOperation(offset, insertion), false);
         this.stringBuilder.insert(offset, f);
@@ -273,7 +273,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
     }
 
     @Override
-    public IASStringBuilderable insert(int offset, double d) {
+    public IASAbstractStringBuilderable insert(int offset, double d) {
         IASString insertion = IASString.valueOf(d);
         this.derive(new InsertOperation(offset, insertion), false);
         this.stringBuilder.insert(offset, d);
@@ -301,7 +301,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
     }
 
     @Override
-    public IASStringBuilderable reverse() {
+    public IASAbstractStringBuilderable reverse() {
         this.derive(new ReverseOperation(), false);
         this.stringBuilder.reverse();
         return this;
@@ -401,7 +401,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
     }
 
     @Override
-    public int compareTo(IASStringBuilderable o) {
+    public int compareTo(IASAbstractStringBuilderable o) {
         return this.stringBuilder.compareTo(o.getStringBuilder());
     }
 

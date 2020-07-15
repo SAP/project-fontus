@@ -14,7 +14,7 @@ public class IASURLDecoder {
     }
 
     public static IASStringable decode(IASStringable url, Charset charset, IASFactory factory) {
-        IASStringBuilderable strb = factory.createStringBuilder();
+        IASAbstractStringBuilderable strb = factory.createStringBuilder();
 
         int start = 0;
         for (int i = 0; i < url.length(); i++) {
@@ -22,7 +22,7 @@ public class IASURLDecoder {
             if (isSpecial(c)) {
                 strb.append(url.substring(start, i));
                 if (c == '+') {
-                    IASStringBuilderable s = factory.createStringBuilder();
+                    IASAbstractStringBuilderable s = factory.createStringBuilder();
                     s.append(' ');
                     IASTaintSource source = url.getTaintFor(i);
                     s.setTaint(source);
@@ -41,7 +41,7 @@ public class IASURLDecoder {
         return strb.toIASString();
     }
 
-    private static int decodeSpecial(final IASStringable url, final IASStringBuilderable strb, final int start, final Charset enc, final IASFactory factory) {
+    private static int decodeSpecial(final IASStringable url, final IASAbstractStringBuilderable strb, final int start, final Charset enc, final IASFactory factory) {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
         int i = start;
@@ -66,7 +66,7 @@ public class IASURLDecoder {
         // Iterating over every character to get back original taint information
         int processedLength = 0;
 
-        IASStringBuilderable builder = factory.createStringBuilder();
+        IASAbstractStringBuilderable builder = factory.createStringBuilder();
         for (int j = 0; j < decoded.length(); j++) {
             String character = decoded.substring(j, j + 1);
             int length = character.getBytes(enc).length;

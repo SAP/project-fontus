@@ -110,7 +110,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
         return this;
     }
 
-    public IASAbstractStringBuilder append(IASStringBuilderable strb) {
+    public IASAbstractStringBuilder append(IASAbstractStringBuilderable strb) {
         IASString string = (IASString) strb.toIASString();
         List<IASTaintRange> ranges = string.getTaintRanges();
         this.appendShifted(ranges);
@@ -425,7 +425,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
     }
 
     @Override
-    public int compareTo(IASStringBuilderable o) {
+    public int compareTo(IASAbstractStringBuilderable o) {
         if (Constants.JAVA_VERSION < 11) {
             return this.toIASString().compareTo(IASString.valueOf(o));
         } else {

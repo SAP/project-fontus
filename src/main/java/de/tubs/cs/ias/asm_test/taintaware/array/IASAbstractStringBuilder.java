@@ -1,6 +1,6 @@
 package de.tubs.cs.ias.asm_test.taintaware.array;
 
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASAbstractStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 @SuppressWarnings({"unused", "Since15"})
-public abstract class IASAbstractStringBuilder implements IASStringBuilderable, IASArrayAware {
+public abstract class IASAbstractStringBuilder implements IASAbstractStringBuilderable, IASArrayAware {
     protected final StringBuilder stringBuilder;
     protected IASTaintInformation taintInformation;
 
@@ -35,7 +35,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         this.append(str);
     }
 
-    public IASAbstractStringBuilder(IASStringBuilderable s) {
+    public IASAbstractStringBuilder(IASAbstractStringBuilderable s) {
         this.stringBuilder = new StringBuilder(s.getStringBuilder());
         this.taintInformation = new IASTaintInformation(((IASAbstractStringBuilder) s).getTaints());
     }
@@ -136,7 +136,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         return this;
     }
 
-    public IASAbstractStringBuilder append(IASStringBuilderable strb) {
+    public IASAbstractStringBuilder append(IASAbstractStringBuilderable strb) {
         this.append(strb.toIASString());
         return this;
     }
@@ -433,7 +433,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     }
 
     @Override
-    public int compareTo(IASStringBuilderable o) {
+    public int compareTo(IASAbstractStringBuilderable o) {
         return this.stringBuilder.compareTo(o.getStringBuilder());
     }
 

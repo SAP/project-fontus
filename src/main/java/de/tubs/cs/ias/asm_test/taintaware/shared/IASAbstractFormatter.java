@@ -121,8 +121,8 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
     }
 
     public IASStringable toIASString() {
-        if (this.output instanceof IASStringBuilderable) {
-            return ((IASStringBuilderable) this.output).toIASString();
+        if (this.output instanceof IASAbstractStringBuilderable) {
+            return ((IASAbstractStringBuilderable) this.output).toIASString();
         }
         return new IASString(this.output.toString());
     }
@@ -384,7 +384,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
 
         private final Locale locale;
 
-        private IASStringBuilderable result;
+        private IASAbstractStringBuilderable result;
 
         private DateFormatSymbols dateFormatSymbols;
 
@@ -393,7 +393,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
         }
 
         void transform(FormatToken formatToken, Calendar aCalendar,
-                       IASStringBuilderable aResult) {
+                       IASAbstractStringBuilderable aResult) {
             this.result = aResult;
             this.calendar = aCalendar;
             char suffix = formatToken.getDateSuffix();
@@ -730,7 +730,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
 
         private IASStringable paddingZeros(long number, int length) {
             int len = length;
-            IASStringBuilderable result = factory.createStringBuilder();
+            IASAbstractStringBuilderable result = factory.createStringBuilder();
             result.append(number);
             int startIndex = 0;
             if (number < 0) {
@@ -878,7 +878,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
          * Transforms the Boolean argument to a formatted string.
          */
         private IASStringable transformFromBoolean() {
-            IASStringBuilderable result = factory.createStringBuilder();
+            IASAbstractStringBuilderable result = factory.createStringBuilder();
             int startIndex = 0;
             int flags = formatToken.getFlags();
 
@@ -909,7 +909,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
          * Transforms the hashcode of the argument to a formatted string.
          */
         private IASStringable transformFromHashCode() {
-            IASStringBuilderable result = factory.createStringBuilder();
+            IASAbstractStringBuilderable result = factory.createStringBuilder();
 
             int startIndex = 0;
             int flags = formatToken.getFlags();
@@ -949,7 +949,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
          * Transforms the String to a formatted string.
          */
         private IASStringable transformFromString() {
-            IASStringBuilderable result = factory.createStringBuilder();
+            IASAbstractStringBuilderable result = factory.createStringBuilder();
             int startIndex = 0;
             int flags = formatToken.getFlags();
 
@@ -999,7 +999,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
          * Transforms the Character to a formatted string.
          */
         private IASStringable transformFromCharacter() {
-            IASStringBuilderable result = factory.createStringBuilder();
+            IASAbstractStringBuilderable result = factory.createStringBuilder();
 
             int startIndex = 0;
             int flags = formatToken.getFlags();
@@ -1059,7 +1059,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
          * Precision is illegal.
          */
         private IASStringable transformFromPercent() {
-            IASStringBuilderable result = factory.createStringBuilder().append("%"); //$NON-NLS-1$
+            IASAbstractStringBuilderable result = factory.createStringBuilder().append("%"); //$NON-NLS-1$
 
             int startIndex = 0;
             int flags = formatToken.getFlags();
@@ -1113,7 +1113,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
         /*
          * Pads characters to the formatted string.
          */
-        private IASStringable padding(IASStringBuilderable source, int startIndex) {
+        private IASStringable padding(IASAbstractStringBuilderable source, int startIndex) {
             int start = startIndex;
             boolean paddingRight = formatToken
                     .isFlagSet(FormatToken.FLAG_MINUS);
@@ -1162,7 +1162,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
         private IASStringable transformFromInteger() {
             int startIndex = 0;
             boolean isNegative = false;
-            IASStringBuilderable result = factory.createStringBuilder();
+            IASAbstractStringBuilderable result = factory.createStringBuilder();
             char currentConversionType = formatToken.getConversionType();
             long value;
 
@@ -1282,7 +1282,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
          * formatToken.FLAG_PARENTHESIS is set. 'result' is used as an in-out
          * parameter.
          */
-        private IASStringBuilderable wrapParentheses(IASStringBuilderable result) {
+        private IASAbstractStringBuilderable wrapParentheses(IASAbstractStringBuilderable result) {
             // delete the '-'
             result.deleteCharAt(0);
             result.insert(0, '(');
@@ -1347,7 +1347,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
         private IASStringable transformFromBigInteger() {
             int startIndex = 0;
             boolean isNegative = false;
-            IASStringBuilderable result = factory.createStringBuilder();
+            IASAbstractStringBuilderable result = factory.createStringBuilder();
             BigInteger bigInt = (BigInteger) arg;
             char currentConversionType = formatToken.getConversionType();
 
@@ -1447,7 +1447,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
          * Transforms a Float,Double or BigDecimal to a formatted string.
          */
         private IASStringable transformFromFloat() {
-            IASStringBuilderable result = factory.createStringBuilder();
+            IASAbstractStringBuilderable result = factory.createStringBuilder();
             int startIndex = 0;
             char currentConversionType = formatToken.getConversionType();
 
@@ -1594,7 +1594,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
             if (null == dateTimeUtil) {
                 dateTimeUtil = new DateTimeUtil(locale);
             }
-            IASStringBuilderable result = factory.createStringBuilder();
+            IASAbstractStringBuilderable result = factory.createStringBuilder();
             // output result
             dateTimeUtil.transform(formatToken, calendar, result);
             return padding(result, startIndex);
@@ -1602,7 +1602,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
     }
 
     private class FloatUtil {
-        private IASStringBuilderable result;
+        private IASAbstractStringBuilderable result;
 
         private final DecimalFormat decimalFormat;
 
@@ -1612,7 +1612,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
 
         private final char minusSign;
 
-        FloatUtil(IASStringBuilderable result, FormatToken formatToken,
+        FloatUtil(IASAbstractStringBuilderable result, FormatToken formatToken,
                   DecimalFormat decimalFormat, Object argument) {
             this.result = result;
             this.formatToken = formatToken;
@@ -1622,7 +1622,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
                     .getMinusSign();
         }
 
-        void transform(FormatToken aFormatToken, IASStringBuilderable aResult) {
+        void transform(FormatToken aFormatToken, IASAbstractStringBuilderable aResult) {
             this.result = aResult;
             this.formatToken = aFormatToken;
             switch (formatToken.getConversionType()) {
@@ -1661,7 +1661,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
         }
 
         void transform_e() {
-            IASStringBuilderable pattern = factory.createStringBuilder();
+            IASAbstractStringBuilderable pattern = factory.createStringBuilder();
             pattern.append('0');
             if (formatToken.getPrecision() > 0) {
                 pattern.append('.');
@@ -1753,7 +1753,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
         }
 
         void transform_f() {
-            IASStringBuilderable pattern = factory.createStringBuilder();
+            IASAbstractStringBuilderable pattern = factory.createStringBuilder();
             if (formatToken.isFlagSet(FormatToken.FLAG_COMMA)) {
                 pattern.append(',');
                 int groupingSize = decimalFormat.getGroupingSize();
@@ -1869,7 +1869,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
 
         private int precision = UNSET;
 
-        private final IASStringBuilderable strFlags = factory.createStringBuilder().append(FLAGT_TYPE_COUNT);
+        private final IASAbstractStringBuilderable strFlags = factory.createStringBuilder().append(FLAGT_TYPE_COUNT);
 
         private char dateSuffix;// will be used in new feature.
 

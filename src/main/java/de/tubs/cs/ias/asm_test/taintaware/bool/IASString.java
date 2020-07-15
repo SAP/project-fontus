@@ -1,7 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.bool;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASAbstractStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringPool;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
@@ -39,7 +39,7 @@ public final class IASString implements IASTaintAware, IASStringable {
         this.tainted = false;
     }
 
-    public IASString(IASStringBuilderable strb) {
+    public IASString(IASAbstractStringBuilderable strb) {
         this.string = strb.toString();
         this.tainted = strb.isTainted();
     }
@@ -226,7 +226,7 @@ public final class IASString implements IASTaintAware, IASStringable {
     }
 
     @Override
-    public boolean contentEquals(IASStringBuilderable sb) {
+    public boolean contentEquals(IASAbstractStringBuilderable sb) {
         return this.string.contentEquals(sb.getStringBuilder());
     }
 

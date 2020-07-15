@@ -1,7 +1,6 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
-import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.IASMatcher;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASFormatterable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
@@ -89,7 +88,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable, IASFor
 
     }
 
-    public static IASFormatterable fromFormatter(Formatter param) {
+    public static IASFormatter fromFormatter(Formatter param) {
         if (param == null) {
             return null;
         }

@@ -7,25 +7,23 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class IASFactoryImpl implements IASFactory {
-
-
     @Override
-    public IASStringBuilderable createStringBuilder() {
+    public IASStringBuilder createStringBuilder() {
         return new IASStringBuilder();
     }
 
     @Override
-    public IASStringable createString(String s) {
+    public IASString createString(String s) {
         return new IASString(s);
     }
 
     @Override
-    public IASStringable valueOf(Object o) {
+    public IASString valueOf(Object o) {
         return IASString.valueOf(o);
     }
 
     @Override
-    public IASStringBuilderable createStringBuilder(IASStringable string) {
+    public IASStringBuilder createStringBuilder(IASStringable string) {
         return new IASStringBuilder(string);
     }
 
@@ -40,28 +38,27 @@ public class IASFactoryImpl implements IASFactory {
     }
 
     @Override
-    public IASStringBuilderable createStringBuilder(StringBuilder string) {
+    public IASStringBuilder createStringBuilder(StringBuilder string) {
         return IASStringBuilder.fromStringBuilder(string);
     }
 
     @Override
-    public IASStringBuilderable createStringBuffer(StringBuffer param) {
+    public IASStringBuffer createStringBuffer(StringBuffer param) {
         return IASStringBuffer.fromStringBuffer(param);
     }
 
     @Override
-    public IASFormatterable createFormatter(Formatter param) {
+    public IASFormatter createFormatter(Formatter param) {
         return IASFormatter.fromFormatter(param);
     }
 
     @Override
-    public IASPatternable createPattern(Pattern param) {
+    public IASPattern createPattern(Pattern param) {
         return IASPattern.fromPattern(param);
     }
 
     @Override
-    public IASMatcherable createMatcher(Matcher param) {
+    public IASMatcher createMatcher(Matcher param) {
         return IASMatcher.fromMatcher(param);
     }
-
 }

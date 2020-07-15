@@ -35,7 +35,7 @@ public final class IASString implements IASArrayAware, IASStringable {
         this((IASString) s);
     }
 
-    public IASString(IASStringBuilderable s) {
+    public IASString(IASAbstractStringBuilderable s) {
         this(s.toIASString());
     }
 
@@ -261,7 +261,7 @@ public final class IASString implements IASArrayAware, IASStringable {
         return this.string.equals(other.string);
     }
 
-    public boolean contentEquals(IASStringBuilderable sb) {
+    public boolean contentEquals(IASAbstractStringBuilderable sb) {
         return this.string.contentEquals(sb);
     }
 

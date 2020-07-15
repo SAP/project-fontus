@@ -157,9 +157,9 @@ public class TaintStringConfig {
         this.TStringArrayDesc = "[" + this.TStringDesc;
         this.TStringBuilderQN = this.TPackage + "IASStringBuilder";
         this.TStringBuilderDesc = String.format("L%s;", this.TStringBuilderQN);
-        this.MethodTStringBuilderDesc = "Lde/tubs/cs/ias/asm_test/taintaware/shared/IASStringBuilderable;";
+        this.MethodTStringBuilderDesc = "Lde/tubs/cs/ias/asm_test/taintaware/shared/IASAbstractStringBuilderable;";
         this.TStringBufferDesc = String.format("L%s;", this.TStringBufferQN);
-        this.MethodTStringBufferDesc = "Lde/tubs/cs/ias/asm_test/taintaware/shared/IASStringBuilderable;";
+        this.MethodTStringBufferDesc = "Lde/tubs/cs/ias/asm_test/taintaware/shared/IASAbstractStringBuilderable;";
         this.ConcatDesc = String.format("(%s[Ljava/lang/Object;)%s", StringDesc, this.TStringDesc);
         this.ToStringInstrumentedDesc = String.format("()%s", this.TStringDesc);
         this.CreateTaintedStringDesc = String.format("(%s)%s", this.TStringDesc, this.TStringDesc);

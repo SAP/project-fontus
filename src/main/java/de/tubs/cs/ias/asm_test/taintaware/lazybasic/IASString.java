@@ -98,7 +98,7 @@ public final class IASString implements IASStringable, IASLazyAware {
         this(new String(bytes));
     }
 
-    public IASString(IASStringBuilderable builder) {
+    public IASString(IASAbstractStringBuilderable builder) {
         this(builder.toString(), ((IASAbstractStringBuilder) builder).getTaintInformation());
     }
 
@@ -204,7 +204,7 @@ public final class IASString implements IASStringable, IASLazyAware {
     }
 
     @Override
-    public boolean contentEquals(IASStringBuilderable sb) {
+    public boolean contentEquals(IASAbstractStringBuilderable sb) {
         return this.string.contentEquals(sb.getStringBuilder());
     }
 

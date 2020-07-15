@@ -23,7 +23,7 @@ public final class IASPattern implements IASPatternable {
         this.patternString = (IASString) p;
     }
 
-    public static IASPatternable fromPattern(Pattern param) {
+    public static IASPattern fromPattern(Pattern param) {
         if (param == null) {
             return null;
         }

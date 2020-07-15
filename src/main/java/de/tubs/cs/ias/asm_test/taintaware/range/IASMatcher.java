@@ -32,7 +32,7 @@ public final class IASMatcher implements IASMatcherable {
         this.matcher = pattern.getPattern().matcher(input);
     }
 
-    public static IASMatcherable fromMatcher(Matcher param) {
+    public static IASMatcher fromMatcher(Matcher param) {
         if (param == null) {
             return null;
         }

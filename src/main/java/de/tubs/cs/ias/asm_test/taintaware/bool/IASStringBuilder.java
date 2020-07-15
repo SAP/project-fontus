@@ -1,10 +1,11 @@
 package de.tubs.cs.ias.asm_test.taintaware.bool;
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASAbstractStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
-public final class IASStringBuilder extends IASAbstractStringBuilder {
-    public static IASStringBuilderable fromStringBuilder(StringBuilder param) {
+public final class IASStringBuilder extends IASAbstractStringBuilder implements IASStringBuilderable {
+    public static IASStringBuilder fromStringBuilder(StringBuilder param) {
         if (param == null) {
             return null;
         }
@@ -130,7 +131,7 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
     }
 
     @Override
-    public IASStringBuilder append(IASStringBuilderable asb) {
+    public IASStringBuilder append(IASAbstractStringBuilderable asb) {
         return (IASStringBuilder) super.append(asb);
     }
 
@@ -315,7 +316,7 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
     }
 
     @Override
-    public int compareTo(IASStringBuilderable o) {
+    public int compareTo(IASAbstractStringBuilderable o) {
         return super.compareTo(o);
     }
 }

@@ -3,12 +3,12 @@ package de.tubs.cs.ias.asm_test.taintaware.bool;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASAbstractStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 
 @SuppressWarnings({"SynchronizedMethod", "ReturnOfThis", "WeakerAccess", "ClassWithTooManyConstructors", "ClassWithTooManyMethods", "Since15"})
-public abstract class IASAbstractStringBuilder implements IASStringBuilderable, IASTaintAware {
+public abstract class IASAbstractStringBuilder implements IASAbstractStringBuilderable, IASTaintAware {
 
     // TODO: accessed in both  and unsynchronized methods
     private final StringBuilder stringBuilder;
@@ -162,7 +162,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
         return this;
     }
 
-    public IASAbstractStringBuilder append(IASStringBuilderable sb) {
+    public IASAbstractStringBuilder append(IASAbstractStringBuilderable sb) {
         this.stringBuilder.append(sb.getStringBuilder());
         this.mergeTaint(sb);
         return this;
@@ -382,7 +382,7 @@ public abstract class IASAbstractStringBuilder implements IASStringBuilderable, 
     }
 
     @Override
-    public int compareTo(IASStringBuilderable o) {
+    public int compareTo(IASAbstractStringBuilderable o) {
         if (Constants.JAVA_VERSION < 11) {
             return this.toIASString().compareTo(IASString.valueOf(o));
         } else {
