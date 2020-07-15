@@ -2,7 +2,7 @@ package de.tubs.cs.ias.asm_test.taintaware.array;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASFormatterable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASAbstractStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
 import java.io.*;
@@ -87,7 +87,7 @@ public class IASFormatter implements IASFormatterable {
 
     }
 
-    public static IASFormatterable fromFormatter(Formatter param) {
+    public static IASFormatter fromFormatter(Formatter param) {
         if(param == null) {
             return null;
         }
@@ -456,7 +456,7 @@ public class IASFormatter implements IASFormatterable {
         }
 
         void transform(FormatToken formatToken, Calendar aCalendar,
-                       IASStringBuilderable aResult) {
+                       IASAbstractStringBuilderable aResult) {
             this.result = (IASStringBuilder) aResult;
             this.calendar = aCalendar;
             char suffix = formatToken.getDateSuffix();
@@ -1179,7 +1179,7 @@ public class IASFormatter implements IASFormatterable {
         /*
          * Pads characters to the formatted string.
          */
-        private IASString padding(IASStringBuilderable source, int startIndex) {
+        private IASString padding(IASAbstractStringBuilderable source, int startIndex) {
             int start = startIndex;
             boolean paddingRight = formatToken
                     .isFlagSet(FormatToken.FLAG_MINUS);
@@ -1348,7 +1348,7 @@ public class IASFormatter implements IASFormatterable {
          * formatToken.FLAG_PARENTHESIS is set. 'result' is used as an in-out
          * parameter.
          */
-        private IASStringBuilder wrapParentheses(IASStringBuilderable result) {
+        private IASStringBuilder wrapParentheses(IASAbstractStringBuilderable result) {
             // delete the '-'
             result.deleteCharAt(0);
             result.insert(0, '(');
@@ -1678,7 +1678,7 @@ public class IASFormatter implements IASFormatterable {
 
         private final char minusSign;
 
-        FloatUtil(IASStringBuilderable result, FormatToken formatToken,
+        FloatUtil(IASAbstractStringBuilderable result, FormatToken formatToken,
                   DecimalFormat decimalFormat, Object argument) {
             this.result = (IASStringBuilder) result;
             this.formatToken = formatToken;
@@ -1688,7 +1688,7 @@ public class IASFormatter implements IASFormatterable {
                     .getMinusSign();
         }
 
-        void transform(FormatToken aFormatToken, IASStringBuilderable aResult) {
+        void transform(FormatToken aFormatToken, IASAbstractStringBuilderable aResult) {
             this.result = (IASStringBuilder) aResult;
             this.formatToken = aFormatToken;
             switch (formatToken.getConversionType()) {

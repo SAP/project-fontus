@@ -4,6 +4,7 @@ import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.taintaware.bool.IASMatcher;
 import de.tubs.cs.ias.asm_test.taintaware.bool.IASPattern;
+import de.tubs.cs.ias.asm_test.utils.ConversionUtils;
 import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 
@@ -27,13 +28,12 @@ public class IASReflectionMethodProxy {
     private static final String packageName = "de.tubs.cs.ias.asm_test.taintaware.";
     private static final Map<String, Class<?>> toInterfaceReplacements = new HashMap<>();
     private static final Map<String, Class<?>> toOrigReplacements = new HashMap<>();
-    private static final Map<String, MethodHandle> toOrigMethods = new HashMap<>();
     private static final Map<Class, Function<Object, Object>> toTaintedMethods = new HashMap<>();
 
     static {
         toInterfaceReplacements.put("IASString", IASStringable.class);
-        toInterfaceReplacements.put("IASStringBuilder", IASStringBuilderable.class);
-        toInterfaceReplacements.put("IASStringBuffer", IASStringBuilderable.class);
+        toInterfaceReplacements.put("IASStringBuilder", IASAbstractStringBuilderable.class);
+        toInterfaceReplacements.put("IASStringBuffer", IASAbstractStringBuilderable.class);
         toInterfaceReplacements.put("IASFormatter", IASFormatterable.class);
 
         toOrigReplacements.put("IASString", String.class);
@@ -42,17 +42,6 @@ public class IASReflectionMethodProxy {
         toOrigReplacements.put("IASFormatter", Formatter.class);
         toOrigReplacements.put("IASPattern", IASPattern.class);
         toOrigReplacements.put("IASMatcher", IASMatcher.class);
-
-        try {
-            toOrigMethods.put("IASString", lookup.findVirtual(IASStringable.class, "getString", MethodType.methodType(String.class)));
-            toOrigMethods.put("IASStringBuilder", lookup.findVirtual(IASStringBuilderable.class, "getStringBuilder", MethodType.methodType(StringBuilder.class)));
-            toOrigMethods.put("IASStringBuffer", lookup.findVirtual(IASStringBuilderable.class, "getStringBuffer", MethodType.methodType(StringBuffer.class)));
-            toOrigMethods.put("IASFormatter", lookup.findVirtual(IASFormatterable.class, "getFormatter", MethodType.methodType(Formatter.class)));
-            toOrigMethods.put("IASPattern", lookup.findVirtual(IASPatternable.class, "getPattern", MethodType.methodType(Pattern.class)));
-            toOrigMethods.put("IASMatcher", lookup.findVirtual(IASMatcherable.class, "getMatcher", MethodType.methodType(Matcher.class)));
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
 
         toTaintedMethods.put(String.class, (param) -> factory.createString((String) param));
         toTaintedMethods.put(StringBuilder.class, (param) -> factory.createStringBuilder((StringBuilder) param));
@@ -96,21 +85,9 @@ public class IASReflectionMethodProxy {
         }
         Object[] converted = new Object[parameters.length];
         for (int i = 0; i < converted.length; i++) {
-            converted[i] = convertParameterToOriginal(parameters[i].getClass(), parameters[i]);
+            converted[i] = ConversionUtils.convertToOrig(parameters[i]);
         }
         return converted;
-    }
-
-    private static Object convertParameterToOriginal(Class parameterType, Object param) throws Throwable {
-        if (param == null) {
-            return null;
-        }
-        for (String cls : toOrigMethods.keySet()) {
-            if (isReplacable(parameterType, cls)) {
-                return toOrigMethods.get(cls).invoke(param);
-            }
-        }
-        return param;
     }
 
     private static Object convertResultToTainted(Class resultType, Object result) {

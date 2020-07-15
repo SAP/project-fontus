@@ -2,7 +2,6 @@ package de.tubs.cs.ias.asm_test.taintaware.range;
 
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.utils.Statistics;
-import de.tubs.cs.ias.asm_test.agent.TaintAgent;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.shared.*;
 import de.tubs.cs.ias.asm_test.taintaware.shared.range.IASTaintRangeStringable;
@@ -53,7 +52,7 @@ public final class IASString implements IASTaintRangeStringable, IASExtendedTain
         }
     }
 
-    public IASString(IASStringBuilderable strb) {
+    public IASString(IASAbstractStringBuilderable strb) {
         IASString s = (IASString) strb.toIASString();
         this.string = s.getString();
         this.taintInformation = new IASTaintInformation(s.getTaintRanges());
@@ -286,7 +285,7 @@ public final class IASString implements IASTaintRangeStringable, IASExtendedTain
         return this.string.equals(other.string);
     }
 
-    public boolean contentEquals(IASStringBuilderable sb) {
+    public boolean contentEquals(IASAbstractStringBuilderable sb) {
         return this.string.contentEquals(sb);
     }
 

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("Since15")
-public class IASAbstractStringBuilder implements IASStringBuilderable, IASLazyAware {
+public class IASAbstractStringBuilder implements IASAbstractStringBuilderable, IASLazyAware {
     private final StringBuilder stringBuilder;
     private IASTaintInformation taintInformation;
 
@@ -45,7 +45,7 @@ public class IASAbstractStringBuilder implements IASStringBuilderable, IASLazyAw
         this.append(IASString.valueOf(string));
     }
 
-    public IASAbstractStringBuilder(IASStringBuilderable strb) {
+    public IASAbstractStringBuilder(IASAbstractStringBuilderable strb) {
         this.stringBuilder = new StringBuilder(strb.length() + 16);
         this.append(strb);
     }
@@ -83,7 +83,7 @@ public class IASAbstractStringBuilder implements IASStringBuilderable, IASLazyAw
     }
 
     @Override
-    public IASAbstractStringBuilder append(IASStringBuilderable toAppend) {
+    public IASAbstractStringBuilder append(IASAbstractStringBuilderable toAppend) {
         return this.append((Object) toAppend);
     }
 
@@ -453,7 +453,7 @@ public class IASAbstractStringBuilder implements IASStringBuilderable, IASLazyAw
     }
 
     @Override
-    public int compareTo(IASStringBuilderable iasStringBuilderable) {
+    public int compareTo(IASAbstractStringBuilderable iasStringBuilderable) {
         return this.stringBuilder.compareTo(iasStringBuilderable.getStringBuilder());
     }
 }

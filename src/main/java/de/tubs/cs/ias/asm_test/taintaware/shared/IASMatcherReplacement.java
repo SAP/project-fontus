@@ -21,7 +21,7 @@ public final class IASMatcherReplacement {
         this.groups = groups;
     }
 
-    public IASStringable doReplacement(Matcher m, IASStringable orig, IASStringBuilderable emptyBuilder) {
+    public IASStringable doReplacement(Matcher m, IASStringable orig, IASAbstractStringBuilderable emptyBuilder) {
         int lastIndex = -1;
         int shift = 0;
         emptyBuilder.append(this.clearedReplacementString);
@@ -53,7 +53,7 @@ public final class IASMatcherReplacement {
         return emptyBuilder.toIASString();
     }
 
-    public static IASMatcherReplacement createReplacement(IASStringable repl, IASStringBuilderable emptyBuilder) {
+    public static IASMatcherReplacement createReplacement(IASStringable repl, IASAbstractStringBuilderable emptyBuilder) {
         LinkedHashMap<Object, Integer> groups = new LinkedHashMap<>();
 
         boolean escaped = false;

@@ -76,7 +76,7 @@ public class IASFormatter implements IASTaintAware, Closeable, Flushable, AutoCl
 
     }
 
-    public static IASFormatterable fromFormatter(Formatter param) {
+    public static IASFormatter fromFormatter(Formatter param) {
         if (param == null) {
             return null;
         }

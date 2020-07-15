@@ -19,21 +19,55 @@ public class ClassUtils {
         for (Class<?> cls = classToDiscover; !cls.equals(Object.class); cls = cls.getSuperclass()) {
             Method[] declaredMethods = cls.getDeclaredMethods();
             for (Method declaredMethod : declaredMethods) {
-                if (isPublicOrProtectedNotStatic(declaredMethod)) {
-                    boolean alreadyContained = methods.stream().anyMatch(method -> {
-                        boolean nameEquals = declaredMethod.getName().equals(method.getName());
-                        boolean correctVisibility = isPublicOrProtectedNotStatic(method);
-                        boolean signaturEquals = Arrays.equals(declaredMethod.getParameterTypes(), method.getParameterTypes());
-                        return nameEquals && correctVisibility && signaturEquals;
-                    });
-
-                    if (!alreadyContained) {
-                        methods.add(declaredMethod);
-                    }
-                }
+                addMethodIfNotContained(declaredMethod, methods);
             }
         }
         return methods;
+    }
+
+    /**
+     * This methods add all methods if the passed interface list to the method list, if the method isn't already contained
+     * For determination if contained see {@link ClassUtils#addMethodIfNotContained(Method, List)}
+     * @param interfaces Array with interface names as QN
+     * @param methods List to add methods (may already contain methods)
+     */
+    public static void addNotContainedJdkInterfaceMethods(String[] interfaces, List<Method> methods) {
+        if (interfaces == null) {
+            return;
+        }
+        for (String interfaceName : interfaces) {
+            if (JdkClassesLookupTable.getInstance().isJdkClass(interfaceName)) {
+                try {
+                    Class cls = Class.forName(Utils.fixup(interfaceName));
+                    for (Method m : cls.getMethods()) {
+                        addMethodIfNotContained(m, methods);
+                    }
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /**
+     * Adds the passed method to the list, if it's not already contained.
+     * The passed method must be an overridable method (public or protected and not never static)
+     *
+     * If a method is already contained is determined by the method name and descriptor (declaring class is NOT considered)
+     */
+    private static void addMethodIfNotContained(Method methodToAdd, List<Method> methods) {
+        if (isPublicOrProtectedNotStatic(methodToAdd)) {
+            boolean alreadyContained = methods.stream().anyMatch(methodInMethods -> {
+                boolean nameEquals = methodToAdd.getName().equals(methodInMethods.getName());
+                boolean correctVisibility = isPublicOrProtectedNotStatic(methodInMethods);
+                boolean signaturEquals = Arrays.equals(methodToAdd.getParameterTypes(), methodInMethods.getParameterTypes());
+                return nameEquals && correctVisibility && signaturEquals;
+            });
+
+            if (!alreadyContained) {
+                methods.add(methodToAdd);
+            }
+        }
     }
 
     public static boolean isPublicOrProtectedNotStatic(Method m) {

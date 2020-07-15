@@ -1,14 +1,11 @@
 package de.tubs.cs.ias.asm_test.taintaware.array;
 
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+import de.tubs.cs.ias.asm_test.taintaware.shared.*;
 
 import java.util.List;
 import java.util.stream.IntStream;
 
-public final class IASStringBuffer extends IASAbstractStringBuilder {
+public final class IASStringBuffer extends IASAbstractStringBuilder implements IASStringBufferable {
 
     public IASStringBuffer(StringBuffer sb, IASTaintInformation taintInformation) {
         super();
@@ -40,7 +37,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
         super(seq);
     }
 
-    public IASStringBuffer(IASStringBuilderable s) {
+    public IASStringBuffer(IASAbstractStringBuilderable s) {
         super(s);
     }
 
@@ -48,7 +45,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
         super(s);
     }
 
-    public static IASStringBuilderable fromStringBuffer(StringBuffer param) {
+    public static IASStringBuffer fromStringBuffer(StringBuffer param) {
         if(param == null) {
             return null;
         }
@@ -96,7 +93,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
-    public synchronized IASStringBuffer append(IASStringBuilderable strb) {
+    public synchronized IASStringBuffer append(IASAbstractStringBuilderable strb) {
         return (IASStringBuffer) super.append(strb);
     }
 
@@ -331,7 +328,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
-    public synchronized int compareTo(IASStringBuilderable o) {
+    public synchronized int compareTo(IASAbstractStringBuilderable o) {
         return super.compareTo(o);
     }
 

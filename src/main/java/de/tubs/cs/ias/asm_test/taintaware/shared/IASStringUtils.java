@@ -30,8 +30,8 @@ public final class IASStringUtils {
             return factory.createString((String)obj);
         } else if(obj instanceof IASStringable) {
             return (IASStringable) obj;
-        } else if(obj instanceof IASStringBuilderable) {
-            IASStringBuilderable b = (IASStringBuilderable) obj;
+        } else if(obj instanceof IASAbstractStringBuilderable) {
+            IASAbstractStringBuilderable b = (IASAbstractStringBuilderable) obj;
             return b.toIASString();
         } else {
             throw new IllegalArgumentException(String.format("Obj is of type %s, but only String or TString are allowed!", obj.getClass().getName()));

@@ -4,9 +4,7 @@ import de.tubs.cs.ias.asm_test.taintaware.lazybasic.operation.DeleteLayer;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASPatternable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -25,7 +23,7 @@ public final class IASPattern implements IASPatternable {
         this.patternString = (IASString) p;
     }
 
-    public static IASPatternable fromPattern(Pattern param) {
+    public static IASPattern fromPattern(Pattern param) {
         if (param == null) {
             return null;
         }

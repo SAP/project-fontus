@@ -1,7 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.shared;
 
 public class IASAbstractCharBuffer {
-    private final IASStringBuilderable stringBuffer;
+    private final IASAbstractStringBuilderable stringBuffer;
     private int position = 0;
     private final int limit;
 

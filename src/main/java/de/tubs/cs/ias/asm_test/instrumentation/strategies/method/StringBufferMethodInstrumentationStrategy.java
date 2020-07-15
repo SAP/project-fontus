@@ -54,7 +54,7 @@ public class StringBufferMethodInstrumentationStrategy extends StringBufferInstr
         Type paramType = Type.getType(parameter);
         if (stringBufferType.equals(paramType)) {
             logger.info("Converting taint-aware StringBuffer to StringBuffer in multi param method invocation");
-            this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.stringConfig.getTStringBufferQN(), "getBuffer", String.format("()%s", Constants.StringBufferDesc), false);
+            this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.stringConfig.getTStringBufferQN(), Constants.TStringBufferToStringBufferName, String.format("()%s", Constants.StringBufferDesc), false);
         }
     }
 

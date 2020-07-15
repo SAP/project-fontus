@@ -1,10 +1,10 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
-import de.tubs.cs.ias.asm_test.taintaware.lazybasic.IASMatcher;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASAbstractStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
-public class IASStringBuilder extends IASAbstractStringBuilder {
+public class IASStringBuilder extends IASAbstractStringBuilder implements IASStringBuilderable {
     public IASStringBuilder() {
         super();
     }
@@ -25,7 +25,7 @@ public class IASStringBuilder extends IASAbstractStringBuilder {
         super(string);
     }
 
-    public IASStringBuilder(IASStringBuilderable strb) {
+    public IASStringBuilder(IASAbstractStringBuilderable strb) {
         super(strb);
     }
 
@@ -37,7 +37,7 @@ public class IASStringBuilder extends IASAbstractStringBuilder {
         super(strb);
     }
 
-    public static IASStringBuilderable fromStringBuilder(StringBuilder param) {
+    public static IASStringBuilder fromStringBuilder(StringBuilder param) {
         if (param == null) {
             return null;
         }
@@ -55,7 +55,7 @@ public class IASStringBuilder extends IASAbstractStringBuilder {
     }
 
     @Override
-    public IASStringBuilder append(IASStringBuilderable strb) {
+    public IASStringBuilder append(IASAbstractStringBuilderable strb) {
         return (IASStringBuilder) super.append(strb);
     }
 

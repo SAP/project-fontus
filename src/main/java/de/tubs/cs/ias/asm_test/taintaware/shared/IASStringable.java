@@ -39,7 +39,7 @@ public interface IASStringable extends IASTaintAware, Comparable<IASStringable>,
 
     boolean equals(Object anObject);
 
-    boolean contentEquals(IASStringBuilderable sb);
+    boolean contentEquals(IASAbstractStringBuilderable sb);
 
 //    boolean contentEquals(StringBuffer sb);
 
