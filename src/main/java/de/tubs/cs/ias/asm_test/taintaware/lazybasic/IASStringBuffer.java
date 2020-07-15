@@ -37,6 +37,13 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
         super(string);
     }
 
+    public static IASStringBuilderable fromStringBuffer(StringBuffer param) {
+        if (param == null) {
+            return null;
+        }
+        return new IASStringBuffer(param);
+    }
+
     @Override
     public synchronized IASStringBuffer append(Object obj) {
         return (IASStringBuffer) super.append(obj);

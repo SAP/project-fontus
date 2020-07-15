@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazybasic;
 
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASAbstractFormatter;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASFormatterable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
 import java.io.*;
@@ -68,6 +69,13 @@ public class IASFormatter extends IASAbstractFormatter {
 
     public IASFormatter(IASStringable fileName, IASStringable csn, Locale l) throws FileNotFoundException {
         this(new File(fileName.getString()), csn, l);
+    }
+
+    public static IASFormatterable fromFormatter(Formatter param) {
+        if (param == null) {
+            return null;
+        }
+        return new IASFormatter(param);
     }
 
     @Override

@@ -44,6 +44,13 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
         super(s);
     }
 
+    public static IASStringBuilderable fromStringBuilder(StringBuilder stringBuilder) {
+        if (stringBuilder == null) {
+            return null;
+        }
+        return new IASStringBuilder(stringBuilder);
+    }
+
     @Override
     public IASStringBuilder append(Object obj) {
         return (IASStringBuilder) super.append(obj);

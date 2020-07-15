@@ -8,7 +8,7 @@ import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public final class IASStringBuilder extends IASAbstractStringBuilder{
+public final class IASStringBuilder extends IASAbstractStringBuilder {
     public IASStringBuilder() {
         super();
     }
@@ -35,6 +35,13 @@ public final class IASStringBuilder extends IASAbstractStringBuilder{
 
     public IASStringBuilder(IASString string) {
         super(string);
+    }
+
+    public static IASStringBuilderable fromStringBuilder(StringBuilder param) {
+        if (param == null) {
+            return null;
+        }
+        return new IASStringBuilder(param);
     }
 
     @Override

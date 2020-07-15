@@ -48,6 +48,13 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
         super(s);
     }
 
+    public static IASStringBuilderable fromStringBuffer(StringBuffer param) {
+        if(param == null) {
+            return null;
+        }
+        return new IASStringBuffer(param);
+    }
+
     @Override
     public synchronized void initialize() {
         super.initialize();

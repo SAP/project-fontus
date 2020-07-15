@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
+import de.tubs.cs.ias.asm_test.taintaware.lazybasic.IASMatcher;
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations.FormatOperation;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASFormatterable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
@@ -67,6 +68,17 @@ public class IASFormatter implements IASFormatterable {
     public IASFormatter(IASStringable fileName, IASStringable csn, Locale l) throws FileNotFoundException, UnsupportedEncodingException {
         this.formatter = new Formatter(fileName.getString(), csn.getString(), l);
 
+    }
+
+    public IASFormatter(Formatter formatter) {
+        this(formatter.out(), formatter.locale());
+    }
+
+    public static IASFormatterable fromFormatter(Formatter param) {
+        if (param == null) {
+            return null;
+        }
+        return new IASFormatter(param);
     }
 
     public IASFormatter format(IASStringable format, Object... args) {

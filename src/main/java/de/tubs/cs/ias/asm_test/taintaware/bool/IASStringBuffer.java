@@ -21,6 +21,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     public IASStringBuffer(IASStringable str) {
         super(str);
     }
+
     public IASStringBuffer(IASString str) {
         super(str);
     }
@@ -35,6 +36,13 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
 
     public IASStringBuffer(StringBuffer buffer) {
         super(buffer);
+    }
+
+    public static IASStringBuilderable fromStringBuffer(StringBuffer param) {
+        if (param == null) {
+            return null;
+        }
+        return new IASStringBuffer(param);
     }
 
     @Override

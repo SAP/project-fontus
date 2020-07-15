@@ -36,6 +36,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private boolean lacksToString = true;
     private boolean isAnnotation = false;
     private boolean inheritsFromJdkClass;
+    private boolean implementsInvocationHandler;
     private MethodVisitRecording recording;
     private final ClassVisitor visitor;
     private final List<ClassInstrumentationStrategy> instrumentation = new ArrayList<>(4);
@@ -46,7 +47,7 @@ class ClassTaintingVisitor extends ClassVisitor {
      */
     private String owner;
     private String superName;
-    private List<Method> overriddenJdkMethods;
+    private final List<Method> overriddenJdkMethods;
 
     public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config) {
         super(Opcodes.ASM7, cv);
@@ -95,6 +96,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
 
         this.inheritsFromJdkClass = this.inheritsFromJdkClass();
+        this.implementsInvocationHandler = this.implementsInvocationHandler(interfaces);
 
         // Is this class/interface an annotation or annotation proxy class? If yes, don't instrument it
         // Cf Java Language Specification 12 - 9.6.1 Annotation Types
@@ -251,7 +253,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             mv = super.visitMethod(access, name, desc, signature, exceptions);
         }
 
-        return new MethodTaintingVisitor(access, newName, desc, mv, this.resolver, this.config);
+        return new MethodTaintingVisitor(access, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler);
     }
 
     private void generateJdkInheritanceProxy(MethodVisitor mv, String instrumentedName, String descriptor) {
@@ -632,6 +634,10 @@ class ClassTaintingVisitor extends ClassVisitor {
 
     private boolean inheritsFromJdkClass() {
         return !isAnnotation && !superName.equals("java/lang/Object") && JdkClassesLookupTable.getInstance().isJdkClass(superName);
+    }
+
+    private boolean implementsInvocationHandler(String[] interfaces) {
+        return Arrays.asList(interfaces).contains("java/lang/reflect/InvocationHandler");
     }
 
     private boolean overridesJdkSuperMethod(int access, String name, String descriptor) {
