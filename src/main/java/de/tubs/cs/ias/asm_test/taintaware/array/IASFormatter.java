@@ -87,6 +87,13 @@ public class IASFormatter implements IASFormatterable {
 
     }
 
+    public static IASFormatterable fromFormatter(Formatter param) {
+        if(param == null) {
+            return null;
+        }
+        return new IASFormatter(param);
+    }
+
     public IASFormatter format(IASStringable format, Object... args) {
         return format(this.locale, format, args);
     }

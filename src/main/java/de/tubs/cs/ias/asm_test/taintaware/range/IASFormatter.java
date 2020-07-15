@@ -1,6 +1,8 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
+import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.IASMatcher;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASFormatterable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeAware;
@@ -18,7 +20,7 @@ import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.*;
 
-public class IASFormatter implements Closeable, Flushable, AutoCloseable {
+public class IASFormatter implements Closeable, Flushable, AutoCloseable, IASFormatterable {
     private final Appendable output;
     private final Locale locale;
     private IOException lastIOException;
@@ -85,6 +87,13 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
     public IASFormatter(IASStringable fileName, IASStringable csn, Locale l) throws FileNotFoundException {
         this(new File(fileName.getString()), csn, l);
 
+    }
+
+    public static IASFormatterable fromFormatter(Formatter param) {
+        if (param == null) {
+            return null;
+        }
+        return new IASFormatter(param);
     }
 
     public IASFormatter format(IASStringable format, Object... args) {

@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASPatternable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
 import java.util.ArrayList;
@@ -8,7 +9,7 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-public class IASPattern {
+public final class IASPattern implements IASPatternable {
     private final Pattern pattern;
     private final IASString patternString;
 
@@ -19,6 +20,13 @@ public class IASPattern {
     private IASPattern(IASStringable p, int f) {
         this.pattern = Pattern.compile(p.toString(), f);
         this.patternString = (IASString) p;
+    }
+
+    public static IASPatternable fromPattern(Pattern param) {
+        if (param == null) {
+            return null;
+        }
+        return new IASPattern(param);
     }
 
     public Predicate<IASString> asPredicate() {

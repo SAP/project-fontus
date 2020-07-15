@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.bool;
 
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASMatchResult;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASMatcherable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
 import java.lang.reflect.Field;
@@ -8,7 +9,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 
 @SuppressWarnings("Since15")
-public class IASMatcher {
+public final class IASMatcher implements IASMatcherable {
     private IASString input;
     private IASPattern pattern;
     private final Matcher matcher;
@@ -30,6 +31,13 @@ public class IASMatcher {
         this.input = IASString.valueOf(input);
         this.pattern = pattern;
         this.matcher = pattern.getPattern().matcher(input);
+    }
+
+    public static IASMatcherable fromMatcher(Matcher param) {
+        if (param == null) {
+            return null;
+        }
+        return new IASMatcher(param);
     }
 
     public IASMatcher appendReplacement(IASStringBuffer sb, IASStringable replacement) {
@@ -73,7 +81,9 @@ public class IASMatcher {
     public IASString group(int group) {
         int start = this.start(group);
         int end = this.end(group);
-        if(start == -1 || end == -1) { return null; }
+        if (start == -1 || end == -1) {
+            return null;
+        }
         return this.input.substring(start, end);
     }
 

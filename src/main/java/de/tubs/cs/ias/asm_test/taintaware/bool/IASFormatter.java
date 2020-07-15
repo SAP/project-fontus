@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.bool;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASFormatterable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
 import java.io.*;
@@ -10,7 +11,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class IASFormatter implements IASTaintAware, Closeable, Flushable, AutoCloseable {
+public class IASFormatter implements IASTaintAware, Closeable, Flushable, AutoCloseable, IASFormatterable {
     private final Formatter formatter;
 
     public IASFormatter(Formatter formatter) {
@@ -73,6 +74,13 @@ public class IASFormatter implements IASTaintAware, Closeable, Flushable, AutoCl
     public IASFormatter(IASStringable fileName, IASStringable csn, Locale l) throws FileNotFoundException, UnsupportedEncodingException {
         this(new Formatter(fileName.getString(), csn.getString(), l));
 
+    }
+
+    public static IASFormatterable fromFormatter(Formatter param) {
+        if (param == null) {
+            return null;
+        }
+        return new IASFormatter(param);
     }
 
     private int countSpecifier(String format) {

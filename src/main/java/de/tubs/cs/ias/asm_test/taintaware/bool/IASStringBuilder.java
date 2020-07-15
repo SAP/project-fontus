@@ -4,6 +4,13 @@ import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
 public final class IASStringBuilder extends IASAbstractStringBuilder {
+    public static IASStringBuilderable fromStringBuilder(StringBuilder param) {
+        if (param == null) {
+            return null;
+        }
+        return new IASStringBuilder(param);
+    }
+
     @Override
     public boolean isTainted() {
         return super.isTainted();

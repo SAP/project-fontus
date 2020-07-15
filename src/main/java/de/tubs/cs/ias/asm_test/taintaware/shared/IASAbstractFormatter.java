@@ -15,7 +15,7 @@ import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.*;
 
-public abstract class IASAbstractFormatter implements Closeable, Flushable, AutoCloseable {
+public abstract class IASAbstractFormatter implements Closeable, Flushable, AutoCloseable, IASFormatterable {
     protected final Appendable output;
     private final Locale locale;
     private IOException lastIOException;

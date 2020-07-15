@@ -25,6 +25,7 @@ import java.util.*;
 @SuppressWarnings("deprecation")
 public class MethodTaintingVisitor extends BasicMethodVisitor {
     private static final Logger logger = LogUtils.getLogger();
+    private final boolean implementsInvocationHandler;
 
     private boolean shouldRewriteCheckCast;
     private final String name;
@@ -54,7 +55,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
      */
     private final Map<FunctionCall, Runnable> methodInterfaceProxies;
 
-    public MethodTaintingVisitor(int acc, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver, Configuration config) {
+    public MethodTaintingVisitor(int acc, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver, Configuration config, boolean implementsInvocationHandler) {
         super(Opcodes.ASM7, methodVisitor);
         this.resolver = resolver;
         logger.info("Instrumenting method: {}{}", name, methodDescriptor);
@@ -64,6 +65,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.shouldRewriteCheckCast = false;
         this.name = name;
         this.methodDescriptor = methodDescriptor;
+        this.implementsInvocationHandler = implementsInvocationHandler;
         this.methodProxies = new HashMap<>();
         this.methodInterfaceProxies = new HashMap<>();
         this.dynProxies = new HashMap<>();
@@ -167,8 +169,22 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         if (opcode == Opcodes.ARETURN && Constants.ToStringDesc.equals(this.methodDescriptor) && Constants.ToString.equals(this.name)) {
             MethodTaintingUtils.callCheckTaint(this.getParentVisitor(), this.stringConfig);
             super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.stringConfig.getTStringQN(), Constants.TStringToStringName, Constants.ToStringDesc, false);
+        } else if (opcode == Opcodes.ARETURN && this.isInvocationHandlerMethod(this.name, this.methodDescriptor)) {
+            // Handling, that method proxies return the correct type (we're in a InvocationHandler.invoke implementation)
+            super.visitVarInsn(Opcodes.ALOAD, 1); // Load proxy param
+            super.visitVarInsn(Opcodes.ALOAD, 2); // Load method param
+            super.visitVarInsn(Opcodes.ALOAD, 3); // Load args param
+            String resultConverterDescriptor = String.format("(L%s;L%s;L%s;[L%s;)L%s;", Utils.fixupReverse(Object.class.getName()), Utils.fixupReverse(Object.class.getName()), Utils.fixupReverse(Method.class.getName()), Utils.fixupReverse(Object.class.getName()), Utils.fixupReverse(Object.class.getName()));
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "handleInvocationProxyCall", resultConverterDescriptor, false);
         }
         super.visitInsn(opcode);
+    }
+
+    private boolean isInvocationHandlerMethod(String name, String descriptor) {
+        boolean nameEquals = name.equals("invoke");
+        String expectedDescriptor = String.format("(L%s;L%s;[L%s;)L%s;", Utils.fixupReverse(Object.class.getName()), Utils.fixupReverse(Method.class.getName()), Utils.fixupReverse(Object.class.getName()), Utils.fixupReverse(Object.class.getName()));
+        boolean descriptorEquals = descriptor.equals(expectedDescriptor);
+        return nameEquals && descriptorEquals && this.implementsInvocationHandler;
     }
 
     /**

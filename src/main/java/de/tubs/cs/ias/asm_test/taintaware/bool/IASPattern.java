@@ -1,12 +1,13 @@
 package de.tubs.cs.ias.asm_test.taintaware.bool;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASPatternable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringUtils;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
 import java.util.regex.Pattern;
 
-public class IASPattern {
+public final class IASPattern implements IASPatternable {
     private final Pattern pattern;
     private final IASString patternString;
 
@@ -25,6 +26,13 @@ public class IASPattern {
 
     public static IASPattern compile(IASStringable regex, int flags) {
         return new IASPattern(Pattern.compile(regex.getString(), flags), regex);
+    }
+
+    public static IASPatternable fromPattern(Pattern param) {
+        if (param == null) {
+            return null;
+        }
+        return new IASPattern(param);
     }
 
     public int flags() {

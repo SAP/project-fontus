@@ -1,16 +1,13 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASMatchResult;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASMatcherReplacement;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRanges;
+import de.tubs.cs.ias.asm_test.taintaware.shared.*;
 
 import java.lang.reflect.Field;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 
 @SuppressWarnings("unused")
-public final class IASMatcher {
+public final class IASMatcher implements IASMatcherable {
     private IASString input;
     private IASPattern pattern;
     private final Matcher matcher;
@@ -33,6 +30,13 @@ public final class IASMatcher {
         this.input = IASString.valueOf(input);
         this.pattern = pattern;
         this.matcher = pattern.getPattern().matcher(input);
+    }
+
+    public static IASMatcherable fromMatcher(Matcher param) {
+        if (param == null) {
+            return null;
+        }
+        return new IASMatcher(param);
     }
 
     public IASMatcher appendReplacement(IASStringBuffer sb, IASStringable replacement) {

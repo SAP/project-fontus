@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
+import de.tubs.cs.ias.asm_test.taintaware.lazybasic.IASMatcher;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
@@ -39,6 +40,13 @@ public class IASStringBuffer extends IASAbstractStringBuilder {
 
     public IASStringBuffer(IASStringBuffer strb) {
         super(strb);
+    }
+
+    public static IASStringBuilderable fromStringBuffer(StringBuffer param) {
+        if (param == null) {
+            return null;
+        }
+        return new IASStringBuffer(param);
     }
 
     @Override
