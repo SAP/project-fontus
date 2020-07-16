@@ -7,15 +7,14 @@ import de.tubs.cs.ias.asm_test.instrumentation.strategies.StringInstrumentation;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Opcodes;
-import de.tubs.cs.ias.asm_test.utils.Logger;
+import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import java.util.regex.Matcher;
 
 public class StringClassInstrumentationStrategy extends StringInstrumentation implements ClassInstrumentationStrategy {
-    private static final Logger logger = LogUtils.getLogger();
+    private static final ParentLogger logger = LogUtils.getLogger();
 
     private final ClassVisitor cv;
 

@@ -10,10 +10,10 @@ import org.objectweb.asm.ClassWriter;
 
 import java.io.IOException;
 import java.io.InputStream;
-import de.tubs.cs.ias.asm_test.utils.Logger;
+import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 
 public class Instrumenter {
-    private static final Logger logger = LogUtils.getLogger();
+    private static final ParentLogger logger = LogUtils.getLogger();
 
     public byte[] instrumentClass(InputStream in, ClassResolver resolver, Configuration config) throws IOException {
         return instrumentInternal(new ClassReader(in), resolver, config);

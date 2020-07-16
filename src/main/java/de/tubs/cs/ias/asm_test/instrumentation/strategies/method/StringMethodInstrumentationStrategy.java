@@ -10,16 +10,15 @@ import de.tubs.cs.ias.asm_test.instrumentation.strategies.StringInstrumentation;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import de.tubs.cs.ias.asm_test.utils.Logger;
+import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
-import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class StringMethodInstrumentationStrategy extends StringInstrumentation implements MethodInstrumentationStrategy {
-    private static final Logger logger = LogUtils.getLogger();
+    private static final ParentLogger logger = LogUtils.getLogger();
 
     private static final Pattern stringQNPattern = Pattern.compile(Constants.StringQN, Pattern.LITERAL);
     private final MethodVisitor mv;

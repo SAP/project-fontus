@@ -5,11 +5,10 @@ import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import de.tubs.cs.ias.asm_test.instrumentation.Instrumenter;
 import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
-import de.tubs.cs.ias.asm_test.utils.Logger;
+import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import picocli.CommandLine;
 
 import java.io.*;
-import java.lang.invoke.MethodHandles;
 import java.util.Enumeration;
 import java.util.concurrent.Callable;
 import java.util.jar.JarEntry;
@@ -26,7 +25,7 @@ import de.tubs.cs.ias.asm_test.config.ConfigurationLoader;
         version = "asm_taint 0.0.1"
 )
 public final class Main implements Callable<Void> {
-    private static final Logger logger = LogUtils.getLogger();
+    private static final ParentLogger logger = LogUtils.getLogger();
     private static final int OneKB = 1024;
     private final Instrumenter instrumenter;
 

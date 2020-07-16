@@ -7,18 +7,17 @@ import de.tubs.cs.ias.asm_test.asm.NopVisitor;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
-import de.tubs.cs.ias.asm_test.utils.Logger;
+import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
 import java.util.Set;
 
 
 public final class InstrumentationState {
 
-    private static final Logger logger = LogUtils.getLogger();
+    private static final ParentLogger logger = LogUtils.getLogger();
 
     private InstrumentationState() {
         this.annotations = new HashSet<>();

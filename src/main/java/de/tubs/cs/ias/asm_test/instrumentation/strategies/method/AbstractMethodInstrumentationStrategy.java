@@ -9,10 +9,9 @@ import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import de.tubs.cs.ias.asm_test.utils.Logger;
+import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
-import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 
@@ -20,7 +19,7 @@ public abstract class AbstractMethodInstrumentationStrategy extends AbstractInst
     private final MethodVisitor mv;
     private final HashMap<String, String> methodsToRename = new HashMap<>(1);
     private final Type type;
-    private static final Logger logger = LogUtils.getLogger();
+    private static final ParentLogger logger = LogUtils.getLogger();
     private final String taintedToOrig;
     private final TaintStringConfig taintStringConfig;
 

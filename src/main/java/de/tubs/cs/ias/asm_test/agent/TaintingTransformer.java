@@ -10,14 +10,13 @@ import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
-import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.ProtectionDomain;
-import de.tubs.cs.ias.asm_test.utils.Logger;
+import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 
 class TaintingTransformer implements ClassFileTransformer {
-    private static final Logger logger = LogUtils.getLogger();
+    private static final ParentLogger logger = LogUtils.getLogger();
 
     private final Configuration config;
     private final Instrumenter instrumenter;
@@ -46,7 +45,7 @@ class TaintingTransformer implements ClassFileTransformer {
         logger.info("Tainting class: {}", className);
         byte[] outArray = this.instrumenter.instrumentClass(classfileBuffer, new ClassResolver(loader), this.config);
         if (this.config.isVerbose()) {
-            String baseName = "/tmp/agent";
+            String baseName = "./tmp/agent";
             File outFile = new File(baseName, className + Constants.CLASS_FILE_SUFFIX);
             File parent = new File(outFile.getParent());
             parent.mkdirs();

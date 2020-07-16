@@ -5,11 +5,11 @@ import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 
 import java.io.InputStream;
-import de.tubs.cs.ias.asm_test.utils.Logger;
+import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 
 public class ClassResolver {
     private final ClassLoader loader;
-    private static final Logger logger = LogUtils.getLogger();
+    private static final ParentLogger logger = LogUtils.getLogger();
 
     public ClassResolver(ClassLoader loader) {
         this.loader = loader;

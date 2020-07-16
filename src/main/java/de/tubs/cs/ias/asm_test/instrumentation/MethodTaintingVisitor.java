@@ -21,7 +21,7 @@ import java.util.*;
 
 @SuppressWarnings("deprecation")
 public class MethodTaintingVisitor extends BasicMethodVisitor {
-    private static final Logger logger = LogUtils.getLogger();
+    private static final ParentLogger logger = LogUtils.getLogger();
     private final boolean implementsInvocationHandler;
 
     private boolean shouldRewriteCheckCast;

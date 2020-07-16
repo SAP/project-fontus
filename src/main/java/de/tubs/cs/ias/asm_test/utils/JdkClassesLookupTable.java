@@ -6,10 +6,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import de.tubs.cs.ias.asm_test.utils.Logger;
 
 public final class JdkClassesLookupTable {
-    private static final Logger logger = LogUtils.getLogger();
+    private static final ParentLogger logger = LogUtils.getLogger();
 
     private static int getJvmVersion() {
         String specVersion = System.getProperty("java.vm.specification.version");
