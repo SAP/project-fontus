@@ -68,10 +68,10 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.methodInterfaceProxies = new HashMap<>();
         this.dynProxies = new HashMap<>();
         this.fillProxies();
-        this.fillStrategies();
         this.fillInterfaceProxies();
         this.config = config;
         this.stringConfig = config.getTaintStringConfig();
+        this.fillStrategies();
         this.signatureInstrumenter = new SignatureInstrumenter(this.api, this.instrumentation);
     }
 

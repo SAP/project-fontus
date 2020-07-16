@@ -24,9 +24,14 @@ class ClassTaintingVisitor extends ClassVisitor {
 
     private final TaintStringConfig stringConfig;
 
-    private final Collection<BlackListEntry> blacklist = new ArrayList<>();
+    private final List<BlackListEntry> blacklist = new ArrayList<>();
+    /**
+     * This blacklist contains the name of the inheriting class (not the jdk class).
+     * The value is a list of corresponding blacklist entries which will be ignored for the generation of not overridden jdk methods
+     */
+    private final Map<String, List<BlackListEntry>> jdkInheritanceBlacklist = new HashMap<>();
     private final String newMainDescriptor;
-    private final Collection<FieldData> staticFinalFields;
+    private final List<FieldData> staticFinalFields;
     private boolean hasClInit = false;
     private boolean isAnnotation = false;
     private boolean implementsInvocationHandler;
@@ -74,6 +79,9 @@ class ClassTaintingVisitor extends ClassVisitor {
     private void fillBlacklist() {
         //this.blacklist.add(new BlackListEntry("main", Constants.MAIN_METHOD_DESC, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
 //        this.blacklist.add(new BlackListEntry(Constants.ToString, Constants.ToStringDesc, Opcodes.ACC_PUBLIC));
+        List<BlackListEntry> blacklistJdbcLeakPrevention = new ArrayList<>();
+        blacklistJdbcLeakPrevention.add(new BlackListEntry("toString", "()Ljava/lang/String;", Opcodes.ACC_PUBLIC));
+        this.jdkInheritanceBlacklist.put("org/apache/catalina/loader/JdbcLeakPrevention", blacklistJdbcLeakPrevention);
     }
 
     /**
@@ -366,6 +374,16 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private void createInstrumentedJdkProxy(Method m) {
+        if (this.jdkInheritanceBlacklist.containsKey(this.owner)) {
+            List<BlackListEntry> blackList = this.jdkInheritanceBlacklist.get(this.owner);
+            for (BlackListEntry entry : blackList) {
+                org.objectweb.asm.commons.Method parsed = org.objectweb.asm.commons.Method.getMethod(m);
+                int accessFlag = (m.getModifiers() & Modifier.PUBLIC) | (m.getModifiers() & Modifier.PROTECTED) | (m.getModifiers() & Modifier.PRIVATE);
+                if (entry.matches(parsed.getName(), parsed.getDescriptor(), accessFlag)) {
+                    return;
+                }
+            }
+        }
         logger.info("Creating proxy for inherited, but not overridden JDK method " + m);
         Descriptor originalDescriptor = Descriptor.parseMethod(m);
         Descriptor instrumentedDescriptor = this.instrumentDescriptor(originalDescriptor);
