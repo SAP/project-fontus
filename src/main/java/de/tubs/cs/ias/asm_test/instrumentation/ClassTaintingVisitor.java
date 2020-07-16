@@ -95,11 +95,6 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
         this.interfaces = interfaces;
 
-        this.inheritsFromJdkClass = this.inheritsFromJdkClass();
-        this.implementsInvocationHandler = this.implementsInvocationHandler();
-
-        // Getting JDK methods
-        this.initJdkClasses();
 
         // Is this class/interface an annotation or annotation proxy class? If yes, don't instrument it
         // Cf Java Language Specification 12 - 9.6.1 Annotation Types
@@ -115,19 +110,24 @@ class ClassTaintingVisitor extends ClassVisitor {
             InstrumentationState.getInstance().addAnnotation(name);
         }
 
+        this.inheritsFromJdkClass = this.inheritsFromJdkClass();
+        this.implementsInvocationHandler = this.implementsInvocationHandler();
+
+        // Getting JDK methods
+        this.initJdkClasses();
+
         String instrumentedSignature = this.instrumentSignature(signature);
         super.visit(version, access, name, instrumentedSignature, superName, interfaces);
     }
 
     private void initJdkClasses() {
-        List<Method> jdkMethods;
         if (this.inheritsFromJdkClass) {
-            jdkMethods = getAllMethods(this.loadSuperClass());
+            List<Method> jdkMethods = getAllMethods(this.loadSuperClass());
+            addNotContainedJdkInterfaceMethods(this.interfaces, jdkMethods);
+            this.jdkMethods = Collections.unmodifiableList(jdkMethods);
         } else {
-            jdkMethods = new ArrayList<>();
+            this.jdkMethods = Collections.unmodifiableList(new ArrayList<>());
         }
-        addNotContainedJdkInterfaceMethods(this.interfaces, jdkMethods);
-        this.jdkMethods = Collections.unmodifiableList(jdkMethods);
     }
 
     /**
@@ -283,16 +283,16 @@ class ClassTaintingVisitor extends ClassVisitor {
 
             // Creating new Object if necessary and duplicating it for initialization
             if (isDescriptorNameToInstrument(param)) {
-                String instrumentedParam = Descriptor.descriptorNameToQN(this.instrumentQN(param));
+                Type instrumentedType = Type.getType(this.instrumentQN(param));
                 int arrayDimensions = calculateDescArrayDimensions(param);
                 if (arrayDimensions == 0) {
-                    mv.visitTypeInsn(Opcodes.NEW, instrumentedParam);
+                    mv.visitTypeInsn(Opcodes.NEW, instrumentedType.getInternalName());
                     mv.visitInsn(Opcodes.DUP);
                     mv.visitVarInsn(loadCodeByType(param), i);
-                    mv.visitMethodInsn(Opcodes.INVOKESPECIAL, instrumentedParam, Constants.Init, new Descriptor(new String[]{param}, "V").toDescriptor(), false);
+                    mv.visitMethodInsn(Opcodes.INVOKESPECIAL, instrumentedType.getInternalName(), Constants.Init, new Descriptor(new String[]{param}, "V").toDescriptor(), false);
                 } else {
                     mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "convertStringArray", String.format("([L%s;)[%s", Utils.fixupReverse(String.class.getName()), this.stringConfig.getMethodTStringDesc()), false);
-                    mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedParam);
+                    mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedType.getInternalName());
                 }
             } else {
                 mv.visitVarInsn(loadCodeByType(param), i);
@@ -301,9 +301,9 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.owner, instrumentedName, instrumentedDescriptor.toDescriptor(), false);
         if (isDescriptorNameToInstrument(d.getReturnType())) {
-            String returnType = Descriptor.descriptorNameToQN(this.instrumentQN(d.getReturnType()));
+            Type returnType = Type.getType(this.instrumentQN(d.getReturnType()));
             String toOriginalMethod = this.getToOriginalMethod(d.getReturnType());
-            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, returnType, toOriginalMethod, new Descriptor(d.getReturnType()).toDescriptor(), false);
+            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, returnType.getInternalName(), toOriginalMethod, new Descriptor(d.getReturnType()).toDescriptor(), false);
         }
 
         mv.visitInsn(returnCodeByReturnType(d.getReturnType()));
@@ -479,11 +479,11 @@ class ClassTaintingVisitor extends ClassVisitor {
             // Creating new Object if necessary and duplicating it for initialization
             if (isDescriptorNameToInstrument(param)) {
                 mv.visitVarInsn(loadCodeByType(param), i + 1);
-                String instrumentedParam = Descriptor.descriptorNameToQN(this.instrumentQN(param));
+                Type instrumentedParam = Type.getType(this.instrumentQN(param));
                 int arrayDimensions = calculateDescArrayDimensions(param);
                 if (arrayDimensions == 0) {
-                    mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedParam);
-                    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, instrumentedParam, this.getToOriginalMethod(param), new Descriptor(param).toDescriptor(), false);
+                    mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedParam.getInternalName());
+                    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, instrumentedParam.getInternalName(), this.getToOriginalMethod(param), new Descriptor(param).toDescriptor(), false);
                 } else {
                     mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "convertTaintAwareStringArray", String.format("([%s)[L%s;", this.stringConfig.getMethodTStringDesc(), Utils.fixupReverse(String.class.getName())), false);
 //                    mv.visitTypeInsn(Opcodes.CHECKCAST, param);
@@ -499,22 +499,22 @@ class ClassTaintingVisitor extends ClassVisitor {
         // Converting the return type back
         if (isDescriptorNameToInstrument(origDescriptor.getReturnType())) {
             // TODO Handle Arrays/Lists
-            String returnType = Descriptor.descriptorNameToQN(this.instrumentQN(origDescriptor.getReturnType()));
+            Type returnType = Type.getType(this.instrumentQN(origDescriptor.getReturnType()));
 
 
-            int arrayDimensions = calculateDescArrayDimensions(returnType);
+            int arrayDimensions = calculateDescArrayDimensions(returnType.getInternalName());
             if (arrayDimensions == 0) {
                 int resultLocalAddress = origDescriptor.parameterCount() + 1;
                 mv.visitVarInsn(Opcodes.ASTORE, resultLocalAddress); // this, params, free storage => 0 indexed
 
-                mv.visitTypeInsn(Opcodes.NEW, returnType);
+                mv.visitTypeInsn(Opcodes.NEW, returnType.getInternalName());
                 mv.visitInsn(Opcodes.DUP);
                 mv.visitVarInsn(Opcodes.ALOAD, resultLocalAddress);
 
-                mv.visitMethodInsn(Opcodes.INVOKESPECIAL, returnType, Constants.Init, new Descriptor(new String[]{origDescriptor.getReturnType()}, "V").toDescriptor(), false);
+                mv.visitMethodInsn(Opcodes.INVOKESPECIAL, returnType.getInternalName(), Constants.Init, new Descriptor(new String[]{origDescriptor.getReturnType()}, "V").toDescriptor(), false);
             } else {
                 mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "convertStringArray", String.format("([L%s;)[%s", Utils.fixupReverse(String.class.getName()), this.stringConfig.getMethodTStringDesc()), false);
-                mv.visitTypeInsn(Opcodes.CHECKCAST, Descriptor.classNameToDescriptorName(Utils.fixup(returnType)));
+                mv.visitTypeInsn(Opcodes.CHECKCAST, returnType.getInternalName());
             }
         }
 
@@ -661,7 +661,19 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private boolean inheritsFromJdkClass() {
-        return !isAnnotation && !superName.equals("java/lang/Object") && JdkClassesLookupTable.getInstance().isJdkClass(superName);
+        if (!isAnnotation) {
+            if (!superName.equals("java/lang/Object")) {
+                if (JdkClassesLookupTable.getInstance().isJdkClass(superName)) {
+                    return true;
+                }
+            }
+            for (String interfaceName : this.interfaces) {
+                if (JdkClassesLookupTable.getInstance().isJdkClass(interfaceName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private boolean implementsInvocationHandler() {

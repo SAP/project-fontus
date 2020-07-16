@@ -195,52 +195,6 @@ public class Descriptor {
     }
 
     /**
-     * @param descriptorName Descriptor name in the format "Ljava/lang/Object;"
-     * @return Class name in the format "java/lang/Object"
-     */
-    public static String descriptorNameToQN(String descriptorName) {
-        switch (descriptorName) {
-            case "I":
-                return "int";
-            case "B":
-                return "byte";
-            case "C":
-                return "char";
-            case "D":
-                return "double";
-            case "F":
-                return "float";
-            case "S":
-                return "short";
-            case "J":
-                return "long";
-            case "Z":
-                return "boolean";
-            case "V":
-                return "void";
-            default:
-                int arrayCount = 0;
-                for (; descriptorName.startsWith("["); arrayCount++) {
-                    descriptorName = descriptorName.substring(1);
-                }
-
-                if (isPrimitiveDescriptorName(descriptorName)) {
-                    descriptorName = descriptorNameToQN(descriptorName);
-                } else {
-                    // Remove "L" [...] ";"
-                    descriptorName = descriptorName.substring(1, descriptorName.length() - 1);
-                }
-
-                StringBuilder descriptorNameBuilder = new StringBuilder(descriptorName);
-                for (int i = 0; i < arrayCount; i++) {
-                    descriptorNameBuilder.append("[]");
-                }
-                descriptorName = descriptorNameBuilder.toString();
-                return descriptorName;
-        }
-    }
-
-    /**
      * Parses a textual Descriptor and disassembles it into its types
      * TODO: maybe remove the ';'s?
      * TODO: throw exception on invalid descriptor
