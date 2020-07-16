@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-import de.tubs.cs.ias.asm_test.utils.Logger;
+import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 
 import java.util.stream.Collectors;
 
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class Configuration {
     private static Configuration configuration;
 
-    private static final Logger logger = LogUtils.getLogger();
+    private static final ParentLogger logger = LogUtils.getLogger();
     @JsonIgnore
     private TaintMethod taintMethod;
     @JsonIgnore

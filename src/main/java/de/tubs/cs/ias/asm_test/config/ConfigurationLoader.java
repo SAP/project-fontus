@@ -6,20 +6,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import de.tubs.cs.ias.asm_test.Constants;
-import de.tubs.cs.ias.asm_test.utils.Logger;
+import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ConfigurationLoader {
-    private static final Logger logger = LogUtils.getLogger();
+    private static final ParentLogger logger = LogUtils.getLogger();
 
     public static Configuration readXmlConfiguration(InputStream stream) {
         ObjectMapper objectMapper = new XmlMapper();

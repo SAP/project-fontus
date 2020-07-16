@@ -6,13 +6,11 @@ import de.tubs.cs.ias.asm_test.instrumentation.MethodTaintingVisitor;
 import de.tubs.cs.ias.asm_test.config.Source;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import org.objectweb.asm.Opcodes;
-import de.tubs.cs.ias.asm_test.utils.Logger;
+import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
-import java.lang.invoke.MethodHandles;
-
 public class SourceTransformer implements ReturnTransformation {
-    private static final Logger logger = LogUtils.getLogger();
+    private static final ParentLogger logger = LogUtils.getLogger();
 
     private final Source source;
     private final TaintStringConfig taintStringConfig;

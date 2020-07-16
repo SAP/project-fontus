@@ -1,31 +1,45 @@
 package de.tubs.cs.ias.asm_test.utils;
 
+import de.tubs.cs.ias.asm_test.Constants;
+import jdk.internal.reflect.Reflection;
+
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.*;
 
 public class LogUtils {
-    private volatile static Logger logger;
+    private static final ParentLogger parentlogger;
 
-    public synchronized static Logger getLogger() {
-        if (logger == null) {
-            logger = new Logger("InstrumentationLogger");
-            try {
-                FileHandler fileHandler = new FileHandler(getFileName());
+    static {
+        parentlogger = new ParentLogger();
+        try {
+            FileHandler fileHandler = new FileHandler(getFileName());
 
-                SimpleFormatter formatter = new LoggerFormatter();
-                fileHandler.setFormatter(formatter);
+            SimpleFormatter formatter = new LoggerFormatter();
+            fileHandler.setFormatter(formatter);
 
-                logger.addHandler(fileHandler);
-            } catch (IOException e) {
-                System.err.println("Could not create log file for instrumentation");
-                e.printStackTrace(System.err);
-            }
-
-            LogManager.getLogManager().addLogger(logger);
+            parentlogger.addHandler(fileHandler);
+        } catch (IOException e) {
+            System.err.println("Could not create log file for instrumentation");
+            e.printStackTrace(System.err);
         }
-        return logger;
+
+        LogManager.getLogManager().addLogger(parentlogger);
+    }
+
+    @SuppressWarnings("Since15")
+    public synchronized static ParentLogger getLogger() {
+        Class callerClass;
+        if (Constants.JAVA_VERSION >= 9) {
+            callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
+                    .getCallerClass();
+        } else {
+            callerClass = Reflection.getCallerClass();
+        }
+        Logger logger = new Logger(callerClass.getName());
+        logger.setParent(parentlogger);
+        return parentlogger;
     }
 
     private static String getFileName() {

@@ -19,11 +19,13 @@ class LoggerFormatter extends SimpleFormatter {
     }
 
     private static String getThreadNameById(int id) {
-        for (Thread t : Thread.getAllStackTraces().keySet()) {
-            if (t.getId() == id) {
-                return t.getName();
-            }
-        }
-        return "Thread-" + id;
+        // TODO The instrumentation before was very cpu intensive, maybe replace this with more efficient implementation
+        return "unknown";
+//        for (Thread t : Thread.getAllStackTraces().keySet()) {
+//            if (t.getId() == id) {
+//                return t.getName();
+//            }
+//        }
+//        return "Thread-" + id;
     }
 }

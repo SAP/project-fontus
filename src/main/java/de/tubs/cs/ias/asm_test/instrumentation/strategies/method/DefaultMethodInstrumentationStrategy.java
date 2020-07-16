@@ -13,13 +13,13 @@ import org.objectweb.asm.Type;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-import de.tubs.cs.ias.asm_test.utils.Logger;
+import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 
 import static de.tubs.cs.ias.asm_test.utils.MethodUtils.isToString;
 
 public class DefaultMethodInstrumentationStrategy extends DefaultInstrumentation implements MethodInstrumentationStrategy {
     private final MethodVisitor mv;
-    private static final Logger logger = LogUtils.getLogger();
+    private static final ParentLogger logger = LogUtils.getLogger();
     private static final Set<Type> requireValueOf = fillRequireValueOfSet();
 
     private static Set<Type> fillRequireValueOfSet() {

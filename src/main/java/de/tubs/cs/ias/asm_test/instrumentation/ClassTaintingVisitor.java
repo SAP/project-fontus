@@ -23,7 +23,7 @@ import static de.tubs.cs.ias.asm_test.utils.ClassUtils.getAllMethods;
 
 
 class ClassTaintingVisitor extends ClassVisitor {
-    private static final Logger logger = LogUtils.getLogger();
+    private static final ParentLogger logger = LogUtils.getLogger();
 
     private final TaintStringConfig stringConfig;
 
