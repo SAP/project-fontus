@@ -12,11 +12,8 @@ import de.tubs.cs.ias.asm_test.config.Source;
 import de.tubs.cs.ias.asm_test.asm.BasicMethodVisitor;
 import de.tubs.cs.ias.asm_test.transformer.*;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.method.*;
-import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
-import de.tubs.cs.ias.asm_test.utils.Utils;
+import de.tubs.cs.ias.asm_test.utils.*;
 import org.objectweb.asm.*;
-import de.tubs.cs.ias.asm_test.utils.Logger;
-import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -165,11 +162,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     @Override
     public void visitInsn(int opcode) {
         this.shouldRewriteCheckCast = false;
-        // If we are in a "toString" method, we have to insert a call to the taint-check before returning.
-        if (opcode == Opcodes.ARETURN && Constants.ToStringDesc.equals(this.methodDescriptor) && Constants.ToString.equals(this.name)) {
-            MethodTaintingUtils.callCheckTaint(this.getParentVisitor(), this.stringConfig);
-            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.stringConfig.getTStringQN(), Constants.TStringToStringName, Constants.ToStringDesc, false);
-        } else if (opcode == Opcodes.ARETURN && this.isInvocationHandlerMethod(this.name, this.methodDescriptor)) {
+        if (opcode == Opcodes.ARETURN && this.isInvocationHandlerMethod(this.name, this.methodDescriptor)) {
             // Handling, that method proxies return the correct type (we're in a InvocationHandler.invoke implementation)
             super.visitVarInsn(Opcodes.ALOAD, 1); // Load proxy param
             super.visitVarInsn(Opcodes.ALOAD, 2); // Load method param
@@ -228,12 +221,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         // Call any functions which manipulate function call parameters and return types
         // for example sources, sinks and JDK functions
         if (this.rewriteParametersAndReturnType(fc)) {
-            return;
-        }
-
-        // ToString wrapping
-        if (name.equals(Constants.ToString) && descriptor.equals(Constants.ToStringDesc)) {
-            super.visitMethodInsn(opcode, owner, Constants.ToStringInstrumented, this.stringConfig.getToStringInstrumentedDesc(), isInterface);
             return;
         }
 

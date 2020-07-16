@@ -1,8 +1,11 @@
 package de.tubs.cs.ias.asm_test.utils;
 
+import de.tubs.cs.ias.asm_test.asm.ClassResolver;
+import de.tubs.cs.ias.asm_test.asm.TypeHierarchyReaderWithLoaderSupport;
+import org.objectweb.asm.Type;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,24 +15,31 @@ public class ClassUtils {
      * This includes the inherited ones (unlike getDeclaredMethods), but excludes the Object-class methods
      *
      * @param classToDiscover Class to discover
-     * @return Discovered methods
+     * @param methods List, where the discovered methods will be added (duplicates will not be stored, can be prefilled)
      */
-    public static List<Method> getAllMethods(Class<?> classToDiscover) {
-        List<Method> methods = new ArrayList<>();
-        for (Class<?> cls = classToDiscover; !cls.equals(Object.class); cls = cls.getSuperclass()) {
-            Method[] declaredMethods = cls.getDeclaredMethods();
-            for (Method declaredMethod : declaredMethods) {
-                addMethodIfNotContained(declaredMethod, methods);
+    public static void getAllMethods(String classToDiscover, ClassResolver resolver, List<Method> methods) {
+        TypeHierarchyReaderWithLoaderSupport typeHierarchyReader = new TypeHierarchyReaderWithLoaderSupport(resolver);
+        for (Type cls = Type.getObjectType(classToDiscover); cls != null; cls = typeHierarchyReader.getSuperClass(cls)) {
+            if (JdkClassesLookupTable.getInstance().isJdkClass(cls.getInternalName())) {
+                try {
+                    Class clazz = Class.forName(cls.getClassName());
+                    Method[] declaredMethods = clazz.getDeclaredMethods();
+                    for (Method declaredMethod : declaredMethods) {
+                        addMethodIfNotContained(declaredMethod, methods);
+                    }
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
             }
         }
-        return methods;
     }
 
     /**
      * This methods add all methods if the passed interface list to the method list, if the method isn't already contained
      * For determination if contained see {@link ClassUtils#addMethodIfNotContained(Method, List)}
+     *
      * @param interfaces Array with interface names as QN
-     * @param methods List to add methods (may already contain methods)
+     * @param methods    List to add methods (may already contain methods)
      */
     public static void addNotContainedJdkInterfaceMethods(String[] interfaces, List<Method> methods) {
         if (interfaces == null) {
@@ -52,7 +62,7 @@ public class ClassUtils {
     /**
      * Adds the passed method to the list, if it's not already contained.
      * The passed method must be an overridable method (public or protected and not never static)
-     *
+     * <p>
      * If a method is already contained is determined by the method name and descriptor (declaring class is NOT considered)
      */
     private static void addMethodIfNotContained(Method methodToAdd, List<Method> methods) {

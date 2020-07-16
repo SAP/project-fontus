@@ -1,8 +1,27 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.utils.ConversionUtils;
+import org.objectweb.asm.Type;
+
 import java.util.regex.Pattern;
 
 public final class Constants {
+    public static final String ConversionUtilsQN = Type.getType(ConversionUtils.class).getInternalName();
+    public static final String ConversionUtilsToConcreteName;
+    public static final String ConversionUtilsToConcreteDesc;
+    public static final String ConversionUtilsToOrigName;
+    public static final String ConversionUtilsToOrigDesc;
+
+    static {
+        try {
+            ConversionUtilsToConcreteName = ConversionUtils.class.getMethod("convertToConcrete", Object.class).getName();
+            ConversionUtilsToConcreteDesc = Type.getType(ConversionUtils.class.getMethod("convertToConcrete", Object.class)).getDescriptor();
+            ConversionUtilsToOrigName = ConversionUtils.class.getMethod("convertToOrig", Object.class).getName();
+            ConversionUtilsToOrigDesc = Type.getType(ConversionUtils.class.getMethod("convertToOrig", Object.class)).getDescriptor();
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * Fully qualified name of the java Object class.
@@ -75,11 +94,6 @@ public final class Constants {
     public static final String MainWrapper = "main";
 
     /**
-     * Name of the instrumented toString method
-     */
-    public static final String ToStringInstrumented = "$toString";
-
-    /**
      * Name of the method that converts taint-aware Strings to regular ones
      */
     public static final String TStringToStringName = "getString";
@@ -98,11 +112,6 @@ public final class Constants {
      * Name of the method that converts taint-aware StringBuffers to regular ones
      */
     public static final String TStringBufferToStringBufferName = "getStringBuffer";
-
-    /**
-     * Descriptor of an object to regular String conversion method
-     */
-    public static final String ToStringDesc = "()Ljava/lang/String;";
 
     /**
      * Descriptor of the untainted init/constructor method.

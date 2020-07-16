@@ -74,7 +74,7 @@ public class IASReflectionMethodProxy {
         } else if (isJdkClass(method.getDeclaringClass())) {
             Object[] converted = convertParametersToOriginal(parameters);
             Object result = method.invoke(instance, converted);
-            return convertResultToTainted(method.getReturnType(), result);
+            return ConversionUtils.convertToConcrete(result);
         }
         return method.invoke(instance, parameters);
     }
@@ -88,18 +88,6 @@ public class IASReflectionMethodProxy {
             converted[i] = ConversionUtils.convertToOrig(parameters[i]);
         }
         return converted;
-    }
-
-    private static Object convertResultToTainted(Class resultType, Object result) {
-        if (result == null) {
-            return null;
-        }
-        for (Class instrumentable : toTaintedMethods.keySet()) {
-            if (instrumentable.equals(resultType)) {
-                return toTaintedMethods.get(instrumentable).apply(result);
-            }
-        }
-        return result;
     }
 
     public static Object getDefaultValue(Method method) {
@@ -181,14 +169,10 @@ public class IASReflectionMethodProxy {
     }
 
     private static String transformMethodName(Class<?> clazz, String methodName, Class[] parameters) {
-        boolean isJdk = JdkClassesLookupTable.getInstance().isJdkClass(clazz);
         boolean isToString = methodName.equals(Constants.ToString) && (parameters == null || parameters.length == 0);
         boolean isTaintAware = IASTaintAware.class.isAssignableFrom(clazz);
 
-
-        if (!isJdk && !isInPackage(clazz) && isToString) {
-            return Constants.ToStringInstrumented;
-        } else if (isTaintAware && isToString) {
+        if (isTaintAware && isToString) {
             return Constants.TO_TSTRING;
         }
 

@@ -15,6 +15,8 @@ import java.util.HashSet;
 import java.util.Set;
 import de.tubs.cs.ias.asm_test.utils.Logger;
 
+import static de.tubs.cs.ias.asm_test.utils.MethodUtils.isToString;
+
 public class DefaultMethodInstrumentationStrategy extends DefaultInstrumentation implements MethodInstrumentationStrategy {
     private final MethodVisitor mv;
     private static final Logger logger = LogUtils.getLogger();
@@ -58,10 +60,6 @@ public class DefaultMethodInstrumentationStrategy extends DefaultInstrumentation
             return true;
         }
         return false;
-    }
-
-    private static boolean isToString(String name, String descriptor) {
-        return name.equals(Constants.ToString) && descriptor.equals(Constants.ToStringDesc);
     }
 
     @Override
