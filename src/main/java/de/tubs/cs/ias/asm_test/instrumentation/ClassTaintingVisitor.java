@@ -31,9 +31,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private final String newMainDescriptor;
     private final Collection<FieldData> staticFinalFields;
     private boolean hasClInit = false;
-    private boolean lacksToString = true;
     private boolean isAnnotation = false;
-    private boolean inheritsFromJdkClass;
     private boolean implementsInvocationHandler;
     private MethodVisitRecording recording;
     private final ClassVisitor visitor;
@@ -48,6 +46,8 @@ class ClassTaintingVisitor extends ClassVisitor {
     private List<Method> jdkMethods;
     private final List<Method> overriddenJdkMethods;
     private String[] interfaces;
+    private boolean isInterface;
+    private boolean extendsSuperClass;
 
     public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config) {
         super(Opcodes.ASM7, cv);
@@ -74,7 +74,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 
     private void fillBlacklist() {
         //this.blacklist.add(new BlackListEntry("main", Constants.MAIN_METHOD_DESC, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
-        this.blacklist.add(new BlackListEntry(Constants.ToString, Constants.ToStringDesc, Opcodes.ACC_PUBLIC));
+//        this.blacklist.add(new BlackListEntry(Constants.ToString, Constants.ToStringDesc, Opcodes.ACC_PUBLIC));
     }
 
     /**
@@ -90,11 +90,9 @@ class ClassTaintingVisitor extends ClassVisitor {
             final String[] interfaces) {
         this.owner = name;
         this.superName = superName == null ? Type.getInternalName(Object.class) : superName;
-        if ((access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE) {
-            this.lacksToString = false;
-        }
         this.interfaces = interfaces;
 
+        this.isInterface = ((access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE);
 
         // Is this class/interface an annotation or annotation proxy class? If yes, don't instrument it
         // Cf Java Language Specification 12 - 9.6.1 Annotation Types
@@ -106,12 +104,11 @@ class ClassTaintingVisitor extends ClassVisitor {
         ) {
             logger.info("{} is annotation or annotation proxy!", name);
             this.isAnnotation = true;
-            this.lacksToString = false;
             InstrumentationState.getInstance().addAnnotation(name);
         }
 
-        this.inheritsFromJdkClass = this.inheritsFromJdkClass();
         this.implementsInvocationHandler = this.implementsInvocationHandler();
+        this.extendsSuperClass = JdkClassesLookupTable.getInstance().isJdkClass(superName);
 
         // Getting JDK methods
         this.initJdkClasses();
@@ -121,13 +118,14 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private void initJdkClasses() {
-        if (this.inheritsFromJdkClass) {
-            List<Method> jdkMethods = getAllMethods(this.loadSuperClass());
+        List<Method> jdkMethods = new ArrayList<>();
+        if (!isInterface && !this.isAnnotation) {
+            if (this.extendsSuperClass) {
+                getAllMethods(this.superName, this.resolver, jdkMethods);
+            }
             addNotContainedJdkInterfaceMethods(this.interfaces, jdkMethods);
-            this.jdkMethods = Collections.unmodifiableList(jdkMethods);
-        } else {
-            this.jdkMethods = Collections.unmodifiableList(new ArrayList<>());
         }
+        this.jdkMethods = Collections.unmodifiableList(jdkMethods);
     }
 
     /**
@@ -165,36 +163,6 @@ class ClassTaintingVisitor extends ClassVisitor {
             }
         }
         return fv;
-    }
-
-    /**
-     * Generate the body of the toString proxy method
-     * <p>
-     * To not break OOP we can't change the Signature of the toString method inherited from Object.
-     * Our solution is thus to instrument the toString method and rename it to $toString with descriptor ()TString;
-     * <p>
-     * To provide a working toString method (i.e., not break applications by having objects use the default toString method)
-     * the code generated here calls $toString, check whether it was tainted and returns the regular String.
-     * <p>
-     * This loses the taint! Thus passing instrumented objects to JVM standard library functions which call toString need special handling.
-     * One solution is to write proxy methods that reassemble the taint information afterwards.
-     * <p>
-     * TODO: The taint handling probably needs various levels of action when a tainted String is required.
-     * This function could just log that the taint is lost and thus notifies the developer that a proxy might be required.
-     * Maybe a whitelist where losing the taint is fine would be a good idea? Where the toString is called,
-     * can be detected by inspecting the call stack. This might be really slow however..
-     *
-     * @param mv The visitor, visiting the toString method.
-     */
-    private void generateToStringProxy(MethodVisitor mv) {
-        mv.visitCode();
-        mv.visitVarInsn(Opcodes.ALOAD, 0);
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.owner, Constants.ToStringInstrumented, this.stringConfig.getToStringInstrumentedDesc(), false);
-        mv.visitInsn(Opcodes.DUP);
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.stringConfig.getTStringQN(), Constants.TStringToStringName, Constants.ToStringDesc, false);
-        mv.visitInsn(Opcodes.ARETURN);
-        mv.visitMaxs(6, 3);
-        mv.visitEnd();
     }
 
 
@@ -239,15 +207,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             mv = super.visitMethod(access, Constants.MainWrapper, this.newMainDescriptor, signature, exceptions);
             newName = Constants.MainWrapper;
             desc = this.newMainDescriptor;
-        } else if (access == Opcodes.ACC_PUBLIC && Constants.ToString.equals(name) && Constants.ToStringDesc.equals(descriptor)) {
-            this.lacksToString = false;
-            logger.info("Creating proxy toString method");
-            MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC, Constants.ToString, Constants.ToStringDesc, null, exceptions);
-            this.generateToStringProxy(v);
-            newName = Constants.ToStringInstrumented;
-            desc = this.stringConfig.getToStringInstrumentedDesc();
-            mv = super.visitMethod(access, newName, desc, signature, exceptions);
-        } else if (overridesJdkSuperMethod(access, name, descriptor) && shouldBeInstrumented(descriptor)) {
+        } else if (!this.isAnnotation && overridesJdkSuperMethod(access, name, descriptor) && shouldBeInstrumented(descriptor)) {
             logger.info("Creating proxy method for JDK inheritance for method: {}{}", name, descriptor);
             MethodVisitor v = super.visitMethod(access, name, descriptor, signature, exceptions);
             newName = this.rewriteMethodNameForJdkInheritanceProxy(name);
@@ -284,16 +244,19 @@ class ClassTaintingVisitor extends ClassVisitor {
             // Creating new Object if necessary and duplicating it for initialization
             if (isDescriptorNameToInstrument(param)) {
                 Type instrumentedType = Type.getType(this.instrumentQN(param));
-                int arrayDimensions = calculateDescArrayDimensions(param);
-                if (arrayDimensions == 0) {
-                    mv.visitTypeInsn(Opcodes.NEW, instrumentedType.getInternalName());
-                    mv.visitInsn(Opcodes.DUP);
-                    mv.visitVarInsn(loadCodeByType(param), i);
-                    mv.visitMethodInsn(Opcodes.INVOKESPECIAL, instrumentedType.getInternalName(), Constants.Init, new Descriptor(new String[]{param}, "V").toDescriptor(), false);
-                } else {
-                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "convertStringArray", String.format("([L%s;)[%s", Utils.fixupReverse(String.class.getName()), this.stringConfig.getMethodTStringDesc()), false);
-                    mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedType.getInternalName());
-                }
+                mv.visitVarInsn(loadCodeByType(param), i);
+                mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
+                mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedType.getInternalName());
+//                int arrayDimensions = calculateDescArrayDimensions(param);
+//                if (arrayDimensions == 0) {
+//                    mv.visitTypeInsn(Opcodes.NEW, instrumentedType.getInternalName());
+//                    mv.visitInsn(Opcodes.DUP);
+//                    mv.visitVarInsn(loadCodeByType(param), i);
+//                    mv.visitMethodInsn(Opcodes.INVOKESPECIAL, instrumentedType.getInternalName(), Constants.Init, new Descriptor(new String[]{param}, "V").toDescriptor(), false);
+//                } else {
+//                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "convertStringArray", String.format("([L%s;)[%s", Utils.fixupReverse(String.class.getName()), this.stringConfig.getMethodTStringDesc()), false);
+//                    mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedType.getInternalName());
+//                }
             } else {
                 mv.visitVarInsn(loadCodeByType(param), i);
             }
@@ -301,9 +264,11 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.owner, instrumentedName, instrumentedDescriptor.toDescriptor(), false);
         if (isDescriptorNameToInstrument(d.getReturnType())) {
-            Type returnType = Type.getType(this.instrumentQN(d.getReturnType()));
-            String toOriginalMethod = this.getToOriginalMethod(d.getReturnType());
-            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, returnType.getInternalName(), toOriginalMethod, new Descriptor(d.getReturnType()).toDescriptor(), false);
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
+            mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(d.getReturnType()).getInternalName());
+//            Type instrumentedReturnType = Type.getType(this.instrumentQN(d.getReturnType()));
+//            String toOriginalMethod = this.getToOriginalMethod(d.getReturnType());
+//            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, instrumentedReturnType.getInternalName(), toOriginalMethod, new Descriptor(d.getReturnType()).toDescriptor(), false);
         }
 
         mv.visitInsn(returnCodeByReturnType(d.getReturnType()));
@@ -320,21 +285,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private int loadCodeByType(String type) {
-        switch (type) {
-            case "I":
-            case "B":
-            case "S":
-            case "Z":
-                return Opcodes.ILOAD;
-            case "J":
-                return Opcodes.LLOAD;
-            case "F":
-                return Opcodes.FLOAD;
-            case "D":
-                return Opcodes.DLOAD;
-            default:
-                return Opcodes.ALOAD;
-        }
+        return Type.getType(type).getOpcode(Opcodes.ILOAD);
     }
 
     private int returnCodeByReturnType(String returnType) {
@@ -385,12 +336,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 
     @Override
     public void visitEnd() {
-        if (this.lacksToString) {
-            logger.info("Adding missing toString method");
-            MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC, Constants.ToStringInstrumented, this.stringConfig.getToStringInstrumentedDesc(), null, null);
-            this.createToString(v);
-        }
-        if (this.inheritsFromJdkClass) {
+        if (!this.isInterface && !this.isAnnotation) {
             logger.info("Overriding not overridden JDK methods which have to be instrumented");
             this.overrideMissingJdkMethods();
         }
@@ -408,9 +354,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private void overrideMissingJdkMethods() {
-        if (this.inheritsFromJdkClass) {
-            Class<?> scl = this.loadSuperClass();
-
+        if (!this.isInterface && !this.isAnnotation) {
             List<Method> methods = this.jdkMethods
                     .stream()
                     .filter(method -> !overriddenJdkMethods.contains(method))
@@ -439,15 +383,13 @@ class ClassTaintingVisitor extends ClassVisitor {
             signature = this.instrumentDescriptorStringlike(signature);
         }
         // Generating proxy with instrumented descriptor
-        MethodVisitor mv = super.visitMethod(m.getModifiers(), m.getName(), instrumentedDescriptor.toDescriptor(), signature, exceptions);
+        int modifiers = (m.getModifiers() & ~Modifier.ABSTRACT);
+        MethodVisitor mv = super.visitMethod(modifiers, m.getName(), instrumentedDescriptor.toDescriptor(), signature, exceptions);
         this.generateJdkNotInheritedProxy(mv, m, originalDescriptor, instrumentedDescriptor);
 
         // Overriding method with original descriptor
         if (!Modifier.isFinal(m.getModifiers())) {
-            if (this.isToString(m) && !this.lacksToString) {
-                return;
-            }
-            MethodVisitor mv2 = super.visitMethod(m.getModifiers(), m.getName(), originalDescriptor.toDescriptor(), signature, exceptions);
+            MethodVisitor mv2 = super.visitMethod(modifiers, m.getName(), originalDescriptor.toDescriptor(), signature, exceptions);
             this.generateOverrideJdkNotInheritedProxy(mv2, m, originalDescriptor);
         }
     }
@@ -524,29 +466,11 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private Class<?> loadSuperClass() {
-        if (!this.inheritsFromJdkClass) {
-            throw new IllegalStateException("Super class can only be loaded if it's a JDK class");
-        }
         try {
             return Class.forName(Utils.fixup(superName));
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("Didn't find super class: " + Utils.fixup(superName));
         }
-    }
-
-    private void createToString(MethodVisitor mv) {
-        mv.visitCode();
-        mv.visitVarInsn(Opcodes.ALOAD, 0);
-        Objects.requireNonNull(this.superName);
-        if (JdkClassesLookupTable.getInstance().isJdkClass(this.superName)) {
-            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superName, Constants.ToString, Constants.ToStringDesc, false);
-            mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringQN(), Constants.FROM_STRING, this.stringConfig.getFromStringDesc(), false);
-        } else {
-            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superName, Constants.ToStringInstrumented, this.stringConfig.getToStringInstrumentedDesc(), false);
-        }
-        mv.visitInsn(Opcodes.ARETURN);
-        mv.visitMaxs(6, 3);
-        mv.visitEnd();
     }
 
     /**
@@ -660,22 +584,6 @@ class ClassTaintingVisitor extends ClassVisitor {
         return !instrumented.equals(descriptorString);
     }
 
-    private boolean inheritsFromJdkClass() {
-        if (!isAnnotation) {
-            if (!superName.equals("java/lang/Object")) {
-                if (JdkClassesLookupTable.getInstance().isJdkClass(superName)) {
-                    return true;
-                }
-            }
-            for (String interfaceName : this.interfaces) {
-                if (JdkClassesLookupTable.getInstance().isJdkClass(interfaceName)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     private boolean implementsInvocationHandler() {
         return Arrays.asList(this.interfaces).contains("java/lang/reflect/InvocationHandler");
     }
@@ -693,7 +601,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         if (!(instrAccPublic || instrAccProtected) || instrAccStatic) {
             return null;
         }
-        if (this.inheritsFromJdkClass) {
+        if (!this.isAnnotation) {
             Optional<Method> methodOptional = this.jdkMethods
                     .stream()
                     .filter(method -> method.getName().equals(name) && Descriptor.parseMethod(method).toDescriptor().equals(descriptor))

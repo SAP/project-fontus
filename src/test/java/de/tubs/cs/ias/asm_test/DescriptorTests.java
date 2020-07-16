@@ -18,13 +18,6 @@ class DescriptorTests {
     private static final TaintStringConfig taintStringConfig = new TaintStringConfig(TaintMethod.defaultTaintMethod());
 
     @Test
-    void parseToString() {
-        Descriptor d = new Descriptor("Ljava/lang/String;");
-        Descriptor pd = Descriptor.parseDescriptor(Constants.ToStringDesc);
-        assertEquals(d, pd, "toString should have no parameters and return Ljava/lang/String;");
-    }
-
-    @Test
     void parseCharArrayDescriptor() {
         Descriptor d = new Descriptor("[C", "V");
         Descriptor pd = Descriptor.parseDescriptor("([C)V");
