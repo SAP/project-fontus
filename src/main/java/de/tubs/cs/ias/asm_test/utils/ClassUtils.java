@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ClassUtils {
+
     /**
      * Returns for the given class all instance methods which are public or protected
      * This includes the inherited ones (unlike getDeclaredMethods), but excludes the Object-class methods

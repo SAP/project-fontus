@@ -8,9 +8,6 @@ import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.clazz.*;
 import de.tubs.cs.ias.asm_test.utils.*;
 import org.objectweb.asm.*;
-import org.objectweb.asm.signature.SignatureReader;
-import org.objectweb.asm.signature.SignatureVisitor;
-import org.objectweb.asm.signature.SignatureWriter;
 
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Method;
@@ -48,6 +45,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private String[] interfaces;
     private boolean isInterface;
     private boolean extendsSuperClass;
+    private SignatureInstrumenter signatureInstrumenter;
 
     public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config) {
         super(Opcodes.ASM7, cv);
@@ -60,6 +58,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.newMainDescriptor = "(" + this.stringConfig.getTStringArrayDesc() + ")V";
         this.fillBlacklist();
         this.fillStrategies();
+        this.signatureInstrumenter = new SignatureInstrumenter(this.api, this.instrumentation);
     }
 
     private void fillStrategies() {
@@ -113,7 +112,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         // Getting JDK methods
         this.initJdkClasses();
 
-        String instrumentedSignature = this.instrumentSignature(signature);
+        String instrumentedSignature = this.signatureInstrumenter.instrumentSignature(signature);
         super.visit(version, access, name, instrumentedSignature, superName, interfaces);
     }
 
@@ -183,7 +182,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         if (this.isAnnotation) {
             return super.visitMethod(access, name, descriptor, signature, exceptions);
         }
-        String instrumentedSignature = this.instrumentSignature(signature);
+        String instrumentedSignature = this.signatureInstrumenter.instrumentSignature(signature);
         MethodVisitor mv;
         String desc = descriptor;
         String newName = name;
@@ -545,18 +544,6 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitInsn(Opcodes.RETURN);
         mv.visitMaxs(6, 3);
         mv.visitEnd();
-    }
-
-    private String instrumentSignature(final String signature) {
-        logger.info("Instrumenting signature {}", signature);
-        if (signature == null) {
-            return null;
-        }
-        SignatureWriter sw = new SignatureWriter();
-        SignatureVisitor sv = new SignatureTaintingVisitor(this.api, this.instrumentation, sw);
-        SignatureReader sr = new SignatureReader(signature);
-        sr.accept(sv);
-        return sw.toString();
     }
 
     /**

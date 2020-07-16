@@ -1,15 +1,15 @@
 package de.tubs.cs.ias.asm_test.instrumentation;
 
-import de.tubs.cs.ias.asm_test.instrumentation.strategies.clazz.ClassInstrumentationStrategy;
+import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationStrategy;
 import org.objectweb.asm.signature.SignatureVisitor;
 
 import java.util.List;
 
 public class SignatureTaintingVisitor extends SignatureVisitor {
-    private final List<ClassInstrumentationStrategy> strategies;
+    private final List<? extends InstrumentationStrategy> strategies;
     private final SignatureVisitor signatureVisitor;
 
-    public SignatureTaintingVisitor(int api, List<ClassInstrumentationStrategy> strategies, SignatureVisitor signatureVisitor) {
+    public SignatureTaintingVisitor(int api, List<? extends InstrumentationStrategy> strategies, SignatureVisitor signatureVisitor) {
         super(api);
         this.strategies = strategies;
         this.signatureVisitor = signatureVisitor;
@@ -17,7 +17,7 @@ public class SignatureTaintingVisitor extends SignatureVisitor {
 
     public String instrumentName(final String name) {
         String instrumented = name;
-        for (ClassInstrumentationStrategy cis : this.strategies) {
+        for (InstrumentationStrategy cis : this.strategies) {
             instrumented = cis.instrumentQN(instrumented);
         }
         return instrumented;

@@ -23,6 +23,7 @@ import java.util.*;
 public class MethodTaintingVisitor extends BasicMethodVisitor {
     private static final ParentLogger logger = LogUtils.getLogger();
     private final boolean implementsInvocationHandler;
+    private final SignatureInstrumenter signatureInstrumenter;
 
     private boolean shouldRewriteCheckCast;
     private final String name;
@@ -40,7 +41,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     private int used;
     private int usedAfterInjection;
 
-    private final Collection<MethodInstrumentationStrategy> instrumentation = new ArrayList<>(4);
+    private final List<MethodInstrumentationStrategy> instrumentation = new ArrayList<>(4);
 
     private final Configuration config;
 
@@ -67,9 +68,14 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.methodInterfaceProxies = new HashMap<>();
         this.dynProxies = new HashMap<>();
         this.fillProxies();
+        this.fillStrategies();
         this.fillInterfaceProxies();
         this.config = config;
         this.stringConfig = config.getTaintStringConfig();
+        this.signatureInstrumenter = new SignatureInstrumenter(this.api, this.instrumentation);
+    }
+
+    private void fillStrategies() {
         this.instrumentation.add(new StringMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
         this.instrumentation.add(new StringBuilderMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
         this.instrumentation.add(new StringBufferMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
@@ -82,6 +88,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     @Override
     public void visitLocalVariable(String name, String descriptor, String signature, Label start, Label end, int index) {
         this.shouldRewriteCheckCast = false;
+//        String signature = this.signatureInstrumenter.instrumentSignature(signature);
         super.visitLocalVariable(name, descriptor, signature, start, end, index);
     }
 
