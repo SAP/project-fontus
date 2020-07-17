@@ -1,6 +1,8 @@
 package de.tubs.cs.ias.asm_test.utils;
 
 
+import de.tubs.cs.ias.asm_test.asm.ClassResolver;
+import org.objectweb.asm.Type;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
@@ -66,7 +68,8 @@ public class ClassUtilsTest {
         excluded.add(middleoverriddenThrough);
 
 
-        List<Method> methods = ClassUtils.getAllMethods(Child.class);
+        List<Method> methods = new ArrayList<>();
+        ClassUtils.getAllMethods(Type.getType(Child.class).getInternalName(), new ClassResolver(ClassUtilsTest.class.getClassLoader()), methods);
 
 
         assertEquals(11, methods.size());

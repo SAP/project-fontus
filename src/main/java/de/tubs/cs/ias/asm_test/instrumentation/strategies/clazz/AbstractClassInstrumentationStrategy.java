@@ -1,10 +1,7 @@
 package de.tubs.cs.ias.asm_test.instrumentation.strategies.clazz;
 
 import de.tubs.cs.ias.asm_test.TriConsumer;
-import de.tubs.cs.ias.asm_test.instrumentation.strategies.AbstractInstrumentation;
-import jdk.internal.org.objectweb.asm.Type;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.*;
 import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
@@ -46,5 +43,10 @@ public abstract class AbstractClassInstrumentationStrategy implements ClassInstr
             return Optional.of(this.visitor.visitField(access, name, newDescriptor, signature, value));
         }
         return Optional.empty();
+    }
+
+    @Override
+    public String instrumentSuperClass(String superClass) {
+        return superClass;
     }
 }

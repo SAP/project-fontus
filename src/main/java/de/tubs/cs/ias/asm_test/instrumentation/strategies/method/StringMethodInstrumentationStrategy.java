@@ -113,7 +113,7 @@ public class StringMethodInstrumentationStrategy extends AbstractMethodInstrumen
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         if (Type.getObjectType(owner).equals(this.type) || owner.endsWith(Constants.StringDesc)) {
             String newDescriptor = InstrumentationHelper.getInstance(this.stringConfig).instrumentDesc(descriptor);
-            String newOwner = this.descPattern.matcher(owner).replaceAll(Matcher.quoteReplacement(this.stringConfig.getTStringQN()));
+            String newOwner = this.qnPattern.matcher(owner).replaceAll(Matcher.quoteReplacement(this.stringConfig.getTStringQN()));
             // TODO: this call is superfluous, TString.toTString is a NOP pretty much.. Maybe drop those calls?
             String newName = this.methodsToRename.getOrDefault(name, name);
             logger.info("Rewriting String invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, newDescriptor);

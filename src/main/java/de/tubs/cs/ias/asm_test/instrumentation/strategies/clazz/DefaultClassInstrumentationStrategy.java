@@ -23,7 +23,7 @@ public class DefaultClassInstrumentationStrategy implements ClassInstrumentation
     }
 
     @Override
-    public String getGetOriginalTypeMethod() {
-        throw new UnsupportedOperationException();
+    public String instrumentSuperClass(String superClass) {
+        return superClass;
     }
 }
