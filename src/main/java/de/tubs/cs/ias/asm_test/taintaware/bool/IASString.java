@@ -220,6 +220,7 @@ public final class IASString implements IASTaintAware, IASStringable {
 
     @Override
     public boolean equals(Object anObject) {
+        if (anObject instanceof String) return this.string.equals(anObject);
         if (!(anObject instanceof IASString)) return false;
         IASString other = (IASString) anObject;
         return this.string.equals(other.string);

@@ -6,11 +6,6 @@ import org.objectweb.asm.ClassVisitor;
 
 public class PatternClassInstrumentationStrategy extends AbstractClassInstrumentationStrategy {
     public PatternClassInstrumentationStrategy(ClassVisitor visitor, TaintStringConfig taintStringConfig) {
-        super(visitor, Constants.PatternDesc, taintStringConfig.getTPatternDesc(), Constants.PatternQN, taintStringConfig.getTPatternQN());
-    }
-
-    @Override
-    public String getGetOriginalTypeMethod() {
-        return Constants.TPatternToPatternName;
+        super(visitor, Constants.PatternDesc, taintStringConfig.getTPatternDesc(), Constants.PatternQN, taintStringConfig.getTPatternQN(), Constants.TPatternToPatternName);
     }
 }

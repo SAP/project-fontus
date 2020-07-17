@@ -3,6 +3,7 @@ package de.tubs.cs.ias.asm_test;
 import de.tubs.cs.ias.asm_test.utils.ConversionUtils;
 import org.objectweb.asm.Type;
 
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 public final class Constants {
@@ -11,17 +12,23 @@ public final class Constants {
     public static final String ConversionUtilsToConcreteDesc;
     public static final String ConversionUtilsToOrigName;
     public static final String ConversionUtilsToOrigDesc;
-
+    public static final String PropertyDesc;
+    public static final String PropertyQN;
     static {
         try {
             ConversionUtilsToConcreteName = ConversionUtils.class.getMethod("convertToConcrete", Object.class).getName();
             ConversionUtilsToConcreteDesc = Type.getType(ConversionUtils.class.getMethod("convertToConcrete", Object.class)).getDescriptor();
             ConversionUtilsToOrigName = ConversionUtils.class.getMethod("convertToOrig", Object.class).getName();
             ConversionUtilsToOrigDesc = Type.getType(ConversionUtils.class.getMethod("convertToOrig", Object.class)).getDescriptor();
+
+            PropertyDesc = Type.getType(Properties.class).getDescriptor();
+            PropertyQN = Type.getType(Properties.class).getInternalName();
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
     }
+
+    public static final String TPropertiesToPropertiesName = "getProperties";
 
     /**
      * Fully qualified name of the java Object class.

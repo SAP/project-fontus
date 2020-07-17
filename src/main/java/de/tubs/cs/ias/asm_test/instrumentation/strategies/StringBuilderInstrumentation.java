@@ -9,23 +9,12 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class StringBuilderInstrumentation implements InstrumentationStrategy {
-    private static final Pattern STRING_BUILDER_QN_MATCHER = Pattern.compile(Constants.StringBuilderQN, Pattern.LITERAL);
+public class StringBuilderInstrumentation extends AbstractInstrumentation {
     protected final TaintStringConfig stringConfig;
 
     public StringBuilderInstrumentation(TaintStringConfig configuration) {
+        super(Constants.StringBuilderDesc, configuration.getTStringBuilderDesc(), Constants.StringBuilderQN, configuration.getTStringBuilderQN(), Constants.TStringBuilderToStringBuilderName);
         this.stringConfig = configuration;
-    }
-
-    @Override
-    public Descriptor instrument(Descriptor desc) {
-        return desc.replaceType(Constants.StringBuilderDesc, this.stringConfig.getTStringBuilderDesc());
-
-    }
-
-    @Override
-    public String instrumentQN(String qn) {
-        return  STRING_BUILDER_QN_MATCHER.matcher(qn).replaceAll(Matcher.quoteReplacement(this.stringConfig.getTStringBuilderQN()));
     }
 
     @Override
@@ -35,18 +24,5 @@ public class StringBuilderInstrumentation implements InstrumentationStrategy {
         String returnType = desc.substring(desc.indexOf(")") + 1);
         returnType = Constants.strBuilderPattern.matcher(returnType).replaceAll(this.stringConfig.getTStringBuilderDesc());
         return desc.substring(0, desc.indexOf("(") + 1) + parameters + ")" + returnType;
-    }
-
-    @Override
-    public Optional<String> translateClassName(String className) {
-        if (className.equals(Utils.fixup(Constants.StringBuilderQN))) {
-            return Optional.of(Utils.fixup(this.stringConfig.getTStringBuilderQN()));
-        }
-        return Optional.empty();
-    }
-
-    @Override
-    public boolean handlesType(String typeName) {
-        return typeName.endsWith(Constants.StringBuilderDesc);
     }
 }

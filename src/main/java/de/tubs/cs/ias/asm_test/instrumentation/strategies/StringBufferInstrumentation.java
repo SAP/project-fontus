@@ -9,22 +9,13 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class StringBufferInstrumentation implements InstrumentationStrategy {
+public class StringBufferInstrumentation extends AbstractInstrumentation {
     private static final Pattern STRING_BUFFER_QN_MATCHER = Pattern.compile(Constants.StringBufferQN, Pattern.LITERAL);
-    protected final TaintStringConfig stringConfig;
+    private final TaintStringConfig stringConfig;
 
     public StringBufferInstrumentation(TaintStringConfig configuration) {
+        super(Constants.StringBufferDesc, configuration.getTStringBufferDesc(), Constants.StringBufferQN, configuration.getTStringBufferQN(), Constants.TStringBufferToStringBufferName);
         this.stringConfig = configuration;
-    }
-
-    @Override
-    public Descriptor instrument(Descriptor desc) {
-        return desc.replaceType(Constants.StringBufferDesc, this.stringConfig.getTStringBufferDesc());
-    }
-
-    @Override
-    public String instrumentQN(String qn) {
-        return STRING_BUFFER_QN_MATCHER.matcher(qn).replaceAll(Matcher.quoteReplacement(this.stringConfig.getTStringBufferQN()));
     }
 
     @Override
@@ -34,18 +25,5 @@ public class StringBufferInstrumentation implements InstrumentationStrategy {
         String returnType = desc.substring(desc.indexOf(")") + 1);
         returnType = Constants.strBufferPattern.matcher(returnType).replaceAll(this.stringConfig.getTStringBufferDesc());
         return desc.substring(0, desc.indexOf("(") + 1) + parameters + ")" + returnType;
-    }
-
-    @Override
-    public Optional<String> translateClassName(String className) {
-        if (className.equals(Utils.fixup(Constants.StringBufferQN))) {
-            return Optional.of(Utils.fixup(this.stringConfig.getTStringBufferQN()));
-        }
-        return Optional.empty();
-    }
-
-    @Override
-    public boolean handlesType(String typeName) {
-        return typeName.endsWith(Constants.StringBufferDesc);
     }
 }

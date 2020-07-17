@@ -256,6 +256,7 @@ public final class IASString implements IASArrayAware, IASStringable {
     }
 
     public boolean equals(Object anObject) {
+        if (anObject instanceof String) return this.string.equals(anObject);
         if (!(anObject instanceof IASString)) return false;
         IASString other = (IASString) anObject;
         return this.string.equals(other.string);
@@ -274,7 +275,7 @@ public final class IASString implements IASArrayAware, IASStringable {
     }
 
     public boolean equalsIgnoreCase(IASStringable anotherString) {
-        if(anotherString == null) {
+        if (anotherString == null) {
             return false;
         }
         return this.string.equalsIgnoreCase(anotherString.getString());

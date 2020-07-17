@@ -78,6 +78,8 @@ public class TaintStringConfig {
     private final String TPatternQN;
     private final String ReflectionMethodProxyQN;
     private final String ToArrayProxyQN;
+    private final String TPropertiesDesc;
+    private final String TPropertiesQN;
 
     public String getTPackage() {
         return this.TPackage;
@@ -172,6 +174,8 @@ public class TaintStringConfig {
         this.TMatcherDesc = String.format("L%s;", this.TMatcherQN);
         this.TPatternQN = this.TPackage + "IASPattern";
         this.TPatternDesc = String.format("L%s;", this.TPatternQN);
+        this.TPropertiesQN = this.TPackage + "IASProperties";
+        this.TPropertiesDesc = String.format("L%s;", this.TPropertiesQN);
     }
 
     public String getTFormatterDesc() {
@@ -224,5 +228,13 @@ public class TaintStringConfig {
 
     public String getToArrayProxyQN() {
         return ToArrayProxyQN;
+    }
+
+    public String getTPropertiesDesc() {
+        return TPropertiesDesc;
+    }
+
+    public String getTPropertiesQN() {
+        return TPropertiesQN;
     }
 }

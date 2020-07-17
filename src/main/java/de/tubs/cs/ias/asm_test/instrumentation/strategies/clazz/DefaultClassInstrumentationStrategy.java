@@ -8,12 +8,11 @@ import org.objectweb.asm.FieldVisitor;
 
 import java.util.Optional;
 
-public class DefaultClassInstrumentationStrategy extends DefaultInstrumentation implements ClassInstrumentationStrategy {
+public class DefaultClassInstrumentationStrategy implements ClassInstrumentationStrategy {
 
     private final ClassVisitor visitor;
 
     public DefaultClassInstrumentationStrategy(ClassVisitor cv, TaintStringConfig configuration) {
-        super(configuration);
         this.visitor = cv;
     }
 

@@ -2,9 +2,9 @@ package de.tubs.cs.ias.asm_test.instrumentation.strategies.method;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
+import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationStrategy;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
-import de.tubs.cs.ias.asm_test.instrumentation.strategies.AbstractInstrumentation;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -14,21 +14,33 @@ import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
 import java.util.HashMap;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public abstract class AbstractMethodInstrumentationStrategy extends AbstractInstrumentation implements MethodInstrumentationStrategy {
-    private final MethodVisitor mv;
-    private final HashMap<String, String> methodsToRename = new HashMap<>(1);
-    private final Type type;
-    private static final ParentLogger logger = LogUtils.getLogger();
-    private final String taintedToOrig;
-    private final TaintStringConfig taintStringConfig;
+public abstract class AbstractMethodInstrumentationStrategy implements MethodInstrumentationStrategy {
+    protected final MethodVisitor mv;
+    protected final HashMap<String, String> methodsToRename = new HashMap<>(1);
+    protected final Type type;
+    protected static final ParentLogger logger = LogUtils.getLogger();
+    protected final String taintedToOrig;
+    protected final TaintStringConfig stringConfig;
+    protected final Pattern descPattern;
+    protected final String taintedDesc;
+    protected final String taintedQN;
+    protected final String origQN;
+    protected final String origDesc;
+    protected final InstrumentationStrategy instrumentationStrategy;
 
-    AbstractMethodInstrumentationStrategy(MethodVisitor parentVisitor, String origDesc, String taintedDesc, String origQN, String taintedQN, String taintedToOrig, Class<?> type, TaintStringConfig taintStringConfig) {
-        super(origDesc, taintedDesc, origQN, taintedQN);
+    AbstractMethodInstrumentationStrategy(MethodVisitor parentVisitor, String taintedDesc, String taintedQN, String taintedToOrig, Class<?> type, TaintStringConfig taintStringConfig, InstrumentationStrategy instrumentationStrategy) {
         this.mv = parentVisitor;
         this.taintedToOrig = taintedToOrig;
         this.type = Type.getType(type);
-        this.taintStringConfig = taintStringConfig;
+        this.origQN = this.type.getInternalName();
+        this.origDesc = this.type.getDescriptor();
+        this.stringConfig = taintStringConfig;
+        this.descPattern = Pattern.compile(origDesc);
+        this.taintedDesc = taintedDesc;
+        this.taintedQN = taintedQN;
+        this.instrumentationStrategy = instrumentationStrategy;
         this.methodsToRename.put(Constants.ToString, Constants.TO_TSTRING);
     }
 
@@ -55,7 +67,7 @@ public abstract class AbstractMethodInstrumentationStrategy extends AbstractInst
     @Override
     public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         if (Type.getObjectType(owner).equals(this.type)) {
-            String newDescriptor = InstrumentationHelper.getInstance(this.taintStringConfig).instrumentDesc(descriptor);
+            String newDescriptor = InstrumentationHelper.getInstance(this.stringConfig).instrumentDesc(descriptor);
             String newOwner = this.taintedQN;
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up
             String newName = this.methodsToRename.getOrDefault(name, name);
@@ -76,7 +88,7 @@ public abstract class AbstractMethodInstrumentationStrategy extends AbstractInst
         }
     }
 
-    private void origToTainted() {
+    protected void origToTainted() {
         this.mv.visitTypeInsn(Opcodes.NEW, this.taintedQN);
         this.mv.visitInsn(Opcodes.DUP);
         this.mv.visitInsn(Opcodes.DUP2_X1);
@@ -107,7 +119,7 @@ public abstract class AbstractMethodInstrumentationStrategy extends AbstractInst
     public String rewriteTypeIns(String type) {
         boolean isArray = type.startsWith("[");
         if (Type.getObjectType(type).equals(this.type) || (isArray && type.endsWith(this.origDesc))) {
-            return this.instrumentQN(type);
+            return this.instrumentationStrategy.instrumentQN(type);
         }
         return type;
     }

@@ -626,6 +626,7 @@ public final class IASString implements IASStringable, IASLazyAware {
 
     @Override
     public boolean equals(Object obj) {
+        if (obj instanceof String) return this.string.equals(obj);
         if (!(obj instanceof IASString)) return false;
         IASString other = (IASString) obj;
         return this.string.equals(other.string);

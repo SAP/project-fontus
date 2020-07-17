@@ -5,7 +5,6 @@ import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
-import de.tubs.cs.ias.asm_test.instrumentation.strategies.DefaultInstrumentation;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -17,10 +16,16 @@ import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 
 import static de.tubs.cs.ias.asm_test.utils.MethodUtils.isToString;
 
-public class DefaultMethodInstrumentationStrategy extends DefaultInstrumentation implements MethodInstrumentationStrategy {
+public class DefaultMethodInstrumentationStrategy implements MethodInstrumentationStrategy {
     private final MethodVisitor mv;
     private static final ParentLogger logger = LogUtils.getLogger();
     private static final Set<Type> requireValueOf = fillRequireValueOfSet();
+    private final TaintStringConfig stringConfig;
+
+    public DefaultMethodInstrumentationStrategy(MethodVisitor mv, TaintStringConfig stringConfig) {
+        this.stringConfig = stringConfig;
+        this.mv = mv;
+    }
 
     private static Set<Type> fillRequireValueOfSet() {
         Set<Type> set = new HashSet<>();
@@ -29,11 +34,6 @@ public class DefaultMethodInstrumentationStrategy extends DefaultInstrumentation
         set.add(Type.getType(Serializable.class));
         set.add(Type.getType(Appendable.class));
         return set;
-    }
-
-    public DefaultMethodInstrumentationStrategy(MethodVisitor mv, TaintStringConfig configuration) {
-        super(configuration);
-        this.mv = mv;
     }
 
     @Override
