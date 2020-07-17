@@ -10,4 +10,6 @@ public interface ClassInstrumentationStrategy  {
 
     Optional<FieldVisitor> instrumentFieldInstruction(int access, String name, String descriptor,
                                                       String signature, Object value, TriConsumer tc);
+
+    String instrumentSuperClass(String superClass);
 }

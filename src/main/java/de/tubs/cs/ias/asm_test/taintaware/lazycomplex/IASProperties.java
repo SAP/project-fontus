@@ -22,12 +22,12 @@ public class IASProperties extends de.tubs.cs.ias.asm_test.taintaware.shared.IAS
         super(defaults);
     }
 
-    protected IASProperties(Properties properties, int signatureChanger) {
-        super(properties, signatureChanger);
+    public IASProperties(de.tubs.cs.ias.asm_test.taintaware.shared.IASProperties defaults) {
+        super(defaults);
     }
 
     public static IASProperties fromProperties(Properties properties) {
-        return new IASProperties(properties, -1);
+        return new IASProperties(properties);
     }
 
     @Override

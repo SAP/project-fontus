@@ -18,10 +18,6 @@ public abstract class IASProperties extends Hashtable<Object, Object> {
      */
     private Properties properties;
 
-    protected IASProperties(Properties properties, int signatureChanger) {
-        this.properties = properties;
-    }
-
     public IASProperties() {
         this.properties = new Properties();
     }
@@ -30,8 +26,12 @@ public abstract class IASProperties extends Hashtable<Object, Object> {
         this.properties = new Properties(initialCapacity);
     }
 
-    public IASProperties(Properties defaults) {
-        this.properties = new Properties(defaults);
+    public IASProperties(Properties properties) {
+        this.properties = properties;
+    }
+
+    public IASProperties(IASProperties defaults) {
+        this.properties = new Properties(defaults.properties);
     }
 
     public synchronized Object setProperty(IASStringable key, IASStringable value) {

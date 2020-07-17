@@ -81,7 +81,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.instrumentation.add(new PatternInstrumentation(this.config.getTaintStringConfig()));
         this.instrumentation.add(new FormatterInstrumentation(this.config.getTaintStringConfig()));
         this.instrumentation.add(new MatcherInstrumentation(this.config.getTaintStringConfig()));
-        this.instrumentation.add(new PatternInstrumentation(this.config.getTaintStringConfig()));
+        this.instrumentation.add(new PropertiesStrategy(this.config.getTaintStringConfig()));
         this.instrumentation.add(new StringBufferInstrumentation(this.config.getTaintStringConfig()));
         this.instrumentation.add(new StringBuilderInstrumentation(this.config.getTaintStringConfig()));
         this.instrumentation.add(new StringInstrumentation(this.config.getTaintStringConfig()));
@@ -109,6 +109,9 @@ class ClassTaintingVisitor extends ClassVisitor {
             final String[] interfaces) {
         this.owner = name;
         this.superName = superName == null ? Type.getInternalName(Object.class) : superName;
+        for (ClassInstrumentationStrategy cis : this.classInstrumentation) {
+            this.superName = cis.instrumentSuperClass(this.superName);
+        }
         this.interfaces = interfaces;
 
         this.isInterface = ((access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE);
@@ -133,7 +136,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.initJdkClasses();
 
         String instrumentedSignature = this.signatureInstrumenter.instrumentSignature(signature);
-        super.visit(version, access, name, instrumentedSignature, superName, interfaces);
+        super.visit(version, access, name, instrumentedSignature, this.superName, interfaces);
     }
 
     private void initJdkClasses() {
@@ -471,7 +474,6 @@ class ClassTaintingVisitor extends ClassVisitor {
         if (isDescriptorNameToInstrument(origDescriptor.getReturnType())) {
             // TODO Handle Arrays/Lists
             Type returnType = Type.getType(this.instrumentQN(origDescriptor.getReturnType()));
-
 
             int arrayDimensions = calculateDescArrayDimensions(returnType.getInternalName());
             if (arrayDimensions == 0) {

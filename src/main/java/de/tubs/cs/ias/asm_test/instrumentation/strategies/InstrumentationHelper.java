@@ -25,6 +25,7 @@ public final class InstrumentationHelper {
         this.strategies.add(new StringInstrumentation(configuration));
         this.strategies.add(new StringBuilderInstrumentation(configuration));
         this.strategies.add(new StringBufferInstrumentation(configuration));
+        this.strategies.add(new PropertiesStrategy(configuration));
         this.strategies.add(new DefaultInstrumentation(configuration));
     }
 

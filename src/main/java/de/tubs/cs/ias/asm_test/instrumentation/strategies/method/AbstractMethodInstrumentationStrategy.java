@@ -29,6 +29,7 @@ public abstract class AbstractMethodInstrumentationStrategy implements MethodIns
     protected final String origQN;
     protected final String origDesc;
     protected final InstrumentationStrategy instrumentationStrategy;
+    protected final Pattern qnPattern;
 
     AbstractMethodInstrumentationStrategy(MethodVisitor parentVisitor, String taintedDesc, String taintedQN, String taintedToOrig, Class<?> type, TaintStringConfig taintStringConfig, InstrumentationStrategy instrumentationStrategy) {
         this.mv = parentVisitor;
@@ -38,6 +39,7 @@ public abstract class AbstractMethodInstrumentationStrategy implements MethodIns
         this.origDesc = this.type.getDescriptor();
         this.stringConfig = taintStringConfig;
         this.descPattern = Pattern.compile(origDesc);
+        this.qnPattern = Pattern.compile(origQN);
         this.taintedDesc = taintedDesc;
         this.taintedQN = taintedQN;
         this.instrumentationStrategy = instrumentationStrategy;
