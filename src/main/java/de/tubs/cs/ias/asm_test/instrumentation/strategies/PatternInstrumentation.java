@@ -5,6 +5,6 @@ import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 
 public class PatternInstrumentation extends AbstractInstrumentation {
     public PatternInstrumentation(TaintStringConfig taintStringConfig) {
-        super(Constants.PatternDesc, taintStringConfig.getTPatternDesc(), Constants.PatternQN, taintStringConfig.getTPatternQN());
+        super(Constants.PatternDesc, taintStringConfig.getTPatternDesc(), Constants.PatternQN, taintStringConfig.getTPatternQN(), Constants.TPatternToPatternName);
     }
 }

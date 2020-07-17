@@ -14,14 +14,16 @@ public abstract class AbstractInstrumentation implements InstrumentationStrategy
     protected final String taintedQN;
     protected final String origQN;
     protected final Pattern descPattern;
+    protected final String getOriginalTypeMethod;
 
-    protected AbstractInstrumentation(String origDesc, String taintedDesc, String origQN, String taintedQN) {
+    protected AbstractInstrumentation(String origDesc, String taintedDesc, String origQN, String taintedQN, String getOriginalTypeMethod) {
         this.origDesc = origDesc;
         this.taintedDesc = taintedDesc;
         this.taintedQN = taintedQN;
         this.origQN = origQN;
         this.qnMatcher = Pattern.compile(origQN, Pattern.LITERAL);
         this.descPattern = Pattern.compile(origDesc);
+        this.getOriginalTypeMethod = getOriginalTypeMethod;
     }
 
     @Override
@@ -50,5 +52,10 @@ public abstract class AbstractInstrumentation implements InstrumentationStrategy
     @Override
     public boolean handlesType(String typeName) {
         return typeName.endsWith(this.origDesc);
+    }
+
+    @Override
+    public String getGetOriginalTypeMethod() {
+        return getOriginalTypeMethod;
     }
 }

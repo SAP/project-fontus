@@ -7,7 +7,7 @@ import org.objectweb.asm.Type;
 /**
  * Interface containing the various tasks a MethodVisitor might want to execute to instrument the code inside a method.
  */
-public interface MethodInstrumentationStrategy extends InstrumentationStrategy {
+public interface MethodInstrumentationStrategy {
 
     /**
      * Called for @link{ {@link org.objectweb.asm.MethodVisitor#visitFieldInsn(int, String, String, String)}} calls.

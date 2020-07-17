@@ -33,6 +33,11 @@ public class DefaultInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
+    public String getGetOriginalTypeMethod() {
+        return null;
+    }
+
+    @Override
     public String instrumentDesc(String desc) {
         return desc;
     }

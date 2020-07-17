@@ -12,29 +12,8 @@ import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import java.util.Optional;
 import java.util.regex.Matcher;
 
-public class StringBuilderClassInstrumentationStrategy extends StringBuilderInstrumentation implements ClassInstrumentationStrategy {
-    private static final ParentLogger logger = LogUtils.getLogger();
-
-    private final ClassVisitor visitor;
-
-    public StringBuilderClassInstrumentationStrategy(ClassVisitor cv, TaintStringConfig configuration) {
-        super(configuration);
-        this.visitor = cv;
-    }
-
-    @Override
-    public Optional<FieldVisitor> instrumentFieldInstruction(int access, String name, String descriptor, String signature, Object value, TriConsumer tc) {
-        Matcher descMatcher = Constants.strBuilderPattern.matcher(descriptor);
-        if(descMatcher.find()) {
-            String newDescriptor = descMatcher.replaceAll(this.stringConfig.getTStringBuilderDesc());
-            logger.info("Replacing StringBuilder field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
-            return Optional.of(this.visitor.visitField(access, name, newDescriptor, signature, value));
-        }
-        return Optional.empty();
-    }
-
-    @Override
-    public String getGetOriginalTypeMethod() {
-        return Constants.TStringBuilderToStringBuilderName;
+public class StringBuilderClassInstrumentationStrategy extends AbstractClassInstrumentationStrategy {
+    public StringBuilderClassInstrumentationStrategy(ClassVisitor visitor, TaintStringConfig config) {
+        super(visitor, Constants.StringBuilderDesc, config.getTStringBuilderDesc(), Constants.StringBuilderQN, config.getTStringBuilderQN(), Constants.TStringBuilderToStringBuilderName);
     }
 }

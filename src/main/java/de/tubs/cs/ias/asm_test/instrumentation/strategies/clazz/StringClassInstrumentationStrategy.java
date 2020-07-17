@@ -13,33 +13,24 @@ import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import java.util.Optional;
 import java.util.regex.Matcher;
 
-public class StringClassInstrumentationStrategy extends StringInstrumentation implements ClassInstrumentationStrategy {
+public class StringClassInstrumentationStrategy  extends AbstractClassInstrumentationStrategy {
     private static final ParentLogger logger = LogUtils.getLogger();
 
-    private final ClassVisitor cv;
-
     public StringClassInstrumentationStrategy(ClassVisitor cv, TaintStringConfig configuration) {
-        super(configuration);
-        this.cv = cv;
+        super(cv, Constants.StringDesc, configuration.getTStringDesc(), Constants.StringQN, configuration.getTStringQN(), Constants.TStringToStringName);
     }
 
     @Override
     public Optional<FieldVisitor> instrumentFieldInstruction(int access, String name, String descriptor, String signature, Object value, TriConsumer tc) {
-        assert this.cv != null;
-        Matcher descMatcher = Constants.strPattern.matcher(descriptor);
+        Matcher descMatcher = this.descPattern.matcher(descriptor);
         if(descMatcher.find()) {
-            String newDescriptor = descMatcher.replaceAll(this.stringConfig.getTStringDesc());
+            String newDescriptor = descMatcher.replaceAll(this.taintedDesc);
             logger.info("Replacing String field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
             if (value != null && access == (Opcodes.ACC_FINAL | Opcodes.ACC_STATIC)) {
                 tc.apply(name, descriptor, value);
             }
-            return Optional.of(this.cv.visitField(access, name, newDescriptor, signature, null));
+            return Optional.of(this.visitor.visitField(access, name, newDescriptor, signature, null));
         }
         return Optional.empty();
-    }
-
-    @Override
-    public String getGetOriginalTypeMethod() {
-        return Constants.TStringToStringName;
     }
 }

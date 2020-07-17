@@ -41,6 +41,9 @@ public class ConversionUtils {
     }
 
     private static Object convertObject(Object object, Map<Class, Function> converters) {
+        if (object == null) {
+            return null;
+        }
         boolean isArray = object.getClass().isArray();
         Class cls = isArray ? object.getClass().getComponentType() : object.getClass();
         for (Class handler : converters.keySet()) {

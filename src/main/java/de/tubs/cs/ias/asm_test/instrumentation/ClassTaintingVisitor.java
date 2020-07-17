@@ -5,6 +5,7 @@ import de.tubs.cs.ias.asm_test.asm.*;
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
+import de.tubs.cs.ias.asm_test.instrumentation.strategies.*;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.clazz.*;
 import de.tubs.cs.ias.asm_test.utils.*;
 import org.objectweb.asm.*;
@@ -37,7 +38,8 @@ class ClassTaintingVisitor extends ClassVisitor {
     private boolean implementsInvocationHandler;
     private MethodVisitRecording recording;
     private final ClassVisitor visitor;
-    private final List<ClassInstrumentationStrategy> instrumentation = new ArrayList<>(4);
+    private final List<InstrumentationStrategy> instrumentation = new ArrayList<>(7);
+    private final List<ClassInstrumentationStrategy> classInstrumentation = new ArrayList<>(7);
     private final Configuration config;
     private final ClassResolver resolver;
     /**
@@ -67,13 +69,23 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private void fillStrategies() {
-        this.instrumentation.add(new FormatterClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.instrumentation.add(new MatcherClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.instrumentation.add(new PatternClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.instrumentation.add(new StringBufferClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.instrumentation.add(new StringBuilderClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.instrumentation.add(new StringClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.instrumentation.add(new DefaultClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
+        this.classInstrumentation.add(new PropertiesClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
+        this.classInstrumentation.add(new FormatterClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
+        this.classInstrumentation.add(new MatcherClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
+        this.classInstrumentation.add(new PatternClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
+        this.classInstrumentation.add(new StringBufferClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
+        this.classInstrumentation.add(new StringBuilderClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
+        this.classInstrumentation.add(new StringClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
+        this.classInstrumentation.add(new DefaultClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
+
+        this.instrumentation.add(new PatternInstrumentation(this.config.getTaintStringConfig()));
+        this.instrumentation.add(new FormatterInstrumentation(this.config.getTaintStringConfig()));
+        this.instrumentation.add(new MatcherInstrumentation(this.config.getTaintStringConfig()));
+        this.instrumentation.add(new PatternInstrumentation(this.config.getTaintStringConfig()));
+        this.instrumentation.add(new StringBufferInstrumentation(this.config.getTaintStringConfig()));
+        this.instrumentation.add(new StringBuilderInstrumentation(this.config.getTaintStringConfig()));
+        this.instrumentation.add(new StringInstrumentation(this.config.getTaintStringConfig()));
+        this.instrumentation.add(new DefaultInstrumentation(this.config.getTaintStringConfig()));
     }
 
     private void fillBlacklist() {
@@ -159,7 +171,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
 
         FieldVisitor fv = null;
-        for (ClassInstrumentationStrategy is : this.instrumentation) {
+        for (ClassInstrumentationStrategy is : this.classInstrumentation) {
             Optional<FieldVisitor> ofv = is.instrumentFieldInstruction(
                     access, name, descriptor, signature, value,
                     (n, d, v) -> this.staticFinalFields.add(FieldData.of(n, d, v))
@@ -235,7 +247,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             mv = super.visitMethod(access, name, desc, instrumentedSignature, exceptions);
         }
 
-        return new MethodTaintingVisitor(access, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler);
+        return new MethodTaintingVisitor(access, this.owner, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler, this.instrumentation);
     }
 
     private void generateJdkInheritanceProxy(MethodVisitor mv, String instrumentedName, String descriptor) {
@@ -300,7 +312,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private String getToOriginalMethod(String qn) {
-        for (ClassInstrumentationStrategy instrumentationStrategy : this.instrumentation) {
+        for (InstrumentationStrategy instrumentationStrategy : this.instrumentation) {
             if (instrumentationStrategy.handlesType(qn)) {
                 return instrumentationStrategy.getGetOriginalTypeMethod();
             }
@@ -309,7 +321,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private boolean isDescriptorNameToInstrument(String qn) {
-        for (ClassInstrumentationStrategy instrumentationStrategy : this.instrumentation) {
+        for (InstrumentationStrategy instrumentationStrategy : this.instrumentation) {
             if (instrumentationStrategy.handlesType(qn)) {
                 return true;
             }
@@ -318,7 +330,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private String instrumentQN(String qn) {
-        for (ClassInstrumentationStrategy instrumentationStrategy : this.instrumentation) {
+        for (InstrumentationStrategy instrumentationStrategy : this.instrumentation) {
             if (instrumentationStrategy.handlesType(qn)) {
                 return instrumentationStrategy.instrumentQN(qn);
             }
@@ -568,7 +580,7 @@ class ClassTaintingVisitor extends ClassVisitor {
      * This instruments the descriptor to call the taintaware string classes (uses the interface types (e.g. IASStringable) for replacement)
      */
     private String instrumentDescriptorStringlike(String descriptor) {
-        for (ClassInstrumentationStrategy is : this.instrumentation) {
+        for (InstrumentationStrategy is : this.instrumentation) {
             descriptor = is.instrumentDesc(descriptor);
         }
         return descriptor;
@@ -578,7 +590,7 @@ class ClassTaintingVisitor extends ClassVisitor {
      * This instruments the descriptors for normal application classes (uses the actual taintaware classes (e.g. IASString))
      */
     private Descriptor instrumentDescriptor(Descriptor descriptor) {
-        for (ClassInstrumentationStrategy is : this.instrumentation) {
+        for (InstrumentationStrategy is : this.instrumentation) {
             descriptor = is.instrument(descriptor);
         }
         return descriptor;
