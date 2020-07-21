@@ -1,9 +1,11 @@
-import groovy.text.GStringTemplateEngine
 plugins {
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
     id 'java'
     id 'maven-publish'
     id 'idea'
 }
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 
 version '0.0.1-SNAPSHOT'
 
@@ -50,7 +52,7 @@ test {
     }
 }
 
-task utilJar(type: Jar) {
+task utilJar(type: ShadowJar) {
     from(sourceSets.main.output) {
         include "**/asm_test/taintaware/**"
         include "**/asm_test/instrumentation/strategies/*"
@@ -65,10 +67,10 @@ task utilJar(type: Jar) {
     utilJar.baseName = "util"
 }
 
-jar {
+shadowJar {
     doFirst {
         manifest {
-            if (!configurations.compile.isEmpty()) {
+//            if (!configurations.compile.isEmpty()) {
                 attributes(
                         // 'Class-Path': configurations.compile.collect{it.toURI().toString()}.join(' '),
                         'Main-Class': 'de.tubs.cs.ias.asm_test.Main',
@@ -77,12 +79,18 @@ jar {
                         'Can-Retransform-Classes': true,
                         'Premain-Class': 'de.tubs.cs.ias.asm_test.agent.TaintAgent'
                 )
-            }
+//            }
         }
     }
-    from {
-        configurations.compileClasspath.filter { it.exists() }.collect { it.isDirectory() ? it : zipTree(it) }
-    }
+//    from {
+//        configurations.compileClasspath.filter { it.exists() }.collect { it.isDirectory() ? it : zipTree(it) }
+//    }
+    relocate 'com.ctc', 'de.tubs.cs.ias.asm_test.com.ctc'
+    relocate 'com.fasterxml', 'de.tubs.cs.ias.asm_test.com.fasterxml'
+    relocate 'org.apache', 'de.tubs.cs.ias.asm_test.org.apache'
+    relocate 'org.codehaus', 'de.tubs.cs.ias.asm_test.org.codehaus'
+    relocate 'org.mutabilitydetector', 'de.tubs.cs.ias.asm_test.org.mutabilitydetector'
+    relocate 'org.objectweb', 'de.tubs.cs.ias.asm_test.org.objectweb'
     dependsOn utilJar
 }
 
@@ -94,7 +102,7 @@ publishing {
             artifactId = 'asm_test'
             version = '0.0.1-SNAPSHOT'
 
-            from components.java
+            artifact shadowJar
         }
 
         util(MavenPublication) {
