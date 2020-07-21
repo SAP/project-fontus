@@ -5,16 +5,14 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 
 import de.tubs.cs.ias.asm_test.agent.AgentConfig;
 import de.tubs.cs.ias.asm_test.asm.FunctionCall;
+import de.tubs.cs.ias.asm_test.instrumentation.BlackListEntry;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import org.apache.commons.text.StringSubstitutor;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 
@@ -29,6 +27,16 @@ public class Configuration {
     private TaintMethod taintMethod;
     @JsonIgnore
     private TaintStringConfig taintStringConfig;
+
+    public Map<String, List<BlackListEntry>> getJdkInheritanceBlacklist() {
+        return jdkInheritanceBlacklist;
+    }
+
+    public void setJdkInheritanceBlacklist(Map<String, List<BlackListEntry>> jdkInheritanceBlacklist) {
+        this.jdkInheritanceBlacklist = jdkInheritanceBlacklist;
+    }
+
+    private Map<String, List<BlackListEntry>> jdkInheritanceBlacklist = new HashMap<>();
 
     private boolean useCaching = defaultUseCaching();
 

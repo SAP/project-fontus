@@ -6,31 +6,22 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import de.tubs.cs.ias.asm_test.Constants;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
+import de.tubs.cs.ias.asm_test.instrumentation.BlackListEntry;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
+import de.tubs.cs.ias.asm_test.utils.ParentLogger;
+import org.objectweb.asm.Opcodes;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ConfigurationLoader {
     private static final ParentLogger logger = LogUtils.getLogger();
-
-//    public static Configuration readXmlConfigurationJaxb(InputStream stream) throws JAXBException {
-//        JAXBContext context = JAXBContext.newInstance(Configuration.class);
-//        Unmarshaller unmarshaller = context.createUnmarshaller();
-//        return (Configuration) unmarshaller.unmarshal(stream);
-//    }
 
     public static Configuration readXmlConfiguration(InputStream stream) {
         ObjectMapper objectMapper = new XmlMapper(new WstxInputFactory(), new WstxOutputFactory());
@@ -53,7 +44,27 @@ public class ConfigurationLoader {
     }
 
     public static Configuration defaultConfiguration() {
-        return readXmlConfiguration(Configuration.class.getClassLoader().getResourceAsStream(Constants.CONFIGURATION_XML_FILENAME));
+        Configuration configuration = readXmlConfiguration(Configuration.class.getClassLoader().getResourceAsStream(Constants.CONFIGURATION_XML_FILENAME));
+        configuration.setJdkInheritanceBlacklist(defaultJdkInheritanceBlacklistEntries());
+        return configuration;
+    }
+
+    public static Map<String, List<BlackListEntry>> defaultJdkInheritanceBlacklistEntries() {
+        Map<String, List<BlackListEntry>> map = new HashMap<>();
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(Configuration.class.getClassLoader().getResourceAsStream(Constants.JDK_INHERITANCE_BLACKLIST_FILENAME)));
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                String[] parts = line.split(",");
+                String owner = parts[0];
+                String name = parts[1];
+                String descriptor = parts[2];
+                List<BlackListEntry> methodList = map.computeIfAbsent(owner, (key) -> new ArrayList<>());
+                methodList.add(new BlackListEntry(name, descriptor, Opcodes.ACC_PUBLIC));
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+        return map;
     }
 
     public static Configuration readJsonConfiguration(InputStream stream) {

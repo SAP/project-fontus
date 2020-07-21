@@ -14,6 +14,8 @@ public final class Constants {
     public static final String ConversionUtilsToOrigDesc;
     public static final String PropertyDesc;
     public static final String PropertyQN;
+    public static final String JDK_INHERITANCE_BLACKLIST_FILENAME = "jdk_inheritance_blacklist.csv";
+
     static {
         try {
             ConversionUtilsToConcreteName = ConversionUtils.class.getMethod("convertToConcrete", Object.class).getName();
