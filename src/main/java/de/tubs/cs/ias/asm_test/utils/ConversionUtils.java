@@ -6,6 +6,7 @@ import de.tubs.cs.ias.asm_test.taintaware.shared.*;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,6 +25,7 @@ public class ConversionUtils {
         toConcrete.put(Formatter.class, (obj) -> factory.createFormatter((Formatter) obj));
         toConcrete.put(Matcher.class, (obj) -> factory.createMatcher((Matcher) obj));
         toConcrete.put(Pattern.class, (obj) -> factory.createPattern((Pattern) obj));
+        toConcrete.put(Properties.class, (obj) -> factory.createProperties((Properties) obj));
 
         toInterface.put(String.class, (obj) -> factory.createString((String) obj));
         toInterface.put(StringBuilder.class, (obj) -> factory.createStringBuilder((StringBuilder) obj));
@@ -31,6 +33,7 @@ public class ConversionUtils {
         toInterface.put(Formatter.class, (obj) -> factory.createFormatter((Formatter) obj));
         toInterface.put(Matcher.class, (obj) -> factory.createMatcher((Matcher) obj));
         toInterface.put(Pattern.class, (obj) -> factory.createPattern((Pattern) obj));
+        toInterface.put(Properties.class, (obj) -> factory.createProperties((Properties) obj));
 
         toOrig.put(IASStringable.class, (obj) -> ((IASStringable) obj).getString());
         toOrig.put(IASStringBuilderable.class, (obj) -> ((IASStringBuilderable) obj).getStringBuilder());
@@ -38,6 +41,7 @@ public class ConversionUtils {
         toOrig.put(IASFormatterable.class, (obj) -> ((IASFormatterable) obj).getFormatter());
         toOrig.put(IASMatcherable.class, (obj) -> ((IASMatcherable) obj).getMatcher());
         toOrig.put(IASPatternable.class, (obj) -> ((IASPatternable) obj).getPattern());
+        toOrig.put(IASProperties.class, (obj) -> ((IASProperties) obj).getProperties());
     }
 
     private static Object convertObject(Object object, Map<Class, Function> converters) {

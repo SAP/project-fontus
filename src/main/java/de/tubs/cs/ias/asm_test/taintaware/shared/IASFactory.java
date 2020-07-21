@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.shared;
 
 import java.util.Formatter;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,7 +16,7 @@ public interface IASFactory {
 
     IASAbstractStringBuilderable createStringBuilder();
 
-    IASStringBuilderable createStringBuilder(IASStringable string);
+    IASStringBuilderable createStringBuilder(IASStringable param);
 
     IASStringBuilderable createStringBuilder(StringBuilder param);
 
@@ -26,4 +27,6 @@ public interface IASFactory {
     IASPatternable createPattern(Pattern param);
 
     IASMatcherable createMatcher(Matcher param);
+
+    IASProperties createProperties(Properties param);
 }

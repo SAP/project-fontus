@@ -62,7 +62,7 @@ public abstract class AbstractMethodInstrumentationStrategy implements MethodIns
         Type paramType = Type.getType(parameter);
         if (this.type.equals(paramType)) {
             logger.info("Converting taint-aware {} to {} in multi param method invocation", this.origQN, this.origQN);
-            this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.taintedQN, this.taintedToOrig, String.format("()%s", this.taintedDesc), false);
+            this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.taintedQN, this.taintedToOrig, String.format("()%s", this.origDesc), false);
         }
     }
 
