@@ -1,14 +1,20 @@
 package de.tubs.cs.ias.asm_test.config;
 
+import com.ctc.wstx.stax.WstxInputFactory;
+import com.ctc.wstx.stax.WstxOutputFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -20,8 +26,14 @@ import java.util.List;
 public class ConfigurationLoader {
     private static final ParentLogger logger = LogUtils.getLogger();
 
+//    public static Configuration readXmlConfigurationJaxb(InputStream stream) throws JAXBException {
+//        JAXBContext context = JAXBContext.newInstance(Configuration.class);
+//        Unmarshaller unmarshaller = context.createUnmarshaller();
+//        return (Configuration) unmarshaller.unmarshal(stream);
+//    }
+
     public static Configuration readXmlConfiguration(InputStream stream) {
-        ObjectMapper objectMapper = new XmlMapper();
+        ObjectMapper objectMapper = new XmlMapper(new WstxInputFactory(), new WstxOutputFactory());
         objectMapper.registerModule(new JaxbAnnotationModule());
         return readFromStream(objectMapper, stream);
     }
