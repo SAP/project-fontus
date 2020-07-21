@@ -30,7 +30,6 @@ class ClassTaintingVisitor extends ClassVisitor {
      * This blacklist contains the name of the inheriting class (not the jdk class).
      * The value is a list of corresponding blacklist entries which will be ignored for the generation of not overridden jdk methods
      */
-    private final Map<String, List<BlackListEntry>> jdkInheritanceBlacklist = new HashMap<>();
     private final String newMainDescriptor;
     private final List<FieldData> staticFinalFields;
     private boolean hasClInit = false;
@@ -91,9 +90,6 @@ class ClassTaintingVisitor extends ClassVisitor {
     private void fillBlacklist() {
         //this.blacklist.add(new BlackListEntry("main", Constants.MAIN_METHOD_DESC, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC));
 //        this.blacklist.add(new BlackListEntry(Constants.ToString, Constants.ToStringDesc, Opcodes.ACC_PUBLIC));
-        List<BlackListEntry> blacklistJdbcLeakPrevention = new ArrayList<>();
-        blacklistJdbcLeakPrevention.add(new BlackListEntry("toString", "()Ljava/lang/String;", Opcodes.ACC_PUBLIC));
-        this.jdkInheritanceBlacklist.put("org/apache/catalina/loader/JdbcLeakPrevention", blacklistJdbcLeakPrevention);
     }
 
     /**
@@ -389,8 +385,8 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private void createInstrumentedJdkProxy(Method m) {
-        if (this.jdkInheritanceBlacklist.containsKey(this.owner)) {
-            List<BlackListEntry> blackList = this.jdkInheritanceBlacklist.get(this.owner);
+        if (Configuration.getConfiguration().getJdkInheritanceBlacklist().containsKey(this.owner)) {
+            List<BlackListEntry> blackList = Configuration.getConfiguration().getJdkInheritanceBlacklist().get(this.owner);
             for (BlackListEntry entry : blackList) {
                 org.objectweb.asm.commons.Method parsed = org.objectweb.asm.commons.Method.getMethod(m);
                 int accessFlag = (m.getModifiers() & Modifier.PUBLIC) | (m.getModifiers() & Modifier.PROTECTED) | (m.getModifiers() & Modifier.PRIVATE);
