@@ -1,8 +1,10 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
 import de.tubs.cs.ias.asm_test.taintaware.shared.*;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASProperties;
 
 import java.util.Formatter;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,8 +25,8 @@ public class IASFactoryImpl implements IASFactory {
     }
 
     @Override
-    public IASStringBuilder createStringBuilder(IASStringable string) {
-        return new IASStringBuilder(string);
+    public IASStringBuilder createStringBuilder(IASStringable param) {
+        return new IASStringBuilder(param);
     }
 
     @Override
@@ -60,5 +62,10 @@ public class IASFactoryImpl implements IASFactory {
     @Override
     public IASMatcher createMatcher(Matcher param) {
         return IASMatcher.fromMatcher(param);
+    }
+
+    @Override
+    public IASProperties createProperties(Properties param) {
+        return de.tubs.cs.ias.asm_test.taintaware.range.IASProperties.fromProperties(param);
     }
 }

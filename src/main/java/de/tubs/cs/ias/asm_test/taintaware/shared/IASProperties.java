@@ -127,13 +127,16 @@ public abstract class IASProperties extends Hashtable<Object, Object> {
                 Collections
                         .list(this.properties.propertyNames())
                         .stream()
-                        .map((obj) -> factory.createString((String) obj))
+                        .map(factory::valueOf)
                         .collect(Collectors.toList())
         );
     }
 
     public Set<IASStringable> stringPropertyNames() {
-        return new HashSet<IASStringable>((Collection<? extends IASStringable>) this.propertyNames());
+        return this.properties.stringPropertyNames()
+                .stream()
+                .map(factory::valueOf)
+                .collect(Collectors.toSet());
     }
 
     public void list(PrintStream out) {
@@ -395,6 +398,10 @@ public abstract class IASProperties extends Hashtable<Object, Object> {
     public synchronized Object clone() {
         IASProperties properties = (IASProperties) super.clone();
         properties.properties = (Properties) this.properties.clone();
+        return properties;
+    }
+
+    public Properties getProperties() {
         return properties;
     }
 }
