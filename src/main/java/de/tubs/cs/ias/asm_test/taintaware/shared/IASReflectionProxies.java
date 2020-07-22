@@ -27,10 +27,24 @@ public class IASReflectionProxies {
         return Class.forName(clazz, true, cl);
     }
 
+    @SuppressWarnings("Since15")
     public static Class<?> classForName(IASStringable str, boolean initialize,
                                         ClassLoader loader) throws ClassNotFoundException {
         String s = str.getString();
         String clazz = InstrumentationHelper.getInstance(tsc).translateClassName(s);
+
+        if(loader == null) {
+            // Get caller class classloader
+            Class callerClass;
+            if (Constants.JAVA_VERSION >= 9) {
+                callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
+                        .getCallerClass();
+            } else {
+                callerClass = Reflection.getCallerClass();
+            }
+            loader = callerClass.getClassLoader();
+        }
+
         return Class.forName(clazz, initialize, loader);
     }
 }
