@@ -227,7 +227,8 @@ class ClassTaintingVisitor extends ClassVisitor {
             desc = this.newMainDescriptor;
         } else if (!this.isAnnotation && overridesJdkSuperMethod(access, name, descriptor) && shouldBeInstrumented(descriptor)) {
             logger.info("Creating proxy method for JDK inheritance for method: {}{}", name, descriptor);
-            MethodVisitor v = super.visitMethod(access, name, descriptor, signature, exceptions);
+            int newAccess = access & ~Opcodes.ACC_ABSTRACT;
+            MethodVisitor v = super.visitMethod(newAccess, name, descriptor, signature, exceptions);
             newName = this.rewriteMethodNameForJdkInheritanceProxy(name);
 
             this.overriddenJdkMethods.add(overriddenJdkSuperMethod(access, name, descriptor));

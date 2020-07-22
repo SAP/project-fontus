@@ -13,6 +13,7 @@ import java.lang.instrument.ClassFileTransformer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.ProtectionDomain;
+
 import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 
 class TaintingTransformer implements ClassFileTransformer {
@@ -29,7 +30,7 @@ class TaintingTransformer implements ClassFileTransformer {
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-        if(loader == null) {
+        if (loader == null) {
             return classfileBuffer;
         }
 
