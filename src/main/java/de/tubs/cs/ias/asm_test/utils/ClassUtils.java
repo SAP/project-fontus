@@ -36,10 +36,11 @@ public class ClassUtils {
     }
 
     /**
-     * This methods add all methods if the passed interface list to the method list, if the method isn't already contained
+     * This methods add all methods if the passed interface list to the method list, if the method isn't already contained or the interface is already implemented by the super type
      * For determination if contained see {@link ClassUtils#addMethodIfNotContained(Method, List)}
      *
-     * @param interfaces Array with interface names as QN
+     * @param superName Super class of the interface implementing one
+     * @param directInheritedInterfaces Array with interface names as QN
      * @param methods    List to add methods (may already contain methods)
      */
     public static void addNotContainedJdkInterfaceMethods(String superName, String[] directInheritedInterfaces, List<Method> methods, ClassResolver resolver) {
