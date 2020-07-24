@@ -10,6 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Comparator;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,7 +36,7 @@ public final class IASString implements IASTaintAware, IASStringable {
     }
 
     public IASString(String s) {
-        this.string = s;
+        this.string = Objects.requireNonNull(s);
         this.tainted = false;
     }
 
@@ -45,7 +46,7 @@ public final class IASString implements IASTaintAware, IASStringable {
     }
 
     public IASString(String s, boolean tainted) {
-        this.string = s;
+        this.string = Objects.requireNonNull(s);
         this.tainted = tainted;
     }
 

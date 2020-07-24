@@ -16,7 +16,7 @@ public class IASFactoryImpl implements IASFactory {
 
     @Override
     public IASString createString(String s) {
-        return new IASString(s);
+        return IASString.fromString(s);
     }
 
     @Override

@@ -141,7 +141,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             if (this.extendsSuperClass) {
                 getAllMethods(this.superName, this.resolver, jdkMethods);
             }
-            addNotContainedJdkInterfaceMethods(this.interfaces, jdkMethods);
+            addNotContainedJdkInterfaceMethods(this.superName, this.interfaces, jdkMethods, this.resolver);
         }
         this.jdkMethods = Collections.unmodifiableList(jdkMethods);
     }
