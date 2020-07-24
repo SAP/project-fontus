@@ -94,10 +94,16 @@ shadowJar {
     dependsOn utilJar
 }
 
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from subprojects.collect { it.sourceSets.main.allSource }
+}
+
+shadowJar.finalizedBy sourcesJar
 
 publishing {
     publications {
-        main(MavenPublication) {
+        shadow(MavenPublication) {
             groupId = 'de.tubs.cs.ias'
             artifactId = 'asm_test'
             version = '0.0.1-SNAPSHOT'
