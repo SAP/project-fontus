@@ -57,24 +57,31 @@ public final class IASPattern implements IASPatternable {
 
     public IASString[] split(CharSequence input) {
         boolean tainted = (input instanceof IASTaintAware) && ((IASTaintAware) input).isTainted();
-        IASString[] result = (IASString[]) IASStringUtils.convertStringArray(this.pattern.split(input));
-        if (result != null && tainted) {
-            for (IASString s : result) {
-                s.setTaint(true);
-            }
-        }
-        return result;
+        IASStringable[] stringables = IASStringUtils.convertStringArray(this.pattern.split(input));
+
+        return convertStringArrays(tainted, stringables);
     }
 
     public IASString[] split(CharSequence input, int limit) {
         boolean tainted = (input instanceof IASTaintAware) && ((IASTaintAware) input).isTainted();
-        IASString[] result = (IASString[]) IASStringUtils.convertStringArray(this.pattern.split(input, limit));
-        if (result != null && tainted) {
-            for (IASString s : result) {
-                s.setTaint(true);
+        IASStringable[] stringables = IASStringUtils.convertStringArray(this.pattern.split(input, limit));
+        return convertStringArrays(tainted, stringables);
+    }
+
+    private IASString[] convertStringArrays(boolean tainted, IASStringable[] stringables) {
+        if (stringables != null) {
+            IASString[] result = new IASString[stringables.length];
+            for (int i = 0; i < stringables.length; i++) {
+                result[i] = (IASString) stringables[i];
             }
+            if(tainted) {
+                for (IASString s : result) {
+                    s.setTaint(true);
+                }
+            }
+            return result;
         }
-        return result;
+        return null;
     }
 
     public String toString() {

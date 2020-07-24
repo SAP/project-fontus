@@ -88,7 +88,12 @@ public final class IASMatcher implements IASMatcherable {
     }
 
     public IASString group(IASStringable name) {
-        return this.input.substring(this.start(name), this.end(name));
+        String s = this.matcher.group(name.getString());
+        if (s != null) {
+            IASString string = new IASString(s, this.input.isTainted());
+            return string;
+        }
+        return null;
     }
 
     public int groupCount() {

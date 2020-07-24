@@ -2,12 +2,12 @@ package de.tubs.cs.ias.asm_test.utils;
 
 import de.tubs.cs.ias.asm_test.asm.ClassResolver;
 import de.tubs.cs.ias.asm_test.asm.TypeHierarchyReaderWithLoaderSupport;
+import org.mutabilitydetector.asm.typehierarchy.TypeHierarchy;
 import org.objectweb.asm.Type;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class ClassUtils {
 
@@ -16,7 +16,7 @@ public class ClassUtils {
      * This includes the inherited ones (unlike getDeclaredMethods), but excludes the Object-class methods
      *
      * @param classToDiscover Class to discover
-     * @param methods List, where the discovered methods will be added (duplicates will not be stored, can be prefilled)
+     * @param methods         List, where the discovered methods will be added (duplicates will not be stored, can be prefilled)
      */
     public static void getAllMethods(String classToDiscover, ClassResolver resolver, List<Method> methods) {
         TypeHierarchyReaderWithLoaderSupport typeHierarchyReader = new TypeHierarchyReaderWithLoaderSupport(resolver);
@@ -42,10 +42,31 @@ public class ClassUtils {
      * @param interfaces Array with interface names as QN
      * @param methods    List to add methods (may already contain methods)
      */
-    public static void addNotContainedJdkInterfaceMethods(String[] interfaces, List<Method> methods) {
-        if (interfaces == null) {
+    public static void addNotContainedJdkInterfaceMethods(String superName, String[] directInheritedInterfaces, List<Method> methods, ClassResolver resolver) {
+        if (directInheritedInterfaces == null || directInheritedInterfaces.length == 0) {
             return;
         }
+        TypeHierarchyReaderWithLoaderSupport typeHierarchyReader = new TypeHierarchyReaderWithLoaderSupport(resolver);
+        Set<Type> superInterfaces = new HashSet<>();
+        for (Type cls = Type.getObjectType(superName); cls != null; cls = typeHierarchyReader.getSuperClass(cls)) {
+            TypeHierarchy hierarchy = typeHierarchyReader.hierarchyOf(cls);
+            superInterfaces.addAll(hierarchy.getInterfaces());
+        }
+
+        List<String> interfaces = new ArrayList<>();
+        for (String directImplI : directInheritedInterfaces) {
+            boolean isContainedInSuper = false;
+            for (Type superI : superInterfaces) {
+                if (superI.equals(Type.getObjectType(directImplI))) {
+                    isContainedInSuper = true;
+                }
+            }
+            if (!isContainedInSuper) {
+                interfaces.add(directImplI);
+            }
+        }
+
+
         for (String interfaceName : interfaces) {
             if (JdkClassesLookupTable.getInstance().isJdkClass(interfaceName)) {
                 try {

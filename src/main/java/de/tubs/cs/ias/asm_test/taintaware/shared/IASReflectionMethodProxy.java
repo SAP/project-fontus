@@ -98,6 +98,9 @@ public class IASReflectionMethodProxy {
                 return factory.getStringClass().cast(converted);
             } else if (method.getReturnType().isArray() && method.getReturnType().getComponentType().isAssignableFrom(String.class)) {
                 String[] result = (String[]) method.getDefaultValue();
+                if (result == null) {
+                    return null;
+                }
                 IASStringable[] converted = IASStringUtils.convertStringArray(result);
                 return Arrays.copyOf(converted, converted.length, factory.getStringArrayClass());
             }

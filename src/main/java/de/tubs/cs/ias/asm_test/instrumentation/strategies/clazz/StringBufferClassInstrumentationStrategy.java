@@ -14,6 +14,6 @@ import java.util.regex.Matcher;
 
 public class StringBufferClassInstrumentationStrategy extends AbstractClassInstrumentationStrategy {
     public StringBufferClassInstrumentationStrategy(ClassVisitor visitor, TaintStringConfig config) {
-        super(visitor, Constants.StringBufferDesc, config.getTStringBuilderDesc(), Constants.StringBufferQN, config.getTStringBufferQN(), Constants.TStringBufferToStringBufferName);
+        super(visitor, Constants.StringBufferDesc, config.getTStringBufferDesc(), Constants.StringBufferQN, config.getTStringBufferQN(), Constants.TStringBufferToStringBufferName);
     }
 }
