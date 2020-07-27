@@ -8,6 +8,7 @@ import org.objectweb.asm.Type;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ClassUtils {
 
@@ -39,34 +40,41 @@ public class ClassUtils {
      * This methods add all methods if the passed interface list to the method list, if the method isn't already contained or the interface is already implemented by the super type
      * For determination if contained see {@link ClassUtils#addMethodIfNotContained(Method, List)}
      *
-     * @param superName Super class of the interface implementing one
+     * @param superName                 Super class of the interface implementing one
      * @param directInheritedInterfaces Array with interface names as QN
-     * @param methods    List to add methods (may already contain methods)
+     * @param methods                   List to add methods (may already contain methods)
      */
     public static void addNotContainedJdkInterfaceMethods(String superName, String[] directInheritedInterfaces, List<Method> methods, ClassResolver resolver) {
         if (directInheritedInterfaces == null || directInheritedInterfaces.length == 0) {
             return;
         }
         TypeHierarchyReaderWithLoaderSupport typeHierarchyReader = new TypeHierarchyReaderWithLoaderSupport(resolver);
+
+        Set<String> jdkOnly = new HashSet<>();
+        discoverAllJdkInterfaces(Arrays.asList(directInheritedInterfaces), jdkOnly, typeHierarchyReader);
+
         Set<Type> superInterfaces = new HashSet<>();
         for (Type cls = Type.getObjectType(superName); cls != null; cls = typeHierarchyReader.getSuperClass(cls)) {
             TypeHierarchy hierarchy = typeHierarchyReader.hierarchyOf(cls);
             superInterfaces.addAll(hierarchy.getInterfaces());
         }
 
+        Set<String> jdkSuperInterfaces = new HashSet<>();
+        discoverAllJdkInterfaces(superInterfaces.stream().map(Type::getInternalName).collect(Collectors.toList()), jdkSuperInterfaces, typeHierarchyReader);
+
         List<String> interfaces = new ArrayList<>();
-        for (String directImplI : directInheritedInterfaces) {
+        for (String directImplI : jdkOnly) {
             boolean isContainedInSuper = false;
-            for (Type superI : superInterfaces) {
-                if (superI.equals(Type.getObjectType(directImplI))) {
+            for (String superI : jdkSuperInterfaces) {
+                if (superI.equals(directImplI)) {
                     isContainedInSuper = true;
+                    break;
                 }
             }
             if (!isContainedInSuper) {
                 interfaces.add(directImplI);
             }
         }
-
 
         for (String interfaceName : interfaces) {
             if (JdkClassesLookupTable.getInstance().isJdkClass(interfaceName)) {
@@ -78,6 +86,17 @@ public class ClassUtils {
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }
+            }
+        }
+    }
+
+    private static void discoverAllJdkInterfaces(List<String> interfacesToLookThrough, Set<String> result, TypeHierarchyReaderWithLoaderSupport typeHierarchyReader) {
+        for (String interfaceName : interfacesToLookThrough) {
+            if (JdkClassesLookupTable.getInstance().isJdkClass(interfaceName)) {
+                result.add(interfaceName);
+            } else {
+                List<String> superInterfaces = typeHierarchyReader.hierarchyOf(Type.getObjectType(interfaceName)).getInterfaces().stream().map(Type::getInternalName).collect(Collectors.toList());
+                discoverAllJdkInterfaces(superInterfaces, result, typeHierarchyReader);
             }
         }
     }

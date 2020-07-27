@@ -18,7 +18,7 @@ public class TaintStringConfig {
      */
     private final String TStringBufferQN;
 
-    private final String TStringUtilsQN;
+    private final String SharedTStringUtilsQN;
 
     /**
      * The fully qualified name of the class containing the Reflection proxies.
@@ -80,6 +80,7 @@ public class TaintStringConfig {
     private final String ToArrayProxyQN;
     private final String TPropertiesDesc;
     private final String TPropertiesQN;
+    private final String TStringUtilsQN;
 
     public String getTPackage() {
         return this.TPackage;
@@ -91,6 +92,10 @@ public class TaintStringConfig {
 
     public String getTStringBufferQN() {
         return this.TStringBufferQN;
+    }
+
+    public String getSharedTStringUtilsQN() {
+        return this.SharedTStringUtilsQN;
     }
 
     public String getTStringUtilsQN() {
@@ -150,7 +155,8 @@ public class TaintStringConfig {
         this.TPackage = taintawarePackage + taintMethod.getSubPath();
         this.TStringQN = this.TPackage + "IASString";
         this.TStringBufferQN = this.TPackage + "IASStringBuffer";
-        this.TStringUtilsQN = sharedPackage + "IASStringUtils";
+        this.TStringUtilsQN = this.TPackage + "IASStringUtils";
+        this.SharedTStringUtilsQN = sharedPackage + "IASStringUtils";
         this.ReflectionProxiesQN = sharedPackage + "IASReflectionProxies";
         this.ReflectionMethodProxyQN = sharedPackage + "IASReflectionMethodProxy";
         this.ToArrayProxyQN = sharedPackage + "IASToArrayProxy";
