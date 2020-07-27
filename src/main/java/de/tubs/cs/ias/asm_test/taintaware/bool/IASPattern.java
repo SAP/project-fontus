@@ -2,7 +2,7 @@ package de.tubs.cs.ias.asm_test.taintaware.bool;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASPatternable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringUtils;
+import de.tubs.cs.ias.asm_test.taintaware.bool.IASStringUtils;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
 import java.util.regex.Pattern;

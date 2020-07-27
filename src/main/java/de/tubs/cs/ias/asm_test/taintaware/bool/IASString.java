@@ -108,9 +108,9 @@ public final class IASString implements IASTaintAware, IASStringable {
         this.string = new String(ascii, hibyte);
     }
 
-    public IASString(byte bytes[], int offset, int length, IASString charsetName)
+    public IASString(byte bytes[], int offset, int length, IASStringable charsetName)
             throws UnsupportedEncodingException {
-        this.string = new String(bytes, offset, length, charsetName.string);
+        this.string = new String(bytes, offset, length, charsetName.getString());
     }
 
     public IASString(byte bytes[], int offset, int length, Charset charset) {

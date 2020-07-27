@@ -12,7 +12,6 @@ import de.tubs.cs.ias.asm_test.config.Source;
 import de.tubs.cs.ias.asm_test.asm.BasicMethodVisitor;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationStrategy;
-import de.tubs.cs.ias.asm_test.instrumentation.strategies.clazz.PropertiesClassInstrumentationStrategy;
 import de.tubs.cs.ias.asm_test.transformer.*;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.method.*;
 import de.tubs.cs.ias.asm_test.utils.*;
@@ -142,7 +141,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
      */
     private void fillProxies() {
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/System", "arraycopy", "(Ljava/lang/Object;ILjava/lang/Object;II)V", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "arraycopy", "(Ljava/lang/Object;ILjava/lang/Object;II)V", false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getSharedTStringUtilsQN(), "arraycopy", "(Ljava/lang/Object;ILjava/lang/Object;II)V", false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;", false),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionProxiesQN(), "classForName", String.format("(%s)Ljava/lang/Class;", this.stringConfig.getMethodTStringDesc()), false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;", false),
@@ -160,7 +159,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getDeclaredMethod", "(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;", false),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "getDeclaredMethodProxied", String.format("(Ljava/lang/Class;%s[Ljava/lang/Class;)Ljava/lang/reflect/Method;", this.stringConfig.getMethodTStringDesc()), false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/System", "getenv", "()Ljava/util/Map;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "getenv", "()Ljava/util/Map;", false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getSharedTStringUtilsQN(), "getenv", "()Ljava/util/Map;", false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, Utils.fixupReverse(Method.class.getName()), "invoke", "(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;", false),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "invoke", "(Ljava/lang/reflect/Method;Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;", false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/reflect/Method", "getDefaultValue", "()Ljava/lang/Object;", false),
@@ -359,7 +358,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         // TODO All instrumented classes not only strings
         if (/*this.shouldRewriteCheckCast &&*/ opcode == Opcodes.CHECKCAST && Constants.StringQN.equals(type)) {
             logger.info("Rewriting checkcast to call to TString.fromObject(Object obj)");
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "fromObject", String.format("(%s)%s", Constants.ObjectDesc, this.stringConfig.getMethodTStringDesc()), false);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getSharedTStringUtilsQN(), "fromObject", String.format("(%s)%s", Constants.ObjectDesc, this.stringConfig.getMethodTStringDesc()), false);
             super.visitTypeInsn(Opcodes.CHECKCAST, this.stringConfig.getTStringQN());
             this.shouldRewriteCheckCast = false;
             return;
@@ -438,7 +437,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         // Load the param array
         super.visitVarInsn(Opcodes.ALOAD, currRegister);
         // Call our concat method
-        super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "concat", this.stringConfig.getConcatDesc(), false);
+        super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getSharedTStringUtilsQN(), "concat", this.stringConfig.getConcatDesc(), false);
     }
 
     /**

@@ -10,12 +10,8 @@ import de.tubs.cs.ias.asm_test.instrumentation.strategies.StringInstrumentation;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
-import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
-import java.util.HashMap;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class StringMethodInstrumentationStrategy extends AbstractMethodInstrumentationStrategy {
     private static final Type stringArrayType = Type.getType(String[].class);
@@ -101,7 +97,7 @@ public class StringMethodInstrumentationStrategy extends AbstractMethodInstrumen
         Type paramType = Type.getType(parameter);
         if (stringArrayType.equals(paramType)) {
             logger.info("Converting taint-aware String-Array to String-Array in JDK method invocation");
-            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "convertTaintAwareStringArray", String.format("(%s)%s", this.stringConfig.getTStringArrayDesc(), Constants.StringArrayDesc), false);
+            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getSharedTStringUtilsQN(), "convertTaintAwareStringArray", String.format("([%s)%s", this.stringConfig.getMethodTStringDesc(), Constants.StringArrayDesc), false);
         }
         if (this.type.equals(paramType)) {
             logger.info("Converting taint-aware String to String in JDK method invocation");
@@ -131,7 +127,8 @@ public class StringMethodInstrumentationStrategy extends AbstractMethodInstrumen
             logger.info("Converting returned String of {}.{}{}", owner, name, desc.toDescriptor());
         } else if (stringArrayType.equals(returnType)) {
             logger.info("Converting returned String Array of {}.{}{}", owner, name, desc.toDescriptor());
-            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "convertStringArray", String.format("(%s)%s", Constants.StringArrayDesc, this.stringConfig.getTStringArrayDesc()), false);
+            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "convertStringArray", String.format("([L%s;)%s", Utils.fixupReverse(String.class.getName()), this.stringConfig.getTStringArrayDesc()), false);
+            mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(this.stringConfig.getTStringArrayDesc()).getInternalName());
         }
     }
 
