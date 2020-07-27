@@ -3,8 +3,11 @@ package de.tubs.cs.ias.asm_test.utils;
 import de.tubs.cs.ias.asm_test.asm.ClassResolver;
 import de.tubs.cs.ias.asm_test.asm.TypeHierarchyReaderWithLoaderSupport;
 import org.mutabilitydetector.asm.typehierarchy.TypeHierarchy;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -77,7 +80,7 @@ public class ClassUtils {
         }
 
         for (String interfaceName : interfaces) {
-            if (JdkClassesLookupTable.getInstance().isJdkClass(interfaceName)) {
+            if (JdkClassesLookupTable.getInstance().isJdkClass(interfaceName) || isAnnotation(interfaceName)) {
                 try {
                     Class cls = Class.forName(Utils.fixup(interfaceName));
                     for (Method m : cls.getMethods()) {
@@ -94,6 +97,10 @@ public class ClassUtils {
         for (String interfaceName : interfacesToLookThrough) {
             if (JdkClassesLookupTable.getInstance().isJdkClass(interfaceName)) {
                 result.add(interfaceName);
+            } else if (isAnnotation(interfaceName)) {
+                result.add(interfaceName);
+                List<String> superInterfaces = typeHierarchyReader.hierarchyOf(Type.getObjectType(interfaceName)).getInterfaces().stream().map(Type::getInternalName).collect(Collectors.toList());
+                discoverAllJdkInterfaces(superInterfaces, result, typeHierarchyReader);
             } else {
                 List<String> superInterfaces = typeHierarchyReader.hierarchyOf(Type.getObjectType(interfaceName)).getInterfaces().stream().map(Type::getInternalName).collect(Collectors.toList());
                 discoverAllJdkInterfaces(superInterfaces, result, typeHierarchyReader);
@@ -134,5 +141,15 @@ public class ClassUtils {
         } catch (Exception ex) {
             throw new UnsupportedOperationException("Cannot evaluate if method is generic signature, because Method.hasGenericInformation is not available");
         }
+    }
+
+    public static boolean isAnnotation(String internalName) {
+        int access = 0;
+        try {
+            access = new ClassReader(internalName).getAccess();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return (access & Opcodes.ACC_ANNOTATION) > 0;
     }
 }
