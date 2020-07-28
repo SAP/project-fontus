@@ -2,17 +2,17 @@ package de.tubs.cs.ias.asm_test.taintaware.shared;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.bool.IASMatcher;
 import de.tubs.cs.ias.asm_test.taintaware.bool.IASPattern;
 import de.tubs.cs.ias.asm_test.utils.ConversionUtils;
 import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
-import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
+import jdk.internal.reflect.Reflection;
 
-import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Formatter;
 import java.util.HashMap;
@@ -60,6 +60,7 @@ public class IASReflectionMethodProxy {
         return result;
     }
 
+    @SuppressWarnings("Since15")
     public static Object invoke(Method method, Object instance, Object... parameters) throws Throwable {
         if (method.getDeclaringClass().isAnnotation()) {
             if (method.getReturnType().isAssignableFrom(String.class)) {
@@ -75,6 +76,21 @@ public class IASReflectionMethodProxy {
             Object[] converted = convertParametersToOriginal(parameters);
             Object result = method.invoke(instance, converted);
             return ConversionUtils.convertToConcrete(result);
+        }
+        if ((!Modifier.isPublic(method.getModifiers()) && !Modifier.isProtected(method.getModifiers()) && !Modifier.isPrivate(method.getModifiers()))
+                || (!Modifier.isPublic(method.getDeclaringClass().getModifiers()) && !Modifier.isProtected(method.getDeclaringClass().getModifiers()) && !Modifier.isPrivate(method.getDeclaringClass().getModifiers()))) {
+            // This method is package private. Iuff the declaring class is in the same package as the calling class we must set it accessible
+            // Otherwise the caller class (which is this class) is not in the same package as the declaring class an an IllegalAccessException is thrown
+            Class callerClass;
+            if (Constants.JAVA_VERSION >= 9) {
+                callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
+                        .getCallerClass();
+            } else {
+                callerClass = Reflection.getCallerClass();
+            }
+            if (method.getDeclaringClass().getPackage().equals(callerClass.getPackage())) {
+                method.setAccessible(true);
+            }
         }
         return method.invoke(instance, parameters);
     }
