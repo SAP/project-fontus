@@ -385,7 +385,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         }
 
         if ("java/lang/invoke/LambdaMetafactory".equals(bootstrapMethodHandle.getOwner()) &&
-                "metafactory".equals(bootstrapMethodHandle.getName())) {
+                ("metafactory".equals(bootstrapMethodHandle.getName()) || "altMetafactory".equals(bootstrapMethodHandle.getName()))) {
             MethodTaintingUtils.invokeVisitLambdaCall(this.stringConfig, this.getParentVisitor(), name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
             return;
         }

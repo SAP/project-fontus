@@ -52,6 +52,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private boolean isInterface;
     private boolean extendsSuperClass;
     private final SignatureInstrumenter signatureInstrumenter;
+    private final List<org.objectweb.asm.commons.Method> instrumentedMethods = new ArrayList();
 
     public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config) {
         super(Opcodes.ASM7, cv);
@@ -97,7 +98,7 @@ class ClassTaintingVisitor extends ClassVisitor {
      */
     @Override
     public void visit(
-            final int version,
+            int version,
             final int access,
             final String name,
             final String signature,
@@ -132,6 +133,11 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.initJdkClasses();
 
         String instrumentedSignature = this.signatureInstrumenter.instrumentSignature(signature);
+
+        if (version < Opcodes.V1_8) {
+            version = Opcodes.V1_8;
+        }
+
         super.visit(version, access, name, instrumentedSignature, this.superName, interfaces);
     }
 
@@ -239,11 +245,25 @@ class ClassTaintingVisitor extends ClassVisitor {
             mv = super.visitMethod(access, newName, desc, instrumentedSignature, exceptions);
         } else if (this.blacklist.contains(new BlackListEntry(name, descriptor, access))) {
             mv = super.visitMethod(access, name, descriptor, signature, exceptions);
+        } else if (this.instrumentedMethods.contains(new org.objectweb.asm.commons.Method(name, this.instrumentDescriptor(descriptor)))) {
+            if (this.instrumentDescriptor(descriptor).equals(descriptor)) {
+                // If a not instrumented method has been instrumented and afterwards the same method with a instrumented descriptor occurs, it has to be ignored
+                return null;
+            }
+            int newAccess = access & ~Opcodes.ACC_ABSTRACT;
+            MethodVisitor v = super.visitMethod(newAccess, name, descriptor, signature, exceptions);
+            newName = this.rewriteMethodNameForJdkInheritanceProxy(name);
+
+            this.overriddenJdkMethods.add(overriddenJdkSuperMethod(access, name, descriptor));
+
+            this.generateJdkInheritanceProxy(v, newName, descriptor);
+            return null;
         } else {
             desc = this.instrumentDescriptor(Descriptor.parseDescriptor(descriptor)).toDescriptor();
             if (!desc.equals(descriptor)) {
                 logger.info("Rewriting method signature {}{} to {}{}", name, descriptor, name, desc);
             }
+            this.instrumentedMethods.add(new org.objectweb.asm.commons.Method(name, desc));
             mv = super.visitMethod(access, name, desc, instrumentedSignature, exceptions);
         }
 
@@ -419,6 +439,11 @@ class ClassTaintingVisitor extends ClassVisitor {
         logger.info("Creating proxy for inherited, but not overridden JDK method " + m);
         Descriptor originalDescriptor = Descriptor.parseMethod(m);
         Descriptor instrumentedDescriptor = this.instrumentDescriptor(originalDescriptor);
+
+        if (this.instrumentedMethods.contains(new org.objectweb.asm.commons.Method(m.getName(), instrumentedDescriptor.toDescriptor()))) {
+            return;
+        }
+
         String[] exceptions = MethodUtils.getExceptionTypes(m);
         String signature = null;
         if (ClassUtils.hasGenericInformation(m)) {
@@ -459,7 +484,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         // TODO Handle arrays/lists
         // Converting parameters
         mv.visitVarInsn(Opcodes.ALOAD, 0);
-        for (int i = 0; i < origDescriptor.parameterCount();) {
+        for (int i = 0; i < origDescriptor.parameterCount(); ) {
             String param = origDescriptor.getParameters().get(i);
             // Creating new Object if necessary and duplicating it for initialization
             if (isDescriptorNameToInstrument(param)) {
@@ -608,6 +633,10 @@ class ClassTaintingVisitor extends ClassVisitor {
             descriptor = is.instrument(descriptor);
         }
         return descriptor;
+    }
+
+    private String instrumentDescriptor(String descriptor) {
+        return this.instrumentDescriptor(Descriptor.parseDescriptor(descriptor)).toDescriptor();
     }
 
     private boolean shouldBeInstrumented(String descriptorString) {
