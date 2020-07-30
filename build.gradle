@@ -103,12 +103,12 @@ shadowJar.finalizedBy sourcesJar
 
 publishing {
     publications {
-        shadow(MavenPublication) {
+        main(MavenPublication) { publication ->
             groupId = 'de.tubs.cs.ias'
             artifactId = 'asm_test'
             version = '0.0.1-SNAPSHOT'
 
-            artifact shadowJar
+            project.shadow.component(publication)
         }
 
         util(MavenPublication) {
