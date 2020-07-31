@@ -17,6 +17,15 @@ repositories {
     mavenLocal()
 }
 
+tasks.jar.configure {
+    classifier = 'default'
+}
+
+// This makes sure that the generated jar has no "-all" suffix
+tasks.shadowJar.configure {
+    classifier = null
+}
+
 dependencies {
     compile 'org.ow2.asm:asm:7.2'
     compile 'org.ow2.asm:asm-commons:7.2'
