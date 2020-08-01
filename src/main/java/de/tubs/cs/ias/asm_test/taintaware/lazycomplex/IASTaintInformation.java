@@ -1,6 +1,5 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
-import de.tubs.cs.ias.asm_test.agent.TaintAgent;
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations.BaseOperation;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
