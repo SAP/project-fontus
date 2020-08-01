@@ -148,7 +148,7 @@ public class ClassUtils {
         try {
             access = new ClassReader(internalName).getAccess();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Could not resolve class " + internalName + " for isAnnotation checking");
         }
         return (access & Opcodes.ACC_ANNOTATION) > 0;
     }
