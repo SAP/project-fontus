@@ -18,6 +18,6 @@ import java.util.regex.Matcher;
 
 public class FormatterMethodInstrumentationStrategy extends AbstractMethodInstrumentationStrategy {
     public FormatterMethodInstrumentationStrategy(MethodVisitor parentVisitor, TaintStringConfig stringConfig) {
-        super(parentVisitor, Constants.FormatterDesc, stringConfig.getTFormatterDesc(), stringConfig.getTFormatterQN(), Formatter.class, stringConfig, new FormatterInstrumentation(stringConfig));
+        super(parentVisitor, stringConfig.getTFormatterDesc(), stringConfig.getTFormatterQN(), Constants.TFormatterToFormatterName, Formatter.class, stringConfig, new FormatterInstrumentation(stringConfig));
     }
 }
