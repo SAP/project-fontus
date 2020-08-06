@@ -152,4 +152,14 @@ public class ClassUtils {
         }
         return (access & Opcodes.ACC_ANNOTATION) > 0;
     }
+
+    public static boolean isInterface(String internalName) {
+        int access = 0;
+        try {
+            access = new ClassReader(internalName).getAccess();
+        } catch (IOException e) {
+            System.err.println("Could not resolve class " + internalName + " for isAnnotation checking");
+        }
+        return ((access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE);
+    }
 }
