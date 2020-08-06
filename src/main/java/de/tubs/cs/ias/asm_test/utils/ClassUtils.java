@@ -119,8 +119,8 @@ public class ClassUtils {
             boolean alreadyContained = methods.stream().anyMatch(methodInMethods -> {
                 boolean nameEquals = methodToAdd.getName().equals(methodInMethods.getName());
                 boolean correctVisibility = isPublicOrProtectedNotStatic(methodInMethods);
-                boolean signaturEquals = Arrays.equals(methodToAdd.getParameterTypes(), methodInMethods.getParameterTypes());
-                return nameEquals && correctVisibility && signaturEquals;
+                boolean signatureEquals = Arrays.equals(methodToAdd.getParameterTypes(), methodInMethods.getParameterTypes());
+                return nameEquals && correctVisibility && signatureEquals;
             });
 
             if (!alreadyContained) {

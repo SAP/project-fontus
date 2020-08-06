@@ -211,6 +211,8 @@ public final class Constants {
     public static final String PatternDesc = java.lang.String.format("L%s;", PatternQN);
     public static final String TPatternToPatternName = "getPattern";
 
+    public static final String PACKAGE = "de.tubs.cs.ias.asm_test";
+
     private Constants() {
     }
 
