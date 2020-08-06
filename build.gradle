@@ -21,11 +21,6 @@ tasks.jar.configure {
     classifier = 'default'
 }
 
-// This makes sure that the generated jar has no "-all" suffix
-tasks.shadowJar.configure {
-    classifier = null
-}
-
 dependencies {
     compile 'org.ow2.asm:asm:7.2'
     compile 'org.ow2.asm:asm-commons:7.2'
@@ -79,7 +74,6 @@ task utilJar(type: ShadowJar) {
 shadowJar {
     doFirst {
         manifest {
-//            if (!configurations.compile.isEmpty()) {
                 attributes(
                         // 'Class-Path': configurations.compile.collect{it.toURI().toString()}.join(' '),
                         'Main-Class': 'de.tubs.cs.ias.asm_test.Main',
@@ -88,12 +82,12 @@ shadowJar {
                         'Can-Retransform-Classes': true,
                         'Premain-Class': 'de.tubs.cs.ias.asm_test.agent.TaintAgent'
                 )
-//            }
         }
     }
-//    from {
-//        configurations.compileClasspath.filter { it.exists() }.collect { it.isDirectory() ? it : zipTree(it) }
-//    }
+
+    // This makes sure that the generated jar has no "-all" suffix
+    classifier = ''
+
     relocate 'com.ctc', 'de.tubs.cs.ias.asm_test.com.ctc'
     relocate 'com.fasterxml', 'de.tubs.cs.ias.asm_test.com.fasterxml'
     relocate 'org.apache', 'de.tubs.cs.ias.asm_test.org.apache'
@@ -112,12 +106,13 @@ shadowJar.finalizedBy sourcesJar
 
 publishing {
     publications {
-        main(MavenPublication) { publication ->
+        shadow(MavenPublication) {
+            from project.components.java
             groupId = 'de.tubs.cs.ias'
             artifactId = 'asm_test'
             version = '0.0.1-SNAPSHOT'
-
-            project.shadow.component(publication)
+            artifact tasks.sourcesJar
+            artifact tasks.shadowJar
         }
 
         util(MavenPublication) {
