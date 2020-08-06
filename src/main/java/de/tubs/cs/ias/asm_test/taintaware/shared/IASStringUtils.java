@@ -92,6 +92,18 @@ public final class IASStringUtils {
         return result;
     }
 
+    public static Hashtable<IASStringable, IASStringable> convertStringHashtableToTStringHashtable(Hashtable<String, String> tbl) {
+        Hashtable<IASStringable, IASStringable> result = new Hashtable<>();
+        tbl.forEach((key, value) -> result.put(factory.valueOf(key), factory.valueOf(value)));
+        return result;
+    }
+
+    public static Hashtable<String, String> convertTStringToTStringHashTable(Hashtable<IASStringable, IASStringable> tbl) {
+        Hashtable<String, String> result = new Hashtable<>();
+        tbl.forEach((key, value) -> result.put(key.getString(), value.getString()));
+        return result;
+    }
+
     public static Map<IASStringable, IASStringable> getenv() {
         Map<String, String> origEnv = System.getenv();
         Map<IASStringable, IASStringable> convertedEnv = convertStringMapToTStringMap(origEnv);

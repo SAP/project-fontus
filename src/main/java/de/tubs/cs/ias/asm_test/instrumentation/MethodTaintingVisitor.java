@@ -164,6 +164,8 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "invoke", "(Ljava/lang/reflect/Method;Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;", false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/reflect/Method", "getDefaultValue", "()Ljava/lang/Object;", false),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "getDefaultValue", "(Ljava/lang/reflect/Method;)Ljava/lang/Object;", false));
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/reflect/Method", "getReturnType", "()Ljava/lang/Class;", false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "getReturnType", "(Ljava/lang/reflect/Method;)Ljava/lang/Class;", false));
     }
 
     private void fillInterfaceProxies() {
@@ -526,7 +528,19 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     @Override
     public void visitJumpInsn(int opcode, Label label) {
         this.shouldRewriteCheckCast = false;
-        super.visitJumpInsn(opcode, label);
+        if (opcode == Opcodes.IF_ACMPEQ) {
+            // Returns 1
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.CompareProxyQN, Constants.CompareProxyEqualsName, Constants.CompareProxyEqualsDesc, false);
+            // Expects something different from 0
+            super.visitJumpInsn(Opcodes.IFNE, label);
+        } else if (opcode == Opcodes.IF_ACMPNE) {
+            // Returns 0
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.CompareProxyQN, Constants.CompareProxyEqualsName, Constants.CompareProxyEqualsDesc, false);
+            // Expects 0
+            super.visitJumpInsn(Opcodes.IFEQ, label);
+        } else {
+            super.visitJumpInsn(opcode, label);
+        }
     }
 
 

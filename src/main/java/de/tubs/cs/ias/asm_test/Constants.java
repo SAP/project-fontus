@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASCompareProxy;
 import de.tubs.cs.ias.asm_test.utils.ConversionUtils;
 import org.objectweb.asm.Type;
 
@@ -15,6 +16,9 @@ public final class Constants {
     public static final String PropertyDesc;
     public static final String PropertyQN;
     public static final String JDK_INHERITANCE_BLACKLIST_FILENAME = "jdk_inheritance_blacklist.csv";
+    public static final String CompareProxyQN = Type.getType(IASCompareProxy.class).getInternalName();
+    public static final String CompareProxyEqualsName = "compareRefEquals";
+    public static final String CompareProxyEqualsDesc;
 
     static {
         try {
@@ -22,6 +26,7 @@ public final class Constants {
             ConversionUtilsToConcreteDesc = Type.getType(ConversionUtils.class.getMethod("convertToConcrete", Object.class)).getDescriptor();
             ConversionUtilsToOrigName = ConversionUtils.class.getMethod("convertToOrig", Object.class).getName();
             ConversionUtilsToOrigDesc = Type.getType(ConversionUtils.class.getMethod("convertToOrig", Object.class)).getDescriptor();
+            CompareProxyEqualsDesc = Type.getType(IASCompareProxy.class.getMethod("compareRefEquals", Object.class, Object.class)).getDescriptor();
 
             PropertyDesc = Type.getType(Properties.class).getDescriptor();
             PropertyQN = Type.getType(Properties.class).getInternalName();
