@@ -52,12 +52,25 @@ public class IASReflectionMethodProxy {
     }
 
     public static Object handleInvocationProxyCall(Object result, Object proxy, Method method, Object[] args) {
-        if (method.getDeclaringClass().isAnnotation() && method.getReturnType().equals(String.class)) {
+        if (method.getDeclaringClass().isAnnotation() && method.getReturnType().equals(String.class) || method.getReturnType().equals(String[].class)) {
             if (result instanceof IASStringable) {
                 return ((IASStringable) result).getString();
+            } else if (result.getClass() == factory.getStringArrayClass()) {
+                return ConversionUtils.convertToOrig(result);
             }
         }
         return result;
+    }
+
+    public static Class<?> getReturnType(Method m) {
+        if (m.getDeclaringClass().isAnnotation()) {
+            if (m.getReturnType() == String.class) {
+                return factory.getStringClass();
+            } else if (m.getReturnType() == String[].class) {
+                return factory.getStringArrayClass();
+            }
+        }
+        return m.getReturnType();
     }
 
     @SuppressWarnings("Since15")
