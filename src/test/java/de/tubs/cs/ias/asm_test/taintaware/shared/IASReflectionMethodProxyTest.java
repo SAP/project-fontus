@@ -116,4 +116,23 @@ public class IASReflectionMethodProxyTest {
 
     }
 
+    @Test
+    public void testGetDeclaredMethodsSorting() throws NoSuchMethodException {
+        Method[] expected = new Method[]{MethodsToSortParameter.class.getMethod("method", IASString.class), MethodsToSortParameter.class.getMethod("method", String.class)};
+
+        Method[] actual = IASReflectionMethodProxy.getDeclaredMethods(MethodsToSortParameter.class);
+
+        assertArrayEquals(expected, actual);
+    }
+
+    private static class MethodsToSortParameter {
+        public void method(String s) {
+
+        }
+
+        public void method(IASString s) {
+
+        }
+    }
+
 }

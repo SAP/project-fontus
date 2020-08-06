@@ -10,7 +10,6 @@ import de.tubs.cs.ias.asm_test.instrumentation.strategies.clazz.*;
 import de.tubs.cs.ias.asm_test.utils.*;
 import org.objectweb.asm.*;
 
-import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -270,15 +269,15 @@ class ClassTaintingVisitor extends ClassVisitor {
         return new MethodTaintingVisitor(access, this.owner, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler, this.instrumentation);
     }
 
-    private void generateJdkInheritanceProxy(MethodVisitor mv, String instrumentedName, String descriptor) {
-        Descriptor d = Descriptor.parseDescriptor(descriptor);
-        Descriptor instrumentedDescriptor = this.instrumentDescriptor(d);
+    private void generateJdkInheritanceProxy(MethodVisitor mv, String instrumentedName, String originalDescriptorString) {
+        Descriptor originalDescriptor = Descriptor.parseDescriptor(originalDescriptorString);
+        Descriptor instrumentedDescriptor = this.instrumentDescriptor(originalDescriptor);
         mv.visitCode();
         // TODO Labels
         // TODO Handle arrays/lists
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         int i = 1;
-        for (String param : d.getParameters()) {
+        for (String param : originalDescriptor.getParameters()) {
 
             // Creating new Object if necessary and duplicating it for initialization
             if (isDescriptorNameToInstrument(param)) {
@@ -293,16 +292,16 @@ class ClassTaintingVisitor extends ClassVisitor {
             i += Type.getType(param).getSize();
         }
         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.owner, instrumentedName, instrumentedDescriptor.toDescriptor(), false);
-        if (isDescriptorNameToInstrument(d.getReturnType())) {
+        if (isDescriptorNameToInstrument(originalDescriptor.getReturnType())) {
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
-            mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(d.getReturnType()).getInternalName());
+            mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(originalDescriptor.getReturnType()).getInternalName());
 //            Type instrumentedReturnType = Type.getType(this.instrumentQN(d.getReturnType()));
 //            String toOriginalMethod = this.getToOriginalMethod(d.getReturnType());
 //            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, instrumentedReturnType.getInternalName(), toOriginalMethod, new Descriptor(d.getReturnType()).toDescriptor(), false);
         }
 
-        mv.visitInsn(returnCodeByReturnType(d.getReturnType()));
-        mv.visitMaxs(d.parameterCount() + 1, d.parameterCount() + 1);
+        mv.visitInsn(returnCodeByReturnType(originalDescriptor.getReturnType()));
+        mv.visitMaxs(originalDescriptor.parameterCount() + 1, originalDescriptor.parameterCount() + 1);
         mv.visitEnd();
     }
 
@@ -451,14 +450,17 @@ class ClassTaintingVisitor extends ClassVisitor {
             signature = this.instrumentDescriptorStringlike(signature);
         }
         // Generating proxy with instrumented descriptor
-        int modifiers = (m.getModifiers() & ~Modifier.ABSTRACT);
-        MethodVisitor mv = super.visitMethod(modifiers, m.getName(), instrumentedDescriptor.toDescriptor(), signature, exceptions);
-        this.generateJdkNotInheritedProxy(mv, m, originalDescriptor, instrumentedDescriptor);
+        MethodVisitor mv = super.visitMethod(m.getModifiers(), m.getName(), instrumentedDescriptor.toDescriptor(), signature, exceptions);
+        if (!Modifier.isAbstract(m.getModifiers())) {
+            this.generateJdkNotInheritedProxy(mv, m, originalDescriptor, instrumentedDescriptor);
+        }
 
         // Overriding method with original descriptor
+        int modifiers = (m.getModifiers() & ~Modifier.ABSTRACT);
         if (!Modifier.isFinal(m.getModifiers())) {
             MethodVisitor mv2 = super.visitMethod(modifiers, m.getName(), originalDescriptor.toDescriptor(), signature, exceptions);
-            this.generateOverrideJdkNotInheritedProxy(mv2, m, originalDescriptor);
+            this.generateJdkInheritanceProxy(mv2, m.getName(), originalDescriptor.toDescriptor());
+//            this.generateOverrideJdkNotInheritedProxy(mv2, m, originalDescriptor);
         }
     }
 
@@ -490,7 +492,11 @@ class ClassTaintingVisitor extends ClassVisitor {
             if (isDescriptorNameToInstrument(param)) {
                 mv.visitVarInsn(loadCodeByType(param), i + 1);
                 Type instrumentedParam = Type.getType(this.instrumentQN(param));
+                Type origParam = Type.getType(param);
                 int arrayDimensions = calculateDescArrayDimensions(param);
+                mv.visitInsn(Opcodes.DUP);
+                Label label = new Label();
+                mv.visitJumpInsn(Opcodes.IFNULL, label);
                 if (arrayDimensions == 0) {
                     mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedParam.getInternalName());
                     mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, instrumentedParam.getInternalName(), this.getToOriginalMethod(param), new Descriptor(param).toDescriptor(), false);
@@ -498,6 +504,8 @@ class ClassTaintingVisitor extends ClassVisitor {
                     mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getSharedTStringUtilsQN(), "convertTaintAwareStringArray", String.format("([%s)[L%s;", this.stringConfig.getMethodTStringDesc(), Utils.fixupReverse(String.class.getName())), false);
 //                    mv.visitTypeInsn(Opcodes.CHECKCAST, param);
                 }
+                mv.visitLabel(label);
+                mv.visitTypeInsn(Opcodes.CHECKCAST, origParam.getInternalName());
             } else {
                 mv.visitVarInsn(loadCodeByType(param), i + 1);
             }
@@ -515,21 +523,34 @@ class ClassTaintingVisitor extends ClassVisitor {
             int arrayDimensions = calculateDescArrayDimensions(returnType.getInternalName());
             if (arrayDimensions == 0) {
                 int resultLocalAddress = origDescriptor.parameterCount() + 1;
-                mv.visitVarInsn(Opcodes.ASTORE, resultLocalAddress); // this, params, free storage => 0 indexed
+                Label label1 = new Label();
+                Label label2 = new Label();
+                mv.visitInsn(Opcodes.DUP);
+                mv.visitJumpInsn(Opcodes.IFNULL, label1);
 
+                mv.visitVarInsn(Opcodes.ASTORE, resultLocalAddress); // this, params, free storage => 0 indexed
                 mv.visitTypeInsn(Opcodes.NEW, returnType.getInternalName());
                 mv.visitInsn(Opcodes.DUP);
                 mv.visitVarInsn(Opcodes.ALOAD, resultLocalAddress);
-
                 mv.visitMethodInsn(Opcodes.INVOKESPECIAL, returnType.getInternalName(), Constants.Init, new Descriptor(new String[]{origDescriptor.getReturnType()}, "V").toDescriptor(), false);
+
+                mv.visitJumpInsn(Opcodes.GOTO, label2);
+                mv.visitLabel(label1);
+
+                mv.visitInsn(Opcodes.POP);
+                mv.visitInsn(Opcodes.ACONST_NULL);
+
+                mv.visitLabel(label2);
+
+
             } else {
-                mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getSharedTStringUtilsQN(), "convertStringArray", String.format("([L%s;)[%s", Utils.fixupReverse(String.class.getName()), this.stringConfig.getMethodTStringDesc()), false);
+                mv.visitMethodInsn(Opcodes.INVOKESTATIC, stringConfig.getSharedTStringUtilsQN(), "convertStringArray", String.format("([L%s;)[%s", Utils.fixupReverse(String.class.getName()), this.stringConfig.getMethodTStringDesc()), false);
                 mv.visitTypeInsn(Opcodes.CHECKCAST, returnType.getInternalName());
             }
         }
 
         mv.visitInsn(returnCodeByReturnType(instrumentedDescriptor.getReturnType()));
-        mv.visitMaxs(instrumentedDescriptor.parameterCount() + 1, instrumentedDescriptor.parameterCount() + 2);
+        mv.visitMaxs(-1, -1);
         mv.visitEnd();
     }
 

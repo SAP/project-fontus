@@ -13,10 +13,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.Formatter;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -200,6 +197,29 @@ public class IASReflectionMethodProxy {
         return clazz.getDeclaredMethod(methodNameString, parameters);
     }
 
+    public static Method[] getDeclaredMethods(Class clazz) {
+        Method[] methods = clazz.getDeclaredMethods();
+        Arrays.sort(methods, new MethodSorter());
+        return methods;
+    }
+
+    public static Method[] getMethods(Class clazz) {
+        Method[] methods = clazz.getMethods();
+        Arrays.sort(methods, new MethodSorter());
+        return methods;
+    }
+
+    private static boolean isParameterSameUninstrumented(Class c1, Class c2) {
+        return ConversionUtils.convertClassToOrig(c1) == ConversionUtils.convertClassToOrig(c2);
+    }
+
+    private static boolean isInstrumented(Class cls) {
+        if (cls.isPrimitive()) {
+            return false;
+        }
+        return cls.getPackage().getName().startsWith(Constants.PACKAGE);
+    }
+
     private static String transformMethodName(Class<?> clazz, String methodName, Class[] parameters) {
         boolean isToString = methodName.equals(Constants.ToString) && (parameters == null || parameters.length == 0);
         boolean isTaintAware = IASTaintAware.class.isAssignableFrom(clazz);
@@ -231,5 +251,42 @@ public class IASReflectionMethodProxy {
 
     private static boolean isInPackage(Class clazz) {
         return clazz.getName().startsWith(packageName);
+    }
+
+    private static class MethodSorter implements Comparator<Method> {
+
+        @Override
+        public int compare(Method o1, Method o2) {
+            if (o1.getName().equals(o2.getName())) {
+                if (o1.getParameterCount() == o2.getParameterCount()) {
+                    boolean isSame = true;
+                    for (int i = 0; i < o1.getParameterCount(); i++) {
+                        if (!isParameterSameUninstrumented(o1.getParameterTypes()[i], o2.getParameterTypes()[i])) {
+                            isSame = false;
+                            break;
+                        }
+                    }
+                    if (!isParameterSameUninstrumented(o1.getReturnType(), o2.getReturnType())) {
+                        isSame = false;
+                    }
+
+                    if (isSame) {
+                        boolean firstGreater = true;
+                        for (int i = 0; i < o1.getParameterCount(); i++) {
+                            if (isInstrumented(o2.getParameterTypes()[i])) {
+                                firstGreater = false;
+                                break;
+                            }
+                        }
+                        if (isInstrumented(o2.getReturnType())) {
+                            firstGreater = false;
+                        }
+
+                        return firstGreater ? -1 : 1;
+                    }
+                }
+            }
+            return 0;
+        }
     }
 }

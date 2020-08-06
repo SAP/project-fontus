@@ -95,4 +95,25 @@ public class ConversionUtils {
     public static Object convertToConcrete(Object object) {
         return convertObject(object, toConcrete);
     }
+
+    public static Object convertClassToOrig(Class cls) {
+        return convertClass(cls, toOrig);
+    }
+
+    public static Object convertClassToInterface(Class cls) {
+        return convertClass(cls, toInterface);
+    }
+
+    public static Object convertClassToConcrete(Class cls) {
+        return convertClass(cls, toConcrete);
+    }
+
+    public static Class convertClass(Class cls, Map<Class, Function> converters) {
+        for (Class handler : converters.keySet()) {
+            if (handler.isAssignableFrom(cls)) {
+                return (Class) converters.get(handler).apply(cls);
+            }
+        }
+        return cls;
+    }
 }
