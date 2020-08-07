@@ -325,8 +325,16 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
      * It might load String values, so we have to transform them.
      */
     @Override
-    public void visitLdcInsn(final Object value) {
+    public void visitLdcInsn(Object value) {
         this.shouldRewriteCheckCast = false;
+
+        // Some cool people use "java.lang.String".equals(cls.getName()) instead cls == String.class
+        if (value instanceof String) {
+            if (value.equals("java.lang.String")) {
+                logger.info("Replaced original class name in string with instrumented one in {}.{}{}", this.owner, this.name, this.methodDescriptor);
+                value = Utils.fixup(Configuration.getConfiguration().getTaintStringConfig().getTStringQN());
+            }
+        }
 
         for (MethodInstrumentationStrategy s : this.methodInstrumentation) {
             if (s.handleLdc(value)) {
