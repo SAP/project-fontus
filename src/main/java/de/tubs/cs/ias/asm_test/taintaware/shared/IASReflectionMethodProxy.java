@@ -49,7 +49,7 @@ public class IASReflectionMethodProxy {
     }
 
     public static Object handleInvocationProxyCall(Object result, Object proxy, Method method, Object[] args) {
-        if (method.getDeclaringClass().isAnnotation() && method.getReturnType().equals(String.class) || method.getReturnType().equals(String[].class)) {
+        if (method.getReturnType().equals(String.class) || method.getReturnType().equals(String[].class)) {
             if (result instanceof IASStringable) {
                 return ((IASStringable) result).getString();
             } else if (result.getClass() == factory.getStringArrayClass()) {

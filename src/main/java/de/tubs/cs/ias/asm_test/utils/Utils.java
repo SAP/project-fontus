@@ -42,6 +42,7 @@ public final class Utils {
             case "Z":
             case "B":
             case "C":
+            case "S":
             case "I":
                 return Opcodes.ISTORE;
             case "J":
@@ -76,6 +77,7 @@ public final class Utils {
             case "Z":
             case "B":
             case "C":
+            case "S":
             case "I":
                 return Opcodes.ILOAD;
             case "J":
