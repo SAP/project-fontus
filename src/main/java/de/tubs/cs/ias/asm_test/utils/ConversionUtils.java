@@ -52,12 +52,42 @@ public class ConversionUtils {
             }
             return ((IASStringable) obj).getString();
         });
-        toOrig.put(IASStringBuilderable.class, (obj) -> ((IASStringBuilderable) obj).getStringBuilder());
-        toOrig.put(IASStringBufferable.class, (obj) -> ((IASStringBufferable) obj).getStringBuffer());
-        toOrig.put(IASFormatterable.class, (obj) -> ((IASFormatterable) obj).getFormatter());
-        toOrig.put(IASMatcherable.class, (obj) -> ((IASMatcherable) obj).getMatcher());
-        toOrig.put(IASPatternable.class, (obj) -> ((IASPatternable) obj).getPattern());
-        toOrig.put(IASProperties.class, (obj) -> ((IASProperties) obj).getProperties());
+        toOrig.put(IASStringBuilderable.class, (obj) -> {
+            if (obj instanceof Class) {
+                return StringBuilder.class;
+            }
+            return ((IASStringBuilderable) obj).getStringBuilder();
+        });
+        toOrig.put(IASStringBufferable.class, (obj) -> {
+            if (obj instanceof Class) {
+                return StringBuffer.class;
+            }
+            return ((IASStringBufferable) obj).getStringBuffer();
+        });
+        toOrig.put(IASFormatterable.class, (obj) -> {
+            if (obj instanceof Class) {
+                return Formatter.class;
+            }
+            return ((IASFormatterable) obj).getFormatter();
+        });
+        toOrig.put(IASMatcherable.class, (obj) -> {
+            if (obj instanceof Class) {
+                return Matcher.class;
+            }
+            return ((IASMatcherable) obj).getMatcher();
+        });
+        toOrig.put(IASPatternable.class, (obj) -> {
+            if (obj instanceof Class) {
+                return Pattern.class;
+            }
+            return ((IASPatternable) obj).getPattern();
+        });
+        toOrig.put(IASProperties.class, (obj) -> {
+            if (obj instanceof Class) {
+                return Properties.class;
+            }
+            return ((IASProperties) obj).getProperties();
+        });
     }
 
     private static Object convertObject(Object object, Map<Class, Function> converters) {
