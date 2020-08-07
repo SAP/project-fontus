@@ -38,6 +38,7 @@ public class IASAbstractStringBuilder implements IASAbstractStringBuilderable, I
         IASString string = IASString.valueOf(seq);
         this.stringBuilder = new StringBuilder(string.length() + 16);
         this.append(string);
+        this.ensureCapacity(string.length() + 16);
     }
 
     public IASAbstractStringBuilder(IASStringable string) {
