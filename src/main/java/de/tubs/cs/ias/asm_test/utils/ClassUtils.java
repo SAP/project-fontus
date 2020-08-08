@@ -2,6 +2,7 @@ package de.tubs.cs.ias.asm_test.utils;
 
 import de.tubs.cs.ias.asm_test.asm.ClassResolver;
 import de.tubs.cs.ias.asm_test.asm.TypeHierarchyReaderWithLoaderSupport;
+import de.tubs.cs.ias.asm_test.config.Configuration;
 import org.mutabilitydetector.asm.typehierarchy.TypeHierarchy;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
@@ -148,7 +149,9 @@ public class ClassUtils {
         try {
             access = new ClassReader(internalName).getAccess();
         } catch (IOException e) {
-            System.err.println("Could not resolve class " + internalName + " for isAnnotation checking");
+            if (Configuration.getConfiguration().isLoggingEnabled()) {
+                System.err.println("Could not resolve class " + internalName + " for isAnnotation checking");
+            }
         }
         return (access & Opcodes.ACC_ANNOTATION) > 0;
     }
@@ -158,7 +161,9 @@ public class ClassUtils {
         try {
             access = new ClassReader(internalName).getAccess();
         } catch (IOException e) {
-            System.err.println("Could not resolve class " + internalName + " for isAnnotation checking");
+            if (Configuration.getConfiguration().isLoggingEnabled()) {
+                System.err.println("Could not resolve class " + internalName + " for isInterface checking");
+            }
         }
         return ((access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE);
     }

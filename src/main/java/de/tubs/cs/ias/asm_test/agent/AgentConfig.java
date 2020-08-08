@@ -1,16 +1,15 @@
 package de.tubs.cs.ias.asm_test.agent;
 
-import de.tubs.cs.ias.asm_test.config.TaintMethod;
-
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.ConfigurationLoader;
+import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
+import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 
 public class AgentConfig {
     private static final ParentLogger logger = LogUtils.getLogger();
@@ -63,6 +62,7 @@ public class AgentConfig {
     private static Configuration parseParts(Iterable<String> parts) {
         Configuration c = ConfigurationLoader.defaultConfiguration();
         boolean verbose = false;
+        Boolean loggingEnabled = null;
         TaintMethod taintMethod = TaintMethod.defaultTaintMethod();
         Boolean useCaching = null;
         Integer layerThreshold = null;
@@ -71,6 +71,9 @@ public class AgentConfig {
         for (String part : parts) {
             if ("verbose".equals(part)) {
                 verbose = true;
+            }
+            if ("logging_enabled".equals(part)) {
+                loggingEnabled = true;
             }
             if (part.startsWith("taintmethod=")) {
                 String taintMethodArgName = afterEquals(part);
@@ -113,6 +116,9 @@ public class AgentConfig {
         }
         if (countRanges != null) {
             c.setCountRanges(countRanges);
+        }
+        if (loggingEnabled != null) {
+            c.setLoggingEnabled(loggingEnabled);
         }
 
         c.transformConverters();
