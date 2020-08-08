@@ -1,17 +1,17 @@
 package de.tubs.cs.ias.asm_test.transformer;
 
-import de.tubs.cs.ias.asm_test.*;
+import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 import de.tubs.cs.ias.asm_test.instrumentation.MethodTaintingVisitor;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
-import de.tubs.cs.ias.asm_test.utils.Utils;
+import de.tubs.cs.ias.asm_test.utils.ParentLogger;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 
 public class MethodParameterTransformer {
     private static final ParentLogger logger = LogUtils.getLogger();
@@ -88,8 +88,8 @@ public class MethodParameterTransformer {
         // With zero parameters, the loop is skipped
         while (!params.empty()) {
             String p = params.pop();
-            int storeOpcode = Utils.getStoreOpcode(p);
-            int loadOpcode = Utils.getLoadOpcode(p);
+            int storeOpcode = Type.getType(p).getOpcode(Opcodes.ISTORE);
+            int loadOpcode = Type.getType(p).getOpcode(Opcodes.ILOAD);
 
             // Call the transformation callbacks in reverse order!
             for (int i = this.paramTransformations.size() - 1; i >= 0; i--) {
@@ -113,7 +113,7 @@ public class MethodParameterTransformer {
                 logger.info("Executing load {}_{} for {}", loadOpcode, finalN, p);
                 this.visitor.visitVarInsn(loadOpcode, finalN);
             });
-            n += Utils.storeOpcodeSize(storeOpcode);
+            n += Type.getType(p).getSize();
         }
 
         // Load the parameters out of local storage
