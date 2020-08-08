@@ -1,7 +1,5 @@
 package de.tubs.cs.ias.asm_test.utils;
 
-import org.objectweb.asm.ClassReader;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,6 +13,33 @@ public final class JdkClassesLookupTable {
     private static int getJvmVersion() {
         String specVersion = System.getProperty("java.vm.specification.version");
         return Integer.parseInt(specVersion);
+    }
+
+    public boolean isJdkClass(String className, ClassLoader loader) {
+        if (className == null) return true;
+
+        boolean blacklisted = false;
+        for (String blacklistedPrefix : blacklistedPrefixes) {
+            if (className.startsWith(blacklistedPrefix)) {
+                blacklisted = true;
+                break;
+            }
+        }
+
+        if (blacklisted && !className.startsWith("javax/servlet")) {
+            return true;
+        }
+
+        // MXBeans have a reduced set of usable data types
+        // Obviously IASString isn't part of it
+        if (className.endsWith("MXBean") && ClassUtils.isInterface(className, loader)) {
+            return true;
+        }
+
+        //TODO: is the split on $ the optimal way to only get the prefix? This is supposed to catch inner classes too
+        String[] parts = className.split("\\$");
+        assert parts[0] != null;
+        return this.jdkClasses.contains(parts[0]);
     }
 
     private static class LazyHolder {
@@ -70,29 +95,6 @@ public final class JdkClassesLookupTable {
     }
 
     public boolean isJdkClass(String className) {
-        if (className == null) return true;
-
-        boolean blacklisted = false;
-        for (String blacklistedPrefix : blacklistedPrefixes) {
-            if (className.startsWith(blacklistedPrefix)) {
-                blacklisted = true;
-                break;
-            }
-        }
-
-        if (blacklisted && !className.startsWith("javax/servlet")) {
-            return true;
-        }
-
-        // MXBeans have a reduced set of usable data types
-        // Obviously IASString isn't part of it
-        if (className.endsWith("MXBean") && ClassUtils.isInterface(className)) {
-            return true;
-        }
-
-        //TODO: is the split on $ the optimal way to only get the prefix? This is supposed to catch inner classes too
-        String[] parts = className.split("\\$");
-        assert parts[0] != null;
-        return this.jdkClasses.contains(parts[0]);
+        return this.isJdkClass(className, null);
     }
 }

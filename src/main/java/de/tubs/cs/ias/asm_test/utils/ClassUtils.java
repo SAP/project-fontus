@@ -9,12 +9,26 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class ClassUtils {
+    private static final Method findLoadedClass;
+
+    static {
+        Method findLoadedClass1 = null;
+        try {
+            findLoadedClass1 = ClassLoader.class.getDeclaredMethod("findLoadedClass", String.class);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+        findLoadedClass = findLoadedClass1;
+        findLoadedClass.setAccessible(true);
+    }
 
     /**
      * Returns for the given class all instance methods which are public or protected
@@ -82,13 +96,20 @@ public class ClassUtils {
 
         for (String interfaceName : interfaces) {
             if (JdkClassesLookupTable.getInstance().isJdkClass(interfaceName) || isAnnotation(interfaceName)) {
+                Class cls = null;
                 try {
-                    Class cls = Class.forName(Utils.fixup(interfaceName));
+                    cls = Class.forName(Utils.fixup(interfaceName));
+                } catch (ClassNotFoundException e) {
+                    try {
+                        cls = (Class) findLoadedClass.invoke(Thread.currentThread().getContextClassLoader(), Utils.fixup(interfaceName));
+                    } catch (IllegalAccessException | InvocationTargetException illegalAccessException) {
+                        illegalAccessException.printStackTrace();
+                    }
+                }
+                if (cls != null) {
                     for (Method m : cls.getMethods()) {
                         addMethodIfNotContained(m, methods);
                     }
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
                 }
             }
         }
@@ -145,26 +166,55 @@ public class ClassUtils {
     }
 
     public static boolean isAnnotation(String internalName) {
-        int access = 0;
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         try {
-            access = new ClassReader(internalName).getAccess();
+            Class cls = (Class) findLoadedClass.invoke(classLoader, Utils.fixup(internalName));
+            if (cls != null) {
+                return cls.isAnnotation();
+            }
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        try {
+            int access = new ClassReader(internalName).getAccess();
+            return (access & Opcodes.ACC_ANNOTATION) > 0;
         } catch (IOException e) {
             if (Configuration.getConfiguration().isLoggingEnabled()) {
                 System.err.println("Could not resolve class " + internalName + " for isAnnotation checking");
             }
         }
-        return (access & Opcodes.ACC_ANNOTATION) > 0;
+        return false;
+    }
+
+    public static boolean isInterface(String internalName, ClassLoader classLoader) {
+        try {
+            return ClassUtils.isInterface(new ClassReader(internalName).getAccess());
+        } catch (IOException e) {
+            if (classLoader != null) {
+                try {
+                    InputStream is = classLoader.getResourceAsStream(internalName + ".class");
+                    if(is != null) {
+                        return ClassUtils.isInterface(new ClassReader(is).getAccess());
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        }
+        if (Configuration.getConfiguration().isLoggingEnabled()) {
+            System.err.println("Could not resolve class " + internalName + " for isInterface checking");
+        }
+        return false;
+    }
+
+    public static boolean isInterface(int access) {
+        return ((access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE);
+    }
+
+    public static boolean isInterface(byte[] bytes) {
+        return ClassUtils.isInterface(new ClassReader(bytes).getAccess());
     }
 
     public static boolean isInterface(String internalName) {
-        int access = 0;
-        try {
-            access = new ClassReader(internalName).getAccess();
-        } catch (IOException e) {
-            if (Configuration.getConfiguration().isLoggingEnabled()) {
-                System.err.println("Could not resolve class " + internalName + " for isInterface checking");
-            }
-        }
-        return ((access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE);
+        return ClassUtils.isInterface(internalName, null);
     }
 }

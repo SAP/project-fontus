@@ -39,6 +39,7 @@ public class IASReflectionMethodProxy {
         toOrigReplacements.put("IASFormatter", Formatter.class);
         toOrigReplacements.put("IASPattern", IASPattern.class);
         toOrigReplacements.put("IASMatcher", IASMatcher.class);
+        toOrigReplacements.put("IASProperties", Properties.class);
 
         toTaintedMethods.put(String.class, (param) -> factory.createString((String) param));
         toTaintedMethods.put(StringBuilder.class, (param) -> factory.createStringBuilder((StringBuilder) param));
@@ -246,11 +247,11 @@ public class IASReflectionMethodProxy {
     }
 
     private static boolean isReplacable(Class parameter, String name) {
-        return parameter.getName().endsWith("." + name);
+        return parameter.getName().endsWith("." + name) || parameter.getName().endsWith("." + name + ";");
     }
 
     private static boolean isInPackage(Class clazz) {
-        return clazz.getName().startsWith(packageName);
+        return clazz.getName().contains(packageName);
     }
 
     private static class MethodSorter implements Comparator<Method> {
