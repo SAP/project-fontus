@@ -4,9 +4,7 @@ import de.tubs.cs.ias.asm_test.asm.ClassResolver;
 import de.tubs.cs.ias.asm_test.asm.TypeHierarchyReaderWithLoaderSupport;
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import org.mutabilitydetector.asm.typehierarchy.TypeHierarchy;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import org.objectweb.asm.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -108,12 +106,45 @@ public class ClassUtils {
                 }
                 if (cls != null) {
                     for (Method m : cls.getMethods()) {
-                        addMethodIfNotContained(m, methods);
+                        if (!isImplementedBySuperClass(superName, m)) {
+                            addMethodIfNotContained(m, methods);
+                        }
                     }
                 }
             }
         }
     }
+
+    public static InputStream getClassInputStream(String internalName) {
+        String resourceName = internalName + ".class";
+        InputStream resource = ClassLoader.getSystemResourceAsStream(resourceName);
+        if (resource != null) {
+            return resource;
+        }
+        resource = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
+        if (resource != null) {
+            return resource;
+        }
+        throw new RuntimeException("Resource for " + internalName + "couldn't be found");
+    }
+
+    private static boolean isImplementedBySuperClass(String superName, Method m) {
+        try {
+            if (JdkClassesLookupTable.getInstance().isJdkClass(superName)) {
+                return false;
+            }
+            ClassReader classReader = new ClassReader(getClassInputStream(superName));
+            MethodChecker methodChecker = new MethodChecker(m);
+            classReader.accept(methodChecker, 0);
+            if (!methodChecker.superImplements) {
+                return isImplementedBySuperClass(classReader.getSuperName(), m);
+            }
+            return true;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     private static void discoverAllJdkInterfaces(List<String> interfacesToLookThrough, Set<String> result, TypeHierarchyReaderWithLoaderSupport typeHierarchyReader) {
         for (String interfaceName : interfacesToLookThrough) {
@@ -188,20 +219,11 @@ public class ClassUtils {
 
     public static boolean isInterface(String internalName, ClassLoader classLoader) {
         try {
-            return ClassUtils.isInterface(new ClassReader(internalName).getAccess());
+            return ClassUtils.isInterface(new ClassReader(getClassInputStream(internalName)).getAccess());
         } catch (IOException e) {
-            if (classLoader != null) {
-                try {
-                    InputStream is = classLoader.getResourceAsStream(internalName + ".class");
-                    if(is != null) {
-                        return ClassUtils.isInterface(new ClassReader(is).getAccess());
-                    }
-                } catch (Exception ignored) {
-                }
+            if (Configuration.getConfiguration().isLoggingEnabled()) {
+                System.err.println("Could not resolve class " + internalName + " for isInterface checking");
             }
-        }
-        if (Configuration.getConfiguration().isLoggingEnabled()) {
-            System.err.println("Could not resolve class " + internalName + " for isInterface checking");
         }
         return false;
     }
@@ -216,5 +238,23 @@ public class ClassUtils {
 
     public static boolean isInterface(String internalName) {
         return ClassUtils.isInterface(internalName, null);
+    }
+
+    public static class MethodChecker extends ClassVisitor {
+        private final Method method;
+        private boolean superImplements = false;
+
+        public MethodChecker(Method method) {
+            super(Opcodes.ASM7);
+            this.method = method;
+        }
+
+        @Override
+        public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+            if (name.equals(this.method.getName()) && Type.getType(this.method).equals(Type.getMethodType(descriptor)) && (access & Opcodes.ACC_ABSTRACT) == 0) {
+                superImplements = true;
+            }
+            return null;
+        }
     }
 }
