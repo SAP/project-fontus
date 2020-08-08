@@ -1,11 +1,12 @@
 package de.tubs.cs.ias.asm_test.agent;
 
-import de.tubs.cs.ias.asm_test.asm.ClassResolver;
 import de.tubs.cs.ias.asm_test.Constants;
+import de.tubs.cs.ias.asm_test.asm.ClassResolver;
+import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.instrumentation.Instrumenter;
 import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
-import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
+import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,8 +14,6 @@ import java.lang.instrument.ClassFileTransformer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.ProtectionDomain;
-
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 
 class TaintingTransformer implements ClassFileTransformer {
     private static final ParentLogger logger = LogUtils.getLogger();
@@ -34,7 +33,7 @@ class TaintingTransformer implements ClassFileTransformer {
             return classfileBuffer;
         }
 
-        if (JdkClassesLookupTable.getInstance().isJdkClass(className)) {
+        if (JdkClassesLookupTable.getInstance().isJdkClass(className, loader)) {
             logger.info("Skipping JDK class: {}", className);
             return classfileBuffer;
         }
