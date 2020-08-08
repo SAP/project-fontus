@@ -61,6 +61,8 @@ java -jar your-application.jar -javaagent:asm_test-0.0.1-SNAPSHOT.jar
 
 ### Parameters
 It is also possible to pass multiple parameters to the agent
+- **verbose**: If this option is set, all instrumented classes are safed to ``./tmp/agent``
+- **logging_enabled**: If this option is set, a log file of the instrumentation process will be created in the working dir named ``asm-{datetime}.log`` 
 - **taintmethod**: Specifying the used taint method. For all options see [Available Tainting Methods](#Available Tainting Methods). The default is *boolean*
 - **use_caching**: Possible values: *true* or *false*. Default is true. Enables/Disables caching of taint evaluation results for lazy tainting methods
 - **layer_threshold**: Specifies a maximum depth of layers for lazybasic tainting. If this threshold is exceeded the taint is calculated and new layers will be stacked on top again. Default value is *30*. If caching is disabled, the threshold is also disabled.

@@ -2,20 +2,16 @@ package de.tubs.cs.ias.asm_test.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-
 import de.tubs.cs.ias.asm_test.agent.AgentConfig;
 import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 import de.tubs.cs.ias.asm_test.instrumentation.BlackListEntry;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
+import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import org.apache.commons.text.StringSubstitutor;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-
 import java.util.*;
-
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
-
 import java.util.stream.Collectors;
 
 @XmlRootElement(name = "configuration")
@@ -234,6 +230,9 @@ public class Configuration {
     private boolean verbose = false;
 
     @XmlElement
+    private boolean loggingEnabled = false;
+
+    @XmlElement
     private final SourceConfig sourceConfig;
     /**
      * All functions listed here consume Strings that need to be checked first.
@@ -270,6 +269,14 @@ public class Configuration {
             throw new IllegalStateException("Configuration not initialized! This should never happen!");
         }
         return configuration;
+    }
+
+    public boolean isLoggingEnabled() {
+        return this.loggingEnabled;
+    }
+
+    public void setLoggingEnabled(boolean loggingEnabled) {
+        this.loggingEnabled = loggingEnabled;
     }
 
     public static void parseAgent(String args) {
