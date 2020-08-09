@@ -51,7 +51,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private boolean isInterface;
     private boolean extendsSuperClass;
     private final SignatureInstrumenter signatureInstrumenter;
-    private final List<org.objectweb.asm.commons.Method> instrumentedMethods = new ArrayList();
+    private final List<org.objectweb.asm.commons.Method> instrumentedMethods = new ArrayList<>();
 
     public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config) {
         super(Opcodes.ASM7, cv);
@@ -234,11 +234,10 @@ class ClassTaintingVisitor extends ClassVisitor {
             logger.info("Creating proxy method for JDK inheritance for method: {}{}", name, descriptor);
             int newAccess = access & ~Opcodes.ACC_ABSTRACT;
             MethodVisitor v = super.visitMethod(newAccess, name, descriptor, signature, exceptions);
-            newName = this.rewriteMethodNameForJdkInheritanceProxy(name);
 
             this.overriddenJdkMethods.add(overriddenJdkSuperMethod(access, name, descriptor));
 
-            this.generateJdkInheritanceProxy(v, newName, descriptor);
+            this.generateProxyToInstrumented(v, newName, descriptor);
 
             desc = this.instrumentDescriptor(Descriptor.parseDescriptor(descriptor)).toDescriptor();
             mv = super.visitMethod(access, newName, desc, instrumentedSignature, exceptions);
@@ -251,11 +250,10 @@ class ClassTaintingVisitor extends ClassVisitor {
             }
             int newAccess = access & ~Opcodes.ACC_ABSTRACT;
             MethodVisitor v = super.visitMethod(newAccess, name, descriptor, signature, exceptions);
-            newName = this.rewriteMethodNameForJdkInheritanceProxy(name);
 
             this.overriddenJdkMethods.add(overriddenJdkSuperMethod(access, name, descriptor));
 
-            this.generateJdkInheritanceProxy(v, newName, descriptor);
+            this.generateProxyToInstrumented(v, newName, descriptor);
             return null;
         } else {
             desc = this.instrumentDescriptor(Descriptor.parseDescriptor(descriptor)).toDescriptor();
@@ -269,12 +267,11 @@ class ClassTaintingVisitor extends ClassVisitor {
         return new MethodTaintingVisitor(access, this.owner, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler, this.instrumentation);
     }
 
-    private void generateJdkInheritanceProxy(MethodVisitor mv, String instrumentedName, String originalDescriptorString) {
+    private void generateProxyToInstrumented(MethodVisitor mv, String instrumentedName, String originalDescriptorString) {
         Descriptor originalDescriptor = Descriptor.parseDescriptor(originalDescriptorString);
         Descriptor instrumentedDescriptor = this.instrumentDescriptor(originalDescriptor);
         mv.visitCode();
-        // TODO Labels
-        // TODO Handle arrays/lists
+        // TODO Handle lists
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         int i = 1;
         for (String param : originalDescriptor.getParameters()) {
@@ -295,9 +292,6 @@ class ClassTaintingVisitor extends ClassVisitor {
         if (isDescriptorNameToInstrument(originalDescriptor.getReturnType())) {
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
             mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(originalDescriptor.getReturnType()).getInternalName());
-//            Type instrumentedReturnType = Type.getType(this.instrumentQN(d.getReturnType()));
-//            String toOriginalMethod = this.getToOriginalMethod(d.getReturnType());
-//            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, instrumentedReturnType.getInternalName(), toOriginalMethod, new Descriptor(d.getReturnType()).toDescriptor(), false);
         }
 
         mv.visitInsn(returnCodeByReturnType(originalDescriptor.getReturnType()));
@@ -409,7 +403,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         String[] exceptions = MethodUtils.getExceptionTypes(method);
         MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions);
         if (method.isDefault()) {
-            this.generateJdkNotInheritedProxy(mv, method, Descriptor.parseMethod(method), Descriptor.parseDescriptor(descriptor));
+            this.generateInstrumentedProxyToSuper(mv, method, Descriptor.parseMethod(method), Descriptor.parseDescriptor(descriptor));
         }
     }
 
@@ -452,38 +446,20 @@ class ClassTaintingVisitor extends ClassVisitor {
         // Generating proxy with instrumented descriptor
         MethodVisitor mv = super.visitMethod(m.getModifiers(), m.getName(), instrumentedDescriptor.toDescriptor(), signature, exceptions);
         if (!Modifier.isAbstract(m.getModifiers())) {
-            this.generateJdkNotInheritedProxy(mv, m, originalDescriptor, instrumentedDescriptor);
+            this.generateInstrumentedProxyToSuper(mv, m, originalDescriptor, instrumentedDescriptor);
         }
 
         // Overriding method with original descriptor
         int modifiers = (m.getModifiers() & ~Modifier.ABSTRACT);
         if (!Modifier.isFinal(m.getModifiers())) {
             MethodVisitor mv2 = super.visitMethod(modifiers, m.getName(), originalDescriptor.toDescriptor(), signature, exceptions);
-            this.generateJdkInheritanceProxy(mv2, m.getName(), originalDescriptor.toDescriptor());
-//            this.generateOverrideJdkNotInheritedProxy(mv2, m, originalDescriptor);
+            this.generateProxyToInstrumented(mv2, m.getName(), originalDescriptor.toDescriptor());
         }
     }
 
-    private boolean isToString(Method method) {
-        return method.getName().equals("toString") && method.getParameterCount() == 0 && !Modifier.isStatic(method.getModifiers()) && !Modifier.isPrivate(method.getModifiers());
-    }
-
-    private void generateOverrideJdkNotInheritedProxy(MethodVisitor mv, Method m, Descriptor originalDescriptor) {
+    private void generateInstrumentedProxyToSuper(MethodVisitor mv, Method m, Descriptor origDescriptor, Descriptor instrumentedDescriptor) {
+        // TODO Handle lists
         mv.visitCode();
-        mv.visitVarInsn(Opcodes.ALOAD, 0);
-        for (int i = 1; i <= originalDescriptor.parameterCount(); i++) {
-            mv.visitVarInsn(this.loadCodeByType(originalDescriptor.getParameters().get(i - 1)), i);
-        }
-        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Utils.fixupReverse(m.getDeclaringClass().getName()), m.getName(), originalDescriptor.toDescriptor(), false);
-        mv.visitInsn(this.returnCodeByReturnType(originalDescriptor.getReturnType()));
-        mv.visitMaxs(originalDescriptor.parameterCount() + 1, originalDescriptor.parameterCount() + 1);
-        mv.visitEnd();
-    }
-
-    private void generateJdkNotInheritedProxy(MethodVisitor mv, Method m, Descriptor origDescriptor, Descriptor instrumentedDescriptor) {
-        mv.visitCode();
-        // TODO Labels
-        // TODO Handle arrays/lists
         // Converting parameters
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         for (int i = 0; i < origDescriptor.parameterCount(); ) {
@@ -501,8 +477,8 @@ class ClassTaintingVisitor extends ClassVisitor {
                     mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedParam.getInternalName());
                     mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, instrumentedParam.getInternalName(), this.getToOriginalMethod(param), new Descriptor(param).toDescriptor(), false);
                 } else {
-                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getSharedTStringUtilsQN(), "convertTaintAwareStringArray", String.format("([%s)[L%s;", this.stringConfig.getMethodTStringDesc(), Utils.fixupReverse(String.class.getName())), false);
-//                    mv.visitTypeInsn(Opcodes.CHECKCAST, param);
+                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
+                    mv.visitTypeInsn(Opcodes.CHECKCAST, origParam.getInternalName());
                 }
                 mv.visitLabel(label);
                 mv.visitTypeInsn(Opcodes.CHECKCAST, origParam.getInternalName());
@@ -517,7 +493,6 @@ class ClassTaintingVisitor extends ClassVisitor {
 
         // Converting the return type back
         if (isDescriptorNameToInstrument(origDescriptor.getReturnType())) {
-            // TODO Handle Arrays/Lists
             Type returnType = Type.getType(this.instrumentQN(origDescriptor.getReturnType()));
 
             int arrayDimensions = calculateDescArrayDimensions(returnType.getInternalName());
@@ -541,10 +516,8 @@ class ClassTaintingVisitor extends ClassVisitor {
                 mv.visitInsn(Opcodes.ACONST_NULL);
 
                 mv.visitLabel(label2);
-
-
             } else {
-                mv.visitMethodInsn(Opcodes.INVOKESTATIC, stringConfig.getSharedTStringUtilsQN(), "convertStringArray", String.format("([L%s;)[%s", Utils.fixupReverse(String.class.getName()), this.stringConfig.getMethodTStringDesc()), false);
+                mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
                 mv.visitTypeInsn(Opcodes.CHECKCAST, returnType.getInternalName());
             }
         }
@@ -552,14 +525,6 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitInsn(returnCodeByReturnType(instrumentedDescriptor.getReturnType()));
         mv.visitMaxs(-1, -1);
         mv.visitEnd();
-    }
-
-    private Class<?> loadSuperClass() {
-        try {
-            return Class.forName(Utils.fixup(superName));
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Didn't find super class: " + Utils.fixup(superName));
-        }
     }
 
     /**
@@ -673,7 +638,6 @@ class ClassTaintingVisitor extends ClassVisitor {
         return overriddenJdkSuperMethod(access, name, descriptor) != null;
     }
 
-    // TODO What if not the class does not inherit directly from JDK?
     private Method overriddenJdkSuperMethod(int access, String name, String descriptor) {
         // TODO static methods
         boolean instrAccPublic = (access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC;
@@ -690,10 +654,5 @@ class ClassTaintingVisitor extends ClassVisitor {
             return methodOptional.orElse(null);
         }
         return null;
-    }
-
-    private String rewriteMethodNameForJdkInheritanceProxy(String name) {
-        // TODO is another name necessary?
-        return name;
     }
 }

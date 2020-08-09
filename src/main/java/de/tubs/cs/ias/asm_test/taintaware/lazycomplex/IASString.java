@@ -82,7 +82,7 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
         this(new String(bytes, offset, length, charset));
     }
 
-    public IASString(byte bytes[], IASStringable charsetName) throws UnsupportedEncodingException {
+    public IASString(byte[] bytes, IASStringable charsetName) throws UnsupportedEncodingException {
         this(new String(bytes, charsetName.getString()));
     }
 
@@ -549,11 +549,11 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
 
     public static IASString join(CharSequence delimiter,
                                  Iterable<? extends CharSequence> elements) {
-        ArrayList<CharSequence> l = new ArrayList();
+        ArrayList<CharSequence> l = new ArrayList<>();
         for (CharSequence s : elements) {
             l.add(s);
         }
-        return IASString.join(delimiter, l.toArray(new CharSequence[l.size()]));
+        return IASString.join(delimiter, l.toArray(new CharSequence[0]));
     }
 
     private static boolean isTainted(Object[] args) {

@@ -1,7 +1,6 @@
 package de.tubs.cs.ias.asm_test.instrumentation.strategies.method;
 
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
-import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationStrategy;
 import org.objectweb.asm.Type;
 
 /**

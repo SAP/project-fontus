@@ -1,7 +1,6 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazybasic;
 
 import de.tubs.cs.ias.asm_test.AbstractTest;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASLazyAware;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

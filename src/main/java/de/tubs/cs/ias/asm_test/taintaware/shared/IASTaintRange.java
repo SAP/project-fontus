@@ -31,6 +31,7 @@ public class IASTaintRange implements Cloneable {
         return new IASTaintRange(start + shift, end + shift, source);
     }
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     protected Object clone() {
         return new IASTaintRange(start, end, source);

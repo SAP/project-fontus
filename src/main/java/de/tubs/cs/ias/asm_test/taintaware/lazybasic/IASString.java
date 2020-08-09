@@ -576,7 +576,7 @@ public final class IASString implements IASStringable, IASLazyAware {
         }
     }
 
-    public static IASString valueOf(char data[]) {
+    public static IASString valueOf(char[] data) {
         return new IASString(String.valueOf(data));
     }
 
@@ -637,15 +637,15 @@ public final class IASString implements IASStringable, IASLazyAware {
         return this.string;
     }
 
-    public static IASString valueOf(char data[], int offset, int count) {
+    public static IASString valueOf(char[] data, int offset, int count) {
         return new IASString(String.valueOf(data, offset, count));
     }
 
-    public static IASString copyValueOf(char data[], int offset, int count) {
+    public static IASString copyValueOf(char[] data, int offset, int count) {
         return new IASString(String.copyValueOf(data, offset, count));
     }
 
-    public static IASString copyValueOf(char data[]) {
+    public static IASString copyValueOf(char[] data) {
         return new IASString(String.copyValueOf(data));
     }
 

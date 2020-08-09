@@ -15,9 +15,9 @@ public class ClassUtilsTest {
 
     @Test
     public void testGetAllMethods() throws NoSuchMethodException {
-        Class zuper = Super.class;
-        Class middle = Middle.class;
-        Class child = Child.class;
+        Class<Super> zuper = Super.class;
+        Class<Middle> middle = Middle.class;
+        Class<Child> child = Child.class;
         Method childchildPublicMethod = child.getDeclaredMethod("childPublicMethod", Child.class);
         Method childchildProtectedMethod = child.getDeclaredMethod("childProtectedMethod", Child.class);
         Method childchildPrivateMethod = child.getDeclaredMethod("childPrivateMethod", Child.class);

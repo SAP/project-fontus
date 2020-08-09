@@ -4,7 +4,6 @@ import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.PatternInstrumentation;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 
 import java.util.regex.Pattern;
 

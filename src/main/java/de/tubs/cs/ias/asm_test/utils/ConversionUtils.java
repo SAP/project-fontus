@@ -15,9 +15,9 @@ import java.util.regex.Pattern;
 public class ConversionUtils {
     private static final IASFactory factory = Configuration.getConfiguration().getTaintMethod().getFactory();
 
-    private static final Map<Class, Function> toConcrete = new HashMap<>();
-    private static final Map<Class, Function> toOrig = new HashMap<>();
-    private static final Map<Class, Function> toInterface = new HashMap<>();
+    private static final Map<Class<?>, Function<Object, Object>> toConcrete = new HashMap<>();
+    private static final Map<Class<?>, Function<Object, Object>> toOrig = new HashMap<>();
+    private static final Map<Class<?>, Function<Object, Object>> toInterface = new HashMap<>();
 
     static {
         toConcrete.put(String.class, (obj) -> {
@@ -90,17 +90,17 @@ public class ConversionUtils {
         });
     }
 
-    private static Object convertObject(Object object, Map<Class, Function> converters) {
+    private static Object convertObject(Object object, Map<Class<?>, Function<Object, Object>> converters) {
         if (object == null) {
             return null;
         }
         boolean isArray = object.getClass().isArray();
-        Class cls = isArray ? object.getClass().getComponentType() : object.getClass();
-        for (Class handler : converters.keySet()) {
+        Class<?> cls = isArray ? object.getClass().getComponentType() : object.getClass();
+        for (Class<?> handler : converters.keySet()) {
             if (handler.isAssignableFrom(cls)) {
                 if (isArray) {
                     Object[] array = (Object[]) object;
-                    Class arrayType = (Class) converters.get(handler).apply(handler);
+                    Class<?> arrayType = (Class<?>) converters.get(handler).apply(handler);
                     Object[] result = (Object[]) Array.newInstance(arrayType, array.length);
                     for (int i = 0; i < array.length; i++) {
                         result[i] = convertObject(array[i], converters);
@@ -126,22 +126,22 @@ public class ConversionUtils {
         return convertObject(object, toConcrete);
     }
 
-    public static Object convertClassToOrig(Class cls) {
+    public static Object convertClassToOrig(Class<?> cls) {
         return convertClass(cls, toOrig);
     }
 
-    public static Object convertClassToInterface(Class cls) {
+    public static Object convertClassToInterface(Class<?> cls) {
         return convertClass(cls, toInterface);
     }
 
-    public static Object convertClassToConcrete(Class cls) {
+    public static Object convertClassToConcrete(Class<?> cls) {
         return convertClass(cls, toConcrete);
     }
 
-    public static Class convertClass(Class cls, Map<Class, Function> converters) {
-        for (Class handler : converters.keySet()) {
+    public static Class<?> convertClass(Class<?> cls, Map<Class<?>, Function<Object, Object>> converters) {
+        for (Class<?> handler : converters.keySet()) {
             if (handler.isAssignableFrom(cls)) {
-                return (Class) converters.get(handler).apply(cls);
+                return (Class<?>) converters.get(handler).apply(cls);
             }
         }
         return cls;
