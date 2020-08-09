@@ -15,7 +15,7 @@ public final class JdkClassesLookupTable {
         return Integer.parseInt(specVersion);
     }
 
-    public boolean isJdkClass(String className, ClassLoader loader) {
+    public boolean isJdkClass(String className) {
         if (className == null) return true;
 
         boolean blacklisted = false;
@@ -32,7 +32,7 @@ public final class JdkClassesLookupTable {
 
         // MXBeans have a reduced set of usable data types
         // Obviously IASString isn't part of it
-        if (className.endsWith("MXBean") && ClassUtils.isInterface(className, loader)) {
+        if (className.endsWith("MXBean") && ClassUtils.isInterface(className)) {
             return true;
         }
 
@@ -92,9 +92,5 @@ public final class JdkClassesLookupTable {
 
     public boolean isJdkClass(Class<?> cls) {
         return isJdkClass(Utils.fixupReverse(cls.getName()));
-    }
-
-    public boolean isJdkClass(String className) {
-        return this.isJdkClass(className, null);
     }
 }

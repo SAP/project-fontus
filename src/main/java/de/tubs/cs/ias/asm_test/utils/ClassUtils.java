@@ -40,7 +40,7 @@ public class ClassUtils {
         for (Type cls = Type.getObjectType(classToDiscover); cls != null; cls = typeHierarchyReader.getSuperClass(cls)) {
             if (JdkClassesLookupTable.getInstance().isJdkClass(cls.getInternalName())) {
                 try {
-                    Class clazz = Class.forName(cls.getClassName());
+                    Class<?> clazz = Class.forName(cls.getClassName());
                     Method[] declaredMethods = clazz.getDeclaredMethods();
                     for (Method declaredMethod : declaredMethods) {
                         addMethodIfNotContained(declaredMethod, methods);
@@ -94,12 +94,12 @@ public class ClassUtils {
 
         for (String interfaceName : interfaces) {
             if (JdkClassesLookupTable.getInstance().isJdkClass(interfaceName) || isAnnotation(interfaceName)) {
-                Class cls = null;
+                Class<?>cls = null;
                 try {
                     cls = Class.forName(Utils.fixup(interfaceName));
                 } catch (ClassNotFoundException e) {
                     try {
-                        cls = (Class) findLoadedClass.invoke(Thread.currentThread().getContextClassLoader(), Utils.fixup(interfaceName));
+                        cls = (Class<?>) findLoadedClass.invoke(Thread.currentThread().getContextClassLoader(), Utils.fixup(interfaceName));
                     } catch (IllegalAccessException | InvocationTargetException illegalAccessException) {
                         illegalAccessException.printStackTrace();
                     }
@@ -199,7 +199,7 @@ public class ClassUtils {
     public static boolean isAnnotation(String internalName) {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         try {
-            Class cls = (Class) findLoadedClass.invoke(classLoader, Utils.fixup(internalName));
+            Class<?>cls = (Class<?>) findLoadedClass.invoke(classLoader, Utils.fixup(internalName));
             if (cls != null) {
                 return cls.isAnnotation();
             }
@@ -217,7 +217,7 @@ public class ClassUtils {
         return false;
     }
 
-    public static boolean isInterface(String internalName, ClassLoader classLoader) {
+    public static boolean isInterface(String internalName) {
         try {
             return ClassUtils.isInterface(new ClassReader(getClassInputStream(internalName)).getAccess());
         } catch (IOException e) {
@@ -234,10 +234,6 @@ public class ClassUtils {
 
     public static boolean isInterface(byte[] bytes) {
         return ClassUtils.isInterface(new ClassReader(bytes).getAccess());
-    }
-
-    public static boolean isInterface(String internalName) {
-        return ClassUtils.isInterface(internalName, null);
     }
 
     public static class MethodChecker extends ClassVisitor {
