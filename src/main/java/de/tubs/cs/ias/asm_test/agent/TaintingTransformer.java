@@ -33,7 +33,7 @@ class TaintingTransformer implements ClassFileTransformer {
             return classfileBuffer;
         }
 
-        if (JdkClassesLookupTable.getInstance().isJdkClass(className, loader)) {
+        if (JdkClassesLookupTable.getInstance().isJdkClass(className)) {
             logger.info("Skipping JDK class: {}", className);
             return classfileBuffer;
         }
