@@ -60,7 +60,7 @@ public class ClassUtils {
      * @param directInheritedInterfaces Array with interface names as QN
      * @param methods                   List to add methods (may already contain methods)
      */
-    public static void addNotContainedJdkInterfaceMethods(String superName, String[] directInheritedInterfaces, List<Method> methods, ClassResolver resolver) {
+    public static void addNotContainedJdkInterfaceMethods(String superName, String[] directInheritedInterfaces, List<Method> methods, ClassResolver resolver, ClassLoader loader) {
         if (directInheritedInterfaces == null || directInheritedInterfaces.length == 0) {
             return;
         }
@@ -94,7 +94,7 @@ public class ClassUtils {
 
         for (String interfaceName : interfaces) {
             if (JdkClassesLookupTable.getInstance().isJdkClass(interfaceName) || isAnnotation(interfaceName)) {
-                Class<?>cls = null;
+                Class<?> cls = null;
                 try {
                     cls = Class.forName(Utils.fixup(interfaceName));
                 } catch (ClassNotFoundException e) {
@@ -106,7 +106,7 @@ public class ClassUtils {
                 }
                 if (cls != null) {
                     for (Method m : cls.getMethods()) {
-                        if (!isImplementedBySuperClass(superName, m)) {
+                        if (!isImplementedBySuperClass(superName, m, loader)) {
                             addMethodIfNotContained(m, methods);
                         }
                     }
@@ -115,29 +115,34 @@ public class ClassUtils {
         }
     }
 
-    public static InputStream getClassInputStream(String internalName) {
+    public static InputStream getClassInputStream(String internalName, ClassLoader loader) {
         String resourceName = internalName + ".class";
         InputStream resource = ClassLoader.getSystemResourceAsStream(resourceName);
-        if (resource != null) {
-            return resource;
+        if (resource == null) {
+            resource = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
+            if (resource == null) {
+                if (loader != null) {
+                    resource = loader.getResourceAsStream(resourceName);
+                }
+            }
         }
-        resource = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
         if (resource != null) {
             return resource;
         }
         throw new RuntimeException("Resource for " + internalName + "couldn't be found");
     }
 
-    private static boolean isImplementedBySuperClass(String superName, Method m) {
+    private static boolean isImplementedBySuperClass(String superName, Method m, ClassLoader loader) {
         try {
             if (JdkClassesLookupTable.getInstance().isJdkClass(superName)) {
                 return false;
             }
-            ClassReader classReader = new ClassReader(getClassInputStream(superName));
+            // TODO What if super class is not loadable
+            ClassReader classReader = new ClassReader(getClassInputStream(superName, loader));
             MethodChecker methodChecker = new MethodChecker(m);
             classReader.accept(methodChecker, 0);
             if (!methodChecker.superImplements) {
-                return isImplementedBySuperClass(classReader.getSuperName(), m);
+                return isImplementedBySuperClass(classReader.getSuperName(), m, loader);
             }
             return true;
         } catch (IOException e) {
@@ -199,7 +204,7 @@ public class ClassUtils {
     public static boolean isAnnotation(String internalName) {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         try {
-            Class<?>cls = (Class<?>) findLoadedClass.invoke(classLoader, Utils.fixup(internalName));
+            Class<?> cls = (Class<?>) findLoadedClass.invoke(classLoader, Utils.fixup(internalName));
             if (cls != null) {
                 return cls.isAnnotation();
             }
@@ -218,14 +223,7 @@ public class ClassUtils {
     }
 
     public static boolean isInterface(String internalName) {
-        try {
-            return ClassUtils.isInterface(new ClassReader(getClassInputStream(internalName)).getAccess());
-        } catch (IOException e) {
-            if (Configuration.getConfiguration().isLoggingEnabled()) {
-                System.err.println("Could not resolve class " + internalName + " for isInterface checking");
-            }
-        }
-        return false;
+        return ClassUtils.isInterface(internalName, null);
     }
 
     public static boolean isInterface(int access) {
@@ -234,6 +232,17 @@ public class ClassUtils {
 
     public static boolean isInterface(byte[] bytes) {
         return ClassUtils.isInterface(new ClassReader(bytes).getAccess());
+    }
+
+    public static boolean isInterface(String internalName, ClassLoader loader) {
+        try {
+            return ClassUtils.isInterface(new ClassReader(getClassInputStream(internalName, loader)).getAccess());
+        } catch (IOException e) {
+            if (Configuration.getConfiguration().isLoggingEnabled()) {
+                System.err.println("Could not resolve class " + internalName + " for isInterface checking");
+            }
+        }
+        return false;
     }
 
     public static class MethodChecker extends ClassVisitor {

@@ -31,6 +31,7 @@ class ClassTaintingVisitor extends ClassVisitor {
      */
     private final String newMainDescriptor;
     private final List<FieldData> staticFinalFields;
+    private final ClassLoader loader;
     private boolean hasClInit = false;
     private boolean isAnnotation = false;
     private boolean implementsInvocationHandler;
@@ -53,12 +54,13 @@ class ClassTaintingVisitor extends ClassVisitor {
     private final SignatureInstrumenter signatureInstrumenter;
     private final List<org.objectweb.asm.commons.Method> instrumentedMethods = new ArrayList<>();
 
-    public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config) {
+    public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config, ClassLoader loader) {
         super(Opcodes.ASM7, cv);
         this.visitor = cv;
         this.staticFinalFields = new ArrayList<>();
         this.overriddenJdkMethods = new ArrayList<>();
         this.resolver = resolver;
+        this.loader = loader;
         this.config = config;
         this.stringConfig = this.config.getTaintStringConfig();
         this.newMainDescriptor = "(" + this.stringConfig.getTStringArrayDesc() + ")V";
@@ -146,7 +148,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             if (this.extendsSuperClass) {
                 getAllJdkMethods(this.superName, this.resolver, jdkMethods);
             }
-            addNotContainedJdkInterfaceMethods(this.superName, this.interfaces, jdkMethods, this.resolver);
+            addNotContainedJdkInterfaceMethods(this.superName, this.interfaces, jdkMethods, this.resolver, this.loader);
         }
         this.jdkMethods = Collections.unmodifiableList(jdkMethods);
     }
