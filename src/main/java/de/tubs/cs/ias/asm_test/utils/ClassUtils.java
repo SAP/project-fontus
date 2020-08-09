@@ -29,13 +29,13 @@ public class ClassUtils {
     }
 
     /**
-     * Returns for the given class all instance methods which are public or protected
+     * Returns for the given class all JDK-inherited instance methods which are public or protected
      * This includes the inherited ones (unlike getDeclaredMethods), but excludes the Object-class methods
      *
      * @param classToDiscover Class to discover
      * @param methods         List, where the discovered methods will be added (duplicates will not be stored, can be prefilled)
      */
-    public static void getAllMethods(String classToDiscover, ClassResolver resolver, List<Method> methods) {
+    public static void getAllJdkMethods(String classToDiscover, ClassResolver resolver, List<Method> methods) {
         TypeHierarchyReaderWithLoaderSupport typeHierarchyReader = new TypeHierarchyReaderWithLoaderSupport(resolver);
         for (Type cls = Type.getObjectType(classToDiscover); cls != null; cls = typeHierarchyReader.getSuperClass(cls)) {
             if (JdkClassesLookupTable.getInstance().isJdkClass(cls.getInternalName())) {

@@ -1,6 +1,9 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import de.tubs.cs.ias.asm_test.taintaware.range.testHelper.THelper;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.migrationsupport.EnableJUnit4MigrationSupport;
@@ -25,6 +28,11 @@ import static org.hamcrest.Matchers.is;
 // David: As I didn't write this Code and don't want to mess with it I suppressed the warnings.
 // TODO: Work out whether we can adapt it to the style of the remaining project?
 public class StringBuilderTest {
+
+    @BeforeAll
+    public static void init() {
+        Configuration.setTestConfig(TaintMethod.RANGE);
+    }
     private IASStringBuilder foo = null;
     private IASStringBuilder bar = null;
 

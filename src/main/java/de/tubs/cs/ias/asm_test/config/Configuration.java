@@ -286,12 +286,20 @@ public class Configuration {
         setConfiguration(configuration);
     }
 
+    public static void setTestConfig(TaintMethod taintMethod) {
+        if (Configuration.configuration == null) {
+            parseOffline(taintMethod);
+        } else {
+            Configuration.getConfiguration().setTaintMethod(taintMethod);
+        }
+    }
+
     public static void parseOffline(TaintMethod method) {
         Configuration configuration = new Configuration();
         configuration.setTaintMethod(method);
 
         String countRangesString = System.getenv("ASM_COUNT_RANGES");
-        if(countRangesString != null) {
+        if (countRangesString != null) {
             try {
                 boolean countRanges = Boolean.parseBoolean(countRangesString);
                 configuration.setCountRanges(countRanges);
@@ -302,7 +310,7 @@ public class Configuration {
         }
 
         String useCachingString = System.getenv("ASM_USE_CACHING");
-        if(useCachingString != null) {
+        if (useCachingString != null) {
             try {
                 boolean useCaching = Boolean.parseBoolean(useCachingString);
                 configuration.setUseCaching(useCaching);
@@ -313,7 +321,7 @@ public class Configuration {
         }
 
         String layerThresholdString = System.getenv("ASM_LAYER_THRESHOLD");
-        if(layerThresholdString != null) {
+        if (layerThresholdString != null) {
             try {
                 int layerThreshold = Integer.parseInt(layerThresholdString);
                 configuration.setLayerThreshold(layerThreshold);

@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class IASReflectionMethodProxyTest {
     @BeforeAll
     public static void setup() {
-        Configuration.parseOffline(TaintMethod.RANGE);
+        Configuration.setTestConfig(TaintMethod.RANGE);
     }
 
     @Test

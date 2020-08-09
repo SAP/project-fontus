@@ -16,7 +16,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static de.tubs.cs.ias.asm_test.utils.ClassUtils.addNotContainedJdkInterfaceMethods;
-import static de.tubs.cs.ias.asm_test.utils.ClassUtils.getAllMethods;
+import static de.tubs.cs.ias.asm_test.utils.ClassUtils.getAllJdkMethods;
 
 
 class ClassTaintingVisitor extends ClassVisitor {
@@ -144,7 +144,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         List<Method> jdkMethods = new ArrayList<>();
         if (!this.isAnnotation) {
             if (this.extendsSuperClass) {
-                getAllMethods(this.superName, this.resolver, jdkMethods);
+                getAllJdkMethods(this.superName, this.resolver, jdkMethods);
             }
             addNotContainedJdkInterfaceMethods(this.superName, this.interfaces, jdkMethods, this.resolver);
         }

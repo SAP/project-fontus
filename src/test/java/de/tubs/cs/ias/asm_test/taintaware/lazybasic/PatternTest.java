@@ -1,6 +1,9 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazybasic;
 
 import de.tubs.cs.ias.asm_test.AbstractTest;
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintMethod;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -9,6 +12,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class PatternTest extends AbstractTest {
+    @BeforeAll
+    public static void init() {
+        Configuration.setTestConfig(TaintMethod.LAZYBASIC);
+    }
 
     @Test
     public void testSplitWithLimit_1() {

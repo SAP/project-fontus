@@ -1,6 +1,9 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static de.tubs.cs.ias.asm_test.taintaware.range.testHelper.RangeChainer.range;
@@ -13,6 +16,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 // David: As I didn't write this Code and don't want to mess with it I suppressed the warnings.
 // TODO: Work out whether we can adapt it to the style of the remaining project?
 public class FormatterTests {
+
+    @BeforeAll
+    public static void init() {
+        Configuration.setTestConfig(TaintMethod.RANGE);
+    }
+
     @Test
     public void format_1() {
         IASString s = new IASString("%s", false);
