@@ -1,7 +1,10 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
 
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASLazyAware;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
@@ -11,6 +14,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class StringTaintTest {
+    @BeforeAll
+    public static void init() {
+        Configuration.setTestConfig(TaintMethod.LAZYCOMPLEX);
+    }
     private Tainter tainter = new Tainter();
 
     private static class Tainter {

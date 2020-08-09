@@ -1,11 +1,20 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazybasic;
 
 import de.tubs.cs.ias.asm_test.AbstractTest;
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintMethod;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class StringTest extends AbstractTest {
+
+    @BeforeAll
+    public static void init() {
+        Configuration.setTestConfig(TaintMethod.LAZYBASIC);
+    }
+
     @Test
     public void testSubSequence_1() {
         IASString s = new IASString("hello");

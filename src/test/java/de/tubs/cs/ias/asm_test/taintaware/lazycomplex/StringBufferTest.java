@@ -2,6 +2,9 @@ package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
 
 import de.tubs.cs.ias.asm_test.AbstractTest;
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintMethod;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -9,6 +12,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class StringBufferTest extends AbstractTest {
+    @BeforeAll
+    public static void init() {
+        Configuration.setTestConfig(TaintMethod.LAZYCOMPLEX);
+    }
 
     @Test
     public void testSubstring_3() {

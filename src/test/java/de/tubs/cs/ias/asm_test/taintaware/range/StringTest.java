@@ -1,8 +1,11 @@
 package de.tubs.cs.ias.asm_test.taintaware.range;
 
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import de.tubs.cs.ias.asm_test.taintaware.range.testHelper.THelper;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 import org.junit.Ignore;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.migrationsupport.EnableJUnit4MigrationSupport;
@@ -23,6 +26,10 @@ import static org.junit.Assert.*;
 // David: As I didn't write this Code and don't want to mess with it I suppressed the warnings.
 // TODO: Work out whether we can adapt it to the style of the remaining project?
 public class StringTest {
+    @BeforeAll
+    public static void init() {
+        Configuration.setTestConfig(TaintMethod.RANGE);
+    }
     private final static IASTaintSource SAMPLE_SOURCE = IASTaintSource.TS_CS_UNKNOWN_ORIGIN;
     private IASString foo = null;
     private IASString bar = null;

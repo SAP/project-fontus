@@ -1,7 +1,10 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.UnsupportedEncodingException;
@@ -11,6 +14,11 @@ import java.nio.charset.StandardCharsets;
 import static org.junit.Assert.*;
 
 public class TURLDecoderTest {
+    @BeforeAll
+    public static void init() {
+        Configuration.setTestConfig(TaintMethod.LAZYCOMPLEX);
+    }
+
     private static final String csString = StandardCharsets.UTF_8.toString();
     private static final IASString cs = new IASString(csString);
 
