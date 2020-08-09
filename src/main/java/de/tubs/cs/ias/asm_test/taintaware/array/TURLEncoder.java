@@ -3,7 +3,6 @@ package de.tubs.cs.ias.asm_test.taintaware.array;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASURLEncoder;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 
 public class TURLEncoder {
     @Deprecated

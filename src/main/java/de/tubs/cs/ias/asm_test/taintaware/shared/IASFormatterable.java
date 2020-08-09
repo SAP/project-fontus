@@ -1,7 +1,5 @@
 package de.tubs.cs.ias.asm_test.taintaware.shared;
 
-import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
-
 import java.io.Closeable;
 import java.io.Flushable;
 import java.io.IOException;

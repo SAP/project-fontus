@@ -30,7 +30,7 @@ public class LogUtils {
 
     @SuppressWarnings("Since15")
     public synchronized static ParentLogger getLogger() {
-        Class callerClass;
+        Class<?> callerClass;
         if (Constants.JAVA_VERSION >= 9) {
             callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
                     .getCallerClass();

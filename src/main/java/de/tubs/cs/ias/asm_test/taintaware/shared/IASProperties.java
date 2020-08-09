@@ -18,9 +18,9 @@ public abstract class IASProperties extends Hashtable<Object, Object> {
     /**
      * This is the single source of truth
      */
-    private Properties properties;
+    private final Properties properties;
 
-    private Map<Object, IASStringable> shadow = new ConcurrentHashMap();
+    private final Map<Object, IASStringable> shadow = new ConcurrentHashMap<>();
 
     public IASProperties() {
         this.properties = new Properties();
@@ -352,6 +352,7 @@ public abstract class IASProperties extends Hashtable<Object, Object> {
         );
     }
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public synchronized Object clone() {
         return factory.createProperties((Properties) this.properties.clone());

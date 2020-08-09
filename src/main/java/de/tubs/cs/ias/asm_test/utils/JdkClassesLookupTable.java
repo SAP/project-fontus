@@ -90,7 +90,7 @@ public final class JdkClassesLookupTable {
             "org/apache/commons/commons-math3"
     };
 
-    public boolean isJdkClass(Class cls) {
+    public boolean isJdkClass(Class<?> cls) {
         return isJdkClass(Utils.fixupReverse(cls.getName()));
     }
 

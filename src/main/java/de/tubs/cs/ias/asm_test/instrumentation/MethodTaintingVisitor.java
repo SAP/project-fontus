@@ -25,10 +25,8 @@ import java.util.*;
 public class MethodTaintingVisitor extends BasicMethodVisitor {
     private static final ParentLogger logger = LogUtils.getLogger();
     private final boolean implementsInvocationHandler;
-    private final SignatureInstrumenter signatureInstrumenter;
     private final String owner;
 
-    private boolean shouldRewriteCheckCast;
     private final String name;
     private final String methodDescriptor;
     private final ClassResolver resolver;
@@ -65,7 +63,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.used = Type.getArgumentsAndReturnSizes(methodDescriptor) >> 2;
         this.usedAfterInjection = 0;
         if ((acc & Opcodes.ACC_STATIC) != 0) this.used--; // no this
-        this.shouldRewriteCheckCast = false;
         this.name = name;
         this.methodDescriptor = methodDescriptor;
         this.instrumentation = instrumentation;
@@ -78,7 +75,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.config = config;
         this.stringConfig = config.getTaintStringConfig();
         this.fillStrategies();
-        this.signatureInstrumenter = new SignatureInstrumenter(this.api, this.instrumentation);
     }
 
     private void fillStrategies() {
@@ -94,8 +90,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
     @Override
     public void visitLocalVariable(String name, String descriptor, String signature, Label start, Label end, int index) {
-        this.shouldRewriteCheckCast = false;
-//        String signature = this.signatureInstrumenter.instrumentSignature(signature);
         super.visitLocalVariable(name, descriptor, signature, start, end, index);
     }
 
@@ -107,7 +101,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     @Override
     public void visitFrame(
             int type, int numLocal, Object[] local, int numStack, Object[] stack) {
-        this.shouldRewriteCheckCast = false;
         if (type != Opcodes.F_NEW)
             throw new IllegalStateException("only expanded frames supported");
         int l = numLocal;
@@ -119,7 +112,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
     @Override
     public void visitVarInsn(int opcode, int var) {
-        this.shouldRewriteCheckCast = false;
         int newMax = var + Utils.storeOpcodeSize(opcode);
         if (newMax > this.used) this.used = newMax;
         super.visitVarInsn(opcode, var);
@@ -127,7 +119,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
     @Override
     public void visitMaxs(int maxStack, int maxLocals) {
-        this.shouldRewriteCheckCast = false;
         super.visitMaxs(maxStack, Math.max(this.used, this.usedAfterInjection));
     }
 
@@ -181,7 +172,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
     @Override
     public void visitInsn(int opcode) {
-        this.shouldRewriteCheckCast = false;
         if (opcode == Opcodes.ARETURN && this.isInvocationHandlerMethod(this.name, this.methodDescriptor)) {
             // Handling, that method proxies return the correct type (we're in a InvocationHandler.invoke implementation)
             super.visitVarInsn(Opcodes.ALOAD, 1); // Load proxy param
@@ -205,7 +195,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
      */
     @Override
     public void visitFieldInsn(final int opcode, final String owner, final String name, final String descriptor) {
-        this.shouldRewriteCheckCast = false;
 
         if (JdkClassesLookupTable.getInstance().isJdkClass(owner) && InstrumentationHelper.getInstance(this.stringConfig).canHandleType(descriptor)) {
             if ((opcode == Opcodes.PUTFIELD || opcode == Opcodes.PUTSTATIC)) {
@@ -239,7 +228,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             final String name,
             final String descriptor,
             final boolean isInterface) {
-        this.shouldRewriteCheckCast = false;
         FunctionCall fc = new FunctionCall(opcode, owner, name, descriptor, isInterface);
 
         // If a method has a defined proxy, apply it right away
@@ -313,7 +301,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.visitMethodInsn(call);
         // Modify Return parameters
         transformer.ModifyReturnType();
-        this.shouldRewriteCheckCast = transformer.rewriteCheckCast();
 
         logger.info("Finished transforming parameters for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
         return true;
@@ -326,7 +313,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
      */
     @Override
     public void visitLdcInsn(Object value) {
-        this.shouldRewriteCheckCast = false;
 
         // Some cool people use "java.lang.String".equals(cls.getName()) instead cls == String.class
         if (value instanceof String) {
@@ -374,7 +360,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             logger.info("Rewriting checkcast to call to TString.fromObject(Object obj)");
             super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getSharedTStringUtilsQN(), "fromObject", String.format("(%s)%s", Constants.ObjectDesc, this.stringConfig.getMethodTStringDesc()), false);
             super.visitTypeInsn(Opcodes.CHECKCAST, this.stringConfig.getTStringQN());
-            this.shouldRewriteCheckCast = false;
             return;
         }
         logger.info("Visiting type [{}] instruction: {}", type, opcode);
@@ -382,7 +367,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         for (MethodInstrumentationStrategy s : this.methodInstrumentation) {
             newType = s.rewriteTypeIns(newType);
         }
-        this.shouldRewriteCheckCast = false;
         super.visitTypeInsn(opcode, newType);
     }
 
@@ -392,7 +376,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             final String descriptor,
             final Handle bootstrapMethodHandle,
             final Object... bootstrapMethodArguments) {
-        this.shouldRewriteCheckCast = false;
 
         if (this.shouldBeDynProxied(name, descriptor)) {
             return;
@@ -505,8 +488,8 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             return true;
         }
         try {
-            for (Class cls = Class.forName(Utils.fixup(thisQn)); cls.getSuperclass() != null; cls = cls.getSuperclass()) {
-                for (Class interf : cls.getInterfaces()) {
+            for (Class<?> cls = Class.forName(Utils.fixup(thisQn)); cls.getSuperclass() != null; cls = cls.getSuperclass()) {
+                for (Class<?> interf : cls.getInterfaces()) {
                     if (Utils.fixupReverse(interf.getName()).equals(requiredQn)) {
                         return true;
                     }
@@ -520,26 +503,22 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
     @Override
     public void visitCode() {
-        this.shouldRewriteCheckCast = false;
         super.visitCode();
     }
 
     @Override
     public void visitIntInsn(int opcode, int operand) {
-        this.shouldRewriteCheckCast = false;
         super.visitIntInsn(opcode, operand);
     }
 
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String descriptor) {
-        this.shouldRewriteCheckCast = false;
         super.visitMethodInsn(opcode, owner, name, descriptor);
     }
 
 
     @Override
     public void visitJumpInsn(int opcode, Label label) {
-        this.shouldRewriteCheckCast = false;
         if (opcode == Opcodes.IF_ACMPEQ) {
             // Returns 1
             super.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.CompareProxyQN, Constants.CompareProxyEqualsName, Constants.CompareProxyEqualsDesc, false);
@@ -558,67 +537,56 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
     @Override
     public void visitLabel(Label label) {
-        this.shouldRewriteCheckCast = false;
         super.visitLabel(label);
     }
 
     @Override
     public void visitIincInsn(int var, int increment) {
-        this.shouldRewriteCheckCast = false;
         super.visitIincInsn(var, increment);
     }
 
     @Override
     public void visitTableSwitchInsn(int min, int max, Label dflt, Label... labels) {
-        this.shouldRewriteCheckCast = false;
         super.visitTableSwitchInsn(min, max, dflt, labels);
     }
 
     @Override
     public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
-        this.shouldRewriteCheckCast = false;
         super.visitLookupSwitchInsn(dflt, keys, labels);
     }
 
     @Override
     public void visitMultiANewArrayInsn(String descriptor, int numDimensions) {
-        this.shouldRewriteCheckCast = false;
         super.visitMultiANewArrayInsn(descriptor, numDimensions);
     }
 
     @Override
     public AnnotationVisitor visitInsnAnnotation(int typeRef, TypePath typePath, String descriptor, boolean visible) {
-        this.shouldRewriteCheckCast = false;
         return super.visitInsnAnnotation(typeRef, typePath, descriptor, visible);
     }
 
     @Override
     public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
-        this.shouldRewriteCheckCast = false;
         super.visitTryCatchBlock(start, end, handler, type);
     }
 
     @Override
     public AnnotationVisitor visitTryCatchAnnotation(int typeRef, TypePath typePath, String descriptor, boolean visible) {
-        this.shouldRewriteCheckCast = false;
         return super.visitTryCatchAnnotation(typeRef, typePath, descriptor, visible);
     }
 
     @Override
     public AnnotationVisitor visitLocalVariableAnnotation(int typeRef, TypePath typePath, Label[] start, Label[] end, int[] index, String descriptor, boolean visible) {
-        this.shouldRewriteCheckCast = false;
         return super.visitLocalVariableAnnotation(typeRef, typePath, start, end, index, descriptor, visible);
     }
 
     @Override
     public void visitLineNumber(int line, Label start) {
-        this.shouldRewriteCheckCast = false;
         super.visitLineNumber(line, start);
     }
 
     @Override
     public void visitEnd() {
-        this.shouldRewriteCheckCast = false;
         super.visitEnd();
     }
 }

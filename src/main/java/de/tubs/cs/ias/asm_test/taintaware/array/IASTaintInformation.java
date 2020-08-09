@@ -61,14 +61,15 @@ public class IASTaintInformation {
         if (this.taints == null) {
             return false;
         }
-        for (int i = 0; i < this.taints.length; i++) {
-            if (this.taints[i] != 0) {
+        for (int taint : this.taints) {
+            if (taint != 0) {
                 return true;
             }
         }
         return false;
     }
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     public IASTaintInformation clone() {
         return new IASTaintInformation(this.taints.clone());
     }

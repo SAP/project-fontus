@@ -22,9 +22,9 @@ public class IASReflectionMethodProxyTest {
 
     @Test
     public void testGetMethodWithParameter() throws NoSuchMethodException {
-        Class cls = IASStringable.class;
+        Class<?> cls = IASStringable.class;
         IASStringable methodName = new IASString("concat");
-        Class[] parameters = {IASString.class};
+        Class<?>[] parameters = {IASString.class};
         Method expected = IASStringable.class.getMethod(methodName.getString(), IASStringable.class);
 
         Method actual = IASReflectionMethodProxy.getMethodProxied(cls, methodName, parameters);
@@ -34,9 +34,9 @@ public class IASReflectionMethodProxyTest {
 
     @Test
     public void testGetMethodWithExternalParameter() throws NoSuchMethodException {
-        Class cls = IASStringable.class;
+        Class<?> cls = IASStringable.class;
         IASStringable methodName = new IASString("charAt");
-        Class[] parameters = {int.class};
+        Class<?>[] parameters = {int.class};
         Method expected = IASStringable.class.getMethod(methodName.getString(), int.class);
 
         Method actual = IASReflectionMethodProxy.getMethodProxied(cls, methodName, parameters);
@@ -46,9 +46,9 @@ public class IASReflectionMethodProxyTest {
 
     @Test
     public void testGetMethodWithEmptyParameter() throws NoSuchMethodException {
-        Class cls = IASStringable.class;
+        Class<?> cls = IASStringable.class;
         IASStringable methodName = new IASString("trim");
-        Class[] parameters = {};
+        Class<?>[] parameters = {};
         Method expected = IASStringable.class.getMethod(methodName.getString());
 
         Method actual = IASReflectionMethodProxy.getMethodProxied(cls, methodName, parameters);
@@ -58,9 +58,9 @@ public class IASReflectionMethodProxyTest {
 
     @Test
     public void testGetMethodWithNullParameter() throws NoSuchMethodException {
-        Class cls = IASStringable.class;
+        Class<?> cls = IASStringable.class;
         IASStringable methodName = new IASString("trim");
-        Class[] parameters = null;
+        Class<?>[] parameters = null;
         Method expected = IASStringable.class.getMethod(methodName.getString());
 
         Method actual = IASReflectionMethodProxy.getMethodProxied(cls, methodName, parameters);

@@ -15,7 +15,7 @@ public class IASReflectionProxies {
         String clazz = InstrumentationHelper.getInstance(tsc).translateClassName(s);
 
         // Get caller class classloader
-        Class callerClass;
+        Class<?> callerClass;
         if (Constants.JAVA_VERSION >= 9) {
             callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
                     .getCallerClass();
@@ -35,7 +35,7 @@ public class IASReflectionProxies {
 
         if(loader == null) {
             // Get caller class classloader
-            Class callerClass;
+            Class<?> callerClass;
             if (Constants.JAVA_VERSION >= 9) {
                 callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
                         .getCallerClass();
