@@ -8,7 +8,7 @@ public final class IASStringPool {
 
     public static IASStringable intern(IASStringable origIasString) {
         IASStringable existingIasString = stringPool.get(origIasString.getString());
-        if(existingIasString != null) {
+        if (existingIasString != null) {
             return existingIasString;
         }
 
