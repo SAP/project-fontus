@@ -215,7 +215,7 @@ public final class IASString implements IASStringable, IASLazyAware {
 
     @Override
     public boolean equalsIgnoreCase(IASStringable anotherString) {
-        if(anotherString == null) {
+        if (anotherString == null) {
             return false;
         }
         return this.string.equalsIgnoreCase(anotherString.getString());
@@ -675,5 +675,18 @@ public final class IASString implements IASStringable, IASLazyAware {
 
     public boolean isInitialized() {
         return !isUninitialized();
+    }
+
+    public static final Comparator<IASString> CASE_INSENSITIVE_ORDER
+            = new IASString.CaseInsensitiveComparator();
+
+    private static class CaseInsensitiveComparator
+            implements Comparator<IASString>, java.io.Serializable {
+        private static final long serialVersionUID = 8575799808933029326L;
+
+        @Override
+        public int compare(IASString s1, IASString s2) {
+            return s1.compareToIgnoreCase(s2);
+        }
     }
 }
