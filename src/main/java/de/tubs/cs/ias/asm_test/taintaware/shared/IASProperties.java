@@ -90,7 +90,8 @@ public abstract class IASProperties extends Hashtable<Object, Object> {
     }
 
     public IASStringable getProperty(IASStringable key, IASStringable defaultValue) {
-        Object orig = ConversionUtils.convertToConcrete(this.properties.getProperty(key.getString(), defaultValue.getString()));
+        String defaultStringValue = defaultValue != null ? defaultValue.getString() : null;
+        Object orig = ConversionUtils.convertToConcrete(this.properties.getProperty(key.getString(), defaultStringValue));
         IASStringable taintaware = this.shadow.get(ConversionUtils.convertToConcrete(key));
         return (IASStringable) chooseReturn(orig, taintaware);
     }
