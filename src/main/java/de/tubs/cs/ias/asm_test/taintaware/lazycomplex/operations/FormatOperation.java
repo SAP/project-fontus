@@ -25,12 +25,15 @@ public class FormatOperation implements IASOperation {
             } else if (this.isPrimitiveOrWrapper(args[i])) {
                 this.args[i] = args[i];
             } else {
-                this.args[i] = args[i].toString();
+                this.args[i] = args[i] != null ? args[i].toString() : null;
             }
         }
     }
 
     public boolean isPrimitiveOrWrapper(Object obj) {
+        if (obj == null) {
+            return false;
+        }
         Class<?> type = obj.getClass();
         return type.isPrimitive() || type == Double.class || type == Float.class || type == Long.class ||
                 type == Integer.class || type == Short.class || type == Character.class ||
