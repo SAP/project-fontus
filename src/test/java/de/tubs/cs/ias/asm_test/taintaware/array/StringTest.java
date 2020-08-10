@@ -1,5 +1,8 @@
 package de.tubs.cs.ias.asm_test.taintaware.array;
 
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintMethod;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -7,6 +10,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class StringTest {
+
+    @BeforeAll
+    public static void init() {
+        Configuration.setTestConfig(TaintMethod.ARRAY);
+    }
+
     @Test
     public void constructorTest1() {
         String s = "Hello World";
@@ -62,6 +71,7 @@ public class StringTest {
         assertTrue(ts.isUninitialized());
         assertFalse(ts.isTainted());
     }
+
     @Test
     // Assumption: empty strings have always a negative taint
     public void testReplaceFirst_15() {

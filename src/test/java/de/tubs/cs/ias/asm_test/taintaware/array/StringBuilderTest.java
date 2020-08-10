@@ -1,6 +1,9 @@
 package de.tubs.cs.ias.asm_test.taintaware.array;
 
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -10,6 +13,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class StringBuilderTest {
     private static final int TAINT = IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId();
+
+    @BeforeAll
+    public static void init() {
+        Configuration.setTestConfig(TaintMethod.ARRAY);
+    }
 
     @Test
     public void testConstructor1() {

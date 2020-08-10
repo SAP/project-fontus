@@ -189,7 +189,8 @@ public final class IASMatcher implements IASMatcherable {
     }
 
     public IASMatcher reset(CharSequence input) {
-        this.reset();
+        this.matcher.reset(input);
+        this.appendPos = 0;
         this.input = IASString.valueOf(input);
         return this;
     }
@@ -221,7 +222,12 @@ public final class IASMatcher implements IASMatcherable {
 
     @Override
     public boolean equals(Object obj) {
-        return this.matcher.equals(obj);
+        if (obj instanceof IASMatcher) {
+            return this.matcher.equals(((IASMatcher) obj).matcher);
+        } else if (obj instanceof Matcher) {
+            return this.matcher.equals(obj);
+        }
+        return false;
     }
 
     @Override
