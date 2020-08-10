@@ -1,10 +1,19 @@
 package de.tubs.cs.ias.asm_test.taintaware.array;
 
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintMethod;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TaintInformationTest {
+
+    @BeforeAll
+    public static void init() {
+        Configuration.setTestConfig(TaintMethod.ARRAY);
+    }
+
     @Test
     public void testSetTaint1() {
         IASTaintInformation ti = new IASTaintInformation(5);
