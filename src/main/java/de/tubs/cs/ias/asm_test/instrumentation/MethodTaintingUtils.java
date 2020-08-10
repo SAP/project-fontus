@@ -4,10 +4,10 @@ import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
+import de.tubs.cs.ias.asm_test.utils.LogUtils;
+import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 import org.objectweb.asm.*;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
-import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -102,7 +102,11 @@ public class MethodTaintingUtils {
                 bsArgs[i] = Utils.instrumentHandle(a, configuration);
             } else if (arg instanceof Type) {
                 Type a = (Type) arg;
-                bsArgs[i] = Utils.instrumentType(a, configuration);
+                if (a.getSort() == Type.OBJECT) {
+                    bsArgs[i] = Type.getObjectType(InstrumentationHelper.getInstance(configuration).instrumentQN(a.getInternalName()));
+                } else {
+                    bsArgs[i] = Utils.instrumentType(a, configuration);
+                }
             } else {
                 bsArgs[i] = arg;
             }
