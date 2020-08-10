@@ -11,6 +11,7 @@ import jdk.internal.reflect.Reflection;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -69,6 +70,30 @@ public class IASReflectionMethodProxy {
             }
         }
         return m.getReturnType();
+    }
+
+    @SuppressWarnings("Since15")
+    public static Object newInstance(Constructor constructor, Object[] parameters) throws Throwable {
+        if (isJdkClass(constructor.getDeclaringClass())) {
+            Object[] converted = convertParametersToOriginal(parameters);
+            return constructor.newInstance(converted);
+        }
+        if ((!Modifier.isPublic(constructor.getModifiers()) && !Modifier.isProtected(constructor.getModifiers()) && !Modifier.isPrivate(constructor.getModifiers()))
+                || (!Modifier.isPublic(constructor.getDeclaringClass().getModifiers()) && !Modifier.isProtected(constructor.getDeclaringClass().getModifiers()) && !Modifier.isPrivate(constructor.getDeclaringClass().getModifiers()))) {
+            // This method is package private. Iuff the declaring class is in the same package as the calling class we must set it accessible
+            // Otherwise the caller class (which is this class) is not in the same package as the declaring class an an IllegalAccessException is thrown
+            Class callerClass;
+            if (Constants.JAVA_VERSION >= 9) {
+                callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
+                        .getCallerClass();
+            } else {
+                callerClass = Reflection.getCallerClass();
+            }
+            if (constructor.getDeclaringClass().getPackage().equals(callerClass.getPackage())) {
+                constructor.setAccessible(true);
+            }
+        }
+        return constructor.newInstance(parameters);
     }
 
     @SuppressWarnings("Since15")
@@ -155,6 +180,20 @@ public class IASReflectionMethodProxy {
         }
 
         return clazz.getMethod(methodNameString, parameters);
+    }
+
+    /**
+     * Proxy for the Class.getConstructor function.
+     * If the method is JDK class method, it replaces taintaware parameter types with the original type
+     */
+    public static Constructor getConstructor(Class<?> clazz, Class[] parameters) throws NoSuchMethodException {
+        if (JdkClassesLookupTable.getInstance().isJdkClass(clazz)) {
+            parameters = transformParametersForJdk(parameters);
+        } else if (isInPackage(clazz)) {
+            parameters = transformParametersForTaintawareInterface(parameters);
+        }
+
+        return clazz.getConstructor(parameters);
     }
 
     private static Class[] transformParametersForJdk(Class[] parameters) {
