@@ -454,6 +454,11 @@ public class IASAbstractStringBuilder implements IASAbstractStringBuilderable, I
     }
 
     @Override
+    public int codePointCount(int beginIndex, int endIndex) {
+        return this.stringBuilder.codePointCount(beginIndex, endIndex);
+    }
+
+    @Override
     public int compareTo(IASAbstractStringBuilderable iasStringBuilderable) {
         return this.stringBuilder.compareTo(iasStringBuilderable.getStringBuilder());
     }
