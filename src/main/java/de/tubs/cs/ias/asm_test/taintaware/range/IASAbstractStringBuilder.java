@@ -405,6 +405,11 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
         return this.stringBuilder.codePoints();
     }
 
+    @Override
+    public int codePointCount(int beginIndex, int endIndex) {
+        return this.stringBuilder.codePointCount(beginIndex, endIndex);
+    }
+
     public StringBuilder getStringBuilder() {
         return this.stringBuilder;
     }
