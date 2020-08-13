@@ -72,6 +72,7 @@ task utilJar(type: ShadowJar) {
 }
 
 shadowJar {
+    mergeServiceFiles()
     doFirst {
         manifest {
                 attributes(
@@ -94,6 +95,10 @@ shadowJar {
     relocate 'org.codehaus', 'de.tubs.cs.ias.asm_test.org.codehaus'
     relocate 'org.mutabilitydetector', 'de.tubs.cs.ias.asm_test.org.mutabilitydetector'
     relocate 'org.objectweb', 'de.tubs.cs.ias.asm_test.org.objectweb'
+    relocate 'javax.activation', 'de.tubs.cs.ias.asm_test.javax.activation'
+    relocate 'javax.xml.bind', 'de.tubs.cs.ias.asm_test.javax.xml.bind'
+//    relocate 'javax.xml.stream', 'de.tubs.cs.ias.asm_test.javax.xml.stream'
+    relocate 'picocli', 'de.tubs.cs.ias.asm_test.picocli'
     dependsOn utilJar
 }
 
