@@ -135,7 +135,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 
         String instrumentedSignature = this.signatureInstrumenter.instrumentSignature(signature);
 
-        if (version < Opcodes.V1_8) {
+        if (version < Opcodes.V1_8 && !this.isAnnotation) {
             version = Opcodes.V1_8;
         }
 
