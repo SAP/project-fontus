@@ -2,6 +2,7 @@ package de.tubs.cs.ias.asm_test.instrumentation.strategies.method;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
+import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.utils.Utils;
@@ -109,17 +110,16 @@ public class StringMethodInstrumentationStrategy extends AbstractMethodInstrumen
     }
 
     @Override
-    public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        if (Type.getObjectType(owner).equals(this.type) || owner.endsWith(Constants.StringDesc)) {
-            String newDescriptor = InstrumentationHelper.getInstance(this.stringConfig).instrumentDesc(descriptor);
-            String newOwner = this.qnPattern.matcher(owner).replaceAll(Matcher.quoteReplacement(this.stringConfig.getTStringQN()));
+    public FunctionCall rewriteOwnerMethod(FunctionCall functionCall) {
+        if (Type.getObjectType(functionCall.getOwner()).equals(this.type) || functionCall.getOwner().endsWith(Constants.StringDesc)) {
+            String newDescriptor = InstrumentationHelper.getInstance(this.stringConfig).instrumentDesc(functionCall.getDescriptor());
+            String newOwner = this.qnPattern.matcher(functionCall.getOwner()).replaceAll(Matcher.quoteReplacement(this.stringConfig.getTStringQN()));
             // TODO: this call is superfluous, TString.toTString is a NOP pretty much.. Maybe drop those calls?
-            String newName = this.methodsToRename.getOrDefault(name, name);
-            logger.info("Rewriting String invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, newDescriptor);
-            this.mv.visitMethodInsn(opcode, newOwner, newName, newDescriptor, isInterface);
-            return true;
+            String newName = this.methodsToRename.getOrDefault(functionCall.getName(), functionCall.getName());
+            logger.info("Rewriting String invoke [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(functionCall.getOpcode()), functionCall.getOwner(), functionCall.getName(), functionCall.getDescriptor(), newOwner, newName, newDescriptor);
+            return new FunctionCall(functionCall.getOpcode(), newOwner, newName, newDescriptor, functionCall.isInterface());
         }
-        return false;
+        return null;
     }
 
     @Override

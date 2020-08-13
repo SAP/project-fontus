@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test.instrumentation.strategies.method;
 
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
+import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 import org.objectweb.asm.Type;
 
 /**
@@ -27,13 +28,9 @@ public interface MethodInstrumentationStrategy {
      * <p>
      * For an explanation of the parameters see {@link org.objectweb.asm.MethodVisitor#visitMethodInsn(int, String, String, String, boolean)}.
      *
-     * @return Whether the owner matches the strategy.
+     * @return An instrumented FunctionCall the owner matches the strategy. Otherwise null.
      */
-    boolean rewriteOwnerMethod(final int opcode,
-                               final String owner,
-                               final String name,
-                               final String descriptor,
-                               final boolean isInterface);
+    FunctionCall rewriteOwnerMethod(final FunctionCall functionCall);
 
     void instrumentReturnType(String owner, String name, Descriptor desc);
 

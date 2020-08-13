@@ -2,6 +2,7 @@ package de.tubs.cs.ias.asm_test.instrumentation.strategies.method;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
+import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationStrategy;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
@@ -67,18 +68,17 @@ public abstract class AbstractMethodInstrumentationStrategy implements MethodIns
     }
 
     @Override
-    public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        if (Type.getObjectType(owner).equals(this.type)) {
-            String newDescriptor = InstrumentationHelper.getInstance(this.stringConfig).instrumentDesc(descriptor);
+    public FunctionCall rewriteOwnerMethod(FunctionCall functionCall) {
+        if (Type.getObjectType(functionCall.getOwner()).equals(this.type)) {
+            String newDescriptor = InstrumentationHelper.getInstance(this.stringConfig).instrumentDesc(functionCall.getDescriptor());
             String newOwner = this.taintedQN;
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up
-            String newName = this.methodsToRename.getOrDefault(name, name);
+            String newName = this.methodsToRename.getOrDefault(functionCall.getName(), functionCall.getName());
 
-            logger.info("Rewriting {} invoke [{}] {}.{}{} to {}.{}{}", this.origQN, Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, newDescriptor);
-            this.mv.visitMethodInsn(opcode, newOwner, newName, newDescriptor, isInterface);
-            return true;
+            logger.info("Rewriting {} invoke [{}] {}.{}{} to {}.{}{}", this.origQN, Utils.opcodeToString(functionCall.getOpcode()), functionCall.getOwner(), functionCall.getName(), functionCall.getName(), newOwner, newName, newDescriptor);
+            return new FunctionCall(functionCall.getOpcode(), newOwner, newName, newDescriptor, functionCall.isInterface());
         }
-        return false;
+        return null;
     }
 
     @Override

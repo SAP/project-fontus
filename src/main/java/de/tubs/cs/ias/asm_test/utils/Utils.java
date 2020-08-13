@@ -2,12 +2,16 @@ package de.tubs.cs.ias.asm_test.utils;
 
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.asm.FieldData;
+import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
+import de.tubs.cs.ias.asm_test.instrumentation.strategies.method.MethodInstrumentationStrategy;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+
+import java.util.List;
 
 public final class Utils {
 
@@ -47,10 +51,19 @@ public final class Utils {
         return Type.getType(desc.toDescriptor());
     }
 
-    public static Handle instrumentHandle(Handle h, TaintStringConfig config) {
+    public static Handle instrumentHandle(Handle h, TaintStringConfig config, List<MethodInstrumentationStrategy> strategies) {
         if (JdkClassesLookupTable.getInstance().isJdkClass(h.getOwner()) && !InstrumentationHelper.getInstance(config).canHandleType(Type.getObjectType(h.getOwner()).getDescriptor())) {
             return h;
         }
+
+        // If the Class is a taintaware one it should be handled by rewriteOwnerMethod, e.g. for toString => toIASString
+        for (MethodInstrumentationStrategy s : strategies) {
+            FunctionCall instrumented = s.rewriteOwnerMethod(new FunctionCall(h.getTag(), h.getOwner(), h.getName(), h.getDesc(), h.isInterface()));
+            if (instrumented != null) {
+                return new Handle(instrumented.getOpcode(), instrumented.getOwner(), instrumented.getName(), instrumented.getDescriptor(), instrumented.isInterface());
+            }
+        }
+
         Descriptor desc = Descriptor.parseDescriptor(h.getDesc());
         desc = InstrumentationHelper.getInstance(config).instrument(desc);
         String owner = InstrumentationHelper.getInstance(config).instrumentQN(h.getOwner());
