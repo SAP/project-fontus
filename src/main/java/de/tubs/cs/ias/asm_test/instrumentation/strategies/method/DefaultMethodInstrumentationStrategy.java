@@ -2,9 +2,11 @@ package de.tubs.cs.ias.asm_test.instrumentation.strategies.method;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
-import de.tubs.cs.ias.asm_test.utils.LogUtils;
-import de.tubs.cs.ias.asm_test.utils.Utils;
+import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
+import de.tubs.cs.ias.asm_test.utils.LogUtils;
+import de.tubs.cs.ias.asm_test.utils.ParentLogger;
+import de.tubs.cs.ias.asm_test.utils.Utils;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -12,7 +14,6 @@ import org.objectweb.asm.Type;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 
 import static de.tubs.cs.ias.asm_test.utils.MethodUtils.isToString;
 
@@ -47,19 +48,18 @@ public class DefaultMethodInstrumentationStrategy implements MethodInstrumentati
     }
 
     @Override
-    public boolean rewriteOwnerMethod(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-        Type tOwner = Type.getObjectType(owner);
-        if(isToString(name, descriptor) && requireValueOf.contains(tOwner)) {
+    public FunctionCall rewriteOwnerMethod(FunctionCall functionCall) {
+        Type tOwner = Type.getObjectType(functionCall.getOwner());
+        if (isToString(functionCall.getName(), functionCall.getDescriptor()) && requireValueOf.contains(tOwner)) {
             int newOpcode = Opcodes.INVOKESTATIC;
             String newOwner = this.stringConfig.getTStringQN();
             String newDescriptor = "(" + Constants.ObjectDesc + ")" + this.stringConfig.getTStringDesc();
             String newName = Constants.VALUE_OF;
             boolean newIsInterface = false;
-            logger.info("Rewriting toString invoke [{}] {}.{}{} to valueOf call {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, newOwner, newName, newDescriptor);
-            this.mv.visitMethodInsn(newOpcode, newOwner, newName, newDescriptor, false);
-            return true;
+            logger.info("Rewriting toString invoke [{}] {}.{}{} to valueOf call {}.{}{}", Utils.opcodeToString(functionCall.getOpcode()), functionCall.getOwner(), functionCall.getName(), functionCall.getDescriptor(), newOwner, newName, newDescriptor);
+            return new FunctionCall(newOpcode, newOwner, newName, newDescriptor, false);
         }
-        return false;
+        return null;
     }
 
     @Override

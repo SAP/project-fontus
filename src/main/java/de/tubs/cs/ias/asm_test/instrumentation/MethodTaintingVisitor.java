@@ -240,7 +240,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         }
 
         for (MethodInstrumentationStrategy s : this.methodInstrumentation) {
-            if (s.rewriteOwnerMethod(opcode, owner, name, descriptor, isInterface)) {
+            FunctionCall functionCall = s.rewriteOwnerMethod(fc);
+            if (functionCall != null) {
+                super.visitMethodInsn(functionCall.getOpcode(), functionCall.getOwner(), functionCall.getName(), functionCall.getDescriptor(), functionCall.isInterface());
                 return;
             }
         }
@@ -387,7 +389,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         if ("java/lang/invoke/LambdaMetafactory".equals(bootstrapMethodHandle.getOwner()) &&
                 ("metafactory".equals(bootstrapMethodHandle.getName()) || "altMetafactory".equals(bootstrapMethodHandle.getName()))) {
-            MethodTaintingUtils.invokeVisitLambdaCall(this.stringConfig, this.getParentVisitor(), name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
+            MethodTaintingUtils.invokeVisitLambdaCall(this.stringConfig, this.getParentVisitor(), this.methodInstrumentation, name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
             return;
         }
 

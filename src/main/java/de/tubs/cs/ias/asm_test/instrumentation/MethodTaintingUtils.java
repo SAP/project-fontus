@@ -4,12 +4,14 @@ import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
+import de.tubs.cs.ias.asm_test.instrumentation.strategies.method.MethodInstrumentationStrategy;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 import org.objectweb.asm.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MethodTaintingUtils {
@@ -90,6 +92,7 @@ public class MethodTaintingUtils {
      */
     static void invokeVisitLambdaCall(final TaintStringConfig configuration,
                                       MethodVisitor mv,
+                                      List<MethodInstrumentationStrategy> strategies,
                                       final String name,
                                       final String descriptor,
                                       final Handle bootstrapMethodHandle,
@@ -99,7 +102,7 @@ public class MethodTaintingUtils {
             Object arg = bootstrapMethodArguments[i];
             if (arg instanceof Handle) {
                 Handle a = (Handle) arg;
-                bsArgs[i] = Utils.instrumentHandle(a, configuration);
+                bsArgs[i] = Utils.instrumentHandle(a, configuration, strategies);
             } else if (arg instanceof Type) {
                 Type a = (Type) arg;
                 if (a.getSort() == Type.OBJECT) {
