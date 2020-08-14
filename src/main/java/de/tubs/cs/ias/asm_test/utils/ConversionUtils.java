@@ -1,13 +1,11 @@
 package de.tubs.cs.ias.asm_test.utils;
 
 import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.shared.*;
 
 import java.lang.reflect.Array;
-import java.util.Formatter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -88,6 +86,46 @@ public class ConversionUtils {
             }
             return ((IASProperties) obj).getProperties();
         });
+    }
+
+    public static Object taint(Object object) {
+        if (object == null) {
+            return null;
+        }
+        boolean isArray = object.getClass().isArray();
+        boolean isIterable = Iterable.class.isAssignableFrom(object.getClass());
+        boolean isEnumerate = Enumeration.class.isAssignableFrom(object.getClass());
+        boolean isMap = Map.class.isAssignableFrom(object.getClass());
+        Class<?> cls = isArray ? object.getClass().getComponentType() : object.getClass();
+        if (IASTaintAware.class.isAssignableFrom(cls)) {
+            if (isArray) {
+                Object[] array = (Object[]) object;
+                for (Object o : array) {
+                    taint(o);
+                }
+            } else {
+                ((IASTaintAware) object).setTaint(true);
+            }
+        } else if (isIterable) {
+            Iterable<Object> iterable = (Iterable<Object>) object;
+            for (Object o : iterable) {
+                taint(o);
+            }
+        } else if (isMap) {
+            Map<Object, Object> map = (Map) object;
+            map.forEach((o, o2) -> {
+                taint(o);
+                taint(o2);
+            });
+        } else if(isEnumerate) {
+            Enumeration<Object> enumeration = (Enumeration<Object>) object;
+            List<Object> list = Collections.list(enumeration);
+            for (Object o : list) {
+                taint(o);
+            }
+            object = Collections.enumeration(list);
+        }
+        return object;
     }
 
     private static Object convertObject(Object object, Map<Class<?>, Function<Object, Object>> converters) {

@@ -13,6 +13,8 @@ public final class Constants {
     public static final String ConversionUtilsToConcreteDesc;
     public static final String ConversionUtilsToOrigName;
     public static final String ConversionUtilsToOrigDesc;
+    public static final String ConversionUtilsTaintName;
+    public static final String ConversionUtilsTaintDesc;
     public static final String PropertyDesc;
     public static final String PropertyQN;
     public static final String JDK_INHERITANCE_BLACKLIST_FILENAME = "jdk_inheritance_blacklist.csv";
@@ -26,6 +28,8 @@ public final class Constants {
             ConversionUtilsToConcreteDesc = Type.getType(ConversionUtils.class.getMethod("convertToConcrete", Object.class)).getDescriptor();
             ConversionUtilsToOrigName = ConversionUtils.class.getMethod("convertToOrig", Object.class).getName();
             ConversionUtilsToOrigDesc = Type.getType(ConversionUtils.class.getMethod("convertToOrig", Object.class)).getDescriptor();
+            ConversionUtilsTaintName = ConversionUtils.class.getMethod("taint", Object.class).getName();
+            ConversionUtilsTaintDesc = Type.getType(ConversionUtils.class.getMethod("taint", Object.class)).getDescriptor();
             CompareProxyEqualsDesc = Type.getType(IASCompareProxy.class.getMethod("compareRefEquals", Object.class, Object.class)).getDescriptor();
 
             PropertyDesc = Type.getType(Properties.class).getDescriptor();

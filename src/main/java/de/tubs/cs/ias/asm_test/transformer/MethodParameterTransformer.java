@@ -31,13 +31,13 @@ public class MethodParameterTransformer {
         this.descriptor = Descriptor.parseDescriptor(this.function.getDescriptor());
     }
 
-    public void AddParameterTransformation(ParameterTransformation transformation) {
+    public void addParameterTransformation(ParameterTransformation transformation) {
         if (transformation != null) {
             this.paramTransformations.add(transformation);
         }
     }
 
-    public void AddReturnTransformation(ReturnTransformation transformation) {
+    public void addReturnTransformation(ReturnTransformation transformation) {
         if (transformation != null) {
             this.returnTransformations.add(transformation);
         }
@@ -72,7 +72,7 @@ public class MethodParameterTransformer {
      * @param nUsedLocalVariables The number of local variables currently used by the
      * calling method.
      */
-    public void ModifyStackParameters(int nUsedLocalVariables) {
+    public void modifyStackParameters(int nUsedLocalVariables) {
 
         if (this.paramTransformations.isEmpty()) {
             return;
@@ -123,7 +123,7 @@ public class MethodParameterTransformer {
         }
     }
 
-    public void ModifyReturnType() {
+    public void modifyReturnType() {
         logger.info("Calling return type transformation");
         // Call the transformation callbacks
         for (ReturnTransformation t : this.returnTransformations) {
