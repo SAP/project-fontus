@@ -51,7 +51,9 @@ public final class IASString implements IASTaintAware, IASStringable {
     }
 
     public static IASString tainted(IASString tstr) {
-        tstr.tainted = true;
+        if (tstr != null) {
+            tstr.tainted = true;
+        }
         return tstr;
     }
 
@@ -243,7 +245,7 @@ public final class IASString implements IASTaintAware, IASStringable {
 
     @Override
     public boolean equalsIgnoreCase(IASStringable anotherString) {
-        if(anotherString == null) {
+        if (anotherString == null) {
             return false;
         }
         return this.string.equalsIgnoreCase(anotherString.getString());

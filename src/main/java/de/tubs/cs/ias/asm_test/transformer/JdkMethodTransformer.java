@@ -1,10 +1,13 @@
 package de.tubs.cs.ias.asm_test.transformer;
 
+import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 import de.tubs.cs.ias.asm_test.instrumentation.MethodTaintingVisitor;
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.method.MethodInstrumentationStrategy;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 import java.util.Collection;
 
@@ -43,8 +46,19 @@ public class JdkMethodTransformer implements ParameterTransformation, ReturnTran
         FunctionCall converter = this.configuration.getConverterForReturnValue(this.call);
         if (converter != null) {
             visitor.visitMethodInsn(converter);
+            return;
         }
 
+        int returnSort = Type.getType(desc.getReturnType()).getSort();
+        if (returnSort == Type.ARRAY || returnSort == Type.OBJECT) {
+            FunctionCall convert = new FunctionCall(Opcodes.INVOKESTATIC,
+                    Constants.ConversionUtilsQN,
+                    Constants.ConversionUtilsToConcreteName,
+                    Constants.ConversionUtilsToConcreteDesc,
+                    false);
+            visitor.visitMethodInsn(convert);
+            visitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(desc.getReturnType()).getInternalName());
+        }
     }
 
 }

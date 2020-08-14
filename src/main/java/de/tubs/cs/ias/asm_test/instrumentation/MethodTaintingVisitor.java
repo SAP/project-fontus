@@ -271,12 +271,14 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         MethodParameterTransformer transformer = new MethodParameterTransformer(this, call);
 
+        boolean isJdkClass = JdkClassesLookupTable.getInstance().isJdkClass(call.getOwner()) || InstrumentationState.getInstance().isAnnotation(call.getOwner(), this.resolver);
+
         // Add JDK transformations
-        if (JdkClassesLookupTable.getInstance().isJdkClass(call.getOwner()) || InstrumentationState.getInstance().isAnnotation(call.getOwner(), this.resolver)) {
+        if (isJdkClass) {
             logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
             JdkMethodTransformer t = new JdkMethodTransformer(call, this.methodInstrumentation, this.config);
-            transformer.AddParameterTransformation(t);
-            transformer.AddReturnTransformation(t);
+            transformer.addParameterTransformation(t);
+            transformer.addReturnTransformation(t);
         }
 
         // Add Sink transformations
@@ -284,7 +286,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         if (sink != null) {
             logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
             SinkTransformer t = new SinkTransformer(sink, this.stringConfig);
-            transformer.AddParameterTransformation(t);
+            transformer.addParameterTransformation(t);
         }
 
         // Add Source transformations
@@ -292,7 +294,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         if (source != null) {
             logger.info("Adding source tainting for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
             ReturnTransformation t = new SourceTransformer(source, this.stringConfig);
-            transformer.AddReturnTransformation(t);
+            transformer.addReturnTransformation(t);
         }
 
         // No transformations required
@@ -301,12 +303,22 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         }
 
         // Do the transformations
-        transformer.ModifyStackParameters(this.used);
+        transformer.modifyStackParameters(this.used);
         this.usedAfterInjection = this.used + transformer.getExtraStackSlots();
+
+        // Instrument descriptor if source/sink is not a JDK class
+        if (!isJdkClass) {
+            Descriptor desc = Descriptor.parseDescriptor(call.getDescriptor());
+            for (InstrumentationStrategy s : this.instrumentation) {
+                desc = s.instrument(desc);
+            }
+            call = new FunctionCall(call.getOpcode(), call.getOwner(), call.getName(), desc.toDescriptor(), call.isInterface());
+        }
         // Make the call
         this.visitMethodInsn(call);
+
         // Modify Return parameters
-        transformer.ModifyReturnType();
+        transformer.modifyReturnType();
 
         logger.info("Finished transforming parameters for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
         return true;
