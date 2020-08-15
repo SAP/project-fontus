@@ -88,46 +88,6 @@ public class ConversionUtils {
         });
     }
 
-    public static Object taint(Object object) {
-        if (object == null) {
-            return null;
-        }
-        boolean isArray = object.getClass().isArray();
-        boolean isIterable = Iterable.class.isAssignableFrom(object.getClass());
-        boolean isEnumerate = Enumeration.class.isAssignableFrom(object.getClass());
-        boolean isMap = Map.class.isAssignableFrom(object.getClass());
-        Class<?> cls = isArray ? object.getClass().getComponentType() : object.getClass();
-        if (IASTaintAware.class.isAssignableFrom(cls)) {
-            if (isArray) {
-                Object[] array = (Object[]) object;
-                for (Object o : array) {
-                    taint(o);
-                }
-            } else {
-                ((IASTaintAware) object).setTaint(true);
-            }
-        } else if (isIterable) {
-            Iterable<Object> iterable = (Iterable<Object>) object;
-            for (Object o : iterable) {
-                taint(o);
-            }
-        } else if (isMap) {
-            Map<Object, Object> map = (Map) object;
-            map.forEach((o, o2) -> {
-                taint(o);
-                taint(o2);
-            });
-        } else if(isEnumerate) {
-            Enumeration<Object> enumeration = (Enumeration<Object>) object;
-            List<Object> list = Collections.list(enumeration);
-            for (Object o : list) {
-                taint(o);
-            }
-            object = Collections.enumeration(list);
-        }
-        return object;
-    }
-
     private static Object convertObject(Object object, Map<Class<?>, Function<Object, Object>> converters) {
         if (object == null) {
             return null;

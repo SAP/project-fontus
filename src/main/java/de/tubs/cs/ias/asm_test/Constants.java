@@ -1,6 +1,7 @@
 package de.tubs.cs.ias.asm_test;
 
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASCompareProxy;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintHandler;
 import de.tubs.cs.ias.asm_test.utils.ConversionUtils;
 import org.objectweb.asm.Type;
 
@@ -13,8 +14,11 @@ public final class Constants {
     public static final String ConversionUtilsToConcreteDesc;
     public static final String ConversionUtilsToOrigName;
     public static final String ConversionUtilsToOrigDesc;
-    public static final String ConversionUtilsTaintName;
-    public static final String ConversionUtilsTaintDesc;
+    public static final String TaintHandlerQN;
+    public static final String TaintHandlerTaintName;
+    public static final String TaintHandlerTaintDesc;
+    public static final String TaintHandlerCheckTaintName;
+    public static final String TaintHandlerCheckTaintDesc;
     public static final String PropertyDesc;
     public static final String PropertyQN;
     public static final String JDK_INHERITANCE_BLACKLIST_FILENAME = "jdk_inheritance_blacklist.csv";
@@ -28,8 +32,11 @@ public final class Constants {
             ConversionUtilsToConcreteDesc = Type.getType(ConversionUtils.class.getMethod("convertToConcrete", Object.class)).getDescriptor();
             ConversionUtilsToOrigName = ConversionUtils.class.getMethod("convertToOrig", Object.class).getName();
             ConversionUtilsToOrigDesc = Type.getType(ConversionUtils.class.getMethod("convertToOrig", Object.class)).getDescriptor();
-            ConversionUtilsTaintName = ConversionUtils.class.getMethod("taint", Object.class).getName();
-            ConversionUtilsTaintDesc = Type.getType(ConversionUtils.class.getMethod("taint", Object.class)).getDescriptor();
+            TaintHandlerQN = Type.getType(IASTaintHandler.class).getInternalName();
+            TaintHandlerTaintName = IASTaintHandler.class.getMethod("taint", Object.class).getName();
+            TaintHandlerTaintDesc = Type.getType(IASTaintHandler.class.getMethod("taint", Object.class)).getDescriptor();
+            TaintHandlerCheckTaintName = IASTaintHandler.class.getMethod("checkTaint", Object.class).getName();
+            TaintHandlerCheckTaintDesc = Type.getType(IASTaintHandler.class.getMethod("checkTaint", Object.class)).getDescriptor();
             CompareProxyEqualsDesc = Type.getType(IASCompareProxy.class.getMethod("compareRefEquals", Object.class, Object.class)).getDescriptor();
 
             PropertyDesc = Type.getType(Properties.class).getDescriptor();

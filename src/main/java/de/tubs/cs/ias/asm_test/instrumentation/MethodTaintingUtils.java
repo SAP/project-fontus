@@ -20,7 +20,7 @@ public class MethodTaintingUtils {
     /**
      * If a taint-aware string is on the top of the stack, we can call this function to add a check to handle tainted strings.
      */
-    public static void callCheckTaint(MethodVisitor mv, TaintStringConfig configuration) {
+    public static void callCheckTaintNative(MethodVisitor mv, TaintStringConfig configuration) {
         Label after = new Label();
         // Call dup here to put the TString reference twice on the stack so the call can pop one without affecting further processing
         mv.visitInsn(Opcodes.DUP);
@@ -28,6 +28,11 @@ public class MethodTaintingUtils {
         mv.visitInsn(Opcodes.DUP);
         mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, configuration.getTStringQN(), Constants.ABORT_IF_TAINTED, "()V", false);
         mv.visitLabel(after);
+    }
+
+    public static void callCheckTaintGeneric(MethodVisitor mv, String typeDescriptor) {
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TaintHandlerQN, Constants.TaintHandlerCheckTaintName, Constants.TaintHandlerCheckTaintDesc, false);
+        mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(typeDescriptor).getInternalName());
     }
 
     /**
@@ -118,5 +123,4 @@ public class MethodTaintingUtils {
         String descr = InstrumentationHelper.getInstance(configuration).instrument(desc).toDescriptor();
         mv.visitInvokeDynamicInsn(name, descr, bootstrapMethodHandle, bsArgs);
     }
-
 }
