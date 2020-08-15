@@ -6,7 +6,6 @@ import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 import de.tubs.cs.ias.asm_test.instrumentation.MethodTaintingVisitor;
 import de.tubs.cs.ias.asm_test.config.Source;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
-import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.Opcodes;
 import de.tubs.cs.ias.asm_test.utils.ParentLogger;
@@ -38,9 +37,9 @@ public class SourceTransformer implements ReturnTransformation {
             visitor.visitMethodInsn(tainter);
         } else {
             FunctionCall taint = new FunctionCall(Opcodes.INVOKESTATIC,
-                    Constants.ConversionUtilsQN,
-                    Constants.ConversionUtilsTaintName,
-                    Constants.ConversionUtilsTaintDesc,
+                    Constants.TaintHandlerQN,
+                    Constants.TaintHandlerTaintName,
+                    Constants.TaintHandlerTaintDesc,
                     false);
             visitor.visitMethodInsn(taint);
             visitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(desc.getReturnType()).getInternalName());

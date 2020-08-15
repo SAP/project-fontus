@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class IASStringPool {
     private static final ConcurrentHashMap<String, IASStringable> stringPool = new ConcurrentHashMap<>();
 
-    public static IASStringable intern(IASStringable origIasString) {
+    public static synchronized IASStringable intern(IASStringable origIasString) {
         IASStringable existingIasString = stringPool.get(origIasString.getString());
         if (existingIasString != null) {
             return existingIasString;
