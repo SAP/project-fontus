@@ -95,7 +95,12 @@ public final class IASMatcher implements IASMatcherable {
     }
 
     public IASString group(IASStringable name) {
-        return this.input.substring(this.start(name), this.end(name));
+        int start = this.start(name);
+        int end = this.end(name);
+        if(start == -1 || end == -1) {
+            return null;
+        }
+        return this.input.substring(start, end);
     }
 
     public int groupCount() {

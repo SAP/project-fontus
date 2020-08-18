@@ -56,6 +56,11 @@ public final class IASString implements IASArrayAware, IASStringable {
         this.taintInformation = new IASTaintInformation(taints);
     }
 
+    public IASString(byte bytes[], int offset, int length, IASStringable charsetName)
+            throws UnsupportedEncodingException {
+        this.string = new String(bytes, offset, length, charsetName.getString());
+    }
+
     @Override
     public boolean isTainted() {
         if (this.taintInformation == null) {
@@ -65,7 +70,9 @@ public final class IASString implements IASArrayAware, IASStringable {
     }
 
     public static IASString tainted(IASString tstr) {
-        tstr.setTaint(true);
+        if (tstr != null) {
+            tstr.setTaint(true);
+        }
         return tstr;
     }
 

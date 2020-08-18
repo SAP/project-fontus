@@ -49,7 +49,9 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
     }
 
     public static IASString tainted(IASString tstr) {
-        tstr.setTaint(true);
+        if (tstr != null) {
+            tstr.setTaint(true);
+        }
         return tstr;
     }
 
@@ -116,6 +118,11 @@ public class IASString implements IASTaintRangeStringable, IASLazyAware {
 
     public IASString(IASString string) {
         this(string.getString(), string.taintInformation);
+    }
+
+    public IASString(byte bytes[], int offset, int length, IASStringable charsetName)
+            throws UnsupportedEncodingException {
+        this.string = new String(bytes, offset, length, charsetName.getString());
     }
 
     /**

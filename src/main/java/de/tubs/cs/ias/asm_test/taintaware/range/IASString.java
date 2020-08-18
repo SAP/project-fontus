@@ -26,6 +26,12 @@ public final class IASString implements IASTaintRangeStringable, IASExtendedTain
         }
     }
 
+    public IASString(byte bytes[], int offset, int length, IASStringable charsetName)
+            throws UnsupportedEncodingException {
+        this.string = new String(bytes, offset, length, charsetName.getString());
+    }
+
+
     public IASString(String s) {
         if (s == null) {
             throw new IllegalArgumentException("String cannot be null");
@@ -86,7 +92,9 @@ public final class IASString implements IASTaintRangeStringable, IASExtendedTain
     }
 
     public static IASString tainted(IASString tstr) {
-        tstr.setTaint(true);
+        if (tstr != null) {
+            tstr.setTaint(true);
+        }
         return tstr;
     }
 

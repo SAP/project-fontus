@@ -49,7 +49,9 @@ public final class IASString implements IASStringable, IASLazyAware {
     }
 
     public static IASString tainted(IASString tstr) {
-        tstr.setTaint(true);
+        if (tstr != null) {
+            tstr.setTaint(true);
+        }
         return tstr;
     }
 
@@ -120,6 +122,11 @@ public final class IASString implements IASStringable, IASLazyAware {
 
     public IASString(StringBuffer strb) {
         this(strb.toString());
+    }
+
+    public IASString(byte bytes[], int offset, int length, IASStringable charsetName)
+            throws UnsupportedEncodingException {
+        this.string = new String(bytes, offset, length, charsetName.getString());
     }
 
     public static IASString fromString(String s) {
