@@ -82,14 +82,6 @@ public final class IASString implements IASTaintAware, IASStringable {
         this.tainted |= other.isTainted();
     }
 
-    @Override
-    public void abortIfTainted() {
-        if (this.tainted) {
-            System.err.printf("String %s is tainted!\nAborting..!\n", this.string);
-            System.exit(1);
-        }
-    }
-
     public IASString(char value[]) {
         this.string = new String(value);
     }

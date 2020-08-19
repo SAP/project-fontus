@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class IASTaintHandler {
-    private static Void handleTaint(Object taintAware) {
+    public static Void handleTaint(IASTaintAware taintAware) {
         // TODO Different taint handling
-        if (((IASTaintAware) taintAware).isTainted()) {
+        if (taintAware.isTainted()) {
             System.err.printf("String %s is tainted!\nAborting..!\n", taintAware);
             System.exit(1);
         }
@@ -23,7 +23,7 @@ public class IASTaintHandler {
         return null;
     }
 
-    public static Object traversObject(Object object, Function<Object, Object> traverser, Function<Object, Void> atomicHandler) {
+    public static Object traversObject(Object object, Function<Object, Object> traverser, Function<IASTaintAware, Void> atomicHandler) {
         if (object == null) {
             return null;
         }
@@ -39,7 +39,7 @@ public class IASTaintHandler {
                     traverser.apply(o);
                 }
             } else {
-                atomicHandler.apply(object);
+                atomicHandler.apply((IASTaintAware) object);
             }
         } else if (isIterable) {
             Iterable<Object> iterable = (Iterable<Object>) object;
