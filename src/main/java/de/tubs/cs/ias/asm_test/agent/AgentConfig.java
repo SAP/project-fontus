@@ -6,6 +6,7 @@ import de.tubs.cs.ias.asm_test.config.ConfigurationLoader;
 import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import de.tubs.cs.ias.asm_test.utils.ParentLogger;
+import de.tubs.cs.ias.asm_test.utils.abort.Abort;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,6 +69,7 @@ public class AgentConfig {
         Boolean useCaching = null;
         Integer layerThreshold = null;
         Boolean countRanges = null;
+        Abort abort = null;
 
         for (String part : parts) {
             if ("verbose".equals(part)) {
@@ -102,6 +104,10 @@ public class AgentConfig {
                 Configuration blacklist = ConfigurationLoader.loadBlacklistFromFile(new File(filename));
                 c.append(blacklist);
             }
+            if (part.startsWith("abort=")) {
+                String abortName = afterEquals(part);
+                abort = Abort.parse(abortName);
+            }
         }
         if (c == null) {
             c = ConfigurationLoader.defaultConfiguration();
@@ -120,6 +126,9 @@ public class AgentConfig {
         }
         if (loggingEnabled != null) {
             c.setLoggingEnabled(loggingEnabled);
+        }
+        if (abort != null) {
+            c.setAbort(abort);
         }
 
         c.transformConverters();

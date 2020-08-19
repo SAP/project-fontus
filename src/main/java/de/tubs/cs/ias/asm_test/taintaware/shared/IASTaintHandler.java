@@ -1,6 +1,8 @@
 package de.tubs.cs.ias.asm_test.taintaware.shared;
 
+import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
+import de.tubs.cs.ias.asm_test.utils.abort.Abort;
 
 import java.util.Collections;
 import java.util.Enumeration;
@@ -12,8 +14,8 @@ public class IASTaintHandler {
     public static Void handleTaint(IASTaintAware taintAware) {
         // TODO Different taint handling
         if (taintAware.isTainted()) {
-            System.err.printf("String %s is tainted!\nAborting..!\n", taintAware);
-            System.exit(1);
+            Abort abort = Configuration.getConfiguration().getAbort();
+            abort.abort(taintAware);
         }
         return null;
     }
