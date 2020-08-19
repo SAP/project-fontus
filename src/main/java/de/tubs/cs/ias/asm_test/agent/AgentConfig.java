@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test.agent;
 
+import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.ConfigurationLoader;
 import de.tubs.cs.ias.asm_test.config.TaintMethod;
@@ -49,7 +50,7 @@ public class AgentConfig {
             return c;
         }
         try (Scanner sc = new Scanner(args)) {
-            sc.useDelimiter(";");
+            sc.useDelimiter(Constants.AGENT_DELIMITER);
             Collection<String> parts = new ArrayList<>();
             while (sc.hasNext()) {
                 String part = sc.next();

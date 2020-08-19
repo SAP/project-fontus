@@ -9,6 +9,8 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 public final class Constants {
+    public static final String AGENT_DELIMITER = ",";
+
     public static final String ConversionUtilsQN = Type.getType(ConversionUtils.class).getInternalName();
     public static final String ConversionUtilsToConcreteName;
     public static final String ConversionUtilsToConcreteDesc;

@@ -3,7 +3,7 @@ package de.tubs.cs.ias.asm_test.utils;
 public enum Statistics {
     INSTANCE;
 
-    private static final int PRINT_INTERVAL = 1000;
+    private static final int PRINT_INTERVAL = 10;
 
     private long stringCount;
     private long taintRangeSum;
@@ -18,7 +18,8 @@ public enum Statistics {
         if (rangeCount == 0) {
             untaintedStringCount++;
         }
-        if (stringCount % PRINT_INTERVAL == 0) {
+        long tainted = stringCount - untaintedStringCount;
+        if (tainted > 0 && tainted % PRINT_INTERVAL == 0) {
             printStatistics();
         }
     }
@@ -35,10 +36,12 @@ public enum Statistics {
         System.out.println(String.format(
                 "Total IASString count: %d\n" +
                         "Untainted IASString count %d\n" +
+                        "Tainted IASString count %d\n" +
                         "Share of IASStrings with zero taint ranges: %f\n" +
                         "Average number of taint ranges per String: %f\n",
                 stringCount,
                 untaintedStringCount,
+                stringCount - untaintedStringCount,
                 getZeroTaintRangeShare(),
                 getRangeCountAverage()
         ));

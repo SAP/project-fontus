@@ -70,11 +70,11 @@ It is also possible to pass multiple parameters to the agent
 - **config**: Specifies a path for a config file
 - **blacklisted_main_classes**: Specifies a filepath to a file which contains blacklisted main classes
 
-The arguments are appended to the agent path like this: ``-javaagent:jarpath[=options]``. Therefore options are defined as ``key=value`` pair and ``;`` is used as delimiter between key-value-pairs.
+The arguments are appended to the agent path like this: ``-javaagent:jarpath[=options]``. Therefore options are defined as ``key=value`` pair and ``,`` is used as delimiter between key-value-pairs.
 
 **Attention:** If you pass multiple key-value pairs, you have to put the javaagent string in quotation marks. Otherwise bash will understand semicolons as command seperators.
 
-An example for parameters passed to the agent ``-javaagent:"asm_test-0.0.1-SNAPSHOT.jar=taintmethod=range;use_caching=false"``.
+An example for parameters passed to the agent ``-javaagent:"asm_test-0.0.1-SNAPSHOT.jar=taintmethod=range,use_caching=false"``.
 
 ### Logging
 
