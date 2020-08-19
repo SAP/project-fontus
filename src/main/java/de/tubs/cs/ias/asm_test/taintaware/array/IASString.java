@@ -691,13 +691,6 @@ public final class IASString implements IASArrayAware, IASStringable {
         return !this.isUninitialized();
     }
 
-    public void abortIfTainted() {
-        if (this.isTainted()) {
-            System.err.printf("String %s is tainted!\nAborting..!\n", this.string);
-            System.exit(1);
-        }
-    }
-
     public static final Comparator<IASString> CASE_INSENSITIVE_ORDER
             = new CaseInsensitiveComparator();
 

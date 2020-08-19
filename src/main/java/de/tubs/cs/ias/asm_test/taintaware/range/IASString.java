@@ -726,13 +726,6 @@ public final class IASString implements IASTaintRangeStringable, IASExtendedTain
         return this.taintInformation == null;
     }
 
-    public void abortIfTainted() {
-//        if (this.isTainted()) {
-//            System.err.printf("String %s is tainted!\nAborting..!\n", this.str);
-//            System.exit(1);
-//        }
-    }
-
     public static final Comparator<IASString> CASE_INSENSITIVE_ORDER
             = new CaseInsensitiveComparator();
 

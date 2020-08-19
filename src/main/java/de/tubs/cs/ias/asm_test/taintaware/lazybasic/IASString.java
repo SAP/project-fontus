@@ -144,13 +144,6 @@ public final class IASString implements IASStringable, IASLazyAware {
     }
 
     @Override
-    public void abortIfTainted() {
-        if (isTainted()) {
-            throw new IllegalStateException("String is tainted");
-        }
-    }
-
-    @Override
     public int length() {
         return this.string.length();
     }

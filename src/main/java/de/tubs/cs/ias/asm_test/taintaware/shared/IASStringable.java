@@ -11,7 +11,9 @@ import java.util.stream.Stream;
 public interface IASStringable extends IASTaintAware, Comparable<IASStringable>, CharSequence {
     String SPLIT_LINE_REGEX = "(\\r|\\n|\\r\\n)";
 
-    void abortIfTainted();
+    default void abortIfTainted() {
+        IASTaintHandler.handleTaint(this);
+    }
 
     int length();
 
