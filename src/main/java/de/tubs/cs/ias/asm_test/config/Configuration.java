@@ -7,6 +7,8 @@ import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 import de.tubs.cs.ias.asm_test.instrumentation.BlackListEntry;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import de.tubs.cs.ias.asm_test.utils.ParentLogger;
+import de.tubs.cs.ias.asm_test.utils.abort.Abort;
+import de.tubs.cs.ias.asm_test.utils.abort.ExitAbort;
 import org.apache.commons.text.StringSubstitutor;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -23,7 +25,6 @@ public class Configuration {
     private TaintMethod taintMethod;
     @JsonIgnore
     private TaintStringConfig taintStringConfig;
-
     public Map<String, List<BlackListEntry>> getJdkInheritanceBlacklist() {
         return jdkInheritanceBlacklist;
     }
@@ -32,6 +33,7 @@ public class Configuration {
         this.jdkInheritanceBlacklist = jdkInheritanceBlacklist;
     }
 
+
     private Map<String, List<BlackListEntry>> jdkInheritanceBlacklist = new HashMap<>();
 
     private boolean useCaching = defaultUseCaching();
@@ -39,6 +41,8 @@ public class Configuration {
     private int layerThreshold = defaultLayerThreshold();
 
     private boolean countRanges = defaultCountRanges();
+
+    private Abort abort = defaultAbort();
 
     private boolean isOfflineInstrumentation = true;
 
@@ -60,6 +64,10 @@ public class Configuration {
 
     public static boolean defaultCountRanges() {
         return false;
+    }
+
+    private static Abort defaultAbort() {
+        return new ExitAbort();
     }
 
     public void setCountRanges(boolean countRanges) {
@@ -339,5 +347,16 @@ public class Configuration {
             throw new IllegalStateException("Configuration already initialized");
         }
         Configuration.configuration = configuration;
+    }
+
+    public void setAbort(Abort abort) {
+        if (abort == null) {
+            throw new IllegalArgumentException(new NullPointerException());
+        }
+        this.abort = abort;
+    }
+
+    public Abort getAbort() {
+        return abort;
     }
 }

@@ -69,6 +69,7 @@ It is also possible to pass multiple parameters to the agent
 - **count_ranges**: Possible values: *true* or *false*. Default is false. If this option is enabled, the number of taint ranges per created string is saved and every 100 created strings statistics will be printed out in stdout. This only applies if taintmethod *range* is used.
 - **config**: Specifies a path for a config file
 - **blacklisted_main_classes**: Specifies a filepath to a file which contains blacklisted main classes
+- **abort**: Specifies what happens if a tainted string reaches a sink. For all options see [Abort types](#Abort types). The default is *exit*
 
 The arguments are appended to the agent path like this: ``-javaagent:jarpath[=options]``. Therefore options are defined as ``key=value`` pair and ``,`` is used as delimiter between key-value-pairs.
 
@@ -91,6 +92,13 @@ Currently there are 5 different tainting mechanisms available:
 - **range**: Optimized tainting per character. Differentiation which character is tainted *is* possible. Linear overhead regarding count of taints per string for cpu and memory (most times a lot more efficient than *array*). As precise as *array*.
 - **lazybasic**: Optimized range approach. Differentiation which character is tainted *is* possible. As long as no taint evaluation is done, faster than range. Memory overhead mostly correlates with the number of string manipulations. As precise as *array*.
 - **lazycomplex**: Optimized lazybasic approach. Differentiation which character is tainted *is* possible. Less computation effort during runtime and during taint evaluation. Memory overhead mostly correlates with the number of string manipulations. As precise as *array*.
+
+## Abort types
+Currently there are three possibilities what can happen, if a tainted string reaches a sink:
+- **exit**: Exits the application through System.exit(int). Beforehands the string is printed to stderr
+- **nothing**: Nothing happens if a tainted string reaches a sink
+- **stderr_logging**: Logs the tainted string to stderr as well as an stacktrace 
+
 
 ## Inspect bytecode of a class
 To see the bytecode for a class file, run ``javap -l -v -p -s TestString.class``
