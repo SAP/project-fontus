@@ -105,7 +105,7 @@ public class IASTaintRanges {
      * @param replacementWidth "width" of the newly inserted ranges (determines shift for the ranges behind the insertion)
      */
     public void replaceTaintInformation(int start, int end, List<IASTaintRange> newRanges, int replacementWidth, boolean shiftNewRanges) {
-        List<IASTaintRange> leftSide = this.getRanges(0, start);
+        List<IASTaintRange> leftSide = this.getTaintRanges(0, start);
         if (start > 0) {
             adjustRanges(leftSide, 0, start, 0);
         }
@@ -175,7 +175,7 @@ public class IASTaintRanges {
     }
 
     public synchronized void appendRangesFrom(IASTaintRanges other, int rightShift, boolean merge) {
-        List<IASTaintRange> ranges = other.getAllRanges();
+        List<IASTaintRange> ranges = other.getTaintRanges();
         if (rightShift != 0) {
             IASTaintRangeUtils.shiftRight(ranges, rightShift);
         }
@@ -183,7 +183,7 @@ public class IASTaintRanges {
     }
 
     public synchronized void resize(int start, int end, int leftShift) {
-        List<IASTaintRange> ranges = this.getRanges(start, end);
+        List<IASTaintRange> ranges = this.getTaintRanges(start, end);
         IASTaintRangeUtils.adjustRanges(ranges, start, end, leftShift);
         this.removeAll();
         this.appendRanges(ranges);
@@ -245,7 +245,7 @@ public class IASTaintRanges {
      * @param startIndex including
      * @param endIndex   excluding
      */
-    public synchronized List<IASTaintRange> getRanges(int startIndex, int endIndex) {
+    public synchronized List<IASTaintRange> getTaintRanges(int startIndex, int endIndex) {
         if (endIndex < startIndex || startIndex < 0) {
             throw new IndexOutOfBoundsException("startIndex: " + startIndex + ", endIndex: " + endIndex);
         } else if (endIndex == startIndex) {
@@ -265,7 +265,7 @@ public class IASTaintRanges {
         return affectedRanges;
     }
 
-    public synchronized List<IASTaintRange> getAllRanges() {
+    public synchronized List<IASTaintRange> getTaintRanges() {
         return new ArrayList<>(this.ranges);
     }
 
@@ -278,7 +278,7 @@ public class IASTaintRanges {
             return;
         }
 
-        final List<IASTaintRange> r1 = getRanges(0, start);
+        final List<IASTaintRange> r1 = getTaintRanges(0, start);
         if (!r1.isEmpty()) {
             // if r1 is not empty we can be sure, that start > 0 (and by this conditional
             // we also avoid an unnecessary methods call
@@ -306,7 +306,7 @@ public class IASTaintRanges {
         if (!ranges.isEmpty()) {
             endIndex = Math.max(ranges.get(ranges.size() - 1).getEnd(), startIndex);
         }
-        return getRanges(startIndex, endIndex);
+        return getTaintRanges(startIndex, endIndex);
     }
 
     public synchronized void insert(int index, List<IASTaintRange> insertions, int width) {
@@ -314,7 +314,7 @@ public class IASTaintRanges {
         if (index < 0) {
             throw new IllegalArgumentException("Index must be 0 or greater!");
         } else if (index > 0) {
-            startRanges.addAll(this.getRanges(0, index));
+            startRanges.addAll(this.getTaintRanges(0, index));
             IASTaintRangeUtils.adjustRanges(startRanges, 0, index, 0);
         }
 
@@ -330,7 +330,7 @@ public class IASTaintRanges {
     }
 
     public synchronized void reversed(int length) {
-        List<IASTaintRange> r = this.getAllRanges();
+        List<IASTaintRange> r = this.getTaintRanges();
         List<IASTaintRange> newRanges = new ArrayList<IASTaintRange>(r.size());
 
         for (IASTaintRange range : r) {
@@ -344,7 +344,7 @@ public class IASTaintRanges {
     }
 
     public synchronized IASTaintRanges copy() {
-        return new IASTaintRanges(this.getAllRanges());
+        return new IASTaintRanges(this.getTaintRanges());
     }
 
     public IASTaintRange getRange(int listIndex) {
@@ -357,7 +357,7 @@ public class IASTaintRanges {
      * @param end exclusive
      */
     public List<IASTaintRange> cutTaint(int start, int end) {
-        List<IASTaintRange> ranges = getRanges(start, end);
+        List<IASTaintRange> ranges = getTaintRanges(start, end);
         adjustRanges(ranges, start, end, 0);
         return ranges;
     }
@@ -375,7 +375,7 @@ public class IASTaintRanges {
     }
 
     public IASTaintSource getTaintFor(int position) {
-        List<IASTaintRange> range = getRanges(position, position + 1);
+        List<IASTaintRange> range = getTaintRanges(position, position + 1);
         if (range.isEmpty()) {
             return null;
         } else {

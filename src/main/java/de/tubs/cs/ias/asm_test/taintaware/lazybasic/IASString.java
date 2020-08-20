@@ -12,7 +12,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @SuppressWarnings("Since15")
-public final class IASString implements IASStringable, IASLazyAware {
+public final class IASString implements IASStringable, IASTaintRangeAware {
     private final String string;
     private IASTaintInformation taintInformation;
 

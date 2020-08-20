@@ -1,7 +1,11 @@
 package de.tubs.cs.ias.asm_test.taintaware.array;
 
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintInformationable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+
+import java.util.List;
+import java.util.Objects;
 
 public class IASTaintInformation implements IASTaintInformationable {
     private int[] taints;
@@ -11,7 +15,7 @@ public class IASTaintInformation implements IASTaintInformationable {
     }
 
     public IASTaintInformation(int[] taints) {
-        this.taints = taints;
+        this.taints = Objects.requireNonNull(taints);
     }
 
     /**
@@ -56,6 +60,11 @@ public class IASTaintInformation implements IASTaintInformationable {
         int[] dst = new int[length];
         System.arraycopy(this.taints, start, dst, 0, length);
         return dst;
+    }
+
+    @Override
+    public List<IASTaintRange> getTaintRanges() {
+        return TaintConverter.toTaintRanges(this.taints);
     }
 
     public boolean isTainted() {

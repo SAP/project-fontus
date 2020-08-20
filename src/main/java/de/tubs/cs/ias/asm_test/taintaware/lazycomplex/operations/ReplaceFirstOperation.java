@@ -32,6 +32,6 @@ public class ReplaceFirstOperation implements IASOperation {
                 ranges.replaceTaintInformation(start, end, replacement.getTaintRanges(), replacement.length(), true);
             }
         }
-        return ranges.getAllRanges();
+        return ranges.getTaintRanges();
     }
 }

@@ -1,17 +1,17 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations;
 
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASLazyAware;
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.IASOperation;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeAware;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeUtils;
 
 import java.util.List;
 import java.util.Objects;
 
 public class ConcatOperation implements IASOperation {
-    private final IASLazyAware second;
+    private final IASTaintRangeAware second;
 
-    public ConcatOperation(IASLazyAware second) {
+    public ConcatOperation(IASTaintRangeAware second) {
         this.second = Objects.requireNonNull(second);
     }
 

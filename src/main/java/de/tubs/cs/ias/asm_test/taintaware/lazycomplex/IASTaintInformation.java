@@ -2,9 +2,7 @@ package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations.BaseOperation;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintInformationable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeUtils;
+import de.tubs.cs.ias.asm_test.taintaware.shared.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,6 +49,16 @@ public class IASTaintInformation implements IASTaintInformationable {
         } else {
             return true;
         }
+    }
+
+    @Override
+    public synchronized IASTaintSource getTaintFor(int position) {
+        return new IASTaintRanges(this.getTaintRanges()).getTaintFor(position);
+    }
+
+    @Override
+    public synchronized boolean isTaintedAt(int index) {
+        return new IASTaintRanges(this.getTaintRanges()).isTaintedAt(index);
     }
 
     private synchronized List<IASTaintRange> evaluate() {

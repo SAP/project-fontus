@@ -1,7 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.range.testHelper;
 
-import de.tubs.cs.ias.asm_test.taintaware.range.IASExtendedTaintRangeAware;
-import de.tubs.cs.ias.asm_test.taintaware.range.IASTaintInformation;
+import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintInformationable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeAware;
 
 @SuppressWarnings("ALL")
@@ -12,7 +12,7 @@ public class THelper {
         return s.isUninitialized();
     }
 
-    public static IASTaintInformation get(IASExtendedTaintRangeAware sB) {
+    public static IASTaintInformationable get(IASTaintRangeAware sB) {
         sB.initialize();
         return sB.getTaintInformation();
     }

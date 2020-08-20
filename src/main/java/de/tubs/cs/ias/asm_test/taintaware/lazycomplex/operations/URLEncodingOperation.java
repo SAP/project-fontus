@@ -55,7 +55,7 @@ public class URLEncodingOperation implements IASOperation {
         } else {
             encodeNonValid(previousString, previousTaint, taintRanges, start, previousString.length(), currentLength);
         }
-        return taintRanges.getAllRanges();
+        return taintRanges.getTaintRanges();
     }
 
     private int encodeValid(List<IASTaintRange> ranges, IASTaintRanges taintRanges, int start, int end, int currentLength) {

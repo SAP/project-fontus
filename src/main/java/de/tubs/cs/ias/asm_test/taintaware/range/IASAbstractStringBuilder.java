@@ -2,14 +2,13 @@ package de.tubs.cs.ias.asm_test.taintaware.range;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.taintaware.shared.*;
-import de.tubs.cs.ias.asm_test.taintaware.shared.range.IASTaintRangeStringBuilderable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
 @SuppressWarnings({"unused", "Since15"})
-public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBuilderable, IASExtendedTaintRangeAware {
+public abstract class IASAbstractStringBuilder implements IASTaintRangeAware, IASAbstractStringBuilderable {
     protected final StringBuilder stringBuilder;
     private IASTaintInformation taintInformation;
 
@@ -125,7 +124,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
     }
 
     protected List<IASTaintRange> getAllRanges() {
-        return isTainted() ? this.taintInformation.getAllRanges() : new ArrayList<>(0);
+        return isTainted() ? this.taintInformation.getTaintRanges() : new ArrayList<>(0);
     }
 
     @Override
