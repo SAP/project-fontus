@@ -1,6 +1,8 @@
 package de.tubs.cs.ias.asm_test.taintaware.shared;
 
-public class IASTaintRange implements Cloneable {
+import java.io.Serializable;
+
+public class IASTaintRange implements Cloneable, Serializable {
     /**
      * Inclusive the start index
      */

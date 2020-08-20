@@ -2,9 +2,10 @@ package de.tubs.cs.ias.asm_test.taintaware.lazybasic;
 
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 
+import java.io.Serializable;
 import java.util.List;
 
-public abstract class IASLayer {
+public abstract class IASLayer implements Serializable {
     protected final int start;
     protected final int end;
 
