@@ -27,47 +27,47 @@ public class IASTaintInformation implements IASTaintInformationable {
         this.layers = new ArrayList<>();
     }
 
-    private void appendLayers(List<IASLayer> layers) {
+    private synchronized void appendLayers(List<IASLayer> layers) {
         for (IASLayer layer : layers) {
             this.appendLayer(layer);
         }
     }
 
-    private void appendLayer(IASLayer layer) {
+    private synchronized void appendLayer(IASLayer layer) {
         if (this.getLayerDepth() >= Configuration.getConfiguration().getLayerThreshold()) {
             this.cache(this.evaluate());
         }
         this.layers.add(layer);
     }
 
-    public List<IASTaintRange> getTaintRanges() {
+    public synchronized List<IASTaintRange> getTaintRanges() {
         return new ArrayList<>(this.evaluate());
     }
 
-    private int getLayerDepth() {
+    private synchronized int getLayerDepth() {
         return this.getOwnLayerCount() + this.getPreviousLayerCount();
     }
 
-    private int getPreviousLayerCount() {
+    private synchronized int getPreviousLayerCount() {
         return this.previous == null ? 0 : this.previous.getLayerDepth();
     }
 
-    private int getOwnLayerCount() {
+    private synchronized int getOwnLayerCount() {
         return this.layers == null ? 0 : this.layers.size();
     }
 
-    private List<IASTaintRange> getPreviousRanges() {
+    private synchronized List<IASTaintRange> getPreviousRanges() {
         if (this.previous == null) {
             return new ArrayList<>(0);
         }
         return this.previous.getTaintRanges();
     }
 
-    private boolean isBase() {
+    private synchronized boolean isBase() {
         return this.layers.size() == 1 && this.layers.get(0) instanceof BaseLayer;
     }
 
-    private List<IASTaintRange> evaluate() {
+    private synchronized List<IASTaintRange> evaluate() {
         if (this.isBase()) {
             return ((BaseLayer)this.layers.get(0)).getBase();
         }
@@ -82,21 +82,21 @@ public class IASTaintInformation implements IASTaintInformationable {
         return previousRanges;
     }
 
-    private void cache(List<IASTaintRange> ranges) {
+    private synchronized void cache(List<IASTaintRange> ranges) {
         this.layers.clear();
         this.layers.add(new BaseLayer(ranges));
         this.previous = null;
     }
 
-    public boolean isTainted() {
+    public synchronized boolean isTainted() {
         return this.getTaintRanges().size() > 0;
     }
 
-    public IASTaintSource getTaintFor(int position) {
+    public synchronized IASTaintSource getTaintFor(int position) {
         return new IASTaintRanges(this.getTaintRanges()).getTaintFor(position);
     }
 
-    public boolean isTaintedAt(int index) {
+    public synchronized boolean isTaintedAt(int index) {
         return new IASTaintRanges(this.getTaintRanges()).isTaintedAt(index);
     }
 }
