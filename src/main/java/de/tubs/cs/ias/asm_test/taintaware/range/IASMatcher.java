@@ -194,7 +194,7 @@ public final class IASMatcher implements IASMatcherable {
                 taintRanges.replaceTaintInformation(start, end, ((IASString) replacement).getTaintRanges(), replacement.length(), true);
             }
         }
-        return new IASString(replacedStr, taintRanges.getAllRanges());
+        return new IASString(replacedStr, taintRanges.getTaintRanges());
     }
 
     public boolean requireEnd() {

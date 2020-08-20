@@ -1,6 +1,5 @@
 package de.tubs.cs.ias.asm_test.taintaware.range.testHelper;
 
-import de.tubs.cs.ias.asm_test.taintaware.range.IASExtendedTaintRangeAware;
 import de.tubs.cs.ias.asm_test.taintaware.range.IASTaintInformation;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeAware;
@@ -9,6 +8,7 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
 import java.util.List;
+
 @SuppressWarnings("ALL")
 // David: As I didn't write this Code and don't want to mess with it I suppressed the warnings.
 // TODO: Work out whether we can adapt it to the style of the remaining project?
@@ -30,7 +30,7 @@ public class TaintMatcher {
                     return;
                 }
 
-                mismatchDescription.appendText("was ").appendValue(((IASExtendedTaintRangeAware) s).getTaintInformation().getAllRanges());
+                mismatchDescription.appendText("was ").appendValue(((IASTaintInformation) ((IASTaintRangeAware) s).getTaintInformation()).getTaintRanges());
             }
 
             @Override
@@ -44,9 +44,9 @@ public class TaintMatcher {
                     return false;
                 }
 
-                IASTaintInformation tI = THelper.get((IASExtendedTaintRangeAware) s);
+                IASTaintInformation tI = (IASTaintInformation) THelper.get((IASTaintRangeAware) s);
 
-                return tI.getAllRanges().equals(ranges);
+                return tI.getTaintRanges().equals(ranges);
             }
         };
     }

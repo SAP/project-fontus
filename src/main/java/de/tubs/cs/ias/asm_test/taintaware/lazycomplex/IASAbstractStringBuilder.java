@@ -2,7 +2,6 @@ package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations.*;
 import de.tubs.cs.ias.asm_test.taintaware.shared.*;
-import de.tubs.cs.ias.asm_test.taintaware.shared.range.IASTaintRangeStringBuilderable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,7 +9,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("Since15")
-public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBuilderable, IASLazyAware {
+public abstract class IASAbstractStringBuilder implements IASAbstractStringBuilderable, IASTaintRangeAware {
     private final StringBuilder stringBuilder;
     private IASTaintInformation taintInformation;
 
@@ -436,5 +435,10 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeStringBui
             return new IASString(newString, new IASTaintInformation(this.stringBuilder.toString(), this.taintInformation, operation));
         }
         return new IASString(newString);
+    }
+
+    @Override
+    public IASTaintInformation getTaintInformation() {
+        return taintInformation;
     }
 }

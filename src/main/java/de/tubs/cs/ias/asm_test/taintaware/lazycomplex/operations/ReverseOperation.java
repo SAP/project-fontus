@@ -12,6 +12,6 @@ public class ReverseOperation implements IASOperation {
     public List<IASTaintRange> apply(String previousString, List<IASTaintRange> previousTaint) {
         IASTaintRanges ti = new IASTaintRanges(previousTaint);
         ti.reversed(previousString.length());
-        return ti.getAllRanges();
+        return ti.getTaintRanges();
     }
 }

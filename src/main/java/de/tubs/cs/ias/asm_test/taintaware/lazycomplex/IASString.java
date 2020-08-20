@@ -3,7 +3,6 @@ package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations.*;
 import de.tubs.cs.ias.asm_test.taintaware.shared.*;
-import de.tubs.cs.ias.asm_test.taintaware.shared.range.IASTaintRangeStringable;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -12,7 +11,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @SuppressWarnings("Since15")
-public final class IASString implements IASTaintRangeStringable, IASLazyAware {
+public final class IASString implements IASStringable, IASTaintRangeAware {
     private final String string;
     private IASTaintInformation taintInformation;
 
@@ -370,7 +369,7 @@ public final class IASString implements IASTaintRangeStringable, IASLazyAware {
     @Override
     public IASString concat(IASStringable str) {
         String substringed = this.string.concat(str.getString());
-        return this.derive(substringed, new ConcatOperation((IASLazyAware) str), ((IASString) str).isInitialized());
+        return this.derive(substringed, new ConcatOperation((IASTaintRangeAware) str), ((IASTaintRangeAware) str).isInitialized());
     }
 
     @Override

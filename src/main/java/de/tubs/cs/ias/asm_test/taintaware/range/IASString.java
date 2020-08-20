@@ -4,7 +4,6 @@ import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.utils.Statistics;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.shared.*;
-import de.tubs.cs.ias.asm_test.taintaware.shared.range.IASTaintRangeStringable;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -14,7 +13,7 @@ import java.util.stream.Stream;
 
 
 @SuppressWarnings("ALL")
-public final class IASString implements IASTaintRangeStringable, IASExtendedTaintRangeAware {
+public final class IASString implements IASTaintRangeAware, IASStringable {
 
     private String string;
     private IASTaintInformation taintInformation;
@@ -54,7 +53,7 @@ public final class IASString implements IASTaintRangeStringable, IASExtendedTain
         this.string = s.getString();
         this.taintInformation = new IASTaintInformation(((IASString) s).getTaintRanges());
         if (Configuration.getConfiguration().countRanges()) {
-            Statistics.INSTANCE.addRangeCount(this.taintInformation.getAllRanges().size());
+            Statistics.INSTANCE.addRangeCount(this.taintInformation.getTaintRanges().size());
         }
     }
 
@@ -63,7 +62,7 @@ public final class IASString implements IASTaintRangeStringable, IASExtendedTain
         this.string = s.getString();
         this.taintInformation = new IASTaintInformation(s.getTaintRanges());
         if (Configuration.getConfiguration().countRanges()) {
-            Statistics.INSTANCE.addRangeCount(this.taintInformation.getAllRanges().size());
+            Statistics.INSTANCE.addRangeCount(this.taintInformation.getTaintRanges().size());
         }
     }
 
@@ -151,7 +150,7 @@ public final class IASString implements IASTaintRangeStringable, IASExtendedTain
         if (iasTaintInformation == null) {
             return;
         }
-        appendRangesFrom(iasTaintInformation.getAllRanges());
+        appendRangesFrom(iasTaintInformation.getTaintRanges());
     }
 
     private void appendRangesFrom(List<IASTaintRange> ranges) {
@@ -382,7 +381,7 @@ public final class IASString implements IASTaintRangeStringable, IASExtendedTain
 
     private List<IASTaintRange> getSubstringRanges(int beginIndex, int endIndex) {
         if (isTainted()) {
-            List<IASTaintRange> ranges = this.taintInformation.getRanges(beginIndex, endIndex);
+            List<IASTaintRange> ranges = this.taintInformation.getTaintRanges(beginIndex, endIndex);
             IASTaintRangeUtils.adjustRanges(ranges, beginIndex, endIndex, beginIndex);
             return ranges;
         } else {
@@ -425,7 +424,7 @@ public final class IASString implements IASTaintRangeStringable, IASExtendedTain
     }
 
     List<IASTaintRange> getAllRanges() {
-        return isTainted() ? this.taintInformation.getAllRanges() : new ArrayList<>(0);
+        return isTainted() ? this.taintInformation.getTaintRanges() : new ArrayList<>(0);
     }
 
     @Override

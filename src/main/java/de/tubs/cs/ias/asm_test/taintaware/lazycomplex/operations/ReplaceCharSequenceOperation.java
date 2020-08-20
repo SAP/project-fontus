@@ -28,6 +28,6 @@ public class ReplaceCharSequenceOperation implements IASOperation {
             ranges.replaceTaintInformation(index, index + this.toReplace.length(), this.replacement.getTaintRanges(), this.replacement.length(), true);
         } while ((index = previousString.indexOf(this.toReplace.getString(), index + 1)) >= 0);
 
-        return ranges.getAllRanges();
+        return ranges.getTaintRanges();
     }
 }

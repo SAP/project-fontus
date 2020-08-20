@@ -10,7 +10,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder implements I
 
     public IASStringBuffer(StringBuffer sb, IASTaintInformation taintInformation) {
         super();
-        this.appendShifted(taintInformation.getAllRanges());
+        this.appendShifted(taintInformation.getTaintRanges());
         this.stringBuilder.append(sb);
     }
 

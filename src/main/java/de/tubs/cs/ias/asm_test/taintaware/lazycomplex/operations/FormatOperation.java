@@ -1,6 +1,6 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations;
 
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASLazyAware;
+import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.IASOperation;
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.IASString;
 import de.tubs.cs.ias.asm_test.taintaware.range.IASFormatter;
@@ -19,8 +19,8 @@ public class FormatOperation implements IASOperation {
         this.format = format;
         this.args = new Object[args.length];
         for (int i = 0; i < args.length; i++) {
-            if (args[i] instanceof IASLazyAware) {
-                IASString str = (IASString) ((IASLazyAware) args[i]).toIASString();
+            if (args[i] instanceof IASTaintAware) {
+                IASString str = (IASString) ((IASTaintAware) args[i]).toIASString();
                 this.args[i] = new de.tubs.cs.ias.asm_test.taintaware.range.IASString(str.getString(), str.getTaintRanges());
             } else if (this.isPrimitiveOrWrapper(args[i])) {
                 this.args[i] = args[i];
