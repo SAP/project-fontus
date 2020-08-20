@@ -12,7 +12,6 @@ import java.util.function.Function;
 
 public class IASTaintHandler {
     public static Void handleTaint(IASTaintAware taintAware) {
-        // TODO Different taint handling
         if (taintAware.isTainted()) {
             Abort abort = Configuration.getConfiguration().getAbort();
             abort.abort(taintAware);

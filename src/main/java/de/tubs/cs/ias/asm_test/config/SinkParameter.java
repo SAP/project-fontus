@@ -20,4 +20,11 @@ public class SinkParameter {
     public int getIndex() {
         return this.index;
     }
+
+    @Override
+    public String toString() {
+        return "SinkParameter{" +
+                "index=" + index +
+                '}';
+    }
 }

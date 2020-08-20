@@ -1,8 +1,9 @@
 package de.tubs.cs.ias.asm_test.taintaware.array;
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintInformationable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 
-public class IASTaintInformation {
+public class IASTaintInformation implements IASTaintInformationable {
     private int[] taints;
 
     public IASTaintInformation(int length) {
