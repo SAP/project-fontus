@@ -7,6 +7,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "source")
 public class Source {
+    @Override
+    public String toString() {
+        return "Source{" +
+                "name='" + name + '\'' +
+                ", function=" + function +
+                '}';
+    }
 
     @XmlElement
     private final String name;

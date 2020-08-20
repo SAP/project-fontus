@@ -4,7 +4,12 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.tubs.cs.ias.asm_test.utils.Utils;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Objects;
 
 /**
@@ -41,6 +46,21 @@ public class FunctionCall {
         this.isInterface = isInterface;
     }
 
+    public static FunctionCall fromMethod(Method method) {
+        int opcode;
+        if (Modifier.isStatic(method.getModifiers())) {
+            opcode = Opcodes.INVOKESTATIC;
+        } else if (method.getDeclaringClass().isInterface()) {
+            opcode = Opcodes.INVOKEINTERFACE;
+        } else if( Modifier.isPrivate(method.getModifiers())) {
+            opcode = Opcodes.INVOKESPECIAL;
+        } else {
+            opcode = Opcodes.INVOKEVIRTUAL;
+        }
+        String descriptor = Type.getType(method).getDescriptor();
+        return new FunctionCall(opcode, Utils.fixupReverse(method.getDeclaringClass().getName()), method.getName(), descriptor, method.getDeclaringClass().isInterface());
+    }
+
     public String getOwner() {
         return this.owner;
     }
@@ -59,6 +79,17 @@ public class FunctionCall {
 
     public boolean isInterface() {
         return this.isInterface;
+    }
+
+    @Override
+    public String toString() {
+        return "FunctionCall{" +
+                "opcode=" + opcode +
+                ", owner='" + owner + '\'' +
+                ", name='" + name + '\'' +
+                ", descriptor='" + descriptor + '\'' +
+                ", isInterface=" + isInterface +
+                '}';
     }
 
     @Override

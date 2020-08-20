@@ -57,4 +57,12 @@ public class Sink {
         return this.name;
     }
 
+    @Override
+    public String toString() {
+        return "Sink{" +
+                "name='" + name + '\'' +
+                ", function=" + function +
+                ", parameters=" + parameters +
+                '}';
+    }
 }

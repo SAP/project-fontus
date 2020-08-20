@@ -2,13 +2,14 @@ package de.tubs.cs.ias.asm_test.taintaware.lazybasic;
 
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.taintaware.lazybasic.operation.BaseLayer;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintInformationable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRanges;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
 
 import java.util.*;
 
-public class IASTaintInformation {
+public class IASTaintInformation implements IASTaintInformationable {
     private final List<IASLayer> layers;
     private IASTaintInformation previous;
 

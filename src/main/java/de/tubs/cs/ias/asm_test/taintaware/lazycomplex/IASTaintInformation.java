@@ -2,6 +2,7 @@ package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations.BaseOperation;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintInformationable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRangeUtils;
 
@@ -10,7 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class IASTaintInformation {
+public class IASTaintInformation implements IASTaintInformationable {
     private String previousString;
     private IASTaintInformation previousInformation;
     private IASOperation operation;

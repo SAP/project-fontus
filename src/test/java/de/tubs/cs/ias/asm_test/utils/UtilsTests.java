@@ -9,6 +9,7 @@ import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,7 +32,7 @@ class UtilsTests {
     @Test
     void testHandleReplacer() {
         Handle h = new Handle(Opcodes.H_INVOKESTATIC, "LambdaTest", "lambda$main$0", desc, false);
-        Handle h2 = Utils.instrumentHandle(h, TAINT_STRING_CONFIG);
+        Handle h2 = Utils.instrumentHandle(h, TAINT_STRING_CONFIG, new ArrayList<>());
         assertEquals(expected, h2.getDesc(), "Descriptors shall be equal");
     }
 }
