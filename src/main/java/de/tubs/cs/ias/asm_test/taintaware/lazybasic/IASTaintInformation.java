@@ -15,8 +15,8 @@ public class IASTaintInformation implements IASTaintInformationable {
 
     public IASTaintInformation(List<IASLayer> layers, IASTaintInformation previous) {
         this.layers = new ArrayList<>();
-        this.appendLayers(layers);
         this.previous = previous;
+        this.appendLayers(layers);
     }
 
     public IASTaintInformation(BaseLayer baseLayer) {
@@ -69,7 +69,7 @@ public class IASTaintInformation implements IASTaintInformationable {
 
     private synchronized List<IASTaintRange> evaluate() {
         if (this.isBase()) {
-            return ((BaseLayer)this.layers.get(0)).getBase();
+            return ((BaseLayer) this.layers.get(0)).getBase();
         }
 
         List<IASTaintRange> previousRanges = this.getPreviousRanges();
@@ -83,9 +83,11 @@ public class IASTaintInformation implements IASTaintInformationable {
     }
 
     private synchronized void cache(List<IASTaintRange> ranges) {
-        this.layers.clear();
-        this.layers.add(new BaseLayer(ranges));
-        this.previous = null;
+        if (Configuration.getConfiguration().useCaching()) {
+            this.layers.clear();
+            this.layers.add(new BaseLayer(ranges));
+            this.previous = null;
+        }
     }
 
     public synchronized boolean isTainted() {
