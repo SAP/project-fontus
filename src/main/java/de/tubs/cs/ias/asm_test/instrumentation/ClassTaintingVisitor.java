@@ -279,14 +279,16 @@ class ClassTaintingVisitor extends ClassVisitor {
         for (String param : originalDescriptor.getParameters()) {
 
             // Creating new Object if necessary and duplicating it for initialization
+            mv.visitVarInsn(loadCodeByType(param), i);
             if (isDescriptorNameToInstrument(param)) {
                 Type instrumentedType = Type.getType(this.instrumentQN(param));
 
-                mv.visitVarInsn(loadCodeByType(param), i);
-                mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
-                mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedType.getInternalName());
-            } else {
-                mv.visitVarInsn(loadCodeByType(param), i);
+                if (Type.getType(param).equals(Type.getType(String.class))) {
+                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringQN(), Constants.FROM_STRING, this.stringConfig.getFromStringDesc(), false);
+                } else {
+                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
+                    mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedType.getInternalName());
+                }
             }
             i += Type.getType(param).getSize();
         }
