@@ -31,19 +31,6 @@ public class ConversionUtils {
         toConcrete.put(Pattern.class, (obj) -> factory.createPattern((Pattern) obj));
         toConcrete.put(Properties.class, (obj) -> factory.createProperties((Properties) obj));
 
-        toInterface.put(String.class, (obj) -> {
-            if (obj instanceof Class) {
-                return IASStringable.class;
-            }
-            return factory.createString((String) obj);
-        });
-        toInterface.put(StringBuilder.class, (obj) -> factory.createStringBuilder((StringBuilder) obj));
-        toInterface.put(StringBuffer.class, (obj) -> factory.createStringBuffer((StringBuffer) obj));
-        toInterface.put(Formatter.class, (obj) -> factory.createFormatter((Formatter) obj));
-        toInterface.put(Matcher.class, (obj) -> factory.createMatcher((Matcher) obj));
-        toInterface.put(Pattern.class, (obj) -> factory.createPattern((Pattern) obj));
-        toInterface.put(Properties.class, (obj) -> factory.createProperties((Properties) obj));
-
         toOrig.put(IASStringable.class, (obj) -> {
             if (obj instanceof Class) {
                 return String.class;
@@ -116,12 +103,58 @@ public class ConversionUtils {
         return convertObject(object, toOrig);
     }
 
-    public static Object convertToInterface(Object object) {
-        return convertObject(object, toInterface);
+    private static boolean isHandlable(Class cls) {
+        return cls == String.class || cls == StringBuilder.class || cls == StringBuffer.class || cls == Formatter.class || cls == Pattern.class || cls == Matcher.class || cls == Properties.class;
     }
 
     public static Object convertToConcrete(Object object) {
-        return convertObject(object, toConcrete);
+        if (object == null) {
+            return null;
+        } else if (object instanceof IASTaintAware) {
+            return object;
+        } else if (object instanceof Class) {
+            return object;
+        }
+        Class cls = object.getClass();
+        if (cls == String.class) {
+            return factory.createString((String) object);
+        } else if (cls == StringBuilder.class) {
+            return factory.createStringBuilder((StringBuilder) object);
+        } else if (cls == StringBuffer.class) {
+            return factory.createStringBuffer((StringBuffer) object);
+        } else if (cls == Formatter.class) {
+            return factory.createFormatter((Formatter) object);
+        } else if (cls == Matcher.class) {
+            return factory.createMatcher((Matcher) object);
+        } else if (cls == Pattern.class) {
+            return factory.createPattern((Pattern) object);
+        } else if (cls == Properties.class) {
+            return factory.createProperties((Properties) object);
+        } else if (cls.isArray()) {
+            cls = object.getClass().getComponentType();
+            if (!cls.isPrimitive() && isHandlable(cls)) {
+                Object[] array = (Object[]) object;
+                Class<?> arrayType = (Class<?>) convertClassToConcrete(cls);
+                Object[] result = (Object[]) Array.newInstance(arrayType, array.length);
+                for (int i = 0; i < array.length; i++) {
+                    result[i] = convertToConcrete(array[i]);
+                }
+                return result;
+            }
+        }
+        return object;
+
+        // Unoptimized version:
+//        Statistics.INSTANCE.countConversion(object);
+//        if (object instanceof IASTaintAware) {
+//            return object;
+//        }
+//        if (object instanceof String) {
+//            Statistics.INSTANCE.countConversionUtilsShortcut();
+//            return factory.createString((String) object);
+//        }
+//        Statistics.INSTANCE.countConversionUtilsLong();
+//        return convertObject(object, toConcrete);
     }
 
     public static Object convertClassToOrig(Class<?> cls) {
