@@ -278,7 +278,6 @@ class ClassTaintingVisitor extends ClassVisitor {
         int i = 1;
         for (String param : originalDescriptor.getParameters()) {
 
-            // Creating new Object if necessary and duplicating it for initialization
             mv.visitVarInsn(loadCodeByType(param), i);
             if (isDescriptorNameToInstrument(param)) {
                 Type instrumentedType = Type.getType(this.instrumentQN(param));
