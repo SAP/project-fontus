@@ -34,7 +34,9 @@ public class StringMethodInstrumentationStrategy extends AbstractMethodInstrumen
         this.mv.visitInsn(Opcodes.DUP);
         this.mv.visitLdcInsn(value);
         this.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.stringConfig.getTStringQN(), Constants.Init, Constants.TStringInitUntaintedDesc, false);
-        this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.stringConfig.getTStringQN(), "intern", String.format("()%s", Type.getType(IASStringable.class).getDescriptor()), false);
+        // Interning not necessary, because CompareProxy catches comparings
+        // Maybe increases memory footprint enormous
+//        this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.stringConfig.getTStringQN(), "intern", String.format("()%s", Type.getType(IASStringable.class).getDescriptor()), false);
         this.mv.visitTypeInsn(Opcodes.CHECKCAST, this.stringConfig.getTStringQN());
     }
 
