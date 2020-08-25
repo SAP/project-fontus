@@ -3,6 +3,7 @@ package de.tubs.cs.ias.asm_test.taintaware.lazycomplex;
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations.BaseOperation;
 import de.tubs.cs.ias.asm_test.taintaware.shared.*;
+import de.tubs.cs.ias.asm_test.utils.stats.Statistics;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,24 +20,36 @@ public class IASTaintInformation implements IASTaintInformationable {
         this.previousString = previousString;
         this.previousInformation = previousInformation;
         this.operation = Objects.requireNonNull(operation);
+        if (Configuration.getConfiguration().collectStats()) {
+            Statistics.INSTANCE.incrementLazyTaintInformationCreated();
+        }
     }
 
     public IASTaintInformation(BaseOperation operation) {
         this.previousString = null;
         this.previousInformation = null;
         this.operation = Objects.requireNonNull(operation);
+        if (Configuration.getConfiguration().collectStats()) {
+            Statistics.INSTANCE.incrementLazyTaintInformationCreated();
+        }
     }
 
     public IASTaintInformation() {
         this.previousString = null;
         this.previousInformation = null;
         this.operation = new BaseOperation();
+        if (Configuration.getConfiguration().collectStats()) {
+            Statistics.INSTANCE.incrementLazyTaintInformationCreated();
+        }
     }
 
     public IASTaintInformation(List<IASTaintRange> taintRanges) {
         this.previousString = null;
         this.previousInformation = null;
         this.operation = new BaseOperation(taintRanges);
+        if (Configuration.getConfiguration().collectStats()) {
+            Statistics.INSTANCE.incrementLazyTaintInformationCreated();
+        }
     }
 
     public synchronized boolean isTainted() {
@@ -63,6 +76,9 @@ public class IASTaintInformation implements IASTaintInformationable {
 
     private synchronized List<IASTaintRange> evaluate() {
         if (this.cache == null) {
+            if (Configuration.getConfiguration().collectStats()) {
+                Statistics.INSTANCE.incrementLazyTaintInformationEvaluated();
+            }
             List<IASTaintRange> ranges = null;
             if (this.previousInformation != null) {
                 ranges = new ArrayList<>(this.previousInformation.evaluate());
