@@ -6,6 +6,7 @@ import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintInformationable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRanges;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+import de.tubs.cs.ias.asm_test.utils.stats.Statistics;
 
 import java.util.*;
 
@@ -17,6 +18,9 @@ public class IASTaintInformation implements IASTaintInformationable {
         this.layers = new ArrayList<>();
         this.previous = previous;
         this.appendLayers(layers);
+        if (Configuration.getConfiguration().collectStats()) {
+            Statistics.INSTANCE.incrementLazyTaintInformationCreated();
+        }
     }
 
     public IASTaintInformation(BaseLayer baseLayer) {
@@ -25,6 +29,9 @@ public class IASTaintInformation implements IASTaintInformationable {
 
     public IASTaintInformation() {
         this.layers = new ArrayList<>();
+        if (Configuration.getConfiguration().collectStats()) {
+            Statistics.INSTANCE.incrementLazyTaintInformationCreated();
+        }
     }
 
     private synchronized void appendLayers(List<IASLayer> layers) {
@@ -70,6 +77,10 @@ public class IASTaintInformation implements IASTaintInformationable {
     private synchronized List<IASTaintRange> evaluate() {
         if (this.isBase()) {
             return ((BaseLayer) this.layers.get(0)).getBase();
+        }
+
+        if (Configuration.getConfiguration().collectStats()) {
+            Statistics.INSTANCE.incrementLazyTaintInformationEvaluated();
         }
 
         List<IASTaintRange> previousRanges = this.getPreviousRanges();

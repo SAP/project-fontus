@@ -1,4 +1,4 @@
-package de.tubs.cs.ias.asm_test.utils;
+package de.tubs.cs.ias.asm_test.utils.stats;
 
 public enum Statistics {
     INSTANCE;
@@ -8,8 +8,19 @@ public enum Statistics {
     private long stringCount;
     private long taintRangeSum;
     private long untaintedStringCount;
+    private long lazyTaintInformationCreated;
+    private long lazyTaintInformationEvaluated;
 
     Statistics() {
+        StatisticsMXBeanImpl.register();
+    }
+
+    public synchronized void incrementLazyTaintInformationCreated() {
+        lazyTaintInformationCreated++;
+    }
+
+    public synchronized void incrementLazyTaintInformationEvaluated() {
+        lazyTaintInformationEvaluated++;
     }
 
     public synchronized void addRangeCount(int rangeCount) {
@@ -38,12 +49,36 @@ public enum Statistics {
                         "Untainted IASString count %d\n" +
                         "Tainted IASString count %d\n" +
                         "Share of IASStrings with zero taint ranges: %f\n" +
-                        "Average number of taint ranges per String: %f\n",
+                        "Average number of taint ranges per String: %f\n" +
+                        "Number of lazy TI's created: %d\n" +
+                        "Number of lazy TI's evaluated: %d\n",
                 stringCount,
                 untaintedStringCount,
                 stringCount - untaintedStringCount,
                 getZeroTaintRangeShare(),
-                getRangeCountAverage()
+                getRangeCountAverage(),
+                lazyTaintInformationCreated,
+                lazyTaintInformationEvaluated
         ));
+    }
+
+    public long getStringCount() {
+        return stringCount;
+    }
+
+    public long getTaintRangeSum() {
+        return taintRangeSum;
+    }
+
+    public long getUntaintedStringCount() {
+        return untaintedStringCount;
+    }
+
+    public long getLazyTaintInformationCreated() {
+        return lazyTaintInformationCreated;
+    }
+
+    public long getLazyTaintInformationEvaluated() {
+        return lazyTaintInformationEvaluated;
     }
 }
