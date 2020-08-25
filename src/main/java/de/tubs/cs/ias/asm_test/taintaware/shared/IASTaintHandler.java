@@ -12,7 +12,9 @@ import java.util.function.Function;
 
 public class IASTaintHandler {
     public static Void handleTaint(IASTaintAware taintAware) {
-        if (taintAware.isTainted()) {
+        boolean isTainted = taintAware.isTainted();
+        if(Configuration.getConfiguration().collectStats())
+        if (isTainted) {
             Abort abort = Configuration.getConfiguration().getAbort();
             abort.abort(taintAware);
         }
