@@ -28,6 +28,9 @@ public final class IASString implements IASTaintRangeAware, IASStringable {
     public IASString(byte bytes[], int offset, int length, IASStringable charsetName)
             throws UnsupportedEncodingException {
         this.string = new String(bytes, offset, length, charsetName.getString());
+        if (Configuration.getConfiguration().collectStats()) {
+            Statistics.INSTANCE.addRangeCount(0);
+        }
     }
 
 
