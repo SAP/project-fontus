@@ -68,7 +68,7 @@ public class AgentConfig {
         TaintMethod taintMethod = TaintMethod.defaultTaintMethod();
         Boolean useCaching = null;
         Integer layerThreshold = null;
-        Boolean countRanges = null;
+        Boolean collectStats = null;
         Abort abort = null;
 
         for (String part : parts) {
@@ -90,9 +90,9 @@ public class AgentConfig {
                 String layerThresholdString = afterEquals(part);
                 layerThreshold = Integer.parseInt(layerThresholdString);
             }
-            if (part.startsWith("count_ranges=")) {
-                String countRangesString = afterEquals(part);
-                countRanges = Boolean.parseBoolean(countRangesString);
+            if (part.startsWith("collect_stats=")) {
+                String collectStatsString = afterEquals(part);
+                collectStats = Boolean.parseBoolean(collectStatsString);
             }
             if (part.startsWith("config=")) {
                 String filename = afterEquals(part);
@@ -121,8 +121,8 @@ public class AgentConfig {
         if (layerThreshold != null) {
             c.setLayerThreshold(layerThreshold);
         }
-        if (countRanges != null) {
-            c.setCountRanges(countRanges);
+        if (collectStats != null) {
+            c.setCollectStats(collectStats);
         }
         if (loggingEnabled != null) {
             c.setLoggingEnabled(loggingEnabled);

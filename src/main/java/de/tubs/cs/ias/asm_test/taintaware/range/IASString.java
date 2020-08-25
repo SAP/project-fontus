@@ -20,7 +20,7 @@ public final class IASString implements IASTaintRangeAware, IASStringable {
 
     public IASString() {
         this.string = "";
-        if (Configuration.getConfiguration().countRanges()) {
+        if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.addRangeCount(0);
         }
     }
@@ -36,7 +36,7 @@ public final class IASString implements IASTaintRangeAware, IASStringable {
             throw new IllegalArgumentException("String cannot be null");
         }
         this.string = s;
-        if (Configuration.getConfiguration().countRanges()) {
+        if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.addRangeCount(0);
         }
     }
@@ -44,7 +44,7 @@ public final class IASString implements IASTaintRangeAware, IASStringable {
     public IASString(String s, boolean tainted) {
         this(s);
         setTaint(tainted);
-        if (Configuration.getConfiguration().countRanges()) {
+        if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.addRangeCount(1);
         }
     }
@@ -52,7 +52,7 @@ public final class IASString implements IASTaintRangeAware, IASStringable {
     public IASString(IASStringable s) {
         this.string = s.getString();
         this.taintInformation = new IASTaintInformation(((IASString) s).getTaintRanges());
-        if (Configuration.getConfiguration().countRanges()) {
+        if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.addRangeCount(this.taintInformation.getTaintRanges().size());
         }
     }
@@ -61,7 +61,7 @@ public final class IASString implements IASTaintRangeAware, IASStringable {
         IASString s = (IASString) strb.toIASString();
         this.string = s.getString();
         this.taintInformation = new IASTaintInformation(s.getTaintRanges());
-        if (Configuration.getConfiguration().countRanges()) {
+        if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.addRangeCount(this.taintInformation.getTaintRanges().size());
         }
     }
@@ -69,7 +69,7 @@ public final class IASString implements IASTaintRangeAware, IASStringable {
     public IASString(String s, List<IASTaintRange> ranges) {
         this(s);
         this.appendRangesFrom(ranges);
-        if (Configuration.getConfiguration().countRanges()) {
+        if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.addRangeCount(ranges.size());
         }
     }
@@ -77,7 +77,7 @@ public final class IASString implements IASTaintRangeAware, IASStringable {
     public IASString(CharSequence sequence, List<IASTaintRange> ranges) {
         this(sequence.toString());
         this.appendRangesFrom(ranges);
-        if (Configuration.getConfiguration().countRanges()) {
+        if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.addRangeCount(ranges.size());
         }
     }

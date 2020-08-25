@@ -40,7 +40,7 @@ public class Configuration {
 
     private int layerThreshold = defaultLayerThreshold();
 
-    private boolean countRanges = defaultCountRanges();
+    private boolean collectStats = defaultCollectStats();
 
     private Abort abort = defaultAbort();
 
@@ -62,7 +62,7 @@ public class Configuration {
         return 30;
     }
 
-    public static boolean defaultCountRanges() {
+    public static boolean defaultCollectStats() {
         return false;
     }
 
@@ -70,8 +70,8 @@ public class Configuration {
         return new ExitAbort();
     }
 
-    public void setCountRanges(boolean countRanges) {
-        this.countRanges = countRanges;
+    public void setCollectStats(boolean collectStats) {
+        this.collectStats = collectStats;
     }
 
     public boolean useCaching() {
@@ -268,8 +268,8 @@ public class Configuration {
         return this.taintMethod;
     }
 
-    public boolean countRanges() {
-        return this.countRanges;
+    public boolean collectStats() {
+        return this.collectStats;
     }
 
     public static Configuration getConfiguration() {
@@ -306,14 +306,14 @@ public class Configuration {
         Configuration configuration = new Configuration();
         configuration.setTaintMethod(method);
 
-        String countRangesString = System.getenv("ASM_COUNT_RANGES");
-        if (countRangesString != null) {
+        String collectStatsString = System.getenv("ASM_COLLECT_STATS");
+        if (collectStatsString != null) {
             try {
-                boolean countRanges = Boolean.parseBoolean(countRangesString);
-                configuration.setCountRanges(countRanges);
-                logger.info("Set count_ranges to {}", countRanges);
+                boolean collectStats = Boolean.parseBoolean(collectStatsString);
+                configuration.setCollectStats(collectStats);
+                logger.info("Set collect_stats to {}", collectStats);
             } catch (Exception ex) {
-                logger.error("Couldn't parse ASM_COUNT_RANGES environment variable: {}", countRangesString);
+                logger.error("Couldn't parse ASM_COLLECT_STATS environment variable: {}", collectStatsString);
             }
         }
 
@@ -324,7 +324,7 @@ public class Configuration {
                 configuration.setUseCaching(useCaching);
                 logger.info("Set use_caching to {}", useCaching);
             } catch (Exception ex) {
-                logger.error("Couldn't parse ASM_USE_CACHING environment variable: {}", countRangesString);
+                logger.error("Couldn't parse ASM_USE_CACHING environment variable: {}", collectStatsString);
             }
         }
 
@@ -335,7 +335,7 @@ public class Configuration {
                 configuration.setLayerThreshold(layerThreshold);
                 logger.info("Set layer_threshold to {}", layerThreshold);
             } catch (Exception ex) {
-                logger.error("Couldn't parse ASM_LAYER_THRESHOLD environment variable: {}", countRangesString);
+                logger.error("Couldn't parse ASM_LAYER_THRESHOLD environment variable: {}", collectStatsString);
             }
         }
 
