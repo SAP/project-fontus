@@ -16,4 +16,12 @@ public interface StatisticsMXBean {
     double getZeroTaintRangeShare();
 
     double getRangeCountAverage();
+
+    long getInitializedStrings();
+
+    long getTaintChecked();
+
+    long getTaintCheckUntainted();
+
+    long getTaintCheckTainted();
 }

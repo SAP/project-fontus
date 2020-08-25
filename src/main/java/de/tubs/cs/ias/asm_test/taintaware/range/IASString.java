@@ -57,6 +57,7 @@ public final class IASString implements IASTaintRangeAware, IASStringable {
         this.taintInformation = new IASTaintInformation(((IASString) s).getTaintRanges());
         if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.addRangeCount(this.taintInformation.getTaintRanges().size());
+            Statistics.INSTANCE.incrementInitialized();
         }
     }
 
@@ -66,6 +67,7 @@ public final class IASString implements IASTaintRangeAware, IASStringable {
         this.taintInformation = new IASTaintInformation(s.getTaintRanges());
         if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.addRangeCount(this.taintInformation.getTaintRanges().size());
+            Statistics.INSTANCE.incrementInitialized();
         }
     }
 
@@ -118,6 +120,9 @@ public final class IASString implements IASTaintRangeAware, IASStringable {
         }
         if (source != null) {
             if (isUninitialized()) {
+                if (Configuration.getConfiguration().collectStats()) {
+                    Statistics.INSTANCE.incrementInitialized();
+                }
                 this.taintInformation = new IASTaintInformation();
             }
             this.taintInformation.addRange(0, this.string.length(), source);
@@ -131,6 +136,9 @@ public final class IASString implements IASTaintRangeAware, IASStringable {
         if (ranges == null || ranges.size() == 0) {
             this.taintInformation = null;
         } else {
+            if (Configuration.getConfiguration().collectStats() && isUninitialized()) {
+                Statistics.INSTANCE.incrementInitialized();
+            }
             this.taintInformation = new IASTaintInformation(ranges);
         }
     }
@@ -138,6 +146,10 @@ public final class IASString implements IASTaintRangeAware, IASStringable {
     public void initialize() {
         if (isUninitialized()) {
             this.taintInformation = new IASTaintInformation();
+
+            if (Configuration.getConfiguration().collectStats() && isUninitialized()) {
+                Statistics.INSTANCE.incrementInitialized();
+            }
         }
     }
 
@@ -159,6 +171,9 @@ public final class IASString implements IASTaintRangeAware, IASStringable {
     private void appendRangesFrom(List<IASTaintRange> ranges) {
         if (isUninitialized() && ranges.size() > 0) {
             this.taintInformation = new IASTaintInformation(ranges);
+            if (Configuration.getConfiguration().collectStats()) {
+                Statistics.INSTANCE.incrementInitialized();
+            }
         } else if (ranges.size() > 0) {
             this.taintInformation.appendRanges(ranges);
         }
