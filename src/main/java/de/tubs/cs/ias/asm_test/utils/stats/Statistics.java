@@ -15,6 +15,9 @@ public enum Statistics implements StatisticsMXBean {
     private long untaintedStringCount;
     private long lazyTaintInformationCreated;
     private long lazyTaintInformationEvaluated;
+    private long initializedStrings;
+    private long taintCheckUntainted;
+    private long taintCheckTainted;
 
     Statistics() {
         register();
@@ -27,6 +30,9 @@ public enum Statistics implements StatisticsMXBean {
         untaintedStringCount = 0;
         lazyTaintInformationCreated = 0;
         lazyTaintInformationEvaluated = 0;
+        taintCheckUntainted = 0;
+        taintCheckTainted = 0;
+        initializedStrings = 0;
     }
 
     public synchronized void incrementLazyTaintInformationCreated() {
@@ -119,5 +125,37 @@ public enum Statistics implements StatisticsMXBean {
 
     public long getLazyTaintInformationEvaluated() {
         return lazyTaintInformationEvaluated;
+    }
+
+    public synchronized void incrementInitialized() {
+        this.initializedStrings++;
+    }
+
+    @Override
+    public synchronized long getInitializedStrings() {
+        return initializedStrings;
+    }
+
+    public synchronized void recordTaintCheck(boolean isTainted) {
+        if(isTainted) {
+            taintCheckTainted++;
+        } else {
+            taintCheckUntainted++;
+        }
+    }
+
+    @Override
+    public long getTaintChecked() {
+        return taintCheckTainted + taintCheckUntainted;
+    }
+
+    @Override
+    public long getTaintCheckUntainted() {
+        return taintCheckUntainted;
+    }
+
+    @Override
+    public long getTaintCheckTainted() {
+        return taintCheckTainted;
     }
 }

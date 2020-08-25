@@ -3,6 +3,7 @@ package de.tubs.cs.ias.asm_test.taintaware.shared;
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.utils.abort.Abort;
+import de.tubs.cs.ias.asm_test.utils.stats.Statistics;
 
 import java.util.Collections;
 import java.util.Enumeration;
@@ -13,7 +14,11 @@ import java.util.function.Function;
 public class IASTaintHandler {
     public static Void handleTaint(IASTaintAware taintAware) {
         boolean isTainted = taintAware.isTainted();
-        if(Configuration.getConfiguration().collectStats())
+
+        if (Configuration.getConfiguration().collectStats()) {
+            Statistics.INSTANCE.recordTaintCheck(isTainted);
+        }
+
         if (isTainted) {
             Abort abort = Configuration.getConfiguration().getAbort();
             abort.abort(taintAware);
