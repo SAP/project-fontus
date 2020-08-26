@@ -18,6 +18,7 @@ public enum Statistics implements StatisticsMXBean {
     private long initializedStrings;
     private long taintCheckUntainted;
     private long taintCheckTainted;
+    private long lazyThresholdExceededCount;
 
     Statistics() {
         register();
@@ -41,6 +42,10 @@ public enum Statistics implements StatisticsMXBean {
 
     public synchronized void incrementLazyTaintInformationEvaluated() {
         lazyTaintInformationEvaluated++;
+    }
+
+    public synchronized void incrementLazyThresholdExceededCount() {
+        lazyThresholdExceededCount++;
     }
 
     public synchronized void addRangeCount(int rangeCount) {
@@ -117,6 +122,11 @@ public enum Statistics implements StatisticsMXBean {
     @Override
     public long getLazyEvaluatedCount() {
         return getLazyTaintInformationEvaluated();
+    }
+
+    @Override
+    public long getLazyThresholdExceededCount() {
+        return this.lazyThresholdExceededCount;
     }
 
     public long getLazyTaintInformationCreated() {

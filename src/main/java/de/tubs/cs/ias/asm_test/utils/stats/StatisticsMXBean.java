@@ -13,6 +13,8 @@ public interface StatisticsMXBean {
 
     long getLazyEvaluatedCount();
 
+    long getLazyThresholdExceededCount();
+
     double getZeroTaintRangeShare();
 
     double getRangeCountAverage();

@@ -42,6 +42,9 @@ public class IASTaintInformation implements IASTaintInformationable {
 
     private synchronized void appendLayer(IASLayer layer) {
         if (this.getLayerDepth() >= Configuration.getConfiguration().getLayerThreshold()) {
+            if (Configuration.getConfiguration().collectStats()) {
+                Statistics.INSTANCE.incrementLazyThresholdExceededCount();
+            }
             this.cache(this.evaluate());
         }
         this.layers.add(layer);
