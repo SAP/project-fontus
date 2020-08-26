@@ -515,12 +515,10 @@ public final class IASString implements IASStringable, IASTaintRangeAware {
 
     @Override
     public void setTaint(boolean taint) {
-        if (taint != this.isTainted()) {
-            if (taint) {
-                this.taintInformation = new IASTaintInformation(new BaseOperation(0, this.length(), IASTaintSource.TS_CS_UNKNOWN_ORIGIN));
-            } else {
-                this.taintInformation = null;
-            }
+        if (taint) {
+            this.taintInformation = new IASTaintInformation(new BaseOperation(0, this.length(), IASTaintSource.TS_CS_UNKNOWN_ORIGIN));
+        } else {
+            this.taintInformation = null;
         }
     }
 
