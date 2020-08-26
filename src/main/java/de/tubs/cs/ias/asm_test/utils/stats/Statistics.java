@@ -8,8 +8,6 @@ import java.lang.management.ManagementFactory;
 public enum Statistics implements StatisticsMXBean {
     INSTANCE;
 
-    private static final int PRINT_INTERVAL = 10;
-
     private long stringCount;
     private long taintRangeSum;
     private long untaintedStringCount;
@@ -55,9 +53,6 @@ public enum Statistics implements StatisticsMXBean {
             untaintedStringCount++;
         }
         long tainted = stringCount - untaintedStringCount;
-        if (tainted > 0 && tainted % PRINT_INTERVAL == 0) {
-            printStatistics();
-        }
     }
 
     @Override
@@ -69,26 +64,6 @@ public enum Statistics implements StatisticsMXBean {
     public synchronized double getZeroTaintRangeShare() {
         return ((double) untaintedStringCount) / stringCount;
     }
-
-    public synchronized void printStatistics() {
-        System.out.println(String.format(
-                "Total IASString count: %d\n" +
-                        "Untainted IASString count %d\n" +
-                        "Tainted IASString count %d\n" +
-                        "Share of IASStrings with zero taint ranges: %f\n" +
-                        "Average number of taint ranges per String: %f\n" +
-                        "Number of lazy TI's created: %d\n" +
-                        "Number of lazy TI's evaluated: %d\n",
-                stringCount,
-                untaintedStringCount,
-                stringCount - untaintedStringCount,
-                getZeroTaintRangeShare(),
-                getRangeCountAverage(),
-                lazyTaintInformationCreated,
-                lazyTaintInformationEvaluated
-        ));
-    }
-
 
     private void register() {
         try {
