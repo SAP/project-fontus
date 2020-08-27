@@ -80,7 +80,12 @@ public class IASAbstractStringBuilder implements IASAbstractStringBuilderable, I
 
     @Override
     public IASAbstractStringBuilder append(IASStringable toAppend) {
-        return this.append((Object) toAppend);
+        if (toAppend == null) {
+            toAppend = new IASString("null");
+        }
+        this.derive(new InsertLayer(this.stringBuilder.length(), this.stringBuilder.length() + toAppend.length(), ((IASString) toAppend).getTaintInformation()));
+        this.stringBuilder.append(toAppend.getString());
+        return this;
     }
 
     @Override

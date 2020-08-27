@@ -97,7 +97,12 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
 
     @Override
     public IASAbstractStringBuilderable append(IASStringable str) {
-        return this.append((Object) str);
+        if (str == null) {
+            str = new IASString("null");
+        }
+        this.derive(new ConcatOperation((IASString) str), ((IASString) str).isInitialized());
+        this.stringBuilder.append(str.getString());
+        return this;
     }
 
     @Override
