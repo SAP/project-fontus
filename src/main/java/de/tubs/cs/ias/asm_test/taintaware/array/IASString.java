@@ -384,13 +384,15 @@ public final class IASString implements IASArrayAware, IASStringable {
     }
 
     public IASString concat(IASStringable str) {
-        int[] firstTaint = this.getTaints();
-        int[] secondTaint = ((IASString) str).getTaints();
-        int[] newTaint = new int[firstTaint.length + secondTaint.length];
-        System.arraycopy(firstTaint, 0, newTaint, 0, firstTaint.length);
-        System.arraycopy(secondTaint, 0, newTaint, firstTaint.length, secondTaint.length);
-        IASString newStr = new IASString(this.string.concat(str.getString()), newTaint);
-        return newStr;
+        if (this.isInitialized() || ((IASString) str).isInitialized()) {
+            int[] firstTaint = this.getTaints();
+            int[] secondTaint = ((IASString) str).getTaints();
+            int[] newTaint = new int[firstTaint.length + secondTaint.length];
+            System.arraycopy(firstTaint, 0, newTaint, 0, firstTaint.length);
+            System.arraycopy(secondTaint, 0, newTaint, firstTaint.length, secondTaint.length);
+            return new IASString(this.string.concat(str.getString()), newTaint);
+        }
+        return new IASString(this.string.concat(str.getString()));
     }
 
     /**
