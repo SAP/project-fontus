@@ -107,67 +107,68 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
 
     @Override
     public IASAbstractStringBuilderable append(CharSequence seq) {
-        return this.append((Object) seq);
+        IASString s = IASString.valueOf(seq);
+        return this.append(s);
     }
 
     @Override
     public IASAbstractStringBuilderable append(CharSequence seq, int start, int end) {
         IASString s = IASString.valueOf(seq, start, end);
-        return this.append((Object) s);
+        return this.append(s);
     }
 
     @Override
     public IASAbstractStringBuilderable append(char[] s, int offset, int len) {
-        IASString str = IASString.valueOf(s, offset, len);
-        return this.append((Object) str);
+        this.stringBuilder.append(s, offset, len);
+        return this;
     }
 
     @Override
     public IASAbstractStringBuilderable append(char[] chars) {
-        IASString str = IASString.valueOf(chars);
-        return this.append((Object) str);
+        this.stringBuilder.append(chars);
+        return this;
     }
 
     @Override
     public IASAbstractStringBuilderable append(boolean b) {
-        IASString str = IASString.valueOf(b);
-        return this.append((Object) str);
+        this.stringBuilder.append(b);
+        return this;
     }
 
     @Override
     public IASAbstractStringBuilderable append(int i) {
-        IASString str = IASString.valueOf(i);
-        return this.append((Object) str);
+        this.stringBuilder.append(i);
+        return this;
     }
 
     @Override
     public IASAbstractStringBuilderable append(long lng) {
-        IASString str = IASString.valueOf(lng);
-        return this.append((Object) str);
+        this.stringBuilder.append(lng);
+        return this;
     }
 
     @Override
     public IASAbstractStringBuilderable append(float f) {
-        IASString str = IASString.valueOf(f);
-        return this.append((Object) str);
+        this.stringBuilder.append(f);
+        return this;
     }
 
     @Override
     public IASAbstractStringBuilderable append(char c) {
-        IASString str = IASString.valueOf(c);
-        return this.append((Object) str);
+        this.stringBuilder.append(c);
+        return this;
     }
 
     @Override
     public IASAbstractStringBuilderable append(double d) {
-        IASString str = IASString.valueOf(d);
-        return this.append((Object) str);
+        this.stringBuilder.append(d);
+        return this;
     }
 
     @Override
     public IASAbstractStringBuilderable appendCodePoint(int codePoint) {
-        IASString str = IASString.valueOf(Character.toChars(codePoint));
-        return this.append((Object) str);
+        this.stringBuilder.appendCodePoint(codePoint);
+        return this;
     }
 
     @Override
