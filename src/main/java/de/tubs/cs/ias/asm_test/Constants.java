@@ -27,6 +27,8 @@ public final class Constants {
     public static final String CompareProxyQN = Type.getType(IASCompareProxy.class).getInternalName();
     public static final String CompareProxyEqualsName = "compareRefEquals";
     public static final String CompareProxyEqualsDesc;
+    public static final String UNTAINTED_METHOD_NAME = "untainted";
+    public static final String UNTAINTED_METHOD_PATH = "untainted/";
 
     static {
         try {
