@@ -3,6 +3,8 @@ package de.tubs.cs.ias.asm_test;
 import de.tubs.cs.ias.asm_test.agent.AgentConfig;
 import de.tubs.cs.ias.asm_test.config.Configuration;
 
+import de.tubs.cs.ias.asm_test.config.TaintMethod;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.net.URISyntaxException;
@@ -15,6 +17,10 @@ import static org.junit.jupiter.api.Assertions.*;
 @SuppressWarnings({ "DuplicateStringLiteralInspection", "SpellCheckingInspection", "ClassIndependentOfModule",
         "ClassOnlyUsedInOneModule" })
 class AgentConfigTests {
+    @BeforeAll
+    public static void init() {
+        Configuration.setTestConfig(TaintMethod.defaultTaintMethod());
+    }
     @Test
     void parseNull() {
         Configuration cfg = AgentConfig.parseConfig(null);
@@ -32,7 +38,7 @@ class AgentConfigTests {
 
     @Test
     void parseRubbish() {
-        Configuration cfg = AgentConfig.parseConfig("sup;son");
+        Configuration cfg = AgentConfig.parseConfig("sup,son");
         assertFalse(cfg.isVerbose(), "parsing rubbish should result in verbose == false");
         assertEquals(new ArrayList<>(0), cfg.getBlacklistedMainClasses(),
                 "parsing rubbish should result in Empty List");
@@ -65,7 +71,7 @@ class AgentConfigTests {
         URL curl = AgentConfigTests.class.getResource(Constants.CONFIGURATION_XML_FILENAME);
         String cfname = Paths.get(curl.toURI()).toString();
     
-        Configuration cfg = AgentConfig.parseConfig("blacklisted_main_classes=" + fname + ";config=" + cfname);
+        Configuration cfg = AgentConfig.parseConfig("blacklisted_main_classes=" + fname + ",config=" + cfname);
 
         assertTrue(cfg.isVerbose(), "parsing list only should result in verbose == true");
         assertEquals(5, cfg.getBlacklistedMainClasses().size(), "Should retrieve the correct number of blacklisted classes.");
@@ -75,7 +81,7 @@ class AgentConfigTests {
     void parseCombined() throws URISyntaxException {
         URL url = AgentConfigTests.class.getResource("blacklist.json");
         String fname = Paths.get(url.toURI()).toString();
-        Configuration cfg = AgentConfig.parseConfig("config=" + fname + ";verbose");
+        Configuration cfg = AgentConfig.parseConfig("config=" + fname + ",verbose");
         assertTrue(cfg.isVerbose(), "parsing combined should result in verbose == true");
         assertEquals(3, cfg.getBlacklistedMainClasses().size(), "Should retrieve the correct number of blacklisted classes.");
         assertEquals("montypythonsflyingclass", cfg.getBlacklistedMainClasses().get(2), "Should retrieve the correct blacklisted classes.");
