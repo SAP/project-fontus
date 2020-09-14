@@ -43,7 +43,7 @@ test {
     useJUnitPlatform()
     testLogging {
         events "skipped", "failed"
-        exceptionFormat "full"
+//        exceptionFormat "full"
     }
 
     afterSuite { desc, result ->
