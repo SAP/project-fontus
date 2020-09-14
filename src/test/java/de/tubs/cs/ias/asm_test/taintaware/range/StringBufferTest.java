@@ -47,7 +47,7 @@ public class StringBufferTest {
 
     @Test
     public void toString_1() {
-        THelper.get(foo).addRange(1, 2, (short) 0);
+        ((IASTaintInformation) THelper.get(foo)).addRange(1, 2, (short) 0);
 
         IASString str = foo.toIASString();
 
@@ -95,7 +95,7 @@ public class StringBufferTest {
     public void setLength_1() {
         IASStringBuffer sb = new IASStringBuffer("Hello World!");
 
-        THelper.get(sb).appendRanges(range(0, 4, 0).add(4, 6, 1).add(6, 12, 2).done());
+        ((IASTaintInformation) THelper.get(sb)).appendRanges(range(0, 4, 0).add(4, 6, 1).add(6, 12, 2).done());
 
         sb.setLength(5);
 
@@ -106,7 +106,7 @@ public class StringBufferTest {
     @Test
     public void setLength_2() {
         // Range of size 0 should be removed
-        THelper.get(foo).appendRanges(range(0, 2, 0).add(2, 3, 1).done());
+        ((IASTaintInformation) THelper.get(foo)).appendRanges(range(0, 2, 0).add(2, 3, 1).done());
 
         foo.setLength(2);
 
@@ -117,7 +117,7 @@ public class StringBufferTest {
     @Test
     public void setLength_3() {
         // Until now range will get end < start (end: 1, start: 2), which is absolutely wrong
-        THelper.get(foo).appendRanges(range(0, 1, 0).add(2, 3, 1).done());
+        ((IASTaintInformation) THelper.get(foo)).appendRanges(range(0, 1, 0).add(2, 3, 1).done());
 
         foo.setLength(1);
 
@@ -127,7 +127,7 @@ public class StringBufferTest {
 
     @Test
     public void setCharAt() {
-        THelper.get(foo).addRange(0, 3, (short) 0);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 3, (short) 0);
         foo.setCharAt(1, 'l');
 
         assertThat(foo.toString(), is("flo"));
@@ -138,7 +138,7 @@ public class StringBufferTest {
     public void append_string() {
         IASString s = new IASString("bar");
 
-        THelper.get(s).addRange(0, 4, (short) 0); // 4 is actually to long, so let's see whether it gets cut down ;)
+        ((IASTaintInformation) THelper.get(s)).addRange(0, 4, (short) 0); // 4 is actually to long, so let's see whether it gets cut down ;)
 
         foo.append(s);
 
@@ -150,7 +150,7 @@ public class StringBufferTest {
     public void append_stringBuffer() {
         IASStringBuffer sb = new IASStringBuffer("bar");
 
-        THelper.get(sb).addRange(0, 4, (short) 0); // 4 is actually to long, so let's see whether it gets cut down ;)
+        ((IASTaintInformation) THelper.get(sb)).addRange(0, 4, (short) 0); // 4 is actually to long, so let's see whether it gets cut down ;)
 
         foo.append(sb);
 
@@ -161,8 +161,8 @@ public class StringBufferTest {
     @Test
     public void append_charSequence_1() {
         // append subtype of AbstractStringBuilder
-        THelper.get(foo).addRange(0, 1, (short) 0);
-        THelper.get(bar).addRange(0, 3, (short) 1);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 1, (short) 0);
+        ((IASTaintInformation) THelper.get(bar)).addRange(0, 3, (short) 1);
 
         foo.append(bar, 0, 2);
 
@@ -173,7 +173,7 @@ public class StringBufferTest {
     @Test
     public void append_charSequence_2() {
         // append an unknown implementation of CharSequence
-        THelper.get(foo).addRange(0, 1, (short) 0);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 1, (short) 0);
 
         foo.append(createCharSequence("blub"), 1, 3);
 
@@ -184,7 +184,7 @@ public class StringBufferTest {
     @Test
     public void append_charSequence_3() {
         // append an untainted String
-        THelper.get(foo).addRange(0, 1, (short) 0);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 1, (short) 0);
 
         foo.append("blub", 1, 4);
 
@@ -194,7 +194,7 @@ public class StringBufferTest {
 
     @Test
     public void append_charArray() {
-        THelper.get(foo).addRange(0, 3, (short) 0);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 3, (short) 0);
         char[] arr = new char[]{'b', 'a', 'r'};
 
         foo.append(arr);
@@ -205,7 +205,7 @@ public class StringBufferTest {
 
     @Test
     public void append_charArray_range() {
-        THelper.get(foo).addRange(0, 3, (short) 0);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 3, (short) 0);
         char[] arr = new char[]{'b', 'a', 'r'};
 
         foo.append(arr, 1, 1);
@@ -216,7 +216,7 @@ public class StringBufferTest {
 
     @Test
     public void append_char() {
-        THelper.get(foo).addRange(0, 3, (short) 0);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 3, (short) 0);
         foo.append('o');
 
         assertThat(foo.toString(), is("fooo"));
@@ -225,7 +225,7 @@ public class StringBufferTest {
 
     @Test
     public void delete() {
-        THelper.get(foo).addRange(0, 1, (short) 0).
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 1, (short) 0).
                 addRange(1, 3, (short) 1);
 
         foo.delete(1, 2);
@@ -236,7 +236,7 @@ public class StringBufferTest {
 
     @Test
     public void deleteCharAt() {
-        THelper.get(foo).addRange(0, 1, (short) 0).
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 1, (short) 0).
                 addRange(1, 3, (short) 1);
 
         foo.deleteCharAt(1);
@@ -249,8 +249,8 @@ public class StringBufferTest {
     public void replace_1() {
         IASStringBuffer sb = new IASStringBuffer("hello world!");
 
-        THelper.get(sb).addRange(0, 12, (short) 0);
-        THelper.get(foo).addRange(0, 3, (short) 1);
+        ((IASTaintInformation) THelper.get(sb)).addRange(0, 12, (short) 0);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 3, (short) 1);
 
         sb.replace(2, 3, foo.toIASString());
 
@@ -262,7 +262,7 @@ public class StringBufferTest {
     public void replace_2() {
         IASStringBuffer sb = new IASStringBuffer("hello world!");
 
-        THelper.get(sb).addRange(0, 12, (short) 0);
+        ((IASTaintInformation) THelper.get(sb)).addRange(0, 12, (short) 0);
 
         sb.replace(1, 11, new IASString(""));
 
@@ -274,7 +274,7 @@ public class StringBufferTest {
     public void substring() {
         IASStringBuffer sb = new IASStringBuffer("hello world!");
 
-        THelper.get(sb).addRange(0, 8, (short) 0).addRange(8, 12, (short) 1);
+        ((IASTaintInformation) THelper.get(sb)).addRange(0, 8, (short) 0).addRange(8, 12, (short) 1);
 
         IASString sub1 = sb.substring(1);
         IASString sub2 = sb.substring(7, 9);
@@ -290,7 +290,7 @@ public class StringBufferTest {
     public void insert_charArray_partially() {
         char[] ar = "bar".toCharArray();
 
-        THelper.get(foo).addRange(0, 3, (short) 0);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 3, (short) 0);
 
         foo.insert(1, ar, 1, 2);
 
@@ -302,8 +302,8 @@ public class StringBufferTest {
     public void insert_string_1() {
         IASString str = new IASString("bar");
 
-        THelper.get(foo).addRange(0, 3, (short) 0);
-        THelper.get(str).addRange(0, 3, (short) 1);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 3, (short) 0);
+        ((IASTaintInformation) THelper.get(str)).addRange(0, 3, (short) 1);
 
         foo.insert(1, str);
 
@@ -315,7 +315,7 @@ public class StringBufferTest {
     public void insert_string_2() {
         IASString str = new IASString("bar");
 
-        THelper.get(foo).addRange(0, 3, (short) 0);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 3, (short) 0);
 
         foo.insert(1, str);
 
@@ -327,7 +327,7 @@ public class StringBufferTest {
     public void insert_charArray() {
         char[] ar = new IASString("bar").toCharArray();
 
-        THelper.get(foo).addRange(0, 3, (short) 0);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 3, (short) 0);
 
         foo.insert(1, ar);
 
@@ -338,8 +338,8 @@ public class StringBufferTest {
     @Test
     public void insert_charSequence_1() {
         // insert subtype of AbstractStringBuilder
-        THelper.get(foo).addRange(0, 3, (short) 0);
-        THelper.get(bar).addRange(0, 3, (short) 1);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 3, (short) 0);
+        ((IASTaintInformation) THelper.get(bar)).addRange(0, 3, (short) 1);
 
         foo.insert(1, bar, 0, 2);
 
@@ -350,7 +350,7 @@ public class StringBufferTest {
     @Test
     public void insert_charSequence_2() {
         // insert an unknown implementation of CharSequence
-        THelper.get(foo).addRange(0, 3, (short) 0);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 3, (short) 0);
         IASStringBuffer foo2 = new IASStringBuffer(foo);
 
         foo.insert(0, createCharSequence("blub"));
@@ -366,7 +366,7 @@ public class StringBufferTest {
     @Test
     public void insert_charSequence_3() {
         // insert an untainted String
-        THelper.get(foo).addRange(0, 1, (short) 0);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 1, (short) 0);
 
         foo.insert(3, "blub", 0, 4); // we need 0 and 4 as parameters, even if they are meaningless, but otherwise compile would take insert(offset, String) instead
 
@@ -386,7 +386,7 @@ public class StringBufferTest {
     @Test
     public void insert_char() {
         // insert an untainted String
-        THelper.get(foo).addRange(0, 3, (short) 0);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 3, (short) 0);
 
         IASStringBuffer foo2 = new IASStringBuffer(foo);
 
@@ -405,7 +405,7 @@ public class StringBufferTest {
         // just Unicode characters contained in BMP
         IASStringBuffer sb = new IASStringBuffer("hello world!");
 
-        THelper.get(sb).addRange(0, 8, (short) 0).addRange(8, 12, (short) 1);
+        ((IASTaintInformation) THelper.get(sb)).addRange(0, 8, (short) 0).addRange(8, 12, (short) 1);
 
         sb.reverse();
 
@@ -423,10 +423,10 @@ public class StringBufferTest {
         IASStringBuffer sb3 = new IASStringBuffer("a\uD800\uDC00b");
         IASStringBuffer sb4 = new IASStringBuffer("a\uD800\uDC00b");
 
-        THelper.get(sb1).addRange(0, 2, (short) 0);
-        THelper.get(sb2).addRange(2, 4, (short) 0);
-        THelper.get(sb3).addRange(0, 2, (short) 0).addRange(2, 4, (short) 1);
-        THelper.get(sb4).addRange(0, 3, (short) 0);
+        ((IASTaintInformation) THelper.get(sb1)).addRange(0, 2, (short) 0);
+        ((IASTaintInformation) THelper.get(sb2)).addRange(2, 4, (short) 0);
+        ((IASTaintInformation) THelper.get(sb3)).addRange(0, 2, (short) 0).addRange(2, 4, (short) 1);
+        ((IASTaintInformation) THelper.get(sb4)).addRange(0, 3, (short) 0);
 
         sb1.reverse();
         sb2.reverse();

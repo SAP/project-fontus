@@ -30,6 +30,7 @@ public class StringTest {
     public static void init() {
         Configuration.setTestConfig(TaintMethod.RANGE);
     }
+
     private final static IASTaintSource SAMPLE_SOURCE = IASTaintSource.TS_CS_UNKNOWN_ORIGIN;
     private IASString foo = null;
     private IASString bar = null;
@@ -90,7 +91,6 @@ public class StringTest {
     }
 
 
-
 //    @Test
 //    public void constructor_fromOtherString() {
 //        IASString s = new IASString(new char[]{'f', 'o', 'o'});
@@ -105,7 +105,7 @@ public class StringTest {
 //
 //        assertThat(s2, not(sameInstance(s)));
 //        assertEquals(s, s2);
-//        assertThat(s2.getTaintInformation().getAllRanges(), is(range(0, 2, 0).done()));
+//        assertThat(s2.getTaintInformation().getTaintRanges(), is(range(0, 2, 0).done()));
 //    }
 //
 //    @Test
@@ -121,10 +121,10 @@ public class StringTest {
 //        assertThat(s.isTainted(), is(true));
 //
 //        IASString s2 = new IASString(s);
-//        assertThat(s2.getTaintInformation().getAllRanges(), is(range(1, 2, 0).done()));
+//        assertThat(s2.getTaintInformation().getTaintRanges(), is(range(1, 2, 0).done()));
 //        // TaintInformation instances are not shared between different strings, but ranges are
 //        assertThat(s2.getTaintInformation(), not(sameInstance(s.getTaintInformation())));
-//        assertThat(s2.getTaintInformation().getAllRanges().get(0), sameInstance(s.getTaintInformation().getAllRanges().get(0)));
+//        assertThat(s2.getTaintInformation().getTaintRanges().get(0), sameInstance(s.getTaintInformation().getTaintRanges().get(0)));
 //    }
 //
 //    @Test
@@ -135,7 +135,7 @@ public class StringTest {
 //
 //        IASString s = new IASString(sB);
 //
-//        assertThat(sB.getTaintInformation().getAllRanges(), equalTo(s.getTaintInformation().getAllRanges()));
+//        assertThat(sB.getTaintInformation().getTaintRanges(), equalTo(s.getTaintInformation().getTaintRanges()));
 //    }
 //
 //    @Test
@@ -156,7 +156,7 @@ public class StringTest {
 //
 //        IASString s = new IASString(sB);
 //
-//        assertThat(THelper.get(sB).getAllRanges(), equalTo(THelper.get(s).getAllRanges()));
+//        assertThat(THelper.get(sB).getTaintRanges(), equalTo(THelper.get(s).getTaintRanges()));
 //    }
 
     @Test
@@ -178,7 +178,7 @@ public class StringTest {
         IASString s = new IASString("Hello World!", false);
         assert !s.isTainted();
 
-        THelper.get(s).addRange(2, 7, (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
+        ((IASTaintInformation) THelper.get(s)).addRange(2, 7, (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
 
         IASString s1 = (IASString) s.subSequence(0, 1);
         IASString s2 = (IASString) s.subSequence(0, 5);
@@ -195,7 +195,7 @@ public class StringTest {
     public void substring_1() {
         // substring(int beginIndex)
 
-        THelper.get(foo).addRange(0, 2, (short) 0);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 2, (short) 0);
 
         IASString s1 = foo.substring(1);
 
@@ -210,12 +210,12 @@ public class StringTest {
 
     @Test
     public void substring_2() {
-        THelper.get(new IASString("foobar")).addRange(1, 4, (short) 0);
+        ((IASTaintInformation) THelper.get(new IASString("foobar"))).addRange(1, 4, (short) 0);
 
         IASString s = new IASString("foobar");
-        THelper.get(s).addRange(1, 4, (short) 0);
+        ((IASTaintInformation) THelper.get(s)).addRange(1, 4, (short) 0);
         IASString s1 = s.substring(0, 2);
-        assertThat(THelper.get(s1).getAllRanges(), equalTo(range(1, 2, 0).done()));
+        assertThat(THelper.get(s1).getTaintRanges(), equalTo(range(1, 2, 0).done()));
 
         // A substring created from an untainted region should not have its taint field initialized
         IASString s2 = s.substring(4, 6);
@@ -233,38 +233,38 @@ public class StringTest {
 
     @Test
     public void concat_1() {
-        THelper.get(foo).addRange(0, 1, (short) 0);
-        THelper.get(bar).addRange(1, 2, (short) 0);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 1, (short) 0);
+        ((IASTaintInformation) THelper.get(bar)).addRange(1, 2, (short) 0);
 
         IASString s = foo.concat(bar);
 
         // TODO Here we could also test interning, can't we?
 
-        assertThat(THelper.get(s).getAllRanges(), equalTo(range(0, 1, 0).add(4, 5, 0).done()));
+        assertThat(((IASTaintInformation) THelper.get(s)).getTaintRanges(), equalTo(range(0, 1, 0).add(4, 5, 0).done()));
     }
 
     @Test
     public void concat_2() {
-        THelper.get(bar).addRange(1, 2, (short) 0);
+        ((IASTaintInformation) THelper.get(bar)).addRange(1, 2, (short) 0);
 
         IASString s = foo.concat(bar);
 
-        assertThat(THelper.get(s).getAllRanges(), equalTo(range(4, 5, 0).done()));
+        assertThat(((IASTaintInformation) THelper.get(s)).getTaintRanges(), equalTo(range(4, 5, 0).done()));
     }
 
     @Test
     public void concat_3() {
-        THelper.get(foo).addRange(0, 1, (short) 0);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 1, (short) 0);
 
         IASString s = foo.concat(bar);
 
-        assertThat(THelper.get(s).getAllRanges(), equalTo(range(0, 1, 0).done()));
+        assertThat(((IASTaintInformation) THelper.get(s)).getTaintRanges(), equalTo(range(0, 1, 0).done()));
     }
 
     @Test
     @Ignore
     public void replace() {
-        THelper.get(foo).addRange(0, 1, (short) 0);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 1, (short) 0);
 
         IASString s1 = foo.replace('f', 'p');
         IASString s2 = foo.replace('o', 'e');
@@ -278,7 +278,7 @@ public class StringTest {
 
         assertThat(s2.toString(), equalTo("fee"));
         // Every replaced char gets its own ranges...
-        assertThat(THelper.get(s2).getAllRanges(), equalTo(range(0, 1, 0).add(1, 2, IASTaintSource.TS_CHAR_UNKNOWN_ORIGIN).add(2, 3, IASTaintSource.TS_CHAR_UNKNOWN_ORIGIN).done()));
+        assertThat(THelper.get(s2).getTaintRanges(), equalTo(range(0, 1, 0).add(1, 2, IASTaintSource.TS_CHAR_UNKNOWN_ORIGIN).add(2, 3, IASTaintSource.TS_CHAR_UNKNOWN_ORIGIN).done()));
         // .. but usually the adjacent ranges get merged on retrieval
         assertThat(s2, taintEquals(range(0, 1, 0).add(1, 3, IASTaintSource.TS_CHAR_UNKNOWN_ORIGIN).done()));
 
@@ -295,7 +295,7 @@ public class StringTest {
         IASString s2 = new IASString("zz");
         IASString s3 = new IASString("ll");
 
-        THelper.get(s2).addRange(0, 2, (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
+        ((IASTaintInformation) THelper.get(s2)).addRange(0, 2, (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
 
         IASString s = s1.replaceFirst(s3, s2);
 
@@ -325,7 +325,7 @@ public class StringTest {
         IASString s2 = new IASString("zz");
         IASString s3 = new IASString("ll");
 
-        THelper.get(s1).addRange(2, 4, (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
+        ((IASTaintInformation) THelper.get(s1)).addRange(2, 4, (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId());
 
         IASString s = s1.replaceFirst(s3, s2);
 
@@ -365,8 +365,8 @@ public class StringTest {
 //    @Ignore
     public void replaceFirst() {
         // Primary test cases for this are located in PatternTest#replaceFirst
-        THelper.get(foo).addRange(1, 3, (short) 0);
-        THelper.get(bar).addRange(1, 2, (short) 1);
+        ((IASTaintInformation) THelper.get(foo)).addRange(1, 3, (short) 0);
+        ((IASTaintInformation) THelper.get(bar)).addRange(1, 2, (short) 1);
 
         IASString s = foo.replaceFirst(new IASString("o+"), bar);
 
@@ -385,8 +385,8 @@ public class StringTest {
         // Primary test cases for this are located in PatternTest#replaceAll
         IASString foofoo = new IASString("foofoo");
 
-        THelper.get(foofoo).addRange(0, 4, (short) 0);
-        THelper.get(bar).addRange(3, 5, (short) 1);
+        ((IASTaintInformation) THelper.get(foofoo)).addRange(0, 4, (short) 0);
+        ((IASTaintInformation) THelper.get(bar)).addRange(3, 5, (short) 1);
 
         IASString s = foofoo.replaceAll(new IASString("o+"), bar);
 
@@ -400,8 +400,8 @@ public class StringTest {
         // Primary test cases for this are located in PatternTest#replace
         // As there are no real modifications to this method in String.java we more or less test
         // whether the CharSequence-augmentation works fine
-        THelper.get(foo).addRange(0, 3, (short) 0);
-        THelper.get(bar).addRange(0, 3, (short) 1);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 3, (short) 0);
+        ((IASTaintInformation) THelper.get(bar)).addRange(0, 3, (short) 1);
 
         IASString s1 = foo.replace("fo", bar);
 
@@ -435,7 +435,7 @@ public class StringTest {
         // Should be covered without modifications because String#substring() is used internally
         IASString s = new IASString("hello:world:okay");
 
-        THelper.get(s).addRange(5, 6, (short) 0).addRange(12, 16, (short) 1); // ":" and "okay"
+        ((IASTaintInformation) THelper.get(s)).addRange(5, 6, (short) 0).addRange(12, 16, (short) 1); // ":" and "okay"
 
         IASString[] arr = s.split(new IASString(":"));
         IASString[] expected = new IASString[]{new IASString("hello"), new IASString("world"), new IASString("okay")};
@@ -449,7 +449,7 @@ public class StringTest {
     @Test
     public void split_limit() {
         IASString a = new IASString("a,b,c");
-        THelper.get(a).addRange(0, 3, (short) 1);
+        ((IASTaintInformation) THelper.get(a)).addRange(0, 3, (short) 1);
 
         IASString[] splitted = a.split(new IASString(","), 2);
 
@@ -499,9 +499,9 @@ public class StringTest {
         assertThat("\u00CCb".toLowerCase(lithuanian), is("\u0069\u0307\u0300b"));
 
         IASString ltUC = new IASString("\u00CC");
-        THelper.get(ltUC).addRange(0, 1, (short) 1);
-        THelper.get(foo).addRange(0, 3, (short) 2);
-        THelper.get(bar).addRange(2, 3, (short) 3);
+        ((IASTaintInformation) THelper.get(ltUC)).addRange(0, 1, (short) 1);
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 3, (short) 2);
+        ((IASTaintInformation) THelper.get(bar)).addRange(2, 3, (short) 3);
 
 //        IASString in = "ß".concat(ltUC).concat("B");
         IASString in = new IASString("ß").concat(ltUC).concat(foo).concat(ltUC).concat(bar);
@@ -533,8 +533,8 @@ public class StringTest {
         assertThat("ß".toUpperCase(), is("SS"));
 
         IASString sharpS = new IASString("ß");
-        THelper.get(sharpS).addRange(0, 1, (short) 1);
-        THelper.get(bar).addRange(2, 3, (short) 3);
+        ((IASTaintInformation) THelper.get(sharpS)).addRange(0, 1, (short) 1);
+        ((IASTaintInformation) THelper.get(bar)).addRange(2, 3, (short) 3);
 
 //        IASString in = "ß".concat(ltUC).concat("B");
         IASString in = new IASString("ß").concat(sharpS).concat(sharpS).concat(bar);
@@ -554,7 +554,7 @@ public class StringTest {
     public void trim() {
         // trim uses substring() internally
         IASString ws = new IASString(" ");
-        THelper.get(ws).addRange(0, 1, (short) 1);
+        ((IASTaintInformation) THelper.get(ws)).addRange(0, 1, (short) 1);
 
         IASString in = ws.concat(foo).concat(ws);
 
@@ -573,8 +573,8 @@ public class StringTest {
     public void replaceAll_simple() {
         IASString in = new IASString("hellofoobarfoo!");
 
-        THelper.get(in).addRange(0, 15, (short) 1);
-        THelper.get(bar).addRange(0, 2, (short) 2);
+        ((IASTaintInformation) THelper.get(in)).addRange(0, 15, (short) 1);
+        ((IASTaintInformation) THelper.get(bar)).addRange(0, 2, (short) 2);
 
         IASString out = in.replaceAll(foo, bar);
 
@@ -587,8 +587,8 @@ public class StringTest {
         IASString in = new IASString("hellofoobarfoo!");
         IASString replacement = new IASString("ba\\r");
 
-        THelper.get(in).addRange(0, 15, (short) 1);
-        THelper.get(replacement).addRange(0, 2, (short) 2);
+        ((IASTaintInformation) THelper.get(in)).addRange(0, 15, (short) 1);
+        ((IASTaintInformation) THelper.get(replacement)).addRange(0, 2, (short) 2);
 
         IASString out = in.replaceAll(foo, replacement);
 
@@ -602,9 +602,9 @@ public class StringTest {
         IASString regex = new IASString("f((o)\\2)");
         IASString replacement = new IASString("f$1bar");
 
-        THelper.get(in).addRange(0, 12, (short) 1);
-        THelper.get(regex).addRange(0, 3, (short) 2);
-        THelper.get(replacement).addRange(0, 6, (short) 3);
+        ((IASTaintInformation) THelper.get(in)).addRange(0, 12, (short) 1);
+        ((IASTaintInformation) THelper.get(regex)).addRange(0, 3, (short) 2);
+        ((IASTaintInformation) THelper.get(replacement)).addRange(0, 6, (short) 3);
 
         IASString out = in.replaceAll(regex, replacement);
 
@@ -625,8 +625,8 @@ public class StringTest {
         // replacement strings as literals (so no special regex functionality)
         IASString in = new IASString("hellofoobarfoo!");
 
-        THelper.get(in).addRange(0, 15, (short) 1);
-        THelper.get(bar).addRange(0, 2, (short) 2);
+        ((IASTaintInformation) THelper.get(in)).addRange(0, 15, (short) 1);
+        ((IASTaintInformation) THelper.get(bar)).addRange(0, 2, (short) 2);
 
         IASString out = in.replace(foo, bar);
 
@@ -646,7 +646,7 @@ public class StringTest {
         IASString in = new IASString("hellofoobarfoo!");
         CharSequence replacement = createCharSequence("bar");
 
-        THelper.get(in).addRange(0, 15, (short) 1);
+        ((IASTaintInformation) THelper.get(in)).addRange(0, 15, (short) 1);
 
         IASString out = in.replace(foo, replacement);
 

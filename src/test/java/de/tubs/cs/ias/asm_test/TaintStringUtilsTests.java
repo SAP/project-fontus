@@ -1,13 +1,22 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import de.tubs.cs.ias.asm_test.taintaware.bool.IASString;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringUtils;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings({"ClassIndependentOfModule", "ClassOnlyUsedInOneModule", "ClassUnconnectedToPackage", "ClassOnlyUsedInOnePackage"})
 class TaintStringUtilsTests {
+
+    @BeforeAll
+    public static void init() {
+        Configuration.setTestConfig(TaintMethod.BOOLEAN);
+    }
+
     @Test
     void testConcat() {
         String s1 = "x";

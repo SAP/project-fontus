@@ -42,6 +42,7 @@ public class Configuration {
 
     private boolean collectStats = defaultCollectStats();
 
+    @JsonIgnore
     private Abort abort = defaultAbort();
 
     private boolean isOfflineInstrumentation = true;
