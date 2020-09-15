@@ -400,6 +400,10 @@ class TestRunner:
 
     async def _run_regular_class_file_with_agent(self, cwd, name, arguments):
         arguments = ["java",
+                     "--add-opens",
+                     "java.base/java.lang=ALL-UNNAMED",
+                     "--add-opens",
+                     "java.base/java.lang.reflect=ALL-UNNAMED",
                      "-classpath",
                      '.:{}'.format(format_jar_filename(
                          "asm_test", self._config.version)),
@@ -508,6 +512,10 @@ class TestRunner:
     async def _run_instrumented_jar_internal(self, cwd, name, entry_point, additional_arguments, input_file):
         arguments = [
             "java",
+            "--add-opens",
+            "java.base/java.lang=ALL-UNNAMED",
+            "--add-opens",
+            "java.base/java.lang.reflect=ALL-UNNAMED",
             "-cp",
             '{}:{}'.format(format_jar_filename(
                 "asm_test", self._config.version), name),
@@ -518,6 +526,10 @@ class TestRunner:
     async def _run_agent_jar_internal(self, cwd, name, entry_point, additional_arguments, input_file):
         arguments = [
             "java",
+            "--add-opens",
+            "java.base/java.lang=ALL-UNNAMED",
+            "--add-opens",
+            "java.base/java.lang.reflect=ALL-UNNAMED",
             "-cp",
             '{}:{}'.format(format_jar_filename(
                 "asm_test", self._config.version), name),
