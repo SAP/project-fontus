@@ -19,7 +19,7 @@ public class ParentLogger extends java.util.logging.Logger {
 
     @Override
     public void log(LogRecord record) {
-        if (Configuration.getConfiguration().isLoggingEnabled()) {
+        if (Configuration.isLoggingEnabled()) {
             super.log(record);
         }
     }

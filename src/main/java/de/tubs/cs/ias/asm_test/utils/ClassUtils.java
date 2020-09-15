@@ -215,7 +215,7 @@ public class ClassUtils {
             int access = new ClassReader(internalName).getAccess();
             return (access & Opcodes.ACC_ANNOTATION) > 0;
         } catch (IOException e) {
-            if (Configuration.getConfiguration().isLoggingEnabled()) {
+            if (Configuration.isLoggingEnabled()) {
                 System.err.println("Could not resolve class " + internalName + " for isAnnotation checking");
             }
         }
@@ -238,7 +238,7 @@ public class ClassUtils {
         try {
             return ClassUtils.isInterface(new ClassReader(getClassInputStream(internalName, loader)).getAccess());
         } catch (IOException e) {
-            if (Configuration.getConfiguration().isLoggingEnabled()) {
+            if (Configuration.isLoggingEnabled()) {
                 System.err.println("Could not resolve class " + internalName + " for isInterface checking");
             }
         }

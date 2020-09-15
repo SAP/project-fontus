@@ -43,7 +43,7 @@ test {
     useJUnitPlatform()
     testLogging {
         events "skipped", "failed"
-//        exceptionFormat "full"
+        exceptionFormat "full"
     }
 
     afterSuite { desc, result ->
@@ -66,6 +66,7 @@ task utilJar(type: ShadowJar) {
         include "**/asm_test/config/TaintStringConfig*"
         include "**/asm_test/config/TaintMethod*"
         include "**/asm_test/config/**"
+        include "**/asm_test/asm/**"
         include "**/asm_test/asm/FunctionCall*" // Because of Configuration class
         include "**/asm_test/agent/AgentConfig*" // Because of Configuration class
     }

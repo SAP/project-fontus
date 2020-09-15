@@ -1,9 +1,10 @@
 package de.tubs.cs.ias.asm_test;
 
+import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASCompareProxy;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintHandler;
 import de.tubs.cs.ias.asm_test.utils.ConversionUtils;
-import org.objectweb.asm.Type;
+import de.tubs.cs.ias.asm_test.utils.Utils;
 
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -11,7 +12,7 @@ import java.util.regex.Pattern;
 public final class Constants {
     public static final String AGENT_DELIMITER = ",";
 
-    public static final String ConversionUtilsQN = Type.getType(ConversionUtils.class).getInternalName();
+    public static final String ConversionUtilsQN = Utils.getInternalName(ConversionUtils.class);
     public static final String ConversionUtilsToConcreteName;
     public static final String ConversionUtilsToConcreteDesc;
     public static final String ConversionUtilsToOrigName;
@@ -24,7 +25,7 @@ public final class Constants {
     public static final String PropertyDesc;
     public static final String PropertyQN;
     public static final String JDK_INHERITANCE_BLACKLIST_FILENAME = "jdk_inheritance_blacklist.csv";
-    public static final String CompareProxyQN = Type.getType(IASCompareProxy.class).getInternalName();
+    public static final String CompareProxyQN = Utils.getInternalName(IASCompareProxy.class);
     public static final String CompareProxyEqualsName = "compareRefEquals";
     public static final String CompareProxyEqualsDesc;
     public static final String UNTAINTED_METHOD_NAME = "untainted";
@@ -33,18 +34,18 @@ public final class Constants {
     static {
         try {
             ConversionUtilsToConcreteName = ConversionUtils.class.getMethod("convertToConcrete", Object.class).getName();
-            ConversionUtilsToConcreteDesc = Type.getType(ConversionUtils.class.getMethod("convertToConcrete", Object.class)).getDescriptor();
+            ConversionUtilsToConcreteDesc = Descriptor.parseMethod(ConversionUtils.class.getMethod("convertToConcrete", Object.class)).toDescriptor();
             ConversionUtilsToOrigName = ConversionUtils.class.getMethod("convertToOrig", Object.class).getName();
-            ConversionUtilsToOrigDesc = Type.getType(ConversionUtils.class.getMethod("convertToOrig", Object.class)).getDescriptor();
-            TaintHandlerQN = Type.getType(IASTaintHandler.class).getInternalName();
+            ConversionUtilsToOrigDesc = Descriptor.parseMethod(ConversionUtils.class.getMethod("convertToOrig", Object.class)).toDescriptor();
+            TaintHandlerQN = Utils.getInternalName(IASTaintHandler.class);
             TaintHandlerTaintName = IASTaintHandler.class.getMethod("taint", Object.class).getName();
-            TaintHandlerTaintDesc = Type.getType(IASTaintHandler.class.getMethod("taint", Object.class)).getDescriptor();
+            TaintHandlerTaintDesc = Descriptor.parseMethod(IASTaintHandler.class.getMethod("taint", Object.class)).toDescriptor();
             TaintHandlerCheckTaintName = IASTaintHandler.class.getMethod("checkTaint", Object.class).getName();
-            TaintHandlerCheckTaintDesc = Type.getType(IASTaintHandler.class.getMethod("checkTaint", Object.class)).getDescriptor();
-            CompareProxyEqualsDesc = Type.getType(IASCompareProxy.class.getMethod("compareRefEquals", Object.class, Object.class)).getDescriptor();
+            TaintHandlerCheckTaintDesc = Descriptor.parseMethod(IASTaintHandler.class.getMethod("checkTaint", Object.class)).toDescriptor();
+            CompareProxyEqualsDesc = Descriptor.parseMethod(IASCompareProxy.class.getMethod("compareRefEquals", Object.class, Object.class)).toDescriptor();
 
-            PropertyDesc = Type.getType(Properties.class).getDescriptor();
-            PropertyQN = Type.getType(Properties.class).getInternalName();
+            PropertyDesc = Descriptor.classNameToDescriptorName(Properties.class.getName());
+            PropertyQN = Utils.getInternalName(Properties.class);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
