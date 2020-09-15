@@ -25,6 +25,11 @@ public class Configuration {
     private TaintMethod taintMethod;
     @JsonIgnore
     private TaintStringConfig taintStringConfig;
+
+    public static boolean isInitialized() {
+        return Configuration.configuration != null;
+    }
+
     public Map<String, List<BlackListEntry>> getJdkInheritanceBlacklist() {
         return jdkInheritanceBlacklist;
     }
@@ -280,8 +285,8 @@ public class Configuration {
         return configuration;
     }
 
-    public boolean isLoggingEnabled() {
-        return this.loggingEnabled;
+    public static boolean isLoggingEnabled() {
+        return !isInitialized() || Configuration.getConfiguration().loggingEnabled;
     }
 
     public void setLoggingEnabled(boolean loggingEnabled) {

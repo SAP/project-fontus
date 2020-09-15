@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.lang.reflect.Method;
 import java.util.stream.Stream;
 
 @SuppressWarnings({"DuplicateStringLiteralInspection", "SpellCheckingInspection", "ClassIndependentOfModule", "ClassOnlyUsedInOneModule"})
@@ -128,5 +129,73 @@ class DescriptorTests {
                                 "Ljava/lang/String;"
                         ))
         );
+    }
+
+    @Test
+    public void testParseMethodPrimitive() throws NoSuchMethodException {
+        Method m = Dummy.class.getDeclaredMethod("primitives", byte.class, short.class, int.class, long.class, boolean.class, double.class, float.class);
+
+        Descriptor d = Descriptor.parseMethod(m);
+        String desc = d.toDescriptor();
+
+        assertEquals("(BSIJZDF)V", desc);
+    }
+
+    @Test
+    public void testParseMethodPrimitiveArrays() throws NoSuchMethodException {
+        Method m = Dummy.class.getDeclaredMethod("primitiveArrays", byte[].class, short[].class, int[].class, long[].class, boolean[].class, double[].class, float[].class);
+
+        Descriptor d = Descriptor.parseMethod(m);
+        String desc = d.toDescriptor();
+
+        assertEquals("([B[S[I[J[Z[D[F)V", desc);
+    }
+
+    @Test
+    public void testParseMethodClass() throws NoSuchMethodException {
+        Method m = Dummy.class.getDeclaredMethod("clazz", String.class);
+
+        Descriptor d = Descriptor.parseMethod(m);
+        String desc = d.toDescriptor();
+
+        assertEquals("(Ljava/lang/String;)V", desc);
+    }
+
+    @Test
+    public void testParseMethodClassArray() throws NoSuchMethodException {
+        Method m = Dummy.class.getDeclaredMethod("clazzArrays", String[].class);
+
+        Descriptor d = Descriptor.parseMethod(m);
+        String desc = d.toDescriptor();
+
+        assertEquals("([Ljava/lang/String;)V", desc);
+    }
+
+    @Test
+    public void testParseMethodReturnTypeClass() throws NoSuchMethodException {
+        Method m = Dummy.class.getDeclaredMethod("returnTypeClass");
+
+        Descriptor d = Descriptor.parseMethod(m);
+        String desc = d.toDescriptor();
+
+        assertEquals("()Ljava/lang/String;", desc);
+    }
+
+    class Dummy {
+        public void primitives(byte b, short s, int i, long l, boolean bool, double d, float f) {
+        }
+
+        public void primitiveArrays(byte[] b, short[] s, int[] i, long[] l, boolean[] bool, double[] d, float[] f) {
+        }
+
+        public void clazz(String s) {
+        }
+
+        public void clazzArrays(String[] s) {
+        }
+
+        public String returnTypeClass() {
+            return null;
+        }
     }
 }

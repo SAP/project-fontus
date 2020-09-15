@@ -106,7 +106,7 @@ def check_output_files_existence(version):
 
 
 def compile_project(args):
-    compile_result = subprocess.run(["./gradlew", "clean", "jar"],
+    compile_result = subprocess.run(["./gradlew", "clean", "shadowJar"],
                                     check=False,
                                     universal_newlines=True,
                                     stdout=subprocess.PIPE,
@@ -700,7 +700,7 @@ if __name__ == "__main__":
                             help="Runs all tests in safe mode.")
     ARG_PARSER.add_argument("--config", default=CONFIG_FILE)
     ARG_PARSER.add_argument("--taint_type", choices=['boolean', 'range',
-                                                     'array'],
+                                                     'array', 'lazybasic', 'lazycomplex'],
                             default='boolean')
 
     main(ARG_PARSER.parse_args())

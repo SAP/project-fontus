@@ -452,7 +452,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         // Load the param array
         super.visitVarInsn(Opcodes.ALOAD, currRegister);
         // Call our concat method
-        super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getSharedTStringUtilsQN(), "concat", this.stringConfig.getConcatDesc(), false);
+        super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "concat", this.stringConfig.getConcatDesc(), false);
     }
 
     /**

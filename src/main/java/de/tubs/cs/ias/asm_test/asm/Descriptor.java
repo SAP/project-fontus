@@ -137,60 +137,15 @@ public class Descriptor {
             return "Z";
         } else if ("void".equals(className)) {
             return "V";
-        } else {
-            String trimmedClassName = className;
-            int arrayDimensions = 0;
-            for (; trimmedClassName.endsWith("[]"); arrayDimensions++) {
-                trimmedClassName = trimmedClassName.substring(0, trimmedClassName.indexOf('['));
+        } else if (className.startsWith("[") && !className.endsWith(";")) {
+            // Primitive array
+            return className;
+        } else{
+            String converted = className;
+            if(!converted.startsWith("[")) {
+                converted = "L" + converted + ";";
             }
-
-            StringBuilder descriptor = new StringBuilder();
-
-            if (isPrimitiveQN(trimmedClassName)) {
-                descriptor.append(classNameToDescriptorName(trimmedClassName));
-            } else {
-                descriptor.append(String.format("L%s;", Utils.fixupReverse(trimmedClassName)));
-            }
-
-            for (int i = 0; i < arrayDimensions; i++) {
-                descriptor.insert(0, "[");
-            }
-
-            return descriptor.toString();
-        }
-    }
-
-    private static boolean isPrimitiveQN(String qn) {
-        switch (qn) {
-            case "int":
-            case "byte":
-            case "char":
-            case "double":
-            case "float":
-            case "long":
-            case "short":
-            case "boolean":
-            case "void":
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    private static boolean isPrimitiveDescriptorName(String descriptorName) {
-        switch (descriptorName) {
-            case "I":
-            case "B":
-            case "C":
-            case "D":
-            case "F":
-            case "S":
-            case "J":
-            case "Z":
-            case "V":
-                return true;
-            default:
-                return false;
+            return Utils.fixupReverse(converted);
         }
     }
 
@@ -251,12 +206,12 @@ public class Descriptor {
     }
 
     public static Descriptor parseMethod(Method m) {
-        return Descriptor
-                .parseDescriptor(
-                        org.objectweb.asm.commons.Method
-                                .getMethod(m)
-                                .getDescriptor()
-                );
+        List<String> parameters = new ArrayList<>(m.getParameterCount());
+        for (Class param : m.getParameterTypes()) {
+            parameters.add(Descriptor.classNameToDescriptorName(param.getName()));
+        }
+        String returnType = classNameToDescriptorName(m.getReturnType().getName());
+        return new Descriptor(parameters, returnType);
     }
 
 }

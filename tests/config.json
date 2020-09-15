@@ -262,11 +262,6 @@
       "source": "ValueOfTest.java"
     },
     {
-      "name": "Logging Test from trying to instrument tomcat",
-      "source": "LoggerTest.java",
-      "safe": true
-    },
-    {
       "name": "Testing Null returning Functions",
       "source": "NullReturned.java"
     },

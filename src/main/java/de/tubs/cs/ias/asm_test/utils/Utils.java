@@ -70,6 +70,10 @@ public final class Utils {
         return new Handle(h.getTag(), owner, h.getName(), desc.toDescriptor(), h.isInterface());
     }
 
+    public static String getInternalName(Class cls) {
+        return Utils.fixupReverse(cls.getName());
+    }
+
     public static String fixup(String s) {
         return s.replace('/', '.');
     }
