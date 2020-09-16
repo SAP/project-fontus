@@ -33,7 +33,6 @@ dependencies {
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
 //    compile 'ch.qos.logback:logback-classic:1.2.3'
     compile group: 'org.mutabilitydetector', name: 'asm-nonclassloadingextensions', version: '1.0-rc2'
-    compile group: 'org.apache.commons', name: 'commons-text', version: '1.8'
     testCompile('org.junit.jupiter:junit-jupiter:5.4.2')
     testCompile('org.junit.jupiter:junit-jupiter-migrationsupport:5.4.2')
     testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
@@ -105,7 +104,6 @@ shadowJar {
 
     relocate 'com.ctc', 'de.tubs.cs.ias.asm_test.com.ctc'
     relocate 'com.fasterxml', 'de.tubs.cs.ias.asm_test.com.fasterxml'
-    relocate 'org.apache', 'de.tubs.cs.ias.asm_test.org.apache'
     relocate 'org.codehaus', 'de.tubs.cs.ias.asm_test.org.codehaus'
     relocate 'org.mutabilitydetector', 'de.tubs.cs.ias.asm_test.org.mutabilitydetector'
     relocate 'org.objectweb', 'de.tubs.cs.ias.asm_test.org.objectweb'
