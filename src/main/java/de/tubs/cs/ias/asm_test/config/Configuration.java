@@ -9,7 +9,6 @@ import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import de.tubs.cs.ias.asm_test.utils.abort.Abort;
 import de.tubs.cs.ias.asm_test.utils.abort.ExitAbort;
-import org.apache.commons.text.StringSubstitutor;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -26,19 +25,6 @@ public class Configuration {
     @JsonIgnore
     private TaintStringConfig taintStringConfig;
 
-    public static boolean isInitialized() {
-        return Configuration.configuration != null;
-    }
-
-    public Map<String, List<BlackListEntry>> getJdkInheritanceBlacklist() {
-        return jdkInheritanceBlacklist;
-    }
-
-    public void setJdkInheritanceBlacklist(Map<String, List<BlackListEntry>> jdkInheritanceBlacklist) {
-        this.jdkInheritanceBlacklist = jdkInheritanceBlacklist;
-    }
-
-
     private Map<String, List<BlackListEntry>> jdkInheritanceBlacklist = new HashMap<>();
 
     private boolean useCaching = defaultUseCaching();
@@ -51,6 +37,105 @@ public class Configuration {
     private Abort abort = defaultAbort();
 
     private boolean isOfflineInstrumentation = true;
+
+    @XmlElement
+    private boolean verbose = false;
+
+    @XmlElement
+    private boolean loggingEnabled = false;
+
+    @XmlElement
+    private final SourceConfig sourceConfig;
+
+    /**
+     * All functions listed here consume Strings that need to be checked first.
+     */
+    @XmlElement
+    private final SinkConfig sinkConfig;
+    @JacksonXmlElementWrapper(localName = "converters")
+    @XmlElement(name = "converter")
+    private final List<FunctionCall> converters;
+
+    @JacksonXmlElementWrapper(localName = "returnGenerics")
+    @XmlElement(name = "returnGeneric")
+    private final List<ReturnsGeneric> returnGeneric;
+
+    @JacksonXmlElementWrapper(localName = "takeGenerics")
+    @XmlElement(name = "takeGeneric")
+    private final List<TakesGeneric> takeGeneric;
+
+    @JacksonXmlElementWrapper(localName = "blacklistedMainClasses")
+    @XmlElement(name = "class")
+    private final List<String> blacklistedMainClasses;
+
+    @JacksonXmlElementWrapper(localName = "excludedPackages")
+    @XmlElement(name = "excludedPackages")
+    private final List<String> excludedPackages;
+
+    public Configuration() {
+        this.verbose = false;
+        this.sourceConfig = new SourceConfig();
+        this.sinkConfig = new SinkConfig();
+        this.converters = new ArrayList<>();
+        this.returnGeneric = new ArrayList<>();
+        this.takeGeneric = new ArrayList<>();
+        this.blacklistedMainClasses = new ArrayList<>();
+        this.excludedPackages = new ArrayList<>();
+    }
+
+    public Configuration(boolean verbose, SourceConfig sourceConfig, SinkConfig sinkConfig, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> blacklistedMainClasses, List<String> excludedPackages) {
+        this.verbose = verbose;
+        this.sourceConfig = sourceConfig;
+        this.sinkConfig = sinkConfig;
+        this.converters = converters;
+        this.returnGeneric = returnGeneric;
+        this.takeGeneric = takeGeneric;
+        this.blacklistedMainClasses = blacklistedMainClasses;
+        this.excludedPackages = excludedPackages;
+    }
+
+    public void append(Configuration other) {
+        if (other != null) {
+            this.verbose |= other.verbose;
+            this.sourceConfig.append(other.sourceConfig);
+            this.sinkConfig.append(other.sinkConfig);
+            this.converters.addAll(other.converters);
+            this.returnGeneric.addAll(other.returnGeneric);
+            this.takeGeneric.addAll(other.takeGeneric);
+            this.blacklistedMainClasses.addAll(other.blacklistedMainClasses);
+            this.excludedPackages.addAll(other.excludedPackages);
+        }
+    }
+
+    public void setTaintMethod(TaintMethod taintMethod) {
+        this.taintMethod = taintMethod;
+        this.taintStringConfig = new TaintStringConfig(taintMethod);
+    }
+
+    public void transformConverters() {
+        List<FunctionCall> converted = this.converters.stream().map(functionCall -> new FunctionCall(functionCall.getOpcode(), functionCall.getOwner(), functionCall.getName(), functionCall.getDescriptor(), functionCall.isInterface())).collect(Collectors.toList());
+
+        this.converters.clear();
+        this.converters.addAll(converted);
+    }
+
+    public TaintStringConfig getTaintStringConfig() {
+        return this.taintStringConfig;
+    }
+
+    void appendBlacklist(Collection<String> other) {
+        if (this.blacklistedMainClasses != null) {
+            this.blacklistedMainClasses.addAll(other);
+        }
+    }
+
+    public Map<String, List<BlackListEntry>> getJdkInheritanceBlacklist() {
+        return jdkInheritanceBlacklist;
+    }
+
+    public void setJdkInheritanceBlacklist(Map<String, List<BlackListEntry>> jdkInheritanceBlacklist) {
+        this.jdkInheritanceBlacklist = jdkInheritanceBlacklist;
+    }
 
     public boolean isOfflineInstrumentation() {
         return isOfflineInstrumentation;
@@ -94,69 +179,6 @@ public class Configuration {
 
     public void setLayerThreshold(int layerThreshold) {
         this.layerThreshold = layerThreshold;
-    }
-
-    public Configuration() {
-        this.verbose = false;
-        this.sourceConfig = new SourceConfig();
-        this.sinkConfig = new SinkConfig();
-        this.converters = new ArrayList<>();
-        this.returnGeneric = new ArrayList<>();
-        this.takeGeneric = new ArrayList<>();
-        this.blacklistedMainClasses = new ArrayList<>();
-    }
-
-    public Configuration(boolean verbose, SourceConfig sourceConfig, SinkConfig sinkConfig, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> blacklistedMainClasses) {
-        this.verbose = verbose;
-        this.sourceConfig = sourceConfig;
-        this.sinkConfig = sinkConfig;
-        this.converters = converters;
-        this.returnGeneric = returnGeneric;
-        this.takeGeneric = takeGeneric;
-        this.blacklistedMainClasses = blacklistedMainClasses;
-    }
-
-    public void append(Configuration other) {
-        if (other != null) {
-            this.verbose |= other.verbose;
-            this.sourceConfig.append(other.sourceConfig);
-            this.sinkConfig.append(other.sinkConfig);
-            this.converters.addAll(other.converters);
-            this.returnGeneric.addAll(other.returnGeneric);
-            this.takeGeneric.addAll(other.takeGeneric);
-            this.blacklistedMainClasses.addAll(other.blacklistedMainClasses);
-        }
-    }
-
-    public void setTaintMethod(TaintMethod taintMethod) {
-        this.taintMethod = taintMethod;
-        this.taintStringConfig = new TaintStringConfig(taintMethod);
-    }
-
-    public void transformConverters() {
-        HashMap<String, String> replacements = new HashMap<>();
-        replacements.put("subpath", this.taintMethod.getSubPath());
-        StringSubstitutor sub = new StringSubstitutor(replacements);
-
-        List<FunctionCall> converted = this.converters.stream().map(functionCall -> {
-            String oldOwner = functionCall.getOwner();
-
-            String newOwner = sub.replace(oldOwner);
-            return new FunctionCall(functionCall.getOpcode(), newOwner, functionCall.getName(), functionCall.getDescriptor(), functionCall.isInterface());
-        }).collect(Collectors.toList());
-
-        this.converters.clear();
-        this.converters.addAll(converted);
-    }
-
-    public TaintStringConfig getTaintStringConfig() {
-        return this.taintStringConfig;
-    }
-
-    void appendBlacklist(Collection<String> other) {
-        if (this.blacklistedMainClasses != null) {
-            this.blacklistedMainClasses.addAll(other);
-        }
     }
 
     public SourceConfig getSourceConfig() {
@@ -240,42 +262,27 @@ public class Configuration {
         return this.blacklistedMainClasses.contains(owner);
     }
 
-    @XmlElement
-    private boolean verbose = false;
-
-    @XmlElement
-    private boolean loggingEnabled = false;
-
-    @XmlElement
-    private final SourceConfig sourceConfig;
-    /**
-     * All functions listed here consume Strings that need to be checked first.
-     */
-    @XmlElement
-    private final SinkConfig sinkConfig;
-
-    @JacksonXmlElementWrapper(localName = "converters")
-    @XmlElement(name = "converter")
-    private final List<FunctionCall> converters;
-
-    @JacksonXmlElementWrapper(localName = "returnGenerics")
-    @XmlElement(name = "returnGeneric")
-    private final List<ReturnsGeneric> returnGeneric;
-
-    @JacksonXmlElementWrapper(localName = "takeGenerics")
-    @XmlElement(name = "takeGeneric")
-    private final List<TakesGeneric> takeGeneric;
-
-    @JacksonXmlElementWrapper(localName = "blacklistedMainClasses")
-    @XmlElement(name = "class")
-    private final List<String> blacklistedMainClasses;
-
     public TaintMethod getTaintMethod() {
         return this.taintMethod;
     }
 
     public boolean collectStats() {
         return this.collectStats;
+    }
+
+    public void setAbort(Abort abort) {
+        if (abort == null) {
+            throw new IllegalArgumentException(new NullPointerException());
+        }
+        this.abort = abort;
+    }
+
+    public Abort getAbort() {
+        return abort;
+    }
+
+    public static boolean isInitialized() {
+        return Configuration.configuration != null;
     }
 
     public static Configuration getConfiguration() {
@@ -291,6 +298,10 @@ public class Configuration {
 
     public void setLoggingEnabled(boolean loggingEnabled) {
         this.loggingEnabled = loggingEnabled;
+    }
+
+    public List<String> getExcludedPackages() {
+        return excludedPackages;
     }
 
     public static void parseAgent(String args) {
@@ -353,16 +364,5 @@ public class Configuration {
             throw new IllegalStateException("Configuration already initialized");
         }
         Configuration.configuration = configuration;
-    }
-
-    public void setAbort(Abort abort) {
-        if (abort == null) {
-            throw new IllegalArgumentException(new NullPointerException());
-        }
-        this.abort = abort;
-    }
-
-    public Abort getAbort() {
-        return abort;
     }
 }

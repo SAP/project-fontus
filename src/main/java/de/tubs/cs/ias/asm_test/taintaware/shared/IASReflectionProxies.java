@@ -4,7 +4,7 @@ import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
-import jdk.internal.reflect.Reflection;
+import de.tubs.cs.ias.asm_test.utils.ReflectionUtils;
 
 public class IASReflectionProxies {
     private static final TaintStringConfig tsc = new TaintStringConfig(Configuration.getConfiguration().getTaintMethod());
@@ -20,7 +20,7 @@ public class IASReflectionProxies {
             callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
                     .getCallerClass();
         } else {
-            callerClass = Reflection.getCallerClass();
+            callerClass = ReflectionUtils.getCallerClass();
         }
         ClassLoader cl = callerClass.getClassLoader();
 
@@ -40,7 +40,7 @@ public class IASReflectionProxies {
                 callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
                         .getCallerClass();
             } else {
-                callerClass = Reflection.getCallerClass();
+                callerClass = ReflectionUtils.getCallerClass();
             }
             loader = callerClass.getClassLoader();
         }

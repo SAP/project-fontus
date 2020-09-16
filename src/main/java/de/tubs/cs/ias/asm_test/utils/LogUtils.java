@@ -1,7 +1,6 @@
 package de.tubs.cs.ias.asm_test.utils;
 
 import de.tubs.cs.ias.asm_test.Constants;
-import jdk.internal.reflect.Reflection;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -35,7 +34,7 @@ public class LogUtils {
             callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
                     .getCallerClass();
         } else {
-            callerClass = Reflection.getCallerClass();
+            callerClass = ReflectionUtils.getCallerClass();
         }
         Logger logger = new Logger(callerClass.getName());
         logger.setParent(parentlogger);

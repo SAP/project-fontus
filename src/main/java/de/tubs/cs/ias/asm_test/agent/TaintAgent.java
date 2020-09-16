@@ -7,6 +7,6 @@ import java.lang.instrument.Instrumentation;
 public class TaintAgent {
     public static void premain(String args, Instrumentation inst) {
         Configuration.parseAgent(args);
-        inst.addTransformer(new TaintingTransformer(Configuration.getConfiguration()));
+        inst.addTransformer(new TaintingTransformer(Configuration.getConfiguration(), inst));
     }
 }

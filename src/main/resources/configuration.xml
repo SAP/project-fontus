@@ -148,4 +148,13 @@
             </conversions>
         </takeGeneric>
     </takeGenerics>
+    <excludedPackages>
+        <excludedPackage>org/apache/juli/</excludedPackage>
+        <excludedPackage>org/apache/xerces/</excludedPackage>
+        <excludedPackage>org/xml/sax/</excludedPackage>
+        <excludedPackage>org/w3c/dom/</excludedPackage>
+        <excludedPackage>org/apache/xmlcommons/</excludedPackage>
+        <excludedPackage>javax/xml/parsers/</excludedPackage>
+        <excludedPackage>javax/xml/transform/</excludedPackage>
+    </excludedPackages>
 </configuration>

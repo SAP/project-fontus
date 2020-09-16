@@ -7,10 +7,12 @@ import de.tubs.cs.ias.asm_test.instrumentation.Instrumenter;
 import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import de.tubs.cs.ias.asm_test.utils.ParentLogger;
+import org.objectweb.asm.ClassReader;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
+import java.lang.instrument.Instrumentation;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.ProtectionDomain;
@@ -20,10 +22,12 @@ class TaintingTransformer implements ClassFileTransformer {
 
     private final Configuration config;
     private final Instrumenter instrumenter;
+    private final Instrumentation instrumentation;
 
-    TaintingTransformer(Configuration config) {
+    TaintingTransformer(Configuration config, Instrumentation instrumentation) {
         this.instrumenter = new Instrumenter();
         this.config = config;
+        this.instrumentation = instrumentation;
     }
 
     @Override
@@ -31,6 +35,10 @@ class TaintingTransformer implements ClassFileTransformer {
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
         if (loader == null) {
             return classfileBuffer;
+        }
+
+        if (className == null) {
+            className = new ClassReader(classfileBuffer).getClassName();
         }
 
         if (JdkClassesLookupTable.getInstance().isJdkClass(className)) {

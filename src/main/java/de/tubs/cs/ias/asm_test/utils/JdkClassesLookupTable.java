@@ -1,5 +1,7 @@
 package de.tubs.cs.ias.asm_test.utils;
 
+import de.tubs.cs.ias.asm_test.config.Configuration;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,11 +11,6 @@ import java.util.*;
 
 public final class JdkClassesLookupTable {
     private static final ParentLogger logger = LogUtils.getLogger();
-
-    private static int getJvmVersion() {
-        String specVersion = System.getProperty("java.vm.specification.version");
-        return Integer.parseInt(specVersion);
-    }
 
     public boolean isJdkClass(String className) {
         return JdkClassesLookupTable.getInstance().isJdkClass(className, null);
@@ -66,7 +63,7 @@ public final class JdkClassesLookupTable {
             while ((line = br.readLine()) != null) {
                 lines.add(line);
             }
-            return new JdkClassesLookupTable(lines);
+            return new JdkClassesLookupTable(lines, Configuration.getConfiguration().getExcludedPackages());
 
         } catch (IOException e) { //TODO: Think about proper error handling
             logger.error("Can't load the class list", e);
@@ -76,23 +73,23 @@ public final class JdkClassesLookupTable {
 
     private final Set<String> jdkClasses;
 
-    private JdkClassesLookupTable(Collection<String> classes) {
+    private JdkClassesLookupTable(Collection<String> classes, List<String> configuredBlacklistedPrefixes) {
         this.jdkClasses = new HashSet<>(classes.size());
         this.jdkClasses.addAll(classes);
+        this.blacklistedPrefixes = Arrays.asList("sun/",
+                "com/sun/proxy",
+                "com/sun/crypto/",
+                "jdk/",
+                "java/",
+                "sun/misc/",
+                "net/sf/jopt-simple/",
+                "org/objectweb/asm/",
+                "org/openjdk/jmh/",
+                "org/apache/commons/commons-math3/");
+        this.blacklistedPrefixes.addAll(configuredBlacklistedPrefixes);
     }
 
-    // TODO: Unify with Main
-    private static final String[] blacklistedPrefixes = {
-            "sun/",
-            "com/sun/proxy",
-            "jdk/",
-            "java/",
-            "sun/misc/",
-            "net/sf/jopt-simple/",
-            "org/objectweb/asm/",
-            "org/openjdk/jmh/",
-            "org/apache/commons/commons-math3"
-    };
+    private final List<String> blacklistedPrefixes;
 
     public boolean isJdkClass(Class<?> cls) {
         return isJdkClass(Utils.fixupReverse(cls.getName()));
