@@ -2,12 +2,14 @@ package de.tubs.cs.ias.asm_test.utils.abort;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 
+import java.util.List;
+
 public abstract class Abort {
     private static final Abort[] aborts = {
-            new NothingAbort(), new ExitAbort(), new StdErrLoggingAbort()
+            new NothingAbort(), new ExitAbort(), new StdErrLoggingAbort(), new JsonLoggingAbort()
     };
 
-    public abstract void abort(IASTaintAware taintAware);
+    public abstract void abort(IASTaintAware taintAware, String sink, List<StackTraceElement> stackTrace);
 
     public abstract String getName();
 

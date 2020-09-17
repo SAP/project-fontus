@@ -5,14 +5,11 @@ import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.utils.abort.Abort;
 import de.tubs.cs.ias.asm_test.utils.stats.Statistics;
 
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 public class IASTaintHandler {
-    public static Void handleTaint(IASTaintAware taintAware) {
+    public static Void handleTaint(IASTaintAware taintAware, String sink) {
         boolean isTainted = taintAware.isTainted();
 
         if (Configuration.getConfiguration().collectStats()) {
@@ -21,7 +18,17 @@ public class IASTaintHandler {
 
         if (isTainted) {
             Abort abort = Configuration.getConfiguration().getAbort();
-            abort.abort(taintAware);
+
+            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+            List<StackTraceElement> cleanedStackTrace = new ArrayList<>();
+            for (int i = 1; i < stackTrace.length; i++) {
+                StackTraceElement ste = stackTrace[i];
+                if (!ste.getClassName().startsWith(IASTaintHandler.class.getName())) {
+                    cleanedStackTrace.add(ste);
+                }
+            }
+
+            abort.abort(taintAware, sink, cleanedStackTrace);
         }
         return null;
     }
@@ -71,8 +78,16 @@ public class IASTaintHandler {
         return object;
     }
 
-    public static Object checkTaint(Object object) {
-        return traversObject(object, IASTaintHandler::checkTaint, IASTaintHandler::handleTaint);
+    public static Object checkTaint(Object object, String sink) {
+        if (object instanceof IASTaintAware) {
+            handleTaint((IASTaintAware) object, sink);
+            return object;
+        }
+
+        return traversObject(object, o -> checkTaint(o, sink), taintAware -> {
+            handleTaint(taintAware, sink);
+            return null;
+        });
     }
 
     public static Object taint(Object object) {

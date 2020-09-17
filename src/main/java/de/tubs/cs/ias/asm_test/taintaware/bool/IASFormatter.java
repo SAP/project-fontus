@@ -11,7 +11,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class IASFormatter implements IASTaintAware, Closeable, Flushable, AutoCloseable, IASFormatterable {
+public class IASFormatter implements Closeable, Flushable, AutoCloseable, IASFormatterable {
     private final Formatter formatter;
 
     public IASFormatter(Formatter formatter) {
@@ -149,20 +149,5 @@ public class IASFormatter implements IASTaintAware, Closeable, Flushable, AutoCl
 
     public Formatter getFormatter() {
         return this.formatter;
-    }
-
-    @Override
-    public boolean isTainted() {
-        if (this.formatter.out() instanceof IASTaintAware) {
-            return ((IASTaintAware) this.formatter.out()).isTainted();
-        }
-        return false;
-    }
-
-    @Override
-    public void setTaint(boolean taint) {
-        if (this.formatter.out() instanceof IASTaintAware) {
-            ((IASTaintAware) this.formatter.out()).setTaint(taint);
-        }
     }
 }

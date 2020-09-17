@@ -5,7 +5,11 @@ import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASAbstractStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+
+import java.util.Collections;
+import java.util.List;
 
 @SuppressWarnings({"SynchronizedMethod", "ReturnOfThis", "WeakerAccess", "ClassWithTooManyConstructors", "ClassWithTooManyMethods", "Since15"})
 public abstract class IASAbstractStringBuilder implements IASAbstractStringBuilderable, IASTaintAware {
@@ -19,7 +23,13 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
     }
 
     @Override
-    public void setTaint(boolean taint) {}
+    public List<IASTaintRange> getTaintRanges() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public void setTaint(boolean taint) {
+    }
 
     @Override
     public void setTaint(IASTaintSource source) {

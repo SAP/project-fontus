@@ -40,8 +40,8 @@ public final class Constants {
             TaintHandlerQN = Utils.getInternalName(IASTaintHandler.class);
             TaintHandlerTaintName = IASTaintHandler.class.getMethod("taint", Object.class).getName();
             TaintHandlerTaintDesc = Descriptor.parseMethod(IASTaintHandler.class.getMethod("taint", Object.class)).toDescriptor();
-            TaintHandlerCheckTaintName = IASTaintHandler.class.getMethod("checkTaint", Object.class).getName();
-            TaintHandlerCheckTaintDesc = Descriptor.parseMethod(IASTaintHandler.class.getMethod("checkTaint", Object.class)).toDescriptor();
+            TaintHandlerCheckTaintName = IASTaintHandler.class.getMethod("checkTaint", Object.class, String.class).getName();
+            TaintHandlerCheckTaintDesc = Descriptor.parseMethod(IASTaintHandler.class.getMethod("checkTaint", Object.class, String.class)).toDescriptor();
             CompareProxyEqualsDesc = Descriptor.parseMethod(IASCompareProxy.class.getMethod("compareRefEquals", Object.class, Object.class)).toDescriptor();
 
             PropertyDesc = Descriptor.classNameToDescriptorName(Properties.class.getName());
@@ -163,10 +163,6 @@ public final class Constants {
      * Matches fully qualified StringBuilder names
      */
     public static final Pattern strBufferPattern = Pattern.compile(StringBufferDesc);
-    /**
-     * The Taint-aware String method to check and act on a potential taint
-     */
-    public static final String ABORT_IF_TAINTED = "abortIfTainted";
 
     /**
      * Descriptor of the Java main method

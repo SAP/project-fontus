@@ -5,7 +5,12 @@ import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASAbstractStringBuilderable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 @SuppressWarnings({"SynchronizedMethod", "ReturnOfThis", "WeakerAccess", "ClassWithTooManyConstructors", "ClassWithTooManyMethods", "Since15"})
 public abstract class IASAbstractStringBuilder implements IASAbstractStringBuilderable, IASTaintAware {
@@ -17,6 +22,15 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
     @Override
     public boolean isTainted() {
         return this.tainted;
+    }
+
+    @Override
+    public List<IASTaintRange> getTaintRanges() {
+        if (isTainted()) {
+            return Collections.singletonList(new IASTaintRange(0, this.length(), IASTaintSource.TS_CS_UNKNOWN_ORIGIN));
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     @Override

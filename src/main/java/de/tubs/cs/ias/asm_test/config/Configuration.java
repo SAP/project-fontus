@@ -12,6 +12,7 @@ import de.tubs.cs.ias.asm_test.utils.abort.ExitAbort;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -364,5 +365,9 @@ public class Configuration {
             throw new IllegalStateException("Configuration already initialized");
         }
         Configuration.configuration = configuration;
+    }
+
+    public File getAbortOutputFile() {
+        return new File("fontus-results.json");
     }
 }

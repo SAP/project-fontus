@@ -1,16 +1,11 @@
 package de.tubs.cs.ias.asm_test.taintaware.untainted;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASAbstractStringBuilderable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringPool;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+import de.tubs.cs.ias.asm_test.taintaware.shared.*;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.util.Comparator;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,6 +46,11 @@ public final class IASString implements IASTaintAware, IASStringable {
     @Override
     public boolean isTainted() {
         return false;
+    }
+
+    @Override
+    public List<IASTaintRange> getTaintRanges() {
+        return Collections.emptyList();
     }
 
     @Override
