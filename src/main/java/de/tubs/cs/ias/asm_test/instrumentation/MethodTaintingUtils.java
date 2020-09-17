@@ -15,22 +15,12 @@ import java.util.List;
 import java.util.Map;
 
 public class MethodTaintingUtils {
-    private static final ParentLogger logger = LogUtils.getLogger();
 
     /**
      * If a taint-aware string is on the top of the stack, we can call this function to add a check to handle tainted strings.
      */
-    public static void callCheckTaintNative(MethodVisitor mv, TaintStringConfig configuration) {
-        Label after = new Label();
-        // Call dup here to put the TString reference twice on the stack so the call can pop one without affecting further processing
-        mv.visitInsn(Opcodes.DUP);
-        mv.visitJumpInsn(Opcodes.IFNULL, after);
-        mv.visitInsn(Opcodes.DUP);
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, configuration.getTStringQN(), Constants.ABORT_IF_TAINTED, "()V", false);
-        mv.visitLabel(after);
-    }
-
-    public static void callCheckTaintGeneric(MethodVisitor mv, String typeDescriptor) {
+    public static void callCheckTaintGeneric(MethodVisitor mv, String typeDescriptor, String sink) {
+        mv.visitLdcInsn(sink);
         mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TaintHandlerQN, Constants.TaintHandlerCheckTaintName, Constants.TaintHandlerCheckTaintDesc, false);
         mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(typeDescriptor).getInternalName());
     }

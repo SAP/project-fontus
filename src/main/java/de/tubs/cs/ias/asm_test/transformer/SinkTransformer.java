@@ -31,13 +31,10 @@ public class SinkTransformer implements ParameterTransformation {
         logger.debug("Type: {}", type);
         // Check whether this parameter needs to be checked for taint
         if (this.sink.findParameter(index) != null) {
-            if (InstrumentationHelper.getInstance(this.config).canHandleType(type) && Type.getType(type).getSort() == Type.OBJECT) {
-                logger.info("Adding taint check for sink {}, paramater {} ({})", this.sink.getName(), index, type);
-                MethodTaintingUtils.callCheckTaintNative(visitor.getParent(), this.config);
-            } else {
-                logger.warn("Tried to check taint for type {} (index {}) in sink {} although it is not taintable!", type, index, this.sink.getName());
-                MethodTaintingUtils.callCheckTaintGeneric(visitor.getParent(), type);
-            }
+            String instrumentedType = InstrumentationHelper.getInstance(this.config).instrumentQN(type);
+            logger.info("Adding taint check for sink {}, paramater {} ({})", this.sink.getName(), index, type);
+            String sinkName = String.format("%s.%s%s", this.sink.getFunction().getOwner(), this.sink.getFunction().getName(), this.sink.getFunction().getDescriptor());
+            MethodTaintingUtils.callCheckTaintGeneric(visitor.getParent(), instrumentedType, sinkName);
         }
     }
 }

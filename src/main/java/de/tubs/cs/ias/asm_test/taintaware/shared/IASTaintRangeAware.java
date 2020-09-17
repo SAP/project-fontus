@@ -6,8 +6,6 @@ import java.util.List;
 
 public interface IASTaintRangeAware extends IASTaintAware {
 
-    List<IASTaintRange> getTaintRanges();
-
     boolean isUninitialized();
 
     default boolean isInitialized() {
