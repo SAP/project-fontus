@@ -1,4 +1,4 @@
-package de.tubs.cs.ias.asm_test.transformer;
+package de.tubs.cs.ias.asm_test.instrumentation.transformer;
 
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.instrumentation.MethodTaintingVisitor;

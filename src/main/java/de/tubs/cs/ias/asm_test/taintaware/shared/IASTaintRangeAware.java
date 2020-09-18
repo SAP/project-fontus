@@ -16,8 +16,6 @@ public interface IASTaintRangeAware extends IASTaintAware {
 
     boolean isTaintedAt(int index);
 
-    void setTaint(IASTaintSource source);
-
     void setTaint(List<IASTaintRange> ranges);
 
     IASTaintInformationable getTaintInformation();

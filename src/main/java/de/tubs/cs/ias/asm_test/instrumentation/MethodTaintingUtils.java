@@ -20,16 +20,13 @@ public class MethodTaintingUtils {
      * If a taint-aware string is on the top of the stack, we can call this function to add a check to handle tainted strings.
      */
     public static void callCheckTaintGeneric(MethodVisitor mv, String typeDescriptor, String sink) {
-        mv.visitLdcInsn(sink);
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TaintHandlerQN, Constants.TaintHandlerCheckTaintName, Constants.TaintHandlerCheckTaintDesc, false);
-        mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(typeDescriptor).getInternalName());
     }
 
     /**
      * Pushes an integer onto the stack.
      * Optimizes small integers towards their dedicated ICONST_n instructions to save space.
      */
-    static void pushNumberOnTheStack(MethodVisitor mv, int num) {
+    public static void pushNumberOnTheStack(MethodVisitor mv, int num) {
         switch (num) {
             case -1:
                 mv.visitInsn(Opcodes.ICONST_M1);

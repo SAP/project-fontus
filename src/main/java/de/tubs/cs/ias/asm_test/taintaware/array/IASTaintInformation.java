@@ -3,6 +3,7 @@ package de.tubs.cs.ias.asm_test.taintaware.array;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintInformationable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSourceRegistry;
 
 import java.util.List;
 import java.util.Objects;
@@ -160,7 +161,7 @@ public class IASTaintInformation implements IASTaintInformationable {
         if (this.taints[position] == 0) {
             return null;
         }
-        return IASTaintSource.getInstanceById((short) this.taints[position]);
+        return IASTaintSourceRegistry.getInstance().get(this.taints[position]);
     }
 
     public boolean isTaintedAt(int index) {

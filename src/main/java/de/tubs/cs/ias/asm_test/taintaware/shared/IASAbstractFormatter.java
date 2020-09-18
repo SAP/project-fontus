@@ -935,7 +935,7 @@ public abstract class IASAbstractFormatter implements Closeable, Flushable, Auto
                 if (arg instanceof IASTaintRangeAware && ((IASTaintAware) arg).isTainted()) {
                     List<IASTaintRange> ranges = ((IASTaintRangeAware) arg).getTaintRanges();
                     if (ranges.size() == 1) {
-                        taintedHexString.setTaint(IASTaintSource.getInstanceById(ranges.get(0).getSource()));
+                        taintedHexString.setTaint(ranges.get(0).getSource());
                     } else {
                         taintedHexString.setTaint(true);
                     }

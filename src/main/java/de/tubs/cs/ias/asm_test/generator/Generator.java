@@ -7,8 +7,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import de.tubs.cs.ias.asm_test.config.*;
-import de.tubs.cs.ias.asm_test.utils.SinkGenerator;
-import de.tubs.cs.ias.asm_test.utils.SourceGenerator;
 import picocli.CommandLine;
 
 import java.io.IOException;

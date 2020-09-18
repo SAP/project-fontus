@@ -33,8 +33,9 @@ public class IASTaintHandler {
         return null;
     }
 
-    private static Void setTaint(Object taintAware) {
-        ((IASTaintAware) taintAware).setTaint(true);
+    private static Void setTaint(Object taintAware, int sourceId) {
+        IASTaintSource source = IASTaintSourceRegistry.getInstance().get(sourceId);
+        ((IASTaintAware) taintAware).setTaint(source);
         return null;
     }
 
@@ -84,13 +85,15 @@ public class IASTaintHandler {
             return object;
         }
 
-        return traversObject(object, o -> checkTaint(o, sink), taintAware -> {
-            handleTaint(taintAware, sink);
-            return null;
-        });
+        return traversObject(object, o -> checkTaint(o, sink), taintAware -> handleTaint(taintAware, sink));
     }
 
-    public static Object taint(Object object) {
-        return traversObject(object, IASTaintHandler::taint, IASTaintHandler::setTaint);
+    public static Object taint(Object object, int sourceId) {
+        if (object instanceof IASTaintAware) {
+            IASTaintSource source = IASTaintSourceRegistry.getInstance().get(sourceId);
+            ((IASTaintAware) object).setTaint(source);
+            return object;
+        }
+        return traversObject(object, o -> taint(o, sourceId), taintAware -> setTaint(taintAware, sourceId));
     }
 }

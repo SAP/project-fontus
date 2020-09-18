@@ -1,14 +1,15 @@
-package de.tubs.cs.ias.asm_test.utils;
+package de.tubs.cs.ias.asm_test.generator;
 
 import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 import de.tubs.cs.ias.asm_test.config.Sink;
 import de.tubs.cs.ias.asm_test.config.SinkParameter;
+import de.tubs.cs.ias.asm_test.utils.Utils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SinkGenerator {
+public class SinkGenerator extends AbstractGenerator{
     private String className;
 
     public SinkGenerator(String className) {
@@ -30,7 +31,7 @@ public class SinkGenerator {
                     }
                 }
                 if (!sinkParameters.isEmpty()) {
-                    Sink sink = new Sink(method.getName() + method.hashCode(), FunctionCall.fromMethod(method), sinkParameters);
+                    Sink sink = new Sink(generateName(method), FunctionCall.fromMethod(method), sinkParameters);
                     sinks.add(sink);
                 }
             }

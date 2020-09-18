@@ -27,11 +27,8 @@ dependencies {
     compile 'org.ow2.asm:asm-analysis:7.2'
     compile 'org.ow2.asm:asm-util:7.2'
     compile 'info.picocli:picocli:4.1.4'
-//    compile 'org.slf4j:slf4j-api:1.7.25'
-    // compile 'org.slf4j:slf4j-jdk14:1.7.25'
     compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.9'
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
-//    compile 'ch.qos.logback:logback-classic:1.2.3'
     compile group: 'org.mutabilitydetector', name: 'asm-nonclassloadingextensions', version: '1.0-rc2'
     testCompile('org.junit.jupiter:junit-jupiter:5.4.2')
     testCompile('org.junit.jupiter:junit-jupiter-migrationsupport:5.4.2')
@@ -109,7 +106,6 @@ shadowJar {
     relocate 'org.objectweb', 'de.tubs.cs.ias.asm_test.org.objectweb'
     relocate 'javax.activation', 'de.tubs.cs.ias.asm_test.javax.activation'
     relocate 'javax.xml.bind', 'de.tubs.cs.ias.asm_test.javax.xml.bind'
-//    relocate 'javax.xml.stream', 'de.tubs.cs.ias.asm_test.javax.xml.stream'
     relocate 'picocli', 'de.tubs.cs.ias.asm_test.picocli'
     dependsOn utilJar
     dependsOn generatorJar
