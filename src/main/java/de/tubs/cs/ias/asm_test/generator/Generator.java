@@ -27,6 +27,7 @@ public class Generator implements Callable<Void> {
     @CommandLine.Option(
             names = {"-so", "--source"},
             required = false,
+            split = ",",
             paramLabel = "Source",
             description = "The classes specified as sources"
     )
@@ -43,6 +44,7 @@ public class Generator implements Callable<Void> {
     @CommandLine.Option(
             names = {"-si", "--sink"},
             required = false,
+            split = ",",
             paramLabel = "Sink",
             description = "The classes specified as sink"
     )

@@ -65,7 +65,7 @@ public final class JdkClassesLookupTable {
             }
             return new JdkClassesLookupTable(lines, Configuration.getConfiguration().getExcludedPackages());
 
-        } catch (IOException e) { //TODO: Think about proper error handling
+        } catch (Exception e) { //TODO: Think about proper error handling
             logger.error("Can't load the class list", e);
             return null;
         }
@@ -76,7 +76,8 @@ public final class JdkClassesLookupTable {
     private JdkClassesLookupTable(Collection<String> classes, List<String> configuredBlacklistedPrefixes) {
         this.jdkClasses = new HashSet<>(classes.size());
         this.jdkClasses.addAll(classes);
-        this.blacklistedPrefixes = Arrays.asList("sun/",
+        this.blacklistedPrefixes = new ArrayList<>();
+        this.blacklistedPrefixes.addAll(Arrays.asList("sun/",
                 "com/sun/proxy",
                 "com/sun/crypto/",
                 "jdk/",
@@ -85,7 +86,7 @@ public final class JdkClassesLookupTable {
                 "net/sf/jopt-simple/",
                 "org/objectweb/asm/",
                 "org/openjdk/jmh/",
-                "org/apache/commons/commons-math3/");
+                "org/apache/commons/commons-math3/"));
         this.blacklistedPrefixes.addAll(configuredBlacklistedPrefixes);
     }
 
