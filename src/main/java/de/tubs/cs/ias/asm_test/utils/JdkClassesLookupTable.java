@@ -67,7 +67,7 @@ public final class JdkClassesLookupTable {
 
         } catch (Exception e) { //TODO: Think about proper error handling
             logger.error("Can't load the class list", e);
-            return null;
+            throw new RuntimeException(e);
         }
     }
 

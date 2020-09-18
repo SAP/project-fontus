@@ -372,7 +372,7 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
     @Override
     public void setTaint(boolean taint) {
         if (taint) {
-            this.derive(new BaseOperation(Collections.singletonList(new IASTaintRange(0, this.length(), (short) IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId()))), true);
+            this.derive(new BaseOperation(Collections.singletonList(new IASTaintRange(0, this.length(), IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN.getId()))), true);
         } else {
             this.derive(new BaseOperation(), false);
         }

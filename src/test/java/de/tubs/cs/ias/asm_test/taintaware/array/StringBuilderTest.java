@@ -2,7 +2,7 @@ package de.tubs.cs.ias.asm_test.taintaware.array;
 
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.TaintMethod;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSourceRegistry;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +12,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class StringBuilderTest {
-    private static final int TAINT = IASTaintSource.TS_CS_UNKNOWN_ORIGIN.getId();
+    private static final int TAINT = IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN.getId();
 
     @BeforeAll
     public static void init() {

@@ -3,12 +3,8 @@ package de.tubs.cs.ias.asm_test.taintaware.bool;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASAbstractStringBuilderable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+import de.tubs.cs.ias.asm_test.taintaware.shared.*;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,7 +23,7 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
     @Override
     public List<IASTaintRange> getTaintRanges() {
         if (isTainted()) {
-            return Collections.singletonList(new IASTaintRange(0, this.length(), IASTaintSource.TS_CS_UNKNOWN_ORIGIN));
+            return Collections.singletonList(new IASTaintRange(0, this.length(), IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN));
         } else {
             return Collections.emptyList();
         }

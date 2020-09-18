@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class IASTaintSourceRegistry {
+    public static final IASTaintSource TS_STRING_CREATED_FROM_CHAR_ARRAY = getInstance().getOrRegisterTaintSource("StringCreatedFromCharArray");
+    public static final IASTaintSource TS_CHAR_UNKNOWN_ORIGIN = getInstance().getOrRegisterTaintSource("CharUnknownOrigin");
+    public static final IASTaintSource TS_CS_UNKNOWN_ORIGIN = getInstance().getOrRegisterTaintSource("CharSequenceUnknownOrigin");
+
     private static IASTaintSourceRegistry instance;
     private final List<IASTaintSource> sources = new ArrayList<>();
     private int counter = 0;

@@ -2,7 +2,7 @@ package de.tubs.cs.ias.asm_test.taintaware.lazycomplex.operations;
 
 import de.tubs.cs.ias.asm_test.taintaware.lazycomplex.IASOperation;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSourceRegistry;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ public class SplitOperationTest {
     @Test
     public void testCompletelyTainted() {
         String before = "bye,bye,bye";
-        List<IASTaintRange> ranges = Collections.singletonList(new IASTaintRange(0, before.length(), IASTaintSource.TS_CS_UNKNOWN_ORIGIN));
+        List<IASTaintRange> ranges = Collections.singletonList(new IASTaintRange(0, before.length(), IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN));
         IASOperation operation1 = new SplitOperation(",", 0, 0);
         IASOperation operation2 = new SplitOperation(",", 1, 0);
         IASOperation operation3 = new SplitOperation(",", 2, 0);
@@ -27,15 +27,15 @@ public class SplitOperationTest {
         assertEquals(1, result1.size());
         assertEquals(1, result2.size());
         assertEquals(1, result3.size());
-        assertEquals(new IASTaintRange(0, 3, IASTaintSource.TS_CS_UNKNOWN_ORIGIN), result1.get(0));
-        assertEquals(new IASTaintRange(0, 3, IASTaintSource.TS_CS_UNKNOWN_ORIGIN), result2.get(0));
-        assertEquals(new IASTaintRange(0, 3, IASTaintSource.TS_CS_UNKNOWN_ORIGIN), result3.get(0));
+        assertEquals(new IASTaintRange(0, 3, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN), result1.get(0));
+        assertEquals(new IASTaintRange(0, 3, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN), result2.get(0));
+        assertEquals(new IASTaintRange(0, 3, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN), result3.get(0));
     }
 
     @Test
     public void testPartlyTainted() {
         String before = "bye,bye,bye";
-        List<IASTaintRange> ranges = Collections.singletonList(new IASTaintRange(8, before.length(), IASTaintSource.TS_CS_UNKNOWN_ORIGIN));
+        List<IASTaintRange> ranges = Collections.singletonList(new IASTaintRange(8, before.length(), IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN));
         IASOperation operation1 = new SplitOperation(",", 0, 0);
         IASOperation operation2 = new SplitOperation(",", 1, 0);
         IASOperation operation3 = new SplitOperation(",", 2, 0);
@@ -47,7 +47,7 @@ public class SplitOperationTest {
         assertEquals(0, result1.size());
         assertEquals(0, result2.size());
         assertEquals(1, result3.size());
-        assertEquals(new IASTaintRange(0, 3, IASTaintSource.TS_CS_UNKNOWN_ORIGIN), result3.get(0));
+        assertEquals(new IASTaintRange(0, 3, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN), result3.get(0));
     }
 
     @Test
@@ -70,7 +70,7 @@ public class SplitOperationTest {
     @Test
     public void testPartlyTaintedWithLimit() {
         String before = "bye,bye,bye";
-        List<IASTaintRange> ranges = Collections.singletonList(new IASTaintRange(8, before.length(), IASTaintSource.TS_CS_UNKNOWN_ORIGIN));
+        List<IASTaintRange> ranges = Collections.singletonList(new IASTaintRange(8, before.length(), IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN));
         IASOperation operation1 = new SplitOperation(",", 0, 2);
         IASOperation operation2 = new SplitOperation(",", 1, 2);
 
@@ -79,6 +79,6 @@ public class SplitOperationTest {
 
         assertEquals(0, result1.size());
         assertEquals(1, result2.size());
-        assertEquals(new IASTaintRange(4, 7, IASTaintSource.TS_CS_UNKNOWN_ORIGIN), result2.get(0));
+        assertEquals(new IASTaintRange(4, 7, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN), result2.get(0));
     }
 }

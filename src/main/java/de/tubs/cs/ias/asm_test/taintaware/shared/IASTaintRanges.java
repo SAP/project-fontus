@@ -19,10 +19,10 @@ public class IASTaintRanges {
     }
 
     public synchronized IASTaintRanges addRange(int start, int end, IASTaintSource source) {
-        return this.addRange(start, end, (short) source.getId());
+        return this.addRange(start, end, source.getId());
     }
 
-    public synchronized IASTaintRanges addRange(int start, int end, short sourceId) {
+    public synchronized IASTaintRanges addRange(int start, int end, int sourceId) {
         if (start == end) {
             // No need to process ranges with length 0
             return this;

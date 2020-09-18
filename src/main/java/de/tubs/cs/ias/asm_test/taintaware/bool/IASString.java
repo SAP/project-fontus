@@ -534,7 +534,7 @@ public final class IASString implements IASTaintAware, IASStringable {
 
     @Override
     public IASTaintSource getTaintFor(int position) {
-        return this.tainted ? IASTaintSource.TS_CS_UNKNOWN_ORIGIN : null;
+        return this.tainted ? IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN : null;
     }
 
     @Override
@@ -560,7 +560,7 @@ public final class IASString implements IASTaintAware, IASStringable {
     @Override
     public List<IASTaintRange> getTaintRanges() {
         if (isTainted()) {
-            return Collections.singletonList(new IASTaintRange(0, this.length(), IASTaintSource.TS_CS_UNKNOWN_ORIGIN));
+            return Collections.singletonList(new IASTaintRange(0, this.length(), IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN));
         } else {
             return Collections.emptyList();
         }

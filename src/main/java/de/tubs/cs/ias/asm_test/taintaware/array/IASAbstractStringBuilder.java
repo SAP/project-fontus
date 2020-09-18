@@ -1,9 +1,6 @@
 package de.tubs.cs.ias.asm_test.taintaware.array;
 
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASAbstractStringBuilderable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+import de.tubs.cs.ias.asm_test.taintaware.shared.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +71,7 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
 
     @Override
     public void setTaint(boolean taint) {
-        setTaint(taint ? IASTaintSource.TS_CS_UNKNOWN_ORIGIN : null);
+        setTaint(taint ? IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN : null);
     }
 
     @Override
