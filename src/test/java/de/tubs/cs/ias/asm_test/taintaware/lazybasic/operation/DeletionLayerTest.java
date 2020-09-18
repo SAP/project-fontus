@@ -1,7 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.lazybasic.operation;
 
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSourceRegistry;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -27,14 +27,14 @@ public class DeletionLayerTest {
 
     @Test
     public void testDeleteInTR1() {
-        List<IASTaintRange> previous = Arrays.asList(new IASTaintRange(0, 10, IASTaintSource.TS_CS_UNKNOWN_ORIGIN));
+        List<IASTaintRange> previous = Arrays.asList(new IASTaintRange(0, 10, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN));
         DeleteLayer deleteLayer = new DeleteLayer(2, 5);
 
         List<IASTaintRange> result = deleteLayer.apply(previous);
 
         assertArrayEquals(
                 new IASTaintRange[]{
-                        new IASTaintRange(0, 7, IASTaintSource.TS_CS_UNKNOWN_ORIGIN)
+                        new IASTaintRange(0, 7, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)
                 },
                 result.toArray()
         );
@@ -43,8 +43,8 @@ public class DeletionLayerTest {
     @Test
     public void testDeleteInTR2() {
         List<IASTaintRange> previous = Arrays.asList(
-                new IASTaintRange(0, 5, IASTaintSource.TS_CS_UNKNOWN_ORIGIN),
-                new IASTaintRange(5, 10, IASTaintSource.TS_CHAR_UNKNOWN_ORIGIN)
+                new IASTaintRange(0, 5, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
+                new IASTaintRange(5, 10, IASTaintSourceRegistry.TS_CHAR_UNKNOWN_ORIGIN)
         );
         DeleteLayer deleteLayer = new DeleteLayer(3, 7);
 
@@ -52,8 +52,8 @@ public class DeletionLayerTest {
 
         assertArrayEquals(
                 new IASTaintRange[]{
-                        new IASTaintRange(0, 3, IASTaintSource.TS_CS_UNKNOWN_ORIGIN),
-                        new IASTaintRange(3, 6, IASTaintSource.TS_CHAR_UNKNOWN_ORIGIN)
+                        new IASTaintRange(0, 3, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
+                        new IASTaintRange(3, 6, IASTaintSourceRegistry.TS_CHAR_UNKNOWN_ORIGIN)
                 },
                 result.toArray()
         );
@@ -62,8 +62,8 @@ public class DeletionLayerTest {
     @Test
     public void testDeleteInTR3() {
         List<IASTaintRange> previous = Arrays.asList(
-                new IASTaintRange(0, 5, IASTaintSource.TS_CS_UNKNOWN_ORIGIN),
-                new IASTaintRange(5, 10, IASTaintSource.TS_CHAR_UNKNOWN_ORIGIN)
+                new IASTaintRange(0, 5, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
+                new IASTaintRange(5, 10, IASTaintSourceRegistry.TS_CHAR_UNKNOWN_ORIGIN)
         );
         DeleteLayer deleteLayer = new DeleteLayer(3);
 
@@ -71,7 +71,7 @@ public class DeletionLayerTest {
 
         assertArrayEquals(
                 new IASTaintRange[]{
-                        new IASTaintRange(0, 3, IASTaintSource.TS_CS_UNKNOWN_ORIGIN),
+                        new IASTaintRange(0, 3, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
                 },
                 result.toArray()
         );
@@ -80,9 +80,9 @@ public class DeletionLayerTest {
     @Test
     public void testDeleteInTR4() {
         List<IASTaintRange> previous = Arrays.asList(
-                new IASTaintRange(0, 5, IASTaintSource.TS_CS_UNKNOWN_ORIGIN),
-                new IASTaintRange(5, 10, IASTaintSource.TS_CHAR_UNKNOWN_ORIGIN),
-                new IASTaintRange(10, 15, IASTaintSource.TS_STRING_CREATED_FROM_CHAR_ARRAY)
+                new IASTaintRange(0, 5, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
+                new IASTaintRange(5, 10, IASTaintSourceRegistry.TS_CHAR_UNKNOWN_ORIGIN),
+                new IASTaintRange(10, 15, IASTaintSourceRegistry.TS_STRING_CREATED_FROM_CHAR_ARRAY)
         );
         DeleteLayer deleteLayer = new DeleteLayer(3, 13);
 
@@ -90,8 +90,8 @@ public class DeletionLayerTest {
 
         assertArrayEquals(
                 new IASTaintRange[]{
-                        new IASTaintRange(0, 3, IASTaintSource.TS_CS_UNKNOWN_ORIGIN),
-                        new IASTaintRange(3, 5, IASTaintSource.TS_STRING_CREATED_FROM_CHAR_ARRAY)
+                        new IASTaintRange(0, 3, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
+                        new IASTaintRange(3, 5, IASTaintSourceRegistry.TS_STRING_CREATED_FROM_CHAR_ARRAY)
                 },
                 result.toArray()
         );
@@ -99,7 +99,7 @@ public class DeletionLayerTest {
 
     @Test
     public void testDeleteInTR5() {
-        List<IASTaintRange> previous = Arrays.asList(new IASTaintRange(0, 5, IASTaintSource.TS_CS_UNKNOWN_ORIGIN));
+        List<IASTaintRange> previous = Arrays.asList(new IASTaintRange(0, 5, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN));
         DeleteLayer deleteLayer = new DeleteLayer(0, 5);
 
         List<IASTaintRange> result = deleteLayer.apply(previous);

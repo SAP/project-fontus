@@ -37,7 +37,7 @@ public class RangeChainer {
             throw new IndexOutOfBoundsException(Integer.toString(source));
         }
 
-        ranges.add(new IASTaintRange(start, end, (short) source));
+        ranges.add(new IASTaintRange(start, end, source));
 
         return this;
     }

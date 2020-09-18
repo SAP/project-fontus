@@ -6,9 +6,6 @@ import java.util.*;
  * Created by d059349 on 15.07.17.
  */
 public class IASTaintSource {
-    public static final IASTaintSource TS_STRING_CREATED_FROM_CHAR_ARRAY = IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("StringCreatedFromCharArray");
-    public static final IASTaintSource TS_CHAR_UNKNOWN_ORIGIN = IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("CharUnknownOrigin");
-    public static final IASTaintSource TS_CS_UNKNOWN_ORIGIN = IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("CharSequenceUnknownOrigin");
 
     private final String name;
     private final int id;
@@ -46,7 +43,10 @@ public class IASTaintSource {
 
     @Override
     public String toString() {
-        return "TaintSource(name='$name', id=$id, level=$level)";
+        return "IASTaintSource{" +
+                "name='" + name + '\'' +
+                ", id=" + id +
+                '}';
     }
 
     public int getId() {

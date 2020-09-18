@@ -367,6 +367,7 @@ public class Configuration {
         Configuration.configuration = configuration;
     }
 
+    @JsonIgnore
     public File getAbortOutputFile() {
         return new File("fontus-results.json");
     }

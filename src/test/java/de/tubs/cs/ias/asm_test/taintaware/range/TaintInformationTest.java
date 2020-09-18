@@ -11,12 +11,12 @@ public class TaintInformationTest {
 //    public void createRange() {
 //        // Check whether TaintInformation and DebugTaintInformation create the right ranges
 ////        IASTaintInformation instance = new IASTaintInformation();
-////        instance.addRange(0, 1, (short) 0);
+////        instance.addRange(0, 1, 0);
 ////
 ////        assertThat(instance.getRange(0), instanceOf(IASTaintRange.class));
 ////
 ////        instance = new DebugTaintInformation();
-////        instance.addRange(0, 1, (short) 0);
+////        instance.addRange(0, 1, 0);
 ////        IASTaintRange range = instance.getRange(0);
 ////
 ////        assertThat(range, instanceOf(DebugTaintRange.class));
@@ -30,13 +30,13 @@ public class TaintInformationTest {
 //
 //        // Different TaintSource; this distinction affects only the internal processing
 //        // in getRanges() (i.e. this test case tests multiple things...)
-//        tI.addRange(0, 200, (short) 0);
-//        tI.addRange(50, 150, (short) 1);
+//        tI.addRange(0, 200, 0);
+//        tI.addRange(50, 150, 1);
 //
 //        List<IASTaintRange> expected = new ArrayList<>();
-//        expected.add(new IASTaintRange(0, 50, (short) 0));
-//        expected.add(new IASTaintRange(50, 150, (short) 1));
-//        expected.add(new IASTaintRange(150, 200, (short) 0));
+//        expected.add(new IASTaintRange(0, 50, 0));
+//        expected.add(new IASTaintRange(50, 150, 1));
+//        expected.add(new IASTaintRange(150, 200, 0));
 //
 //        assertThat(tI.getRanges(0, 190), equalTo(expected));
 //    }
@@ -46,21 +46,21 @@ public class TaintInformationTest {
 //        IASTaintInformation tI = new IASTaintInformation();
 //
 //        // Same TaintSource
-//        tI.addRange(0, 200, (short) 0);
-//        tI.addRange(100, 199, (short) 0);
+//        tI.addRange(0, 200, 0);
+//        tI.addRange(100, 199, 0);
 //
 //        List<IASTaintRange> expected = new ArrayList<>();
-//        expected.add(new IASTaintRange(0, 199, (short) 0)); // the last of the third ranges goes from 199
+//        expected.add(new IASTaintRange(0, 199, 0)); // the last of the third ranges goes from 199
 //        // to 200, 199 > 190 -> we therefore do not merge this one
 //
 //        assertThat(tI.getRanges(0, 190, true), equalTo(expected));
 //
-//        expected.set(0, new IASTaintRange(0, 200, (short) 0));
+//        expected.set(0, new IASTaintRange(0, 200, 0));
 //        assertThat(tI.getRanges(0, 200, true), equalTo(expected));
 //
-//        tI.addRange(100, 300, (short) 0);
+//        tI.addRange(100, 300, 0);
 //
-//        expected.set(0, new IASTaintRange(0, 300, (short) 0));
+//        expected.set(0, new IASTaintRange(0, 300, 0));
 //        assertThat(tI.getRanges(0, 300, true), equalTo(expected));
 //    }
 //
@@ -69,17 +69,17 @@ public class TaintInformationTest {
 //        // both halfs get shrinked down to zero, so we actually override it completely
 //        IASTaintInformation tI = new IASTaintInformation();
 //
-//        tI.addRange(0, 10, (short) 0);
-//        tI.addRange(20, 30, (short) 1);
+//        tI.addRange(0, 10, 0);
+//        tI.addRange(20, 30, 1);
 //
 //        IASTaintInformation tI2 = new IASTaintInformation();
 //
-//        tI2.addRange(20, 30, (short) 1);
-//        tI2.addRange(0, 10, (short) 0);
+//        tI2.addRange(20, 30, 1);
+//        tI2.addRange(0, 10, 0);
 //
 //        List<IASTaintRange> expected = new ArrayList<>();
-//        expected.add(new IASTaintRange(0, 10, (short) 0));
-//        expected.add(new IASTaintRange(20, 30, (short) 1));
+//        expected.add(new IASTaintRange(0, 10, 0));
+//        expected.add(new IASTaintRange(20, 30, 1));
 //
 //        assertThat(expected, equalTo(tI.getRanges(0, 200)));
 //        assertThat(expected, equalTo(tI2.getRanges(0, 100)));
@@ -91,11 +91,11 @@ public class TaintInformationTest {
 //        // both halfs get shrinked down to zero, so we actually override it completely
 //        IASTaintInformation tI = new IASTaintInformation();
 //
-//        tI.addRange(0, 100, (short) 0);
-//        tI.addRange(0, 100, (short) 1);
+//        tI.addRange(0, 100, 0);
+//        tI.addRange(0, 100, 1);
 //
 //        List<IASTaintRange> expected = new ArrayList<>();
-//        expected.add(new IASTaintRange(0, 100, (short) 1));
+//        expected.add(new IASTaintRange(0, 100, 1));
 //
 //        assertThat(expected, equalTo(tI.getRanges(0, 200)));
 //    }
@@ -104,11 +104,11 @@ public class TaintInformationTest {
 //    public void addRange_coveringExistingRangeCompletely() {
 //        IASTaintInformation tI = new IASTaintInformation();
 //
-//        tI.addRange(50, 100, (short) 0);
-//        tI.addRange(0, 150, (short) 1);
+//        tI.addRange(50, 100, 0);
+//        tI.addRange(0, 150, 1);
 //
 //        List<IASTaintRange> expected = new ArrayList<>();
-//        expected.add(new IASTaintRange(0, 150, (short) 1));
+//        expected.add(new IASTaintRange(0, 150, 1));
 //
 //        assertThat(expected, equalTo(tI.getRanges(0, 200)));
 //    }
@@ -118,12 +118,12 @@ public class TaintInformationTest {
 //        // starts in "free" area
 //        IASTaintInformation tI = new IASTaintInformation();
 //
-//        tI.addRange(50, 100, (short) 0);
-//        tI.addRange(0, 60, (short) 1);
+//        tI.addRange(50, 100, 0);
+//        tI.addRange(0, 60, 1);
 //
 //        List<IASTaintRange> expected = new ArrayList<>();
-//        expected.add(new IASTaintRange(0, 60, (short) 1));
-//        expected.add(new IASTaintRange(60, 100, (short) 0));
+//        expected.add(new IASTaintRange(0, 60, 1));
+//        expected.add(new IASTaintRange(60, 100, 0));
 //
 //        assertThat(expected, equalTo(tI.getRanges(0, 200)));
 //    }
@@ -133,13 +133,13 @@ public class TaintInformationTest {
 //        // ends in "free" area between two ranges
 //        IASTaintInformation tI = new IASTaintInformation();
 //
-//        tI.addRange(50, 100, (short) 0);
-//        tI.addRange(0, 110, (short) 1);
-//        tI.addRange(200, 300, (short) 2);
+//        tI.addRange(50, 100, 0);
+//        tI.addRange(0, 110, 1);
+//        tI.addRange(200, 300, 2);
 //
 //        List<IASTaintRange> expected = new ArrayList<>();
-//        expected.add(new IASTaintRange(0, 110, (short) 1));
-//        expected.add(new IASTaintRange(200, 300, (short) 2));
+//        expected.add(new IASTaintRange(0, 110, 1));
+//        expected.add(new IASTaintRange(200, 300, 2));
 //
 //        assertThat(expected, equalTo(tI.getRanges(0, 201))); // getRanges' endIndex is exclusive
 //    }
@@ -149,11 +149,11 @@ public class TaintInformationTest {
 //        // ends in "free" area (NOT between two ranges)
 //        IASTaintInformation tI = new IASTaintInformation();
 //
-//        tI.addRange(50, 100, (short) 0);
-//        tI.addRange(0, 110, (short) 1);
+//        tI.addRange(50, 100, 0);
+//        tI.addRange(0, 110, 1);
 //
 //        List<IASTaintRange> expected = new ArrayList<>();
-//        expected.add(new IASTaintRange(0, 110, (short) 1));
+//        expected.add(new IASTaintRange(0, 110, 1));
 //
 //        assertThat(expected, equalTo(tI.getRanges(0, 200)));
 //    }
@@ -162,13 +162,13 @@ public class TaintInformationTest {
 //    public void getRanges_mergedRangesOnlyIfActuallyAdjacent() {
 //        IASTaintInformation tI = new IASTaintInformation();
 //
-//        tI.addRange(0, 10, (short) 0);
-//        tI.addRange(10, 20, (short) 0);
-//        tI.addRange(21, 30, (short) 0);
+//        tI.addRange(0, 10, 0);
+//        tI.addRange(10, 20, 0);
+//        tI.addRange(21, 30, 0);
 //
 //        List<IASTaintRange> expected = new ArrayList<>();
-//        expected.add(new IASTaintRange(0, 20, (short) 0));
-//        expected.add(new IASTaintRange(21, 30, (short) 0));
+//        expected.add(new IASTaintRange(0, 20, 0));
+//        expected.add(new IASTaintRange(21, 30, 0));
 //
 //        assertThat(expected, equalTo(tI.getRanges(0, 200, true)));
 //    }
@@ -177,9 +177,9 @@ public class TaintInformationTest {
 //    public void getRanges_mergedRangesOnlyIfActuallyAdjacentButNotInCaseOfDebugTaintInformation() {
 //        DebugTaintInformation tI = new DebugTaintInformation();
 //
-//        tI.addRange(5, 10, (short) 0);
-//        tI.addRange(10, 20, (short) 0);
-//        tI.addRange(21, 30, (short) 0);
+//        tI.addRange(5, 10, 0);
+//        tI.addRange(10, 20, 0);
+//        tI.addRange(21, 30, 0);
 //
 //        List<IASTaintRange> expected = new ArrayList<>();
 //
@@ -197,7 +197,7 @@ public class TaintInformationTest {
 //    public void getRanges_freeAreaAndExclusiveEndIndex() {
 //        IASTaintInformation tI = new IASTaintInformation();
 //
-//        tI.addRange(10, 15, (short) 0);
+//        tI.addRange(10, 15, 0);
 //
 //        // getRanges's endIndex is exclusive
 //        assertThat(tI.getRanges(0, 10).size(), is(0));
@@ -209,10 +209,10 @@ public class TaintInformationTest {
 //    public void getRanges_stripEmtpyRanges() {
 //        IASTaintInformation tI = new IASTaintInformation();
 //
-//        tI.addRange(10, 10, (short) 0);
-//        tI.addRange(11, 12, (short) 1);
-//        tI.addRange(15, 15, (short) 2);
-//        tI.addRange(20, 30, (short) 3);
+//        tI.addRange(10, 10, 0);
+//        tI.addRange(11, 12, 1);
+//        tI.addRange(15, 15, 2);
+//        tI.addRange(20, 30, 3);
 //
 //        assertThat(tI.getAllRanges(), equalTo(range(11, 12, 1).add(20, 30, 3).done()));
 //    }
@@ -256,7 +256,7 @@ public class TaintInformationTest {
 //    public void isTainted() {
 //        IASTaintInformation tI = new IASTaintInformation();
 //
-//        tI.addRange(0, 10, (short) 0);
+//        tI.addRange(0, 10, 0);
 //
 //        assertThat(tI.isTainted(0), equalTo(true));
 //        assertThat(tI.isTainted(11), equalTo(false));
@@ -302,9 +302,9 @@ public class TaintInformationTest {
 //    public void adjustRanges() {
 //        IASTaintInformation tI = new IASTaintInformation();
 //
-//        tI.addRange(0, 10, (short) 0);
-//        tI.addRange(10, 20, (short) 1);
-//        tI.addRange(20, 30, (short) 2);
+//        tI.addRange(0, 10, 0);
+//        tI.addRange(10, 20, 1);
+//        tI.addRange(20, 30, 2);
 //
 //        List<IASTaintRange> ranges = tI.getRanges(0, 30);
 //
@@ -317,7 +317,7 @@ public class TaintInformationTest {
 //    public void adjustRanges_justOneRange() {
 //        IASTaintInformation tI = new IASTaintInformation();
 //
-//        tI.addRange(0, 10, (short) 0);
+//        tI.addRange(0, 10, 0);
 //
 //        List<IASTaintRange> ranges = tI.getRanges(0, 30);
 //
@@ -330,9 +330,9 @@ public class TaintInformationTest {
 //    public void removeTaintForRange_1() {
 //        IASTaintInformation tI = new IASTaintInformation();
 //
-//        tI.addRange(0, 10, (short) 0);
-//        tI.addRange(10, 20, (short) 1);
-//        tI.addRange(20, 30, (short) 2);
+//        tI.addRange(0, 10, 0);
+//        tI.addRange(10, 20, 1);
+//        tI.addRange(20, 30, 2);
 //
 //        tI.removeTaintForRange(15, 18);
 //
@@ -348,9 +348,9 @@ public class TaintInformationTest {
 //        // This time we also use the leftshift-feature of removeTaintForRange()
 //        IASTaintInformation tI = new IASTaintInformation();
 //
-//        tI.addRange(0, 10, (short) 0);
-//        tI.addRange(10, 20, (short) 1);
-//        tI.addRange(20, 30, (short) 2);
+//        tI.addRange(0, 10, 0);
+//        tI.addRange(10, 20, 1);
+//        tI.addRange(20, 30, 2);
 //
 //        tI.removeTaintForRange(15, 18, true);
 //
@@ -364,9 +364,9 @@ public class TaintInformationTest {
 //    public void reversed() {
 //        IASTaintInformation tI = new IASTaintInformation();
 //
-//        tI.addRange(0, 10, (short) 0);
-//        tI.addRange(10, 20, (short) 1);
-//        tI.addRange(20, 30, (short) 2);
+//        tI.addRange(0, 10, 0);
+//        tI.addRange(10, 20, 1);
+//        tI.addRange(20, 30, 2);
 //
 //        IASTaintInformation reversedTI = tI.reversed(32);
 //

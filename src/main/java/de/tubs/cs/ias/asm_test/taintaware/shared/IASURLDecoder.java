@@ -84,7 +84,7 @@ public class IASURLDecoder {
                 if (source == null) {
                     source = curr;
                 } else if(source != curr) {
-                    source = IASTaintSource.TS_CHAR_UNKNOWN_ORIGIN;
+                    source = IASTaintSourceRegistry.TS_CHAR_UNKNOWN_ORIGIN;
                     break;
                 }
             }

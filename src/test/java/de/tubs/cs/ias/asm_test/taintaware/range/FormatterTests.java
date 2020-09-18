@@ -2,7 +2,7 @@ package de.tubs.cs.ias.asm_test.taintaware.range;
 
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.TaintMethod;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSource;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintSourceRegistry;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +32,7 @@ public class FormatterTests {
 
         IASString s1 = f.toIASString();
         assertEquals("Hello World!", s1.toString());
-        assertThat(s1, taintEquals(range(0, 12, IASTaintSource.TS_CS_UNKNOWN_ORIGIN)));
+        assertThat(s1, taintEquals(range(0, 12, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)));
     }
 
     @Test
@@ -58,7 +58,7 @@ public class FormatterTests {
 
         IASString s1 = f.toIASString();
         assertEquals("Hello 1 World!", s1.toString());
-        assertThat(s1, taintEquals(range(0, 6, IASTaintSource.TS_CS_UNKNOWN_ORIGIN).add(7, 14, IASTaintSource.TS_CS_UNKNOWN_ORIGIN)));
+        assertThat(s1, taintEquals(range(0, 6, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN).add(7, 14, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)));
     }
 
 
@@ -72,7 +72,7 @@ public class FormatterTests {
 
         IASString s1 = f.toIASString();
         assertEquals("Hello 1 World!", s1.toString());
-        assertThat(s1, taintEquals(range(0, 6, IASTaintSource.TS_CS_UNKNOWN_ORIGIN).add(7, 14, IASTaintSource.TS_CS_UNKNOWN_ORIGIN)));
+        assertThat(s1, taintEquals(range(0, 6, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN).add(7, 14, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)));
     }
 
     @Test
@@ -85,7 +85,7 @@ public class FormatterTests {
 
         IASString s1 = f.toIASString();
         assertEquals("Hello 1 World!", s1.toString());
-        assertThat(s1, taintEquals(range(6, 7, IASTaintSource.TS_CS_UNKNOWN_ORIGIN)));
+        assertThat(s1, taintEquals(range(6, 7, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)));
     }
 
     @Test
@@ -98,6 +98,6 @@ public class FormatterTests {
 
         IASString s1 = f.toIASString();
         assertEquals("5e918d2", s1.toString());
-        assertThat(s1, taintEquals(range(0, 7, IASTaintSource.TS_CS_UNKNOWN_ORIGIN)));
+        assertThat(s1, taintEquals(range(0, 7, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)));
     }
 }

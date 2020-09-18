@@ -110,7 +110,7 @@ public final class IASString implements IASTaintRangeAware, IASStringable {
      */
     @Override
     public void setTaint(boolean taint) {
-        setTaint(taint ? IASTaintSource.TS_CS_UNKNOWN_ORIGIN : null);
+        setTaint(taint ? IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN : null);
     }
 
     @Override
