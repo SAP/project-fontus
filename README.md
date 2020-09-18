@@ -2,7 +2,7 @@
 A modern framework for dynamic taint analysis with string-like classes in the JVM
 
 ## Building the Framework
-For building the framework execute the gradle task ``jar``. Aftwerwords you will find the Framework JAR in ``./build/libs``
+For building the framework execute the gradle task ``shadowJar`` or ``publishToMavenLocal``. Aftwerwords you will find the Framework JAR in ``./build/libs``
 
 There will be two JAR files. First of all the one starting with ``asm_test``, which is for doing the offline instrumentation and the agent instrumentation.
 And secondly the one which starts with ``util``, which is necessary to execute offline instrumented applications. 
@@ -92,6 +92,7 @@ Currently there are 5 different tainting mechanisms available:
 - **range**: Optimized tainting per character. Differentiation which character is tainted *is* possible. Linear overhead regarding count of taints per string for cpu and memory (most times a lot more efficient than *array*). As precise as *array*.
 - **lazybasic**: Optimized range approach. Differentiation which character is tainted *is* possible. As long as no taint evaluation is done, faster than range. Memory overhead mostly correlates with the number of string manipulations. As precise as *array*.
 - **lazycomplex**: Optimized lazybasic approach. Differentiation which character is tainted *is* possible. Less computation effort during runtime and during taint evaluation. Memory overhead mostly correlates with the number of string manipulations. As precise as *array*.
+- **nothing**: An wrapper class is used to redirect all calls to the original classes. No taint calculation is performed! The taint is always "false"
 
 ## Abort types
 Currently there are three possibilities what can happen, if a tainted string reaches a sink:
