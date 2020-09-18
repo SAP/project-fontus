@@ -12,7 +12,7 @@ import de.tubs.cs.ias.asm_test.config.Source;
 import de.tubs.cs.ias.asm_test.asm.BasicMethodVisitor;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationStrategy;
-import de.tubs.cs.ias.asm_test.transformer.*;
+import de.tubs.cs.ias.asm_test.instrumentation.transformer.*;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.method.*;
 import de.tubs.cs.ias.asm_test.utils.*;
 import org.objectweb.asm.*;

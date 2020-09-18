@@ -2,8 +2,6 @@ package de.tubs.cs.ias.asm_test.utils;
 
 
 import de.tubs.cs.ias.asm_test.Constants;
-import jdk.internal.reflect.ConstructorAccessor;
-import jdk.internal.reflect.MethodAccessor;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;

@@ -11,19 +11,22 @@ public class IASTaintRange implements Cloneable, Serializable {
      * Exclusive the end index
      */
     private final int end;
-    private final short source;
+    private final IASTaintSource source;
 
-    public IASTaintRange(int start, int end, short source) {
+    public IASTaintRange(int start, int end, IASTaintSource source) {
         if (end < start) {
             throw new IllegalArgumentException("TaintRange size cannot be smaller than 0");
+        }
+        if (source == null) {
+            throw new NullPointerException("Source was null");
         }
         this.start = start;
         this.end = end;
         this.source = source;
     }
 
-    public IASTaintRange(int start, int end, IASTaintSource source) {
-        this(start, end, (short) source.getId());
+    public IASTaintRange(int start, int end, int sourceId) {
+        this(start, end, IASTaintSourceRegistry.getInstance().get(sourceId));
     }
 
     public IASTaintRange shiftRight(int shift) {
@@ -47,7 +50,7 @@ public class IASTaintRange implements Cloneable, Serializable {
         return end;
     }
 
-    public short getSource() {
+    public IASTaintSource getSource() {
         return source;
     }
 
@@ -56,18 +59,18 @@ public class IASTaintRange implements Cloneable, Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        IASTaintRange range = (IASTaintRange) o;
+        IASTaintRange that = (IASTaintRange) o;
 
-        if (start != range.start) return false;
-        if (end != range.end) return false;
-        return source == range.source;
+        if (start != that.start) return false;
+        if (end != that.end) return false;
+        return source.equals(that.source);
     }
 
     @Override
     public int hashCode() {
         int result = start;
         result = 31 * result + end;
-        result = 31 * result + (int) source;
+        result = 31 * result + source.hashCode();
         return result;
     }
 

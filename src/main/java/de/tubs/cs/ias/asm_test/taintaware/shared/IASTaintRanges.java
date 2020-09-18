@@ -379,7 +379,7 @@ public class IASTaintRanges {
         if (range.isEmpty()) {
             return null;
         } else {
-            return IASTaintSource.getInstanceById(range.get(0).getSource());
+            return range.get(0).getSource();
         }
     }
 }

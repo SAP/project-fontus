@@ -66,7 +66,6 @@ public class TaintStringConfig {
     /**
      * Descriptor of the 'tainted' method that turns a regular String into a tainted one
      */
-    private final String CreateTaintedStringDesc;
     private final String asStringDesc;
     private final String fromStringDesc;
     private final String TFormatterDesc;
@@ -134,10 +133,6 @@ public class TaintStringConfig {
         return this.ToStringInstrumentedDesc;
     }
 
-    public String getCreateTaintedStringDesc() {
-        return this.CreateTaintedStringDesc;
-    }
-
     public String getAsStringDesc() {
         return this.asStringDesc;
     }
@@ -170,7 +165,6 @@ public class TaintStringConfig {
         this.MethodTStringBufferDesc = "Lde/tubs/cs/ias/asm_test/taintaware/shared/IASAbstractStringBuilderable;";
         this.ConcatDesc = String.format("(%s[Ljava/lang/Object;)%s", StringDesc, this.TStringDesc);
         this.ToStringInstrumentedDesc = String.format("()%s", this.TStringDesc);
-        this.CreateTaintedStringDesc = String.format("(%s)%s", this.TStringDesc, this.TStringDesc);
         this.asStringDesc = String.format("(%s)%s", this.TStringDesc, StringDesc);
         this.fromStringDesc = String.format("(%s)%s", StringDesc, this.TStringDesc);
         this.TFormatterQN = this.TPackage + "IASFormatter";
