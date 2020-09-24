@@ -9,7 +9,7 @@ public abstract class Abort {
             new NothingAbort(), new ExitAbort(), new StdErrLoggingAbort(), new JsonLoggingAbort()
     };
 
-    public abstract void abort(IASTaintAware taintAware, String sink, List<StackTraceElement> stackTrace);
+    public abstract void abort(IASTaintAware taintAware, String sink, String category, List<StackTraceElement> stackTrace);
 
     public abstract String getName();
 

@@ -4,10 +4,12 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Objects;
@@ -59,6 +61,11 @@ public class FunctionCall {
         }
         String descriptor = Type.getType(method).getDescriptor();
         return new FunctionCall(opcode, Utils.fixupReverse(method.getDeclaringClass().getName()), method.getName(), descriptor, method.getDeclaringClass().isInterface());
+    }
+
+    public static FunctionCall fromConstructor(Constructor<?> constructor) {
+        String descriptor = Type.getType(constructor).getDescriptor();
+        return new FunctionCall(Opcodes.INVOKESPECIAL, Utils.fixupReverse(constructor.getDeclaringClass().getName()), Constants.Init, descriptor, constructor.getDeclaringClass().isInterface());
     }
 
     public String getOwner() {

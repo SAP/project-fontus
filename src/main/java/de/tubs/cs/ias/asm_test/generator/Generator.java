@@ -72,7 +72,13 @@ public class Generator implements Callable<Void> {
         List<Sink> sinks = new ArrayList<>();
         if (this.sinkClasses != null) {
             for (String sink : this.sinkClasses) {
-                SinkGenerator sinkGenerator = new SinkGenerator(sink);
+                String className = sink;
+                String category = "unknown";
+                if (sink.contains("=")) {
+                    className = sink.substring(0, sink.indexOf("="));
+                    category = sink.substring(sink.indexOf("=") + 1);
+                }
+                SinkGenerator sinkGenerator = new SinkGenerator(className, category);
                 sinks.addAll(sinkGenerator.readSinks(this.sinkObjects));
             }
         }

@@ -6,7 +6,7 @@ import java.util.List;
 
 public class StdErrLoggingAbort extends Abort {
     @Override
-    public void abort(IASTaintAware taintAware, String sink, List<StackTraceElement> stackTrace) {
+    public void abort(IASTaintAware taintAware, String sink, String category, List<StackTraceElement> stackTrace) {
         System.err.printf("String %s is tainted! \n", taintAware);
         new Throwable().printStackTrace();
     }

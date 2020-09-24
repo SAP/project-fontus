@@ -35,6 +35,36 @@ public class IASFactoryImpl implements IASFactory {
     }
 
     @Override
+    public Class<? extends IASStringBuilderable> getStringBuilderClass() {
+        return IASStringBuilder.class;
+    }
+
+    @Override
+    public Class<? extends IASStringBufferable> getStringBufferClass() {
+        return IASStringBuffer.class;
+    }
+
+    @Override
+    public Class<? extends IASFormatterable> getFormatterClass() {
+        return IASFormatter.class;
+    }
+
+    @Override
+    public Class<? extends IASPatternable> getPatternClass() {
+        return IASPattern.class;
+    }
+
+    @Override
+    public Class<? extends IASMatcherable> getMatcherClass() {
+        return IASMatcher.class;
+    }
+
+    @Override
+    public Class<? extends IASProperties> getPropertiesClass() {
+        return de.tubs.cs.ias.asm_test.taintaware.range.IASProperties.class;
+    }
+
+    @Override
     public Class<? extends IASStringable[]> getStringArrayClass() {
         return IASString[].class;
     }

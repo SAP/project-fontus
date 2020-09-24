@@ -28,6 +28,7 @@ dependencies {
     compile 'org.ow2.asm:asm-util:7.2'
     compile 'info.picocli:picocli:4.1.4'
     compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.9'
+    compile group: 'org.json', name: 'json', version: '20200518'
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
     compile group: 'org.mutabilitydetector', name: 'asm-nonclassloadingextensions', version: '1.0-rc2'
     testCompile('org.junit.jupiter:junit-jupiter:5.4.2')
@@ -78,7 +79,19 @@ task generatorJar(type: ShadowJar) {
     from(project.convention.getPlugin(JavaPluginConvention).sourceSets.main.output)
     configurations = [project.configurations.runtime]
 
-    generatorJar.baseName = 'generator'
+    baseName = 'generator'
+}
+
+task converterJar(type: ShadowJar) {
+    manifest {
+        attributes(
+                'Main-Class': 'de.tubs.cs.ias.asm_test.converter.Converter',
+        )
+    }
+    from(project.convention.getPlugin(JavaPluginConvention).sourceSets.main.output)
+    configurations = [project.configurations.runtime]
+
+    baseName = 'converter'
 }
 
 shadowJar {
@@ -102,12 +115,14 @@ shadowJar {
     relocate 'com.ctc', 'de.tubs.cs.ias.asm_test.com.ctc'
     relocate 'com.fasterxml', 'de.tubs.cs.ias.asm_test.com.fasterxml'
     relocate 'org.codehaus', 'de.tubs.cs.ias.asm_test.org.codehaus'
+    relocate 'org.json', 'de.tubs.cs.ias.asm_test.org.json'
     relocate 'org.mutabilitydetector', 'de.tubs.cs.ias.asm_test.org.mutabilitydetector'
     relocate 'org.objectweb', 'de.tubs.cs.ias.asm_test.org.objectweb'
     relocate 'javax.activation', 'de.tubs.cs.ias.asm_test.javax.activation'
     relocate 'javax.xml.bind', 'de.tubs.cs.ias.asm_test.javax.xml.bind'
     relocate 'picocli', 'de.tubs.cs.ias.asm_test.picocli'
     dependsOn utilJar
+    dependsOn converterJar
     dependsOn generatorJar
 }
 
