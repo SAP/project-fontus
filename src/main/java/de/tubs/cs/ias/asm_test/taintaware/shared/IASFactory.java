@@ -8,6 +8,18 @@ import java.util.regex.Pattern;
 public interface IASFactory {
     Class<? extends IASStringable> getStringClass();
 
+    Class<? extends IASStringBuilderable> getStringBuilderClass();
+
+    Class<? extends IASStringBufferable> getStringBufferClass();
+
+    Class<? extends IASFormatterable> getFormatterClass();
+
+    Class<? extends IASPatternable> getPatternClass();
+
+    Class<? extends IASMatcherable> getMatcherClass();
+
+    Class<? extends IASProperties> getPropertiesClass();
+
     Class<? extends IASStringable[]> getStringArrayClass();
 
     IASStringable createString(String s);

@@ -16,9 +16,9 @@ public class JsonLoggingAbort extends Abort {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public void abort(IASTaintAware taintAware, String sink, List<StackTraceElement> stackTrace) {
+    public void abort(IASTaintAware taintAware, String sink, String category, List<StackTraceElement> stackTrace) {
         IASStringable taintedString = taintAware.toIASString();
-        Abort abort = new Abort(sink, taintedString.getString(), taintedString.getTaintRanges(), convertStackTrace(stackTrace));
+        Abort abort = new Abort(sink, category, taintedString.getString(), taintedString.getTaintRanges(), convertStackTrace(stackTrace));
         previousAborts.add(abort);
 
         saveAborts();
@@ -42,13 +42,15 @@ public class JsonLoggingAbort extends Abort {
     }
 
     public static class Abort {
-        private String sink;
-        private String payload;
-        private List<IASTaintRange> ranges;
-        private List<String> stackTrace;
+        private final String sink;
+        private final String category;
+        private final String payload;
+        private final List<IASTaintRange> ranges;
+        private final List<String> stackTrace;
 
-        private Abort(String sink, String payload, List<IASTaintRange> ranges, List<String> stackTrace) {
+        private Abort(String sink, String category, String payload, List<IASTaintRange> ranges, List<String> stackTrace) {
             this.sink = sink;
+            this.category = category;
             this.payload = payload;
             this.ranges = ranges;
             this.stackTrace = stackTrace;
@@ -68,6 +70,10 @@ public class JsonLoggingAbort extends Abort {
 
         public List<String> getStackTrace() {
             return stackTrace;
+        }
+
+        public String getCategory() {
+            return category;
         }
     }
 }

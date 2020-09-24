@@ -53,6 +53,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private boolean extendsSuperClass;
     private final SignatureInstrumenter signatureInstrumenter;
     private final List<org.objectweb.asm.commons.Method> instrumentedMethods = new ArrayList<>();
+    private boolean inEnd;
 
     public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config, ClassLoader loader) {
         super(Opcodes.ASM7, cv);
@@ -70,22 +71,22 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private void fillStrategies() {
-        this.classInstrumentation.add(new PropertiesClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.classInstrumentation.add(new FormatterClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.classInstrumentation.add(new MatcherClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.classInstrumentation.add(new PatternClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
+        this.classInstrumentation.add(new StringClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
         this.classInstrumentation.add(new StringBufferClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
         this.classInstrumentation.add(new StringBuilderClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.classInstrumentation.add(new StringClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
+        this.classInstrumentation.add(new PatternClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
+        this.classInstrumentation.add(new FormatterClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
+        this.classInstrumentation.add(new MatcherClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
+        this.classInstrumentation.add(new PropertiesClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
         this.classInstrumentation.add(new DefaultClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
 
+        this.instrumentation.add(new StringInstrumentation(this.config.getTaintStringConfig()));
+        this.instrumentation.add(new StringBuilderInstrumentation(this.config.getTaintStringConfig()));
+        this.instrumentation.add(new StringBufferInstrumentation(this.config.getTaintStringConfig()));
         this.instrumentation.add(new PatternInstrumentation(this.config.getTaintStringConfig()));
         this.instrumentation.add(new FormatterInstrumentation(this.config.getTaintStringConfig()));
         this.instrumentation.add(new MatcherInstrumentation(this.config.getTaintStringConfig()));
         this.instrumentation.add(new PropertiesStrategy(this.config.getTaintStringConfig()));
-        this.instrumentation.add(new StringBufferInstrumentation(this.config.getTaintStringConfig()));
-        this.instrumentation.add(new StringBuilderInstrumentation(this.config.getTaintStringConfig()));
-        this.instrumentation.add(new StringInstrumentation(this.config.getTaintStringConfig()));
         this.instrumentation.add(new DefaultInstrumentation(this.config.getTaintStringConfig()));
     }
 
@@ -154,19 +155,6 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     /**
-     * Writes all static final String field initializations into the static initializer
-     *
-     * @param mv The visitor creating the static initialization block
-     */
-    private void writeToStaticInitializer(MethodVisitor mv) {
-        for (FieldData e : this.staticFinalFields) {
-            Object value = e.getValue();
-            mv.visitLdcInsn(value);
-            mv.visitFieldInsn(Opcodes.PUTSTATIC, this.owner, e.getName(), e.getDescriptor());
-        }
-    }
-
-    /**
      * Replaces String like attributes with their taint-aware counterparts.
      */
     @Override
@@ -213,7 +201,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         String desc = descriptor;
         String newName = name;
 
-        if (this.recording == null && isClInit(access, name, desc)) {
+        if (this.recording == null && isClInit(access, name, desc) && !this.inEnd) {
             logger.info("Recording static initializer");
             RecordingMethodVisitor rmv = new RecordingMethodVisitor();
             this.recording = rmv.getRecording();
@@ -362,6 +350,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 
     @Override
     public void visitEnd() {
+        this.inEnd = true;
         if (!this.isAnnotation) {
             logger.info("Overriding not overridden JDK methods which have to be instrumented");
             if (!this.isInterface) {

@@ -1,8 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.untainted;
 
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASFactory;
+import de.tubs.cs.ias.asm_test.taintaware.shared.*;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASProperties;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 
 import java.util.Formatter;
 import java.util.Properties;
@@ -33,6 +32,36 @@ public class IASFactoryImpl implements IASFactory {
     @Override
     public Class<? extends IASStringable> getStringClass() {
         return IASString.class;
+    }
+
+    @Override
+    public Class<? extends IASStringBuilderable> getStringBuilderClass() {
+        return IASStringBuilder.class;
+    }
+
+    @Override
+    public Class<? extends IASStringBufferable> getStringBufferClass() {
+        return IASStringBuffer.class;
+    }
+
+    @Override
+    public Class<? extends IASFormatterable> getFormatterClass() {
+        return IASFormatter.class;
+    }
+
+    @Override
+    public Class<? extends IASPatternable> getPatternClass() {
+        return IASPattern.class;
+    }
+
+    @Override
+    public Class<? extends IASMatcherable> getMatcherClass() {
+        return IASMatcher.class;
+    }
+
+    @Override
+    public Class<? extends IASProperties> getPropertiesClass() {
+        return de.tubs.cs.ias.asm_test.taintaware.untainted.IASProperties.class;
     }
 
     @Override

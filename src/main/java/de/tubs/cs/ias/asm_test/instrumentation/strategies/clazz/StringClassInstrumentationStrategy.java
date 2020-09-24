@@ -25,7 +25,7 @@ public class StringClassInstrumentationStrategy  extends AbstractClassInstrument
         if(descMatcher.find()) {
             String newDescriptor = descMatcher.replaceAll(this.taintedDesc);
             logger.info("Replacing String field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
-            if (value != null && access == (Opcodes.ACC_FINAL | Opcodes.ACC_STATIC)) {
+            if (value != null && (access & Opcodes.ACC_FINAL) != 0 && (access & Opcodes.ACC_STATIC) != 0) {
                 tc.apply(name, descriptor, value);
             }
             return Optional.of(this.visitor.visitField(access, name, newDescriptor, signature, null));

@@ -82,6 +82,12 @@ public final class Utils {
         return s.replace('.', '/');
     }
 
+
+    /**
+     * Writes all static final String field initializations into the static initializer
+     *
+     * @param mv The visitor creating the static initialization block
+     */
     public static void writeToStaticInitializer(MethodVisitor mv, String owner, Iterable<FieldData> staticFields) {
         for (FieldData field : staticFields) {
             Object value = field.getValue();

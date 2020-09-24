@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.function.Function;
 
 public class IASTaintHandler {
-    public static Void handleTaint(IASTaintAware taintAware, String sink) {
+    public static Void handleTaint(IASTaintAware taintAware, String sink, String category) {
         boolean isTainted = taintAware.isTainted();
 
         if (Configuration.getConfiguration().collectStats()) {
@@ -28,7 +28,7 @@ public class IASTaintHandler {
                 }
             }
 
-            abort.abort(taintAware, sink, cleanedStackTrace);
+            abort.abort(taintAware, sink, category, cleanedStackTrace);
         }
         return null;
     }
@@ -79,13 +79,13 @@ public class IASTaintHandler {
         return object;
     }
 
-    public static Object checkTaint(Object object, String sink) {
+    public static Object checkTaint(Object object, String sink, String category) {
         if (object instanceof IASTaintAware) {
-            handleTaint((IASTaintAware) object, sink);
+            handleTaint((IASTaintAware) object, sink, category);
             return object;
         }
 
-        return traversObject(object, o -> checkTaint(o, sink), taintAware -> handleTaint(taintAware, sink));
+        return traversObject(object, o -> checkTaint(o, sink, category), taintAware -> handleTaint(taintAware, sink, category));
     }
 
     public static Object taint(Object object, int sourceId) {
