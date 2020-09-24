@@ -63,12 +63,73 @@ public class Converter implements Callable<Void> {
 
             JSONArray jsonArray = (JSONArray) juturnaObject.get("sinks");
             Configuration configuration = mergeSinks(fontusConfig, jsonArray);
+            jsonArray = (JSONArray) juturnaObject.get("sources");
+            Configuration configuration1 = mergeSources(fontusConfig, jsonArray);
+            configuration.append(configuration1);
 
             saveConfig(configuration);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         return null;
+    }
+
+    private Configuration mergeSources(Configuration fontusConfig, JSONArray jsonArray) {
+        List<Source> sources = new ArrayList<>();
+        for (Object sourceJsonO : jsonArray) {
+            JSONObject sourceJson = (JSONObject) sourceJsonO;
+            try {
+                FunctionCall call = parseFunctionCall(sourceJson);
+                boolean isContained = false;
+                for (Source source : fontusConfig.getSourceConfig().getSources()) {
+                    if (call.equals(source.getFunction())) {
+                        isContained = true;
+                        break;
+                    }
+                }
+                if (!isContained) {
+                    String sourceName = generateName(call);
+                    sources.add(new Source(sourceName, call));
+                }
+            } catch (Exception e) {
+                System.err.println("Some error occured with this:");
+                System.err.println(sourceJson.toString());
+                System.err.println(e + ": " + e.getMessage());
+            }
+        }
+        Configuration configuration = new Configuration();
+        configuration.getSourceConfig().append(new SourceConfig(sources));
+        return configuration;
+    }
+
+    private Configuration mergeSinks(Configuration fontusConfig, JSONArray jsonArray) throws NoSuchMethodException, ClassNotFoundException {
+        List<Sink> sinks = new ArrayList<>();
+        for (Object sinkJsonO : jsonArray) {
+            JSONObject sinkJson = (JSONObject) sinkJsonO;
+            try {
+                FunctionCall call = parseFunctionCall(sinkJson);
+                boolean isContained = false;
+                for (Sink sink : fontusConfig.getSinkConfig().getSinks()) {
+                    if (call.equals(sink.getFunction())) {
+                        isContained = true;
+                        break;
+                    }
+                }
+                if (!isContained) {
+                    List<SinkParameter> sinkParameters = parseParameters(sinkJson);
+                    String category = parseCategory(sinkJson);
+                    String sinkName = generateName(call);
+                    sinks.add(new Sink(sinkName, call, sinkParameters, category));
+                }
+            } catch (Exception e) {
+                System.err.println("Some error occured with this:");
+                System.err.println(sinkJson.toString());
+                System.err.println(e + ": " + e.getMessage());
+            }
+        }
+        Configuration configuration = new Configuration();
+        configuration.getSinkConfig().append(new SinkConfig(sinks));
+        return configuration;
     }
 
     private Class<?> resolveClass(String name) throws ClassNotFoundException {
@@ -94,34 +155,6 @@ public class Converter implements Callable<Void> {
             default:
                 return Class.forName(name);
         }
-    }
-
-    private Configuration mergeSinks(Configuration fontusConfig, JSONArray jsonArray) throws NoSuchMethodException, ClassNotFoundException {
-        List<Sink> sinks = new ArrayList<>();
-        for (Object sinkJsonO : jsonArray) {
-            try {
-                JSONObject sinkJson = (JSONObject) sinkJsonO;
-                FunctionCall call = parseFunctionCall(sinkJson);
-                boolean isContained = false;
-                for (Sink sink : fontusConfig.getSinkConfig().getSinks()) {
-                    if (call.equals(sink.getFunction())) {
-                        isContained = true;
-                        break;
-                    }
-                }
-                if (!isContained) {
-                    List<SinkParameter> sinkParameters = parseParameters(sinkJson);
-                    String category = parseCategory(sinkJson);
-                    String sinkName = generateName(call);
-                    sinks.add(new Sink(sinkName, call, sinkParameters, category));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        Configuration configuration = new Configuration();
-        configuration.getSinkConfig().append(new SinkConfig(sinks));
-        return configuration;
     }
 
     private String parseCategory(JSONObject sinkJson) {
