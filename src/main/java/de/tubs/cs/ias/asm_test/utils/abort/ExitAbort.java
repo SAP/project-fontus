@@ -5,9 +5,10 @@ import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import java.util.List;
 
 public class ExitAbort extends Abort {
+    private StdErrLoggingAbort stdErrLoggingAbort = new StdErrLoggingAbort();
     @Override
     public void abort(IASTaintAware taintAware, String sink, String category, List<StackTraceElement> stackTrace) {
-        System.err.printf("String %s is tainted!\nAborting..!\n", taintAware);
+        stdErrLoggingAbort.abort(taintAware, sink, category, stackTrace);
         System.exit(1);
     }
 

@@ -13,10 +13,15 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public final class Utils {
 
     private Utils() {
+    }
+
+    public static List<String> convertStackTrace(List<StackTraceElement> stackTrace) {
+        return stackTrace.stream().map(stackTraceElement -> String.format("%s.%s(%s:%d)", stackTraceElement.getClassName(), stackTraceElement.getMethodName(), stackTraceElement.getFileName(), stackTraceElement.getLineNumber())).collect(Collectors.toList());
     }
 
     public static String opcodeToString(int opcode) {

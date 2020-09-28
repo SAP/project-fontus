@@ -69,7 +69,7 @@ It is also possible to pass multiple parameters to the agent
 - **collect_stats**: Possible values: *true* or *false*. Default is false. If this option is enabled, the stats about taints in strings will be collected. This only applies if taintmethod *range* is used and can cause massive overhead.
 - **config**: Specifies a path for a config file
 - **blacklisted_main_classes**: Specifies a filepath to a file which contains blacklisted main classes
-- **abort**: Specifies what happens if a tainted string reaches a sink. For all options see [Abort types](#Abort types). The default is *exit*
+- **abort**: Specifies what happens if a tainted string reaches a sink. For all options see [Abort types](#Abort types). The default is *stderr_logging*
 
 The arguments are appended to the agent path like this: ``-javaagent:jarpath[=options]``. Therefore options are defined as ``key=value`` pair and ``,`` is used as delimiter between key-value-pairs.
 
@@ -98,7 +98,8 @@ Currently there are 5 different tainting mechanisms available:
 Currently there are three possibilities what can happen, if a tainted string reaches a sink:
 - **exit**: Exits the application through System.exit(int). Beforehands the string is printed to stderr
 - **nothing**: Nothing happens if a tainted string reaches a sink
-- **stderr_logging**: Logs the tainted string to stderr as well as an stacktrace 
+- **stderr_logging**: Logs the tainted string to stderr as well as an stacktrace
+- **json_logging**: Logs the tainted string to a json file in ``./fontus-results.json``
 
 
 ## Inspect bytecode of a class
