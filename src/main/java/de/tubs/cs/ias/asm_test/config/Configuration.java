@@ -9,6 +9,8 @@ import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import de.tubs.cs.ias.asm_test.utils.abort.Abort;
 import de.tubs.cs.ias.asm_test.utils.abort.ExitAbort;
+import de.tubs.cs.ias.asm_test.utils.abort.NothingAbort;
+import de.tubs.cs.ias.asm_test.utils.abort.StdErrLoggingAbort;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -159,7 +161,7 @@ public class Configuration {
     }
 
     private static Abort defaultAbort() {
-        return new ExitAbort();
+        return new StdErrLoggingAbort();
     }
 
     public void setCollectStats(boolean collectStats) {

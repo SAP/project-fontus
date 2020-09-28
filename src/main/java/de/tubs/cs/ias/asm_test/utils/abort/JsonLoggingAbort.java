@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static de.tubs.cs.ias.asm_test.utils.Utils.convertStackTrace;
+
 public class JsonLoggingAbort extends Abort {
     private final List<Abort> previousAborts = new ArrayList<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -24,10 +26,6 @@ public class JsonLoggingAbort extends Abort {
         saveAborts();
     }
 
-    private List<String> convertStackTrace(List<StackTraceElement> stackTrace) {
-        return stackTrace.stream().map(stackTraceElement -> String.format("%s.%s(%s:%d)", stackTraceElement.getClassName(), stackTraceElement.getMethodName(), stackTraceElement.getFileName(), stackTraceElement.getLineNumber())).collect(Collectors.toList());
-    }
-
     private void saveAborts() {
         try {
             this.objectMapper.writeValue(Configuration.getConfiguration().getAbortOutputFile(), previousAborts);
@@ -38,7 +36,7 @@ public class JsonLoggingAbort extends Abort {
 
     @Override
     public String getName() {
-        return "json_logging_abort";
+        return "json_logging";
     }
 
     public static class Abort {
