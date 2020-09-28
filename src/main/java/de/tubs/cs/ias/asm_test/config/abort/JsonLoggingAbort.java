@@ -1,4 +1,4 @@
-package de.tubs.cs.ias.asm_test.utils.abort;
+package de.tubs.cs.ias.asm_test.config.abort;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.tubs.cs.ias.asm_test.config.Configuration;
@@ -9,7 +9,6 @@ import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static de.tubs.cs.ias.asm_test.utils.Utils.convertStackTrace;
 

@@ -2,7 +2,7 @@ package de.tubs.cs.ias.asm_test.taintaware.shared;
 
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
-import de.tubs.cs.ias.asm_test.utils.abort.Abort;
+import de.tubs.cs.ias.asm_test.config.abort.Abort;
 import de.tubs.cs.ias.asm_test.utils.stats.Statistics;
 
 import java.util.*;
@@ -39,7 +39,7 @@ public class IASTaintHandler {
         return null;
     }
 
-    public static Object traversObject(Object object, Function<Object, Object> traverser, Function<IASTaintAware, Void> atomicHandler) {
+    public static Object traverseObject(Object object, Function<Object, Object> traverser, Function<IASTaintAware, Void> atomicHandler) {
         if (object == null) {
             return null;
         }
@@ -83,7 +83,7 @@ public class IASTaintHandler {
             return object;
         }
 
-        return traversObject(object, o -> checkTaint(o, sink, category), taintAware -> handleTaint(taintAware, sink, category));
+        return traverseObject(object, o -> checkTaint(o, sink, category), taintAware -> handleTaint(taintAware, sink, category));
     }
 
     public static Object taint(Object object, int sourceId) {
@@ -92,6 +92,6 @@ public class IASTaintHandler {
             ((IASTaintAware) object).setTaint(source);
             return object;
         }
-        return traversObject(object, o -> taint(o, sourceId), taintAware -> setTaint(taintAware, sourceId));
+        return traverseObject(object, o -> taint(o, sourceId), taintAware -> setTaint(taintAware, sourceId));
     }
 }

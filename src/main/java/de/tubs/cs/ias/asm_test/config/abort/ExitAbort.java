@@ -1,4 +1,4 @@
-package de.tubs.cs.ias.asm_test.utils.abort;
+package de.tubs.cs.ias.asm_test.config.abort;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 
