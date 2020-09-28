@@ -6,7 +6,7 @@ import de.tubs.cs.ias.asm_test.config.ConfigurationLoader;
 import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import de.tubs.cs.ias.asm_test.utils.ParentLogger;
-import de.tubs.cs.ias.asm_test.utils.abort.Abort;
+import de.tubs.cs.ias.asm_test.config.abort.Abort;
 
 import java.io.File;
 import java.io.IOException;

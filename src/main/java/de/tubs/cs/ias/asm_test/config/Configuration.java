@@ -7,10 +7,8 @@ import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 import de.tubs.cs.ias.asm_test.instrumentation.BlackListEntry;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import de.tubs.cs.ias.asm_test.utils.ParentLogger;
-import de.tubs.cs.ias.asm_test.utils.abort.Abort;
-import de.tubs.cs.ias.asm_test.utils.abort.ExitAbort;
-import de.tubs.cs.ias.asm_test.utils.abort.NothingAbort;
-import de.tubs.cs.ias.asm_test.utils.abort.StdErrLoggingAbort;
+import de.tubs.cs.ias.asm_test.config.abort.Abort;
+import de.tubs.cs.ias.asm_test.config.abort.StdErrLoggingAbort;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;

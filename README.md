@@ -77,13 +77,6 @@ The arguments are appended to the agent path like this: ``-javaagent:jarpath[=op
 
 An example for parameters passed to the agent ``-javaagent:"asm_test-0.0.1-SNAPSHOT.jar=taintmethod=range,use_caching=false"``.
 
-### Logging
-
-The instrumentation framework outputs a lot of information for debugging purposes. This can be disabled by setting the *log.level* property to *OFF*. E.g., by calling the instrumentation like this:
-
-```bash
-java -Dlog.level=OFF -jar your-application.jar -javaagent:asm_test-0.0.1-SNAPSHOT.jar
-```
 
 ## Available Tainting Methods
 Currently there are 5 different tainting mechanisms available:
