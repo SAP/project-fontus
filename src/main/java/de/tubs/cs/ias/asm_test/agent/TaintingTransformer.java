@@ -52,27 +52,43 @@ class TaintingTransformer implements ClassFileTransformer {
 
         logger.info("Tainting class: {}", className);
         try {
-            byte[] outArray = this.instrumenter.instrumentClass(classfileBuffer, new ClassResolver(loader), this.config, loader);
-            if (this.config.isVerbose()) {
-                String baseName = "./tmp/agent";
-                File outFile = new File(baseName, className + Constants.CLASS_FILE_SUFFIX);
-                File parent = new File(outFile.getParent());
-                parent.mkdirs();
-                try {
-                    outFile.createNewFile();
-                    Path p = outFile.toPath();
-                    Files.write(p, outArray);
-                } catch (IOException e) {
-                    logger.error("Failed to write class file", e);
-                }
-            }
+            byte[] outArray = instrumentClassByteArray(classfileBuffer, loader);
+            saveIfVerbose(className, outArray);
             return outArray;
         } catch (Exception e) {
             logger.error("Instrumentation failed for {}. Reason: {}", className, e.getMessage());
-//            System.err.println("Instrumentation failed for " + className);
-//            e.printStackTrace();
         }
         return null;
+    }
+
+    private byte[] instrumentClassByteArray(byte[] classfileBuffer, ClassLoader loader) {
+        byte[] outArray;
+        try {
+            outArray = this.instrumenter.instrumentClass(classfileBuffer, new ClassResolver(loader), this.config, loader, false);
+        } catch (IllegalArgumentException ex) {
+            if (ex.getMessage().equals("JSR/RET are not supported with computeFrames option")) {
+                outArray = this.instrumenter.instrumentClass(classfileBuffer, new ClassResolver(loader), this.config, loader, true);
+            } else {
+                throw ex;
+            }
+        }
+        return outArray;
+    }
+
+    private void saveIfVerbose(String className, byte[] outArray) {
+        if (this.config.isVerbose()) {
+            String baseName = "./tmp/agent";
+            File outFile = new File(baseName, className + Constants.CLASS_FILE_SUFFIX);
+            File parent = new File(outFile.getParent());
+            parent.mkdirs();
+            try {
+                outFile.createNewFile();
+                Path p = outFile.toPath();
+                Files.write(p, outArray);
+            } catch (IOException e) {
+                logger.error("Failed to write class file", e);
+            }
+        }
     }
 
 }

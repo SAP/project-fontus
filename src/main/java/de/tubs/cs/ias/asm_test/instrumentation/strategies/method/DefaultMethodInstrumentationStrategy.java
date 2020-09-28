@@ -44,7 +44,8 @@ public class DefaultMethodInstrumentationStrategy implements MethodInstrumentati
     }
 
     @Override
-    public void insertJdkMethodParameterConversion(String parameter) {
+    public boolean insertJdkMethodParameterConversion(String parameter) {
+        return false;
     }
 
     @Override

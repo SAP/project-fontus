@@ -3,8 +3,8 @@ package de.tubs.cs.ias.asm_test.instrumentation.transformer;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.asm.FunctionCall;
-import de.tubs.cs.ias.asm_test.instrumentation.MethodTaintingVisitor;
 import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.instrumentation.MethodTaintingVisitor;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.method.MethodInstrumentationStrategy;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -24,16 +24,25 @@ public class JdkMethodTransformer implements ParameterTransformation, ReturnTran
     }
 
     @Override
-    public void transform(int index, String type, MethodTaintingVisitor visitor) {
+    public void transform(int index, String typeString, MethodTaintingVisitor visitor) {
 
         for (MethodInstrumentationStrategy s : this.instrumentation) {
-            s.insertJdkMethodParameterConversion(type);
+            if (s.insertJdkMethodParameterConversion(typeString)) {
+                return;
+            }
         }
 
         FunctionCall converter = this.configuration.getConverterForParameter(this.call, index);
         if (converter != null) {
             visitor.visitMethodInsn(converter);
+            return;
         }
+
+//        Type type = Type.getType(typeString);
+//        int returnSort = type.getSort();
+//        if (returnSort == Type.ARRAY || returnSort == Type.OBJECT) {
+//            Utils.insertGenericConversionToOrig(visitor.getParent(), type.getInternalName());
+//        }
     }
 
     @Override

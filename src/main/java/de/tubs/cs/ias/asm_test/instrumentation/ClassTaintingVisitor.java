@@ -9,6 +9,7 @@ import de.tubs.cs.ias.asm_test.instrumentation.strategies.*;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.clazz.*;
 import de.tubs.cs.ias.asm_test.utils.*;
 import org.objectweb.asm.*;
+import org.objectweb.asm.commons.JSRInlinerAdapter;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -32,6 +33,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private final String newMainDescriptor;
     private final List<FieldData> staticFinalFields;
     private final ClassLoader loader;
+    private final boolean containsJSRRET;
     private boolean hasClInit = false;
     private boolean isAnnotation = false;
     private boolean implementsInvocationHandler;
@@ -55,7 +57,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private final List<org.objectweb.asm.commons.Method> instrumentedMethods = new ArrayList<>();
     private boolean inEnd;
 
-    public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config, ClassLoader loader) {
+    public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config, ClassLoader loader, boolean containsJSRRET) {
         super(Opcodes.ASM7, cv);
         this.visitor = cv;
         this.staticFinalFields = new ArrayList<>();
@@ -63,6 +65,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.resolver = resolver;
         this.loader = loader;
         this.config = config;
+        this.containsJSRRET = containsJSRRET;
         this.stringConfig = this.config.getTaintStringConfig();
         this.newMainDescriptor = "(" + this.stringConfig.getTStringArrayDesc() + ")V";
         this.fillBlacklist();
@@ -254,7 +257,11 @@ class ClassTaintingVisitor extends ClassVisitor {
             mv = super.visitMethod(access, name, desc, instrumentedSignature, exceptions);
         }
 
-        return new MethodTaintingVisitor(access, this.owner, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler, this.instrumentation);
+        MethodTaintingVisitor mtv = new MethodTaintingVisitor(access, this.owner, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler, this.instrumentation);
+        if (this.containsJSRRET) {
+            return new JSRInlinerAdapter(mtv, access, newName, desc, instrumentedSignature, exceptions);
+        }
+        return mtv;
     }
 
     private void generateProxyToInstrumented(MethodVisitor mv, String instrumentedName, String originalDescriptorString) {

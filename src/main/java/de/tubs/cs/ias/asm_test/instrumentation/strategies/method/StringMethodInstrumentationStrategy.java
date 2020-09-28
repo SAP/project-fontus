@@ -99,16 +99,19 @@ public class StringMethodInstrumentationStrategy extends AbstractMethodInstrumen
     }
 
     @Override
-    public void insertJdkMethodParameterConversion(String parameter) {
+    public boolean insertJdkMethodParameterConversion(String parameter) {
         Type paramType = Type.getType(parameter);
         if (stringArrayType.equals(paramType)) {
             logger.info("Converting taint-aware String-Array to String-Array in JDK method invocation");
             this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getSharedTStringUtilsQN(), "convertTaintAwareStringArray", String.format("([%s)%s", this.stringConfig.getMethodTStringDesc(), Constants.StringArrayDesc), false);
+            return true;
         }
         if (this.type.equals(paramType)) {
             logger.info("Converting taint-aware String to String in JDK method invocation");
             this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringQN(), Constants.AS_STRING, this.stringConfig.getAsStringDesc(), false);
+            return true;
         }
+        return false;
     }
 
     @Override

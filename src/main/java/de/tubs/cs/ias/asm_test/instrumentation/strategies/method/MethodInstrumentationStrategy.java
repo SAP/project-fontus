@@ -21,7 +21,7 @@ public interface MethodInstrumentationStrategy {
     /**
      * Inserts conversion instructions if the {@param parameter} corresponds wo the actual strategy.
      */
-    void insertJdkMethodParameterConversion(String parameter);
+    boolean insertJdkMethodParameterConversion(String parameter);
 
     /**
      * Rewrites methods belonging to the class the actual strategy corresponds to.

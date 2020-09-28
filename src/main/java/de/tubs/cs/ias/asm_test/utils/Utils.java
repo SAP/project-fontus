@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test.utils;
 
+import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.asm.FieldData;
 import de.tubs.cs.ias.asm_test.asm.FunctionCall;
@@ -94,6 +95,15 @@ public final class Utils {
             mv.visitLdcInsn(value);
             mv.visitFieldInsn(Opcodes.PUTSTATIC, owner, field.getName(), field.getDescriptor());
         }
+    }
+
+    public static void insertGenericConversionToOrig(MethodVisitor mv, String expectedTypeInternalName) {
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+                Constants.ConversionUtilsQN,
+                Constants.ConversionUtilsToOrigName,
+                Constants.ConversionUtilsToOrigDesc,
+                false);
+        mv.visitTypeInsn(Opcodes.CHECKCAST, expectedTypeInternalName);
     }
 
     public static boolean contains(String[] array, String value) {
