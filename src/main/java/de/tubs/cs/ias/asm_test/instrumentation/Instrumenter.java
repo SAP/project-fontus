@@ -15,17 +15,17 @@ import java.io.InputStream;
 public class Instrumenter {
     private static final ParentLogger logger = LogUtils.getLogger();
 
-    public byte[] instrumentClass(InputStream in, ClassResolver resolver, Configuration config) throws IOException {
-        return instrumentInternal(new ClassReader(in), resolver, config, null);
+    public byte[] instrumentClass(InputStream in, ClassResolver resolver, Configuration config, boolean containsJSRRET) throws IOException {
+        return instrumentInternal(new ClassReader(in), resolver, config, null, containsJSRRET);
     }
 
-    public byte[] instrumentClass(byte[] classFileBuffer, ClassResolver resolver, Configuration config, ClassLoader loader) {
-        return instrumentInternal(new ClassReader(classFileBuffer), resolver, config, loader);
+    public byte[] instrumentClass(byte[] classFileBuffer, ClassResolver resolver, Configuration config, ClassLoader loader, boolean containsJSRRET) {
+        return instrumentInternal(new ClassReader(classFileBuffer), resolver, config, loader, containsJSRRET);
     }
 
-    private static byte[] instrumentInternal(ClassReader cr, ClassResolver resolver, Configuration config, ClassLoader loader) {
+    private static byte[] instrumentInternal(ClassReader cr, ClassResolver resolver, Configuration config, ClassLoader loader, boolean containsJSRRET) {
         NonClassloadingClassWriter writer = new NonClassloadingClassWriter(cr, ClassWriter.COMPUTE_FRAMES, new TypeHierarchyReaderWithLoaderSupport(resolver));
-        ClassTaintingVisitor smr = new ClassTaintingVisitor(writer, resolver, config, loader);
+        ClassTaintingVisitor smr = new ClassTaintingVisitor(writer, resolver, config, loader, containsJSRRET);
         cr.accept(smr, ClassReader.SKIP_FRAMES);
         String clazzName = cr.getClassName();
         String superName = cr.getSuperName();

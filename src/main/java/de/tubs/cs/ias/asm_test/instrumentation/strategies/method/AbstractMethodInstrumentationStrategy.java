@@ -59,12 +59,14 @@ public abstract class AbstractMethodInstrumentationStrategy implements MethodIns
     }
 
     @Override
-    public void insertJdkMethodParameterConversion(String parameter) {
+    public boolean insertJdkMethodParameterConversion(String parameter) {
         Type paramType = Type.getType(parameter);
         if (this.type.equals(paramType)) {
             logger.info("Converting taint-aware {} to {} in multi param method invocation", this.origQN, this.origQN);
             this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.taintedQN, this.taintedToOrig, String.format("()%s", this.origDesc), false);
+            return true;
         }
+        return false;
     }
 
     @Override

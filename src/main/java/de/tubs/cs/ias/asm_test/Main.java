@@ -70,8 +70,17 @@ public final class Main implements Callable<Void> {
 
 
     private void instrumentClassStream(InputStream i, OutputStream o) throws IOException {
-        byte[] out = this.instrumenter.instrumentClass(i, new ClassResolver(ClassLoader.getSystemClassLoader()), this.configuration);
-        o.write(out);
+        byte[] outArray;
+        try {
+            outArray = this.instrumenter.instrumentClass(i, new ClassResolver(ClassLoader.getSystemClassLoader()), this.configuration, false);
+        } catch (IllegalArgumentException ex) {
+            if (ex.getMessage().equals("JSR/RET are not supported with computeFrames option")) {
+                outArray = this.instrumenter.instrumentClass(i, new ClassResolver(ClassLoader.getSystemClassLoader()), this.configuration, true);
+            } else {
+                throw ex;
+            }
+        }
+        o.write(outArray);
     }
 
     private static void copySingleEntry(InputStream i, OutputStream o) throws IOException {

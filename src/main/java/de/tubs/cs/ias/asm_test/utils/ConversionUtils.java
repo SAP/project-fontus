@@ -79,6 +79,17 @@ public class ConversionUtils {
         if (object == null) {
             return null;
         }
+
+        if (object instanceof List) {
+            List list = (List) object;
+            List result = new ArrayList<>();
+            for (Object listEntry : list) {
+                Object converted = convertObject(listEntry, converters);
+                result.add(converted);
+            }
+            return result;
+        }
+
         boolean isArray = object.getClass().isArray();
         Class<?> cls = isArray ? object.getClass().getComponentType() : object.getClass();
         for (Class<?> handler : converters.keySet()) {

@@ -47,15 +47,13 @@ public class IASTaintHandler {
         boolean isIterable = Iterable.class.isAssignableFrom(object.getClass());
         boolean isEnumerate = Enumeration.class.isAssignableFrom(object.getClass());
         boolean isMap = Map.class.isAssignableFrom(object.getClass());
-        Class<?> cls = isArray ? object.getClass().getComponentType() : object.getClass();
+        Class<?> cls = object.getClass();
         if (IASTaintAware.class.isAssignableFrom(cls)) {
-            if (isArray) {
-                Object[] array = (Object[]) object;
-                for (Object o : array) {
-                    traverser.apply(o);
-                }
-            } else {
-                atomicHandler.apply((IASTaintAware) object);
+            atomicHandler.apply((IASTaintAware) object);
+        } else if (isArray) {
+            Object[] array = (Object[]) object;
+            for (Object o : array) {
+                traverser.apply(o);
             }
         } else if (isIterable) {
             Iterable<Object> iterable = (Iterable<Object>) object;

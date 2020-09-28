@@ -575,7 +575,14 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
     @Override
     public void visitMultiANewArrayInsn(String descriptor, int numDimensions) {
-        super.visitMultiANewArrayInsn(descriptor, numDimensions);
+        String instrumented = descriptor;
+        for (InstrumentationStrategy instrumentationStrategy : this.instrumentation) {
+            instrumented = instrumentationStrategy.instrumentQN(descriptor);
+            if (!instrumented.equals(descriptor)) {
+                break;
+            }
+        }
+        super.visitMultiANewArrayInsn(instrumented, numDimensions);
     }
 
     @Override
