@@ -131,19 +131,9 @@
       "source": "MethodReferenceTest.java"
     },
     {
-      "name": "Inner Class Example Tests",
-      "source": "InnerClassExample.java",
-      "safe": true
-    },
-    {
       "name": "Main as a Varargs method Test",
       "source": "VarArgsMainTest.java",
       "arguments": ["hallo", "welt!"]
-    },
-    {
-      "name": "Anonymous Classes Test",
-      "source": "AnonymousClasses.java",
-      "safe": true
     },
     {
       "name": "Main as a Varargs method Test",
@@ -198,10 +188,6 @@
     {
       "name": "String Switch Test",
       "source": "StringSwitchTest.java"
-    },
-    {
-      "name": "checkcast/instanceof for String Arrays",
-      "source": "StrippedDownServletExample.java"
     },
     {
       "name": "String.toString test",
@@ -274,10 +260,6 @@
       "source": "NullReturnedFromStdLib.java"
     },
     {
-      "name": "SystemGetProperty",
-      "source": "SystemGetProperty.java"
-    },
-    {
       "name": "FieldAccessTest",
       "source": "FieldAccessTest.java"
     },
@@ -320,5 +302,25 @@
       "source": "InternTest.java"
     }
 
+  ],
+  "excluded_tests": [
+    {
+      "name": "SystemGetProperty",
+      "source": "SystemGetProperty.java"
+    },
+    {
+      "name": "checkcast/instanceof for String Arrays",
+      "source": "StrippedDownServletExample.java"
+    },
+    {
+      "name": "Anonymous Classes Test",
+      "source": "AnonymousClasses.java",
+      "safe": true
+    },
+    {
+      "name": "Inner Class Example Tests",
+      "source": "InnerClassExample.java",
+      "safe": true
+    }
   ]
 }
