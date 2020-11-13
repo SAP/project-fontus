@@ -19,7 +19,7 @@ public class ClassResolver {
         if (className.startsWith("[L") && className.endsWith(";")) {
             className = className.substring(2, className.length() - 1);
         }
-        String fixed = Utils.fixupReverse(className) + Constants.CLASS_FILE_SUFFIX;
+        String fixed = Utils.dotToSlash(className) + Constants.CLASS_FILE_SUFFIX;
         logger.info("Trying to resolve {} from {}", fixed, className);
         InputStream is = this.loader.getResourceAsStream(fixed);
         if (is == null) {

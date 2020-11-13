@@ -3,7 +3,6 @@ package de.tubs.cs.ias.asm_test.utils;
 import de.tubs.cs.ias.asm_test.config.Configuration;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -93,6 +92,6 @@ public final class JdkClassesLookupTable {
     private final List<String> blacklistedPrefixes;
 
     public boolean isJdkClass(Class<?> cls) {
-        return isJdkClass(Utils.fixupReverse(cls.getName()));
+        return isJdkClass(Utils.dotToSlash(cls.getName()));
     }
 }

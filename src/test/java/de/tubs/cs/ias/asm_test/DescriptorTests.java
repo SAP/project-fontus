@@ -35,7 +35,7 @@ class DescriptorTests {
     @ParameterizedTest(name = "(){0} = no parameters and {0} as return type.")
     @ValueSource(strings = {"Z", "B", "C", "S", "I", "F", "D", "J"})
     void parseNoParamReturnPrimitive(String primitive) {
-        Descriptor d = new Descriptor(primitive);
+        Descriptor d = new Descriptor(new String[]{}, primitive);
         String descriptor = String.format("()%s", primitive);
         Descriptor pd = Descriptor.parseDescriptor(descriptor);
         assertEquals(d, pd, String.format("%s should parse to no params and %s as return type.", descriptor, primitive));

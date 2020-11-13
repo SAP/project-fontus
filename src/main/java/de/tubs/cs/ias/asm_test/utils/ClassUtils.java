@@ -96,10 +96,10 @@ public class ClassUtils {
             if (JdkClassesLookupTable.getInstance().isJdkClass(interfaceName) || isAnnotation(interfaceName)) {
                 Class<?> cls = null;
                 try {
-                    cls = Class.forName(Utils.fixup(interfaceName));
+                    cls = Class.forName(Utils.slashToDot(interfaceName));
                 } catch (ClassNotFoundException e) {
                     try {
-                        cls = (Class<?>) findLoadedClass.invoke(Thread.currentThread().getContextClassLoader(), Utils.fixup(interfaceName));
+                        cls = (Class<?>) findLoadedClass.invoke(Thread.currentThread().getContextClassLoader(), Utils.slashToDot(interfaceName));
                     } catch (IllegalAccessException | InvocationTargetException illegalAccessException) {
                         illegalAccessException.printStackTrace();
                     }
@@ -204,7 +204,7 @@ public class ClassUtils {
     public static boolean isAnnotation(String internalName) {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         try {
-            Class<?> cls = (Class<?>) findLoadedClass.invoke(classLoader, Utils.fixup(internalName));
+            Class<?> cls = (Class<?>) findLoadedClass.invoke(classLoader, Utils.slashToDot(internalName));
             if (cls != null) {
                 return cls.isAnnotation();
             }

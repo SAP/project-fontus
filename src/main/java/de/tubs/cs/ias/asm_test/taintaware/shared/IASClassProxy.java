@@ -6,11 +6,11 @@ import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
 import de.tubs.cs.ias.asm_test.utils.ReflectionUtils;
 
-public class IASReflectionProxies {
+public class IASClassProxy {
     private static final TaintStringConfig tsc = new TaintStringConfig(Configuration.getConfiguration().getTaintMethod());
 
     @SuppressWarnings("Since15")
-    public static Class<?> classForName(IASStringable str) throws ClassNotFoundException {
+    public static Class<?> forName(IASStringable str) throws ClassNotFoundException {
         String s = str.getString();
         String clazz = InstrumentationHelper.getInstance(tsc).translateClassName(s);
 
@@ -28,8 +28,8 @@ public class IASReflectionProxies {
     }
 
     @SuppressWarnings("Since15")
-    public static Class<?> classForName(IASStringable str, boolean initialize,
-                                        ClassLoader loader) throws ClassNotFoundException {
+    public static Class<?> forName(IASStringable str, boolean initialize,
+                                   ClassLoader loader) throws ClassNotFoundException {
         String s = str.getString();
         String clazz = InstrumentationHelper.getInstance(tsc).translateClassName(s);
 

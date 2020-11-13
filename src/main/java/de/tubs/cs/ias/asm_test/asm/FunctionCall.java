@@ -60,12 +60,12 @@ public class FunctionCall {
             opcode = Opcodes.INVOKEVIRTUAL;
         }
         String descriptor = Type.getType(method).getDescriptor();
-        return new FunctionCall(opcode, Utils.fixupReverse(method.getDeclaringClass().getName()), method.getName(), descriptor, method.getDeclaringClass().isInterface());
+        return new FunctionCall(opcode, Utils.dotToSlash(method.getDeclaringClass().getName()), method.getName(), descriptor, method.getDeclaringClass().isInterface());
     }
 
     public static FunctionCall fromConstructor(Constructor<?> constructor) {
         String descriptor = Type.getType(constructor).getDescriptor();
-        return new FunctionCall(Opcodes.INVOKESPECIAL, Utils.fixupReverse(constructor.getDeclaringClass().getName()), Constants.Init, descriptor, constructor.getDeclaringClass().isInterface());
+        return new FunctionCall(Opcodes.INVOKESPECIAL, Utils.dotToSlash(constructor.getDeclaringClass().getName()), Constants.Init, descriptor, constructor.getDeclaringClass().isInterface());
     }
 
     public String getOwner() {

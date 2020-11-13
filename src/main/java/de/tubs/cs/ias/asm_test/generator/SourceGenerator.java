@@ -12,7 +12,7 @@ public class SourceGenerator extends AbstractGenerator {
     private String className;
 
     public SourceGenerator(String className) {
-        this.className = Utils.fixup(className);
+        this.className = Utils.slashToDot(className);
     }
 
     public List<Source> readSources(boolean isObject) {

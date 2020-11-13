@@ -15,7 +15,7 @@ public class MethodUtils {
         String[] exceptions = new String[annotatedExceptionTypes.length];
         int i = 0;
         for (AnnotatedType ex : annotatedExceptionTypes) {
-            exceptions[i] = Utils.fixupReverse(ex.getType().getTypeName());
+            exceptions[i] = Utils.dotToSlash(ex.getType().getTypeName());
             i++;
         }
         return exceptions;
