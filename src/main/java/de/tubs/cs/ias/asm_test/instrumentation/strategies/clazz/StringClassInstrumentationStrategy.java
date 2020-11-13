@@ -16,7 +16,7 @@ public class StringClassInstrumentationStrategy  extends AbstractClassInstrument
     private static final ParentLogger logger = LogUtils.getLogger();
 
     public StringClassInstrumentationStrategy(ClassVisitor cv, TaintStringConfig configuration) {
-        super(cv, Constants.StringDesc, configuration.getTStringDesc(), Constants.StringQN, configuration.getTStringQN(), Constants.TStringToStringName);
+        super(cv, Constants.StringDesc, configuration.getTStringDesc(), Constants.StringQN, Constants.TStringToStringName);
     }
 
     @Override

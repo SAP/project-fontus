@@ -77,14 +77,14 @@ public final class Utils {
     }
 
     public static String getInternalName(Class cls) {
-        return Utils.fixupReverse(cls.getName());
+        return Utils.dotToSlash(cls.getName());
     }
 
-    public static String fixup(String s) {
+    public static String slashToDot(String s) {
         return s.replace('/', '.');
     }
 
-    public static String fixupReverse(String s) {
+    public static String dotToSlash(String s) {
         return s.replace('.', '/');
     }
 

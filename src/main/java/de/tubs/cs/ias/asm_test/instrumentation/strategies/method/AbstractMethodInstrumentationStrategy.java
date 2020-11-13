@@ -47,6 +47,21 @@ public abstract class AbstractMethodInstrumentationStrategy implements MethodIns
         this.methodsToRename.put(Constants.ToString, Constants.TO_TSTRING);
     }
 
+    AbstractMethodInstrumentationStrategy(MethodVisitor parentVisitor, Class<?> taintedClass, Class<?> origClass, String taintedToOrig, TaintStringConfig taintStringConfig, InstrumentationStrategy instrumentationStrategy) {
+        this.mv = parentVisitor;
+        this.taintedToOrig = taintedToOrig;
+        this.type = Type.getType(origClass);
+        this.origQN = this.type.getInternalName();
+        this.origDesc = this.type.getDescriptor();
+        this.stringConfig = taintStringConfig;
+        this.descPattern = Pattern.compile(origDesc);
+        this.qnPattern = Pattern.compile(origQN);
+        this.taintedDesc = Type.getType(taintedClass).getDescriptor();
+        this.taintedQN = Type.getType(taintedClass).getInternalName();
+        this.instrumentationStrategy = instrumentationStrategy;
+        this.methodsToRename.put(Constants.ToString, Constants.TO_TSTRING);
+    }
+
     @Override
     public boolean instrumentFieldIns(int opcode, String owner, String name, String descriptor) {
         Matcher matcher = this.descPattern.matcher(descriptor);

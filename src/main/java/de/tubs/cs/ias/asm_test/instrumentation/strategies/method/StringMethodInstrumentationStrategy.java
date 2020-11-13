@@ -3,7 +3,6 @@ package de.tubs.cs.ias.asm_test.instrumentation.strategies.method;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.asm.FunctionCall;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
@@ -135,7 +134,7 @@ public class StringMethodInstrumentationStrategy extends AbstractMethodInstrumen
             logger.info("Converting returned String of {}.{}{}", owner, name, desc.toDescriptor());
         } else if (stringArrayType.equals(returnType)) {
             logger.info("Converting returned String Array of {}.{}{}", owner, name, desc.toDescriptor());
-            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "convertStringArray", String.format("([L%s;)%s", Utils.fixupReverse(String.class.getName()), this.stringConfig.getTStringArrayDesc()), false);
+            this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "convertStringArray", String.format("([L%s;)%s", Utils.dotToSlash(String.class.getName()), this.stringConfig.getTStringArrayDesc()), false);
             mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(this.stringConfig.getTStringArrayDesc()).getInternalName());
         }
     }

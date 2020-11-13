@@ -17,7 +17,7 @@ public abstract class AbstractClassInstrumentationStrategy implements ClassInstr
     protected final String origQN;
     protected final String getOriginalTypeMethod;
 
-    AbstractClassInstrumentationStrategy(ClassVisitor visitor, String origDesc, String taintedDesc, String origQN, String taintedQN, String getOriginalTypeMethod) {
+    AbstractClassInstrumentationStrategy(ClassVisitor visitor, String origDesc, String taintedDesc, String origQN, String getOriginalTypeMethod) {
         this.visitor = visitor;
         this.descPattern = Pattern.compile(origDesc);
         this.origQN = origQN;
@@ -25,10 +25,19 @@ public abstract class AbstractClassInstrumentationStrategy implements ClassInstr
         this.getOriginalTypeMethod = getOriginalTypeMethod;
     }
 
-    AbstractClassInstrumentationStrategy(ClassVisitor visitor, Class<?> clazz, String taintedDesc, String taintedQN, String getOriginalTypeMethod) {
+    AbstractClassInstrumentationStrategy(ClassVisitor visitor, Class<?> origClass, Class<?> taintedClass, String getOriginalTypeMethod) {
         this.visitor = visitor;
-        this.origQN = Type.getType(clazz).getInternalName();
-        String origDesc = Type.getType(clazz).getDescriptor();
+        this.origQN = Type.getType(origClass).getInternalName();
+        String origDesc = Type.getType(origClass).getDescriptor();
+        this.descPattern = Pattern.compile(origDesc);
+        this.taintedDesc = Type.getType(taintedClass).getDescriptor();
+        this.getOriginalTypeMethod = getOriginalTypeMethod;
+    }
+
+    AbstractClassInstrumentationStrategy(ClassVisitor visitor, Class<?> origClass, String taintedDesc, String taintedQN, String getOriginalTypeMethod) {
+        this.visitor = visitor;
+        this.origQN = Type.getType(origClass).getInternalName();
+        String origDesc = Type.getType(origClass).getDescriptor();
         this.descPattern = Pattern.compile(origDesc);
         this.taintedDesc = taintedDesc;
         this.getOriginalTypeMethod = getOriginalTypeMethod;

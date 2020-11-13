@@ -1,5 +1,8 @@
 package de.tubs.cs.ias.asm_test.config;
 
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASClassProxy;
+import de.tubs.cs.ias.asm_test.utils.Utils;
+
 import static de.tubs.cs.ias.asm_test.Constants.StringDesc;
 
 public class TaintStringConfig {
@@ -152,7 +155,7 @@ public class TaintStringConfig {
         this.TStringBufferQN = this.TPackage + "IASStringBuffer";
         this.TStringUtilsQN = this.TPackage + "IASStringUtils";
         this.SharedTStringUtilsQN = sharedPackage + "IASStringUtils";
-        this.ReflectionProxiesQN = sharedPackage + "IASReflectionProxies";
+        this.ReflectionProxiesQN = Utils.dotToSlash(IASClassProxy.class.getName());
         this.ReflectionMethodProxyQN = sharedPackage + "IASReflectionMethodProxy";
         this.ToArrayProxyQN = sharedPackage + "IASToArrayProxy";
         this.TStringDesc = String.format("L%s;", this.TStringQN);

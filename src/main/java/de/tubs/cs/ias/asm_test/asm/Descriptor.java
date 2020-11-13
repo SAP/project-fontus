@@ -25,15 +25,6 @@ public class Descriptor {
         this.returnType = returnType;
     }
 
-    // This is kinda ugly, as a single String parameter would be applicable to the var args overload below..
-    // The java spec tries to resolve overloaded methods without taking var args into account first however,
-    // so a single String argument will result in this constructor being invoked.
-    // See: https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.12.2
-    public Descriptor(String returnType) {
-        this.parameters = Collections.emptyList();
-        this.returnType = returnType;
-    }
-
     @SuppressWarnings("OverloadedVarargsMethod")
     public Descriptor(String... args) {
         List<String> arguments = Arrays.asList(args);
@@ -145,7 +136,7 @@ public class Descriptor {
             if(!converted.startsWith("[")) {
                 converted = "L" + converted + ";";
             }
-            return Utils.fixupReverse(converted);
+            return Utils.dotToSlash(converted);
         }
     }
 

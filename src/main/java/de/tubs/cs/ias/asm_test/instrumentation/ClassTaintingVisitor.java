@@ -81,6 +81,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.classInstrumentation.add(new FormatterClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
         this.classInstrumentation.add(new MatcherClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
         this.classInstrumentation.add(new PropertiesClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
+        this.classInstrumentation.add(new ProxyClassInstrumentationStrategy(this.visitor));
         this.classInstrumentation.add(new DefaultClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
 
         this.instrumentation.add(new StringInstrumentation(this.config.getTaintStringConfig()));
@@ -90,6 +91,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.instrumentation.add(new FormatterInstrumentation(this.config.getTaintStringConfig()));
         this.instrumentation.add(new MatcherInstrumentation(this.config.getTaintStringConfig()));
         this.instrumentation.add(new PropertiesStrategy(this.config.getTaintStringConfig()));
+        this.instrumentation.add(new ProxyInstrumentation());
         this.instrumentation.add(new DefaultInstrumentation(this.config.getTaintStringConfig()));
     }
 
@@ -474,7 +476,7 @@ class ClassTaintingVisitor extends ClassVisitor {
                 mv.visitJumpInsn(Opcodes.IFNULL, label);
                 if (arrayDimensions == 0) {
                     mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedParam.getInternalName());
-                    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, instrumentedParam.getInternalName(), this.getToOriginalMethod(param), new Descriptor(param).toDescriptor(), false);
+                    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, instrumentedParam.getInternalName(), this.getToOriginalMethod(param), new Descriptor(new String[]{}, param).toDescriptor(), false);
                 } else {
                     mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
                     mv.visitTypeInsn(Opcodes.CHECKCAST, origParam.getInternalName());
@@ -544,10 +546,10 @@ class ClassTaintingVisitor extends ClassVisitor {
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
-            String parseOfflineOwner = Utils.fixupReverse(Configuration.class.getName());
+            String parseOfflineOwner = Utils.dotToSlash(Configuration.class.getName());
             String parseOfflineName = parseOffline.getName();
             String parseOfflineDescriptor = parseOffline.getDescriptor();
-            String taintMethodOwner = Utils.fixupReverse(TaintMethod.class.getName());
+            String taintMethodOwner = Utils.dotToSlash(TaintMethod.class.getName());
             String taintMethodName = Configuration.getConfiguration().getTaintMethod().name();
             String taintMethodDescriptor = Descriptor.classNameToDescriptorName(taintMethodOwner);
 

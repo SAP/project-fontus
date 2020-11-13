@@ -15,7 +15,7 @@ public class SinkGenerator extends AbstractGenerator {
     private final String category;
 
     public SinkGenerator(String className, String category) {
-        this.className = Utils.fixup(className);
+        this.className = Utils.slashToDot(className);
         this.category = category;
     }
 

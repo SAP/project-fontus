@@ -2,6 +2,7 @@ package de.tubs.cs.ias.asm_test.instrumentation.strategies;
 
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.utils.Utils;
+import org.objectweb.asm.Type;
 
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -26,6 +27,16 @@ public abstract class AbstractInstrumentation implements InstrumentationStrategy
         this.getOriginalTypeMethod = getOriginalTypeMethod;
     }
 
+    protected AbstractInstrumentation(Class<?> origClass, Class<?> taintedClass, String getOriginalTypeMethod) {
+        this.origDesc = Type.getType(origClass).getDescriptor();
+        this.origQN = Type.getType(origClass).getInternalName();
+        this.taintedDesc = Type.getType(taintedClass).getDescriptor();
+        this.taintedQN = Type.getType(taintedClass).getInternalName();
+        this.qnMatcher = Pattern.compile(origQN, Pattern.LITERAL);
+        this.descPattern = Pattern.compile(origDesc);
+        this.getOriginalTypeMethod = getOriginalTypeMethod;
+    }
+
     @Override
     public Descriptor instrument(Descriptor desc) {
         return desc.replaceType(this.origDesc, this.taintedDesc);
@@ -43,8 +54,8 @@ public abstract class AbstractInstrumentation implements InstrumentationStrategy
 
     @Override
     public Optional<String> translateClassName(String className) {
-        if (className.equals(Utils.fixup(this.origQN))) {
-            return Optional.of(Utils.fixup(this.taintedQN));
+        if (className.equals(Utils.slashToDot(this.origQN))) {
+            return Optional.of(Utils.slashToDot(this.taintedQN));
         }
         return Optional.empty();
     }

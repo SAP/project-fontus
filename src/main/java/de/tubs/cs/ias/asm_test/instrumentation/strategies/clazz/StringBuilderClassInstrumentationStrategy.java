@@ -6,6 +6,6 @@ import org.objectweb.asm.ClassVisitor;
 
 public class StringBuilderClassInstrumentationStrategy extends AbstractClassInstrumentationStrategy {
     public StringBuilderClassInstrumentationStrategy(ClassVisitor visitor, TaintStringConfig config) {
-        super(visitor, Constants.StringBuilderDesc, config.getTStringBuilderDesc(), Constants.StringBuilderQN, config.getTStringBuilderQN(), Constants.TStringBuilderToStringBuilderName);
+        super(visitor, Constants.StringBuilderDesc, config.getTStringBuilderDesc(), Constants.StringBuilderQN, Constants.TStringBuilderToStringBuilderName);
     }
 }

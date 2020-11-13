@@ -7,6 +7,7 @@ import de.tubs.cs.ias.asm_test.instrumentation.Instrumenter;
 import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import de.tubs.cs.ias.asm_test.utils.ParentLogger;
+import de.tubs.cs.ias.asm_test.utils.VerboseLogger;
 import org.objectweb.asm.ClassReader;
 
 import java.io.File;
@@ -53,7 +54,7 @@ class TaintingTransformer implements ClassFileTransformer {
         logger.info("Tainting class: {}", className);
         try {
             byte[] outArray = instrumentClassByteArray(classfileBuffer, loader);
-            saveIfVerbose(className, outArray);
+            VerboseLogger.saveIfVerbose(className, outArray);
             return outArray;
         } catch (Exception e) {
             logger.error("Instrumentation failed for {}. Reason: {}", className, e.getMessage());
@@ -73,22 +74,6 @@ class TaintingTransformer implements ClassFileTransformer {
             }
         }
         return outArray;
-    }
-
-    private void saveIfVerbose(String className, byte[] outArray) {
-        if (this.config.isVerbose()) {
-            String baseName = "./tmp/agent";
-            File outFile = new File(baseName, className + Constants.CLASS_FILE_SUFFIX);
-            File parent = new File(outFile.getParent());
-            parent.mkdirs();
-            try {
-                outFile.createNewFile();
-                Path p = outFile.toPath();
-                Files.write(p, outArray);
-            } catch (IOException e) {
-                logger.error("Failed to write class file", e);
-            }
-        }
     }
 
 }

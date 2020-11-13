@@ -168,7 +168,7 @@ public class Converter implements Callable<Void> {
     }
 
     private String generateName(FunctionCall call) {
-        String name = Utils.fixupReverse(call.getOwner()) + ".";
+        String name = Utils.dotToSlash(call.getOwner()) + ".";
         if (call.getName().equals(Constants.Init)) {
             name += call.getOwner().substring(call.getOwner().lastIndexOf('/'));
         } else {
@@ -214,7 +214,7 @@ public class Converter implements Callable<Void> {
         if (isInterface) {
             opcodes = Opcodes.INVOKEINTERFACE;
         }
-        String internalName = Utils.fixupReverse(className);
+        String internalName = Utils.dotToSlash(className);
         String[] parameters = fqn.substring(fqn.indexOf('(') + 1, fqn.indexOf(')')).split(", ");
         List<Class> parameterClasses = new ArrayList<>();
         for (int i = 0; i < parameters.length; i++) {
