@@ -82,8 +82,10 @@ public class IASProxyProxyBuilder {
 
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitFieldInsn(Opcodes.GETFIELD, Utils.getInternalName(IASProxyProxy.class), "h", Type.getType(InvocationHandler.class).getDescriptor());
+
         mv.visitVarInsn(Opcodes.ALOAD, 0);
-        mv.visitFieldInsn(Opcodes.GETSTATIC, this.name, methodFieldName, Descriptor.classNameToDescriptorName(Method.class.getName()));
+
+        mv.visitFieldInsn(Opcodes.GETSTATIC, this.name, methodFieldName, Type.getType(Method.class).getDescriptor());
 
         if (method.getParameterCount() > 0) {
             mv.visitLdcInsn(method.getParameterCount());
@@ -105,7 +107,7 @@ public class IASProxyProxyBuilder {
             mv.visitInsn(Opcodes.RETURN);
         } else {
             unwrapParameter(mv, method.getReturnType());
-            mv.visitInsn(Opcodes.ARETURN);
+            mv.visitInsn(Type.getType(method.getReturnType()).getOpcode(Opcodes.IRETURN));
         }
 
         mv.visitLabel(endLabel);
@@ -127,16 +129,19 @@ public class IASProxyProxyBuilder {
 
     private void unwrapParameter(MethodVisitor mv, Class<?> type) {
         if (type.isPrimitive()) {
-            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Utils.getInternalName(primitiveToWrapper(type)), type.getCanonicalName() + "Value", "()" + type.getName(), false);
+            mv.visitTypeInsn(Opcodes.CHECKCAST, Utils.getInternalName(primitiveToWrapper(type)));
+            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Utils.getInternalName(primitiveToWrapper(type)), type.getCanonicalName() + "Value", MethodType.methodType(type).toMethodDescriptorString(), false);
+        } else {
+            mv.visitTypeInsn(Opcodes.CHECKCAST, Utils.getInternalName(type));
         }
     }
 
     private void loadAndWrapParameter(MethodVisitor mv, Class<?> arg, int registerIndex) {
         if (arg.isPrimitive()) {
-            int opcode = Type.getType(arg).getOpcode(Opcodes.ALOAD);
+            int opcode = Type.getType(arg).getOpcode(Opcodes.ILOAD);
             Class<?> wrapper = primitiveToWrapper(arg);
             mv.visitVarInsn(opcode, registerIndex);
-            mv.visitMethodInsn(Opcodes.INVOKESTATIC, Utils.getInternalName(arg), "valueOf", MethodType.methodType(arg, new Class[]{wrapper}).toMethodDescriptorString(), false);
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, Utils.getInternalName(wrapper), "valueOf", MethodType.methodType(wrapper, new Class[]{arg}).toMethodDescriptorString(), false);
         } else {
             mv.visitVarInsn(Opcodes.ALOAD, registerIndex);
         }
@@ -208,18 +213,21 @@ public class IASProxyProxyBuilder {
                 Class<?> param = method.getParameterTypes()[i];
                 mv.visitInsn(Opcodes.DUP);
                 mv.visitLdcInsn(i);
-                mv.visitLdcInsn(Type.getType(param));
+                if (param.isPrimitive()) {
+                    mv.visitFieldInsn(Opcodes.GETSTATIC, Utils.getInternalName(primitiveToWrapper(param)), "TYPE", Type.getType(Class.class).getDescriptor());
+                } else {
+                    mv.visitLdcInsn(Type.getType(param));
+                }
                 mv.visitInsn(Opcodes.AASTORE);
             }
 
             mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Utils.getInternalName(Class.class), "getMethod", MethodType.methodType(Method.class, String.class, Class[].class).toMethodDescriptorString(), false);
-            mv.visitFieldInsn(Opcodes.PUTSTATIC, this.name, methodFieldName, Descriptor.classNameToDescriptorName(Method.class.getName()));
-
-            mv.visitInsn(Opcodes.RETURN);
-
-            mv.visitMaxs(-1, -1);
-            mv.visitEnd();
+            mv.visitFieldInsn(Opcodes.PUTSTATIC, this.name, methodFieldName, Type.getType(Method.class).getDescriptor());
         }
+        mv.visitInsn(Opcodes.RETURN);
+
+        mv.visitMaxs(-1, -1);
+        mv.visitEnd();
     }
 
     private void generateMethods(List<ProxyMethod> methods) {
