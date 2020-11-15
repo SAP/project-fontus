@@ -224,6 +224,7 @@ public final class Constants {
     public static final String TPatternToPatternName = "getPattern";
 
     public static final String PACKAGE = "de.tubs.cs.ias.asm_test";
+    public static final String PACKAGE_NEW = "fontus";
 
     private Constants() {
     }

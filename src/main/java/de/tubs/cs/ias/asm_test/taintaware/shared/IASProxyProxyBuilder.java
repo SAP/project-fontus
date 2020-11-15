@@ -1,23 +1,30 @@
 package de.tubs.cs.ias.asm_test.taintaware.shared;
 
 import de.tubs.cs.ias.asm_test.Constants;
-import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 import de.tubs.cs.ias.asm_test.utils.VerboseLogger;
+import jdk.internal.misc.JavaLangAccess;
+import jdk.internal.misc.SharedSecrets;
 import jdk.internal.misc.Unsafe;
 import org.objectweb.asm.*;
 
 import java.lang.invoke.MethodType;
+import java.lang.module.ModuleDescriptor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class IASProxyProxyBuilder {
+    private static volatile int counter = 0;
+    private static final String PROXY_CLASS_BASE_NAME = Constants.PACKAGE_NEW + ".internal";
+    private static final JavaLangAccess JLA = SharedSecrets.getJavaLangAccess();
     private static final Unsafe UNSAFE = Unsafe.getUnsafe();
+    private static final Map<ClassLoader, Module> cachedModules = new HashMap();
+    private static final AtomicInteger packageCounter = new AtomicInteger(0);
     public static final String HANDLER_FIELD_NAME = "h";
     private final String name;
     private final Class<?>[] interfaces;
@@ -29,24 +36,38 @@ public class IASProxyProxyBuilder {
         this.classWriter = classWriter;
         this.name = name;
         this.interfaces = interfaces;
-        this.module = findModule();
         this.classLoader = classLoader;
+        this.module = findModule();
     }
 
     private Module findModule() {
         // TODO better module handling (exported and not exported interfaces)
-        Module module = null;
-        for (Class<?> intf : this.interfaces) {
-            if (module == null) {
-                module = intf.getModule();
-            } else {
-                if (!module.equals(intf.getModule())) {
-                    throw new IllegalArgumentException("Provided interfaces from different modules");
-                }
-            }
-        }
+//        Module module = null;
+//        for (Class<?> intf : this.interfaces) {
+//            if (module == null) {
+//                module = intf.getModule();
+//            } else {
+//                if (!module.equals(intf.getModule())) {
+//                    throw new IllegalArgumentException("Provided interfaces from different modules");
+//                }
+//            }
+//        }
+//
+//        return module;
 
-        return module;
+        if (!cachedModules.containsKey(this.classLoader)) {
+            String name = PROXY_CLASS_BASE_NAME + ".proxy" + packageCounter.incrementAndGet();
+            ModuleDescriptor moduleDescriptor = ModuleDescriptor
+                    .newModule(PROXY_CLASS_BASE_NAME, Set.of(ModuleDescriptor.Modifier.SYNTHETIC))
+                    .packages(Set.of(PROXY_CLASS_BASE_NAME))
+                    .build();
+            Module m = JLA.defineModule(this.classLoader, moduleDescriptor, null);
+
+            JLA.addReads(m, IASProxyProxy.class.getModule());
+            JLA.addExports(m, name, Object.class.getModule());
+            cachedModules.put(classLoader, m);
+        }
+        return cachedModules.get(this.classLoader);
     }
 
     public Class<?> build() {
@@ -67,7 +88,7 @@ public class IASProxyProxyBuilder {
         return loadClass();
     }
 
-    private Class loadClass() {
+    private Class<?> loadClass() {
         PrivilegedAction<ClassLoader> pa = this.module::getClassLoader;
         ClassLoader cl = AccessController.doPrivileged(pa);
 
@@ -76,9 +97,11 @@ public class IASProxyProxyBuilder {
             throw new IllegalArgumentException("The passed classloader does not match the module classloader");
         }
 
+        byte[] bytes = this.classWriter.toByteArray();
 
         VerboseLogger.saveIfVerbose(name, bytes);
-        Class<? extends IASProxyProxy> cls = (Class<? extends IASProxyProxy>) UNSAFE.defineClass(name, bytes, 0, bytes.length, classLoader, null);
+
+        return AccessController.doPrivileged((PrivilegedAction<Class<?>>) () -> UNSAFE.defineClass(name, bytes, 0, bytes.length, classLoader, null));
     }
 
     private void generateInvocationHandlerField() {
@@ -86,8 +109,9 @@ public class IASProxyProxyBuilder {
         fv.visitEnd();
     }
 
-    public static IASProxyProxyBuilder newBuilder(String name, Class<?>[] interfaces, ClassLoader classLoader) {
+    public static IASProxyProxyBuilder newBuilder(Class<?>[] interfaces, ClassLoader classLoader) {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        String name = newProxyName();
 
         return new IASProxyProxyBuilder(Utils.dotToSlash(name), interfaces, classWriter, classLoader);
     }
@@ -314,5 +338,11 @@ public class IASProxyProxyBuilder {
             this.method = method;
             this.methodFieldName = methodFieldName;
         }
+    }
+
+    private static synchronized String newProxyName() {
+        String name = PROXY_CLASS_BASE_NAME + "$Proxy" + counter;
+        counter++;
+        return name;
     }
 }

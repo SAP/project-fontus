@@ -1,26 +1,22 @@
 package de.tubs.cs.ias.asm_test.taintaware.shared;
 
-import de.tubs.cs.ias.asm_test.Constants;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class IASProxyProxy {
-    private static volatile int counter = 0;
-    private static final String PROXY_CLASS_BASE_NAME = Constants.PACKAGE + ".";
     protected final InvocationHandler h;
-    private static final Map<Class<? extends IASProxyProxy>, byte[]> proxyCache = new HashMap<>();
+    private static final List<Class<?>> proxyCache = new ArrayList<>();
 
     protected IASProxyProxy(InvocationHandler h) {
         this.h = h;
     }
 
     public static boolean isProxyClass(Class<?> cls) {
-        return proxyCache.containsKey(cls);
+        return proxyCache.contains(cls);
     }
 
     public static InvocationHandler getInvocationHandler(Object proxy) {
@@ -78,32 +74,28 @@ public class IASProxyProxy {
 
     @SuppressWarnings("unchecked")
     public static Object newProxyInstance(ClassLoader classLoader, Class<?>[] interfaces, InvocationHandler h) throws NoSuchMethodException {
-        String name = newProxyName();
-
-        IASProxyProxyBuilder builder = IASProxyProxyBuilder.newBuilder(name, interfaces, classLoader);
-        Class<? extends IASProxyProxy> cls = builder.build();
-
-        Constructor<?> constructor = cls.getConstructor(InvocationHandler.class);
-
-        proxyCache.put(cls, bytes);
-
         try {
-            return constructor.newInstance(h);
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new InternalError(e.toString(), e);
-        } catch (InvocationTargetException e) {
-            Throwable t = e.getCause();
-            if (t instanceof RuntimeException) {
-                throw (RuntimeException) t;
-            } else {
-                throw new InternalError(t.toString(), t);
-            }
-        }
-    }
+            IASProxyProxyBuilder builder = IASProxyProxyBuilder.newBuilder(interfaces, classLoader);
+            Class<?> cls = builder.build();
 
-    private static synchronized String newProxyName() {
-        String name = PROXY_CLASS_BASE_NAME + "$" + counter;
-        counter++;
-        return name;
+            Constructor<?> constructor = cls.getConstructor(InvocationHandler.class);
+
+            proxyCache.add(cls);
+
+            try {
+                return constructor.newInstance(h);
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new InternalError(e.toString(), e);
+            } catch (InvocationTargetException e) {
+                Throwable t = e.getCause();
+                if (t instanceof RuntimeException) {
+                    throw (RuntimeException) t;
+                } else {
+                    throw new InternalError(t.toString(), t);
+                }
+            }
+        } catch (Exception ex) {
+            throw ex;
+        }
     }
 }
