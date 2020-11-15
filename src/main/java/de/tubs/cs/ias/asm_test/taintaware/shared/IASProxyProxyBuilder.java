@@ -3,29 +3,56 @@ package de.tubs.cs.ias.asm_test.taintaware.shared;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.utils.Utils;
+import de.tubs.cs.ias.asm_test.utils.VerboseLogger;
+import jdk.internal.misc.Unsafe;
 import org.objectweb.asm.*;
 
 import java.lang.invoke.MethodType;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 
 public class IASProxyProxyBuilder {
+    private static final Unsafe UNSAFE = Unsafe.getUnsafe();
     public static final String HANDLER_FIELD_NAME = "h";
     private final String name;
     private final Class<?>[] interfaces;
     private final ClassWriter classWriter;
+    private final Module module;
+    private final ClassLoader classLoader;
 
-    private IASProxyProxyBuilder(String name, Class<?>[] interfaces, ClassWriter classWriter) {
+    private IASProxyProxyBuilder(String name, Class<?>[] interfaces, ClassWriter classWriter, ClassLoader classLoader) {
         this.classWriter = classWriter;
         this.name = name;
         this.interfaces = interfaces;
+        this.module = findModule();
+        this.classLoader = classLoader;
     }
 
-    public byte[] build() {
+    private Module findModule() {
+        // TODO better module handling (exported and not exported interfaces)
+        Module module = null;
+        for (Class<?> intf : this.interfaces) {
+            if (module == null) {
+                module = intf.getModule();
+            } else {
+                if (!module.equals(intf.getModule())) {
+                    throw new IllegalArgumentException("Provided interfaces from different modules");
+                }
+            }
+        }
+
+        return module;
+    }
+
+    public Class<?> build() {
         generateClassHeader();
+
+        generateInvocationHandlerField();
 
         generateConstructor();
 
@@ -37,13 +64,32 @@ public class IASProxyProxyBuilder {
 
         generateStaticInitializer(methods);
 
-        return classWriter.toByteArray();
+        return loadClass();
     }
 
-    public static IASProxyProxyBuilder newBuilder(String name, Class<?>[] interfaces) {
+    private Class loadClass() {
+        PrivilegedAction<ClassLoader> pa = this.module::getClassLoader;
+        ClassLoader cl = AccessController.doPrivileged(pa);
+
+
+        if (cl != this.classLoader) {
+            throw new IllegalArgumentException("The passed classloader does not match the module classloader");
+        }
+
+
+        VerboseLogger.saveIfVerbose(name, bytes);
+        Class<? extends IASProxyProxy> cls = (Class<? extends IASProxyProxy>) UNSAFE.defineClass(name, bytes, 0, bytes.length, classLoader, null);
+    }
+
+    private void generateInvocationHandlerField() {
+        FieldVisitor fv = this.classWriter.visitField(Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL, HANDLER_FIELD_NAME, Type.getType(InvocationHandler.class).getDescriptor(), null, null);
+        fv.visitEnd();
+    }
+
+    public static IASProxyProxyBuilder newBuilder(String name, Class<?>[] interfaces, ClassLoader classLoader) {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 
-        return new IASProxyProxyBuilder(Utils.dotToSlash(name), interfaces, classWriter);
+        return new IASProxyProxyBuilder(Utils.dotToSlash(name), interfaces, classWriter, classLoader);
     }
 
     public void generateProxyMethod(ProxyMethod proxyMethod) {
@@ -81,7 +127,7 @@ public class IASProxyProxyBuilder {
         mv.visitLabel(startLabel);
 
         mv.visitVarInsn(Opcodes.ALOAD, 0);
-        mv.visitFieldInsn(Opcodes.GETFIELD, Utils.getInternalName(IASProxyProxy.class), "h", Type.getType(InvocationHandler.class).getDescriptor());
+        mv.visitFieldInsn(Opcodes.GETFIELD, this.name, HANDLER_FIELD_NAME, Type.getType(InvocationHandler.class).getDescriptor());
 
         mv.visitVarInsn(Opcodes.ALOAD, 0);
 
@@ -173,8 +219,11 @@ public class IASProxyProxyBuilder {
         MethodVisitor mv = classWriter.visitMethod(Opcodes.ACC_PUBLIC, Constants.Init, MethodType.methodType(void.class, InvocationHandler.class).toMethodDescriptorString(), null, null);
         mv.visitCode();
         mv.visitVarInsn(Opcodes.ALOAD, 0);
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Utils.getInternalName(Object.class), Constants.Init, MethodType.methodType(void.class).toMethodDescriptorString(), false);
+        mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitVarInsn(Opcodes.ALOAD, 1);
-        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Utils.getInternalName(IASProxyProxy.class), Constants.Init, MethodType.methodType(void.class, InvocationHandler.class).toMethodDescriptorString(), false);
+        mv.visitFieldInsn(Opcodes.PUTFIELD, this.name, HANDLER_FIELD_NAME, Type.getType(InvocationHandler.class).getDescriptor());
+//        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Utils.getInternalName(IASProxyProxy.class), Constants.Init, MethodType.methodType(void.class, InvocationHandler.class).toMethodDescriptorString(), false);
         mv.visitInsn(Opcodes.RETURN);
         mv.visitMaxs(-1, -1);
         mv.visitEnd();
@@ -185,7 +234,8 @@ public class IASProxyProxyBuilder {
         for (int i = 0; i < interfaces.length; i++) {
             interfaceNames[i] = Utils.getInternalName(interfaces[i]);
         }
-        classWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC, Utils.dotToSlash(this.name), null, Utils.getInternalName(IASProxyProxy.class), interfaceNames);
+//        classWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC, Utils.dotToSlash(this.name), null, Utils.getInternalName(IASProxyProxy.class), interfaceNames);
+        classWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC, Utils.dotToSlash(this.name), null, Utils.getInternalName(Object.class), interfaceNames);
     }
 
     private void generateMethodFields(List<ProxyMethod> methods) {
