@@ -1,20 +1,17 @@
 package de.tubs.cs.ias.asm_test.taintaware.shared;
 
 import de.tubs.cs.ias.asm_test.Constants;
-import de.tubs.cs.ias.asm_test.utils.ReflectionUtils;
-import de.tubs.cs.ias.asm_test.utils.VerboseLogger;
-import jdk.internal.misc.Unsafe;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class IASProxyProxy {
-    private static final Unsafe UNSAFE = Unsafe.getUnsafe();
     private static volatile int counter = 0;
-    private static final String PROXY_CLASS_BASE_NAME = Constants.PACKAGE + ".IASProxyImpl";
+    private static final String PROXY_CLASS_BASE_NAME = Constants.PACKAGE + ".";
     protected final InvocationHandler h;
     private static final Map<Class<? extends IASProxyProxy>, byte[]> proxyCache = new HashMap<>();
 
@@ -23,10 +20,6 @@ public class IASProxyProxy {
     }
 
     public static boolean isProxyClass(Class<?> cls) {
-        if (!cls.isAssignableFrom(IASProxyProxy.class)) {
-            return false;
-        }
-
         return proxyCache.containsKey(cls);
     }
 
@@ -34,13 +27,20 @@ public class IASProxyProxy {
         if (!isProxyClass(proxy.getClass())) {
             throw new IllegalArgumentException("not a proxy instance");
         } else {
-            InvocationHandler invocationHandler = ((IASProxyProxy) proxy).h;
-            Class<?> caller = ReflectionUtils.getCallerClass();
-            if (needsPackageAccessCheck(caller.getClassLoader(), invocationHandler.getClass().getClassLoader())) {
+//            InvocationHandler invocationHandler = ((IASProxyProxy) proxy).h;
+//            Class<?> caller = ReflectionUtils.getCallerClass();
+//            if (needsPackageAccessCheck(caller.getClassLoader(), invocationHandler.getClass().getClassLoader())) {
 //                ReflectUtil.checkPackageAccess(invocationHandler.getClass());
-            }
+//            }
+//            return invocationHandler;
 
-            return invocationHandler;
+            try {
+                Field f = proxy.getClass().getDeclaredField("h");
+                f.setAccessible(true);
+                return (InvocationHandler) f.get(proxy);
+            } catch (IllegalAccessException | NoSuchFieldException e) {
+                throw new IllegalStateException(e);
+            }
         }
     }
 
@@ -80,12 +80,9 @@ public class IASProxyProxy {
     public static Object newProxyInstance(ClassLoader classLoader, Class<?>[] interfaces, InvocationHandler h) throws NoSuchMethodException {
         String name = newProxyName();
 
-        IASProxyProxyBuilder builder = IASProxyProxyBuilder.newBuilder(name, interfaces);
-        byte[] bytes = builder.build();
+        IASProxyProxyBuilder builder = IASProxyProxyBuilder.newBuilder(name, interfaces, classLoader);
+        Class<? extends IASProxyProxy> cls = builder.build();
 
-        VerboseLogger.saveIfVerbose(name, bytes);
-
-        Class<? extends IASProxyProxy> cls = (Class<? extends IASProxyProxy>) UNSAFE.defineClass(name, bytes, 0, bytes.length, classLoader, null);
         Constructor<?> constructor = cls.getConstructor(InvocationHandler.class);
 
         proxyCache.put(cls, bytes);
