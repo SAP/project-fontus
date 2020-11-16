@@ -94,7 +94,8 @@ public class IASProxyProxy {
                     throw new InternalError(t.toString(), t);
                 }
             }
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
+            ex.printStackTrace();
             throw ex;
         }
     }
