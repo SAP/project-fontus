@@ -8,7 +8,6 @@ import de.tubs.cs.ias.asm_test.taintaware.bool.IASPattern;
 import de.tubs.cs.ias.asm_test.utils.ConversionUtils;
 import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.utils.ReflectionUtils;
-import jdk.internal.reflect.Reflection;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Array;
