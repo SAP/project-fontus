@@ -118,16 +118,15 @@ public class IASProxyProxyBuilder {
     public void generateProxyMethod(ProxyMethod proxyMethod) {
         Method method = proxyMethod.getMethod();
         String methodFieldName = proxyMethod.getMethodFieldName();
-        Class<?>[] exceptions = method.getExceptionTypes();
-//        List<Class<?>> exceptions = proxyMethod.getAllExceptions();
+        List<Class<?>> exceptions = proxyMethod.getAllExceptions();
         Label startLabel = new Label();
         Label endLabel = new Label();
         Label annotatedExceptionsLabel = new Label();
         Label unknownExceptionLabel = new Label();
 
-        String[] exceptionNames = new String[exceptions.length];
-        for (int i = 0; i < exceptions.length; i++) {
-            exceptionNames[i] = Utils.getInternalName(exceptions[i]);
+        String[] exceptionNames = new String[exceptions.size()];
+        for (int i = 0; i < exceptions.size(); i++) {
+            exceptionNames[i] = Utils.getInternalName(exceptions.get(i));
         }
 
         MethodType methodType = MethodType.methodType(method.getReturnType(), method.getParameterTypes());
@@ -138,7 +137,7 @@ public class IASProxyProxyBuilder {
         MethodVisitor mv = classWriter.visitMethod(modifiers, method.getName(), methodType.toMethodDescriptorString(), null, exceptionNames);
         mv.visitCode();
 
-        if (exceptions.length > 0) {
+        if (exceptions.size() > 0) {
             for (Class<?> ex : exceptions) {
                 mv.visitTryCatchBlock(startLabel, endLabel, annotatedExceptionsLabel,
                         Utils.getInternalName(ex));
