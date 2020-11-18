@@ -4,6 +4,7 @@ import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.asm.ClassResolver;
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.instrumentation.Instrumenter;
+import de.tubs.cs.ias.asm_test.taintaware.shared.IASProxyProxy;
 import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import de.tubs.cs.ias.asm_test.utils.ParentLogger;
@@ -46,8 +47,14 @@ class TaintingTransformer implements ClassFileTransformer {
             logger.info("Skipping JDK class: {}", className);
             return classfileBuffer;
         }
+
         if (className.startsWith("de/tubs/cs/ias/asm_test")) {
             logger.info("Skipping Tainting Framework class: {}", className);
+            return classfileBuffer;
+        }
+
+        if (IASProxyProxy.isProxyClass(className, classfileBuffer)) {
+            logger.info("Skipping self generated proxy class: {}", className);
             return classfileBuffer;
         }
 

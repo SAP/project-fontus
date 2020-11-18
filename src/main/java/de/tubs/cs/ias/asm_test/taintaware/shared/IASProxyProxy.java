@@ -1,22 +1,41 @@
 package de.tubs.cs.ias.asm_test.taintaware.shared;
 
+import de.tubs.cs.ias.asm_test.utils.Utils;
+import de.tubs.cs.ias.asm_test.utils.VerboseLogger;
+import jdk.internal.misc.Unsafe;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class IASProxyProxy {
+    private static final Unsafe UNSAFE = Unsafe.getUnsafe();
     protected final InvocationHandler h;
-    private static final List<Class<?>> proxyCache = new ArrayList<>();
+    private static final Map<byte[], Class<?>> proxyCache = new HashMap<>();
 
     protected IASProxyProxy(InvocationHandler h) {
         this.h = h;
     }
 
     public static boolean isProxyClass(Class<?> cls) {
-        return proxyCache.contains(cls);
+        return proxyCache.containsValue(cls);
+    }
+
+    public static boolean isProxyClass(String name, byte[] bytes) {
+        for (Map.Entry<byte[], Class<?>> entry : proxyCache.entrySet()) {
+            Class<?> cls = entry.getValue();
+            byte[] cachedBytes = entry.getKey();
+            if (cls == null || cls.getName().equals(Utils.slashToDot(name))) {
+                if (Arrays.equals(cachedBytes, bytes)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public static InvocationHandler getInvocationHandler(Object proxy) {
@@ -72,15 +91,26 @@ public class IASProxyProxy {
         return false;
     }
 
-    @SuppressWarnings("unchecked")
+
+    private static Class<?> loadClass(String name, byte[] bytes, ClassLoader classLoader) {
+        return UNSAFE.defineClass(Utils.slashToDot(name), bytes, 0, bytes.length, classLoader, null);
+    }
+
     public static Object newProxyInstance(ClassLoader classLoader, Class<?>[] interfaces, InvocationHandler h) throws NoSuchMethodException {
         try {
             IASProxyProxyBuilder builder = IASProxyProxyBuilder.newBuilder(interfaces, classLoader);
-            Class<?> cls = builder.build();
+
+            byte[] bytes = builder.build();
+            proxyCache.put(bytes, null);
+
+            VerboseLogger.saveIfVerbose(builder.getName(), bytes);
+
+            Class<?> cls = loadClass(builder.getName(), bytes, classLoader);
+
 
             Constructor<?> constructor = cls.getConstructor(InvocationHandler.class);
 
-            proxyCache.add(cls);
+            proxyCache.put(bytes, cls);
 
             try {
                 return constructor.newInstance(h);
