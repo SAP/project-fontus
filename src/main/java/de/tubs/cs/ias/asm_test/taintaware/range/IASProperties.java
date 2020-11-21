@@ -46,17 +46,17 @@ public class IASProperties extends de.tubs.cs.ias.asm_test.taintaware.shared.IAS
     }
 
     @Override
-    public void save(OutputStream out, String comments) {
+    public void save(OutputStream out, IASStringable comments) {
         super.save(out, comments);
     }
 
     @Override
-    public void store(Writer writer, String comments) throws IOException {
+    public void store(Writer writer, IASStringable comments) throws IOException {
         super.store(writer, comments);
     }
 
     @Override
-    public void store(OutputStream out, String comments) throws IOException {
+    public void store(OutputStream out, IASStringable comments) throws IOException {
         super.store(out, comments);
     }
 
@@ -66,17 +66,17 @@ public class IASProperties extends de.tubs.cs.ias.asm_test.taintaware.shared.IAS
     }
 
     @Override
-    public void storeToXML(OutputStream os, String comment) throws IOException {
+    public void storeToXML(OutputStream os, IASStringable comment) throws IOException {
         super.storeToXML(os, comment);
     }
 
     @Override
-    public void storeToXML(OutputStream os, String comment, String encoding) throws IOException {
+    public void storeToXML(OutputStream os, IASStringable comment, IASStringable encoding) throws IOException {
         super.storeToXML(os, comment, encoding);
     }
 
     @Override
-    public void storeToXML(OutputStream os, String comment, Charset charset) throws IOException {
+    public void storeToXML(OutputStream os, IASStringable comment, Charset charset) throws IOException {
         super.storeToXML(os, comment, charset);
     }
 

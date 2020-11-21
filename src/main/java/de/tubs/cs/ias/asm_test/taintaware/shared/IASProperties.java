@@ -54,33 +54,33 @@ public abstract class IASProperties extends Hashtable<Object, Object> {
         this.properties.load(inStream);
     }
 
-    public void save(OutputStream out, String comments) {
-        this.properties.save(out, comments);
+    public void save(OutputStream out, IASStringable comments) {
+        this.properties.save(out, comments.getString());
     }
 
-    public void store(Writer writer, String comments) throws IOException {
-        this.properties.store(writer, comments);
+    public void store(Writer writer, IASStringable comments) throws IOException {
+        this.properties.store(writer, comments.getString());
     }
 
-    public void store(OutputStream out, String comments) throws IOException {
-        this.properties.store(out, comments);
+    public void store(OutputStream out, IASStringable comments) throws IOException {
+        this.properties.store(out, comments.getString());
     }
 
     public synchronized void loadFromXML(InputStream in) throws IOException, InvalidPropertiesFormatException {
         this.properties.loadFromXML(in);
     }
 
-    public void storeToXML(OutputStream os, String comment) throws IOException {
-        this.properties.storeToXML(os, comment);
+    public void storeToXML(OutputStream os, IASStringable comment) throws IOException {
+        this.properties.storeToXML(os, comment.getString());
     }
 
-    public void storeToXML(OutputStream os, String comment, String encoding) throws IOException {
-        this.properties.storeToXML(os, comment, encoding);
+    public void storeToXML(OutputStream os, IASStringable comment, IASStringable encoding) throws IOException {
+        this.properties.storeToXML(os, comment.getString(), encoding.getString());
     }
 
     @SuppressWarnings("Since15")
-    public void storeToXML(OutputStream os, String comment, Charset charset) throws IOException {
-        this.properties.storeToXML(os, comment, charset);
+    public void storeToXML(OutputStream os, IASStringable comment, Charset charset) throws IOException {
+        this.properties.storeToXML(os, comment.getString(), charset);
     }
 
     public IASStringable getProperty(IASStringable key) {
@@ -197,9 +197,7 @@ public abstract class IASProperties extends Hashtable<Object, Object> {
     @Override
     public synchronized void putAll(Map<?, ?> t) {
         for (Map.Entry<?, ?> entry : t.entrySet()) {
-            Object key = ConversionUtils.convertToConcrete(entry.getKey());
-            Object value = ConversionUtils.convertToConcrete(entry.getValue());
-            this.properties.put(key, value);
+            this.put(entry.getKey(), entry.getValue());
         }
     }
 
