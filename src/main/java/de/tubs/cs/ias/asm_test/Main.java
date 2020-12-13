@@ -1,11 +1,13 @@
 package de.tubs.cs.ias.asm_test;
 
 import de.tubs.cs.ias.asm_test.asm.ClassResolver;
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.ConfigurationLoader;
 import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import de.tubs.cs.ias.asm_test.instrumentation.Instrumenter;
-import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import de.tubs.cs.ias.asm_test.utils.ParentLogger;
+import de.tubs.cs.ias.asm_test.utils.lookups.CombinedExcludedLookup;
 import picocli.CommandLine;
 
 import java.io.*;
@@ -14,9 +16,6 @@ import java.util.concurrent.Callable;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
-
-import de.tubs.cs.ias.asm_test.config.Configuration;
-import de.tubs.cs.ias.asm_test.config.ConfigurationLoader;
 
 @CommandLine.Command(
         description = "Replaces all String instances with taint-aware Strings.",
@@ -117,15 +116,12 @@ public final class Main implements Callable<Void> {
 
                 jos.putNextEntry(jeo);
 
+                CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(Thread.currentThread().getContextClassLoader());
+
                 if (jei.getName().endsWith(Constants.CLASS_FILE_SUFFIX) &&
-                        !JdkClassesLookupTable.getInstance().isJdkClass(jei.getName()) &&
-                        !jei.getName().startsWith("de/tubs/cs/ias/asm_test/") &&
-                        !jei.getName().startsWith("org/slf4j") &&
-                        !jei.getName().startsWith("ch/qos/logback") &&
-                        !jei.getName().startsWith("module-info") &&
-                        !jei.getName().startsWith("org/openjdk/jmh/") &&
-                        !jei.getName().startsWith("org/apache/commons/commons-math3") &&
-                        !jei.getName().startsWith("net/sf/jopt-simple/")
+                        !combinedExcludedLookup.isJdkClass(jei.getName()) &&
+                        !combinedExcludedLookup.isFontusClass(jei.getName()) &&
+                        !combinedExcludedLookup.isPackageExcluded(jei.getName())
                 ) {
                     this.instrumentClassStream(jeis, jos);
                 } else {

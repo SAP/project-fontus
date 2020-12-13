@@ -34,11 +34,11 @@ public class IASProxyProxy {
         return proxyCache.containsValue(cls);
     }
 
-    public static boolean isProxyClass(String name, byte[] bytes) {
+    public static boolean isProxyClass(String internalName, byte[] bytes) {
         for (Map.Entry<byte[], Class<?>> entry : proxyCache.entrySet()) {
             Class<?> cls = entry.getValue();
             byte[] cachedBytes = entry.getKey();
-            if (cls == null || cls.getName().equals(Utils.slashToDot(name))) {
+            if (cls == null || cls.getName().equals(Utils.slashToDot(internalName))) {
                 if (Arrays.equals(cachedBytes, bytes)) {
                     return true;
                 }

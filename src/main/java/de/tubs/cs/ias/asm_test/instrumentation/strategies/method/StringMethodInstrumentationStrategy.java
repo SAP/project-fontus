@@ -3,11 +3,11 @@ package de.tubs.cs.ias.asm_test.instrumentation.strategies.method;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.asm.FunctionCall;
-import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
-import de.tubs.cs.ias.asm_test.utils.Utils;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.StringInstrumentation;
+import de.tubs.cs.ias.asm_test.utils.Utils;
+import de.tubs.cs.ias.asm_test.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -16,10 +16,10 @@ import java.util.regex.Matcher;
 
 public class StringMethodInstrumentationStrategy extends AbstractMethodInstrumentationStrategy {
     private static final Type stringArrayType = Type.getType(String[].class);
+    private final CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup();
 
     public StringMethodInstrumentationStrategy(MethodVisitor mv, TaintStringConfig configuration) {
         super(mv, configuration.getTStringDesc(), configuration.getTStringQN(), Constants.TStringToStringName, String.class, configuration, new StringInstrumentation(configuration));
-
     }
 
     /**
@@ -81,7 +81,7 @@ public class StringMethodInstrumentationStrategy extends AbstractMethodInstrumen
         }
         Matcher matcher = Constants.strPattern.matcher(descriptor);
         if (matcher.find()) {
-            if (JdkClassesLookupTable.getInstance().isJdkClass(newOwner)) {
+            if (this.combinedExcludedLookup.isPackageExcludedOrJdk(newOwner)) {
                 this.mv.visitFieldInsn(opcode, newOwner, name, descriptor);
                 this.stringToTStringBuilderBased();
             } else {
