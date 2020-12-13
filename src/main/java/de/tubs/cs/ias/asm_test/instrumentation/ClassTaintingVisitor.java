@@ -8,15 +8,14 @@ import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.*;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.clazz.*;
 import de.tubs.cs.ias.asm_test.utils.*;
+import de.tubs.cs.ias.asm_test.utils.lookups.AnnotationLookup;
+import de.tubs.cs.ias.asm_test.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static de.tubs.cs.ias.asm_test.utils.ClassUtils.addNotContainedJdkInterfaceMethods;
-import static de.tubs.cs.ias.asm_test.utils.ClassUtils.getAllJdkMethods;
 
 
 class ClassTaintingVisitor extends ClassVisitor {
@@ -51,10 +50,11 @@ class ClassTaintingVisitor extends ClassVisitor {
     private final List<Method> overriddenJdkMethods;
     private String[] interfaces;
     private boolean isInterface;
-    private boolean extendsSuperClass;
+    private final CombinedExcludedLookup combinedExcludedLookup;
     private final SignatureInstrumenter signatureInstrumenter;
     private final List<org.objectweb.asm.commons.Method> instrumentedMethods = new ArrayList<>();
     private boolean inEnd;
+    private boolean extendsJdkSuperClass;
 
     public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config, ClassLoader loader, boolean containsJSRRET) {
         super(Opcodes.ASM7, cv);
@@ -70,6 +70,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.fillBlacklist();
         this.fillStrategies();
         this.signatureInstrumenter = new SignatureInstrumenter(this.api, this.instrumentation);
+        this.combinedExcludedLookup = new CombinedExcludedLookup(loader);
     }
 
     private void fillStrategies() {
@@ -121,14 +122,14 @@ class ClassTaintingVisitor extends ClassVisitor {
 
         // Is this class/interface an annotation or annotation proxy class? If yes, don't instrument it
         // Cf Java Language Specification 12 - 9.6.1 Annotation Types
-        if (InstrumentationState.getInstance().isAnnotation(name, superName, interfaces, this.resolver)) {
+        if (AnnotationLookup.getInstance().isAnnotation(name, superName, interfaces, this.resolver)) {
             logger.info("{} is annotation or annotation proxy!", name);
             this.isAnnotation = true;
-            InstrumentationState.getInstance().addAnnotation(name);
+            AnnotationLookup.getInstance().addAnnotation(name);
         }
 
         this.implementsInvocationHandler = this.implementsInvocationHandler();
-        this.extendsSuperClass = JdkClassesLookupTable.getInstance().isJdkClass(superName);
+        this.extendsJdkSuperClass = this.combinedExcludedLookup.isJdkClass(superName);
 
         // Getting JDK methods
         this.initJdkClasses();
@@ -143,14 +144,14 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private void initJdkClasses() {
-        List<Method> jdkMethods = new ArrayList<>();
+        ClassTraverser classTraverser = new ClassTraverser(this.combinedExcludedLookup);
         if (!this.isAnnotation) {
-            if (this.extendsSuperClass) {
-                getAllJdkMethods(this.superName, this.resolver, jdkMethods);
+            if (this.extendsJdkSuperClass) {
+                classTraverser.getAllJdkMethods(this.superName, this.resolver);
             }
-            addNotContainedJdkInterfaceMethods(this.superName, this.interfaces, jdkMethods, this.resolver, this.loader);
+            classTraverser.addNotContainedJdkInterfaceMethods(this.superName, this.interfaces, this.resolver, this.loader);
         }
-        this.jdkMethods = Collections.unmodifiableList(jdkMethods);
+        this.jdkMethods = Collections.unmodifiableList(classTraverser.getMethods());
     }
 
     /**
@@ -253,7 +254,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             mv = super.visitMethod(access, name, desc, instrumentedSignature, exceptions);
         }
 
-        MethodTaintingVisitor mtv = new MethodTaintingVisitor(access, this.owner, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler, this.instrumentation);
+        MethodTaintingVisitor mtv = new MethodTaintingVisitor(access, this.owner, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler, this.instrumentation, this.combinedExcludedLookup);
         if (this.containsJSRRET) {
             return new JSRInlinerAdapter(mtv, access, newName, desc, instrumentedSignature, exceptions);
         }

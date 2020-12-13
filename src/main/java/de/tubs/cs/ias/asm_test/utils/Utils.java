@@ -7,6 +7,7 @@ import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.method.MethodInstrumentationStrategy;
+import de.tubs.cs.ias.asm_test.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -16,6 +17,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public final class Utils {
+
+
+    private static final CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup();
 
     private Utils() {
     }
@@ -58,7 +62,7 @@ public final class Utils {
     }
 
     public static Handle instrumentHandle(Handle h, TaintStringConfig config, List<MethodInstrumentationStrategy> strategies) {
-        if (JdkClassesLookupTable.getInstance().isJdkClass(h.getOwner()) && !InstrumentationHelper.getInstance(config).canHandleType(Type.getObjectType(h.getOwner()).getDescriptor())) {
+        if (combinedExcludedLookup.isPackageExcludedOrJdk(h.getOwner()) && !InstrumentationHelper.getInstance(config).canHandleType(Type.getObjectType(h.getOwner()).getDescriptor())) {
             return h;
         }
 

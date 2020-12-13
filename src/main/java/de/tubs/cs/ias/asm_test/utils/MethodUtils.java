@@ -4,6 +4,7 @@ import de.tubs.cs.ias.asm_test.Constants;
 
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 public class MethodUtils {
     public static boolean isToString(String name, String methodDescriptor) {
@@ -29,5 +30,9 @@ public class MethodUtils {
         } catch (Exception ex) {
             throw new UnsupportedOperationException("Cannot evaluate if method is generic signature, because Method.hasGenericInformation is not available");
         }
+    }
+
+    public static boolean isPublicOrProtectedNotStatic(de.tubs.cs.ias.asm_test.instrumentation.Method m) {
+        return (Modifier.isPublic(m.getAccess()) || Modifier.isProtected(m.getAccess())) && !Modifier.isStatic(m.getAccess());
     }
 }

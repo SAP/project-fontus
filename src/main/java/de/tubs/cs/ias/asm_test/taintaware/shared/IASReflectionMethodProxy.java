@@ -6,8 +6,9 @@ import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.taintaware.bool.IASMatcher;
 import de.tubs.cs.ias.asm_test.taintaware.bool.IASPattern;
 import de.tubs.cs.ias.asm_test.utils.ConversionUtils;
-import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.utils.ReflectionUtils;
+import de.tubs.cs.ias.asm_test.utils.Utils;
+import de.tubs.cs.ias.asm_test.utils.lookups.CombinedExcludedLookup;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Array;
@@ -28,6 +29,7 @@ public class IASReflectionMethodProxy {
     private static final Map<String, Class<?>> toOrigReplacements = new HashMap<>();
     private static final Map<Class, Function<Object, Object>> toTaintedMethods = new HashMap<>();
     private static final Map<String, Class<?>> toConcreteReplacements = new HashMap<>();
+    private static final CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup();
 
     static {
         toInterfaceReplacements.put("IASString", IASStringable.class);
@@ -86,7 +88,7 @@ public class IASReflectionMethodProxy {
 
     @SuppressWarnings("Since15")
     public static Object newInstance(Constructor constructor, Object[] parameters) throws Throwable {
-        if (isJdkClass(constructor.getDeclaringClass())) {
+        if (combinedExcludedLookup.isPackageExcludedOrJdk(Utils.getInternalName(constructor.getDeclaringClass()))) {
             Object[] converted = convertParametersToOriginal(parameters);
             return constructor.newInstance(converted);
         }
@@ -120,7 +122,7 @@ public class IASReflectionMethodProxy {
                 IASStringable[] converted = IASStringUtils.convertStringArray(result);
                 return Arrays.copyOf(converted, converted.length, factory.getStringArrayClass());
             }
-        } else if (isJdkClass(method.getDeclaringClass())) {
+        } else if (combinedExcludedLookup.isPackageExcludedOrJdk(Utils.getInternalName(method.getDeclaringClass()))) {
             Object[] converted = convertParametersToOriginal(parameters);
             Object result = method.invoke(instance, converted);
             return ConversionUtils.convertToConcrete(result);
@@ -172,10 +174,6 @@ public class IASReflectionMethodProxy {
         return method.getDefaultValue();
     }
 
-    private static boolean isJdkClass(Class cls) {
-        return JdkClassesLookupTable.getInstance().isJdkClass(cls);
-    }
-
     /**
      * Proxy for the Class.getMethod function.
      * If the method is taintaware class method, it replaces taintaware parameter types with the interface type
@@ -185,7 +183,7 @@ public class IASReflectionMethodProxy {
     public static Method getMethodProxied(Class<?> clazz, IASStringable methodName, Class[] parameters) throws NoSuchMethodException {
         String methodNameString = transformMethodName(clazz, methodName.getString(), parameters);
 
-        if (JdkClassesLookupTable.getInstance().isJdkClass(clazz)) {
+        if (combinedExcludedLookup.isPackageExcludedOrJdk(Utils.getInternalName(clazz))) {
             parameters = transformParametersForJdk(parameters);
         } else if (isInPackage(clazz)) {
             parameters = transformParametersForTaintawareInterface(parameters);
@@ -201,7 +199,7 @@ public class IASReflectionMethodProxy {
      * If the method is JDK class method, it replaces taintaware parameter types with the original type
      */
     public static Constructor getConstructor(Class<?> clazz, Class[] parameters) throws NoSuchMethodException {
-        if (JdkClassesLookupTable.getInstance().isJdkClass(clazz)) {
+        if (combinedExcludedLookup.isPackageExcludedOrJdk(Utils.getInternalName(clazz))) {
             parameters = transformParametersForJdk(parameters);
         } else if (isInPackage(clazz)) {
             parameters = transformParametersForTaintawareInterface(parameters);
@@ -242,7 +240,7 @@ public class IASReflectionMethodProxy {
     public static Method getDeclaredMethodProxied(Class<?> clazz, IASStringable methodName, Class[] parameters) throws NoSuchMethodException {
         String methodNameString = transformMethodName(clazz, methodName.getString(), parameters);
 
-        if (JdkClassesLookupTable.getInstance().isJdkClass(clazz)) {
+        if (combinedExcludedLookup.isPackageExcludedOrJdk(Utils.getInternalName(clazz))) {
             parameters = transformParametersForJdk(parameters);
         } else if (isInPackage(clazz)) {
             parameters = transformParametersForTaintawareInterface(parameters);

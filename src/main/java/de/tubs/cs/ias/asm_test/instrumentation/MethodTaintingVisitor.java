@@ -1,20 +1,19 @@
 package de.tubs.cs.ias.asm_test.instrumentation;
 
 import de.tubs.cs.ias.asm_test.Constants;
-import de.tubs.cs.ias.asm_test.asm.ProxiedDynamicFunctionEntry;
-import de.tubs.cs.ias.asm_test.asm.ClassResolver;
-import de.tubs.cs.ias.asm_test.asm.Descriptor;
-import de.tubs.cs.ias.asm_test.asm.FunctionCall;
+import de.tubs.cs.ias.asm_test.asm.*;
 import de.tubs.cs.ias.asm_test.config.Configuration;
-import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.config.Sink;
 import de.tubs.cs.ias.asm_test.config.Source;
-import de.tubs.cs.ias.asm_test.asm.BasicMethodVisitor;
+import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationStrategy;
-import de.tubs.cs.ias.asm_test.instrumentation.transformer.*;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.method.*;
-import de.tubs.cs.ias.asm_test.utils.*;
+import de.tubs.cs.ias.asm_test.instrumentation.transformer.*;
+import de.tubs.cs.ias.asm_test.utils.LogUtils;
+import de.tubs.cs.ias.asm_test.utils.ParentLogger;
+import de.tubs.cs.ias.asm_test.utils.Utils;
+import de.tubs.cs.ias.asm_test.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.*;
 
 import java.lang.reflect.Method;
@@ -49,16 +48,19 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
     private final TaintStringConfig stringConfig;
 
+    private final CombinedExcludedLookup combinedExcludedLookup;
+
     /**
      * If a method which is part of an interface should be proxied, place it here
      * The owner should be the interface
      */
     private final Map<FunctionCall, Runnable> methodInterfaceProxies;
 
-    public MethodTaintingVisitor(int acc, String owner, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver, Configuration config, boolean implementsInvocationHandler, List<InstrumentationStrategy> instrumentation) {
+    public MethodTaintingVisitor(int acc, String owner, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver, Configuration config, boolean implementsInvocationHandler, List<InstrumentationStrategy> instrumentation, CombinedExcludedLookup combinedExcludedLookup) {
         super(Opcodes.ASM7, methodVisitor);
         this.resolver = resolver;
         this.owner = owner;
+        this.combinedExcludedLookup = combinedExcludedLookup;
         logger.info("Instrumenting method: {}{}", name, methodDescriptor);
         this.used = Type.getArgumentsAndReturnSizes(methodDescriptor) >> 2;
         this.usedAfterInjection = 0;
@@ -201,7 +203,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     @Override
     public void visitFieldInsn(final int opcode, final String owner, final String name, final String descriptor) {
 
-        if (JdkClassesLookupTable.getInstance().isJdkClass(owner) && InstrumentationHelper.getInstance(this.stringConfig).canHandleType(descriptor)) {
+        if (this.combinedExcludedLookup.isJdkClass(owner) && InstrumentationHelper.getInstance(this.stringConfig).canHandleType(descriptor)) {
             if ((opcode == Opcodes.PUTFIELD || opcode == Opcodes.PUTSTATIC)) {
                 mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
                 mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(descriptor).getInternalName());
@@ -272,10 +274,10 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         MethodParameterTransformer transformer = new MethodParameterTransformer(this, call);
 
-        boolean isJdkClass = JdkClassesLookupTable.getInstance().isJdkClass(call.getOwner()) || InstrumentationState.getInstance().isAnnotation(call.getOwner(), this.resolver);
+        boolean isExcluded = this.combinedExcludedLookup.isJdkOrAnnotation(call.getOwner());
 
         // Add JDK transformations
-        if (isJdkClass) {
+        if (isExcluded) {
             logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
             JdkMethodTransformer t = new JdkMethodTransformer(call, this.methodInstrumentation, this.config);
             transformer.addParameterTransformation(t);
@@ -308,7 +310,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.usedAfterInjection = this.used + transformer.getExtraStackSlots();
 
         // Instrument descriptor if source/sink is not a JDK class
-        if (!isJdkClass) {
+        if (!isExcluded) {
             Descriptor desc = Descriptor.parseDescriptor(call.getDescriptor());
             for (InstrumentationStrategy s : this.instrumentation) {
                 desc = s.instrument(desc);
@@ -481,7 +483,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             return true;
         }
         if (pfe.getOpcode() == Opcodes.INVOKEVIRTUAL || pfe.getOpcode() == Opcodes.INVOKEINTERFACE) {
-            if (isQNJdk(pfe.getOwner())) {
+            if (this.combinedExcludedLookup.isJdkClass(pfe.getOwner())) {
                 for (FunctionCall mip : this.methodInterfaceProxies.keySet()) {
                     if (pfe.getName().equals(mip.getName()) && pfe.getDescriptor().equals(mip.getDescriptor())) {
                         if (thisOrSuperQNEquals(pfe.getOwner(), mip.getOwner())) {
@@ -496,10 +498,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             }
         }
         return false;
-    }
-
-    private boolean isQNJdk(String qn) {
-        return JdkClassesLookupTable.getInstance().isJdkClass(Utils.dotToSlash(qn));
     }
 
     private boolean thisOrSuperQNEquals(String thisQn, final String requiredQn) {

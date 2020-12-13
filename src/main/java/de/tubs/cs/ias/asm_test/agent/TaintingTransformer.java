@@ -1,22 +1,16 @@
 package de.tubs.cs.ias.asm_test.agent;
 
-import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.asm.ClassResolver;
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.instrumentation.Instrumenter;
-import de.tubs.cs.ias.asm_test.taintaware.shared.IASProxyProxy;
-import de.tubs.cs.ias.asm_test.utils.JdkClassesLookupTable;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import de.tubs.cs.ias.asm_test.utils.VerboseLogger;
+import de.tubs.cs.ias.asm_test.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.ClassReader;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.ProtectionDomain;
 
 class TaintingTransformer implements ClassFileTransformer {
@@ -43,17 +37,18 @@ class TaintingTransformer implements ClassFileTransformer {
             className = new ClassReader(classfileBuffer).getClassName();
         }
 
-        if (JdkClassesLookupTable.getInstance().isJdkClass(className)) {
+        CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(loader);
+        if (combinedExcludedLookup.isJdkClass(className)) {
             logger.info("Skipping JDK class: {}", className);
             return classfileBuffer;
         }
 
-        if (className.startsWith("de/tubs/cs/ias/asm_test")) {
+        if (combinedExcludedLookup.isFontusClass(className)) {
             logger.info("Skipping Tainting Framework class: {}", className);
             return classfileBuffer;
         }
 
-        if (IASProxyProxy.isProxyClass(className, classfileBuffer)) {
+        if (combinedExcludedLookup.isProxyClass(className, classfileBuffer)) {
             logger.info("Skipping self generated proxy class: {}", className);
             return classfileBuffer;
         }
