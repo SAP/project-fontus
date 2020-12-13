@@ -109,7 +109,14 @@ public class IASProxyProxyBuilder {
     }
 
     public static IASProxyProxyBuilder newBuilder(Class<?>[] interfaces, ClassLoader classLoader) {
-        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        // This is necessary because otherwise the Bootstrap Classloader is used to load application classes in visitMaxs
+        // See https://stackoverflow.com/questions/26573945/classnotfoundexception-at-asm-objectwriter-getcommonsuperclass
+        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES) {
+            @Override
+            protected ClassLoader getClassLoader() {
+                return classLoader;
+            }
+        };
         String name = newProxyName(interfaces);
 
         return new IASProxyProxyBuilder(Utils.dotToSlash(name), interfaces, classWriter, classLoader);
