@@ -11,7 +11,6 @@ import de.tubs.cs.ias.asm_test.utils.*;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -122,12 +121,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 
         // Is this class/interface an annotation or annotation proxy class? If yes, don't instrument it
         // Cf Java Language Specification 12 - 9.6.1 Annotation Types
-        if (Utils.contains(interfaces, Constants.AnnotationQN) ||
-                (Constants.ProxyQN.equals(superName)
-                        && interfaces.length == 1
-                        && InstrumentationState.getInstance().isAnnotation(interfaces[0], this.resolver)
-                )
-        ) {
+        if (InstrumentationState.getInstance().isAnnotation(name, superName, interfaces, this.resolver)) {
             logger.info("{} is annotation or annotation proxy!", name);
             this.isAnnotation = true;
             InstrumentationState.getInstance().addAnnotation(name);
@@ -385,26 +379,26 @@ class ClassTaintingVisitor extends ClassVisitor {
         List<Method> methods = this.jdkMethods
                 .stream()
                 .filter(method -> !overriddenJdkMethods.contains(method))
-                .filter(method -> shouldBeInstrumented(Descriptor.parseMethod(method).toDescriptor()))
-                .filter(method -> !Modifier.isStatic(method.getModifiers()))
-                .filter(method -> !MethodUtils.isToString(method.getName(), Type.getType(method).getDescriptor()))
+                .filter(method -> shouldBeInstrumented(method.getDescriptor()))
+                .filter(method -> !Modifier.isStatic(method.getAccess()))
+                .filter(method -> !MethodUtils.isToString(method.getName(), method.getDescriptor()))
                 .collect(Collectors.toList());
         methods.forEach(this::createJdkDeclaring);
     }
 
     private void createJdkDeclaring(Method method) {
-        String signature = null;
-        if (ClassUtils.hasGenericInformation(method)) {
-            signature = Descriptor.getSignature(method);
-            signature = this.instrumentDescriptorStringlike(signature);
-        }
-        int access = method.getModifiers();
+        String signature = method.getSignature();
+//        if (signature == null && ClassUtils.hasGenericInformation(method)) {
+//            signature = Descriptor.getSignature(method);
+//            signature = this.instrumentDescriptorStringlike(signature);
+//        }
+        int access = method.getAccess();
         String name = method.getName();
-        String descriptor = this.instrumentDescriptor(Descriptor.parseMethod(method)).toDescriptor();
-        String[] exceptions = MethodUtils.getExceptionTypes(method);
+        String descriptor = this.instrumentDescriptor(Descriptor.parseDescriptor(method.getDescriptor())).toDescriptor();
+        String[] exceptions = method.getExceptions();
         MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions);
         if (method.isDefault()) {
-            this.generateInstrumentedProxyToSuper(mv, method, Descriptor.parseMethod(method), Descriptor.parseDescriptor(descriptor));
+            this.generateInstrumentedProxyToSuper(mv, method, Descriptor.parseDescriptor(method.getDescriptor()), Descriptor.parseDescriptor(descriptor));
         }
     }
 
@@ -412,8 +406,8 @@ class ClassTaintingVisitor extends ClassVisitor {
         List<Method> methods = this.jdkMethods
                 .stream()
                 .filter(method -> !overriddenJdkMethods.contains(method))
-                .filter(method -> shouldBeInstrumented(Descriptor.parseMethod(method).toDescriptor()))
-                .filter(method -> !Modifier.isStatic(method.getModifiers()))
+                .filter(method -> shouldBeInstrumented(method.getDescriptor()))
+                .filter(method -> !Modifier.isStatic(method.getAccess()))
                 .collect(Collectors.toList());
 
         methods.forEach(this::createInstrumentedJdkProxy);
@@ -423,36 +417,35 @@ class ClassTaintingVisitor extends ClassVisitor {
         if (Configuration.getConfiguration().getJdkInheritanceBlacklist().containsKey(this.owner)) {
             List<BlackListEntry> blackList = Configuration.getConfiguration().getJdkInheritanceBlacklist().get(this.owner);
             for (BlackListEntry entry : blackList) {
-                org.objectweb.asm.commons.Method parsed = org.objectweb.asm.commons.Method.getMethod(m);
-                int accessFlag = (m.getModifiers() & Modifier.PUBLIC) | (m.getModifiers() & Modifier.PROTECTED) | (m.getModifiers() & Modifier.PRIVATE);
-                if (entry.matches(parsed.getName(), parsed.getDescriptor(), accessFlag)) {
+                int accessFlag = (m.getAccess() & Modifier.PUBLIC) | (m.getAccess() & Modifier.PROTECTED) | (m.getAccess() & Modifier.PRIVATE);
+                if (entry.matches(m.getName(), m.getDescriptor(), accessFlag)) {
                     return;
                 }
             }
         }
         logger.info("Creating proxy for inherited, but not overridden JDK method " + m);
-        Descriptor originalDescriptor = Descriptor.parseMethod(m);
+        Descriptor originalDescriptor = Descriptor.parseDescriptor(m.getDescriptor());
         Descriptor instrumentedDescriptor = this.instrumentDescriptor(originalDescriptor);
 
         if (this.instrumentedMethods.contains(new org.objectweb.asm.commons.Method(m.getName(), instrumentedDescriptor.toDescriptor()))) {
             return;
         }
 
-        String[] exceptions = MethodUtils.getExceptionTypes(m);
-        String signature = null;
-        if (ClassUtils.hasGenericInformation(m)) {
-            signature = Descriptor.getSignature(m);
-            signature = this.instrumentDescriptorStringlike(signature);
-        }
+        String[] exceptions = m.getExceptions();
+        String signature = m.getSignature();
+//        if (ClassUtils.hasGenericInformation(m)) {
+//            signature = Descriptor.getSignature(m);
+//            signature = this.instrumentDescriptorStringlike(signature);
+//        }
         // Generating proxy with instrumented descriptor
-        MethodVisitor mv = super.visitMethod(m.getModifiers(), m.getName(), instrumentedDescriptor.toDescriptor(), signature, exceptions);
-        if (!Modifier.isAbstract(m.getModifiers())) {
+        MethodVisitor mv = super.visitMethod(m.getAccess(), m.getName(), instrumentedDescriptor.toDescriptor(), signature, exceptions);
+        if (!Modifier.isAbstract(m.getAccess())) {
             this.generateInstrumentedProxyToSuper(mv, m, originalDescriptor, instrumentedDescriptor);
         }
 
         // Overriding method with original descriptor
-        int modifiers = (m.getModifiers() & ~Modifier.ABSTRACT);
-        if (!Modifier.isFinal(m.getModifiers())) {
+        int modifiers = (m.getAccess() & ~Modifier.ABSTRACT);
+        if (!Modifier.isFinal(m.getAccess())) {
             MethodVisitor mv2 = super.visitMethod(modifiers, m.getName(), originalDescriptor.toDescriptor(), signature, exceptions);
             this.generateProxyToInstrumented(mv2, m.getName(), originalDescriptor.toDescriptor());
         }
@@ -650,7 +643,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         if (!this.isAnnotation) {
             Optional<Method> methodOptional = this.jdkMethods
                     .stream()
-                    .filter(method -> method.getName().equals(name) && Descriptor.parseMethod(method).toDescriptor().equals(descriptor))
+                    .filter(method -> method.getName().equals(name) && method.getDescriptor().equals(descriptor))
                     .findAny();
             return methodOptional.orElse(null);
         }
