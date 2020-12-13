@@ -13,9 +13,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class IASProxyProxy {
-    private static final Unsafe UNSAFE = Unsafe.getUnsafe();
+    private static final Unsafe UNSAFE;
     protected final InvocationHandler h;
     private static final Map<byte[], Class<?>> proxyCache = new HashMap<>();
+
+    static {
+        try {
+            UNSAFE = Unsafe.getUnsafe();
+        } catch (Throwable ex) {
+            System.err.println("Couldn't load unsafe!");
+            throw ex;
+        }
+    }
 
     protected IASProxyProxy(InvocationHandler h) {
         this.h = h;

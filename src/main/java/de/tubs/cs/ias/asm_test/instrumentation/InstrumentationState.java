@@ -24,6 +24,17 @@ public final class InstrumentationState {
         this.noAnnotations = new HashSet<>();
     }
 
+    public boolean isAnnotation(String name, String superName, String[] interfaces, ClassResolver resolver) {
+        if(name.startsWith("[")) { return false; } // Arrays ain't annotations
+        if (this.annotations.contains(name)) {
+            return true;
+        } else if (this.noAnnotations.contains(name)) {
+            return false;
+        } else {
+            return this.testAnnotation(name, superName, interfaces, resolver);
+        }
+    }
+
     private static class LazyHolder {
         private static final InstrumentationState INSTANCE = new InstrumentationState();
     }
@@ -37,27 +48,21 @@ public final class InstrumentationState {
     }
 
     public boolean isAnnotation(String name, ClassResolver resolver) {
-        if(name.startsWith("[")) { return false; } // Arrays ain't annotations
-        if (this.annotations.contains(name)) {
-            return true;
-        } else if (this.noAnnotations.contains(name)) {
-            return false;
-        } else {
-            return this.testAnnotation(name, resolver);
-        }
+        return this.isAnnotation(name, null, null, resolver);
     }
 
 
-    private boolean testAnnotation(String className, ClassResolver resolver) {
+    private boolean testAnnotation(String className, String superName, String[] interfaces, ClassResolver resolver) {
         try {
-            NopVisitor nv = new NopVisitor(Opcodes.ASM7);
-            ClassReader cr = new ClassReaderWithLoaderSupport(resolver, className);
-            cr.accept(nv, ClassReader.SKIP_FRAMES);
-            String clazzName = cr.getClassName();
-            String superName = cr.getSuperName();
-            String[] interfaces = cr.getInterfaces();
+            if (superName == null || interfaces == null) {
+                NopVisitor nv = new NopVisitor(Opcodes.ASM7);
+                ClassReader cr = new ClassReaderWithLoaderSupport(resolver, className);
+                cr.accept(nv, ClassReader.SKIP_FRAMES);
+                superName = cr.getSuperName();
+                interfaces = cr.getInterfaces();
+            }
             String ifs = String.join(", ", interfaces);
-            logger.info("Testing {} (super: {}, interfaces: {} for being an annotation", clazzName, superName, ifs);
+            logger.info("Testing {} (super: {}, interfaces: {} for being an annotation", className, superName, ifs);
             if (Utils.contains(interfaces, Constants.AnnotationQN)) {
                 this.annotations.add(className);
                 return true;
@@ -66,7 +71,7 @@ public final class InstrumentationState {
             if (Constants.ProxyQN.equals(superName)) {
                 if (interfaces.length == 1) {
                     String interf = interfaces[0];
-                    if (this.testAnnotation(interf, resolver)) {
+                    if (this.testAnnotation(interf, null, null, resolver)) {
                         this.annotations.add(className);
                         return true;
                     }
@@ -79,6 +84,6 @@ public final class InstrumentationState {
         return false;
     }
 
-    private final Set<String> annotations;
     private final Set<String> noAnnotations;
+    private final Set<String> annotations;
 }

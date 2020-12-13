@@ -20,4 +20,14 @@ public class MethodUtils {
         }
         return exceptions;
     }
+
+    public static boolean hasGenericInformation(Method m) {
+        try {
+            Method hasGenericInformation = Method.class.getDeclaredMethod("hasGenericInformation");
+            hasGenericInformation.setAccessible(true);
+            return (boolean) hasGenericInformation.invoke(m);
+        } catch (Exception ex) {
+            throw new UnsupportedOperationException("Cannot evaluate if method is generic signature, because Method.hasGenericInformation is not available");
+        }
+    }
 }

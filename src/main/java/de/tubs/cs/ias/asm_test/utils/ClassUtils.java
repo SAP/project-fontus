@@ -1,8 +1,8 @@
 package de.tubs.cs.ias.asm_test.utils;
 
-import de.tubs.cs.ias.asm_test.asm.ClassResolver;
-import de.tubs.cs.ias.asm_test.asm.TypeHierarchyReaderWithLoaderSupport;
+import de.tubs.cs.ias.asm_test.asm.*;
 import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.instrumentation.InstrumentationState;
 import org.mutabilitydetector.asm.typehierarchy.TypeHierarchy;
 import org.objectweb.asm.*;
 
@@ -35,7 +35,7 @@ public class ClassUtils {
      * @param classToDiscover Class to discover
      * @param methods         List, where the discovered methods will be added (duplicates will not be stored, can be prefilled)
      */
-    public static void getAllJdkMethods(String classToDiscover, ClassResolver resolver, List<Method> methods) {
+    public static void getAllJdkMethods(String classToDiscover, ClassResolver resolver, List<de.tubs.cs.ias.asm_test.instrumentation.Method> methods) {
         TypeHierarchyReaderWithLoaderSupport typeHierarchyReader = new TypeHierarchyReaderWithLoaderSupport(resolver);
         for (Type cls = Type.getObjectType(classToDiscover); cls != null; cls = typeHierarchyReader.getSuperClass(cls)) {
             if (JdkClassesLookupTable.getInstance().isJdkClass(cls.getInternalName())) {
@@ -43,7 +43,7 @@ public class ClassUtils {
                     Class<?> clazz = Class.forName(cls.getClassName());
                     Method[] declaredMethods = clazz.getDeclaredMethods();
                     for (Method declaredMethod : declaredMethods) {
-                        addMethodIfNotContained(declaredMethod, methods);
+                        addMethodIfNotContained(de.tubs.cs.ias.asm_test.instrumentation.Method.from(declaredMethod), methods);
                     }
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
@@ -54,20 +54,20 @@ public class ClassUtils {
 
     /**
      * This methods add all methods if the passed interface list to the method list, if the method isn't already contained or the interface is already implemented by the super type
-     * For determination if contained see {@link ClassUtils#addMethodIfNotContained(Method, List)}
+     * For determination if contained see {@link ClassUtils#addMethodIfNotContained(de.tubs.cs.ias.asm_test.instrumentation.Method, List)}
      *
      * @param superName                 Super class of the interface implementing one
      * @param directInheritedInterfaces Array with interface names as QN
      * @param methods                   List to add methods (may already contain methods)
      */
-    public static void addNotContainedJdkInterfaceMethods(String superName, String[] directInheritedInterfaces, List<Method> methods, ClassResolver resolver, ClassLoader loader) {
+    public static void addNotContainedJdkInterfaceMethods(String superName, String[] directInheritedInterfaces, List<de.tubs.cs.ias.asm_test.instrumentation.Method> methods, ClassResolver resolver, ClassLoader loader) {
         if (directInheritedInterfaces == null || directInheritedInterfaces.length == 0) {
             return;
         }
         TypeHierarchyReaderWithLoaderSupport typeHierarchyReader = new TypeHierarchyReaderWithLoaderSupport(resolver);
 
         Set<String> jdkOnly = new HashSet<>();
-        discoverAllJdkInterfaces(Arrays.asList(directInheritedInterfaces), jdkOnly, typeHierarchyReader);
+        discoverAllJdkInterfaces(Arrays.asList(directInheritedInterfaces), jdkOnly, typeHierarchyReader, resolver);
 
         Set<Type> superInterfaces = new HashSet<>();
         for (Type cls = Type.getObjectType(superName); cls != null; cls = typeHierarchyReader.getSuperClass(cls)) {
@@ -76,7 +76,7 @@ public class ClassUtils {
         }
 
         Set<String> jdkSuperInterfaces = new HashSet<>();
-        discoverAllJdkInterfaces(superInterfaces.stream().map(Type::getInternalName).collect(Collectors.toList()), jdkSuperInterfaces, typeHierarchyReader);
+        discoverAllJdkInterfaces(superInterfaces.stream().map(Type::getInternalName).collect(Collectors.toList()), jdkSuperInterfaces, typeHierarchyReader, resolver);
 
         List<String> interfaces = new ArrayList<>();
         for (String directImplI : jdkOnly) {
@@ -93,8 +93,9 @@ public class ClassUtils {
         }
 
         for (String interfaceName : interfaces) {
-            if (JdkClassesLookupTable.getInstance().isJdkClass(interfaceName) || isAnnotation(interfaceName)) {
+            if (JdkClassesLookupTable.getInstance().isJdkClass(interfaceName) || isAnnotation(interfaceName, resolver)) {
                 Class<?> cls = null;
+                List<de.tubs.cs.ias.asm_test.instrumentation.Method> intfMethods = new ArrayList<>();
                 try {
                     cls = Class.forName(Utils.slashToDot(interfaceName));
                 } catch (ClassNotFoundException e) {
@@ -104,11 +105,33 @@ public class ClassUtils {
                         illegalAccessException.printStackTrace();
                     }
                 }
+
                 if (cls != null) {
                     for (Method m : cls.getMethods()) {
-                        if (!isImplementedBySuperClass(superName, m, loader)) {
-                            addMethodIfNotContained(m, methods);
-                        }
+                        de.tubs.cs.ias.asm_test.instrumentation.Method method = de.tubs.cs.ias.asm_test.instrumentation.Method.from(m);
+                        intfMethods.add(method);
+                    }
+                } else {
+                    try {
+                        ClassVisitor cv = new NopVisitor(Opcodes.ASM7) {
+                            @Override
+                            public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+                                de.tubs.cs.ias.asm_test.instrumentation.Method method = new de.tubs.cs.ias.asm_test.instrumentation.Method(access, interfaceName, name, descriptor, signature, exceptions, true);
+                                intfMethods.add(method);
+                                return super.visitMethod(access, name, descriptor, signature, exceptions);
+                            }
+                        };
+                        ClassReader cr;
+                        cr = new ClassReaderWithLoaderSupport(resolver, interfaceName);
+                        cr.accept(cv, ClassReader.SKIP_FRAMES);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                for (de.tubs.cs.ias.asm_test.instrumentation.Method method : intfMethods) {
+                    if (!isImplementedBySuperClass(superName, method, loader)) {
+                        addMethodIfNotContained(method, methods);
                     }
                 }
             }
@@ -132,7 +155,7 @@ public class ClassUtils {
         throw new RuntimeException("Resource for " + internalName + "couldn't be found");
     }
 
-    private static boolean isImplementedBySuperClass(String superName, Method m, ClassLoader loader) {
+    private static boolean isImplementedBySuperClass(String superName, de.tubs.cs.ias.asm_test.instrumentation.Method m, ClassLoader loader) {
         try {
             if (JdkClassesLookupTable.getInstance().isJdkClass(superName)) {
                 return false;
@@ -151,17 +174,17 @@ public class ClassUtils {
     }
 
 
-    private static void discoverAllJdkInterfaces(List<String> interfacesToLookThrough, Set<String> result, TypeHierarchyReaderWithLoaderSupport typeHierarchyReader) {
+    private static void discoverAllJdkInterfaces(List<String> interfacesToLookThrough, Set<String> result, TypeHierarchyReaderWithLoaderSupport typeHierarchyReader, ClassResolver resolver) {
         for (String interfaceName : interfacesToLookThrough) {
             if (JdkClassesLookupTable.getInstance().isJdkClass(interfaceName)) {
                 result.add(interfaceName);
-            } else if (isAnnotation(interfaceName)) {
+            } else if (isAnnotation(interfaceName, resolver)) {
                 result.add(interfaceName);
                 List<String> superInterfaces = typeHierarchyReader.hierarchyOf(Type.getObjectType(interfaceName)).getInterfaces().stream().map(Type::getInternalName).collect(Collectors.toList());
-                discoverAllJdkInterfaces(superInterfaces, result, typeHierarchyReader);
+                discoverAllJdkInterfaces(superInterfaces, result, typeHierarchyReader, resolver);
             } else {
                 List<String> superInterfaces = typeHierarchyReader.hierarchyOf(Type.getObjectType(interfaceName)).getInterfaces().stream().map(Type::getInternalName).collect(Collectors.toList());
-                discoverAllJdkInterfaces(superInterfaces, result, typeHierarchyReader);
+                discoverAllJdkInterfaces(superInterfaces, result, typeHierarchyReader, resolver);
             }
         }
     }
@@ -172,7 +195,7 @@ public class ClassUtils {
      * <p>
      * If a method is already contained is determined by the method name and descriptor (declaring class is NOT considered)
      */
-    private static void addMethodIfNotContained(Method methodToAdd, List<Method> methods) {
+    private static void addMethodIfNotContained(de.tubs.cs.ias.asm_test.instrumentation.Method methodToAdd, List<de.tubs.cs.ias.asm_test.instrumentation.Method> methods) {
         if (isPublicOrProtectedNotStatic(methodToAdd)) {
             boolean alreadyContained = methods.stream().anyMatch(methodInMethods -> {
                 boolean nameEquals = methodToAdd.getName().equals(methodInMethods.getName());
@@ -187,21 +210,11 @@ public class ClassUtils {
         }
     }
 
-    public static boolean isPublicOrProtectedNotStatic(Method m) {
-        return (Modifier.isPublic(m.getModifiers()) || Modifier.isProtected(m.getModifiers())) && !Modifier.isStatic(m.getModifiers());
+    public static boolean isPublicOrProtectedNotStatic(de.tubs.cs.ias.asm_test.instrumentation.Method m) {
+        return (Modifier.isPublic(m.getAccess()) || Modifier.isProtected(m.getAccess())) && !Modifier.isStatic(m.getAccess());
     }
 
-    public static boolean hasGenericInformation(Method m) {
-        try {
-            Method hasGenericInformation = Method.class.getDeclaredMethod("hasGenericInformation");
-            hasGenericInformation.setAccessible(true);
-            return (boolean) hasGenericInformation.invoke(m);
-        } catch (Exception ex) {
-            throw new UnsupportedOperationException("Cannot evaluate if method is generic signature, because Method.hasGenericInformation is not available");
-        }
-    }
-
-    public static boolean isAnnotation(String internalName) {
+    public static boolean isAnnotation(String internalName, ClassResolver resolver) {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         try {
             Class<?> cls = (Class<?>) findLoadedClass.invoke(classLoader, Utils.slashToDot(internalName));
@@ -219,7 +232,7 @@ public class ClassUtils {
                 System.err.println("Could not resolve class " + internalName + " for isAnnotation checking");
             }
         }
-        return false;
+        return InstrumentationState.getInstance().isAnnotation(internalName, resolver);
     }
 
     public static boolean isInterface(String internalName) {
@@ -246,17 +259,17 @@ public class ClassUtils {
     }
 
     public static class MethodChecker extends ClassVisitor {
-        private final Method method;
+        private final de.tubs.cs.ias.asm_test.instrumentation.Method method;
         private boolean superImplements = false;
 
-        public MethodChecker(Method method) {
+        public MethodChecker(de.tubs.cs.ias.asm_test.instrumentation.Method method) {
             super(Opcodes.ASM7);
             this.method = method;
         }
 
         @Override
         public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
-            if (name.equals(this.method.getName()) && Type.getType(this.method).equals(Type.getMethodType(descriptor)) && (access & Opcodes.ACC_ABSTRACT) == 0) {
+            if (name.equals(this.method.getName()) && this.method.getDescriptor().equals(descriptor) && (access & Opcodes.ACC_ABSTRACT) == 0) {
                 superImplements = true;
             }
             return null;
