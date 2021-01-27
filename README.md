@@ -89,11 +89,15 @@ Currently there are 5 different tainting mechanisms available:
 
 ## Abort types
 Currently there are three possibilities what can happen, if a tainted string reaches a sink:
+
 - **exit**: Exits the application through System.exit(int). Beforehands the string is printed to stderr
 - **nothing**: Nothing happens if a tainted string reaches a sink
 - **stderr_logging**: Logs the tainted string to stderr as well as an stacktrace
 - **json_logging**: Logs the tainted string to a json file in ``./fontus-results.json``
 
-
 ## Inspect bytecode of a class
+
 To see the bytecode for a class file, run ``javap -l -v -p -s TestString.class``
+
+## Troubleshoot
+
