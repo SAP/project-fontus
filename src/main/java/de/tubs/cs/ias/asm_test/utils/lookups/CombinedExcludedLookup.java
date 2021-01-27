@@ -26,6 +26,10 @@ public class CombinedExcludedLookup {
         return JdkClassesLookup.getInstance().isJdkClass(internalName, classLoader);
     }
 
+    public boolean isJdkClass(Class cls) {
+        return JdkClassesLookup.getInstance().isJdkClass(Utils.getInternalName(cls), classLoader);
+    }
+
     public boolean isPackageExcludedOrJdk(String internalName) {
         return this.isJdkClass(internalName) || this.isPackageExcluded(internalName);
     }
