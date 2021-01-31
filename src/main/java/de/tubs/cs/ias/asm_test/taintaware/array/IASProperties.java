@@ -26,6 +26,10 @@ public class IASProperties extends de.tubs.cs.ias.asm_test.taintaware.shared.IAS
         super(defaults);
     }
 
+    public IASProperties(IASProperties defaults) {
+        super(defaults);
+    }
+
     public static IASProperties fromProperties(Properties properties) {
         return new IASProperties(properties);
     }
