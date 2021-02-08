@@ -46,6 +46,9 @@ public class Configuration {
     private boolean loggingEnabled = false;
 
     @XmlElement
+    private boolean recursiveTainting = false;
+
+    @XmlElement
     private final SourceConfig sourceConfig;
 
     /**
@@ -370,5 +373,9 @@ public class Configuration {
     @JsonIgnore
     public File getAbortOutputFile() {
         return new File("fontus-results.json");
+    }
+
+    public boolean isRecursiveTainting() {
+        return recursiveTainting;
     }
 }

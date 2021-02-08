@@ -10,6 +10,7 @@ import org.mutabilitydetector.asm.typehierarchy.TypeHierarchy;
 import org.objectweb.asm.*;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,18 @@ public class ClassTraverser {
 
     public ClassTraverser(CombinedExcludedLookup combinedExcludedLookup) {
         this.combinedExcludedLookup = combinedExcludedLookup;
+    }
+
+    public static List<Field> getAllFields(Class<?> origClass) {
+        List<Field> fields = new ArrayList<>();
+        for (Class<?> cls = origClass; cls != null; cls = cls.getSuperclass()) {
+            for (Field f : cls.getDeclaredFields()) {
+                if (!fields.contains(f)) {
+                    fields.add(f);
+                }
+            }
+        }
+        return fields;
     }
 
     /**
