@@ -19,14 +19,29 @@ public class SqlKeywordAttack {
 
         sql_keyword_attack_obj.put("attack_type","SqlKeywordAttack");
 
+        int keyword_attacks_count = 0;
+
         for(String s : sql_primary_keywords){
             if(tainted_string.toUpperCase().contains(s)){
-//                List<Integer> foundIndexes = new ArrayList<>();
-//                for (int i = -1; (i = tainted_string.indexOf(s, i + 1)) != -1; i++) {
-//                    foundIndexes.add(i);
-//                }
+                // List<Integer> foundIndexes = new ArrayList<>();
+                for (int i = -1; (i = tainted_string.indexOf(s, i + 1)) != -1; i++) {
+                    keyword_attacks_count++;
+                }
             }
         }
+
+        for(String s : sql_single_keywords){
+            if(tainted_string.toUpperCase().contains(s)){
+                // List<Integer> foundIndexes = new ArrayList<>();
+                for (int i = -1; (i = tainted_string.indexOf(s, i + 1)) != -1; i++) {
+                    keyword_attacks_count++;
+                }
+            }
+        }
+
+        sql_keyword_attack_obj.put("attack_count", keyword_attacks_count);
+
+        sql_keyword_attack_obj.put("attack_detected", keyword_attacks_count > 0);
 
         return sql_keyword_attack_obj;
     }
