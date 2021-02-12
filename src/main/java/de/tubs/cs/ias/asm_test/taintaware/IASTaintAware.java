@@ -14,6 +14,8 @@ public interface IASTaintAware extends Serializable {
 
     void setTaint(IASTaintSource source);
 
+    void setContent(String content, List<IASTaintRange> taintRanges);
+
     IASStringable toIASString();
 
     List<IASTaintRange> getTaintRanges();

@@ -12,7 +12,7 @@ import java.util.List;
 public abstract class IASAbstractStringBuilder implements IASAbstractStringBuilderable, IASTaintAware {
 
     // TODO: accessed in both  and unsynchronized methods
-    private final StringBuilder stringBuilder;
+    private StringBuilder stringBuilder;
     private boolean tainted = false;
 
     @Override
@@ -41,6 +41,14 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
         if (this.stringBuilder.length() > 0 || source == null) {
             this.tainted = source != null;
         }
+    }
+
+    @Override
+    public void setContent(String content, List<IASTaintRange> taintRanges) {
+        this.stringBuilder = new StringBuilder(content);
+        IASTaintRanges ranges = new IASTaintRanges(taintRanges);
+        ranges.resize(0, this.length(), 0);
+        this.setTaint(ranges.isTainted());
     }
 
     private void mergeTaint(IASTaintAware other) {

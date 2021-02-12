@@ -15,7 +15,7 @@ import java.util.List;
 public abstract class IASAbstractStringBuilder implements IASAbstractStringBuilderable, IASTaintAware {
 
     // TODO: accessed in both  and unsynchronized methods
-    private final StringBuilder stringBuilder;
+    private StringBuilder stringBuilder;
 
     @Override
     public boolean isTainted() {
@@ -33,6 +33,11 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
 
     @Override
     public void setTaint(IASTaintSource source) {
+    }
+
+    @Override
+    public void setContent(String content, List<IASTaintRange> taintRanges) {
+        this.stringBuilder = new StringBuilder(content);
     }
 
     public IASAbstractStringBuilder() {

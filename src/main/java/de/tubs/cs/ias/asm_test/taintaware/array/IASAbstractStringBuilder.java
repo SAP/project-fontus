@@ -8,7 +8,7 @@ import java.util.stream.IntStream;
 
 @SuppressWarnings({"unused", "Since15"})
 public abstract class IASAbstractStringBuilder implements IASAbstractStringBuilderable, IASArrayAware {
-    protected final StringBuilder stringBuilder;
+    protected StringBuilder stringBuilder;
     protected IASTaintInformation taintInformation;
 
     public IASAbstractStringBuilder() {
@@ -84,6 +84,12 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
         } else {
             this.taintInformation = null;
         }
+    }
+
+    @Override
+    public synchronized void setContent(String content, List<IASTaintRange> taintRanges) {
+        this.stringBuilder = new StringBuilder(content);
+        this.setTaint(taintRanges);
     }
 
     @Override

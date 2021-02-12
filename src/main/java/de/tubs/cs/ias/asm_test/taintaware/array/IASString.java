@@ -100,6 +100,12 @@ public final class IASString implements IASArrayAware, IASStringable {
     }
 
     @Override
+    public void setContent(String content, List<IASTaintRange> taintRanges) {
+        this.string = content;
+        this.setTaint(taintRanges);
+    }
+
+    @Override
     public void setTaint(List<IASTaintRange> ranges) {
         if (ranges == null || ranges.size() == 0) {
             this.taintInformation = null;

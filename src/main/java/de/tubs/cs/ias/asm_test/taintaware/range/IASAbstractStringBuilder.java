@@ -9,7 +9,7 @@ import java.util.stream.IntStream;
 
 @SuppressWarnings({"unused", "Since15"})
 public abstract class IASAbstractStringBuilder implements IASTaintRangeAware, IASAbstractStringBuilderable {
-    protected final StringBuilder stringBuilder;
+    protected StringBuilder stringBuilder;
     private IASTaintInformation taintInformation;
 
     public IASAbstractStringBuilder() {
@@ -70,6 +70,12 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeAware, IA
         } else {
             this.taintInformation = null;
         }
+    }
+
+    @Override
+    public void setContent(String content, List<IASTaintRange> taintRanges) {
+        this.stringBuilder = new StringBuilder(content);
+        this.setTaint(taintRanges);
     }
 
     @Override
