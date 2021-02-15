@@ -10,6 +10,7 @@ import java.util.function.Function;
 
 public class IASTaintHandler {
     public static Void handleTaint(IASTaintAware taintAware, String sink, String category) {
+        System.out.println("this runs");
         boolean isTainted = taintAware.isTainted();
 
         if (Configuration.getConfiguration().collectStats()) {
@@ -18,6 +19,7 @@ public class IASTaintHandler {
 
         if (isTainted) {
             Abort abort = Configuration.getConfiguration().getAbort();
+            System.out.println(taintAware.toString());
 
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
             List<StackTraceElement> cleanedStackTrace = new ArrayList<>();
@@ -27,7 +29,7 @@ public class IASTaintHandler {
                     cleanedStackTrace.add(ste);
                 }
             }
-
+            System.out.println("this runs as well");
             abort.abort(taintAware, sink, category, cleanedStackTrace);
         }
         return null;

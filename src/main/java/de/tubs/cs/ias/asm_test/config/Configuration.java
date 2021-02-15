@@ -49,6 +49,12 @@ public class Configuration {
     private final SourceConfig sourceConfig;
 
     /**
+     * Added for Capturing Network Data
+     */
+    @XmlElement
+    private final NetworkServletConfig networkServletConfig;
+
+    /**
      * All functions listed here consume Strings that need to be checked first.
      */
     @XmlElement
@@ -77,6 +83,7 @@ public class Configuration {
         this.verbose = false;
         this.sourceConfig = new SourceConfig();
         this.sinkConfig = new SinkConfig();
+        this.networkServletConfig = new NetworkServletConfig();
         this.converters = new ArrayList<>();
         this.returnGeneric = new ArrayList<>();
         this.takeGeneric = new ArrayList<>();
@@ -84,10 +91,11 @@ public class Configuration {
         this.excludedPackages = new ArrayList<>();
     }
 
-    public Configuration(boolean verbose, SourceConfig sourceConfig, SinkConfig sinkConfig, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> blacklistedMainClasses, List<String> excludedPackages) {
+    public Configuration(boolean verbose, SourceConfig sourceConfig, SinkConfig sinkConfig, NetworkServletConfig networkServletConfig, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> blacklistedMainClasses, List<String> excludedPackages) {
         this.verbose = verbose;
         this.sourceConfig = sourceConfig;
         this.sinkConfig = sinkConfig;
+        this.networkServletConfig = networkServletConfig;
         this.converters = converters;
         this.returnGeneric = returnGeneric;
         this.takeGeneric = takeGeneric;
@@ -100,11 +108,13 @@ public class Configuration {
             this.verbose |= other.verbose;
             this.sourceConfig.append(other.sourceConfig);
             this.sinkConfig.append(other.sinkConfig);
+            this.networkServletConfig.append(other.networkServletConfig);
             this.converters.addAll(other.converters);
             this.returnGeneric.addAll(other.returnGeneric);
             this.takeGeneric.addAll(other.takeGeneric);
             this.blacklistedMainClasses.addAll(other.blacklistedMainClasses);
             this.excludedPackages.addAll(other.excludedPackages);
+            System.out.println("here: " + other.toString());
         }
     }
 
@@ -184,6 +194,11 @@ public class Configuration {
 
     public SourceConfig getSourceConfig() {
         return this.sourceConfig;
+    }
+
+    // Added for NetworkServlet
+    public NetworkServletConfig getNetworkServletConfig() {
+        return this.networkServletConfig;
     }
 
     public SinkConfig getSinkConfig() {

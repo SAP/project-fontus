@@ -24,6 +24,7 @@ public class ConfigurationLoader {
     private static final ParentLogger logger = LogUtils.getLogger();
 
     public static Configuration readXmlConfiguration(InputStream stream) {
+        System.out.println("w1");
         ObjectMapper objectMapper = new XmlMapper(new WstxInputFactory(), new WstxOutputFactory());
         objectMapper.registerModule(new JaxbAnnotationModule());
         return readFromStream(objectMapper, stream);
@@ -44,6 +45,7 @@ public class ConfigurationLoader {
     }
 
     public static Configuration defaultConfiguration() {
+        System.out.println("w2");
         Configuration configuration = readXmlConfiguration(Configuration.class.getClassLoader().getResourceAsStream(Constants.CONFIGURATION_XML_FILENAME));
         configuration.setJdkInheritanceBlacklist(defaultJdkInheritanceBlacklistEntries());
         return configuration;
@@ -81,6 +83,7 @@ public class ConfigurationLoader {
     }
 
     public static Configuration loadConfigurationFrom(File f) {
+        System.out.println("w4");
         Configuration c = null;
         if (f == null) {
             logger.error("Null file input!");
@@ -92,6 +95,7 @@ public class ConfigurationLoader {
                         c = readJsonConfiguration(fi);
                     } else if (f.getName().endsWith(Constants.XML_FILE_SUFFIX)) {
                         c = readXmlConfiguration(fi);
+                        System.out.println(c.toString());
                     } else {
                         logger.error("File {} ending not recognised!", f.getAbsolutePath());
                     }

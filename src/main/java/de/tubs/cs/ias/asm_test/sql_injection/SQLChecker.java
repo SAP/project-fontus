@@ -11,7 +11,6 @@ import java.io.IOException;
 public class SQLChecker {
 
     public static void checkTaintedString(String json_string) throws IOException {
-        printCheck(json_string);
         JSONObject json_obj = new JSONObject(json_string);
         String sql_string = json_obj.getString("payload");
         JSONArray input_ranges = json_obj.getJSONArray("ranges");

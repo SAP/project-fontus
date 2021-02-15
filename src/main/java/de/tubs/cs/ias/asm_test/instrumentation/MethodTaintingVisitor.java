@@ -2,10 +2,7 @@ package de.tubs.cs.ias.asm_test.instrumentation;
 
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.asm.*;
-import de.tubs.cs.ias.asm_test.config.Configuration;
-import de.tubs.cs.ias.asm_test.config.Sink;
-import de.tubs.cs.ias.asm_test.config.Source;
-import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
+import de.tubs.cs.ias.asm_test.config.*;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationStrategy;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.method.*;
@@ -298,6 +295,17 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             logger.info("Adding source tainting for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
             ReturnTransformation t = new SourceTransformer(source, this.stringConfig);
             transformer.addReturnTransformation(t);
+        }
+
+        // Add NetworkServlet transformations
+        NetworkServlet networkServlet = this.config.getNetworkServletConfig().getNetworkServletForFunction(call);
+        if (networkServlet != null) {
+            System.out.println("networkServlet : " + this.stringConfig);
+            System.out.println("this.used : " + this.used);
+            System.out.println(networkServlet.toString());
+            logger.info("Adding Network Servlet Parameter for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+//            ReturnTransformation t = new SourceTransformer(source, this.stringConfig);
+//            transformer.addParameterTransformation(t);
         }
 
         // No transformations required

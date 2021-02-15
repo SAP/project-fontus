@@ -34,11 +34,12 @@ public class SinkTransformer implements ParameterTransformation {
         // Check whether this parameter needs to be checked for taint
         if (this.sink.findParameter(index) != null) {
             String instrumentedType = InstrumentationHelper.getInstance(this.config).instrumentQN(type);
-            logger.info("Adding taint check for sink {}, paramater {} ({})", this.sink.getName(), index, type);
+            logger.info("Adding taint check for sink {}, parameter {} ({})", this.sink.getName(), index, type);
             String sinkName = String.format("%s.%s%s", this.sink.getFunction().getOwner(), this.sink.getFunction().getName(), this.sink.getFunction().getDescriptor());
             String sink = this.sink.getCategory() == null ? "unknown" : this.sink.getCategory();
 
             MethodVisitor originalVisitor = mv.getParent();
+            //System.out.println("sinkName : " + sinkName +  ", sink : " + sink + ", mv : " + mv + ", mv_parent : " + originalVisitor.toString());
             originalVisitor.visitLdcInsn(sinkName);
             originalVisitor.visitLdcInsn(sink);
             originalVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TaintHandlerQN, Constants.TaintHandlerCheckTaintName, Constants.TaintHandlerCheckTaintDesc, false);
