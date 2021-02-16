@@ -2,7 +2,7 @@ package de.tubs.cs.ias.asm_test.utils.lookups;
 
 import de.tubs.cs.ias.asm_test.utils.ClassUtils;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public final class JdkClassesLookup {
-    private static final ParentLogger logger = LogUtils.getLogger();
+    private static final Logger logger = LogUtils.getLogger();
 
     private JdkClassesLookup(Collection<String> classes) {
         this.jdkClasses = new HashSet<>(classes.size());

@@ -4,13 +4,13 @@ import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationStrategy;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
 import java.util.HashMap;
@@ -21,7 +21,7 @@ public abstract class AbstractMethodInstrumentationStrategy implements MethodIns
     protected final MethodVisitor mv;
     protected final HashMap<String, String> methodsToRename = new HashMap<>(1);
     protected final Type type;
-    protected static final ParentLogger logger = LogUtils.getLogger();
+    protected static final Logger logger = LogUtils.getLogger();
     protected final String taintedToOrig;
     protected final TaintStringConfig stringConfig;
     protected final Pattern descPattern;

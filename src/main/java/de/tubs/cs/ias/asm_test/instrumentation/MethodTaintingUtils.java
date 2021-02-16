@@ -5,8 +5,6 @@ import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.method.MethodInstrumentationStrategy;
-import de.tubs.cs.ias.asm_test.utils.LogUtils;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 import org.objectweb.asm.*;
 

@@ -6,9 +6,9 @@ import de.tubs.cs.ias.asm_test.agent.AgentConfig;
 import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 import de.tubs.cs.ias.asm_test.instrumentation.BlackListEntry;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import de.tubs.cs.ias.asm_test.config.abort.Abort;
 import de.tubs.cs.ias.asm_test.config.abort.StdErrLoggingAbort;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class Configuration {
     private static Configuration configuration;
 
-    private static final ParentLogger logger = LogUtils.getLogger();
+    private static final Logger logger = LogUtils.getLogger();
     @JsonIgnore
     private TaintMethod taintMethod;
     @JsonIgnore

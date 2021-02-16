@@ -10,7 +10,7 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.instrumentation.BlackListEntry;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 import org.objectweb.asm.Opcodes;
 
 import java.io.*;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ConfigurationLoader {
-    private static final ParentLogger logger = LogUtils.getLogger();
+    private static final Logger logger = LogUtils.getLogger();
 
     public static Configuration readXmlConfiguration(InputStream stream) {
         ObjectMapper objectMapper = new XmlMapper(new WstxInputFactory(), new WstxOutputFactory());

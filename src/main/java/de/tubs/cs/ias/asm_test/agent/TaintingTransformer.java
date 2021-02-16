@@ -4,7 +4,7 @@ import de.tubs.cs.ias.asm_test.asm.ClassResolver;
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.instrumentation.Instrumenter;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 import de.tubs.cs.ias.asm_test.utils.VerboseLogger;
 import de.tubs.cs.ias.asm_test.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.ClassReader;
@@ -14,7 +14,7 @@ import java.lang.instrument.Instrumentation;
 import java.security.ProtectionDomain;
 
 class TaintingTransformer implements ClassFileTransformer {
-    private static final ParentLogger logger = LogUtils.getLogger();
+    private static final Logger logger = LogUtils.getLogger();
 
     private final Configuration config;
     private final Instrumenter instrumenter;

@@ -5,14 +5,14 @@ import de.tubs.cs.ias.asm_test.instrumentation.MethodTaintingVisitor;
 import de.tubs.cs.ias.asm_test.config.Sink;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 public class SinkTransformer implements ParameterTransformation {
-    private static final ParentLogger logger = LogUtils.getLogger();
+    private static final Logger logger = LogUtils.getLogger();
 
     private final Sink sink;
     private final TaintStringConfig config;

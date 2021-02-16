@@ -5,7 +5,7 @@ import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 import de.tubs.cs.ias.asm_test.instrumentation.MethodTaintingVisitor;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Stack;
 
 public class MethodParameterTransformer {
-    private static final ParentLogger logger = LogUtils.getLogger();
+    private static final Logger logger = LogUtils.getLogger();
 
     private final MethodTaintingVisitor visitor;
     private final FunctionCall function;

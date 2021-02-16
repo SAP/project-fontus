@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 
 class ClassTaintingVisitor extends ClassVisitor {
-    private static final ParentLogger logger = LogUtils.getLogger();
+    private static final Logger logger = LogUtils.getLogger();
 
     private final TaintStringConfig stringConfig;
 

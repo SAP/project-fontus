@@ -11,7 +11,7 @@ import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationStrateg
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.method.*;
 import de.tubs.cs.ias.asm_test.instrumentation.transformer.*;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 import de.tubs.cs.ias.asm_test.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.*;
@@ -22,7 +22,7 @@ import java.util.*;
 
 @SuppressWarnings("deprecation")
 public class MethodTaintingVisitor extends BasicMethodVisitor {
-    private static final ParentLogger logger = LogUtils.getLogger();
+    private static final Logger logger = LogUtils.getLogger();
     private final boolean implementsInvocationHandler;
     private final String owner;
 
