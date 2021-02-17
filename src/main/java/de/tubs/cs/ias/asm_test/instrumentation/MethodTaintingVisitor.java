@@ -274,7 +274,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         MethodParameterTransformer transformer = new MethodParameterTransformer(this, call);
 
-        boolean isExcluded = this.combinedExcludedLookup.isJdkOrAnnotation(call.getOwner());
+        boolean isExcluded = this.combinedExcludedLookup.isJdkOrAnnotation(call.getOwner()) || this.combinedExcludedLookup.isPackageExcluded(call.getOwner());
 
         // Add JDK transformations
         if (isExcluded) {

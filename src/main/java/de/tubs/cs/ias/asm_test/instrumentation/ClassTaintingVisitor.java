@@ -129,7 +129,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
 
         this.implementsInvocationHandler = this.implementsInvocationHandler();
-        this.extendsJdkSuperClass = this.combinedExcludedLookup.isJdkClass(superName);
+        this.extendsJdkSuperClass = this.combinedExcludedLookup.isPackageExcludedOrJdk(superName);
 
         // Getting JDK methods
         this.initJdkClasses();
@@ -283,7 +283,15 @@ class ClassTaintingVisitor extends ClassVisitor {
             }
             i += Type.getType(param).getSize();
         }
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.owner, instrumentedName, instrumentedDescriptor.toDescriptor(), false);
+
+        int opcode;
+        if ("<init>".equals(instrumentedName)) {
+            opcode = Opcodes.INVOKESPECIAL;
+        } else {
+            opcode = Opcodes.INVOKEVIRTUAL;
+        }
+
+        mv.visitMethodInsn(opcode, this.owner, instrumentedName, instrumentedDescriptor.toDescriptor(), false);
         if (isDescriptorNameToInstrument(originalDescriptor.getReturnType())) {
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
             mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(originalDescriptor.getReturnType()).getInternalName());

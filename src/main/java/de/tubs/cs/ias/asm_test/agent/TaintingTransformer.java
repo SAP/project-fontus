@@ -43,6 +43,11 @@ class TaintingTransformer implements ClassFileTransformer {
             return classfileBuffer;
         }
 
+        if (combinedExcludedLookup.isPackageExcluded(className)) {
+            logger.info("Skipping excluded class: {}", className);
+            return classfileBuffer;
+        }
+
         if (combinedExcludedLookup.isFontusClass(className)) {
             logger.info("Skipping Tainting Framework class: {}", className);
             return classfileBuffer;

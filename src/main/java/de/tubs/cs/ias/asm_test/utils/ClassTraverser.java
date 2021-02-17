@@ -48,14 +48,34 @@ public class ClassTraverser {
         TypeHierarchyReaderWithLoaderSupport typeHierarchyReader = new TypeHierarchyReaderWithLoaderSupport(resolver);
         for (Type cls = Type.getObjectType(classToDiscover); cls != null; cls = typeHierarchyReader.getSuperClass(cls)) {
             if (this.combinedExcludedLookup.isPackageExcludedOrJdk(cls.getInternalName())) {
+                Class<?> clazz;
                 try {
-                    Class<?> clazz = Class.forName(cls.getClassName());
+                    clazz = Class.forName(cls.getClassName());
+                } catch (ClassNotFoundException e) {
+                    clazz = ClassUtils.findLoadedClass(cls.getClassName());
+                }
+
+                if (clazz != null) {
                     java.lang.reflect.Method[] declaredMethods = clazz.getDeclaredMethods();
                     for (java.lang.reflect.Method declaredMethod : declaredMethods) {
                         addMethodIfNotContained(Method.from(declaredMethod));
                     }
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
+                } else {
+                    try {
+                        final String clsName = cls.getInternalName();
+                        ClassVisitor cv = new NopVisitor(Opcodes.ASM7) {
+                            @Override
+                            public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+                                de.tubs.cs.ias.asm_test.instrumentation.Method method = new de.tubs.cs.ias.asm_test.instrumentation.Method(access, clsName, name, descriptor, signature, exceptions, false);
+                                addMethodIfNotContained(method);
+                                return super.visitMethod(access, name, descriptor, signature, exceptions);
+                            }
+                        };
+                        ClassReader cr = new ClassReaderWithLoaderSupport(resolver, cls.getClassName());
+                        cr.accept(cv, ClassReader.SKIP_FRAMES);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
@@ -181,8 +201,13 @@ public class ClassTraverser {
                             }
                         };
                         ClassReader cr;
-                        cr = new ClassReaderWithLoaderSupport(resolver, interfaceName);
-                        cr.accept(cv, ClassReader.SKIP_FRAMES);
+                        Queue<String> superInterfaceNames = new ArrayDeque<>();
+                        superInterfaceNames.add(interfaceName);
+                        for (String intfName = superInterfaceNames.poll(); intfName != null; intfName = superInterfaceNames.poll()) {
+                            cr = new ClassReaderWithLoaderSupport(resolver, intfName);
+                            superInterfaceNames.addAll(Arrays.asList(cr.getInterfaces()));
+                            cr.accept(cv, ClassReader.SKIP_FRAMES);
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
