@@ -24,7 +24,7 @@ public class SqlCheckerAbort extends Abort{
 
     private void sendAborts(SqlAbort sql_checker_abort) {
         try {
-            // SQLChecker.checkTaintedString(this.objectMapper.writeValueAsString(sql_checker_abort));
+            //SQLChecker.checkTaintedString(this.objectMapper.writeValueAsString(sql_checker_abort));
             SQLChecker.printCheck(this.objectMapper.writeValueAsString(sql_checker_abort));
         } catch (IOException e) {
             e.printStackTrace();
