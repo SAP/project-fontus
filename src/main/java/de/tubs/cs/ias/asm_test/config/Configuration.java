@@ -375,6 +375,10 @@ public class Configuration {
         return new File("fontus-results.json");
     }
 
+    public void setRecursiveTainting(boolean recursiveTainting) {
+        this.recursiveTainting = recursiveTainting;
+    }
+
     public boolean isRecursiveTainting() {
         return recursiveTainting;
     }

@@ -1,5 +1,7 @@
 package de.tubs.cs.ias.asm_test.taintaware.shared;
 
+import de.tubs.cs.ias.asm_test.config.Configuration;
+import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import de.tubs.cs.ias.asm_test.taintaware.bool.IASString;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -10,6 +12,8 @@ public class IASTaintHandlerTest {
     @BeforeAll
     static void before() {
         IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("mySource");
+        Configuration.setTestConfig(TaintMethod.BOOLEAN);
+        Configuration.getConfiguration().setRecursiveTainting(true);
     }
 
     @Test
