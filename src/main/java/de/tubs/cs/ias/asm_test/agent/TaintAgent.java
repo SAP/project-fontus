@@ -16,6 +16,16 @@ public class TaintAgent {
 
     public static Class<?> findLoadedClass(String className) {
         Objects.requireNonNull(className);
+
+        // Bypass for offline and tests
+        if (instrumentation == null) {
+            try {
+                return Class.forName(className);
+            } catch (ClassNotFoundException e) {
+                return null;
+            }
+        }
+
         for (Class<?> cls : instrumentation.getAllLoadedClasses()) {
             if (className.equals(cls.getName())) {
                 return cls;
