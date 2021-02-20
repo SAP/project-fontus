@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
 
 @SuppressWarnings("Since15")
 public class IASAbstractStringBuilder implements IASAbstractStringBuilderable, IASTaintRangeAware {
-    private final StringBuilder stringBuilder;
+    private StringBuilder stringBuilder;
     private IASTaintInformation taintInformation;
 
     public IASAbstractStringBuilder() {
@@ -409,6 +409,12 @@ public class IASAbstractStringBuilder implements IASAbstractStringBuilderable, I
         if (this.length() > 0 && source != null) {
             this.taintInformation = new IASTaintInformation(new BaseLayer(0, this.length(), source));
         }
+    }
+
+    @Override
+    public void setContent(String content, List<IASTaintRange> taintRanges) {
+        this.stringBuilder = new StringBuilder(content);
+        this.setTaint(taintRanges);
     }
 
 

@@ -4,7 +4,7 @@ import de.tubs.cs.ias.asm_test.asm.ClassResolver;
 import de.tubs.cs.ias.asm_test.asm.TypeHierarchyReaderWithLoaderSupport;
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 import org.mutabilitydetector.asm.NonClassloadingClassWriter;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class Instrumenter {
-    private static final ParentLogger logger = LogUtils.getLogger();
+    private static final Logger logger = LogUtils.getLogger();
 
     public byte[] instrumentClass(InputStream in, ClassResolver resolver, Configuration config, boolean containsJSRRET) throws IOException {
         return instrumentInternal(new ClassReader(in), resolver, config, null, containsJSRRET);

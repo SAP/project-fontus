@@ -73,6 +73,14 @@ public final class IASString implements IASTaintAware, IASStringable {
         }
     }
 
+    @Override
+    public void setContent(String content, List<IASTaintRange> taintRanges) {
+        this.string = content;
+        IASTaintRanges ranges = new IASTaintRanges(taintRanges);
+        ranges.resize(0, this.length(), 0);
+        this.setTaint(ranges.isTainted());
+    }
+
     private void mergeTaint(IASTaintAware other) {
         this.tainted |= other.isTainted();
     }

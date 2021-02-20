@@ -10,6 +10,7 @@ import org.mutabilitydetector.asm.typehierarchy.TypeHierarchy;
 import org.objectweb.asm.*;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,18 @@ public class ClassTraverser {
         this.combinedExcludedLookup = combinedExcludedLookup;
     }
 
+    public static List<Field> getAllFields(Class<?> origClass) {
+        List<Field> fields = new ArrayList<>();
+        for (Class<?> cls = origClass; cls != null; cls = cls.getSuperclass()) {
+            for (Field f : cls.getDeclaredFields()) {
+                if (!fields.contains(f)) {
+                    fields.add(f);
+                }
+            }
+        }
+        return fields;
+    }
+
     /**
      * Returns for the given class all JDK-inherited instance methods which are public or protected
      * This includes the inherited ones (unlike getDeclaredMethods), but excludes the Object-class methods
@@ -35,14 +48,29 @@ public class ClassTraverser {
         TypeHierarchyReaderWithLoaderSupport typeHierarchyReader = new TypeHierarchyReaderWithLoaderSupport(resolver);
         for (Type cls = Type.getObjectType(classToDiscover); cls != null; cls = typeHierarchyReader.getSuperClass(cls)) {
             if (this.combinedExcludedLookup.isPackageExcludedOrJdk(cls.getInternalName())) {
-                try {
-                    Class<?> clazz = Class.forName(cls.getClassName());
+                Class<?> clazz = ClassUtils.findLoadedClass(cls.getInternalName());
+
+                if (clazz != null) {
                     java.lang.reflect.Method[] declaredMethods = clazz.getDeclaredMethods();
                     for (java.lang.reflect.Method declaredMethod : declaredMethods) {
                         addMethodIfNotContained(Method.from(declaredMethod));
                     }
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
+                } else {
+                    try {
+                        final String clsName = cls.getInternalName();
+                        ClassVisitor cv = new NopVisitor(Opcodes.ASM7) {
+                            @Override
+                            public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+                                de.tubs.cs.ias.asm_test.instrumentation.Method method = new de.tubs.cs.ias.asm_test.instrumentation.Method(access, clsName, name, descriptor, signature, exceptions, false);
+                                addMethodIfNotContained(method);
+                                return super.visitMethod(access, name, descriptor, signature, exceptions);
+                            }
+                        };
+                        ClassReader cr = new ClassReaderWithLoaderSupport(resolver, cls.getClassName());
+                        cr.accept(cv, ClassReader.SKIP_FRAMES);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
@@ -144,13 +172,8 @@ public class ClassTraverser {
 
         for (String interfaceName : interfaces) {
             if (this.combinedExcludedLookup.isPackageExcludedOrJdk(interfaceName) || this.combinedExcludedLookup.isAnnotation(interfaceName)) {
-                Class<?> cls;
+                Class<?> cls = ClassUtils.findLoadedClass(interfaceName);
                 List<de.tubs.cs.ias.asm_test.instrumentation.Method> intfMethods = new ArrayList<>();
-                try {
-                    cls = Class.forName(Utils.slashToDot(interfaceName));
-                } catch (ClassNotFoundException e) {
-                    cls = ClassUtils.findLoadedClass(interfaceName);
-                }
 
                 if (cls != null) {
                     for (java.lang.reflect.Method m : cls.getMethods()) {
@@ -168,8 +191,13 @@ public class ClassTraverser {
                             }
                         };
                         ClassReader cr;
-                        cr = new ClassReaderWithLoaderSupport(resolver, interfaceName);
-                        cr.accept(cv, ClassReader.SKIP_FRAMES);
+                        Queue<String> superInterfaceNames = new ArrayDeque<>();
+                        superInterfaceNames.add(interfaceName);
+                        for (String intfName = superInterfaceNames.poll(); intfName != null; intfName = superInterfaceNames.poll()) {
+                            cr = new ClassReaderWithLoaderSupport(resolver, intfName);
+                            superInterfaceNames.addAll(Arrays.asList(cr.getInterfaces()));
+                            cr.accept(cv, ClassReader.SKIP_FRAMES);
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

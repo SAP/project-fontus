@@ -51,8 +51,10 @@ This instrumentation type works on-the-fly with starting the application.
 ### Execution
 For instrumenting via java agents just add the following to your VM option parameters:
 ```bash
--javaagent:asm_test-0.0.1-SNAPSHOT.jar
+--add-opens java.base/jdk.internal.misc=ALL-UNNAMED -javaagent:asm_test-0.0.1-SNAPSHOT.jar
 ```
+
+The `--add-opens` is necessary because the framework is using Java internal classes
 
 A complete java execution command could look like this:
 ```bash

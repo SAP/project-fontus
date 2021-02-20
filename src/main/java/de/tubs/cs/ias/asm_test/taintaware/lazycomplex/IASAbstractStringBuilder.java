@@ -10,7 +10,7 @@ import java.util.stream.IntStream;
 
 @SuppressWarnings("Since15")
 public abstract class IASAbstractStringBuilder implements IASAbstractStringBuilderable, IASTaintRangeAware {
-    private final StringBuilder stringBuilder;
+    private StringBuilder stringBuilder;
     private IASTaintInformation taintInformation;
 
     public IASAbstractStringBuilder() {
@@ -53,6 +53,12 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
         } else {
             this.taintInformation = new IASTaintInformation(new BaseOperation(0, this.length(), source));
         }
+    }
+
+    @Override
+    public void setContent(String content, List<IASTaintRange> taintRanges) {
+        this.stringBuilder = new StringBuilder(content);
+        this.setTaint(taintRanges);
     }
 
     @Override

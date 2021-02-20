@@ -2,33 +2,12 @@ package de.tubs.cs.ias.asm_test.utils;
 
 import de.tubs.cs.ias.asm_test.Constants;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.logging.*;
 
 public class LogUtils {
-    private static final ParentLogger parentlogger;
-
-    static {
-        parentlogger = new ParentLogger();
-        try {
-            FileHandler fileHandler = new FileHandler(getFileName());
-
-            SimpleFormatter formatter = new LoggerFormatter();
-            fileHandler.setFormatter(formatter);
-
-            parentlogger.addHandler(fileHandler);
-        } catch (IOException e) {
-            System.err.println("Could not create log file for instrumentation");
-            e.printStackTrace(System.err);
-        }
-
-        LogManager.getLogManager().addLogger(parentlogger);
-    }
-
     @SuppressWarnings("Since15")
-    public synchronized static ParentLogger getLogger() {
+    public synchronized static Logger getLogger() {
         Class<?> callerClass;
         if (Constants.JAVA_VERSION >= 9) {
             callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
@@ -36,9 +15,7 @@ public class LogUtils {
         } else {
             callerClass = ReflectionUtils.getCallerClass();
         }
-        Logger logger = new Logger(callerClass.getName());
-        logger.setParent(parentlogger);
-        return parentlogger;
+        return new Logger(callerClass.getName(), getFileName());
     }
 
     private static String getFileName() {

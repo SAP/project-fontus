@@ -10,7 +10,7 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import de.tubs.cs.ias.asm_test.Constants;
 import de.tubs.cs.ias.asm_test.instrumentation.BlackListEntry;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 import org.objectweb.asm.Opcodes;
 
 import java.io.*;
@@ -21,10 +21,9 @@ import java.util.List;
 import java.util.Map;
 
 public class ConfigurationLoader {
-    private static final ParentLogger logger = LogUtils.getLogger();
+    private static final Logger logger = LogUtils.getLogger();
 
     public static Configuration readXmlConfiguration(InputStream stream) {
-        System.out.println("w1");
         ObjectMapper objectMapper = new XmlMapper(new WstxInputFactory(), new WstxOutputFactory());
         objectMapper.registerModule(new JaxbAnnotationModule());
         return readFromStream(objectMapper, stream);
@@ -45,7 +44,6 @@ public class ConfigurationLoader {
     }
 
     public static Configuration defaultConfiguration() {
-        System.out.println("w2");
         Configuration configuration = readXmlConfiguration(Configuration.class.getClassLoader().getResourceAsStream(Constants.CONFIGURATION_XML_FILENAME));
         configuration.setJdkInheritanceBlacklist(defaultJdkInheritanceBlacklistEntries());
         return configuration;
@@ -83,7 +81,6 @@ public class ConfigurationLoader {
     }
 
     public static Configuration loadConfigurationFrom(File f) {
-        System.out.println("w4");
         Configuration c = null;
         if (f == null) {
             logger.error("Null file input!");
@@ -95,7 +92,6 @@ public class ConfigurationLoader {
                         c = readJsonConfiguration(fi);
                     } else if (f.getName().endsWith(Constants.XML_FILE_SUFFIX)) {
                         c = readXmlConfiguration(fi);
-                        System.out.println(c.toString());
                     } else {
                         logger.error("File {} ending not recognised!", f.getAbsolutePath());
                     }

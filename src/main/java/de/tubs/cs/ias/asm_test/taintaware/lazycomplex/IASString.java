@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 
 @SuppressWarnings("Since15")
 public final class IASString implements IASStringable, IASTaintRangeAware {
-    private final String string;
+    private String string;
     private IASTaintInformation taintInformation;
 
     public IASString() {
@@ -167,6 +167,12 @@ public final class IASString implements IASStringable, IASTaintRangeAware {
         } else {
             this.taintInformation = new IASTaintInformation(new BaseOperation(0, this.length(), source));
         }
+    }
+
+    @Override
+    public void setContent(String content, List<IASTaintRange> taintRanges) {
+        this.string = content;
+        this.setTaint(taintRanges);
     }
 
     @Override

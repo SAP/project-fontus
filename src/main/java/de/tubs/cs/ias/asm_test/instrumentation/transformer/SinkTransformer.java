@@ -5,14 +5,14 @@ import de.tubs.cs.ias.asm_test.instrumentation.MethodTaintingVisitor;
 import de.tubs.cs.ias.asm_test.config.Sink;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationHelper;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 public class SinkTransformer implements ParameterTransformation {
-    private static final ParentLogger logger = LogUtils.getLogger();
+    private static final Logger logger = LogUtils.getLogger();
 
     private final Sink sink;
     private final TaintStringConfig config;
@@ -34,12 +34,11 @@ public class SinkTransformer implements ParameterTransformation {
         // Check whether this parameter needs to be checked for taint
         if (this.sink.findParameter(index) != null) {
             String instrumentedType = InstrumentationHelper.getInstance(this.config).instrumentQN(type);
-            logger.info("Adding taint check for sink {}, parameter {} ({})", this.sink.getName(), index, type);
+            logger.info("Adding taint check for sink {}, paramater {} ({})", this.sink.getName(), index, type);
             String sinkName = String.format("%s.%s%s", this.sink.getFunction().getOwner(), this.sink.getFunction().getName(), this.sink.getFunction().getDescriptor());
             String sink = this.sink.getCategory() == null ? "unknown" : this.sink.getCategory();
 
             MethodVisitor originalVisitor = mv.getParent();
-            //System.out.println("sinkName : " + sinkName +  ", sink : " + sink + ", mv : " + mv + ", mv_parent : " + originalVisitor.toString());
             originalVisitor.visitLdcInsn(sinkName);
             originalVisitor.visitLdcInsn(sink);
             originalVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TaintHandlerQN, Constants.TaintHandlerCheckTaintName, Constants.TaintHandlerCheckTaintDesc, false);

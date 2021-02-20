@@ -2,7 +2,7 @@ package de.tubs.cs.ias.asm_test.instrumentation;
 
 import de.tubs.cs.ias.asm_test.instrumentation.strategies.InstrumentationStrategy;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.signature.SignatureVisitor;
 import org.objectweb.asm.signature.SignatureWriter;
@@ -10,7 +10,7 @@ import org.objectweb.asm.signature.SignatureWriter;
 import java.util.List;
 
 public class SignatureInstrumenter {
-    private static final ParentLogger logger = LogUtils.getLogger();
+    private static final Logger logger = LogUtils.getLogger();
     private final List<? extends InstrumentationStrategy> instrumentation;
     private final int api;
 

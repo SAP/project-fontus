@@ -726,23 +726,4 @@
             </sink>
         </sinks>
     </sinkConfig>
-    <networkServletConfig>
-        <networkServlets>
-            <networkServlet>
-                <name>HttpRequestCapture</name>
-                <function>
-                    <opcode>182</opcode>
-                    <owner>javax/servlet/http/HttpServlet</owner>
-                    <name>doGet</name>
-                    <descriptor>(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;)V</descriptor>
-                    <interface>false</interface>
-                </function>
-                <parameters>
-                    <parameter>
-                        <index>0</index>
-                    </parameter>
-                </parameters>
-            </networkServlet>
-        </networkServlets>
-    </networkServletConfig>
 </configuration>

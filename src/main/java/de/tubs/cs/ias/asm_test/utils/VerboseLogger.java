@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class VerboseLogger {
-    private static final ParentLogger logger = LogUtils.getLogger();
+    private static final Logger logger = LogUtils.getLogger();
 
     public static void saveIfVerbose(String className, byte[] outArray) {
         if (Configuration.getConfiguration().isVerbose()) {

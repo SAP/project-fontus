@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 @SuppressWarnings("Since15")
 public final class IASString implements IASStringable, IASTaintRangeAware {
-    private final String string;
+    private String string;
     private IASTaintInformation taintInformation;
 
     public IASString(String string, IASTaintInformation taintInformation) {
@@ -535,6 +535,12 @@ public final class IASString implements IASStringable, IASTaintRangeAware {
         if (source != null && this.string.length() > 0) {
             this.taintInformation = new IASTaintInformation(new BaseLayer(0, this.string.length(), source));
         }
+    }
+
+    @Override
+    public void setContent(String content, List<IASTaintRange> taintRanges) {
+        this.string = content;
+        this.setTaint(taintRanges);
     }
 
     @Override

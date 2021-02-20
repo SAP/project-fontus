@@ -6,7 +6,7 @@ import de.tubs.cs.ias.asm_test.asm.ClassResolver;
 import de.tubs.cs.ias.asm_test.asm.NopVisitor;
 import de.tubs.cs.ias.asm_test.utils.ClassUtils;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
@@ -19,7 +19,7 @@ import java.util.Set;
 
 public final class AnnotationLookup {
 
-    private static final ParentLogger logger = LogUtils.getLogger();
+    private static final Logger logger = LogUtils.getLogger();
 
     private AnnotationLookup() {
         this.annotations = new HashSet<>();

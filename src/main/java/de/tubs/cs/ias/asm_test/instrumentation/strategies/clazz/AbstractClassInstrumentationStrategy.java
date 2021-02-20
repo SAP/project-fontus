@@ -1,8 +1,8 @@
 package de.tubs.cs.ias.asm_test.instrumentation.strategies.clazz;
 
 import de.tubs.cs.ias.asm_test.TriConsumer;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 import org.objectweb.asm.*;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
 
 import java.util.Optional;
@@ -10,7 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class AbstractClassInstrumentationStrategy implements ClassInstrumentationStrategy {
-    private static final ParentLogger logger = LogUtils.getLogger();
+    private static final Logger logger = LogUtils.getLogger();
     protected final ClassVisitor visitor;
     protected final Pattern descPattern;
     protected final String taintedDesc;

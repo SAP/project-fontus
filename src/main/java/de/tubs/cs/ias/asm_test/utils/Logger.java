@@ -1,15 +1,64 @@
 package de.tubs.cs.ias.asm_test.utils;
 
-public class Logger extends ParentLogger {
-    private final String sourceClass;
+import de.tubs.cs.ias.asm_test.config.Configuration;
 
-    public Logger(String sourceClass) {
-        this.setUseParentHandlers(true);
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.regex.Pattern;
+
+public class Logger {
+    private final String sourceClass;
+    private final String outputFile;
+
+    public Logger(String sourceClass, String outputFile) {
         this.sourceClass = sourceClass;
+        this.outputFile = outputFile;
     }
 
-    @Override
     public String getSourceClassName() {
-        return sourceClass;
+        return "unknown";
+    }
+
+    public void log(String level, String message) {
+        if (Configuration.isLoggingEnabled()) {
+            String line = String.format("%s\t|%s\t|%s", level, this.sourceClass, message);
+            try {
+                BufferedWriter writer = new BufferedWriter(new FileWriter(this.outputFile, true));
+                writer.write(line);
+                writer.newLine();
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void error(String message, Object... insertions) {
+        message = this.format(message, insertions);
+        this.log("ERROR", message);
+    }
+
+    public void info(String message, Object... insertions) {
+        message = this.format(message, insertions);
+        this.log("INFO", message);
+    }
+
+    private String format(String message, Object... insertions) {
+        for (int i = 0; message.contains("{}"); i++) {
+            message = message.replaceFirst(Pattern.quote("{}"), "{" + i + "}");
+        }
+        return MessageFormat.format(message, insertions);
+    }
+
+    public void debug(String message, String insertions) {
+        message = this.format(message, insertions);
+        this.log("DEBUG", message);
+    }
+
+    public void warn(String message, Object... insertions) {
+        message = this.format(message, insertions);
+        this.log("WARN", message);
     }
 }

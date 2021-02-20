@@ -3,6 +3,7 @@ package de.tubs.cs.ias.asm_test.config.abort;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
+import de.tubs.cs.ias.asm_test.taintaware.range.IASString;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 

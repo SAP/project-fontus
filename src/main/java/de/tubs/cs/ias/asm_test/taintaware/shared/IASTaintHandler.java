@@ -3,12 +3,20 @@ package de.tubs.cs.ias.asm_test.taintaware.shared;
 import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 import de.tubs.cs.ias.asm_test.config.abort.Abort;
+import de.tubs.cs.ias.asm_test.utils.Utils;
+import de.tubs.cs.ias.asm_test.utils.lookups.CombinedExcludedLookup;
+import de.tubs.cs.ias.asm_test.utils.lookups.JdkClassesLookup;
 import de.tubs.cs.ias.asm_test.utils.stats.Statistics;
 
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Function;
 
+import static de.tubs.cs.ias.asm_test.utils.ClassTraverser.getAllFields;
+
 public class IASTaintHandler {
+    public static CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(ClassLoader.getSystemClassLoader());
+
     public static Void handleTaint(IASTaintAware taintAware, String sink, String category) {
         boolean isTainted = taintAware.isTainted();
 
@@ -18,7 +26,6 @@ public class IASTaintHandler {
 
         if (isTainted) {
             Abort abort = Configuration.getConfiguration().getAbort();
-            System.out.println(taintAware.toString());
 
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
             List<StackTraceElement> cleanedStackTrace = new ArrayList<>();
@@ -28,6 +35,7 @@ public class IASTaintHandler {
                     cleanedStackTrace.add(ste);
                 }
             }
+
             abort.abort(taintAware, sink, category, cleanedStackTrace);
         }
         return null;
@@ -39,15 +47,38 @@ public class IASTaintHandler {
         return null;
     }
 
-    public static Object traverseObject(Object object, Function<Object, Object> traverser, Function<IASTaintAware, Void> atomicHandler) {
+    public static Object traverseObject(Object object, Function<IASTaintAware, Void> atomicHandler) {
+        List<Object> visited = new ArrayList<>();
+        return traverseObject(object, new Function<Object, Void>() {
+            @Override
+            public Void apply(Object o) {
+                traverseObject(o, this, visited, atomicHandler);
+                return null;
+            }
+        }, visited, atomicHandler);
+    }
+
+    public static Object traverseObject(Object object, Function<Object, Void> traverser, List<Object> visited, Function<IASTaintAware, Void> atomicHandler) {
         if (object == null) {
             return null;
+        } else if (visited.contains(object)) {
+            return object;
+        } else if (object.getClass().isEnum()) {
+            return object;
         }
+        visited.add(object);
+
         boolean isArray = object.getClass().isArray();
+        boolean isPrimitive = isArray ? object.getClass().getComponentType().isPrimitive() : object.getClass().isPrimitive();
         boolean isIterable = Iterable.class.isAssignableFrom(object.getClass());
         boolean isEnumerate = Enumeration.class.isAssignableFrom(object.getClass());
         boolean isMap = Map.class.isAssignableFrom(object.getClass());
         Class<?> cls = object.getClass();
+
+        if (isArray && isPrimitive) {
+            return object;
+        }
+
         if (IASTaintAware.class.isAssignableFrom(cls)) {
             atomicHandler.apply((IASTaintAware) object);
         } else if (isArray) {
@@ -73,6 +104,20 @@ public class IASTaintHandler {
                 traverser.apply(o);
             }
             object = Collections.enumeration(list);
+        } else if (combinedExcludedLookup.isJdkClass(cls) || combinedExcludedLookup.isAnnotation(cls) || combinedExcludedLookup.isPackageExcluded(cls)) {
+            return object;
+        } else if (Configuration.getConfiguration().isRecursiveTainting()) {
+            List<Field> fields = getAllFields(cls);
+            for (Field f : fields) {
+                f.setAccessible(true);
+                Object attr;
+                try {
+                    attr = f.get(object);
+                    traverseObject(attr, traverser, visited, atomicHandler);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         return object;
     }
@@ -83,7 +128,7 @@ public class IASTaintHandler {
             return object;
         }
 
-        return traverseObject(object, o -> checkTaint(o, sink, category), taintAware -> handleTaint(taintAware, sink, category));
+        return traverseObject(object, taintAware -> handleTaint(taintAware, sink, category));
     }
 
     public static Object taint(Object object, int sourceId) {
@@ -92,6 +137,6 @@ public class IASTaintHandler {
             ((IASTaintAware) object).setTaint(source);
             return object;
         }
-        return traverseObject(object, o -> taint(o, sourceId), taintAware -> setTaint(taintAware, sourceId));
+        return traverseObject(object, taintAware -> setTaint(taintAware, sourceId));
     }
 }

@@ -1,12 +1,17 @@
 package de.tubs.cs.ias.asm_test.config.abort;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.tubs.cs.ias.asm_test.agent.TaintAgent;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
+import de.tubs.cs.ias.asm_test.taintaware.lazybasic.IASString;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.sql_injection.SQLChecker;
+import de.tubs.cs.ias.asm_test.utils.ClassUtils;
 
 import java.io.IOException;
+import java.lang.reflect.*;
+import java.util.Arrays;
 import java.util.List;
 
 import static de.tubs.cs.ias.asm_test.utils.Utils.convertStackTrace;
@@ -16,6 +21,20 @@ public class SqlCheckerAbort extends Abort{
 
     @Override
     public void abort(IASTaintAware taintAware, String sink, String category, List<StackTraceElement> stackTrace) {
+        try {
+            Class cls = TaintAgent.findLoadedClass("org.springframework.web.context.request.RequestContextHolder");
+            Method method1 = cls.getMethod("getRequestAttributes");
+            System.out.println("here: ");
+            Object o = method1.invoke(null);
+            Method m2 = o.getClass().getMethod("getRequest");
+            Object request = m2.invoke(o);
+            //System.out.println(Arrays.toString(request.getClass().getMethods()));
+            IASString host= (IASString) request.getClass().getMethod("getHeader", IASString.class).invoke(request, new IASString("host"));
+            System.out.println("host : " + host.toString());
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+
         IASStringable taintedString = taintAware.toIASString();
         SqlAbort sql_checker_abort = new SqlAbort(sink, category, taintedString.getString(), taintedString.getTaintRanges(), convertStackTrace(stackTrace));
 

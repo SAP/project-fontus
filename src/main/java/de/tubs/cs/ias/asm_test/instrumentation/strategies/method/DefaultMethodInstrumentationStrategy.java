@@ -5,7 +5,7 @@ import de.tubs.cs.ias.asm_test.asm.Descriptor;
 import de.tubs.cs.ias.asm_test.asm.FunctionCall;
 import de.tubs.cs.ias.asm_test.config.TaintStringConfig;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 import de.tubs.cs.ias.asm_test.utils.Utils;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -19,7 +19,7 @@ import static de.tubs.cs.ias.asm_test.utils.MethodUtils.isToString;
 
 public class DefaultMethodInstrumentationStrategy implements MethodInstrumentationStrategy {
     private final MethodVisitor mv;
-    private static final ParentLogger logger = LogUtils.getLogger();
+    private static final Logger logger = LogUtils.getLogger();
     private static final Set<Type> requireValueOf = fillRequireValueOfSet();
     private final TaintStringConfig stringConfig;
 

@@ -5,8 +5,8 @@ import de.tubs.cs.ias.asm_test.config.Configuration;
 import de.tubs.cs.ias.asm_test.config.ConfigurationLoader;
 import de.tubs.cs.ias.asm_test.config.TaintMethod;
 import de.tubs.cs.ias.asm_test.utils.LogUtils;
-import de.tubs.cs.ias.asm_test.utils.ParentLogger;
 import de.tubs.cs.ias.asm_test.config.abort.Abort;
+import de.tubs.cs.ias.asm_test.utils.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +14,7 @@ import java.nio.file.Files;
 import java.util.*;
 
 public class AgentConfig {
-    private static final ParentLogger logger = LogUtils.getLogger();
+    private static final Logger logger = LogUtils.getLogger();
     private final boolean verbose;
     private final List<String> blacklist;
     private final TaintMethod taintMethod;

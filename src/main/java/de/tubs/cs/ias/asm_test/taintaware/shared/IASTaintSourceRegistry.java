@@ -31,6 +31,11 @@ public class IASTaintSourceRegistry {
         return this.sources.get(id - 1);
     }
 
+    public synchronized void clear() {
+        this.sources.clear();
+        this.counter = 0;
+    }
+
     public static synchronized IASTaintSourceRegistry getInstance() {
         if (instance == null) {
             instance = new IASTaintSourceRegistry();
