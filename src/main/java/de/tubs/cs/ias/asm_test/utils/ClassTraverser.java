@@ -48,12 +48,7 @@ public class ClassTraverser {
         TypeHierarchyReaderWithLoaderSupport typeHierarchyReader = new TypeHierarchyReaderWithLoaderSupport(resolver);
         for (Type cls = Type.getObjectType(classToDiscover); cls != null; cls = typeHierarchyReader.getSuperClass(cls)) {
             if (this.combinedExcludedLookup.isPackageExcludedOrJdk(cls.getInternalName())) {
-                Class<?> clazz;
-                try {
-                    clazz = Class.forName(cls.getClassName());
-                } catch (ClassNotFoundException e) {
-                    clazz = ClassUtils.findLoadedClass(cls.getClassName());
-                }
+                Class<?> clazz = ClassUtils.findLoadedClass(cls.getInternalName());
 
                 if (clazz != null) {
                     java.lang.reflect.Method[] declaredMethods = clazz.getDeclaredMethods();
@@ -177,13 +172,8 @@ public class ClassTraverser {
 
         for (String interfaceName : interfaces) {
             if (this.combinedExcludedLookup.isPackageExcludedOrJdk(interfaceName) || this.combinedExcludedLookup.isAnnotation(interfaceName)) {
-                Class<?> cls;
+                Class<?> cls = ClassUtils.findLoadedClass(interfaceName);
                 List<de.tubs.cs.ias.asm_test.instrumentation.Method> intfMethods = new ArrayList<>();
-                try {
-                    cls = Class.forName(Utils.slashToDot(interfaceName));
-                } catch (ClassNotFoundException e) {
-                    cls = ClassUtils.findLoadedClass(interfaceName);
-                }
 
                 if (cls != null) {
                     for (java.lang.reflect.Method m : cls.getMethods()) {

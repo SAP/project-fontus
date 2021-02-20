@@ -10,7 +10,6 @@ import de.tubs.cs.ias.asm_test.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.ClassReader;
 
 import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.Instrumentation;
 import java.security.ProtectionDomain;
 
 class TaintingTransformer implements ClassFileTransformer {
@@ -18,12 +17,10 @@ class TaintingTransformer implements ClassFileTransformer {
 
     private final Configuration config;
     private final Instrumenter instrumenter;
-    private final Instrumentation instrumentation;
 
-    TaintingTransformer(Configuration config, Instrumentation instrumentation) {
+    TaintingTransformer(Configuration config) {
         this.instrumenter = new Instrumenter();
         this.config = config;
-        this.instrumentation = instrumentation;
     }
 
     @Override

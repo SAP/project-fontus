@@ -401,9 +401,8 @@ class TestRunner:
     async def _run_regular_class_file_with_agent(self, cwd, name, arguments):
         arguments = ["java",
                      "--add-opens",
-                     "java.base/java.lang=ALL-UNNAMED",
-                     "--add-opens",
-                     "java.base/java.lang.reflect=ALL-UNNAMED",
+                     "java.base/jdk.internal.misc=ALL-UNNAMED",
+                     "--illegal-access=permit",
                      "-classpath",
                      '.:{}'.format(format_jar_filename(
                          "asm_test", self._config.version)),
