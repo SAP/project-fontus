@@ -1,6 +1,9 @@
 dist: xenial
 language: java
 
+jdk:
+  - openjdk11
+
 before_install:
 - sudo apt-get update
 - sudo apt-get install python3
@@ -8,7 +11,7 @@ before_install:
 install: true
 
 script:
-- jdk_switcher use openjdk11
+- java -version
 - ./gradlew -s assemble
 - ./gradlew -s check
 - ./gradlew publishToMavenLocal
