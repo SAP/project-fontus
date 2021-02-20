@@ -8,6 +8,7 @@ before_install:
 install: true
 
 script:
+- jdk_switcher use openjdk11
 - ./gradlew -s assemble
 - ./gradlew -s check
 - ./gradlew publishToMavenLocal
