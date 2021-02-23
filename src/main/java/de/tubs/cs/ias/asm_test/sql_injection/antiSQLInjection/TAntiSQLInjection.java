@@ -109,11 +109,28 @@ public class TAntiSQLInjection  {
      }
 
     /**
+     * Added as part of SQLInjection support for java-bytecode-tainter
+     */
+    public  TAntiSQLInjection(EDbVendor dbVendor, ArrayList<ESqlStatementType> sqltypes){
+        this.sqlParser = new TGSqlParser(dbVendor);
+        this.enabledStatements = sqltypes;
+    }
+
+    /**
      * add a type of sql statement that allowed to be executed in database.
      * @param sqltype
      */
     public void enableStatement(ESqlStatementType sqltype){
         this.enabledStatements.add(sqltype);
+    }
+
+    /**
+     * Added as part of SQLInjection support for java-bytecode-tainter
+     * add the types of sql statements that allowed to be executed in database.
+     * @param sqltypes
+     */
+    public void enableStatements(ArrayList<ESqlStatementType> sqltypes){
+        this.enabledStatements = sqltypes;
     }
 
     /**

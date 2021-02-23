@@ -8,6 +8,7 @@ import de.tubs.cs.ias.asm_test.taintaware.shared.IASStringable;
 import de.tubs.cs.ias.asm_test.taintaware.shared.IASTaintRange;
 import de.tubs.cs.ias.asm_test.sql_injection.SQLChecker;
 import de.tubs.cs.ias.asm_test.utils.ClassUtils;
+import de.tubs.cs.ias.asm_test.utils.NetworkRequestObject;
 
 import java.io.IOException;
 import java.lang.reflect.*;
@@ -22,15 +23,9 @@ public class SqlCheckerAbort extends Abort{
     @Override
     public void abort(IASTaintAware taintAware, String sink, String category, List<StackTraceElement> stackTrace) {
         try {
-            Class cls = TaintAgent.findLoadedClass("org.springframework.web.context.request.RequestContextHolder");
-            Method method1 = cls.getMethod("getRequestAttributes");
-            System.out.println("here: ");
-            Object o = method1.invoke(null);
-            Method m2 = o.getClass().getMethod("getRequest");
-            Object request = m2.invoke(o);
-            //System.out.println(Arrays.toString(request.getClass().getMethods()));
-            IASString host= (IASString) request.getClass().getMethod("getHeader", IASString.class).invoke(request, new IASString("host"));
-            System.out.println("host : " + host.toString());
+            NetworkRequestObject request_object = new NetworkRequestObject();
+            System.out.println("host : " + request_object.getHeaderByName("host"));
+            System.out.println("path : " + request_object.getServletPath());
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
