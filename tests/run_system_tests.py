@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from os import path
 import argparse
 import pprint
@@ -10,6 +8,7 @@ from pathlib import Path
 import tempfile
 from shutil import copyfile
 import asyncio
+import re
 
 SCRIPT_PATH = path.dirname(path.abspath(__file__))
 PROJECT_BASE_PATH = path.join(SCRIPT_PATH, '..')
@@ -134,7 +133,10 @@ def build_jars():
 class ExecutionResult:
     def __init__(self, rv, stdout, stderr):
         self._stdout = stdout
-        self._stderr = stderr
+
+        pattern = re.compile('WARNING(.)*\n')
+        self._stderr = pattern.sub('', stderr.decode('utf8')).encode('utf8')
+
         self._return_value = rv
 
     @property
@@ -169,7 +171,6 @@ class TestCase:
         self._arguments = test_dict.get('arguments', [])
         self._javac_version = None  # test_dict.get('javac_version')
         self._regular_result = None
-        self._instrumented_result = None
         self._agent_result = None
 
     @property
@@ -259,10 +260,9 @@ class JarTestCase:
 
 
 class TestResult:
-    def __init__(self, test_case, regular_result, instrumented_result, agent_result):
+    def __init__(self, test_case, regular_result, agent_result):
         self._test_case = test_case
         self._regular_result = regular_result
-        self._instrumented_result = instrumented_result
         self._agent_result = agent_result
 
     @property
@@ -271,21 +271,12 @@ class TestResult:
 
     @property
     def successful(self):
-        return not (self._regular_result is None or self._instrumented_result is None) and \
-            (self._regular_result == self._instrumented_result and (
-                self._regular_result == self._agent_result))
+        return not (self._regular_result is None) and \
+            (self._regular_result == self._agent_result)
 
     @property
     def regular_result(self):
         return self._regular_result
-
-    @property
-    def instrumented_result(self):
-        return self._instrumented_result
-
-    @instrumented_result.setter
-    def instrumented_result(self, value):
-        self._instrumented_result = value
 
     @regular_result.setter
     def regular_result(self, value):
@@ -302,7 +293,6 @@ class TestResult:
     def __repr__(self):
         return ('TestResult(\n\ttest_case={self._test_case}, '
                 '\n\tregular_result={self._regular_result!r}, '
-                '\n\tinstrumented_result={self._instrumented_result!r},'
                 '\n\tagent_result={self._agent_result!r}\n)').format(self=self)
 
 
@@ -402,10 +392,8 @@ class TestRunner:
         arguments = ["java",
                      "--add-opens",
                      "java.base/jdk.internal.misc=ALL-UNNAMED",
-                     "--illegal-access=permit",
                      "-classpath",
-                     '.:{}'.format(format_jar_filename(
-                         "asm_test", self._config.version)),
+                     '.',
                      '-javaagent:{}=taintmethod={}'.format(format_jar_filename(
                          "asm_test", self._config.version), self._config.taintmethod),
                      name
@@ -417,124 +405,15 @@ class TestRunner:
         arguments = ["java", name] + arguments
         return await run_command(cwd, arguments)
 
-    async def _instrument_application(self, cwd, input_file, output_file):
-        arguments = [
-            "java",
-            "-jar",
-            format_jar_filename(
-                "asm_test", self._config.version),
-            "-f",
-            input_file,
-            "-o",
-            output_file,
-            "-t",
-            self._config.taintmethod
-        ]
-        return await run_command(cwd, arguments)
-
-    def _instrument_application_sync(self, cwd, input_file, output_file):
-        arguments = [
-            "java",
-            "-jar",
-            format_jar_filename(
-                "asm_test", self._config.version),
-            "-f",
-            input_file,
-            "-o",
-            output_file,
-            "-t",
-            self._config.taintmethod
-        ]
-        return run_command_sync(cwd, arguments)
-
-    async def _instrument_class_file(self, cwd, name):
-        classes = Path(cwd).glob('{}*.class'.format(name))
-        instruments = []
-        for clazz in classes:
-            class_name = clazz.name
-            if self._config.verbose:
-                print('\tInstrumenting: {}'.format(class_name))
-            input_file = path.join(cwd, class_name)
-            output_file = path.join(cwd, TMPDIR_OUTPUT_DIR_SUFFIX, class_name)
-            instruments.append((cwd, input_file, output_file))
-        await asyncio.gather(*(self._instrument_application(cwd, input_file, output_file)
-                               for (cwd, input_file, output_file) in instruments))
-
-    def _instrument_class_file_sync(self, cwd, name):
-        classes = Path(cwd).glob('{}*.class'.format(name))
-        for clazz in classes:
-            class_name = clazz.name
-            if self._config.verbose:
-                print('\tInstrumenting: {}'.format(class_name))
-            input_file = path.join(cwd, class_name)
-            output_file = path.join(cwd, TMPDIR_OUTPUT_DIR_SUFFIX, class_name)
-            self._instrument_application_sync(cwd, input_file, output_file)
-
-    async def _instrument_jar(self, cwd, name):
-        input_file = path.join(cwd, name)
-        output_file = path.join(cwd, TMPDIR_OUTPUT_DIR_SUFFIX, name)
-        instrumenter_jar = format_jar_filename(
-            "asm_test", self._config.version)
-        arguments = [
-            "java",
-            "-classpath",
-            '{}:{}'.format(instrumenter_jar, input_file),
-            "de.tubs.cs.ias.asm_test.Main",
-            "-f",
-            input_file,
-            "-o",
-            output_file,
-            "-t",
-            self._config.taintmethod
-        ]
-        return await run_command(cwd, arguments)
-
-    def _instrument_jar_sync(self, cwd, name):
-        input_file = path.join(cwd, name)
-        output_file = path.join(cwd, TMPDIR_OUTPUT_DIR_SUFFIX, name)
-        instrumenter_jar = format_jar_filename(
-            "asm_test", self._config.version)
-        arguments = [
-            "java",
-            "-classpath",
-            '{}:{}'.format(instrumenter_jar, input_file),
-            "de.tubs.cs.ias.asm_test.Main",
-            "-f",
-            input_file,
-            "-o",
-            output_file,
-            "-t",
-            self._config.taintmethod
-        ]
-        return run_command_sync(cwd, arguments)
-
-    async def _run_instrumented_jar_internal(self, cwd, name, entry_point, additional_arguments, input_file):
-        arguments = [
-            "java",
-            "--add-opens",
-            "java.base/java.lang=ALL-UNNAMED",
-            "--add-opens",
-            "java.base/java.lang.reflect=ALL-UNNAMED",
-            "-cp",
-            '{}:{}'.format(format_jar_filename(
-                "asm_test", self._config.version), name),
-            entry_point
-        ] + additional_arguments
-        return await run_command(cwd, arguments, input_file)
-
     async def _run_agent_jar_internal(self, cwd, name, entry_point, additional_arguments, input_file):
         arguments = [
             "java",
             "--add-opens",
-            "java.base/java.lang=ALL-UNNAMED",
-            "--add-opens",
-            "java.base/java.lang.reflect=ALL-UNNAMED",
-            "-cp",
-            '{}:{}'.format(format_jar_filename(
-                "asm_test", self._config.version), name),
+            "java.base/jdk.internal.misc=ALL-UNNAMED",
             '-javaagent:{}=taintmethod={}'.format(format_jar_filename(
                 "asm_test", self._config.version), self._config.taintmethod),
-            entry_point
+            '-jar',
+            name
         ] + additional_arguments
         return await run_command(cwd, arguments, input_file)
 
@@ -554,29 +433,12 @@ class TestRunner:
         else:
             return await self._run_jar_internal(cwd, name, arguments, input_file)
 
-    async def _run_instrumented_jar(self, cwd, name, entry_point, arguments, input_file=None):
-        if input_file:
-            with open(input_file, "r", encoding="utf-8") as inp:
-                return await self._run_instrumented_jar_internal(cwd, name, entry_point, arguments, inp)
-        else:
-            return await self._run_instrumented_jar_internal(cwd, name, entry_point, arguments, input_file)
-
     async def _run_agent_jar(self, cwd, name, entry_point, arguments, input_file=None):
         if input_file:
             with open(input_file, "r", encoding="utf-8") as inp:
                 return await self._run_agent_jar_internal(cwd, name, entry_point, arguments, inp)
         else:
             return await self._run_agent_jar_internal(cwd, name, entry_point, arguments, input_file)
-
-    async def _run_instrumented_class_file(self, cwd, name, additional_arguments):
-        arguments = [
-            "java",
-            "-classpath",
-            '.:{}'.format(format_jar_filename(
-                "asm_test", self._config.version)),
-            name
-        ] + additional_arguments
-        return await run_command(cwd, arguments)
 
     @staticmethod
     async def _compile_source_file(cwd, source):
@@ -588,12 +450,7 @@ class TestRunner:
         print('Running Jar Test: "{}"'.format(test.name))
         copy_jar(base_dir, test.jar_file)
         # check whether test should be run in safe mode or safe mode is activated
-        if (test.safe or self._safe):
-            self._instrument_jar_sync(base_dir, test.jar_file)
-        else:
-            await self._instrument_jar(base_dir, test.jar_file)
-        instrumented_cwd = path.join(base_dir, TMPDIR_OUTPUT_DIR_SUFFIX)
-        regular_result, agent_result, instrumented_result = await(asyncio.gather(
+        regular_result, agent_result = await(asyncio.gather(
             self._run_jar(
                 base_dir,
                 test.jar_file,
@@ -606,16 +463,9 @@ class TestRunner:
                 test.entry_point,
                 test.arguments,
                 test.input_file
-            ),
-            self._run_instrumented_jar(
-                instrumented_cwd,
-                test.jar_file,
-                test.entry_point,
-                test.arguments,
-                test.input_file
             )
         ))
-        return TestResult(test, regular_result, instrumented_result, agent_result)
+        return TestResult(test, regular_result, agent_result)
 
     async def _run_test(self, base_dir, test):
         if isinstance(test, JarTestCase):
@@ -624,20 +474,9 @@ class TestRunner:
         (base_name, _, _) = test.source.partition(".java")
         copy_source_file(base_dir, test.source)
         await self._compile_source_file(base_dir, test.source)
-        # check whether test should be run in safe mode or safe mode is activated
-        if (test.safe or self._safe):
-            self._instrument_class_file_sync(base_dir, base_name)
-        else:
-            await self._instrument_class_file(base_dir, base_name)
-        instrumented_cwd = path.join(base_dir, TMPDIR_OUTPUT_DIR_SUFFIX)
-        regular_result, instrumented_result, agent_result = await asyncio.gather(
+        regular_result, agent_result = await asyncio.gather(
             self._run_regular_class_file(
                 base_dir,
-                base_name,
-                test.arguments
-            ),
-            self._run_instrumented_class_file(
-                instrumented_cwd,
                 base_name,
                 test.arguments
             ),
@@ -647,7 +486,7 @@ class TestRunner:
                 test.arguments
             )
         )
-        return TestResult(test, regular_result, instrumented_result, agent_result)
+        return TestResult(test, regular_result, agent_result)
 
     async def _run_tests(self, base_dir):
         # run all the tests concurrently and then check their results once they're all finished
@@ -658,11 +497,9 @@ class TestRunner:
             if not test_result.successful:
                 print(
                     ('Test "{}" failed:\nRegular result: "{}",\n'
-                     'Instrumented Result: "{}"\n'
                      'Agent Result: "{}"').format(
                          test_result.test_case.name,
                          test_result.regular_result,
-                         test_result.instrumented_result,
                          test_result.agent_result
                     )
                 )
