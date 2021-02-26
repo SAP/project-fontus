@@ -24,6 +24,7 @@ public class Sink {
     @XmlElement(name = "parameter")
     private final List<SinkParameter> parameters;
 
+    @XmlElement
     private final String category;
 
     public Sink() {
