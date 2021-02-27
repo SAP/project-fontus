@@ -20,7 +20,7 @@ INPUTS_BASE_PATH = path.join(JARS_BASE_PATH, "inputs")
 TESTS_SOURCE_DIR = path.join(TESTS_DIR, "src")
 CONFIG_FILE = path.join(TESTS_DIR, "config.json")
 TMPDIR_OUTPUT_DIR_SUFFIX = "instrumented"
-JAR_BASE_NAMES = ["asm_test", "util"]
+JAR_BASE_NAMES = ["fontus", "util"]
 
 
 def check_return_value(func):
@@ -397,7 +397,7 @@ class TestRunner:
                      "-classpath",
                      '.',
                      '-javaagent:{}=taintmethod={}'.format(format_jar_filename(
-                         "asm_test", self._config.version), self._config.taintmethod),
+                         "fontus", self._config.version), self._config.taintmethod),
                      name
                      ] + arguments
         return await run_command(cwd, arguments)
@@ -413,7 +413,7 @@ class TestRunner:
                         "--add-opens",
                         "java.base/jdk.internal.misc=ALL-UNNAMED",
                         '-javaagent:{}=taintmethod={}'.format(format_jar_filename(
-                            "asm_test", self._config.version), self._config.taintmethod),
+                            "fontus", self._config.version), self._config.taintmethod),
                         '-jar',
                         name
                     ] + additional_arguments

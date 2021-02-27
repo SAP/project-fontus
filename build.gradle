@@ -56,16 +56,16 @@ test {
 
 task utilJar(type: ShadowJar) {
     from(sourceSets.main.output) {
-        include "**/asm_test/taintaware/**"
-        include "**/asm_test/instrumentation/strategies/*"
-        include "**/asm_test/utils/**"
-        include "**/asm_test/Constants*"
-        include "**/asm_test/config/TaintStringConfig*"
-        include "**/asm_test/config/TaintMethod*"
-        include "**/asm_test/config/**"
-        include "**/asm_test/asm/**"
-        include "**/asm_test/asm/FunctionCall*" // Because of Configuration class
-        include "**/asm_test/agent/AgentConfig*" // Because of Configuration class
+        include "**/fontus/taintaware/**"
+        include "**/fontus/instrumentation/strategies/*"
+        include "**/fontus/utils/**"
+        include "**/fontus/Constants*"
+        include "**/fontus/config/TaintStringConfig*"
+        include "**/fontus/config/TaintMethod*"
+        include "**/fontus/config/**"
+        include "**/fontus/asm/**"
+        include "**/fontus/asm/FunctionCall*" // Because of Configuration class
+        include "**/fontus/agent/AgentConfig*" // Because of Configuration class
     }
     utilJar.baseName = "util"
 }
@@ -73,7 +73,7 @@ task utilJar(type: ShadowJar) {
 task generatorJar(type: ShadowJar) {
     manifest {
         attributes(
-                'Main-Class': 'de.tubs.cs.ias.asm_test.generator.Generator',
+                'Main-Class': 'com.sap.fontus.generator.Generator',
         )
     }
     from(project.convention.getPlugin(JavaPluginConvention).sourceSets.main.output)
@@ -85,7 +85,7 @@ task generatorJar(type: ShadowJar) {
 task converterJar(type: ShadowJar) {
     manifest {
         attributes(
-                'Main-Class': 'de.tubs.cs.ias.asm_test.converter.Converter',
+                'Main-Class': 'com.sap.fontus.converter.Converter',
         )
     }
     from(project.convention.getPlugin(JavaPluginConvention).sourceSets.main.output)
@@ -100,11 +100,11 @@ shadowJar {
         manifest {
                 attributes(
                         // 'Class-Path': configurations.compile.collect{it.toURI().toString()}.join(' '),
-                        'Main-Class': 'de.tubs.cs.ias.asm_test.Main',
-                        'Agent-Class': 'de.tubs.cs.ias.asm_test.agent.TaintAgent',
+                        'Main-Class': 'com.sap.fontus.Main',
+                        'Agent-Class': 'com.sap.fontus.agent.TaintAgent',
                         'Can-Redefine-Classes': true,
                         'Can-Retransform-Classes': true,
-                        'Premain-Class': 'de.tubs.cs.ias.asm_test.agent.TaintAgent'
+                        'Premain-Class': 'com.sap.fontus.agent.TaintAgent'
                 )
         }
     }
@@ -112,15 +112,15 @@ shadowJar {
     // This makes sure that the generated jar has no "-all" suffix
     classifier = ''
 
-    relocate 'com.ctc', 'de.tubs.cs.ias.asm_test.com.ctc'
-    relocate 'com.fasterxml', 'de.tubs.cs.ias.asm_test.com.fasterxml'
-    relocate 'org.codehaus', 'de.tubs.cs.ias.asm_test.org.codehaus'
-    relocate 'org.json', 'de.tubs.cs.ias.asm_test.org.json'
-    relocate 'org.mutabilitydetector', 'de.tubs.cs.ias.asm_test.org.mutabilitydetector'
-    relocate 'org.objectweb', 'de.tubs.cs.ias.asm_test.org.objectweb'
-    relocate 'javax.activation', 'de.tubs.cs.ias.asm_test.javax.activation'
-    relocate 'javax.xml.bind', 'de.tubs.cs.ias.asm_test.javax.xml.bind'
-    relocate 'picocli', 'de.tubs.cs.ias.asm_test.picocli'
+    relocate 'com.ctc', 'com.sap.fontus.com.ctc'
+    relocate 'com.fasterxml', 'com.sap.fontus.com.fasterxml'
+    relocate 'org.codehaus', 'com.sap.fontus.org.codehaus'
+    relocate 'org.json', 'com.sap.fontus.org.json'
+    relocate 'org.mutabilitydetector', 'com.sap.fontus.org.mutabilitydetector'
+    relocate 'org.objectweb', 'com.sap.fontus.org.objectweb'
+    relocate 'javax.activation', 'com.sap.fontus.javax.activation'
+    relocate 'javax.xml.bind', 'com.sap.fontus.javax.xml.bind'
+    relocate 'picocli', 'com.sap.fontus.picocli'
     dependsOn utilJar
     dependsOn converterJar
     dependsOn generatorJar
@@ -137,15 +137,15 @@ publishing {
     publications {
         shadow(MavenPublication) {
             from project.components.java
-            groupId = 'de.tubs.cs.ias'
-            artifactId = 'asm_test'
+            groupId = 'com.sap.fontus'
+            artifactId = 'fontus'
             version = '0.0.1-SNAPSHOT'
             artifact tasks.sourcesJar
             artifact tasks.shadowJar
         }
 
         util(MavenPublication) {
-            groupId 'de.tubs.cs.ias'
+            groupId 'com.sap.fontus'
             artifactId 'util'
             version = '0.0.1-SNAPSHOT'
             artifact utilJar

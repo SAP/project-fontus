@@ -4,13 +4,13 @@ A modern framework for dynamic taint analysis with string-like classes in the JV
 ## Building the Framework
 For building the framework execute the gradle task ``shadowJar`` or ``publishToMavenLocal``. Aftwerwords you will find the Framework JAR in ``./build/libs``
 
-There will be two JAR files. First of all the one starting with ``asm_test``, which is for doing the offline instrumentation and the agent instrumentation.
+There will be two JAR files. First of all the one starting with ``fontus``, which is for doing the offline instrumentation and the agent instrumentation.
 And secondly the one which starts with ``util``, which is necessary to execute offline instrumented applications. 
 
 ## Offline instrumentation
 ### Instrumentation
 #### Class files
-To instrument a class file you have to execute the ``asm_test`` JAR and passing the parameters ``-f`` for the source file and ``-o`` for the output file.
+To instrument a class file you have to execute the ``fontus`` JAR and passing the parameters ``-f`` for the source file and ``-o`` for the output file.
 
 **Attention**: Source and output cannot be the same, otherwise the instrumentation will fail
 
@@ -18,7 +18,7 @@ Here is an example how to instrument a class file:
 ```bash
 BASE_DIR=$(pwd)
 cd ${BASE_DIR}/build/libs;
-java -jar asm_test-0.0.1-SNAPSHOT.jar -f ${BASE_DIR}/tests/TestString.class -o ${BASE_DIR}/tests/out/TestString.class
+java -jar fontus-0.0.1-SNAPSHOT.jar -f ${BASE_DIR}/tests/TestString.class -o ${BASE_DIR}/tests/out/TestString.class
 ```
 
 #### JAR Archives
@@ -28,7 +28,7 @@ For some reason, the -classpath and the -jar switches of the java executable are
 
 So when instrumenting a jar, execute something like the following:
 ```sh
-java -classpath "asm_test-0.0.1-SNAPSHOT.jar:jar-file-to-instrument-X.Y.Z.RELEASE.jar" de.tubs.cs.ias.asm_test.Main -f jar-file-to-instrument-X.Y.Z.RELEASE.jar -o jar-file-to-instrument-X.Y.Z.RELEASE.instrumented.jar
+java -classpath "fontus-0.0.1-SNAPSHOT.jar:jar-file-to-instrument-X.Y.Z.RELEASE.jar" Main -f jar-file-to-instrument-X.Y.Z.RELEASE.jar -o jar-file-to-instrument-X.Y.Z.RELEASE.instrumented.jar
 ```
 
 #### Select taint method
@@ -42,7 +42,7 @@ The instrumented file can then be executed by running ``java -classpath ".:util-
 The instrumentation framework outputs a lot of information for debugging purposes. This can be disabled by setting the *log.level* property to *OFF*. E.g., by calling the instrumentation like this:
 
 ```bash
-java -Dlog.level=OFF -jar asm_test-0.0.1-SNAPSHOT.jar -f ${BASE_DIR}/tests/TestString.class -o ${BASE_DIR}/tests/out/TestString.class
+java -Dlog.level=OFF -jar fontus-0.0.1-SNAPSHOT.jar -f ${BASE_DIR}/tests/TestString.class -o ${BASE_DIR}/tests/out/TestString.class
 ```
 
 ## Agent Instrumentation
@@ -51,14 +51,14 @@ This instrumentation type works on-the-fly with starting the application.
 ### Execution
 For instrumenting via java agents just add the following to your VM option parameters:
 ```bash
---add-opens java.base/jdk.internal.misc=ALL-UNNAMED -javaagent:asm_test-0.0.1-SNAPSHOT.jar
+--add-opens java.base/jdk.internal.misc=ALL-UNNAMED -javaagent:fontus-0.0.1-SNAPSHOT.jar
 ```
 
 The `--add-opens` is necessary because the framework is using Java internal classes
 
 A complete java execution command could look like this:
 ```bash
-java -jar your-application.jar -javaagent:asm_test-0.0.1-SNAPSHOT.jar
+java -jar your-application.jar -javaagent:fontus-0.0.1-SNAPSHOT.jar
 ```
 
 ### Parameters
@@ -77,7 +77,7 @@ The arguments are appended to the agent path like this: ``-javaagent:jarpath[=op
 
 **Attention:** If you pass multiple key-value pairs, you have to put the javaagent string in quotation marks. Otherwise bash will understand semicolons as command seperators.
 
-An example for parameters passed to the agent ``-javaagent:"asm_test-0.0.1-SNAPSHOT.jar=taintmethod=range,use_caching=false"``.
+An example for parameters passed to the agent ``-javaagent:"fontus-0.0.1-SNAPSHOT.jar=taintmethod=range,use_caching=false"``.
 
 
 ## Available Tainting Methods
