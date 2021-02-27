@@ -11,7 +11,8 @@ before_install:
 install: true
 
 script:
-- $TRAVIS_BUILD_DIR/install-jdk.sh --install openjdk11 --target $JAVA_HOME
+- echo $JAVA_HOME
+- which java
 - java -version
 - ./gradlew -s assemble
 - ./gradlew -s check
