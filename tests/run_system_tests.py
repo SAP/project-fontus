@@ -29,6 +29,7 @@ def check_return_value(func):
         if ret_val.return_value != 0:
             pprint.pprint(ret_val)
         return ret_val
+
     return wrapper_check_return_value
 
 
@@ -38,6 +39,7 @@ def check_return_value_sync(func):
         if ret_val.return_value != 0:
             pprint.pprint(ret_val)
         return ret_val
+
     return wrapper_check_return_value
 
 
@@ -158,8 +160,8 @@ class ExecutionResult:
 
     def __eq__(self, other):
         return self._return_value == other.return_value \
-            and self._stdout == other.stdout \
-            and self._stderr == other.stderr
+               and self._stdout == other.stdout \
+               and self._stderr == other.stderr
 
 
 class TestCase:
@@ -272,7 +274,7 @@ class TestResult:
     @property
     def successful(self):
         return not (self._regular_result is None) and \
-            (self._regular_result == self._agent_result)
+               (self._regular_result == self._agent_result)
 
     @property
     def regular_result(self):
@@ -407,23 +409,23 @@ class TestRunner:
 
     async def _run_agent_jar_internal(self, cwd, name, entry_point, additional_arguments, input_file):
         arguments = [
-            "java",
-            "--add-opens",
-            "java.base/jdk.internal.misc=ALL-UNNAMED",
-            '-javaagent:{}=taintmethod={}'.format(format_jar_filename(
-                "asm_test", self._config.version), self._config.taintmethod),
-            '-jar',
-            name
-        ] + additional_arguments
+                        "java",
+                        "--add-opens",
+                        "java.base/jdk.internal.misc=ALL-UNNAMED",
+                        '-javaagent:{}=taintmethod={}'.format(format_jar_filename(
+                            "asm_test", self._config.version), self._config.taintmethod),
+                        '-jar',
+                        name
+                    ] + additional_arguments
         return await run_command(cwd, arguments, input_file)
 
     @staticmethod
     async def _run_jar_internal(cwd, name, additional_arguments, input_file):
         arguments = [
-            "java",
-            "-jar",
-            name
-        ] + additional_arguments
+                        "java",
+                        "-jar",
+                        name
+                    ] + additional_arguments
         return await run_command(cwd, arguments, input_file)
 
     async def _run_jar(self, cwd, name, arguments, input_file=None):
@@ -498,9 +500,9 @@ class TestRunner:
                 print(
                     ('Test "{}" failed:\nRegular result: "{}",\n'
                      'Agent Result: "{}"').format(
-                         test_result.test_case.name,
-                         test_result.regular_result,
-                         test_result.agent_result
+                        test_result.test_case.name,
+                        test_result.regular_result,
+                        test_result.agent_result
                     )
                 )
             elif self._config.verbose:
@@ -534,10 +536,17 @@ def main(args):
     # pprint.pprint(config)
     runner = TestRunner(config, args.safe)
     loop = asyncio.get_event_loop()
+    loop.run_until_complete(check_java_version())
     result = loop.run_until_complete(runner.run_tests())
     print(result)
     sys.exit(result.num_failed)
 
+
+async def check_java_version():
+    proc = await asyncio.create_subprocess_shell('java -version', stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    stdout, stderr = await proc.communicate()
+    print(stdout)
+    print(stderr)
 
 if __name__ == "__main__":
     ARG_PARSER = argparse.ArgumentParser()
