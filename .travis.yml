@@ -11,6 +11,8 @@ before_install:
 install: true
 
 script:
+- readlink -f /usr/bin/java
+- ls -l /usr/bin/java
 - echo $JAVA_HOME
 - which java
 - java -version
