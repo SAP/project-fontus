@@ -1,4 +1,4 @@
-dist: xenial
+dist: bionic
 language: java
 
 jdk:
@@ -10,8 +10,11 @@ before_install:
 
 install: true
 
+
+
 script:
 - readlink -f /usr/bin/java
+- readlink -f /etc/alternatives/java
 - ls -l /usr/bin/java
 - echo $JAVA_HOME
 - which java
