@@ -13,12 +13,6 @@ install: true
 
 
 script:
-- readlink -f /usr/bin/java
-- readlink -f /etc/alternatives/java
-- ls -l /usr/bin/java
-- echo $JAVA_HOME
-- which java
-- java -version
 - ./gradlew -s assemble
 - ./gradlew -s check
 - ./gradlew publishToMavenLocal

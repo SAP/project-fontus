@@ -547,14 +547,7 @@ async def check_java_version():
     stdout, stderr = await proc.communicate()
     print(stdout)
     print(stderr)
-    proc = await asyncio.create_subprocess_shell('echo $JAVA_Home', stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-    stdout, stderr = await proc.communicate()
-    print(stdout)
-    print(stderr)
-    proc = await asyncio.create_subprocess_shell('which java', stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-    stdout, stderr = await proc.communicate()
-    print(stdout)
-    print(stderr)
+
 
 if __name__ == "__main__":
     ARG_PARSER = argparse.ArgumentParser()
