@@ -15,6 +15,8 @@ import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.List;
 
+//import org.apache.calcite.sql.parser;
+
 import static de.tubs.cs.ias.asm_test.utils.Utils.convertStackTrace;
 
 public class SqlCheckerAbort extends Abort{
@@ -40,7 +42,7 @@ public class SqlCheckerAbort extends Abort{
         try {
             //SQLChecker.checkTaintedString(this.objectMapper.writeValueAsString(sql_checker_abort));
             SQLChecker.printCheck(this.objectMapper.writeValueAsString(sql_checker_abort));
-        } catch (IOException e) {
+        } catch (IOException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             e.printStackTrace();
         }
     }

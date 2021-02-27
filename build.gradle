@@ -22,7 +22,8 @@ tasks.jar.configure {
 }
 
 dependencies {
-    compile files('src/main/java/de/tubs/cs/ias/asm_test/sql_injection/antiSQLInjection/lib/gsp.jar')
+    compile files('libs/gsp.jar')
+    compile group: 'org.apache.calcite', name: 'calcite-core', version: '1.15.0'
     compile 'org.ow2.asm:asm:9.0'
     compile 'org.ow2.asm:asm-commons:9.0'
     compile 'org.ow2.asm:asm-analysis:9.0'

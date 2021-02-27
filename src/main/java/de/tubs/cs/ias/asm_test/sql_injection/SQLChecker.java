@@ -2,12 +2,15 @@ package de.tubs.cs.ias.asm_test.sql_injection;
 
 import de.tubs.cs.ias.asm_test.sql_injection.antiSQLInjection.antiSQLInjection;
 import de.tubs.cs.ias.asm_test.sql_injection.attack_cases.CommentLineAttack;
+import de.tubs.cs.ias.asm_test.utils.NetworkRequestObject;
+import org.apache.calcite.sql.parser.SqlParser;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 public class SQLChecker {
 
@@ -24,11 +27,12 @@ public class SQLChecker {
         }
     }
 
-    public static void printCheck(String tainted_string) throws IOException {
+    public static void printCheck(String tainted_string) throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         JSONObject json_obj = new JSONObject(tainted_string);
         String sql_string = json_obj.getString("payload");
-        String json_string = antiSQLInjection.getSqlInjectionInfo(sql_string).toString();
-        System.out.println(json_string);
+        JSONArray json_array = antiSQLInjection.getSqlInjectionInfo(sql_string);
+        System.out.println(json_array.toString());
+        NetworkRequestObject.setResponseMessage(json_array.isEmpty());
     }
 
     private static void checkAttack(String tainted_string){
@@ -39,6 +43,6 @@ public class SQLChecker {
     public static void main(String[] args) throws IOException {
         String tainted_json_string = "SELECT * FROM products WHERE id = 10 or 1=1;--";
 
-        SQLChecker.printCheck(tainted_json_string);
+        //SQLChecker.printCheck(tainted_json_string);
     }
 }

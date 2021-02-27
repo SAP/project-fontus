@@ -53,4 +53,18 @@ public class NetworkRequestObject {
         }
         return null;
     }
+
+    public static void setResponseMessage(boolean sql_injection) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Class cls = TaintAgent.findLoadedClass("org.springframework.web.context.request.RequestContextHolder");
+        Method reqAttributeMethod = cls.getMethod("getRequestAttributes");
+        Object reqAttributeObject = reqAttributeMethod.invoke(null);
+        Method respObjectMethod = reqAttributeObject.getClass().getMethod("getResponse");
+        Object respObject = respObjectMethod.invoke(reqAttributeObject);
+        if(sql_injection){
+            respObject.getClass().getMethod("addHeader", IASString.class, IASString.class).invoke(respObject, new IASString("message"), new IASString("sql_not_injected"));
+        }
+        else{
+            respObject.getClass().getMethod("addHeader", IASString.class, IASString.class).invoke(respObject, new IASString("message"), new IASString("sql_injected"));
+        }
+    }
 }
