@@ -1,5 +1,6 @@
 package de.tubs.cs.ias.asm_test.config.abort;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.tubs.cs.ias.asm_test.agent.TaintAgent;
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
@@ -23,7 +24,7 @@ public class SqlCheckerAbort extends Abort{
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public void abort(IASTaintAware taintAware, String sink, String category, List<StackTraceElement> stackTrace) {
+    public void abort(IASTaintAware taintAware, String sink, String category, List<StackTraceElement> stackTrace) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, InterruptedException, IOException {
         try {
             NetworkRequestObject request_object = new NetworkRequestObject();
             System.out.println("host : " + request_object.getHeaderByName("host"));
@@ -38,13 +39,13 @@ public class SqlCheckerAbort extends Abort{
         sendAborts(sql_checker_abort);
     }
 
-    private void sendAborts(SqlAbort sql_checker_abort) {
-        try {
-            //SQLChecker.checkTaintedString(this.objectMapper.writeValueAsString(sql_checker_abort));
-            SQLChecker.printCheck(this.objectMapper.writeValueAsString(sql_checker_abort));
-        } catch (IOException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
+    private void sendAborts(SqlAbort sql_checker_abort) throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, InterruptedException {
+        SQLChecker.checkTaintedString(this.objectMapper.writeValueAsString(sql_checker_abort));
+//        try {
+//            SQLChecker.checkTaintedString(this.objectMapper.writeValueAsString(sql_checker_abort));
+//        } catch (RuntimeException | IllegalAccessException | NoSuchMethodException | InvocationTargetException | IOException | InterruptedException e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Override

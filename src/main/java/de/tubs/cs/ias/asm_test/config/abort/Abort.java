@@ -2,6 +2,8 @@ package de.tubs.cs.ias.asm_test.config.abort;
 
 import de.tubs.cs.ias.asm_test.taintaware.IASTaintAware;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public abstract class Abort {
@@ -9,7 +11,7 @@ public abstract class Abort {
             new NothingAbort(), new ExitAbort(), new StdErrLoggingAbort(), new JsonLoggingAbort(), new SqlCheckerAbort()
     };
 
-    public abstract void abort(IASTaintAware taintAware, String sink, String category, List<StackTraceElement> stackTrace);
+    public abstract void abort(IASTaintAware taintAware, String sink, String category, List<StackTraceElement> stackTrace) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, InterruptedException, IOException;
 
     public abstract String getName();
 
