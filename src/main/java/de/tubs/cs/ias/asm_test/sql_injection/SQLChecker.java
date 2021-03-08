@@ -1,8 +1,10 @@
 package de.tubs.cs.ias.asm_test.sql_injection;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.tubs.cs.ias.asm_test.sql_injection.antiSQLInjection.antiSQLInjection;
 import de.tubs.cs.ias.asm_test.sql_injection.attack_cases.CommentLineAttack;
 import de.tubs.cs.ias.asm_test.utils.NetworkRequestObject;
+import de.tubs.cs.ias.asm_test.utils.NetworkResponseObject;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -32,7 +34,8 @@ public class SQLChecker {
         String sql_string = json_obj.getString("payload");
         JSONArray json_array = antiSQLInjection.getSqlInjectionInfo(sql_string);
         System.out.println(json_array.toString());
-        NetworkRequestObject.setResponseMessage(json_array.isEmpty());
+        NetworkRequestObject req_obj = new NetworkRequestObject();
+        NetworkResponseObject.setResponseMessage(req_obj,!json_array.isEmpty());
     }
 
     private static void checkAttack(String tainted_string){

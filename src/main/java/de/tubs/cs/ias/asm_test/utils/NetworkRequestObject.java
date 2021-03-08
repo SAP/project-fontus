@@ -1,15 +1,22 @@
 package de.tubs.cs.ias.asm_test.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.tubs.cs.ias.asm_test.agent.TaintAgent;
 import de.tubs.cs.ias.asm_test.taintaware.lazybasic.IASString;
 import org.json.Cookie;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Enumeration;
+import java.util.Map;
 
-public class NetworkRequestObject {
+public class NetworkRequestObject implements Serializable {
 
     private final Object reqObject;
 
@@ -54,21 +61,84 @@ public class NetworkRequestObject {
         return null;
     }
 
-    public static void setResponseMessage(boolean sql_injection) throws RuntimeException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InterruptedException {
-        Class cls = TaintAgent.findLoadedClass("org.springframework.web.context.request.RequestContextHolder");
-        Method reqAttributeMethod = cls.getMethod("getRequestAttributes");
-        Object reqAttributeObject = reqAttributeMethod.invoke(null);
-        Method respObjectMethod = reqAttributeObject.getClass().getMethod("getResponse");
-        Object respObject = respObjectMethod.invoke(reqAttributeObject);
-        if(sql_injection){
-            respObject.getClass().getMethod("addHeader", IASString.class, IASString.class).invoke(respObject, new IASString("message"), new IASString("sql_not_injected"));
+    public String getEncodedRequestBody() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        // Main request json
+        JSONObject req_json = new JSONObject();
+
+        // Construct Method in json
+        String method = this.reqObject.getClass().getMethod("getMethod").invoke(this.reqObject).toString();
+        req_json.put("method", method);
+
+        // Construct Path in json
+        String path = this.reqObject.getClass().getMethod("getServletPath").invoke(this.reqObject).toString();
+        req_json.put("path", path);
+
+        // Construct Path in json
+        String protocol = this.reqObject.getClass().getMethod("getProtocol").invoke(this.reqObject).toString();
+        req_json.put("protocol", protocol);
+
+        // Construct Headers in json
+        Enumeration<IASString> header_names = (Enumeration<IASString>) this.reqObject.getClass().getMethod("getHeaderNames").invoke(this.reqObject);
+        JSONArray headers = new JSONArray();
+        if (header_names != null) {
+            JSONObject header = new JSONObject();
+            while (header_names.hasMoreElements()) {
+                IASString header_name_ias = header_names.nextElement();
+                String header_name = header_name_ias.toString();
+                String header_value = this.reqObject.getClass().getMethod("getHeader", IASString.class).invoke(this.reqObject, header_name_ias).toString();
+                header.put(header_name, header_value);
+            }
+            headers.put(header);
         }
-        else{
-            respObject.getClass().getMethod("addHeader", IASString.class, IASString.class).invoke(respObject, new IASString("message"), new IASString("sql_injected"));
-            respObject.getClass().getMethod("sendError", int.class).invoke(respObject, 500);
-            throw new InterruptedException("SQL Injection Error");
-            //Thread.currentThread().stop();
-            //System.exit(1);
+        req_json.put("headers", headers);
+
+        // Construct Parameters in json
+        JSONArray parameters = new JSONArray();
+        Map<IASString, IASString[]> parameter_names = (Map<IASString, IASString[]>) this.reqObject.getClass().getMethod("getParameterMap").invoke(this.reqObject);
+        for (IASString key : parameter_names.keySet()) {
+            IASString[] strArr = parameter_names.get(key);
+            for (IASString val : strArr) {
+                JSONObject parameter = new JSONObject();
+                parameter.put(key.toString(), val.toString());
+                parameters.put(parameter);
+            }
         }
+        req_json.put("parameters", parameters);
+
+        //Construct body if present
+        StringBuffer bb = new StringBuffer();
+        String line;
+        try {
+            BufferedReader bbr = (BufferedReader) this.reqObject.getClass().getMethod("getReader").invoke(this.reqObject);
+            while ((line = bbr.readLine()) != null) {
+                bb.append(line);
+            }
+        }
+        catch (Exception e){}
+        req_json.put("body",bb.toString());
+
+        String encoded_req = Base64.getEncoder().encodeToString(req_json.toString().getBytes(StandardCharsets.UTF_8));
+
+//        byte[] decodedBytes = Base64.getDecoder().decode(encoded_req);
+//        String decodedString = new String(decodedBytes);
+//        System.out.println(decodedString);
+
+        return encoded_req;
     }
 }
+
+/*    // testing
+    //ObjectMapper objMapper = new ObjectMapper();
+    NetworkRequestObject reqObject2 = new NetworkRequestObject();
+        try {
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(bos);
+                oos.writeObject(reqObject2);
+                oos.flush();
+                byte[] yourBytes = bos.toByteArray();
+                //System.out.println(objMapper.writeValueAsString(reqObject));
+                } catch (IOException e) {
+                e.printStackTrace();
+                }
+//
+ */
