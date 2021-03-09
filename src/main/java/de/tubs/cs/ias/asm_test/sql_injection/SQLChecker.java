@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 public class SQLChecker {
-
     public static void checkTaintedString(String tainted_string) throws RuntimeException, IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InterruptedException {
         JSONObject json_obj = new JSONObject(tainted_string);
         String sql_string = json_obj.getString("payload");
@@ -22,5 +21,4 @@ public class SQLChecker {
         System.out.println(json_array.toString());
         NetworkResponseObject.setResponseMessage(new NetworkRequestObject(),!json_array.isEmpty());
     }
-
 }

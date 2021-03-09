@@ -106,7 +106,7 @@ public class NetworkRequestObject implements Serializable {
         req_json.put("parameters", parameters);
 
         //Construct body if present
-        StringBuffer bb = new StringBuffer();
+        StringBuilder bb = new StringBuilder();
         String line;
         try {
             BufferedReader bbr = (BufferedReader) this.reqObject.getClass().getMethod("getReader").invoke(this.reqObject);
@@ -114,7 +114,7 @@ public class NetworkRequestObject implements Serializable {
                 bb.append(line);
             }
         }
-        catch (Exception e){}
+        catch (Exception ignored){}
         req_json.put("body",bb.toString());
 
         String encoded_req = Base64.getEncoder().encodeToString(req_json.toString().getBytes(StandardCharsets.UTF_8));
