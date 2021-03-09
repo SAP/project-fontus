@@ -20,8 +20,7 @@ public class SQLChecker {
         String sql_string = json_obj.getString("payload");
         JSONArray json_array = antiSQLInjection.getSqlInjectionInfo(sql_string);
         System.out.println(json_array.toString());
-        NetworkRequestObject req_obj = new NetworkRequestObject();
-        NetworkResponseObject.setResponseMessage(req_obj,!json_array.isEmpty());
+        NetworkResponseObject.setResponseMessage(new NetworkRequestObject(),!json_array.isEmpty());
     }
 
 }
