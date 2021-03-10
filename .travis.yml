@@ -13,6 +13,7 @@ install: true
 
 
 script:
+- java -version
 - ./gradlew -s assemble
 - ./gradlew -s check
 - ./gradlew publishToMavenLocal

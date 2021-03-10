@@ -2,11 +2,11 @@ package com.sap.fontus.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-import com.sap.fontus.agent.AgentConfig;
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.abort.Abort;
 import com.sap.fontus.config.abort.StdErrLoggingAbort;
 import com.sap.fontus.instrumentation.BlackListEntry;
+import com.sap.fontus.agent.AgentConfig;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
 

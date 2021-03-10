@@ -1,10 +1,11 @@
 package com.sap.fontus.config.abort;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sap.fontus.config.Configuration;
+
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASStringable;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
+import com.sap.fontus.config.Configuration;
 
 import java.io.IOException;
 import java.util.ArrayList;

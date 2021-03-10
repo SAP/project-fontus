@@ -6,7 +6,10 @@ import com.sap.fontus.config.Configuration;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+
 import java.util.*;
 import java.util.function.Function;
 
@@ -15,7 +18,7 @@ import static com.sap.fontus.utils.ClassTraverser.getAllFields;
 public class IASTaintHandler {
     public static CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(ClassLoader.getSystemClassLoader());
 
-    public static Void handleTaint(IASTaintAware taintAware, String sink, String category) {
+    public static Void handleTaint(IASTaintAware taintAware, String sink, String category) throws InterruptedException, NoSuchMethodException, IOException, IllegalAccessException, InvocationTargetException {
         boolean isTainted = taintAware.isTainted();
 
         if (Configuration.getConfiguration().collectStats()) {
@@ -120,13 +123,19 @@ public class IASTaintHandler {
         return object;
     }
 
-    public static Object checkTaint(Object object, String sink, String category) {
+    public static Object checkTaint(Object object, String sink, String category) throws InterruptedException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         if (object instanceof IASTaintAware) {
             handleTaint((IASTaintAware) object, sink, category);
             return object;
         }
-
-        return traverseObject(object, taintAware -> handleTaint(taintAware, sink, category));
+        return traverseObject(object, taintAware -> {
+            try {
+                return handleTaint(taintAware, sink, category);
+            } catch (InterruptedException | NoSuchMethodException | IOException | IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+            return null;
+        });
     }
 
     public static Object taint(Object object, int sourceId) {
