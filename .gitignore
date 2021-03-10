@@ -11,6 +11,10 @@ bin
 .project
 
 *.log
+*.log.lck
 
 # Emacs files
 *~
+
+**/venv
+**/*.iml

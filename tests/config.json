@@ -28,11 +28,6 @@
       "jar_file": "sbasciibytes.jar"
     },
     {
-      "name": "Forwarding Argument to Main via Reflection",
-      "jar_file": "forward_main.jar",
-      "input_file": "forward.input"
-    },
-    {
       "name": "String Array Clone",
       "jar_file": "str_array_clone.jar",
       "input_file": "str_array_clone.input"
@@ -131,29 +126,14 @@
       "source": "MethodReferenceTest.java"
     },
     {
-      "name": "Inner Class Example Tests",
-      "source": "InnerClassExample.java",
-      "safe": true
-    },
-    {
       "name": "Main as a Varargs method Test",
       "source": "VarArgsMainTest.java",
       "arguments": ["hallo", "welt!"]
     },
     {
-      "name": "Anonymous Classes Test",
-      "source": "AnonymousClasses.java",
-      "safe": true
-    },
-    {
       "name": "Main as a Varargs method Test",
       "source": "VarArgsMainTest.java",
       "arguments": ["hallo", "welt!"]
-    },
-    {
-      "name": "Static Inner Class Test",
-      "source": "StaticInnerClassTest.java",
-      "safe": true
     },
     {
       "name": "Reflection Test: creating an empty String",
@@ -180,28 +160,8 @@
       "source": "ReflectionDirect.java"
     },
     {
-      "name": "Static Final String instance variable",
-      "source": "TestStaticFinalString.java"
-    },
-    {
-      "name": "Static Initializer Test",
-      "source": "StaticInitializerTest.java"
-    },
-    {
-      "name": "Static Initializer Tests from Tom",
-      "source": "StaticInitializerTestsFromTom.java"
-    },
-    {
-      "name": "Multiple Static Initializer Tests",
-      "source": "MultipleStaticInitializers.java"
-    },
-    {
       "name": "String Switch Test",
       "source": "StringSwitchTest.java"
-    },
-    {
-      "name": "checkcast/instanceof for String Arrays",
-      "source": "StrippedDownServletExample.java"
     },
     {
       "name": "String.toString test",
@@ -262,11 +222,6 @@
       "source": "ValueOfTest.java"
     },
     {
-      "name": "Logging Test from trying to instrument tomcat",
-      "source": "LoggerTest.java",
-      "safe": true
-    },
-    {
       "name": "Testing Null returning Functions",
       "source": "NullReturned.java"
     },
@@ -277,10 +232,6 @@
     {
       "name": "Testing Null returned from Stdlib",
       "source": "NullReturnedFromStdLib.java"
-    },
-    {
-      "name": "SystemGetProperty",
-      "source": "SystemGetProperty.java"
     },
     {
       "name": "FieldAccessTest",
@@ -325,5 +276,51 @@
       "source": "InternTest.java"
     }
 
+  ],
+  "excluded_tests": [
+    {
+      "name": "SystemGetProperty",
+      "source": "SystemGetProperty.java"
+    },
+    {
+      "name": "checkcast/instanceof for String Arrays",
+      "source": "StrippedDownServletExample.java"
+    },
+    {
+      "name": "Static Final String instance variable",
+      "source": "TestStaticFinalString.java"
+    },
+    {
+      "name": "Static Initializer Test",
+      "source": "StaticInitializerTest.java"
+    },
+    {
+      "name": "Static Initializer Tests from Tom",
+      "source": "StaticInitializerTestsFromTom.java"
+    },
+    {
+      "name": "Multiple Static Initializer Tests",
+      "source": "MultipleStaticInitializers.java"
+    },
+    {
+      "name": "Anonymous Classes Test",
+      "source": "AnonymousClasses.java",
+      "safe": true
+    },
+    {
+      "name": "Inner Class Example Tests",
+      "source": "InnerClassExample.java",
+      "safe": true
+    },
+    {
+      "name": "Static Inner Class Test",
+      "source": "StaticInnerClassTest.java",
+      "safe": true
+    },
+    {
+      "name": "Forwarding Argument to Main via Reflection",
+      "jar_file": "forward_main.jar",
+      "input_file": "forward.input"
+    }
   ]
 }
