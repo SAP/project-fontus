@@ -15,3 +15,6 @@ bin
 
 # Emacs files
 *~
+
+**/venv
+**/*.iml

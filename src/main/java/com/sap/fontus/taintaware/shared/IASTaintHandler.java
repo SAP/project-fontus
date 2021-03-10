@@ -9,6 +9,7 @@ import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+
 import java.util.*;
 import java.util.function.Function;
 
@@ -127,7 +128,6 @@ public class IASTaintHandler {
             handleTaint((IASTaintAware) object, sink, category);
             return object;
         }
-
         return traverseObject(object, taintAware -> {
             try {
                 return handleTaint(taintAware, sink, category);

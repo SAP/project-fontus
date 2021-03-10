@@ -1,8 +1,9 @@
 package com.sap.fontus.config;
 
-import com.sap.fontus.Constants;
 import com.sap.fontus.taintaware.shared.IASClassProxy;
 import com.sap.fontus.utils.Utils;
+
+import static com.sap.fontus.Constants.StringDesc;
 
 public class TaintStringConfig {
     /**
@@ -165,10 +166,10 @@ public class TaintStringConfig {
         this.MethodTStringBuilderDesc = "Lcom/sap/fontus/taintaware/shared/IASAbstractStringBuilderable;";
         this.TStringBufferDesc = String.format("L%s;", this.TStringBufferQN);
         this.MethodTStringBufferDesc = "Lcom/sap/fontus/taintaware/shared/IASAbstractStringBuilderable;";
-        this.ConcatDesc = String.format("(%s[Ljava/lang/Object;)%s", Constants.StringDesc, this.TStringDesc);
+        this.ConcatDesc = String.format("(%s[Ljava/lang/Object;)%s", StringDesc, this.TStringDesc);
         this.ToStringInstrumentedDesc = String.format("()%s", this.TStringDesc);
-        this.asStringDesc = String.format("(%s)%s", this.TStringDesc, Constants.StringDesc);
-        this.fromStringDesc = String.format("(%s)%s", Constants.StringDesc, this.TStringDesc);
+        this.asStringDesc = String.format("(%s)%s", this.TStringDesc, StringDesc);
+        this.fromStringDesc = String.format("(%s)%s", StringDesc, this.TStringDesc);
         this.TFormatterQN = this.TPackage + "IASFormatter";
         this.TFormatterDesc = String.format("L%s;", this.TFormatterQN);
         this.MethodTFormatterDesc = "Lcom/sap/fontus/taintaware/shared/IASFormatterable;";

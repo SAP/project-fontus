@@ -103,7 +103,7 @@ shadowJar {
         manifest {
                 attributes(
                         // 'Class-Path': configurations.compile.collect{it.toURI().toString()}.join(' '),
-                        'Main-Class': 'com.sap.fontus.asm_test.Main',
+                        'Main-Class': 'com.sap.fontus.Main',
                         'Agent-Class': 'com.sap.fontus.agent.TaintAgent',
                         'Can-Redefine-Classes': true,
                         'Can-Retransform-Classes': true,

@@ -1,4 +1,4 @@
-import de.tubs.cs.ias.asm_test.TaintStringHelper;
+import com.sap.fontus.TaintStringHelper;
 class PolymorhismTests {
     public static void main(String[] args) {
         String s = new String("Hello world!");

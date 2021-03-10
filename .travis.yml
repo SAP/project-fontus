@@ -1,4 +1,4 @@
-dist: xenial
+dist: bionic
 language: java
 
 jdk:
@@ -9,6 +9,8 @@ before_install:
 - sudo apt-get install python3
 
 install: true
+
+
 
 script:
 - java -version
