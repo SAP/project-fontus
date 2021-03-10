@@ -1,0 +1,11 @@
+package com.sap.fontus.instrumentation.strategies.clazz;
+
+import com.sap.fontus.Constants;
+import com.sap.fontus.config.TaintStringConfig;
+import org.objectweb.asm.ClassVisitor;
+
+public class StringBufferClassInstrumentationStrategy extends AbstractClassInstrumentationStrategy {
+    public StringBufferClassInstrumentationStrategy(ClassVisitor visitor, TaintStringConfig config) {
+        super(visitor, Constants.StringBufferDesc, config.getTStringBufferDesc(), Constants.StringBufferQN, Constants.TStringBufferToStringBufferName);
+    }
+}

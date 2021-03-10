@@ -47,7 +47,7 @@ node ('master') {
                 
                 stage('Publish') {
                     junit '**/build/test-results/**/TEST-*.xml'
-                    archiveArtifacts artifacts: 'build/libs/asm_test-*.jar, build/publications/main/pom-default.xml', fingerprint: true
+                    archiveArtifacts artifacts: 'build/libs/fontus-*.jar, build/publications/main/pom-default.xml', fingerprint: true
                 }
 
                 stage('Test') {
