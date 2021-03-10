@@ -29,12 +29,12 @@ public class SqlCheckerAbort extends Abort{
         }
 
         IASStringable taintedString = taintAware.toIASString();
-        SqlAbort sql_checker_abort = new SqlAbort(sink, category, taintedString.getString(), taintedString.getTaintRanges(), convertStackTrace(stackTrace));
+        Abort sql_checker_abort = new Abort(sink, category, taintedString.getString(), taintedString.getTaintRanges(), convertStackTrace(stackTrace));
 
         sendAborts(sql_checker_abort);
     }
 
-    private void sendAborts(SqlAbort sql_checker_abort) throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, InterruptedException {
+    private void sendAborts(Abort sql_checker_abort) throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, InterruptedException {
         SQLChecker.checkTaintedString(this.objectMapper.writeValueAsString(sql_checker_abort));
 //        try {
 //            SQLChecker.checkTaintedString(this.objectMapper.writeValueAsString(sql_checker_abort));
@@ -48,14 +48,14 @@ public class SqlCheckerAbort extends Abort{
         return "sql_checker";
     }
 
-    public static class SqlAbort {
+    public static class Abort {
         private final String sink;
         private final String category;
         private final String payload;
         private final List<IASTaintRange> ranges;
         private final List<String> stackTrace;
 
-        private SqlAbort(String sink, String category, String payload, List<IASTaintRange> ranges, List<String> stackTrace) {
+        private Abort(String sink, String category, String payload, List<IASTaintRange> ranges, List<String> stackTrace) {
             this.sink = sink;
             this.category = category;
             this.payload = payload;
