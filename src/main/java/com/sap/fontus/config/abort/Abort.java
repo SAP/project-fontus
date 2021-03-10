@@ -6,7 +6,7 @@ import java.util.List;
 
 public abstract class Abort {
     private static final Abort[] aborts = {
-            new NothingAbort(), new ExitAbort(), new StdErrLoggingAbort(), new JsonLoggingAbort()
+            new NothingAbort(), new ExitAbort(), new StdErrLoggingAbort(), new JsonLoggingAbort(), new SanitizationAbort()
     };
 
     public abstract void abort(IASTaintAware taintAware, String sink, String category, List<StackTraceElement> stackTrace);
