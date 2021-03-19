@@ -6,6 +6,7 @@ import com.sap.fontus.agent.AgentConfig;
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.abort.Abort;
 import com.sap.fontus.config.abort.StdErrLoggingAbort;
+import com.sap.fontus.config.taintloss.TaintlossHandler;
 import com.sap.fontus.instrumentation.BlackListEntry;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
@@ -36,6 +37,9 @@ public class Configuration {
 
     @JsonIgnore
     private Abort abort = defaultAbort();
+
+    @JsonIgnore
+    private TaintlossHandler taintlossHandler = null;
 
     private boolean isOfflineInstrumentation = true;
 
@@ -381,5 +385,17 @@ public class Configuration {
 
     public boolean isRecursiveTainting() {
         return recursiveTainting;
+    }
+
+    public boolean handleTaintloss() {
+        return this.taintlossHandler != null;
+    }
+
+    public TaintlossHandler getTaintlossHandler() {
+        return taintlossHandler;
+    }
+
+    public void setTaintlossHandler(TaintlossHandler taintlossHandler) {
+        this.taintlossHandler = taintlossHandler;
     }
 }

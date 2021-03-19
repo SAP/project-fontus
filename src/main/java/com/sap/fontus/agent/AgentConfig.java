@@ -5,6 +5,7 @@ import com.sap.fontus.config.abort.Abort;
 import com.sap.fontus.Constants;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
+import com.sap.fontus.config.taintloss.TaintlossHandler;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
 
@@ -70,6 +71,7 @@ public class AgentConfig {
         Integer layerThreshold = null;
         Boolean collectStats = null;
         Abort abort = null;
+        TaintlossHandler taintlossHandler = null;
 
         for (String part : parts) {
             if ("verbose".equals(part)) {
@@ -108,6 +110,10 @@ public class AgentConfig {
                 String abortName = afterEquals(part);
                 abort = Abort.parse(abortName);
             }
+            if (part.startsWith("taintloss_handler=")) {
+                String taintlossHandlerName = afterEquals(part);
+                taintlossHandler = TaintlossHandler.parse(taintlossHandlerName);
+            }
         }
         if (c == null) {
             c = ConfigurationLoader.defaultConfiguration();
@@ -129,6 +135,9 @@ public class AgentConfig {
         }
         if (abort != null) {
             c.setAbort(abort);
+        }
+        if (taintlossHandler != null) {
+            c.setTaintlossHandler(taintlossHandler);
         }
 
         c.transformConverters();
