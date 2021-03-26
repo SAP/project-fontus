@@ -24,6 +24,7 @@ tasks.jar.configure {
 dependencies {
     compile files('libs/gsp.jar')
     compile group: 'org.apache.calcite', name: 'calcite-core', version: '1.15.0'
+
     compile 'org.ow2.asm:asm:9.0'
     compile 'org.ow2.asm:asm-commons:9.0'
     compile 'org.ow2.asm:asm-analysis:9.0'
@@ -124,7 +125,18 @@ shadowJar {
     relocate 'javax.activation', 'com.sap.fontus.javax.activation'
     relocate 'javax.xml.bind', 'com.sap.fontus.javax.xml.bind'
     relocate 'picocli', 'com.sap.fontus.picocli'
-    relocate 'gudusoft', 'com.sap.fontus.gudusoft'
+
+//    relocate 'gudusoft', 'com.sap.fontus.gudusoft'
+//    relocate 'org.opentest4j', 'com.sap.fontus.org.opentest4j'
+//    relocate 'com.esri', 'com.sap.fontus.com.esri'
+//    relocate 'net.hydromatic', 'com.sap.fontus.net.hydromatic'
+//    relocate 'com.yahoo', 'com.sap.fontus.com.yahoo'
+
+    relocate 'org.apache.calcite', 'com.sap.fontus.org.apache.calcite'
+    relocate 'com.google', 'com.sap.fontus.com.google'
+    relocate 'org.apiguardian', 'com.sap.fontus.org.apiguardian'
+    relocate 'org.slf4j', 'com.sap.fontus.org.slf4j'
+
     dependsOn utilJar
     dependsOn converterJar
     dependsOn generatorJar
