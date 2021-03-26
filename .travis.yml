@@ -2,7 +2,9 @@ dist: bionic
 language: java
 
 jdk:
+  - openjdk10
   - openjdk11
+  - openjdk15
 
 before_install:
 - sudo apt-get update
