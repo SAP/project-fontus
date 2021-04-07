@@ -79,7 +79,7 @@ public class Sanitization {
             // replaces all tainted chars, s
             StringBuffer quoteCountingString = new StringBuffer(taintedString);
             for (IASTaintRange range : taintRanges) {
-                for (int i = range.getStart(); i <= range.getEnd(); i++) {
+                for (int i = range.getStart(); i < range.getEnd(); i++) {
                     quoteCountingString.setCharAt(i, ' ');
                 }
             }
@@ -94,8 +94,8 @@ public class Sanitization {
                 // "original" taintedString. If NOT, skip this range, since its content was
                 // already altered by handling another range
                 // TODO: only ignore already changed part.
-                if (!preparedString.substring(taintRangeStart, taintRangeEnd + 1)
-                        .equals(taintedString.substring(taintRangeStart, taintRangeEnd + 1))) {
+                if (!preparedString.substring(taintRangeStart, taintRangeEnd)
+                        .equals(taintedString.substring(taintRangeStart, taintRangeEnd))) {
                     continue;
                 }
 
@@ -123,13 +123,13 @@ public class Sanitization {
                         startTaintIndex = Math.max(startTaintIndex, help.lastIndexOf(c) + 1);
                     }
 
-                    if (taintRangeEnd < preparedString.length() - 1) {
+                    if (taintRangeEnd < preparedString.length()) {
                         int noMatch = -1;
                         for (char c : notTextChars) {
-                            if (preparedString.indexOf(c, taintRangeEnd + 1) != -1) {
-                                endTaintIndex = Math.min(endTaintIndex, preparedString.indexOf(c, taintRangeEnd + 1));
+                            if (preparedString.indexOf(c, taintRangeEnd) != -1) {
+                                endTaintIndex = Math.min(endTaintIndex, preparedString.indexOf(c, taintRangeEnd));
                             }
-                            noMatch = Math.max(noMatch, preparedString.indexOf(c, taintRangeEnd + 1));
+                            noMatch = Math.max(noMatch, preparedString.indexOf(c, taintRangeEnd));
                         }
                         // check is necessary to include whole charsequence at end of sql query
                         if (noMatch != -1) {
@@ -146,11 +146,11 @@ public class Sanitization {
                     endTaintIndex = preparedString.length() - 1;
                     char[] textChars = new char[] { '\"', '\'' };
                     String temp = preparedString;
-                    if (taintRangeStart > 0 && taintRangeEnd < preparedString.length() - 1) {
+                    if (taintRangeStart > 0 && taintRangeEnd < preparedString.length()) {
                         char quoteType = '\"';
                         for (char c : textChars) {
                             int helpStart = preparedString.substring(0, taintRangeStart).lastIndexOf(c);
-                            int helpEnd = preparedString.indexOf(c, taintRangeEnd + 1);
+                            int helpEnd = preparedString.indexOf(c, taintRangeEnd);
                             if (helpStart != -1 && helpEnd != -1 && helpEnd <= endTaintIndex) {
                                 startTaintIndex = helpStart + 1;
                                 endTaintIndex = helpEnd - 1;
@@ -284,7 +284,7 @@ public class Sanitization {
     // check if char of string is tainted
     private static boolean charIsTainted(int charPosition, List<IASTaintRange> taintRanges) {
         for (IASTaintRange range : taintRanges) {
-            if (charPosition >= range.getStart() && charPosition <= range.getEnd()) {
+            if (charPosition >= range.getStart() && charPosition < range.getEnd()) {
                 return true;
             }
         }
@@ -309,7 +309,7 @@ public class Sanitization {
             boolean charIsTainted = false;
             IASTaintRange taintedRange = null;
             for (IASTaintRange range : taintRanges) {
-                if (i >= range.getStart() && i <= range.getEnd()) {
+                if (i >= range.getStart() && i < range.getEnd()) {
                     charIsTainted = true;
                     taintedRange = range;
                 }
@@ -475,7 +475,7 @@ public class Sanitization {
                     case HtmlTextContent:
                     case HtmlAttributeValue:
                         sanitizedSubstring = Encode
-                                .forHtml(taintedString.substring(range.getStart(), range.getEnd() + 1));
+                                .forHtml(taintedString.substring(range.getStart(), range.getEnd()));
                         break;
 
                     // Encodes for CSS strings in style blocks and attributes in Html
@@ -486,18 +486,18 @@ public class Sanitization {
                     // TODO: decide whether or not these measures should be taken
                     case CssInlineString:
                         if (taintedString.substring(0, range.getStart()).trim().endsWith("\"")
-                                && taintedString.substring(range.getEnd() + 1).trim().startsWith("\"")) {
+                                && taintedString.substring(range.getEnd()).trim().startsWith("\"")) {
                             sanitizedSubstring = Encode
-                                    .forCssString(taintedString.substring(range.getStart(), range.getEnd() + 1));
+                                    .forCssString(taintedString.substring(range.getStart(), range.getEnd()));
                         } else {
                             sanitizedSubstring = "\""
-                                    + Encode.forCssString(taintedString.substring(range.getStart(), range.getEnd() + 1))
+                                    + Encode.forCssString(taintedString.substring(range.getStart(), range.getEnd()))
                                     + "\"";
                         }
                         break;
                     case CssInternalString:
                         sanitizedSubstring = Encode
-                                .forCssString(taintedString.substring(range.getStart(), range.getEnd() + 1));
+                                .forCssString(taintedString.substring(range.getStart(), range.getEnd()));
                         break;
 
                     // Encodes for CSS URLs in style blocks and attributes in Html
@@ -506,12 +506,12 @@ public class Sanitization {
                     // TODO: add method that checks if given URL is safe. If not abort.
                     case CssUrl:
                         if (taintedString.substring(0, range.getStart()).trim().endsWith("\"url(\"")
-                                && taintedString.substring(range.getEnd() + 1).trim().startsWith("\")\"")) {
+                                && taintedString.substring(range.getEnd()).trim().startsWith("\")\"")) {
                             sanitizedSubstring = Encode
-                                    .forCssUrl(taintedString.substring(range.getStart(), range.getEnd() + 1));
+                                    .forCssUrl(taintedString.substring(range.getStart(), range.getEnd()));
                         } else {
                             sanitizedSubstring = "url("
-                                    + Encode.forCssUrl(taintedString.substring(range.getStart(), range.getEnd() + 1))
+                                    + Encode.forCssUrl(taintedString.substring(range.getStart(), range.getEnd()))
                                     + ")";
                         }
                         break;
@@ -522,7 +522,7 @@ public class Sanitization {
                     // TODO: add method that checks if given URL is safe. If not abort.
                     case Uri:
                         try {
-                            sanitizedSubstring = new URI(taintedString.substring(range.getStart(), range.getEnd() + 1))
+                            sanitizedSubstring = new URI(taintedString.substring(range.getStart(), range.getEnd()))
                                     .toString();
                         } catch (URISyntaxException e) {
                             e.printStackTrace();
@@ -533,44 +533,44 @@ public class Sanitization {
                     // value, path or query-string.
                     case UriComponent:
                         sanitizedSubstring = Encode
-                                .forUriComponent(taintedString.substring(range.getStart(), range.getEnd() + 1));
+                                .forUriComponent(taintedString.substring(range.getStart(), range.getEnd()));
                         break;
 
                     // Encodes XML and XHTML text content
                     case XmlContent:
                     case XHtmlContent:
                         sanitizedSubstring = Encode
-                                .forXmlContent(taintedString.substring(range.getStart(), range.getEnd() + 1));
+                                .forXmlContent(taintedString.substring(range.getStart(), range.getEnd()));
                         break;
 
                     // Encodes XML and XHTML attribut content
                     case XmlAttributeValue:
                     case XHtmlAttributeValue:
                         sanitizedSubstring = Encode
-                                .forXmlAttribute(taintedString.substring(range.getStart(), range.getEnd() + 1));
+                                .forXmlAttribute(taintedString.substring(range.getStart(), range.getEnd()));
                         break;
 
                     // ONLY encodes XML comments. NOT for XHTML comments
                     case XmlComment:
                         sanitizedSubstring = Encode
-                                .forXmlComment(taintedString.substring(range.getStart(), range.getEnd() + 1));
+                                .forXmlComment(taintedString.substring(range.getStart(), range.getEnd()));
                         break;
 
                     // Encodes XML CDATA
                     case CDATA:
                         sanitizedSubstring = Encode
-                                .forCDATA(taintedString.substring(range.getStart(), range.getEnd() + 1));
+                                .forCDATA(taintedString.substring(range.getStart(), range.getEnd()));
                         break;
 
                     // Encodes java code given as string
                     case Java:
                         if (taintedString.substring(0, range.getStart()).trim().endsWith("\"")
-                                && taintedString.substring(range.getEnd() + 1).trim().startsWith("\"")) {
+                                && taintedString.substring(range.getEnd()).trim().startsWith("\"")) {
                             sanitizedSubstring = Encode
-                                    .forJava(taintedString.substring(range.getStart(), range.getEnd() + 1));
+                                    .forJava(taintedString.substring(range.getStart(), range.getEnd()));
                         } else {
                             sanitizedSubstring = "\""
-                                    + Encode.forJava(taintedString.substring(range.getStart(), range.getEnd() + 1))
+                                    + Encode.forJava(taintedString.substring(range.getStart(), range.getEnd()))
                                     + "\"";
                         }
                         break;
@@ -583,12 +583,12 @@ public class Sanitization {
                     // TODO: decide whether dynamically generated javascript code should be allowed
                     case JavaScript:
                         if (taintedString.substring(0, range.getStart()).trim().endsWith("\"")
-                                && taintedString.substring(range.getEnd() + 1).trim().startsWith("\"")) {
+                                && taintedString.substring(range.getEnd()).trim().startsWith("\"")) {
                             sanitizedSubstring = Encode
-                                    .forJavaScript(taintedString.substring(range.getStart(), range.getEnd() + 1));
+                                    .forJavaScript(taintedString.substring(range.getStart(), range.getEnd()));
                         } else {
                             sanitizedSubstring = "\"" + Encode.forJavaScript(
-                                    taintedString.substring(range.getStart(), range.getEnd() + 1)) + "\"";
+                                    taintedString.substring(range.getStart(), range.getEnd())) + "\"";
                         }
                         break;
 
@@ -604,7 +604,7 @@ public class Sanitization {
                     default:
                         return null;
                 }
-                sb.replace(range.getStart(), range.getEnd() + 1, sanitizedSubstring);
+                sb.replace(range.getStart(), range.getEnd(), sanitizedSubstring);
             }
             return sb.toString();
         } else {

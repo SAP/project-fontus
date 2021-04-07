@@ -22,7 +22,7 @@ public class XssSanitizationTest {
     @Test
     public void testHtmlAttributeNameTainted_1() {
         String taintedString = "<html> <body> <img src=\"test.jpg\" width=\"200\" height=\"100\"> </body> </html>";
-        IASTaintRange r = new IASTaintRange(19, 21, new IASTaintSource("dummy", 1234)); // src is tainted
+        IASTaintRange r = new IASTaintRange(19, 22, new IASTaintSource("dummy", 1234)); // src is tainted
         List<IASTaintRange> ranges = new ArrayList<>();
         ranges.add(r);
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
@@ -36,7 +36,7 @@ public class XssSanitizationTest {
     @Test
     public void testHtmlAttributeNameTainted_2() {
         String taintedString = "<html> <body> <img src=\"test.jpg\" width=\"200\" height=\"100\"> </body> </html>";
-        IASTaintRange r = new IASTaintRange(34, 38, new IASTaintSource("dummy", 1234)); // width is tainted
+        IASTaintRange r = new IASTaintRange(34, 39, new IASTaintSource("dummy", 1234)); // width is tainted
         List<IASTaintRange> ranges = new ArrayList<>();
         ranges.add(r);
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
@@ -53,7 +53,7 @@ public class XssSanitizationTest {
     @Test
     public void testHtmlAttributeValueTainted_1() {
         String taintedString = "<html> <body> <img src=\"test.jpg\" width=\"200\" height=\"100\"> </body> </html>";
-        IASTaintRange r = new IASTaintRange(24, 31, new IASTaintSource("dummy", 1234)); // test.jpg is tainted
+        IASTaintRange r = new IASTaintRange(24, 32, new IASTaintSource("dummy", 1234)); // test.jpg is tainted
         List<IASTaintRange> ranges = new ArrayList<>();
         ranges.add(r);
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
@@ -69,7 +69,7 @@ public class XssSanitizationTest {
     @Test
     public void testHtmlAttributeValueTainted_2() {
         String taintedString = "<html> <body> <img src=\"test.jpg\" width=\"200\" height=\"100\"> </body> </html>";
-        IASTaintRange r = new IASTaintRange(41, 43, new IASTaintSource("dummy", 1234)); // 200 is tainted
+        IASTaintRange r = new IASTaintRange(41, 44, new IASTaintSource("dummy", 1234)); // 200 is tainted
         List<IASTaintRange> ranges = new ArrayList<>();
         ranges.add(r);
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
@@ -85,7 +85,7 @@ public class XssSanitizationTest {
     @Test
     public void testHtmlAttributeValueTainted_3() {
         String taintedString = "<html> <body> <img src=\"t&st.jpg\" width=\"200\" height=\"100\"> </body> </html>";
-        IASTaintRange r = new IASTaintRange(24, 31, new IASTaintSource("dummy", 1234)); // t&st.jpg is tainted
+        IASTaintRange r = new IASTaintRange(24, 32, new IASTaintSource("dummy", 1234)); // t&st.jpg is tainted
         List<IASTaintRange> ranges = new ArrayList<>();
         ranges.add(r);
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
@@ -101,8 +101,8 @@ public class XssSanitizationTest {
     @Test
     public void testHtmlAttributeValueTainted_4() {
         String taintedString = "<html> <body> <img src=\"t&st.jpg\" width=\"200\" height=\"100\"> </body> </html>";
-        IASTaintRange r1 = new IASTaintRange(24, 31, new IASTaintSource("dummy", 1234)); // t&st.jpg is tainted
-        IASTaintRange r2 = new IASTaintRange(41, 43, new IASTaintSource("dummy", 1234)); // 200 is tainted
+        IASTaintRange r1 = new IASTaintRange(24, 32, new IASTaintSource("dummy", 1234)); // t&st.jpg is tainted
+        IASTaintRange r2 = new IASTaintRange(41, 44, new IASTaintSource("dummy", 1234)); // 200 is tainted
         List<IASTaintRange> ranges = new ArrayList<>();
         ranges.add(r1);
         ranges.add(r2);
@@ -122,7 +122,7 @@ public class XssSanitizationTest {
     @Test
     public void testHtmlCommentTainted() {
         String taintedString = "<html> <body> <!-- This is a comment --> <img src=\"test.jpg\" width=\"200\" height=\"100\"> </body> </html>";
-        IASTaintRange r = new IASTaintRange(18, 36, new IASTaintSource("dummy", 1234)); // This is a comment is tainted
+        IASTaintRange r = new IASTaintRange(18, 37, new IASTaintSource("dummy", 1234)); // This is a comment is tainted
         List<IASTaintRange> ranges = new ArrayList<>();
         ranges.add(r);
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
@@ -139,7 +139,7 @@ public class XssSanitizationTest {
     @Test
     public void testHtmlTextContentTainted_1() {
         String taintedString = "<html> <body> hello world </body> </html>";
-        IASTaintRange r = new IASTaintRange(14, 24, new IASTaintSource("dummy", 1234)); // hello world is tainted
+        IASTaintRange r = new IASTaintRange(14, 25, new IASTaintSource("dummy", 1234)); // hello world is tainted
         List<IASTaintRange> ranges = new ArrayList<>();
         ranges.add(r);
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
@@ -154,7 +154,7 @@ public class XssSanitizationTest {
     @Test
     public void testHtmlTextContentTainted_2() {
         String taintedString = "<html> <body> Hello & Bye! </body> </html>";
-        IASTaintRange r = new IASTaintRange(14, 25, new IASTaintSource("dummy", 1234)); // Hello & Bye! is tainted
+        IASTaintRange r = new IASTaintRange(14, 26, new IASTaintSource("dummy", 1234)); // Hello & Bye! is tainted
         List<IASTaintRange> ranges = new ArrayList<>();
         ranges.add(r);
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
@@ -169,7 +169,7 @@ public class XssSanitizationTest {
     @Test
     public void testHtmlTextContentTainted_3() {
         String taintedString = "<html> <body> Hello & Bye! </body> </html>";
-        IASTaintRange r = new IASTaintRange(14, 18, new IASTaintSource("dummy", 1234)); // Hello is tainted
+        IASTaintRange r = new IASTaintRange(14, 19, new IASTaintSource("dummy", 1234)); // Hello is tainted
         List<IASTaintRange> ranges = new ArrayList<>();
         ranges.add(r);
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
@@ -188,7 +188,7 @@ public class XssSanitizationTest {
     public void testCssStringTainted_1() {
         // inline css string
         String taintedString = "<html> <body> <h1 style=\"color:red;\">Red Heading</h1> </body> </html>";
-        IASTaintRange r = new IASTaintRange(25, 34, new IASTaintSource("dummy", 1234)); // color:red; is tainted
+        IASTaintRange r = new IASTaintRange(25, 35, new IASTaintSource("dummy", 1234)); // color:red; is tainted
         List<IASTaintRange> ranges = new ArrayList<>();
         ranges.add(r);
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
@@ -204,7 +204,7 @@ public class XssSanitizationTest {
     public void testCssStringTainted_2() {
         // missing quotation in inline css string
         String taintedString = "<html> <body> <h1 style=color:red;>Red Heading</h1> </body> </html>";
-        IASTaintRange r = new IASTaintRange(24, 33, new IASTaintSource("dummy", 1234)); // color:red; is tainted
+        IASTaintRange r = new IASTaintRange(24, 34, new IASTaintSource("dummy", 1234)); // color:red; is tainted
         List<IASTaintRange> ranges = new ArrayList<>();
         ranges.add(r);
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
@@ -220,7 +220,7 @@ public class XssSanitizationTest {
     public void testCssStringTainted_3() {
         // internal css string
         String taintedString = "<html> <style> body {color: red;} </style> <body> hello </body> </html>";
-        IASTaintRange r = new IASTaintRange(15, 32, new IASTaintSource("dummy", 1234)); // body {color:red;} is tainted
+        IASTaintRange r = new IASTaintRange(15, 33, new IASTaintSource("dummy", 1234)); // body {color:red;} is tainted
         List<IASTaintRange> ranges = new ArrayList<>();
         ranges.add(r);
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);

@@ -90,7 +90,7 @@ public class SqlSanitizationTest {
         String taintedString = "SELECT ID, City FROM Students WHERE City='London'";
         List<IASTaintRange> ranges = new ArrayList<>();
         // London is tainted, i.e. the '' are NOT included in the taint
-        ranges.add(new IASTaintRange(taintedString.length() - 7, taintedString.length() - 2, new IASTaintSource("dummy", 1234)));
+        ranges.add(new IASTaintRange(taintedString.length() - 7, taintedString.length() - 1, new IASTaintSource("dummy", 1234)));
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since taintRange IS NOT empty
@@ -112,7 +112,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID, City FROM Students WHERE City=4c6f6e646f6e"; // hex for London
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 12, taintedString.length() - 1, new IASTaintSource("dummy", 1234)));
+        ranges.add(new IASTaintRange(taintedString.length() - 12, taintedString.length(), new IASTaintSource("dummy", 1234)));
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since taintRange IS NOT empty
@@ -134,7 +134,7 @@ public class SqlSanitizationTest {
         String taintedString = "SELECT ID, City FROM Students WHERE City='" + badInput + "'";
         List<IASTaintRange> ranges = new ArrayList<>();
         // >>' OR 1=1--<< is tainted
-        ranges.add(new IASTaintRange(taintedString.length() - 11, taintedString.length() - 2, new IASTaintSource("dummy", 1234)));
+        ranges.add(new IASTaintRange(taintedString.length() - 11, taintedString.length() - 1, new IASTaintSource("dummy", 1234)));
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since taintRange IS NOT empty
@@ -153,7 +153,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID, City FROM Students WHERE ID=1";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 1, taintedString.length() - 1, new IASTaintSource("dummy", 1234)));
+        ranges.add(new IASTaintRange(taintedString.length() - 1, taintedString.length(), new IASTaintSource("dummy", 1234)));
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
         // sanitization was performed because attribute was tainted
         // number not being supported as datatype for ID
@@ -175,7 +175,7 @@ public class SqlSanitizationTest {
         String badInput = "31204f5220313d312d2d"; // is hex representation of 1 OR 1=1--
         String taintedString = "SELECT ID, City FROM Students WHERE ID=" + badInput;
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 20, taintedString.length() - 1, new IASTaintSource("dummy", 1234)));
+        ranges.add(new IASTaintRange(taintedString.length() - 20, taintedString.length(), new IASTaintSource("dummy", 1234)));
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
         // check if sanitization was aborted because exception was thrown due to hex
         // number not being supported as datatype for ID
@@ -190,7 +190,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID, City FROM Students WHERE 1=1 AND ID=1 AND City='London'";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 19, taintedString.length() - 19, new IASTaintSource("dummy", 1234)));
+        ranges.add(new IASTaintRange(taintedString.length() - 19, taintedString.length() - 18, new IASTaintSource("dummy", 1234)));
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
         // sanitization was performed because attribute was tainted
         // number not being supported as datatype for ID
@@ -211,7 +211,7 @@ public class SqlSanitizationTest {
         String taintedString = "SELECT ID, City FROM Students WHERE ID=1 AND City='London'";
         List<IASTaintRange> ranges = new ArrayList<>();
         // London is tainted, i.e. the '' are NOT included in the taint
-        ranges.add(new IASTaintRange(taintedString.length() - 7, taintedString.length() - 2, new IASTaintSource("dummy", 1234)));
+        ranges.add(new IASTaintRange(taintedString.length() - 7, taintedString.length() - 1, new IASTaintSource("dummy", 1234)));
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since taintRange IS NOT empty
@@ -233,9 +233,9 @@ public class SqlSanitizationTest {
         String taintedString = "SELECT ID, City FROM Students WHERE City='London' AND ID=1";
         List<IASTaintRange> ranges = new ArrayList<>();
         // London is tainted
-        ranges.add(new IASTaintRange(taintedString.length() - 16, taintedString.length() - 11, new IASTaintSource("dummy", 1234)));
+        ranges.add(new IASTaintRange(taintedString.length() - 16, taintedString.length() - 10, new IASTaintSource("dummy", 1234)));
         // 1 is tainted
-        ranges.add(new IASTaintRange(taintedString.length() - 1, taintedString.length() - 1, new IASTaintSource("dummy", 1234)));
+        ranges.add(new IASTaintRange(taintedString.length() - 1, taintedString.length(), new IASTaintSource("dummy", 1234)));
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // since taintRange IS NOT empty sanitization should be performed
@@ -258,9 +258,9 @@ public class SqlSanitizationTest {
         String taintedString = "SELECT ID, City FROM Students WHERE City='" + badInput + "' AND ID=1";
         List<IASTaintRange> ranges = new ArrayList<>();
         // badInput is tainted
-        ranges.add(new IASTaintRange(taintedString.length() - 20, taintedString.length() - 11, new IASTaintSource("dummy", 1234)));
+        ranges.add(new IASTaintRange(taintedString.length() - 20, taintedString.length() - 10, new IASTaintSource("dummy", 1234)));
         // 1 is tainted
-        ranges.add(new IASTaintRange(taintedString.length() - 1, taintedString.length() - 1, new IASTaintSource("dummy", 1234)));
+        ranges.add(new IASTaintRange(taintedString.length() - 1, taintedString.length(), new IASTaintSource("dummy", 1234)));
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // since taintRange IS NOT empty sanitization should be performed
@@ -280,7 +280,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT TOP 1 ID FROM Students";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(11, 11, new IASTaintSource("dummy", 1234))); // 1 is tainted
+        ranges.add(new IASTaintRange(11, 12, new IASTaintSource("dummy", 1234))); // 1 is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // since taintRange IS NOT empty sanitization should be performed
@@ -300,7 +300,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID FROM Students WHERE ID BETWEEN 1 AND 2";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 7, taintedString.length() - 7, new IASTaintSource("dummy", 1234))); // 1 is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 7, taintedString.length() - 6, new IASTaintSource("dummy", 1234))); // 1 is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // since taintRange IS NOT empty sanitization should be performed
@@ -322,7 +322,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "ALTER TABLE Students ADD Age INTEGER DEFAULT 20 NOT NULL";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 11, taintedString.length() - 10, new IASTaintSource("dummy", 1234))); // 20 is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 11, taintedString.length() - 9, new IASTaintSource("dummy", 1234))); // 20 is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since something is tainted bind
@@ -339,7 +339,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID, City FROM Students WHERE City LIKE 'London'";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 7, taintedString.length() - 2, new IASTaintSource("dummy", 1234))); // London is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 7, taintedString.length() - 1, new IASTaintSource("dummy", 1234))); // London is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // sanitization was performed because attribute was tainted
@@ -359,7 +359,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID FROM Students WHERE ID IN(1,2)";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 2, taintedString.length() - 2, new IASTaintSource("dummy", 1234))); // 2 is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 2, taintedString.length() - 1, new IASTaintSource("dummy", 1234))); // 2 is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // sanitization was performed because attribute was tainted
@@ -380,7 +380,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT City FROM Students WHERE City='\' OR 1=1\''";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 10, taintedString.length() - 2, new IASTaintSource("dummy", 1234)));// \' OR 1=1\' is
+        ranges.add(new IASTaintRange(taintedString.length() - 10, taintedString.length() - 1, new IASTaintSource("dummy", 1234)));// \' OR 1=1\' is
                                                                                                  // tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
@@ -396,7 +396,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT City FROM Students WHERE TRUE=TRUE";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 4, taintedString.length() - 1, new IASTaintSource("dummy", 1234)));// second TRUE is
+        ranges.add(new IASTaintRange(taintedString.length() - 4, taintedString.length(), new IASTaintSource("dummy", 1234)));// second TRUE is
                                                                                                 // tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
@@ -421,7 +421,7 @@ public class SqlSanitizationTest {
         String taintedString = "SELECT City FROM Students WHERE City='St. John\'s' OR City='London'";
         List<IASTaintRange> ranges = new ArrayList<>();
         // St. John's is tainted
-        ranges.add(new IASTaintRange(taintedString.length() - 28, taintedString.length() - 19, new IASTaintSource("dummy", 1234)));
+        ranges.add(new IASTaintRange(taintedString.length() - 28, taintedString.length() - 18, new IASTaintSource("dummy", 1234)));
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNotNull(rs);
@@ -444,7 +444,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT City FROM Students WHERE City='St. John''s' OR City='London'";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 7, taintedString.length() - 2, new IASTaintSource("dummy", 1234)));// London is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 7, taintedString.length() - 1, new IASTaintSource("dummy", 1234)));// London is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
         // this query will cause problems due to the apostrophe in the city name.
         // this is to be expected
@@ -468,7 +468,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT City FROM Students WHERE City='London' OR City='St. John''s'";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 29, taintedString.length() - 24, new IASTaintSource("dummy", 1234)));// London is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 29, taintedString.length() - 23, new IASTaintSource("dummy", 1234)));// London is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
         // this query will cause problems due to the apostrophe in the city name.
         // this is to be expected
@@ -488,7 +488,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID, City FROM Students WHERE ID=1 AND City='London'";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(0, 5, new IASTaintSource("dummy", 1234)));// SELECT is tainted
+        ranges.add(new IASTaintRange(0, 6, new IASTaintSource("dummy", 1234)));// SELECT is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since a sql command is tainted, the
@@ -504,7 +504,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID, City FROM Students WHERE ID=1 AND City='London'";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(16, 19, new IASTaintSource("dummy", 1234)));// FROM is tainted
+        ranges.add(new IASTaintRange(16, 20, new IASTaintSource("dummy", 1234)));// FROM is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNull(rs);
@@ -518,7 +518,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID, City FROM Students WHERE ID=1 AND City='London'";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(30, 34, new IASTaintSource("dummy", 1234)));// WHERE is tainted
+        ranges.add(new IASTaintRange(30, 35, new IASTaintSource("dummy", 1234)));// WHERE is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNull(rs);
@@ -532,7 +532,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT City FROM Students GROUP BY Students.City";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(26, 33, new IASTaintSource("dummy", 1234)));// GROUP BY is tainted
+        ranges.add(new IASTaintRange(26, 34, new IASTaintSource("dummy", 1234)));// GROUP BY is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNull(rs);
@@ -546,7 +546,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID, City FROM Students GROUP BY Students.City, Students.ID HAVING ID<2";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(66, 71, new IASTaintSource("dummy", 1234)));// HAVING is tainted
+        ranges.add(new IASTaintRange(66, 72, new IASTaintSource("dummy", 1234)));// HAVING is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNull(rs);
@@ -560,7 +560,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID, City FROM Students ORDER BY City";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(30, 37, new IASTaintSource("dummy", 1234)));// ORDER BY is tainted
+        ranges.add(new IASTaintRange(30, 38, new IASTaintSource("dummy", 1234)));// ORDER BY is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNull(rs);
@@ -574,7 +574,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT s.ID, s.City FROM Students s INNER JOIN Students t ON s.City=t.City WHERE t.City='London'";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(36, 45, new IASTaintSource("dummy", 1234)));// INNER JOIN is tainted
+        ranges.add(new IASTaintRange(36, 46, new IASTaintSource("dummy", 1234)));// INNER JOIN is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNull(rs);
@@ -588,7 +588,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID, City FROM Students WHERE ID=1 AND City='London'";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(41, 43, new IASTaintSource("dummy", 1234)));// AND is tainted
+        ranges.add(new IASTaintRange(41, 44, new IASTaintSource("dummy", 1234)));// AND is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNull(rs);
@@ -602,7 +602,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT SUM(ID) AS Sum_ID, City FROM Students GROUP BY Students.City ORDER BY City ASC";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(7, 9, new IASTaintSource("dummy", 1234)));// SUM is tainted
+        ranges.add(new IASTaintRange(7, 10, new IASTaintSource("dummy", 1234)));// SUM is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNull(rs);
@@ -616,7 +616,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT SUM(ID) AS Sum_ID, City FROM Students GROUP BY Students.City ORDER BY City ASC";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(15, 16, new IASTaintSource("dummy", 1234)));// AS is tainted
+        ranges.add(new IASTaintRange(15, 17, new IASTaintSource("dummy", 1234)));// AS is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNull(rs);
@@ -630,7 +630,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT SUM(ID) AS Sum_ID, City FROM Students GROUP BY Students.City ORDER BY City ASC";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 3, taintedString.length() - 1, new IASTaintSource("dummy", 1234)));// ASC is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 3, taintedString.length(), new IASTaintSource("dummy", 1234)));// ASC is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNull(rs);
@@ -644,7 +644,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT TOP 1 ID FROM Students";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(7, 9, new IASTaintSource("dummy", 1234)));// TOP is tainted
+        ranges.add(new IASTaintRange(7, 10, new IASTaintSource("dummy", 1234)));// TOP is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNull(rs);
@@ -658,7 +658,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID FROM Students WHERE ID BETWEEN 1 AND 2";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 15, taintedString.length() - 9, new IASTaintSource("dummy", 1234))); // BETWEEN is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 15, taintedString.length() - 8, new IASTaintSource("dummy", 1234))); // BETWEEN is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNull(rs);
@@ -672,7 +672,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "CREATE TABLE Profs (Name VARCHAR(50), Age INTEGER)";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(0, 5, new IASTaintSource("dummy", 1234))); // CREATE is tainted
+        ranges.add(new IASTaintRange(0, 6, new IASTaintSource("dummy", 1234))); // CREATE is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since something is tainted bind
@@ -689,7 +689,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "CREATE TABLE Profs (Name VARCHAR(50), Age INTEGER)";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 8, taintedString.length() - 2, new IASTaintSource("dummy", 1234))); // INTEGER is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 8, taintedString.length() - 1, new IASTaintSource("dummy", 1234))); // INTEGER is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since something is tainted bind
@@ -706,7 +706,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "ALTER TABLE Students ADD Age INTEGER DEFAULT 20 NOT NULL";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 8, taintedString.length() - 6, new IASTaintSource("dummy", 1234))); // NOT is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 8, taintedString.length() - 5, new IASTaintSource("dummy", 1234))); // NOT is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since something is tainted bind
@@ -723,7 +723,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "ALTER TABLE Students ADD Age INTEGER DEFAULT 20 NOT NULL";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 19, taintedString.length() - 13, new IASTaintSource("dummy", 1234))); // DEFAULT is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 19, taintedString.length() - 12, new IASTaintSource("dummy", 1234))); // DEFAULT is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since something is tainted bind
@@ -740,7 +740,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "ALTER TABLE Students ADD Age INTEGER DEFAULT 20 NOT NULL";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(21, 23, new IASTaintSource("dummy", 1234))); // ADD is tainted
+        ranges.add(new IASTaintRange(21, 24, new IASTaintSource("dummy", 1234))); // ADD is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since something is tainted bind
@@ -757,7 +757,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "ALTER TABLE Students ADD Age INTEGER DEFAULT 20 NOT NULL";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(0, 4, new IASTaintSource("dummy", 1234))); // ALTER is tainted
+        ranges.add(new IASTaintRange(0, 5, new IASTaintSource("dummy", 1234))); // ALTER is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since something is tainted bind
@@ -774,7 +774,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "DROP TABLE Profs";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(0, 3, new IASTaintSource("dummy", 1234))); // DROP is tainted
+        ranges.add(new IASTaintRange(0, 4, new IASTaintSource("dummy", 1234))); // DROP is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since something is tainted bind
@@ -791,7 +791,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "TRUNCATE TABLE Profs";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(0, 7, new IASTaintSource("dummy", 1234))); // TRUNCATE is tainted
+        ranges.add(new IASTaintRange(0, 8, new IASTaintSource("dummy", 1234))); // TRUNCATE is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since something is tainted bind
@@ -808,7 +808,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID FROM Students WHERE ID IS NOT NULL";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 11, taintedString.length() - 1, new IASTaintSource("dummy", 1234))); // IS NOT NULL is
+        ranges.add(new IASTaintRange(taintedString.length() - 11, taintedString.length(), new IASTaintSource("dummy", 1234))); // IS NOT NULL is
                                                                                                   // tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
@@ -825,7 +825,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID FROM Students WHERE ID IS NULL";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 7, taintedString.length() - 1, new IASTaintSource("dummy", 1234))); // IS NULL is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 7, taintedString.length(), new IASTaintSource("dummy", 1234))); // IS NULL is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNull(rs);
@@ -839,7 +839,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID, City FROM Students WHERE City LIKE 'London'";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 13, taintedString.length() - 10, new IASTaintSource("dummy", 1234))); // LIKE is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 13, taintedString.length() - 9, new IASTaintSource("dummy", 1234))); // LIKE is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNull(rs);
@@ -853,7 +853,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID FROM Students WHERE ID IN(1,2)";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 7, taintedString.length() - 6, new IASTaintSource("dummy", 1234))); // IN is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 7, taintedString.length() - 5, new IASTaintSource("dummy", 1234))); // IN is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNull(rs);
@@ -867,7 +867,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID, City FROM Students WHERE ID=1 AND City='London'";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(21, 28, new IASTaintSource("dummy", 1234)));// Students is tainted
+        ranges.add(new IASTaintRange(21, 29, new IASTaintSource("dummy", 1234)));// Students is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since a table name is tainted, the
@@ -883,7 +883,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "CREATE TABLE Profs (Name VARCHAR(50), Age INTEGER)";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(13, 17, new IASTaintSource("dummy", 1234))); // Profs is tainted
+        ranges.add(new IASTaintRange(13, 18, new IASTaintSource("dummy", 1234))); // Profs is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since something is tainted bind
@@ -900,7 +900,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "ALTER TABLE Students ADD Age INTEGER DEFAULT 20 NOT NULL";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(12, 19, new IASTaintSource("dummy", 1234))); // Students is tainted
+        ranges.add(new IASTaintRange(12, 20, new IASTaintSource("dummy", 1234))); // Students is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since something is tainted bind
@@ -917,7 +917,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "DROP TABLE Profs";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(11, 15, new IASTaintSource("dummy", 1234))); // Profs is tainted
+        ranges.add(new IASTaintRange(11, 16, new IASTaintSource("dummy", 1234))); // Profs is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since something is tainted bind
@@ -934,7 +934,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "TRUNCATE TABLE Profs";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(15, 19, new IASTaintSource("dummy", 1234))); // Profs is tainted
+        ranges.add(new IASTaintRange(15, 20, new IASTaintSource("dummy", 1234))); // Profs is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since something is tainted bind
@@ -952,7 +952,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID, City FROM Students WHERE ID=1 AND City='London'";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(7, 8, new IASTaintSource("dummy", 1234))); // first ID is tainted
+        ranges.add(new IASTaintRange(7, 9, new IASTaintSource("dummy", 1234))); // first ID is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed. It was due to taint.
@@ -975,7 +975,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT IDS, City FROM Students";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(7, 9, new IASTaintSource("dummy", 1234))); // first IDS is tainted
+        ranges.add(new IASTaintRange(7, 10, new IASTaintSource("dummy", 1234))); // first IDS is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed. It was due to taint.
@@ -1002,7 +1002,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID, City FROM Students WHERE ID=1 AND City='London'";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(36, 37, new IASTaintSource("dummy", 1234))); // second ID is tainted
+        ranges.add(new IASTaintRange(36, 38, new IASTaintSource("dummy", 1234))); // second ID is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since a sql column name is tainted, the
@@ -1018,7 +1018,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID, City FROM Students WHERE ID=1 GROUP BY City";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(50, 53, new IASTaintSource("dummy", 1234)));// second City is tainted
+        ranges.add(new IASTaintRange(50, 54, new IASTaintSource("dummy", 1234)));// second City is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since only a sql column name for
@@ -1037,7 +1037,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT SUM(ID) AS Sum_ID, City FROM Students GROUP BY Students.City ORDER BY City ASC";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(11, 12, new IASTaintSource("dummy", 1234)));// first ID is tainted
+        ranges.add(new IASTaintRange(11, 13, new IASTaintSource("dummy", 1234)));// first ID is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since a sql column name is tainted, the
@@ -1053,7 +1053,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT SUM(ID) AS Sum_ID, City FROM Students GROUP BY Students.City ORDER BY City ASC";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(18, 23, new IASTaintSource("dummy", 1234)));// Sum_ID is tainted
+        ranges.add(new IASTaintRange(18, 24, new IASTaintSource("dummy", 1234)));// Sum_ID is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since a sql column name is tainted, the
@@ -1069,7 +1069,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT SUM(ID) AS Sum_ID, City FROM Students GROUP BY Students.City ORDER BY City ASC";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 8, taintedString.length() - 5, new IASTaintSource("dummy", 1234)));// third City is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 8, taintedString.length() - 4, new IASTaintSource("dummy", 1234)));// third City is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since a sql column name is tainted, the
@@ -1085,7 +1085,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "CREATE TABLE Profs (Name VARCHAR(50), Age INTEGER)";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 12, taintedString.length() - 10, new IASTaintSource("dummy", 1234))); // Age is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 12, taintedString.length() - 9, new IASTaintSource("dummy", 1234))); // Age is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since something is tainted bind
@@ -1102,7 +1102,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "ALTER TABLE Students ADD Age INTEGER DEFAULT 20 NOT NULL";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(25, 27, new IASTaintSource("dummy", 1234))); // Age is tainted
+        ranges.add(new IASTaintRange(25, 28, new IASTaintSource("dummy", 1234))); // Age is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since something is tainted bind
@@ -1120,7 +1120,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID FROM Students WHERE ID=1";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 4, taintedString.length() - 1, new IASTaintSource("dummy", 1234)));// ID=1 is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 4, taintedString.length(), new IASTaintSource("dummy", 1234)));// ID=1 is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since a sql syntax and attribute values
@@ -1139,7 +1139,7 @@ public class SqlSanitizationTest {
         String taintedString = "SELECT ID FROM Students WHERE ID=1";
         List<IASTaintRange> ranges = new ArrayList<>();
         ranges.add(new IASTaintRange(7, 8, new IASTaintSource("dummy", 1234)));// first ID is tainted
-        ranges.add(new IASTaintRange(taintedString.length() - 4, taintedString.length() - 1, new IASTaintSource("dummy", 1234)));// ID=1 is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 4, taintedString.length(), new IASTaintSource("dummy", 1234)));// ID=1 is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since a sql syntax and attribute values
@@ -1157,7 +1157,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT ID FROM Students WHERE ID=1";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(0, taintedString.length() - 1, new IASTaintSource("dummy", 1234)));// everything is tainted
+        ranges.add(new IASTaintRange(0, taintedString.length(), new IASTaintSource("dummy", 1234)));// everything is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since a sql syntax and attribute values
@@ -1175,7 +1175,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT City FROM Students WHERE TRUE=TRUE";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 3, taintedString.length() - 2, new IASTaintSource("dummy", 1234)));// RU of second TRUE is
+        ranges.add(new IASTaintRange(taintedString.length() - 3, taintedString.length() - 1, new IASTaintSource("dummy", 1234)));// RU of second TRUE is
                                                                                                 // tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
@@ -1201,7 +1201,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT City FROM Students WHERE ID=123";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 2, taintedString.length() - 2, new IASTaintSource("dummy", 1234)));// 2 is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 2, taintedString.length() - 1, new IASTaintSource("dummy", 1234)));// 2 is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         // check if sanitization was performed, since only a attribute value, more
@@ -1221,7 +1221,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT City FROM Students WHERE ID=123 OR ID=1";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 10, taintedString.length() - 10, new IASTaintSource("dummy", 1234)));// 2 is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 10, taintedString.length() - 9, new IASTaintSource("dummy", 1234)));// 2 is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNotNull(rs);
@@ -1240,7 +1240,7 @@ public class SqlSanitizationTest {
         String s = "12";
         String taintedString = "SELECT City FROM Students WHERE ID=" + s + "3 OR ID=1";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 11, taintedString.length() - 10, new IASTaintSource("dummy", 1234)));// 12 is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 11, taintedString.length() - 9, new IASTaintSource("dummy", 1234)));// 12 is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNotNull(rs);
@@ -1258,8 +1258,8 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT City FROM Students WHERE ID=1234 OR ID=1";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 11, taintedString.length() - 10, new IASTaintSource("dummy", 1234)));// 23 is tainted
-        ranges.add(new IASTaintRange(taintedString.length() - 9, taintedString.length() - 9, new IASTaintSource("dummy", 1234)));// 4 is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 11, taintedString.length() - 9, new IASTaintSource("dummy", 1234)));// 23 is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 9, taintedString.length() - 8, new IASTaintSource("dummy", 1234)));// 4 is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNotNull(rs);
@@ -1277,7 +1277,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT City FROM Students WHERE City='Rome'";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 3, taintedString.length() - 2, new IASTaintSource("dummy", 1234)));// me is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 3, taintedString.length() - 1, new IASTaintSource("dummy", 1234)));// me is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNotNull(rs);
@@ -1295,7 +1295,7 @@ public class SqlSanitizationTest {
         Connection con = this.getConnection();
         String taintedString = "SELECT City FROM Students WHERE City='New York'";
         List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(new IASTaintRange(taintedString.length() - 5, taintedString.length() - 4, new IASTaintSource("dummy", 1234)));// Yo is tainted
+        ranges.add(new IASTaintRange(taintedString.length() - 5, taintedString.length() - 3, new IASTaintSource("dummy", 1234)));// Yo is tainted
         ResultSet rs = Sanitization.sanitizeAndExecuteQuery(taintedString, ranges, con);
 
         assertNotNull(rs);
