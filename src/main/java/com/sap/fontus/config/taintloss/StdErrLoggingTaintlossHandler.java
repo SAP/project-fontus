@@ -4,16 +4,10 @@ import com.sap.fontus.taintaware.IASTaintAware;
 
 import java.util.List;
 
-import static com.sap.fontus.utils.Utils.convertStackTrace;
-
-public class StdErrLoggingTaintlossHandler extends TaintlossHandler {
+public class StdErrLoggingTaintlossHandler extends LoggingTaintlossHandler {
     @Override
     protected void handleTaintlossInternal(IASTaintAware taintAware, List<StackTraceElement> stackTrace) {
-        System.err.printf("Taintlossy method hit on string \"%s\"!\n", taintAware);
-        List<String> stackTraceStrings = convertStackTrace(stackTrace);
-        for (String ste : stackTraceStrings) {
-            System.err.println("\tat " + ste);
-        }
+        System.err.println(this.format(taintAware, stackTrace));
     }
 
     @Override

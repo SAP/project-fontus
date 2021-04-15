@@ -31,7 +31,16 @@ public class IASReflectionMethodProxy {
     private static final Map<String, Class<?>> toConcreteReplacements = new HashMap<>();
     private static final CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup();
 
+    private static final Method forNameMethod;
+
     static {
+        try {
+            forNameMethod = Class.class.getMethod("forName", String.class);
+        } catch (NoSuchMethodException e) {
+            System.out.println("Could not load method Class.forName");
+            throw new RuntimeException(e);
+        }
+
         toInterfaceReplacements.put("IASString", IASStringable.class);
         toInterfaceReplacements.put("IASStringBuilder", IASAbstractStringBuilderable.class);
         toInterfaceReplacements.put("IASStringBuffer", IASAbstractStringBuilderable.class);
@@ -124,6 +133,13 @@ public class IASReflectionMethodProxy {
             }
         } else if (combinedExcludedLookup.isPackageExcludedOrJdk(Utils.getInternalName(method.getDeclaringClass()))) {
             Object[] converted = convertParametersToOriginal(parameters);
+
+            if (method.equals(forNameMethod)) {
+                Class caller = ReflectionUtils.getCallerClass();
+                ClassLoader callerLoader = caller.getClassLoader();
+                return Class.forName((String) converted[0], true, callerLoader);
+            }
+
             Object result = method.invoke(instance, converted);
             return ConversionUtils.convertToConcrete(result);
         }
@@ -206,6 +222,20 @@ public class IASReflectionMethodProxy {
         }
 
         return clazz.getConstructor(parameters);
+    }
+
+    /**
+     * Proxy for the Class.getConstructor function.
+     * If the method is JDK class method, it replaces taintaware parameter types with the original type
+     */
+    public static Constructor getDeclaredConstructor(Class<?> clazz, Class[] parameters) throws NoSuchMethodException {
+        if (combinedExcludedLookup.isPackageExcludedOrJdk(Utils.getInternalName(clazz))) {
+            parameters = transformParametersForJdk(parameters);
+        } else if (isInPackage(clazz)) {
+            parameters = transformParametersForTaintawareInterface(parameters);
+        }
+
+        return clazz.getDeclaredConstructor(parameters);
     }
 
     private static Class[] transformParametersForJdk(Class[] parameters) {

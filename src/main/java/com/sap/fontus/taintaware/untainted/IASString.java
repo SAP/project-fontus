@@ -1,5 +1,6 @@
 package com.sap.fontus.taintaware.untainted;
 
+import com.sap.fontus.config.taintloss.TaintlossHandler;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.*;
 
@@ -143,16 +144,19 @@ public final class IASString implements IASTaintAware, IASStringable {
 
     @Override
     public char charAt(int index) {
+        TaintlossHandler.logTaintloss(this);
         return this.string.charAt(index);
     }
 
     @Override
     public int codePointAt(int index) {
+        TaintlossHandler.logTaintloss(this);
         return this.string.codePointAt(index);
     }
 
     @Override
     public int codePointBefore(int index) {
+        TaintlossHandler.logTaintloss(this);
         return this.string.codePointBefore(index);
     }
 
@@ -168,26 +172,31 @@ public final class IASString implements IASTaintAware, IASStringable {
 
     @Override
     public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {
+        TaintlossHandler.logTaintloss(this);
         this.string.getChars(srcBegin, srcEnd, dst, dstBegin);
     }
 
     @Override
     public void getBytes(int srcBegin, int srcEnd, byte dst[], int dstBegin) {
+        TaintlossHandler.logTaintloss(this);
         this.string.getBytes(srcBegin, srcEnd, dst, dstBegin);
     }
 
     @Override
     public byte[] getBytes(IASStringable charsetName) throws UnsupportedEncodingException {
+        TaintlossHandler.logTaintloss(this);
         return this.string.getBytes(charsetName.getString());
     }
 
     @Override
     public byte[] getBytes(Charset charset) {
+        TaintlossHandler.logTaintloss(this);
         return this.string.getBytes(charset);
     }
 
     @Override
     public byte[] getBytes() {
+        TaintlossHandler.logTaintloss(this);
         return this.string.getBytes();
     }
 
@@ -460,16 +469,19 @@ public final class IASString implements IASTaintAware, IASStringable {
 
     @Override
     public IntStream chars() {
+        TaintlossHandler.logTaintloss(this);
         return this.string.chars();
     }
 
     @Override
     public IntStream codePoints() {
+        TaintlossHandler.logTaintloss(this);
         return this.string.codePoints();
     }
 
     @Override
     public char[] toCharArray() {
+        TaintlossHandler.logTaintloss(this);
         return this.string.toCharArray();
     }
 
@@ -544,6 +556,8 @@ public final class IASString implements IASTaintAware, IASStringable {
     //TODO: sound?
     @Override
     public IASString intern() {
+        this.string = this.string.intern();
+        TaintlossHandler.logTaintloss(this);
         return (IASString) IASStringPool.intern(this);
     }
 

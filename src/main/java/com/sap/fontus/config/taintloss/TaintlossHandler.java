@@ -1,5 +1,6 @@
 package com.sap.fontus.config.taintloss;
 
+import com.sap.fontus.config.Configuration;
 import com.sap.fontus.taintaware.IASTaintAware;
 
 import java.util.Arrays;
@@ -8,13 +9,13 @@ import java.util.stream.Collectors;
 
 public abstract class TaintlossHandler {
     private static final TaintlossHandler[] handlers = {
-            new StdErrLoggingTaintlossHandler()
+            new StdErrLoggingTaintlossHandler(), new FileLoggingTaintlossHandler(), new StatisticsTaintlossHandler()
     };
 
     public final void handleTaintloss(IASTaintAware taintAware) {
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
 
-        List<StackTraceElement> stackTrace = Arrays.stream(stack, 0, stack.length - 1).collect(Collectors.toList());
+        List<StackTraceElement> stackTrace = Arrays.stream(stack, 3, stack.length).collect(Collectors.toList());
 
         this.handleTaintlossInternal(taintAware, stackTrace);
     }
@@ -37,5 +38,11 @@ public abstract class TaintlossHandler {
             }
         }
         throw new IllegalArgumentException(String.format("Taintloss handler with name \"%s\" not found! Please use on of: [%s]", name, Arrays.stream(handlers).map(TaintlossHandler::getName).map(n -> String.format("\"%s\"", n)).collect(Collectors.joining(","))));
+    }
+
+    public static void logTaintloss(IASTaintAware taintAware) {
+        if (Configuration.getConfiguration().handleTaintloss()) {
+            Configuration.getConfiguration().getTaintlossHandler().handleTaintloss(taintAware);
+        }
     }
 }

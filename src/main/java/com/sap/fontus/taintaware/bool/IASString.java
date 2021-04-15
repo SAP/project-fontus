@@ -26,8 +26,15 @@ public final class IASString implements IASTaintAware, IASStringable {
     }
 
     public IASString(IASStringable s) {
-        this.string = s.getString();
-        this.tainted = s.isTainted();
+        this(s.getString(), s.isTainted());
+    }
+
+    public IASString(IASStringable s, boolean tainted) {
+        this(s.getString(), tainted);
+    }
+
+    public IASString(IASString s, boolean tainted) {
+        this(s.getString(), tainted);
     }
 
     public IASString(String s) {
@@ -36,8 +43,7 @@ public final class IASString implements IASTaintAware, IASStringable {
     }
 
     public IASString(IASAbstractStringBuilderable strb) {
-        this.string = strb.toString();
-        this.tainted = strb.isTainted();
+        this(strb.toString(), strb.isTainted());
     }
 
     public IASString(String s, boolean tainted) {
@@ -50,6 +56,13 @@ public final class IASString implements IASTaintAware, IASStringable {
             tstr.tainted = true;
         }
         return tstr;
+    }
+
+    public static IASString tainted(IASStringable tstr) {
+        if (tstr != null) {
+            ((IASString) tstr).tainted = true;
+        }
+        return (IASString) tstr;
     }
 
     @Override
@@ -75,7 +88,14 @@ public final class IASString implements IASTaintAware, IASStringable {
 
     @Override
     public void setContent(String content, List<IASTaintRange> taintRanges) {
-        this.string = content;
+        this.string = Objects.requireNonNull(content);
+        IASTaintRanges ranges = new IASTaintRanges(taintRanges);
+        ranges.resize(0, this.length(), 0);
+        this.setTaint(ranges.isTainted());
+    }
+
+    public void setContent(IASStringable content, List<IASTaintRange> taintRanges) {
+        this.string = Objects.requireNonNull(Objects.requireNonNull(content).getString());
         IASTaintRanges ranges = new IASTaintRanges(taintRanges);
         ranges.resize(0, this.length(), 0);
         this.setTaint(ranges.isTainted());
@@ -137,23 +157,19 @@ public final class IASString implements IASTaintAware, IASStringable {
     }
 
     public IASString(IASStringBuilder builder) {
-        this.string = builder.toString();
-        this.tainted = builder.isTainted();
+        this(builder.toString(), builder.isTainted());
     }
 
     public IASString(IASStringBuffer buffer) {
-        this.string = buffer.toString();
-        this.tainted = buffer.isTainted();
+        this(buffer.toString(), buffer.isTainted());
     }
 
     public IASString(IASString string) {
-        this.string = string.string;
-        this.tainted = string.tainted;
+        this(string.string, string.tainted);
     }
 
     private IASString(CharSequence cs, boolean tainted) {
-        this.string = cs.toString();
-        this.tainted = tainted;
+        this(cs.toString(), tainted);
     }
 
     @Override
@@ -667,6 +683,7 @@ public final class IASString implements IASTaintAware, IASStringable {
     //TODO: sound?
     @Override
     public IASString intern() {
+        this.string = this.string.intern();
         return (IASString) IASStringPool.intern(this);
     }
 
@@ -677,7 +694,19 @@ public final class IASString implements IASTaintAware, IASStringable {
         return new IASString(str);
     }
 
+
+    public static IASString fromString(IASStringable str) {
+        if (str == null) return null;
+
+        return (IASString) str;
+    }
+
     public static String asString(IASString str) {
+        if (str == null) return null;
+        return str.getString();
+    }
+
+    public static String asString(IASStringable str) {
         if (str == null) return null;
         return str.getString();
     }

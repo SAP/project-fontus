@@ -168,7 +168,7 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
             this.stringBuilder.append(s);
             return this;
         }
-        this.stringBuilder.append(str.toIASString());
+        this.stringBuilder.append(str.getString());
         this.mergeTaint(str);
         return this;
     }

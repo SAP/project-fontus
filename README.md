@@ -72,7 +72,7 @@ It is also possible to pass multiple parameters to the agent
 - **config**: Specifies a path for a config file
 - **blacklisted_main_classes**: Specifies a filepath to a file which contains blacklisted main classes
 - **abort**: Specifies what happens if a tainted string reaches a sink. For all options see [Abort types](#Abort types). The default is *stderr_logging*
-- **taintloss_handler**: Specifies what happens if a method is called which potentially causes taintloss (e.g. String.toChatArray()). For all options see [Taintloss handler types](#Taintloss handler types) 
+- **taintloss_handler**: Specifies what happens if a method is called which potentially causes taintloss (e.g. String.toChatArray()). For all options see [Taintloss handler types](#Taintloss handler types). By default no taintloss handler is used 
 
 The arguments are appended to the agent path like this: ``-javaagent:jarpath[=options]``. Therefore options are defined as ``key=value`` pair and ``,`` is used as delimiter between key-value-pairs.
 
@@ -100,6 +100,8 @@ Currently there are four possibilities what can happen, if a tainted string reac
 
 ## Taintloss handler types
 - **stderr_logging**: Logs to stderr if a potentially taintlossy method is called
+- **file_logging**: Logs to file``./taintloss.log`` formatted in the same way we stderr_logging
+- **statistics_logging**: Logs to the statistics MXBean in the format "Caller.method -> Taintloss.method: Hits"
 
 ## Inspect bytecode of a class
 
