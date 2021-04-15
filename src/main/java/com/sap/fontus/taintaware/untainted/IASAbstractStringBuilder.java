@@ -2,6 +2,7 @@ package com.sap.fontus.taintaware.untainted;
 
 
 import com.sap.fontus.Constants;
+import com.sap.fontus.config.taintloss.TaintlossHandler;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
@@ -99,16 +100,19 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
 
     @Override
     public char charAt(int index) {
+        TaintlossHandler.logTaintloss(this);
         return this.stringBuilder.charAt(index);
     }
 
 
     public int codePointAt(int index) {
+        TaintlossHandler.logTaintloss(this);
         return this.stringBuilder.codePointAt(index);
     }
 
 
     public int codePointBefore(int index) {
+        TaintlossHandler.logTaintloss(this);
         return this.stringBuilder.codePointBefore(index);
     }
 
@@ -125,10 +129,12 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
 
     public void getChars(int srcBegin, int srcEnd, char[] dst,
                          int dstBegin) {
+        TaintlossHandler.logTaintloss(this);
         this.stringBuilder.getChars(srcBegin, srcEnd, dst, dstBegin);
     }
 
     public void setCharAt(int index, char ch) {
+        TaintlossHandler.logTaintloss(this);
         this.stringBuilder.setCharAt(index, ch);
     }
 
@@ -144,7 +150,7 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
             this.stringBuilder.append(s);
             return this;
         }
-        this.stringBuilder.append(str.toIASString());
+        this.stringBuilder.append(str.getString());
         return this;
     }
 
@@ -165,10 +171,10 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
 
     @Override
     public IASAbstractStringBuilder append(CharSequence csq) {
+//        if (csq instanceof IASTaintAware) {
+//            csq = csq.toString();
+//        }
         this.stringBuilder.append(csq);
-        if (csq instanceof IASTaintAware) {
-            IASTaintAware ta = (IASTaintAware) csq;
-        }
         return this;
     }
 
@@ -182,11 +188,13 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
     }
 
     public IASAbstractStringBuilder append(char[] str) {
+        TaintlossHandler.logTaintloss(this);
         this.stringBuilder.append(str);
         return this;
     }
 
     public IASAbstractStringBuilder append(char[] str, int offset, int len) {
+        TaintlossHandler.logTaintloss(this);
         this.stringBuilder.append(str, offset, len);
         return this;
     }
@@ -198,6 +206,7 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
 
     @Override
     public IASAbstractStringBuilder append(char c) {
+        TaintlossHandler.logTaintloss(this);
         this.stringBuilder.append(c);
         return this;
     }
@@ -208,6 +217,7 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
     }
 
     public IASAbstractStringBuilder appendCodePoint(int codePoint) {
+        TaintlossHandler.logTaintloss(this);
         this.stringBuilder.appendCodePoint(codePoint);
         return this;
     }
@@ -262,6 +272,7 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
 
     public IASAbstractStringBuilder insert(int index, char[] str, int offset,
                                            int len) {
+        TaintlossHandler.logTaintloss(this);
         this.stringBuilder.insert(index, str, offset, len);
         return this;
     }
@@ -276,6 +287,7 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
     }
 
     public IASAbstractStringBuilder insert(int offset, char[] str) {
+        TaintlossHandler.logTaintloss(this);
         this.stringBuilder.insert(offset, str);
         return this;
     }

@@ -80,6 +80,7 @@ public final class IASStringUtils {
         for (int i = args.length - 1; i >= 0; i--) {
             Object a = args[i];
             IASStringable arg = a == null ? factory.createString("null") : factory.valueOf(a);
+            arg = factory.quoteReplacement(arg);
             ret = ret.replaceFirst(CONCAT_PLACEHOLDER, arg);
         }
         return ret;

@@ -97,4 +97,9 @@ public class IASFactoryImpl implements IASFactory {
     public com.sap.fontus.taintaware.shared.IASProperties createProperties(Properties param) {
         return com.sap.fontus.taintaware.range.IASProperties.fromProperties(param);
     }
+
+    @Override
+    public IASStringable quoteReplacement(IASStringable string) {
+        return IASMatcher.quoteReplacement(string);
+    }
 }

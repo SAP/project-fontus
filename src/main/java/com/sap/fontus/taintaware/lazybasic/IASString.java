@@ -485,6 +485,7 @@ public final class IASString implements IASStringable, IASTaintRangeAware {
 
     @Override
     public IASString intern() {
+        this.string = this.string.intern();
         return (IASString) IASStringPool.intern(this);
     }
 

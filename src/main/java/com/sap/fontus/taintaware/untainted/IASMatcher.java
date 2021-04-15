@@ -30,7 +30,7 @@ public final class IASMatcher implements IASMatcherable {
     IASMatcher(IASPattern pattern, CharSequence input) {
         this.input = IASString.valueOf(input);
         this.pattern = pattern;
-        this.matcher = pattern.getPattern().matcher(input);
+        this.matcher = pattern.getPattern().matcher(this.input.getString());
     }
 
     public static IASMatcher fromMatcher(Matcher param) {

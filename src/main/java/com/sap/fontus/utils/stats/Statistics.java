@@ -4,6 +4,8 @@ import com.sap.fontus.Constants;
 
 import javax.management.*;
 import java.lang.management.ManagementFactory;
+import java.util.HashMap;
+import java.util.Map;
 
 public enum Statistics implements StatisticsMXBean {
     INSTANCE;
@@ -17,6 +19,7 @@ public enum Statistics implements StatisticsMXBean {
     private long taintCheckUntainted;
     private long taintCheckTainted;
     private long lazyThresholdExceededCount;
+    private Map<String, Long> taintlossHits = new HashMap<>();
 
     Statistics() {
         register();
@@ -32,6 +35,17 @@ public enum Statistics implements StatisticsMXBean {
         taintCheckUntainted = 0;
         taintCheckTainted = 0;
         initializedStrings = 0;
+        this.taintlossHits.clear();
+    }
+
+    public synchronized void incrementTaintlossHits(String call) {
+        this.taintlossHits.compute(call, ((tuple, longVal) -> {
+            if (longVal == null) {
+                return 1L;
+            } else {
+                return longVal + 1;
+            }
+        }));
     }
 
     public synchronized void incrementLazyTaintInformationCreated() {
@@ -122,7 +136,7 @@ public enum Statistics implements StatisticsMXBean {
     }
 
     public synchronized void recordTaintCheck(boolean isTainted) {
-        if(isTainted) {
+        if (isTainted) {
             taintCheckTainted++;
         } else {
             taintCheckUntainted++;
@@ -142,5 +156,10 @@ public enum Statistics implements StatisticsMXBean {
     @Override
     public long getTaintCheckTainted() {
         return taintCheckTainted;
+    }
+
+    @Override
+    public Map<String, Long> getTaintlossHits() {
+        return this.taintlossHits;
     }
 }

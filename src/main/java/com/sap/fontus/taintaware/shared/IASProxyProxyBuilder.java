@@ -320,20 +320,22 @@ public class IASProxyProxyBuilder {
         List<ProxyMethod> methods = new ArrayList<>();
         for (Class<?> intf : interfaces) {
             for (Method m : intf.getMethods()) {
-                ProxyMethod newProxyMethod = new ProxyMethod(m, "m" + counter);
+                if (!Modifier.isStatic(m.getModifiers())) {
+                    ProxyMethod newProxyMethod = new ProxyMethod(m, "m" + counter);
 
-                boolean isAlreadyContained = false;
-                for (ProxyMethod pm : methods) {
-                    if (pm.getNameWithDescriptor().equals(newProxyMethod.getNameWithDescriptor())) {
-                        isAlreadyContained = true;
-                        pm.addExceptions(m.getExceptionTypes());
-                        break;
+                    boolean isAlreadyContained = false;
+                    for (ProxyMethod pm : methods) {
+                        if (pm.getNameWithDescriptor().equals(newProxyMethod.getNameWithDescriptor())) {
+                            isAlreadyContained = true;
+                            pm.addExceptions(m.getExceptionTypes());
+                            break;
+                        }
                     }
-                }
 
-                if (!isAlreadyContained) {
-                    methods.add(newProxyMethod);
-                    counter++;
+                    if (!isAlreadyContained) {
+                        methods.add(newProxyMethod);
+                        counter++;
+                    }
                 }
             }
         }
