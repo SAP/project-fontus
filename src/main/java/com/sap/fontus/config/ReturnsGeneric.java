@@ -24,4 +24,8 @@ public class ReturnsGeneric {
     public String getConverter() {
         return this.converter;
     }
+
+    public boolean isAlwaysApply() {
+        return alwaysApply;
+    }
 }

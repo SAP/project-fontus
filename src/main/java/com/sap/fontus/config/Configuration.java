@@ -247,12 +247,18 @@ public class Configuration {
     }
 
     public FunctionCall getConverterForReturnValue(FunctionCall c) {
+        return this.getConverterForReturnValue(c, false);
+    }
+
+    public FunctionCall getConverterForReturnValue(FunctionCall c, boolean onlyAlwaysApply) {
         for (ReturnsGeneric rg : this.returnGeneric) {
             if (rg.getFunctionCall().equals(c)) {
-                String converterName = rg.getConverter();
-                FunctionCall converter = this.getConverter(converterName);
-                logger.info("Found converter for rv of {}: {}", c, converter);
-                return converter;
+                if (!(onlyAlwaysApply && !rg.isAlwaysApply())) {
+                    String converterName = rg.getConverter();
+                    FunctionCall converter = this.getConverter(converterName);
+                    logger.info("Found converter for rv of {}: {}", c, converter);
+                    return converter;
+                }
             }
         }
         return null;
