@@ -278,6 +278,12 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         boolean isExcluded = this.combinedExcludedLookup.isJdkOrAnnotation(call.getOwner()) || this.combinedExcludedLookup.isPackageExcluded(call.getOwner());
 
+        // Add always apply transformer
+        FunctionCall converter = this.config.getConverterForReturnValue(call, true);
+        if (converter != null) {
+            transformer.addReturnTransformation(new AlwaysApplyReturnGenericTransformer(converter));
+        }
+
         // Add JDK transformations
         if (isExcluded) {
             logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
