@@ -348,6 +348,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             if (value.equals("java.lang.String")) {
                 logger.info("Replaced original class name in string with instrumented one in {}.{}{}", this.owner, this.name, this.methodDescriptor);
                 value = Utils.slashToDot(Configuration.getConfiguration().getTaintStringConfig().getTStringQN());
+            } else if (value.equals("[Ljava.lang.String;")) {
+                logger.info("Replaced original class name in string with instrumented one in {}.{}{}", this.owner, this.name, this.methodDescriptor);
+                value = Utils.slashToDot(Configuration.getConfiguration().getTaintStringConfig().getTStringArrayDesc());
             }
         }
 
