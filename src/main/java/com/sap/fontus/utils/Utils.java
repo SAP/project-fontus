@@ -28,6 +28,14 @@ public final class Utils {
         return stackTrace.stream().map(stackTraceElement -> String.format("%s.%s(%s:%d)", stackTraceElement.getClassName(), stackTraceElement.getMethodName(), stackTraceElement.getFileName(), stackTraceElement.getLineNumber())).collect(Collectors.toList());
     }
 
+    public static int getArgumentsStackSize(String descriptor) {
+        return (Type.getArgumentsAndReturnSizes(descriptor) >> 2) - 1;
+    }
+
+    public static int getReturnStackSize(Descriptor descriptor) {
+        return Type.getType(descriptor.getReturnType()).getSize();
+    }
+
     public static String opcodeToString(int opcode) {
         switch (opcode) {
             case Opcodes.INVOKEVIRTUAL:
@@ -57,7 +65,7 @@ public final class Utils {
 
     public static Type instrumentType(Type t, TaintStringConfig config) {
         Descriptor desc = Descriptor.parseDescriptor(t.getDescriptor());
-        desc = InstrumentationHelper.getInstance(config).instrument(desc);
+        desc = InstrumentationHelper.getInstance(config).instrumentForNormalCall(desc);
         return Type.getType(desc.toDescriptor());
     }
 
@@ -75,7 +83,7 @@ public final class Utils {
         }
 
         Descriptor desc = Descriptor.parseDescriptor(h.getDesc());
-        desc = InstrumentationHelper.getInstance(config).instrument(desc);
+        desc = InstrumentationHelper.getInstance(config).instrumentForNormalCall(desc);
         String owner = InstrumentationHelper.getInstance(config).instrumentQN(h.getOwner());
         return new Handle(h.getTag(), owner, h.getName(), desc.toDescriptor(), h.isInterface());
     }

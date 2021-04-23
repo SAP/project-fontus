@@ -38,7 +38,7 @@ public abstract class AbstractInstrumentation implements InstrumentationStrategy
     }
 
     @Override
-    public Descriptor instrument(Descriptor desc) {
+    public Descriptor instrumentForNormalCall(Descriptor desc) {
         return desc.replaceType(this.origDesc, this.taintedDesc);
     }
 
@@ -48,7 +48,7 @@ public abstract class AbstractInstrumentation implements InstrumentationStrategy
     }
 
     @Override
-    public String instrumentDesc(String desc) {
+    public String instrumentDescForIASCall(String desc) {
         return this.descPattern.matcher(desc).replaceAll(this.taintedDesc);
     }
 

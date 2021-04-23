@@ -30,4 +30,6 @@ public interface StatisticsMXBean {
     long getTaintCheckTainted();
 
     Map<String, Long> getTaintlossHits();
+
+    void saveClassBytecode(String qn);
 }

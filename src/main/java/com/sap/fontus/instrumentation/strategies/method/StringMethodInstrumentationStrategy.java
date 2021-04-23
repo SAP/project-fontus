@@ -116,7 +116,7 @@ public class StringMethodInstrumentationStrategy extends AbstractMethodInstrumen
     @Override
     public FunctionCall rewriteOwnerMethod(FunctionCall functionCall) {
         if (Type.getObjectType(functionCall.getOwner()).equals(this.type) || functionCall.getOwner().endsWith(Constants.StringDesc)) {
-            String newDescriptor = InstrumentationHelper.getInstance(this.stringConfig).instrumentDesc(functionCall.getDescriptor());
+            String newDescriptor = InstrumentationHelper.getInstance(this.stringConfig).instrumentDescForIASCall(functionCall.getDescriptor());
             String newOwner = this.qnPattern.matcher(functionCall.getOwner()).replaceAll(Matcher.quoteReplacement(this.stringConfig.getTStringQN()));
             // TODO: this call is superfluous, TString.toTString is a NOP pretty much.. Maybe drop those calls?
             String newName = this.methodsToRename.getOrDefault(functionCall.getName(), functionCall.getName());

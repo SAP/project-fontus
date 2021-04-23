@@ -6,6 +6,7 @@ import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.instrumentation.MethodTaintingVisitor;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
+import com.sap.fontus.utils.Utils;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
@@ -48,7 +49,7 @@ public class MethodParameterTransformer {
     }
 
     public int getExtraStackSlots() {
-        return (Type.getArgumentsAndReturnSizes(this.descriptor.toDescriptor()) >> 2) - 1;
+        return Utils.getArgumentsStackSize(this.descriptor.toDescriptor());
     }
 
     public boolean needsTransformation() {

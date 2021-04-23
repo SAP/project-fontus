@@ -53,6 +53,10 @@ public class CombinedExcludedLookup {
         return internalName.startsWith(Utils.dotToSlash(Constants.PACKAGE));
     }
 
+    public boolean isFontusClass(Class<?> cls) {
+        return cls.getName().startsWith(Constants.PACKAGE);
+    }
+
     public boolean isAnnotation(Class<?> cls) {
         return isAnnotation(Utils.dotToSlash(cls.getName()));
     }

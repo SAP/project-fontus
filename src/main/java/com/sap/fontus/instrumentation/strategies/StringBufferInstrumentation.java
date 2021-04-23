@@ -15,7 +15,7 @@ public class StringBufferInstrumentation extends AbstractInstrumentation {
     }
 
     @Override
-    public String instrumentDesc(String desc) {
+    public String instrumentDescForIASCall(String desc) {
         String parameters = desc.substring(desc.indexOf("(") + 1, desc.indexOf(")"));
         parameters = Constants.strBufferPattern.matcher(parameters).replaceAll(this.stringConfig.getMethodTStringBufferDesc());
         String returnType = desc.substring(desc.indexOf(")") + 1);

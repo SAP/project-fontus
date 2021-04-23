@@ -24,6 +24,7 @@ public class FunctionCall {
         this.owner = "";
         this.name = "";
         this.descriptor = "";
+        this.parsedDescriptor = null;
         this.isInterface = false;
     }
 
@@ -40,11 +41,14 @@ public class FunctionCall {
     @JsonProperty(value = "interface")
     private final boolean isInterface;
 
+    private Descriptor parsedDescriptor;
+
     public FunctionCall(final int opcode, final String owner, final String name, final String descriptor, final boolean isInterface) {
         this.opcode = opcode;
         this.owner = owner;
         this.name = name;
         this.descriptor = descriptor;
+        this.parsedDescriptor = Descriptor.parseDescriptor(descriptor);
         this.isInterface = isInterface;
     }
 
@@ -54,7 +58,7 @@ public class FunctionCall {
             opcode = Opcodes.INVOKESTATIC;
         } else if (method.getDeclaringClass().isInterface()) {
             opcode = Opcodes.INVOKEINTERFACE;
-        } else if( Modifier.isPrivate(method.getModifiers())) {
+        } else if (Modifier.isPrivate(method.getModifiers())) {
             opcode = Opcodes.INVOKESPECIAL;
         } else {
             opcode = Opcodes.INVOKEVIRTUAL;
@@ -78,6 +82,13 @@ public class FunctionCall {
 
     public String getDescriptor() {
         return this.descriptor;
+    }
+
+    public Descriptor getParsedDescriptor() {
+        if (this.parsedDescriptor == null) {
+            this.parsedDescriptor = Descriptor.parseDescriptor(this.descriptor);
+        }
+        return this.parsedDescriptor;
     }
 
     public int getOpcode() {

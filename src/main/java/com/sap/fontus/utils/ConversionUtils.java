@@ -168,15 +168,15 @@ public class ConversionUtils {
 //        return convertObject(object, toConcrete);
     }
 
-    public static Object convertClassToOrig(Class<?> cls) {
+    public static Class<?> convertClassToOrig(Class<?> cls) {
         return convertClass(cls, toOrig);
     }
 
-    public static Object convertClassToInterface(Class<?> cls) {
+    public static Class<?> convertClassToInterface(Class<?> cls) {
         return convertClass(cls, toInterface);
     }
 
-    public static Object convertClassToConcrete(Class<?> cls) {
+    public static Class<?> convertClassToConcrete(Class<?> cls) {
         return convertClass(cls, toConcrete);
     }
 
