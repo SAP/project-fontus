@@ -1,6 +1,7 @@
 package com.sap.fontus.utils.stats;
 
 import com.sap.fontus.Constants;
+import com.sap.fontus.agent.TaintAgent;
 
 import javax.management.*;
 import java.lang.management.ManagementFactory;
@@ -161,5 +162,10 @@ public enum Statistics implements StatisticsMXBean {
     @Override
     public Map<String, Long> getTaintlossHits() {
         return this.taintlossHits;
+    }
+
+    @Override
+    public void saveClassBytecode(String qn) {
+        TaintAgent.logInstrumentedClass(qn);
     }
 }

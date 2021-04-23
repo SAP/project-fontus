@@ -12,7 +12,7 @@ public class StringInstrumentation extends AbstractInstrumentation {
     }
 
     @Override
-    public String instrumentDesc(String desc) {
+    public String instrumentDescForIASCall(String desc) {
         String parameters = desc.substring(desc.indexOf("(") + 1, desc.indexOf(")"));
         parameters = Constants.strPattern.matcher(parameters).replaceAll(this.stringConfig.getMethodTStringDesc());
         String returnType = desc.substring(desc.indexOf(")") + 1);

@@ -105,7 +105,7 @@ public class MethodTaintingUtils {
             }
         }
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
-        String descr = InstrumentationHelper.getInstance(configuration).instrument(desc).toDescriptor();
+        String descr = InstrumentationHelper.getInstance(configuration).instrumentForNormalCall(desc).toDescriptor();
         mv.visitInvokeDynamicInsn(name, descr, bootstrapMethodHandle, bsArgs);
     }
 }

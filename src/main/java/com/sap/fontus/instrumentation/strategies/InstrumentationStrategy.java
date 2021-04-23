@@ -5,11 +5,18 @@ import com.sap.fontus.asm.Descriptor;
 import java.util.Optional;
 
 public interface InstrumentationStrategy {
-    Descriptor instrument(Descriptor desc);
+    /**
+     * Replaces all taintable type occurrences with the concrete type
+     */
+    Descriptor instrumentForNormalCall(Descriptor desc);
 
     String instrumentQN(String qn);
 
-    String instrumentDesc(String desc);
+    /**
+     * Replaces taintable type occurences in the parameters with the interface and in the return with the concrete type
+     * Used for instrumenting calls to taintable classes e.g. String/IASString.replaceAll
+     */
+    String instrumentDescForIASCall(String desc);
 
     Optional<String> translateClassName(String className);
 
