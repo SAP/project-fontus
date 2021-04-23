@@ -17,6 +17,9 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -101,7 +104,7 @@ public class SQLChecker {
             while(lexer.token() != Token.EOF){
                 // Create the corresponding LexerToken
                 lexer_tokens.add(new SqlLexerToken(startPos,lexer.pos(),lexer.token().toString(),0));
-                //System.out.println("tokenType : " + lexer.token() + ", startPos : " + startPos + ", endPos : " + lexer.pos());
+                System.out.println("tokenType : " + lexer.token() + ", startPos : " + startPos + ", endPos : " + lexer.pos());
                 startPos = lexer.pos();
                 lexer.nextToken();
             }
@@ -147,9 +150,38 @@ public class SQLChecker {
         NetworkResponseObject.setResponseMessage(new NetworkRequestObject(),!json_array.isEmpty());
     }
 
+    public static void logTaintedString(String tainted_string) throws RuntimeException, IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InterruptedException {
+        JSONObject json_obj = new JSONObject(tainted_string);
+        List<SqlLexerToken> token_ranges = getLexerTokens(json_obj.getString("payload"));
+        JSONArray taint_ranges = json_obj.getJSONArray("ranges");
+        String sql_string = json_obj.getString("payload");
+        JSONArray json_array = getSqlInjectionInfo(token_ranges,taint_ranges,sql_string);
+        System.out.println(json_array.toString());
+        if(!json_array.isEmpty()){
+            Logger logger = Logger.getLogger("SqlInjectionLog");
+            FileHandler fh;
+
+            try {
+
+                // This block configure the logger with handler and formatter
+                fh = new FileHandler("sql_injection_logger.log", true);
+                logger.addHandler(fh);
+                SimpleFormatter formatter = new SimpleFormatter();
+                fh.setFormatter(formatter);
+
+                // the following statement is used to log any messages
+                logger.info(json_array.toString());
+
+            } catch (SecurityException | IOException e) {
+                e.printStackTrace();
+            }
+            throw new InterruptedException("SQL Injection Error");
+        }
+    }
+
     public static void main(String[] args) {
         //String sqlString = "insert into table1 values      (data1, data2)";
-        String sqlString = "select x   ,  rt   from emp,der,  dwad,poal where id='3' OR 1 =   'a'";
+        String sqlString = "select * from table1 where id = 3";
 //        SQLStatementParser parser = SQLParserUtils.createSQLStatementParser(sqlString, DbType.mysql);
 //        parser.parseStatementList();
 //

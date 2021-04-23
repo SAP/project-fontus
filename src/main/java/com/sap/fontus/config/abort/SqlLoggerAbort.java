@@ -1,19 +1,19 @@
 package com.sap.fontus.config.abort;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sap.fontus.utils.NetworkRequestObject;
+import com.sap.fontus.sql_injection.SQLChecker;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASStringable;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
-import com.sap.fontus.sql_injection.SQLChecker;
+import com.sap.fontus.utils.NetworkRequestObject;
 
 import java.io.IOException;
-import java.lang.reflect.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import static com.sap.fontus.utils.Utils.convertStackTrace;
 
-public class SqlCheckerAbort extends Abort{
+public class SqlLoggerAbort extends Abort{
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -33,17 +33,12 @@ public class SqlCheckerAbort extends Abort{
     }
 
     private void sendAborts(Abort sql_checker_abort) throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, InterruptedException {
-        SQLChecker.checkTaintedString(this.objectMapper.writeValueAsString(sql_checker_abort));
-//        try {
-//            SQLChecker.checkTaintedString(this.objectMapper.writeValueAsString(sql_checker_abort));
-//        } catch (RuntimeException | IllegalAccessException | NoSuchMethodException | InvocationTargetException | IOException | InterruptedException e) {
-//            e.printStackTrace();
-//        }
+        SQLChecker.logTaintedString(this.objectMapper.writeValueAsString(sql_checker_abort));
     }
 
     @Override
     public String getName() {
-        return "sql_checker";
+        return "sql_logger";
     }
 
     public static class Abort {
@@ -82,3 +77,4 @@ public class SqlCheckerAbort extends Abort{
         }
     }
 }
+
