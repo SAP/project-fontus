@@ -50,6 +50,10 @@ public final class IASStringBuilder extends IASAbstractStringBuilder implements 
         super(buffer);
     }
 
+    public IASStringBuilder(StringBuilder builder) {
+        super(builder);
+    }
+
     @Override
     public int length() {
         return super.length();

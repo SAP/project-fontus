@@ -91,6 +91,11 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
         this.tainted = false;
     }
 
+    public IASAbstractStringBuilder(StringBuilder sb) {
+        this.stringBuilder = sb;
+        this.tainted = false;
+    }
+
     @Override
     public int length() {
         return this.stringBuilder.length();

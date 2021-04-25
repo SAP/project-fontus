@@ -11,6 +11,7 @@ import com.sap.fontus.instrumentation.strategies.InstrumentationStrategy;
 import com.sap.fontus.instrumentation.strategies.method.*;
 import com.sap.fontus.instrumentation.transformer.*;
 import com.sap.fontus.taintaware.shared.IASLookupUtils;
+import com.sap.fontus.taintaware.shared.IASStringable;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
 import com.sap.fontus.utils.Utils;
@@ -258,18 +259,19 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             }
         }
 
-        if (this.isRelevantMethodHandleInvocation(fc)) {
-            this.generateMethodHandleInvocationIntercept(fc);
-            return;
-        }
+//        if (this.isRelevantMethodHandleInvocation(fc)) {
+//            this.generateMethodHandleInvocationIntercept(fc);
+//            return;
+//        }
 
         if (this.isMethodHandleLookup(fc)) {
             this.generateMethodHandleLookupIntercept(fc);
+            return;
         }
 
         // Call any functions which manipulate function call parameters and return types
         // for example sources, sinks and JDK functions
-        if (this.rewriteParametersAndReturnType(fc)) {
+        if (!this.isRelevantMethodHandleInvocation(fc) && this.rewriteParametersAndReturnType(fc)) {
             return;
         }
 
@@ -374,7 +376,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     private void storeArgumentsToLocals(FunctionCall call) {
         Stack<String> params = call.getParsedDescriptor().getParameterStack();
 
-        int i = call.getParsedDescriptor().getParameters().stream().mapToInt(s -> Type.getType(s).getSize()).sum();
+        int i = Utils.getArgumentsStackSize(call.getDescriptor());
         while (!params.isEmpty()) {
             String param = params.pop();
 
@@ -388,38 +390,66 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
     private boolean isRelevantMethodHandleInvocation(FunctionCall fc) {
-        if (fc.getOwner().equals("java/lang/invoke/MethodHandle") && (
+//        if (
+        return fc.getOwner().equals("java/lang/invoke/MethodHandle") && (
                 fc.getName().equals("invoke") ||
                         fc.getName().equals("invokeExact") ||
-                        fc.getName().equals("invokeWithArguments")
-        )) {
-            String instrumentedDesc = InstrumentationHelper.getInstance(this.stringConfig).instrumentForNormalCall(Descriptor.parseDescriptor(fc.getDescriptor())).toDescriptor();
-            return !instrumentedDesc.equals(fc.getDescriptor());
-        }
-        return false;
+                        fc.getName().equals("invokeWithArguments"));
+//        )) {
+//            String instrumentedDesc = InstrumentationHelper.getInstance(this.stringConfig).instrumentForNormalCall(Descriptor.parseDescriptor(fc.getDescriptor())).toDescriptor();
+//            return !instrumentedDesc.equals(fc.getDescriptor());
+//        }
+//        return false;
     }
 
     private void generateMethodHandleLookupIntercept(FunctionCall fc) {
+        Label label1 = new Label();
+        Label label3 = new Label();
+
         // Copying the class reference to the top of the Stack
         this.storeArgumentsToLocals(fc);
 
-        super.visitVarInsn(Opcodes.ALOAD, this.used);
+        int classLocal = this.used;
+        int nameLocal = classLocal + 1;
+        int methodTypeLocal = nameLocal + 1;
+        int isJdkLocal = this.used + Utils.getArgumentsStackSize(fc.getDescriptor());
+        int methodHandleLocal = isJdkLocal + 1;
 
-        Label label1 = new Label();
-        Label label2 = new Label();
+        super.visitVarInsn(Opcodes.ALOAD, classLocal);
         super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASLookupUtils.class), "isJdkOrExcluded", new Descriptor(new String[]{Type.getDescriptor(Class.class)}, Type.getDescriptor(boolean.class)).toDescriptor(), false);
+        super.visitVarInsn(Opcodes.ISTORE, isJdkLocal);
 
+        super.visitVarInsn(Opcodes.ILOAD, isJdkLocal);
         super.visitJumpInsn(Opcodes.IFEQ, label1);
         {
-            this.loadArgumentsFromLocals(fc);
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASLookupUtils.class), "uninstrumentForJdk", Type.getMethodDescriptor(Type.getType(MethodType.class), Type.getType(MethodType.class)));
-            this.visitJumpInsn(Opcodes.GOTO, label2);
+            this.visitVarInsn(Opcodes.ALOAD, methodTypeLocal);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASLookupUtils.class), "uninstrumentForJdk", Type.getMethodDescriptor(Type.getType(MethodType.class), Type.getType(MethodType.class)), false);
+            this.visitVarInsn(Opcodes.ASTORE, methodTypeLocal);
         }
         super.visitLabel(label1);
 
-        this.loadArgumentsFromLocals(fc);
+        super.visitVarInsn(Opcodes.ALOAD, classLocal);
+        super.visitVarInsn(Opcodes.ALOAD, nameLocal);
+        super.visitMethodInsn(Opcodes.INVOKEINTERFACE, Type.getInternalName(IASStringable.class), "getString", Type.getMethodDescriptor(Type.getType(String.class)), true);
+        super.visitVarInsn(Opcodes.ALOAD, methodTypeLocal);
 
-        super.visitLabel(label2);
+//        this.loadArgumentsFromLocals(fc);
+
+        this.visitMethodInsn(fc);
+
+        super.visitVarInsn(Opcodes.ASTORE, methodHandleLocal);
+
+        super.visitVarInsn(Opcodes.ILOAD, isJdkLocal);
+        super.visitJumpInsn(Opcodes.IFEQ, label3);
+        {
+            super.visitVarInsn(Opcodes.ALOAD, methodHandleLocal);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASLookupUtils.class), "convertForJdk", Type.getMethodDescriptor(Type.getType(MethodHandle.class), Type.getType(MethodHandle.class)), false);
+            super.visitVarInsn(Opcodes.ASTORE, methodHandleLocal);
+        }
+        super.visitLabel(label3);
+
+        super.visitVarInsn(Opcodes.ALOAD, methodHandleLocal);
+        this.usedAfterInjection = Math.max(this.used + Utils.getArgumentsStackSize(fc.getDescriptor()) + 2, this.usedAfterInjection);
     }
 
     private boolean isMethodHandleLookup(FunctionCall fc) {

@@ -20,7 +20,7 @@ public interface InstrumentationStrategy {
 
     Optional<String> translateClassName(String className);
 
-    boolean handlesType(String typeName);
+    boolean handlesType(String descriptor);
 
     String getGetOriginalTypeMethod();
 }
