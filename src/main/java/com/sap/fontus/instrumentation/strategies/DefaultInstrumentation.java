@@ -28,7 +28,7 @@ public class DefaultInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
-    public boolean handlesType(String typeName) {
+    public boolean handlesType(String descriptor) {
         return false;
     }
 

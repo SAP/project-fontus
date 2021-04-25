@@ -61,8 +61,8 @@ public abstract class AbstractInstrumentation implements InstrumentationStrategy
     }
 
     @Override
-    public boolean handlesType(String typeName) {
-        return typeName.endsWith(this.origDesc);
+    public boolean handlesType(String descriptor) {
+        return descriptor.endsWith(this.origDesc);
     }
 
     @Override
