@@ -23,14 +23,12 @@ public class ConversionUtils {
     private static final Map<Class<?>, Function<Object, Object>> toInterface = new HashMap<>();
     private static final Map<Class<?>, MethodHandle> toOrigMethods = new HashMap<>();
     private static final Map<Class<?>, MethodHandle> toConcreteMethods = new HashMap<>();
+    private static final Map<Class<?>, Class<?>> toConcreteClass = new HashMap<>();
+    private static final Map<Class<?>, Class<?>> toOrigClass = new HashMap<>();
+    private static final Map<Class<?>, Class<?>> toInterfaceClass = new HashMap<>();
 
     static {
-        toConcrete.put(String.class, (obj) -> {
-            if (obj instanceof Class) {
-                return factory.getStringClass();
-            }
-            return factory.createString((String) obj);
-        });
+        toConcrete.put(String.class, (obj) -> factory.createString((String) obj));
         toConcrete.put(StringBuilder.class, (obj) -> factory.createStringBuilder((StringBuilder) obj));
         toConcrete.put(StringBuffer.class, (obj) -> factory.createStringBuffer((StringBuffer) obj));
         toConcrete.put(Formatter.class, (obj) -> factory.createFormatter((Formatter) obj));
@@ -38,48 +36,53 @@ public class ConversionUtils {
         toConcrete.put(Pattern.class, (obj) -> factory.createPattern((Pattern) obj));
         toConcrete.put(Properties.class, (obj) -> factory.createProperties((Properties) obj));
 
-        toOrig.put(IASStringable.class, (obj) -> {
-            if (obj instanceof Class) {
-                return String.class;
-            }
-            return ((IASStringable) obj).getString();
-        });
-        toOrig.put(IASStringBuilderable.class, (obj) -> {
-            if (obj instanceof Class) {
-                return StringBuilder.class;
-            }
-            return ((IASStringBuilderable) obj).getStringBuilder();
-        });
-        toOrig.put(IASStringBufferable.class, (obj) -> {
-            if (obj instanceof Class) {
-                return StringBuffer.class;
-            }
-            return ((IASStringBufferable) obj).getStringBuffer();
-        });
-        toOrig.put(IASFormatterable.class, (obj) -> {
-            if (obj instanceof Class) {
-                return Formatter.class;
-            }
-            return ((IASFormatterable) obj).getFormatter();
-        });
-        toOrig.put(IASMatcherable.class, (obj) -> {
-            if (obj instanceof Class) {
-                return Matcher.class;
-            }
-            return ((IASMatcherable) obj).getMatcher();
-        });
-        toOrig.put(IASPatternable.class, (obj) -> {
-            if (obj instanceof Class) {
-                return Pattern.class;
-            }
-            return ((IASPatternable) obj).getPattern();
-        });
-        toOrig.put(IASProperties.class, (obj) -> {
-            if (obj instanceof Class) {
-                return Properties.class;
-            }
-            return ((IASProperties) obj).getProperties();
-        });
+        toOrig.put(IASStringable.class, (obj) -> ((IASStringable) obj).getString());
+        toOrig.put(IASStringBuilderable.class, (obj) -> ((IASStringBuilderable) obj).getStringBuilder());
+        toOrig.put(IASStringBufferable.class, (obj) -> ((IASStringBufferable) obj).getStringBuffer());
+        toOrig.put(IASFormatterable.class, (obj) -> ((IASFormatterable) obj).getFormatter());
+        toOrig.put(IASMatcherable.class, (obj) -> ((IASMatcherable) obj).getMatcher());
+        toOrig.put(IASPatternable.class, (obj) -> ((IASPatternable) obj).getPattern());
+        toOrig.put(IASProperties.class, (obj) -> ((IASProperties) obj).getProperties());
+
+        toInterfaceClass.put(String.class, IASStringable.class);
+        toInterfaceClass.put(StringBuilder.class, IASAbstractStringBuilderable.class);
+        toInterfaceClass.put(StringBuffer.class, IASAbstractStringBuilderable.class);
+        toInterfaceClass.put(Formatter.class, IASFormatterable.class);
+        toInterfaceClass.put(Matcher.class, IASMatcherable.class);
+        toInterfaceClass.put(Pattern.class, IASPatternable.class);
+        toInterfaceClass.put(Properties.class, IASProperties.class);
+
+        toInterfaceClass.put(factory.getStringClass(), IASStringable.class);
+        toInterfaceClass.put(factory.getStringBuilderClass(), IASAbstractStringBuilderable.class);
+        toInterfaceClass.put(factory.getStringBufferClass(), IASAbstractStringBuilderable.class);
+        toInterfaceClass.put(factory.getFormatterClass(), IASFormatterable.class);
+        toInterfaceClass.put(factory.getMatcherClass(), IASMatcherable.class);
+        toInterfaceClass.put(factory.getPatternClass(), IASPatternable.class);
+        toInterfaceClass.put(factory.getPropertiesClass(), IASProperties.class);
+
+        toOrigClass.put(IASStringable.class, String.class);
+        toOrigClass.put(IASStringBuilderable.class, StringBuilder.class);
+        toOrigClass.put(IASStringBufferable.class, StringBuffer.class);
+        toOrigClass.put(IASFormatterable.class, Formatter.class);
+        toOrigClass.put(IASMatcherable.class, Matcher.class);
+        toOrigClass.put(IASPatternable.class, Pattern.class);
+        toOrigClass.put(IASProperties.class, Properties.class);
+
+        toOrigClass.put(factory.getStringClass(), String.class);
+        toOrigClass.put(factory.getStringBuilderClass(), StringBuilder.class);
+        toOrigClass.put(factory.getStringBufferClass(), StringBuffer.class);
+        toOrigClass.put(factory.getFormatterClass(), Formatter.class);
+        toOrigClass.put(factory.getMatcherClass(), Matcher.class);
+        toOrigClass.put(factory.getPatternClass(), Pattern.class);
+        toOrigClass.put(factory.getPropertiesClass(), Properties.class);
+
+        toConcreteClass.put(String.class, factory.getStringClass());
+        toConcreteClass.put(StringBuilder.class, factory.getStringBuilderClass());
+        toConcreteClass.put(StringBuffer.class, factory.getStringBufferClass());
+        toConcreteClass.put(Formatter.class, factory.getFormatterClass());
+        toConcreteClass.put(Matcher.class, factory.getMatcherClass());
+        toConcreteClass.put(Pattern.class, factory.getPatternClass());
+        toConcreteClass.put(Properties.class, factory.getPropertiesClass());
 
         TaintStringConfig stringConfig = Configuration.getConfiguration().getTaintStringConfig();
         try {
@@ -107,7 +110,7 @@ public class ConversionUtils {
         }
     }
 
-    private static Object convertObject(Object object, Map<Class<?>, Function<Object, Object>> converters) {
+    private static Object convertObject(Object object, Map<Class<?>, Function<Object, Object>> converters, Map<Class<?>, Class<?>> classConverters) {
         if (object == null) {
             return null;
         }
@@ -116,10 +119,14 @@ public class ConversionUtils {
             List list = (List) object;
             List result = new ArrayList<>();
             for (Object listEntry : list) {
-                Object converted = convertObject(listEntry, converters);
+                Object converted = convertObject(listEntry, converters, classConverters);
                 result.add(converted);
             }
             return result;
+        }
+
+        if (object instanceof Class) {
+            return convertClass((Class<?>) object, classConverters);
         }
 
         boolean isArray = object.getClass().isArray();
@@ -128,10 +135,10 @@ public class ConversionUtils {
             if (handler.isAssignableFrom(cls)) {
                 if (isArray) {
                     Object[] array = (Object[]) object;
-                    Class<?> arrayType = (Class<?>) converters.get(handler).apply(handler);
+                    Class<?> arrayType = classConverters.get(handler);
                     Object[] result = (Object[]) Array.newInstance(arrayType, array.length);
                     for (int i = 0; i < array.length; i++) {
-                        result[i] = convertObject(array[i], converters);
+                        result[i] = convertObject(array[i], converters, classConverters);
                     }
                     return result;
                 } else {
@@ -143,7 +150,7 @@ public class ConversionUtils {
     }
 
     public static Object convertToOrig(Object object) {
-        return convertObject(object, toOrig);
+        return convertObject(object, toOrig, toOrigClass);
     }
 
     private static boolean isHandlable(Class cls) {
@@ -201,24 +208,36 @@ public class ConversionUtils {
     }
 
     public static Class<?> convertClassToOrig(Class<?> cls) {
-        return convertClass(cls, toOrig);
+        return convertClass(cls, toOrigClass);
     }
 
     public static Class<?> convertClassToInterface(Class<?> cls) {
-        return convertClass(cls, toInterface);
+        return convertClass(cls, toInterfaceClass);
     }
 
     public static Class<?> convertClassToConcrete(Class<?> cls) {
-        return convertClass(cls, toConcrete);
+        return convertClass(cls, toConcreteClass);
     }
 
-    public static Class<?> convertClass(Class<?> cls, Map<Class<?>, Function<Object, Object>> converters) {
-        for (Class<?> handler : converters.keySet()) {
-            if (handler.isAssignableFrom(cls)) {
-                return (Class<?>) converters.get(handler).apply(cls);
+    public static Class<?> convertClass(Class<?> cls, Map<Class<?>, Class<?>> converters) {
+        Class<?> baseClass = cls;
+        if (cls.isArray()) {
+            baseClass = cls.getComponentType();
+        }
+        Class<?> converted = converters.get(baseClass);
+
+        if (converted == null) {
+            return cls;
+        }
+
+        if (cls.isArray()) {
+            try {
+                return Class.forName(cls.getName().replace(baseClass.getName(), converted.getName()));
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException("Could not convert array type " + cls.getName() + " to instrumented type", e);
             }
         }
-        return cls;
+        return converted;
     }
 
     public static MethodHandle getToInstrumentedConverter(Class<?> uninstrumentedClass) {
