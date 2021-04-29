@@ -45,6 +45,14 @@ public final class IASString implements IASTaintAware, IASStringable {
         this(strb.toString(), strb.isTainted());
     }
 
+    public IASString(IASStringBuilderable strb) {
+        this(strb.toString(), strb.isTainted());
+    }
+
+    public IASString(IASStringBufferable strb) {
+        this(strb.toString(), strb.isTainted());
+    }
+
     public IASString(String s, boolean tainted) {
 //        if ("java.lang.String".equals(s)) {
 //            s = IASString.class.getName();

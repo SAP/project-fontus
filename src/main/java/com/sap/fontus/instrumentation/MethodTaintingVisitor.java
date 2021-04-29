@@ -22,7 +22,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.function.ToIntFunction;
 
 
 @SuppressWarnings("deprecation")
@@ -42,6 +41,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
      * Some dynamic method invocations can't be handled generically. Add proxy functions here.
      */
     private final HashMap<ProxiedDynamicFunctionEntry, Runnable> dynProxies;
+    private final String ownerSuperClass;
 
     private int used;
     private int usedAfterInjection;
@@ -62,7 +62,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
      */
     private final Map<FunctionCall, Runnable> methodInterfaceProxies;
 
-    public MethodTaintingVisitor(int acc, String owner, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver, Configuration config, boolean implementsInvocationHandler, List<InstrumentationStrategy> instrumentation, CombinedExcludedLookup combinedExcludedLookup, List<DynamicCall> bootstrapMethods) {
+    public MethodTaintingVisitor(int acc, String owner, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver, Configuration config, boolean implementsInvocationHandler, List<InstrumentationStrategy> instrumentation, CombinedExcludedLookup combinedExcludedLookup, List<DynamicCall> bootstrapMethods, String ownerSuperClass) {
         super(Opcodes.ASM7, methodVisitor);
         this.resolver = resolver;
         this.owner = owner;
@@ -79,6 +79,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.methodProxies = new HashMap<>();
         this.methodInterfaceProxies = new HashMap<>();
         this.dynProxies = new HashMap<>();
+        this.ownerSuperClass = ownerSuperClass;
         this.fillProxies();
         this.fillInterfaceProxies();
         this.config = config;
@@ -259,13 +260,27 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             }
         }
 
-//        if (this.isRelevantMethodHandleInvocation(fc)) {
-//            this.generateMethodHandleInvocationIntercept(fc);
-//            return;
-//        }
+        if (this.name.equals("toString") && this.methodDescriptor.equals(Type.getMethodDescriptor(Type.getType(stringConfig.getTStringDesc())))
+                && opcode == Opcodes.INVOKESPECIAL && name.equals("toString") && descriptor.equals(Type.getMethodDescriptor(Type.getType(String.class)))
+                && this.combinedExcludedLookup.isPackageExcludedOrJdk(owner)
+                && !this.combinedExcludedLookup.isPackageExcludedOrJdk(this.ownerSuperClass)) {
+            Descriptor instrumented = new Descriptor(Type.getType(stringConfig.getTStringDesc()));
+            super.visitMethodInsn(Opcodes.INVOKESPECIAL, this.ownerSuperClass, name, instrumented.toDescriptor(), false);
+            return;
+        }
 
-        if (this.isMethodHandleLookup(fc)) {
-            this.generateMethodHandleLookupIntercept(fc);
+        if (this.isVirtualOrStaticMethodHandleLookup(fc)) {
+            this.generateVirtualOrStaticMethodHandleLookupIntercept(fc);
+            return;
+        }
+
+        if (this.isConstructorMethodHandleLookup(fc)) {
+            this.generateConstructorMethodHandleLookupIntercept(fc);
+            return;
+        }
+
+        if (this.isSpecialMethodHandleLookup(fc)) {
+            this.generateSpecialMethodHandleLookupIntercept(fc);
             return;
         }
 
@@ -288,69 +303,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         super.visitMethodInsn(opcode, owner, name, desc.toDescriptor(), isInterface);
     }
 
-    private void generateMethodHandleInvocationIntercept(FunctionCall fc) {
-        // Preparing transformer
-        MethodParameterTransformer transformer = new MethodParameterTransformer(this, fc);
-
-        JdkMethodTransformer jdkMethodTransformer = new JdkMethodTransformer(fc, this.methodInstrumentation, this.config);
-
-        transformer.addParameterTransformation(jdkMethodTransformer);
-        transformer.addReturnTransformation(jdkMethodTransformer);
-
-        // Bytecode generation
-        Label label1 = new Label();
-        Label label2 = new Label();
-        Label label3 = new Label();
-        Label label4 = new Label();
-
-        this.storeArgumentsToLocals(fc);
-
-        if (!Type.getType(fc.getParsedDescriptor().getReturnType()).equals(Type.getType(void.class))) {
-            super.visitInsn(Opcodes.DUP);
-        }
-        super.visitInsn(Opcodes.DUP);
-        super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASLookupUtils.class), "isInstrumented", Type.getMethodDescriptor(Type.getType(boolean.class), Type.getType(MethodHandle.class)), false);
-
-        super.visitJumpInsn(Opcodes.IFEQ, label1);
-        // if(!isInstrumented(...))
-        {
-            this.loadArgumentsFromLocals(fc);
-
-            transformer.modifyStackParameters(this.used);
-            this.usedAfterInjection = Math.max(this.used + transformer.getExtraStackSlots(), this.usedAfterInjection);
-
-            this.visitMethodInsn(fc);
-
-            super.visitJumpInsn(Opcodes.GOTO, label2);
-        }
-        super.visitLabel(label1);
-
-        this.loadArgumentsFromLocals(fc);
-        super.visitMethodInsn(fc.getOpcode(), fc.getOwner(), fc.getName(), InstrumentationHelper.getInstance(this.stringConfig).instrumentForNormalCall(fc.getDescriptor()), fc.isInterface());
-
-        super.visitLabel(label2);
-
-        if (!Type.getType(fc.getParsedDescriptor().getReturnType()).equals(Type.getType(void.class))) {
-            this.storeReturnToLocals(fc);
-
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASLookupUtils.class), "isInstrumented", Type.getMethodDescriptor(Type.getType(boolean.class), Type.getType(MethodHandle.class)), false);
-            super.visitJumpInsn(Opcodes.IFEQ, label3);
-            // if(!isInstrumented(...))
-            {
-                this.loadReturnToLocals(fc);
-
-                transformer.modifyReturnType();
-
-                super.visitJumpInsn(Opcodes.GOTO, label4);
-            }
-            super.visitLabel(label3);
-
-            this.loadReturnToLocals(fc);
-
-            super.visitLabel(label4);
-        }
-    }
-
     private void loadReturnToLocals(FunctionCall fc) {
         super.visitVarInsn(Type.getType(fc.getParsedDescriptor().getReturnType()).getOpcode(Opcodes.ILOAD), this.used);
     }
@@ -358,19 +310,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     private void storeReturnToLocals(FunctionCall fc) {
         super.visitVarInsn(Type.getType(fc.getParsedDescriptor().getReturnType()).getOpcode(Opcodes.ISTORE), this.used);
         this.usedAfterInjection = Math.max(this.used + Utils.getReturnStackSize(fc.getParsedDescriptor()), this.usedAfterInjection);
-    }
-
-    private void loadArgumentsFromLocals(FunctionCall fc) {
-        List<String> params = Descriptor.parseDescriptor(fc.getDescriptor()).getParameters();
-
-        int n = 0;
-        for (int i = 0; i < params.size(); i++) {
-            String param = params.get(i);
-            int storeOpcode = Type.getType(param).getOpcode(Opcodes.ISTORE);
-
-            super.visitVarInsn(storeOpcode, this.used + n);
-            n += Type.getType(param).getSize();
-        }
     }
 
     private void storeArgumentsToLocals(FunctionCall call) {
@@ -402,7 +341,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 //        return false;
     }
 
-    private void generateMethodHandleLookupIntercept(FunctionCall fc) {
+    private void generateVirtualOrStaticMethodHandleLookupIntercept(FunctionCall fc) {
         Label label1 = new Label();
         Label label3 = new Label();
 
@@ -422,9 +361,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         super.visitVarInsn(Opcodes.ILOAD, isJdkLocal);
         super.visitJumpInsn(Opcodes.IFEQ, label1);
         {
-            this.visitVarInsn(Opcodes.ALOAD, methodTypeLocal);
+            super.visitVarInsn(Opcodes.ALOAD, methodTypeLocal);
             super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASLookupUtils.class), "uninstrumentForJdk", Type.getMethodDescriptor(Type.getType(MethodType.class), Type.getType(MethodType.class)), false);
-            this.visitVarInsn(Opcodes.ASTORE, methodTypeLocal);
+            super.visitVarInsn(Opcodes.ASTORE, methodTypeLocal);
         }
         super.visitLabel(label1);
 
@@ -432,8 +371,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         super.visitVarInsn(Opcodes.ALOAD, nameLocal);
         super.visitMethodInsn(Opcodes.INVOKEINTERFACE, Type.getInternalName(IASStringable.class), "getString", Type.getMethodDescriptor(Type.getType(String.class)), true);
         super.visitVarInsn(Opcodes.ALOAD, methodTypeLocal);
-
-//        this.loadArgumentsFromLocals(fc);
 
         this.visitMethodInsn(fc);
 
@@ -452,13 +389,100 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.usedAfterInjection = Math.max(this.used + Utils.getArgumentsStackSize(fc.getDescriptor()) + 2, this.usedAfterInjection);
     }
 
-    private boolean isMethodHandleLookup(FunctionCall fc) {
+    private void generateConstructorMethodHandleLookupIntercept(FunctionCall fc) {
+        Label label = new Label();
+
+        // Copying the class reference to the top of the Stack
+        this.storeArgumentsToLocals(fc);
+
+        int classLocal = this.used;
+        int methodTypeLocal = classLocal + 1;
+        int isJdkLocal = this.used + Utils.getArgumentsStackSize(fc.getDescriptor());
+
+        super.visitVarInsn(Opcodes.ALOAD, classLocal);
+        super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASLookupUtils.class), "isJdkOrExcluded", new Descriptor(new String[]{Type.getDescriptor(Class.class)}, Type.getDescriptor(boolean.class)).toDescriptor(), false);
+        super.visitVarInsn(Opcodes.ISTORE, isJdkLocal);
+
+        super.visitVarInsn(Opcodes.ILOAD, isJdkLocal);
+        super.visitJumpInsn(Opcodes.IFEQ, label);
+        {
+            super.visitVarInsn(Opcodes.ALOAD, methodTypeLocal);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASLookupUtils.class), "uninstrumentForJdk", Type.getMethodDescriptor(Type.getType(MethodType.class), Type.getType(MethodType.class)), false);
+            super.visitVarInsn(Opcodes.ASTORE, methodTypeLocal);
+        }
+        super.visitLabel(label);
+
+        super.visitVarInsn(Opcodes.ALOAD, classLocal);
+        super.visitVarInsn(Opcodes.ALOAD, methodTypeLocal);
+
+        this.visitMethodInsn(fc);
+
+        this.usedAfterInjection = Math.max(this.used + Utils.getArgumentsStackSize(fc.getDescriptor()) + 1, this.usedAfterInjection);
+    }
+
+    private void generateSpecialMethodHandleLookupIntercept(FunctionCall fc) {
+        Label label1 = new Label();
+        Label label3 = new Label();
+
+        // Copying the class reference to the top of the Stack
+        this.storeArgumentsToLocals(fc);
+
+        int classLocal = this.used;
+        int nameLocal = classLocal + 1;
+        int methodTypeLocal = nameLocal + 1;
+        int callerLocal = methodTypeLocal + 1;
+        int isJdkLocal = this.used + Utils.getArgumentsStackSize(fc.getDescriptor());
+        int methodHandleLocal = isJdkLocal + 1;
+
+        super.visitVarInsn(Opcodes.ALOAD, classLocal);
+        super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASLookupUtils.class), "isJdkOrExcluded", new Descriptor(new String[]{Type.getDescriptor(Class.class)}, Type.getDescriptor(boolean.class)).toDescriptor(), false);
+        super.visitVarInsn(Opcodes.ISTORE, isJdkLocal);
+
+        super.visitVarInsn(Opcodes.ILOAD, isJdkLocal);
+        super.visitJumpInsn(Opcodes.IFEQ, label1);
+        {
+            super.visitVarInsn(Opcodes.ALOAD, methodTypeLocal);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASLookupUtils.class), "uninstrumentForJdk", Type.getMethodDescriptor(Type.getType(MethodType.class), Type.getType(MethodType.class)), false);
+            super.visitVarInsn(Opcodes.ASTORE, methodTypeLocal);
+        }
+        super.visitLabel(label1);
+
+        super.visitVarInsn(Opcodes.ALOAD, classLocal);
+        super.visitVarInsn(Opcodes.ALOAD, nameLocal);
+        super.visitMethodInsn(Opcodes.INVOKEINTERFACE, Type.getInternalName(IASStringable.class), "getString", Type.getMethodDescriptor(Type.getType(String.class)), true);
+        super.visitVarInsn(Opcodes.ALOAD, methodTypeLocal);
+        super.visitVarInsn(Opcodes.ALOAD, callerLocal);
+
+        this.visitMethodInsn(fc);
+
+        super.visitVarInsn(Opcodes.ASTORE, methodHandleLocal);
+
+        super.visitVarInsn(Opcodes.ILOAD, isJdkLocal);
+        super.visitJumpInsn(Opcodes.IFEQ, label3);
+        {
+            super.visitVarInsn(Opcodes.ALOAD, methodHandleLocal);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASLookupUtils.class), "convertForJdk", Type.getMethodDescriptor(Type.getType(MethodHandle.class), Type.getType(MethodHandle.class)), false);
+            super.visitVarInsn(Opcodes.ASTORE, methodHandleLocal);
+        }
+        super.visitLabel(label3);
+
+        super.visitVarInsn(Opcodes.ALOAD, methodHandleLocal);
+        this.usedAfterInjection = Math.max(this.used + Utils.getArgumentsStackSize(fc.getDescriptor()) + 2, this.usedAfterInjection);
+    }
+
+    private boolean isVirtualOrStaticMethodHandleLookup(FunctionCall fc) {
         return fc.getOwner().equals("java/lang/invoke/MethodHandles$Lookup") && (
-                fc.getName().equals("findConstructor") ||
-                        fc.getName().equals("findVirtual") ||
-                        fc.getName().equals("findStatic") ||
-                        fc.getName().equals("findSpecial")
+                fc.getName().equals("findVirtual") ||
+                        fc.getName().equals("findStatic")
         );
+    }
+
+    private boolean isSpecialMethodHandleLookup(FunctionCall fc) {
+        return fc.getOwner().equals("java/lang/invoke/MethodHandles$Lookup") && fc.getName().equals("findSpecial");
+    }
+
+    private boolean isConstructorMethodHandleLookup(FunctionCall fc) {
+        return fc.getOwner().equals("java/lang/invoke/MethodHandles$Lookup") && fc.getName().equals("findConstructor");
     }
 
     private boolean rewriteParametersAndReturnType(FunctionCall call) {

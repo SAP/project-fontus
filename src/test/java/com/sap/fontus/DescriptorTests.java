@@ -8,10 +8,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.objectweb.asm.Type;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.lang.reflect.Method;
+import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 @SuppressWarnings({"DuplicateStringLiteralInspection", "SpellCheckingInspection", "ClassIndependentOfModule", "ClassOnlyUsedInOneModule"})
@@ -20,14 +23,14 @@ class DescriptorTests {
 
     @Test
     void parseCharArrayDescriptor() {
-        Descriptor d = new Descriptor("[C", "V");
+        Descriptor d = new Descriptor(Type.getType(void.class), Type.getType(char[].class));
         Descriptor pd = Descriptor.parseDescriptor("([C)V");
         assertEquals(d, pd, "Both descriptors should have one char array parameter and void return type.");
     }
 
     @Test
     void parseArrayDescriptor() {
-        Descriptor d = new Descriptor("[Ljava/lang/String;", "[C");
+        Descriptor d = new Descriptor(Type.getType(char[].class), Type.getType(String[].class));
         Descriptor pd = Descriptor.parseDescriptor("([Ljava/lang/String;)[C");
         assertEquals(d, pd, "Both descriptors should have one String array array parameter and a char array return type.");
     }
@@ -75,35 +78,35 @@ class DescriptorTests {
     private static Stream<Arguments> provideDescriptorReplacementData() {
         return Stream.of(
                 Arguments.of(
-                        new Descriptor("I",
-                                Constants.StringDesc,
-                                "[Ljava/lang/Object;",
-                                "F",
-                                "Ljava/util/function/Function;",
-                                "Ljava/lang/Float;",
-                                "Ljava/util/List;"
+                        new Descriptor(Type.getType(List.class),
+                                Type.getType(int.class),
+                                Type.getType(Constants.StringDesc),
+                                Type.getType(Object[].class),
+                                Type.getType(float.class),
+                                Type.getType(Function.class),
+                                Type.getType(Float.class)
                         ),
                         Constants.StringDesc,
                         taintStringConfig.getTStringDesc(),
-                        new Descriptor("I",
-                                taintStringConfig.getTStringDesc(),
-                                "[Ljava/lang/Object;",
-                                "F",
-                                "Ljava/util/function/Function;",
-                                "Ljava/lang/Float;",
-                                "Ljava/util/List;"
+                        new Descriptor(Type.getType(List.class),
+                                Type.getType(int.class),
+                                Type.getType(taintStringConfig.getTStringDesc()),
+                                Type.getType(Object[].class),
+                                Type.getType(float.class),
+                                Type.getType(Function.class),
+                                Type.getType(Float.class)
                         )
                 ),
                 Arguments.of(
-                        new Descriptor("[Ljava/lang/Object;", "Ljava/util/List;"),
+                        new Descriptor(Type.getType(List.class), Type.getType(Object[].class)),
                         Constants.StringDesc,
                         taintStringConfig.getTStringDesc(),
-                        new Descriptor("[Ljava/lang/Object;", "Ljava/util/List;")),
+                        new Descriptor(Type.getType(List.class), Type.getType(Object[].class))),
                 Arguments.of(
-                        new Descriptor("[Ljava/lang/String;", "V"),
+                        new Descriptor(Type.getType(void.class), Type.getType(String[].class)),
                         Constants.StringDesc,
                         taintStringConfig.getTStringDesc(),
-                        new Descriptor("[" + taintStringConfig.getTStringDesc(), "V")
+                        new Descriptor(Type.getType(void.class), Type.getType("[" + taintStringConfig.getTStringDesc()))
                 )
         );
     }
@@ -111,22 +114,21 @@ class DescriptorTests {
     private static Stream<Arguments> provideDescriptorData() {
         return Stream.of(
                 Arguments.of("(ILjava/lang/String;[Ljava/lang/Object;FLjava/util/function/Function;Ljava/lang/Float;)Ljava/util/List;",
-                        new Descriptor("I",
-                                "Ljava/lang/String;",
-                                "[Ljava/lang/Object;",
-                                "F",
-                                "Ljava/util/function/Function;",
-                                "Ljava/lang/Float;",
-                                "Ljava/util/List;"
+                        new Descriptor(
+                                Type.getType(List.class),
+                                Type.getType(int.class),
+                                Type.getType(String.class),
+                                Type.getType(Object[].class),
+                                Type.getType(float.class),
+                                Type.getType(Function.class),
+                                Type.getType(Float.class)
                         )),
                 Arguments.of("([Ljava/lang/Object;)Ljava/util/List;",
-                        new Descriptor("[Ljava/lang/Object;", "Ljava/util/List;")),
+                        new Descriptor(Type.getType(List.class), Type.getType(Object[].class))),
                 Arguments.of(Constants.MAIN_METHOD_DESC,
-                        new Descriptor("[Ljava/lang/String;", "V")),
+                        new Descriptor(Type.getType(void.class), Type.getType(String[].class))),
                 Arguments.of("(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;",
-                        new Descriptor("Ljava/lang/String;",
-                                "[Ljava/lang/Object;",
-                                "Ljava/lang/String;"
+                        new Descriptor(Type.getType(String.class), Type.getType(String.class), Type.getType(Object[].class)
                         ))
         );
     }
