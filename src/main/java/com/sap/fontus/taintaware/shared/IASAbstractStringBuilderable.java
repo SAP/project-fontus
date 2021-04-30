@@ -33,6 +33,10 @@ public interface IASAbstractStringBuilderable extends Serializable, Comparable<I
 
     IASAbstractStringBuilderable appendCodePoint(int codePoint);
 
+    int codePointAt(int index);
+
+    int codePointBefore(int index);
+
     int codePointCount(int beginIndex, int endIndex);
 
     IASAbstractStringBuilderable delete(int start, int end);
@@ -66,6 +70,10 @@ public interface IASAbstractStringBuilderable extends Serializable, Comparable<I
     IASAbstractStringBuilderable insert(int offset, float f);
 
     IASAbstractStringBuilderable insert(int offset, double d);
+
+    int offsetByCodePoints(int index, int codePointOffset);
+
+    void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin);
 
     int indexOf(IASStringable str);
 
