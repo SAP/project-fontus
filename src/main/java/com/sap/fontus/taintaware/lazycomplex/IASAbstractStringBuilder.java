@@ -415,6 +415,26 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
     }
 
     @Override
+    public void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin) {
+        this.stringBuilder.getChars(srcBegin, srcEnd, dst, dstBegin);
+    }
+
+    @Override
+    public int codePointAt(int index) {
+        return this.stringBuilder.codePointAt(index);
+    }
+
+    @Override
+    public int codePointBefore(int index) {
+        return this.stringBuilder.codePointBefore(index);
+    }
+
+    @Override
+    public int offsetByCodePoints(int index, int codePointOffset) {
+        return this.offsetByCodePoints(index, codePointOffset);
+    }
+
+    @Override
     public int compareTo(IASAbstractStringBuilderable o) {
         return this.stringBuilder.compareTo(o.getStringBuilder());
     }

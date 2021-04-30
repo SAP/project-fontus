@@ -102,16 +102,19 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
     }
 
 
+    @Override
     public int capacity() {
         return this.stringBuilder.capacity();
     }
 
 
+    @Override
     public void ensureCapacity(int minimumCapacity) {
         this.stringBuilder.ensureCapacity(minimumCapacity);
     }
 
 
+    @Override
     public void trimToSize() {
         this.stringBuilder.trimToSize();
     }
@@ -122,6 +125,7 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
     }
 
 
+    @Override
     public void setLength(int newLength) {
         this.stringBuilder.setLength(newLength);
     }
@@ -132,41 +136,47 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
     }
 
 
+    @Override
     public int codePointAt(int index) {
         return this.stringBuilder.codePointAt(index);
     }
 
 
+    @Override
     public int codePointBefore(int index) {
         return this.stringBuilder.codePointBefore(index);
     }
 
 
+    @Override
     public int codePointCount(int beginIndex, int endIndex) {
         return this.stringBuilder.codePointCount(beginIndex, endIndex);
     }
 
-
+    @Override
     public int offsetByCodePoints(int index, int codePointOffset) {
         return this.stringBuilder.offsetByCodePoints(index, codePointOffset);
     }
 
-
+    @Override
     public void getChars(int srcBegin, int srcEnd, char[] dst,
                          int dstBegin) {
         this.stringBuilder.getChars(srcBegin, srcEnd, dst, dstBegin);
     }
 
+    @Override
     public void setCharAt(int index, char ch) {
         this.stringBuilder.setCharAt(index, ch);
     }
 
+    @Override
     public IASAbstractStringBuilder append(Object obj) {
         // TODO: fix?
         this.stringBuilder.append(obj);
         return this;
     }
 
+    @Override
     public IASAbstractStringBuilder append(IASStringable str) {
         if (str == null) {
             String s = null;
@@ -183,6 +193,7 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
         return this;
     }
 
+    @Override
     public IASAbstractStringBuilder append(IASAbstractStringBuilderable sb) {
         this.stringBuilder.append(sb.getStringBuilder());
         this.mergeTaint(sb);
@@ -215,16 +226,19 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
         return this;
     }
 
+    @Override
     public IASAbstractStringBuilder append(char[] str) {
         this.stringBuilder.append(str);
         return this;
     }
 
+    @Override
     public IASAbstractStringBuilder append(char[] str, int offset, int len) {
         this.stringBuilder.append(str, offset, len);
         return this;
     }
 
+    @Override
     public IASAbstractStringBuilder append(boolean b) {
         this.stringBuilder.append(b);
         return this;
@@ -236,33 +250,39 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
         return this;
     }
 
+    @Override
     public IASAbstractStringBuilder append(int i) {
         this.stringBuilder.append(i);
         return this;
     }
 
+    @Override
     public IASAbstractStringBuilder appendCodePoint(int codePoint) {
         this.stringBuilder.appendCodePoint(codePoint);
         return this;
     }
 
 
+    @Override
     public IASAbstractStringBuilder append(long lng) {
         this.stringBuilder.append(lng);
         return this;
     }
 
+    @Override
     public IASAbstractStringBuilder append(float f) {
         this.stringBuilder.append(f);
         return this;
     }
 
+    @Override
     public IASAbstractStringBuilder append(double d) {
         this.stringBuilder.append(d);
         return this;
     }
 
 
+    @Override
     public IASAbstractStringBuilder delete(int start, int end) {
         this.stringBuilder.delete(start, end);
         if (this.stringBuilder.length() == 0) {
@@ -272,6 +292,7 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
     }
 
 
+    @Override
     public IASAbstractStringBuilder deleteCharAt(int index) {
         this.stringBuilder.deleteCharAt(index);
         if (this.stringBuilder.length() == 0) {
@@ -281,12 +302,14 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
     }
 
 
+    @Override
     public IASAbstractStringBuilder replace(int start, int end, IASStringable str) {
         this.stringBuilder.replace(start, end, str.getString());
         this.mergeTaint(str);
         return this;
     }
 
+    @Override
     public IASString substring(int start) {
         return this.substring(start, this.stringBuilder.length());
     }
@@ -297,31 +320,37 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
     }
 
 
+    @Override
     public IASString substring(int start, int end) {
         return new IASString(this.stringBuilder.substring(start, end), this.tainted);
     }
 
+    @Override
     public IASAbstractStringBuilder insert(int index, char[] str, int offset,
                                            int len) {
         this.stringBuilder.insert(index, str, offset, len);
         return this;
     }
 
+    @Override
     public IASAbstractStringBuilder insert(int offset, Object obj) {
         return this.insert(offset, IASString.valueOf(obj));
     }
 
+    @Override
     public IASAbstractStringBuilder insert(int offset, IASStringable str) {
         this.stringBuilder.insert(offset, str);
         this.mergeTaint(str);
         return this;
     }
 
+    @Override
     public IASAbstractStringBuilder insert(int offset, char[] str) {
         this.stringBuilder.insert(offset, str);
         return this;
     }
 
+    @Override
     public IASAbstractStringBuilder insert(int dstOffset, CharSequence s) {
         if (s instanceof IASTaintAware) {
             IASTaintAware ta = (IASTaintAware) s;
@@ -331,6 +360,7 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
         return this;
     }
 
+    @Override
     public IASAbstractStringBuilder insert(int dstOffset, CharSequence s,
                                            int start, int end) {
         if (s instanceof IASTaintAware) {
@@ -341,59 +371,71 @@ public abstract class IASAbstractStringBuilder implements IASAbstractStringBuild
         return this;
     }
 
+    @Override
     public IASAbstractStringBuilder insert(int offset, boolean b) {
         this.stringBuilder.insert(offset, b);
         return this;
     }
 
+    @Override
     public IASAbstractStringBuilder insert(int offset, char c) {
         this.stringBuilder.insert(offset, c);
         return this;
     }
 
+    @Override
     public IASAbstractStringBuilder insert(int offset, int i) {
         this.stringBuilder.insert(offset, i);
         return this;
     }
 
+    @Override
     public IASAbstractStringBuilder insert(int offset, long l) {
         this.stringBuilder.insert(offset, l);
         return this;
     }
 
+    @Override
     public IASAbstractStringBuilder insert(int offset, float f) {
         this.stringBuilder.insert(offset, f);
         return this;
     }
 
+    @Override
     public IASAbstractStringBuilder insert(int offset, double d) {
         this.stringBuilder.insert(offset, d);
         return this;
     }
 
+    @Override
     public int indexOf(IASStringable str) {
         // Note, synchronization achieved via invocations of other StringBuffer methods
         return this.stringBuilder.indexOf(str.getString());
     }
 
+    @Override
     public int indexOf(IASStringable str, int fromIndex) {
         return this.stringBuilder.indexOf(str.getString(), fromIndex);
     }
 
+    @Override
     public int lastIndexOf(IASStringable str) {
         // Note, synchronization achieved via invocations of other StringBuffer methods
         return this.lastIndexOf(str, this.stringBuilder.length()); //TODO: correct?
     }
 
+    @Override
     public int lastIndexOf(IASStringable str, int fromIndex) {
         return this.stringBuilder.lastIndexOf(str.getString(), fromIndex);
     }
 
+    @Override
     public IASAbstractStringBuilder reverse() {
         this.stringBuilder.reverse();
         return this;
     }
 
+    @Override
     public IASString toIASString() {
         return new IASString(this.stringBuilder.toString(), this.tainted);
     }
