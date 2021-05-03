@@ -3,6 +3,7 @@ package com.sap.fontus.asm;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sap.fontus.Constants;
 import com.sap.fontus.utils.Utils;
@@ -41,6 +42,7 @@ public class FunctionCall {
     @JsonProperty(value = "interface")
     private final boolean isInterface;
 
+    @JsonIgnore
     private Descriptor parsedDescriptor;
 
     public FunctionCall(final int opcode, final String owner, final String name, final String descriptor, final boolean isInterface) {

@@ -303,15 +303,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         super.visitMethodInsn(opcode, owner, name, desc.toDescriptor(), isInterface);
     }
 
-    private void loadReturnToLocals(FunctionCall fc) {
-        super.visitVarInsn(Type.getType(fc.getParsedDescriptor().getReturnType()).getOpcode(Opcodes.ILOAD), this.used);
-    }
-
-    private void storeReturnToLocals(FunctionCall fc) {
-        super.visitVarInsn(Type.getType(fc.getParsedDescriptor().getReturnType()).getOpcode(Opcodes.ISTORE), this.used);
-        this.usedAfterInjection = Math.max(this.used + Utils.getReturnStackSize(fc.getParsedDescriptor()), this.usedAfterInjection);
-    }
-
     private void storeArgumentsToLocals(FunctionCall call) {
         Stack<String> params = call.getParsedDescriptor().getParameterStack();
 
@@ -329,16 +320,10 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
     private boolean isRelevantMethodHandleInvocation(FunctionCall fc) {
-//        if (
         return fc.getOwner().equals("java/lang/invoke/MethodHandle") && (
                 fc.getName().equals("invoke") ||
                         fc.getName().equals("invokeExact") ||
                         fc.getName().equals("invokeWithArguments"));
-//        )) {
-//            String instrumentedDesc = InstrumentationHelper.getInstance(this.stringConfig).instrumentForNormalCall(Descriptor.parseDescriptor(fc.getDescriptor())).toDescriptor();
-//            return !instrumentedDesc.equals(fc.getDescriptor());
-//        }
-//        return false;
     }
 
     private void generateVirtualOrStaticMethodHandleLookupIntercept(FunctionCall fc) {
