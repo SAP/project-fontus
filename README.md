@@ -72,7 +72,7 @@ It is also possible to pass multiple parameters to the agent
 - **config**: Specifies a path for a config file
 - **blacklisted_main_classes**: Specifies a filepath to a file which contains blacklisted main classes
 - **abort**: Specifies what happens if a tainted string reaches a sink. For all options see [Abort types](#Abort types). The default is *stderr_logging*
-- **taintloss_handler**: Specifies what happens if a method is called which potentially causes taintloss (e.g. String.toChatArray()). For all options see [Taintloss handler types](#Taintloss handler types). By default no taintloss handler is used 
+- **taintloss_handler**: Specifies what happens if a method is called which potentially causes taintloss (e.g. String.toCharArray()). For all options see [Taintloss handler types](#Taintloss handler types). By default no taintloss handler is used 
 
 The arguments are appended to the agent path like this: ``-javaagent:jarpath[=options]``. Therefore options are defined as ``key=value`` pair and ``,`` is used as delimiter between key-value-pairs.
 
