@@ -41,4 +41,6 @@ public interface IASFactory {
     IASMatcherable createMatcher(Matcher param);
 
     IASProperties createProperties(Properties param);
+
+    IASStringable quoteReplacement(IASStringable string);
 }

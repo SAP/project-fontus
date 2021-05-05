@@ -27,7 +27,7 @@ dependencies {
     compile 'org.ow2.asm:asm-analysis:9.0'
     compile 'org.ow2.asm:asm-util:9.0'
     compile 'info.picocli:picocli:4.1.4'
-    compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.9'
+    compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.3'
     compile group: 'org.json', name: 'json', version: '20200518'
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
     compile group: 'org.mutabilitydetector', name: 'asm-nonclassloadingextensions', version: '1.0-rc2'
@@ -101,6 +101,21 @@ task converterJar(type: ShadowJar) {
     baseName = 'converter'
 }
 
+task aotJar(type: ShadowJar) {
+    manifest {
+        attributes(
+                'Agent-Class': 'com.sap.fontus.agent.aot.AOTTaintAgent',
+                'Can-Redefine-Classes': true,
+                'Can-Retransform-Classes': true,
+                'Premain-Class': 'com.sap.fontus.agent.aot.AOTTaintAgent'
+        )
+    }
+    includeEmptyDirs = false
+    from sourceSets.main.output
+    include("**/agent/aot/**")
+    baseName = 'aot-fontus'
+}
+
 shadowJar {
     mergeServiceFiles()
     doFirst {
@@ -121,7 +136,7 @@ shadowJar {
 
     relocate 'com.ctc', 'com.sap.fontus.com.ctc'
     relocate 'com.fasterxml', 'com.sap.fontus.com.fasterxml'
-    relocate 'org.codehaus', 'com.sap.fontus.org.codehaus'
+    relocate 'org.codehaus.stax2', 'com.sap.fontus.org.codehaus.stax2'
     relocate 'org.json', 'com.sap.fontus.org.json'
     relocate 'org.mutabilitydetector', 'com.sap.fontus.org.mutabilitydetector'
     relocate 'org.objectweb', 'com.sap.fontus.org.objectweb'
@@ -131,6 +146,7 @@ shadowJar {
     dependsOn utilJar
     dependsOn converterJar
     dependsOn generatorJar
+    dependsOn aotJar
 }
 
 task sourcesJar(type: Jar) {

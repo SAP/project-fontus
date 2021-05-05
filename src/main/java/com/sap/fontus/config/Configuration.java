@@ -6,6 +6,7 @@ import com.sap.fontus.agent.AgentConfig;
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.abort.Abort;
 import com.sap.fontus.config.abort.StdErrLoggingAbort;
+import com.sap.fontus.config.taintloss.TaintlossHandler;
 import com.sap.fontus.instrumentation.BlackListEntry;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
@@ -36,6 +37,9 @@ public class Configuration {
 
     @JsonIgnore
     private Abort abort = defaultAbort();
+
+    @JsonIgnore
+    private TaintlossHandler taintlossHandler = null;
 
     private boolean isOfflineInstrumentation = true;
 
@@ -243,12 +247,18 @@ public class Configuration {
     }
 
     public FunctionCall getConverterForReturnValue(FunctionCall c) {
+        return this.getConverterForReturnValue(c, false);
+    }
+
+    public FunctionCall getConverterForReturnValue(FunctionCall c, boolean onlyAlwaysApply) {
         for (ReturnsGeneric rg : this.returnGeneric) {
             if (rg.getFunctionCall().equals(c)) {
-                String converterName = rg.getConverter();
-                FunctionCall converter = this.getConverter(converterName);
-                logger.info("Found converter for rv of {}: {}", c, converter);
-                return converter;
+                if (!(onlyAlwaysApply && !rg.isAlwaysApply())) {
+                    String converterName = rg.getConverter();
+                    FunctionCall converter = this.getConverter(converterName);
+                    logger.info("Found converter for rv of {}: {}", c, converter);
+                    return converter;
+                }
             }
         }
         return null;
@@ -381,5 +391,17 @@ public class Configuration {
 
     public boolean isRecursiveTainting() {
         return recursiveTainting;
+    }
+
+    public boolean handleTaintloss() {
+        return this.taintlossHandler != null;
+    }
+
+    public TaintlossHandler getTaintlossHandler() {
+        return taintlossHandler;
+    }
+
+    public void setTaintlossHandler(TaintlossHandler taintlossHandler) {
+        this.taintlossHandler = taintlossHandler;
     }
 }

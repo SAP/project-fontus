@@ -55,6 +55,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private final List<org.objectweb.asm.commons.Method> instrumentedMethods = new ArrayList<>();
     private boolean inEnd;
     private boolean extendsJdkSuperClass;
+    private final List<DynamicCall> bootstrapMethods = new ArrayList<>();
 
     public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config, ClassLoader loader, boolean containsJSRRET) {
         super(Opcodes.ASM7, cv);
@@ -254,7 +255,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             mv = super.visitMethod(access, name, desc, instrumentedSignature, exceptions);
         }
 
-        MethodTaintingVisitor mtv = new MethodTaintingVisitor(access, this.owner, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler, this.instrumentation, this.combinedExcludedLookup);
+        MethodTaintingVisitor mtv = new MethodTaintingVisitor(access, this.owner, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler, this.instrumentation, this.combinedExcludedLookup, this.bootstrapMethods, this.superName);
         if (this.containsJSRRET) {
             return new JSRInlinerAdapter(mtv, access, newName, desc, instrumentedSignature, exceptions);
         }
@@ -381,7 +382,27 @@ class ClassTaintingVisitor extends ClassVisitor {
             ClassInitializerAugmentingVisitor augmentingVisitor = new ClassInitializerAugmentingVisitor(mv, this.owner, this.staticFinalFields);
             this.recording.replay(augmentingVisitor);
         }
+
+        if (!this.bootstrapMethods.isEmpty()) {
+            this.generateBootstrapMethods();
+        }
         super.visitEnd();
+    }
+
+    private void generateBootstrapMethods() {
+        List<DynamicCall> filtered = new ArrayList<>();
+
+        outer:
+        for (DynamicCall dynamicCall : this.bootstrapMethods) {
+            for (DynamicCall existing : filtered) {
+                if (dynamicCall.getOriginal().equals(existing.getOriginal())) {
+                    continue outer;
+                }
+            }
+            filtered.add(dynamicCall);
+        }
+
+        filtered.forEach(this::createBootstrapMethod);
     }
 
     private void declareMissingJdkMethods() {
@@ -458,6 +479,31 @@ class ClassTaintingVisitor extends ClassVisitor {
             MethodVisitor mv2 = super.visitMethod(modifiers, m.getName(), originalDescriptor.toDescriptor(), signature, exceptions);
             this.generateProxyToInstrumented(mv2, m.getName(), originalDescriptor.toDescriptor());
         }
+    }
+
+    private void createBootstrapMethod(DynamicCall dynamicCall) {
+        MethodVisitor mv = super.visitMethod(Opcodes.ACC_STATIC, dynamicCall.getProxy().getName(), dynamicCall.getProxy().getDesc(), null, null);
+
+        Descriptor instrumentedOriginalDescriptor = Descriptor.parseDescriptor(dynamicCall.getOriginal().getDesc());
+        Descriptor proxyDescriptor = Descriptor.parseDescriptor(dynamicCall.getProxy().getDesc());
+
+        mv.visitCode();
+
+        for (int i = 0; i < instrumentedOriginalDescriptor.getParameters().size(); i++) {
+            String instrOrigParam = instrumentedOriginalDescriptor.getParameters().get(i);
+            String proxyParam = proxyDescriptor.getParameters().get(i);
+
+            mv.visitVarInsn(loadCodeByType(instrOrigParam), i);
+            if (!instrOrigParam.equals(proxyParam)) {
+                // Only strings are possible as tainted type, therefore it must always be a string conversion
+                mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringQN(), Constants.FROM_STRING, this.stringConfig.getFromStringDesc(), false);
+            }
+        }
+
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, dynamicCall.getOriginal().getOwner(), dynamicCall.getOriginal().getName(), dynamicCall.getOriginal().getDesc(), false);
+        mv.visitInsn(Opcodes.ARETURN);
+        mv.visitMaxs(-1, -1);
+        mv.visitEnd();
     }
 
     private void generateInstrumentedProxyToSuper(MethodVisitor mv, Method m, Descriptor origDescriptor, Descriptor instrumentedDescriptor) {
@@ -609,7 +655,7 @@ class ClassTaintingVisitor extends ClassVisitor {
      */
     private String instrumentDescriptorStringlike(String descriptor) {
         for (InstrumentationStrategy is : this.instrumentation) {
-            descriptor = is.instrumentDesc(descriptor);
+            descriptor = is.instrumentDescForIASCall(descriptor);
         }
         return descriptor;
     }
@@ -619,7 +665,7 @@ class ClassTaintingVisitor extends ClassVisitor {
      */
     private Descriptor instrumentDescriptor(Descriptor descriptor) {
         for (InstrumentationStrategy is : this.instrumentation) {
-            descriptor = is.instrument(descriptor);
+            descriptor = is.instrumentForNormalCall(descriptor);
         }
         return descriptor;
     }

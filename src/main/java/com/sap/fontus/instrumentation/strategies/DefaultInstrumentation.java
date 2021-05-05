@@ -13,7 +13,7 @@ public class DefaultInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
-    public Descriptor instrument(Descriptor desc) {
+    public Descriptor instrumentForNormalCall(Descriptor desc) {
         return desc;
     }
 
@@ -28,7 +28,7 @@ public class DefaultInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
-    public boolean handlesType(String typeName) {
+    public boolean handlesType(String descriptor) {
         return false;
     }
 
@@ -38,7 +38,7 @@ public class DefaultInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
-    public String instrumentDesc(String desc) {
+    public String instrumentDescForIASCall(String desc) {
         return desc;
     }
 }

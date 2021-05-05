@@ -1,5 +1,6 @@
 package com.sap.fontus.taintaware.bool;
 
+import com.sap.fontus.Constants;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.*;
 
@@ -21,26 +22,41 @@ public final class IASString implements IASTaintAware, IASStringable {
     private static ConcurrentHashMap<String, IASString> internPool = new ConcurrentHashMap<>();
 
     public IASString() {
-        this.string = "";
-        this.tainted = false;
+        this("", false);
     }
 
     public IASString(IASStringable s) {
-        this.string = s.getString();
-        this.tainted = s.isTainted();
+        this(s.getString(), s.isTainted());
+    }
+
+    public IASString(IASStringable s, boolean tainted) {
+        this(s.getString(), tainted);
+    }
+
+    public IASString(IASString s, boolean tainted) {
+        this(s.getString(), tainted);
     }
 
     public IASString(String s) {
-        this.string = Objects.requireNonNull(s);
-        this.tainted = false;
+        this(Objects.requireNonNull(s), false);
     }
 
     public IASString(IASAbstractStringBuilderable strb) {
-        this.string = strb.toString();
-        this.tainted = strb.isTainted();
+        this(strb.toString(), strb.isTainted());
+    }
+
+    public IASString(IASStringBuilderable strb) {
+        this(strb.toString(), strb.isTainted());
+    }
+
+    public IASString(IASStringBufferable strb) {
+        this(strb.toString(), strb.isTainted());
     }
 
     public IASString(String s, boolean tainted) {
+//        if ("java.lang.String".equals(s)) {
+//            s = IASString.class.getName();
+//        }
         this.string = Objects.requireNonNull(s);
         this.tainted = tainted;
     }
@@ -50,6 +66,13 @@ public final class IASString implements IASTaintAware, IASStringable {
             tstr.tainted = true;
         }
         return tstr;
+    }
+
+    public static IASString tainted(IASStringable tstr) {
+        if (tstr != null) {
+            ((IASString) tstr).tainted = true;
+        }
+        return (IASString) tstr;
     }
 
     @Override
@@ -75,7 +98,14 @@ public final class IASString implements IASTaintAware, IASStringable {
 
     @Override
     public void setContent(String content, List<IASTaintRange> taintRanges) {
-        this.string = content;
+        this.string = Objects.requireNonNull(content);
+        IASTaintRanges ranges = new IASTaintRanges(taintRanges);
+        ranges.resize(0, this.length(), 0);
+        this.setTaint(ranges.isTainted());
+    }
+
+    public void setContent(IASStringable content, List<IASTaintRange> taintRanges) {
+        this.string = Objects.requireNonNull(Objects.requireNonNull(content).getString());
         IASTaintRanges ranges = new IASTaintRanges(taintRanges);
         ranges.resize(0, this.length(), 0);
         this.setTaint(ranges.isTainted());
@@ -86,74 +116,70 @@ public final class IASString implements IASTaintAware, IASStringable {
     }
 
     public IASString(char value[]) {
-        this.string = new String(value);
+        this(new String(value), false);
     }
 
     public IASString(char value[], int offset, int count) {
-        this.string = new String(value, offset, count);
+        this(new String(value, offset, count), false);
     }
 
     public IASString(int[] codePoints, int offset, int count) {
-        this.string = new String(codePoints, offset, count);
+        this(new String(codePoints, offset, count), false);
     }
 
     public IASString(byte ascii[], int hibyte, int offset, int count) {
-        this.string = new String(ascii, hibyte, offset, count);
+        this(new String(ascii, hibyte, offset, count), false);
     }
 
     public IASString(byte ascii[], int hibyte) {
-        this.string = new String(ascii, hibyte);
+        this(new String(ascii, hibyte), false);
     }
 
     public IASString(byte bytes[], int offset, int length, IASStringable charsetName)
             throws UnsupportedEncodingException {
-        this.string = new String(bytes, offset, length, charsetName.getString());
+        this(new String(bytes, offset, length, charsetName.getString()), false);
     }
 
     public IASString(byte bytes[], int offset, int length, Charset charset) {
         // TODO: howto handle this? Does the charset affect tainting?
-        this.string = new String(bytes, offset, length, charset);
+        this(new String(bytes, offset, length, charset), false);
     }
 
     public IASString(byte bytes[], IASStringable charsetName) throws UnsupportedEncodingException {
         // TODO: howto handle this? Does the charset affect tainting?
-        this.string = new String(bytes, charsetName.getString());
+        this(new String(bytes, charsetName.getString()), false);
     }
 
     public IASString(byte bytes[], Charset charset) {
-        this.string = new String(bytes, charset);
+        this(new String(bytes, charset), false);
     }
 
     public IASString(byte bytes[], int offset, int length) {
-        this.string = new String(bytes, offset, length);
+        this(new String(bytes, offset, length), false);
     }
 
     public IASString(byte[] bytes) {
-        this.string = new String(bytes);
+        this(new String(bytes), false);
     }
 
     public IASString(StringBuffer buffer) {
-        this.string = new String(buffer);
+        this(new String(buffer), false);
     }
 
     public IASString(IASStringBuilder builder) {
-        this.string = builder.toString();
-        this.tainted = builder.isTainted();
+        this(builder.toString(), builder.isTainted());
     }
 
     public IASString(IASStringBuffer buffer) {
-        this.string = buffer.toString();
-        this.tainted = buffer.isTainted();
+        this(buffer.toString(), buffer.isTainted());
     }
 
     public IASString(IASString string) {
-        this.string = string.string;
-        this.tainted = string.tainted;
+        this(string.string, string.tainted);
     }
 
     private IASString(CharSequence cs, boolean tainted) {
-        this.string = cs.toString();
-        this.tainted = tainted;
+        this(cs.toString(), tainted);
     }
 
     @Override
@@ -667,6 +693,7 @@ public final class IASString implements IASTaintAware, IASStringable {
     //TODO: sound?
     @Override
     public IASString intern() {
+        this.string = this.string.intern();
         return (IASString) IASStringPool.intern(this);
     }
 
@@ -677,7 +704,19 @@ public final class IASString implements IASTaintAware, IASStringable {
         return new IASString(str);
     }
 
+
+    public static IASString fromString(IASStringable str) {
+        if (str == null) return null;
+
+        return (IASString) str;
+    }
+
     public static String asString(IASString str) {
+        if (str == null) return null;
+        return str.getString();
+    }
+
+    public static String asString(IASStringable str) {
         if (str == null) return null;
         return str.getString();
     }

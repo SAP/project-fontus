@@ -87,7 +87,7 @@ public abstract class AbstractMethodInstrumentationStrategy implements MethodIns
     @Override
     public FunctionCall rewriteOwnerMethod(FunctionCall functionCall) {
         if (Type.getObjectType(functionCall.getOwner()).equals(this.type)) {
-            String newDescriptor = InstrumentationHelper.getInstance(this.stringConfig).instrumentDesc(functionCall.getDescriptor());
+            String newDescriptor = InstrumentationHelper.getInstance(this.stringConfig).instrumentDescForIASCall(functionCall.getDescriptor());
             String newOwner = this.taintedQN;
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up
             String newName = this.methodsToRename.getOrDefault(functionCall.getName(), functionCall.getName());

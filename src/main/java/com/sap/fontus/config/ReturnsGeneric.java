@@ -14,11 +14,18 @@ public class ReturnsGeneric {
     @XmlElement
     private String converter;
 
+    @XmlElement
+    private boolean alwaysApply = false;
+
     public FunctionCall getFunctionCall() {
         return this.functionCall;
     }
 
     public String getConverter() {
         return this.converter;
+    }
+
+    public boolean isAlwaysApply() {
+        return alwaysApply;
     }
 }

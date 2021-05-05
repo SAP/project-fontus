@@ -22,46 +22,19 @@ import java.util.regex.Pattern;
 
 @SuppressWarnings("rawtypes")
 public class IASReflectionMethodProxy {
-    private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
     private static final IASFactory factory = Configuration.getConfiguration().getTaintMethod().getFactory();
     private static final String packageName = "com.sap.fontus.taintaware.";
-    private static final Map<String, Class<?>> toInterfaceReplacements = new HashMap<>();
-    private static final Map<String, Class<?>> toOrigReplacements = new HashMap<>();
-    private static final Map<Class, Function<Object, Object>> toTaintedMethods = new HashMap<>();
-    private static final Map<String, Class<?>> toConcreteReplacements = new HashMap<>();
     private static final CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup();
 
+    private static final Method forNameMethod;
+
     static {
-        toInterfaceReplacements.put("IASString", IASStringable.class);
-        toInterfaceReplacements.put("IASStringBuilder", IASAbstractStringBuilderable.class);
-        toInterfaceReplacements.put("IASStringBuffer", IASAbstractStringBuilderable.class);
-        toInterfaceReplacements.put("IASFormatter", IASFormatterable.class);
-        toInterfaceReplacements.put("IASMatcher", IASMatcherable.class);
-        toInterfaceReplacements.put("IASPattern", IASPatternable.class);
-        toInterfaceReplacements.put("IASProperties", IASProperties.class);
-
-        toConcreteReplacements.put("String", factory.getStringClass());
-        toConcreteReplacements.put("StringBuilder", factory.getStringBuilderClass());
-        toConcreteReplacements.put("StringBuffer", factory.getStringBufferClass());
-        toConcreteReplacements.put("Formatter", factory.getFormatterClass());
-        toConcreteReplacements.put("Matcher", factory.getMatcherClass());
-        toConcreteReplacements.put("Pattern", factory.getPatternClass());
-        toConcreteReplacements.put("Properties", factory.getPropertiesClass());
-
-        toOrigReplacements.put("IASString", String.class);
-        toOrigReplacements.put("IASStringBuilder", StringBuilder.class);
-        toOrigReplacements.put("IASStringBuffer", StringBuffer.class);
-        toOrigReplacements.put("IASFormatter", Formatter.class);
-        toOrigReplacements.put("IASPattern", IASPattern.class);
-        toOrigReplacements.put("IASMatcher", IASMatcher.class);
-        toOrigReplacements.put("IASProperties", Properties.class);
-
-        toTaintedMethods.put(String.class, (param) -> factory.createString((String) param));
-        toTaintedMethods.put(StringBuilder.class, (param) -> factory.createStringBuilder((StringBuilder) param));
-        toTaintedMethods.put(StringBuffer.class, (param) -> factory.createStringBuffer((StringBuffer) param));
-        toTaintedMethods.put(Formatter.class, (param) -> factory.createFormatter((Formatter) param));
-        toTaintedMethods.put(Pattern.class, (param) -> factory.createPattern((Pattern) param));
-        toTaintedMethods.put(Matcher.class, (param) -> factory.createMatcher((Matcher) param));
+        try {
+            forNameMethod = Class.class.getMethod("forName", String.class);
+        } catch (NoSuchMethodException e) {
+            System.out.println("Could not load method Class.forName");
+            throw new RuntimeException(e);
+        }
     }
 
     public static Object handleInvocationProxyCall(Object result, Object proxy, Method method, Object[] args) {
@@ -124,6 +97,13 @@ public class IASReflectionMethodProxy {
             }
         } else if (combinedExcludedLookup.isPackageExcludedOrJdk(Utils.getInternalName(method.getDeclaringClass()))) {
             Object[] converted = convertParametersToOriginal(parameters);
+
+            if (method.equals(forNameMethod)) {
+                Class caller = ReflectionUtils.getCallerClass();
+                ClassLoader callerLoader = caller.getClassLoader();
+                return Class.forName((String) converted[0], true, callerLoader);
+            }
+
             Object result = method.invoke(instance, converted);
             return ConversionUtils.convertToConcrete(result);
         }
@@ -208,26 +188,40 @@ public class IASReflectionMethodProxy {
         return clazz.getConstructor(parameters);
     }
 
-    private static Class[] transformParametersForJdk(Class[] parameters) {
-        return transformParameters(parameters, toOrigReplacements);
+    /**
+     * Proxy for the Class.getConstructor function.
+     * If the method is JDK class method, it replaces taintaware parameter types with the original type
+     */
+    public static Constructor getDeclaredConstructor(Class<?> clazz, Class[] parameters) throws NoSuchMethodException {
+        if (combinedExcludedLookup.isPackageExcludedOrJdk(Utils.getInternalName(clazz))) {
+            parameters = transformParametersForJdk(parameters);
+        } else if (isInPackage(clazz)) {
+            parameters = transformParametersForTaintawareInterface(parameters);
+        }
+
+        return clazz.getDeclaredConstructor(parameters);
     }
 
-    private static Class[] transformParametersForInstrumentedWithConcrete(Class[] parameters) {
-        return transformParameters(parameters, toConcreteReplacements);
+    static Class[] transformParametersForJdk(Class[] parameters) {
+        return transformParameters(parameters, ConversionUtils::convertClassToOrig);
     }
 
-    private static Class[] transformParametersForTaintawareInterface(Class[] parameters) {
-        return transformParameters(parameters, toInterfaceReplacements);
+    static Class[] transformParametersForInstrumentedWithConcrete(Class[] parameters) {
+        return transformParameters(parameters, ConversionUtils::convertClassToConcrete);
     }
 
-    private static Class[] transformParameters(Class[] parameters, Map<String, Class<?>> toOrigReplacements) {
+    static Class[] transformParametersForTaintawareInterface(Class[] parameters) {
+        return transformParameters(parameters, ConversionUtils::convertClassToInterface);
+    }
+
+    private static Class[] transformParameters(Class[] parameters, Function<Class<?>, Class<?>> converter) {
         if (parameters == null) {
             return null;
         }
         Class[] classes = new Class[parameters.length];
         for (int i = 0; i < parameters.length; i++) {
             Class cls = parameters[i];
-            classes[i] = replaceParameter(cls, toOrigReplacements);
+            classes[i] = converter.apply(cls);
         }
         return classes;
     }
@@ -270,6 +264,9 @@ public class IASReflectionMethodProxy {
     private static boolean isInstrumented(Class cls) {
         if (cls.isPrimitive()) {
             return false;
+        }
+        if (cls.isArray()) {
+            cls = cls.getComponentType();
         }
         return cls.getPackage().getName().startsWith(Constants.PACKAGE);
     }

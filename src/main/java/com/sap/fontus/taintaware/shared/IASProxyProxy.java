@@ -105,21 +105,50 @@ public class IASProxyProxy {
         return UNSAFE.defineClass(Utils.slashToDot(name), bytes, 0, bytes.length, classLoader, null);
     }
 
+    private static Class<?> findProxyClassInternal(Class<?>[] interfaces) {
+        Class<?>[] paramInterfaces = interfaces.clone();
+        Arrays.sort(paramInterfaces, (o1, o2) -> o2.hashCode() - o1.hashCode());
+        for (Class<?> proxy : proxyCache.values()) {
+            Class<?>[] proxyInterfaces = proxy.getInterfaces();
+            if (proxyInterfaces.length == paramInterfaces.length) {
+                Arrays.sort(proxyInterfaces, (o1, o2) -> o2.hashCode() - o1.hashCode());
+                if (Arrays.equals(proxyInterfaces, paramInterfaces)) {
+                    return proxy;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static Class<?> createProxyClassInternal(ClassLoader classLoader, Class<?>[] interfaces) {
+        IASProxyProxyBuilder builder = IASProxyProxyBuilder.newBuilder(interfaces, classLoader);
+
+        byte[] bytes = builder.build();
+        proxyCache.put(bytes, null);
+
+        VerboseLogger.saveIfVerbose(builder.getName(), bytes);
+
+        Class<?> cls = loadClass(builder.getName(), bytes, classLoader);
+
+        proxyCache.put(bytes, cls);
+
+        return cls;
+    }
+
+    public static synchronized Class<?> getProxyClass(ClassLoader classLoader, Class<?>[] interfaces) {
+        Class<?> cached = findProxyClassInternal(interfaces);
+
+        if (cached == null) {
+            return createProxyClassInternal(classLoader, interfaces);
+        } else {
+            return cached;
+        }
+    }
+
     public static Object newProxyInstance(ClassLoader classLoader, Class<?>[] interfaces, InvocationHandler h) throws NoSuchMethodException {
         try {
-            IASProxyProxyBuilder builder = IASProxyProxyBuilder.newBuilder(interfaces, classLoader);
-
-            byte[] bytes = builder.build();
-            proxyCache.put(bytes, null);
-
-            VerboseLogger.saveIfVerbose(builder.getName(), bytes);
-
-            Class<?> cls = loadClass(builder.getName(), bytes, classLoader);
-
-
-            Constructor<?> constructor = cls.getConstructor(InvocationHandler.class);
-
-            proxyCache.put(bytes, cls);
+            Class<?> proxy = getProxyClass(classLoader, interfaces);
+            Constructor<?> constructor = proxy.getConstructor(InvocationHandler.class);
 
             try {
                 return constructor.newInstance(h);

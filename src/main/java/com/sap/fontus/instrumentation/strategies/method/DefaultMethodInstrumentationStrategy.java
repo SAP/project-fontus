@@ -50,7 +50,7 @@ public class DefaultMethodInstrumentationStrategy implements MethodInstrumentati
     @Override
     public FunctionCall rewriteOwnerMethod(FunctionCall functionCall) {
         Type tOwner = Type.getObjectType(functionCall.getOwner());
-        if (MethodUtils.isToString(functionCall.getName(), functionCall.getDescriptor()) && requireValueOf.contains(tOwner)) {
+        if (MethodUtils.isToString(functionCall.getName(), functionCall.getDescriptor()) && requireValueOf.contains(tOwner) && functionCall.getOpcode() != Opcodes.INVOKESPECIAL) {
             int newOpcode = Opcodes.INVOKESTATIC;
             String newOwner = this.stringConfig.getTStringQN();
             String newDescriptor = "(" + Constants.ObjectDesc + ")" + this.stringConfig.getTStringDesc();

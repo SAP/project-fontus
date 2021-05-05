@@ -38,18 +38,22 @@ public final class InstrumentationHelper {
         return newQN;
     }
 
-    public Descriptor instrument(Descriptor desc) {
+    public String instrumentForNormalCall(String desc) {
+        return this.instrumentForNormalCall(Descriptor.parseDescriptor(desc)).toDescriptor();
+    }
+
+    public Descriptor instrumentForNormalCall(Descriptor desc) {
         Descriptor newDesc = desc;
         for (InstrumentationStrategy is : this.strategies) {
-            newDesc = is.instrument(newDesc);
+            newDesc = is.instrumentForNormalCall(newDesc);
         }
         return newDesc;
     }
 
-    public String instrumentDesc(String desc) {
+    public String instrumentDescForIASCall(String desc) {
         String newDesc = desc;
         for (InstrumentationStrategy is : this.strategies) {
-            newDesc = is.instrumentDesc(newDesc);
+            newDesc = is.instrumentDescForIASCall(newDesc);
         }
         return newDesc;
     }
