@@ -20,7 +20,7 @@ public class SanitizationAbort extends Abort {
         categories.add(Sanitization.AttackCategory.XSS);
         // sanitize here
         String sanitizedString = Sanitization.sanitizeSinks(taintedString, ranges, categories);
-        System.err.println(taintedString + " was sanitized and resultet in: " + sanitizedString);
+        System.err.println(taintedString + " was sanitized and resulted in: " + sanitizedString);
         taintAware.setContent(sanitizedString, ranges);
     }
 

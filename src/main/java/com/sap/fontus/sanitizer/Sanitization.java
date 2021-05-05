@@ -300,9 +300,9 @@ public class Sanitization {
         boolean comment = false;
         boolean insideRoundBracket = false;
         List<String> tags = new ArrayList<>();
-        StringBuffer tag = new StringBuffer();
-        StringBuffer attributeName = new StringBuffer();
-        StringBuffer sanitizedString = new StringBuffer();
+        StringBuilder tag = new StringBuilder();
+        StringBuilder attributeName = new StringBuilder();
+        StringBuilder sanitizedString = new StringBuilder();
         // loop over each char in string
         for (int i = 0; i < taintedString.length(); i++) {
             // Check if the current character is tainted
@@ -312,6 +312,7 @@ public class Sanitization {
                 if (i >= range.getStart() && i < range.getEnd()) {
                     charIsTainted = true;
                     taintedRange = range;
+                    break;
                 }
             }
 
@@ -339,14 +340,14 @@ public class Sanitization {
                         case "style":
                         case "onmouseover":
                             sanitizedString.append(Encode.forJavaScript(
-                                    taintedString.substring(taintedRange.getStart(), taintedRange.getEnd() + 1)));
-                            i = taintedRange.getEnd();
+                                    taintedString.substring(taintedRange.getStart(), taintedRange.getEnd())));
+                            i = taintedRange.getEnd() - 1;
                             break;
                         // typical attribute values like width, name or value
                         default:
                             sanitizedString.append(Encode.forHtml(
-                                    taintedString.substring(taintedRange.getStart(), taintedRange.getEnd() + 1)));
-                            i = taintedRange.getEnd();
+                                    taintedString.substring(taintedRange.getStart(), taintedRange.getEnd())));
+                            i = taintedRange.getEnd() - 1;
                     }
                 } else if (insideTag) {
                     // attribute names should NOT be given by a user
@@ -365,13 +366,12 @@ public class Sanitization {
                         // script context
                     } else if(tags.contains("script")){
                         sanitizedString.append(" \"" + Encode.forJavaScript(
-                                taintedString.substring(taintedRange.getStart(), taintedRange.getEnd() + 1)) + "\" ");
-                        i = taintedRange.getEnd();
+                                taintedString.substring(taintedRange.getStart(), taintedRange.getEnd())) + "\" ");
+                        i = taintedRange.getEnd() - 1;
                     }else{
                         // html context
-                        sanitizedString.append(Encode.forHtml(
-                                taintedString.substring(taintedRange.getStart(), taintedRange.getEnd() + 1)));
-                        i = taintedRange.getEnd();
+                        sanitizedString.append(Encode.forHtml(taintedString.substring(taintedRange.getStart(), taintedRange.getEnd())));
+                        i = taintedRange.getEnd() - 1;
                         // ???
                         // TODO: add more else cases for other contexts
                     }
@@ -389,8 +389,8 @@ public class Sanitization {
                         tagDeclaration = false;
                         attDeclaration = false;
                         tags.add(tag.toString().toLowerCase());
-                        attributeName = new StringBuffer();
-                        tag = new StringBuffer();
+                        attributeName = new StringBuilder();
+                        tag = new StringBuilder();
                     } else if (taintedString.charAt(i) == '=') { // = is followed by attribute value
                         attDeclaration = true;
                         tagDeclaration = false;
@@ -400,7 +400,7 @@ public class Sanitization {
                         attributeName.append(taintedString.charAt(i));
                     } else {
                         // ignore remaining chars
-                        attributeName = new StringBuffer();
+                        attributeName = new StringBuilder();
                     }
                 } else if (closingTag) {
                     if (taintedString.charAt(i) <= ' ') {
@@ -408,7 +408,7 @@ public class Sanitization {
                     } else if (taintedString.charAt(i) == '>') { // end of tag
                         closingTag = false;
                         tags.remove(tags.size() - 1);
-                        tag = new StringBuffer();
+                        tag = new StringBuilder();
                     } else {
                         tag.append(taintedString.charAt(i));
                     }
@@ -446,8 +446,6 @@ public class Sanitization {
              System.out.println();*/
 
         }
-        System.out.println(taintedString);
-
         // return
         return sanitizedString.toString();
 
