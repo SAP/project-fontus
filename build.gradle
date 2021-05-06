@@ -22,8 +22,6 @@ tasks.jar.configure {
 }
 
 dependencies {
-    // compile files('libs/gsp.jar')
-    compile group: 'org.apache.calcite', name: 'calcite-core', version: '1.15.0'
     compile group: 'com.alibaba', name: 'druid', version: '1.2.5'
 
     compile 'org.ow2.asm:asm:9.0'
@@ -38,7 +36,6 @@ dependencies {
     testCompile('org.junit.jupiter:junit-jupiter:5.4.2')
     testCompile('org.junit.jupiter:junit-jupiter-migrationsupport:5.4.2')
     testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
-    compile 'junit:junit:4.12'
 }
 
 test {
@@ -127,16 +124,6 @@ shadowJar {
     relocate 'javax.xml.bind', 'com.sap.fontus.javax.xml.bind'
     relocate 'picocli', 'com.sap.fontus.picocli'
 
-//    relocate 'gudusoft', 'com.sap.fontus.gudusoft'
-//    relocate 'org.opentest4j', 'com.sap.fontus.org.opentest4j'
-//    relocate 'com.esri', 'com.sap.fontus.com.esri'
-//    relocate 'net.hydromatic', 'com.sap.fontus.net.hydromatic'
-//    relocate 'com.yahoo', 'com.sap.fontus.com.yahoo'
-
-    relocate 'org.apache.calcite', 'com.sap.fontus.org.apache.calcite'
-    relocate 'com.google', 'com.sap.fontus.com.google'
-    relocate 'org.apiguardian', 'com.sap.fontus.org.apiguardian'
-    relocate 'org.slf4j', 'com.sap.fontus.org.slf4j'
     relocate 'com.alibaba', 'com.sap.fontus.com.alibaba'
 
     dependsOn utilJar

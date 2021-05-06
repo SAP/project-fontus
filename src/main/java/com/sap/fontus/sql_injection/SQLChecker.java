@@ -1,16 +1,10 @@
 package com.sap.fontus.sql_injection;
 
-import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.druid.sql.ast.SQLStatement;
-import com.alibaba.druid.sql.dialect.mysql.parser.MySqlStatementParser;
 import com.alibaba.druid.sql.parser.*;
 import com.alibaba.druid.DbType;
-import com.alibaba.druid.util.JdbcConstants;
 import com.sap.fontus.utils.NetworkRequestObject;
 import com.sap.fontus.utils.NetworkResponseObject;
-import org.apache.calcite.sql.*;
-import org.apache.calcite.sql.parser.SqlParseException;
-import org.apache.calcite.sql.parser.SqlParser;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -23,8 +17,6 @@ import java.util.logging.SimpleFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.alibaba.druid.sql.SQLUtils.toSQLString;
-
 public class SQLChecker {
 
     private static JSONArray getSqlInjectionInfo(List<SqlLexerToken> tokens, JSONArray taint_ranges, String sql_string){
@@ -33,13 +25,6 @@ public class SQLChecker {
             JSONObject taint_range = taint_ranges.getJSONObject(i);
             int taint_start = taint_range.getInt("start");
             int taint_end = taint_range.getInt("end");
-//            String tainted_string = sql_string.substring(taint_start,taint_end);
-//            if(checkOperators(tainted_string)){
-//                JSONObject injection_info_obj_op = new JSONObject();
-//                injection_info_obj_op.put("token_info","SQL Operator Found");
-//                injection_info_obj_op.put("taint_info",taint_range);
-//                injection_info_arr.put(injection_info_obj_op);
-//            }
             for(SqlLexerToken token: tokens){
                 if(checkBorders(token,taint_start,taint_end) || startsComment(token,taint_start,taint_end)){
                     JSONObject injection_info_obj = new JSONObject();
@@ -55,28 +40,6 @@ public class SQLChecker {
         }
         return injection_info_arr;
     }
-
-//    private static boolean checkOperators(String tainted_string){
-//        // Check for Arithmetic, Bitwise or Comparison Operators
-//        Pattern op_pattern1 = Pattern.compile("[+*/=\\-%><&|^]");
-//        Matcher op_matcher1 = op_pattern1.matcher(tainted_string.toLowerCase(Locale.ROOT));
-//        while(op_matcher1.find()){
-//            return true;
-//        }
-//
-//        // Check for Logical Operators
-//        final List<String> sql_logical_operators = Arrays.asList("ALL","AND","ANY","BETWEEN","EXISTS","IN","LIKE","NOT",
-//                "OR","SOME");
-//        for(String operator : sql_logical_operators){
-//            // If the operators are surrounded by spaces or at the beginning or end of string
-//            Pattern op_pattern2 = Pattern.compile("(?<=\\s|^)" + operator + "(?=\\s+|$)");
-//            Matcher op_matcher2 = op_pattern2.matcher(tainted_string.toLowerCase(Locale.ROOT));
-//            while(op_matcher2.find()){
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
 
     private static boolean checkBorders(SqlLexerToken token,int taint_start,int taint_end){
         return taint_start < token.begin && token.begin < taint_end ||
@@ -139,14 +102,15 @@ public class SQLChecker {
 
 
 
-    public static void checkTaintedString(String tainted_string) throws RuntimeException, IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InterruptedException {
+    public static void reportTaintedString(String tainted_string) throws RuntimeException, IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InterruptedException {
         JSONObject json_obj = new JSONObject(tainted_string);
+
         List<SqlLexerToken> token_ranges = getLexerTokens(json_obj.getString("payload"));
         JSONArray taint_ranges = json_obj.getJSONArray("ranges");
         String sql_string = json_obj.getString("payload");
-        //JSONArray json_array = antiSQLInjection.getSqlInjectionInfo(sql_string);
+
         JSONArray json_array = getSqlInjectionInfo(token_ranges,taint_ranges,sql_string);
-        System.out.println(json_array.toString());
+        System.out.println("checkTaintedString : " + json_array.toString());
         NetworkResponseObject.setResponseMessage(new NetworkRequestObject(),!json_array.isEmpty());
     }
 
@@ -156,14 +120,13 @@ public class SQLChecker {
         JSONArray taint_ranges = json_obj.getJSONArray("ranges");
         String sql_string = json_obj.getString("payload");
         JSONArray json_array = getSqlInjectionInfo(token_ranges,taint_ranges,sql_string);
-        System.out.println(json_array.toString());
+        System.out.println("logTaintedString : " + json_array.toString());
         if(!json_array.isEmpty()){
             Logger logger = Logger.getLogger("SqlInjectionLog");
             FileHandler fh;
-
             try {
 
-                // This block configure the logger with handler and formatter
+                // This block configures the logger with handler and formatter
                 fh = new FileHandler("sql_injection_logger.log", true);
                 logger.addHandler(fh);
                 SimpleFormatter formatter = new SimpleFormatter();
@@ -197,35 +160,3 @@ public class SQLChecker {
     }
 
 }
-
-//    public static void main(String[] args) throws SqlParseException {
-//        //String sqlString = "select * from emp,der where id=2 and 1=1";
-//        String sqlString = "insert into emp values(1,2)";
-//        SqlParser parser = SqlParser.create(sqlString);
-//        SqlNode node = parser.parseStmt();
-//        System.out.println(node);
-//        SqlInsert node_s = (SqlInsert) node;
-//        System.out.println(node_s.getOperandList());
-//        String m = node.toString();
-//        String[] tokens = node.toString().split("\\r?\\n");
-//
-//        for(String token : tokens){
-//            //Pattern pattern = Pattern.compile("(?<=\\s|^|[;])" + token.toLowerCase(Locale.ROOT) +"(?=\\s|$)");
-//            String token_string = token.toLowerCase(Locale.ROOT).replace("`","");
-//            Pattern pattern = Pattern.compile(token_string);
-//            System.out.println(token_string);
-//            Matcher matcher = pattern.matcher(sqlString.toLowerCase(Locale.ROOT));
-//            while(matcher.find()){
-//                System.out.println(matcher.start() + " " + matcher.end());
-//            }
-//        }
-//
-//        System.out.println(Arrays.toString(tokens));
-//        FontusSqlVisitor f_visitor = new FontusSqlVisitor();
-//        SqlParserPos x = (SqlParserPos) node.accept(f_visitor);
-//        System.out.println("x = " + x);
-//    }
-
-
-
-
