@@ -80,7 +80,7 @@ class TaintingTransformer implements ClassFileTransformer {
         try {
             outArray = this.instrumenter.instrumentClass(classfileBuffer, new ClassResolver(loader), this.config, loader, false);
         } catch (IllegalArgumentException ex) {
-            if (ex.getMessage().equals("JSR/RET are not supported with computeFrames option")) {
+            if ("JSR/RET are not supported with computeFrames option".equals(ex.getMessage())) {
                 outArray = this.instrumenter.instrumentClass(classfileBuffer, new ClassResolver(loader), this.config, loader, true);
             } else {
                 throw ex;

@@ -15,7 +15,7 @@ import static com.sap.fontus.utils.ClassTraverser.getAllFields;
 public class IASTaintHandler {
     public static CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(ClassLoader.getSystemClassLoader());
 
-    public static Void handleTaint(IASTaintAware taintAware, String sinkFunction, String sinkName) {
+    public static Void handleTaint(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName) {
         boolean isTainted = taintAware.isTainted();
 
         if (Configuration.getConfiguration().collectStats()) {
@@ -34,7 +34,7 @@ public class IASTaintHandler {
                 }
             }
 
-            abort.abort(taintAware, sinkFunction, sinkName, cleanedStackTrace);
+            abort.abort(taintAware, instance, sinkFunction, sinkName, cleanedStackTrace);
         }
         return null;
     }
@@ -120,13 +120,13 @@ public class IASTaintHandler {
         return object;
     }
 
-    public static Object checkTaint(Object object, String sinkFunction, String sinkName) {
+    public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName) {
         if (object instanceof IASTaintAware) {
-            handleTaint((IASTaintAware) object, sinkFunction, sinkName);
+            handleTaint((IASTaintAware) object, instance, sinkFunction, sinkName);
             return object;
         }
 
-        return traverseObject(object, taintAware -> handleTaint(taintAware, sinkFunction, sinkName));
+        return traverseObject(object, taintAware -> handleTaint(taintAware, instance, sinkFunction, sinkName));
     }
 
     public static Object taint(Object object, int sourceId) {

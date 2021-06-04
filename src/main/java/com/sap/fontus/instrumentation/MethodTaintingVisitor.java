@@ -494,7 +494,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         Sink sink = this.config.getSinkConfig().getSinkForFunction(call);
         if (sink != null) {
             logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-            SinkTransformer t = new SinkTransformer(sink, this.stringConfig);
+            SinkTransformer t = new SinkTransformer(sink, this.stringConfig, this.used);
             transformer.addParameterTransformation(t);
         }
 

@@ -7,8 +7,8 @@ import java.util.List;
 public class ExitAbort extends Abort {
     private StdErrLoggingAbort stdErrLoggingAbort = new StdErrLoggingAbort();
     @Override
-    public void abort(IASTaintAware taintAware, String sink, String category, List<StackTraceElement> stackTrace) {
-        stdErrLoggingAbort.abort(taintAware, sink, category, stackTrace);
+    public void abort(IASTaintAware taintAware, Object instance, String sink, String category, List<StackTraceElement> stackTrace) {
+        stdErrLoggingAbort.abort(taintAware, instance, sink, category, stackTrace);
         System.exit(1);
     }
 

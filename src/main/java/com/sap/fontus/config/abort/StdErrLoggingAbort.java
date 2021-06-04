@@ -8,7 +8,7 @@ import static com.sap.fontus.utils.Utils.convertStackTrace;
 
 public class StdErrLoggingAbort extends Abort {
     @Override
-    public void abort(IASTaintAware taintAware, String sink, String category, List<StackTraceElement> stackTrace) {
+    public void abort(IASTaintAware taintAware, Object instance, String sink, String category, List<StackTraceElement> stackTrace) {
         System.err.printf("String \"%s\" is tainted and reached sink \"%s\" of category \"%s\"! \n", taintAware, sink, category);
         List<String> stackTraceStrings = convertStackTrace(stackTrace);
         for (String ste: stackTraceStrings) {
