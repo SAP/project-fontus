@@ -101,6 +101,11 @@ public class FunctionCall {
         return this.isInterface;
     }
 
+    @JsonIgnore
+    public boolean isInstanceMethod() {
+        return this.getOpcode() == Opcodes.INVOKESPECIAL || this.getOpcode() == Opcodes.INVOKEVIRTUAL || this.getOpcode() == Opcodes.INVOKEINTERFACE;
+    }
+
     @Override
     public String toString() {
         return "FunctionCall{" +
