@@ -13,6 +13,7 @@ public class TaintAgent {
     private static HashMap<String, Class<?>> loadedClasses = new HashMap<>();
 
     public static void premain(String args, Instrumentation inst) {
+        System.out.println("Starting application with Fontus Tainting!");
         instrumentation = inst;
         Configuration.parseAgent(args);
         transformer = new TaintingTransformer(Configuration.getConfiguration());

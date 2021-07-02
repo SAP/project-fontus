@@ -10,6 +10,7 @@ import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.utils.Utils;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 
+import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -255,6 +256,22 @@ public class IASReflectionMethodProxy {
         Method[] methods = clazz.getMethods();
         Arrays.sort(methods, new MethodSorter());
         return methods;
+    }
+
+    public static InputStream getResourceAsStream(Class cls, IASStringable resource) {
+        InputStream stream = cls.getResourceAsStream(resource.getString());
+        if (Configuration.getConfiguration().isResourceToInstrument(resource.getString())) {
+            return new IASInstrumenterInputStream(stream);
+        }
+        return stream;
+    }
+
+    public static InputStream getResourceAsStream(ClassLoader cls, IASStringable resource) {
+        InputStream stream = cls.getResourceAsStream(resource.getString());
+        if (Configuration.getConfiguration().isResourceToInstrument(resource.getString())) {
+            return new IASInstrumenterInputStream(stream);
+        }
+        return stream;
     }
 
     private static boolean isParameterSameUninstrumented(Class c1, Class c2) {

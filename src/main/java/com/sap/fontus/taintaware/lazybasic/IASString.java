@@ -1,5 +1,6 @@
 package com.sap.fontus.taintaware.lazybasic;
 
+import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.lazybasic.operation.BaseLayer;
 import com.sap.fontus.taintaware.lazybasic.operation.DeleteLayer;
 import com.sap.fontus.taintaware.lazybasic.operation.InsertLayer;
@@ -141,6 +142,19 @@ public final class IASString implements IASStringable, IASTaintRangeAware {
             return null;
         }
         return string.string;
+    }
+
+    public static IASString toStringOf(Object o) {
+        if (o instanceof IASTaintAware) {
+            return (IASString) ((IASTaintAware) o).toIASString();
+        } else {
+            String val = o.toString();
+            if (val == null) {
+                return null;
+            } else {
+                return new IASString(val);
+            }
+        }
     }
 
     @Override

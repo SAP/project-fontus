@@ -37,7 +37,7 @@ public class IASProxyProxyBuilder {
         String pkg = null;
         for (Class<?> intf : interfaces) {
             if (!Modifier.isPublic(intf.getModifiers())) {
-                String packageName = intf.getPackageName();
+                String packageName = getPackageName(intf);
                 if (pkg == null) {
                     pkg = packageName;
                 } else {
@@ -53,6 +53,17 @@ public class IASProxyProxyBuilder {
         } else {
             return pkg;
         }
+    }
+
+    private static String getPackageName(Class<?> cls) {
+        Package pkg = cls.getPackage();
+        if (cls.isArray()) {
+            pkg = cls.getComponentType().getPackage();
+        }
+        if (pkg == null) {
+            return "java.lang";
+        }
+        return pkg.getName();
     }
 
     private Module findModule() {

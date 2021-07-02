@@ -66,6 +66,7 @@ class TaintingTransformer implements ClassFileTransformer {
             VerboseLogger.saveIfVerbose(className, outArray);
             return outArray;
         } catch (Exception e) {
+            e.printStackTrace();
             logger.error("Instrumentation failed for {}. Reason: {}", className, e.getMessage());
         }
         return null;

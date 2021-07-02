@@ -6,7 +6,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sap.fontus.Constants;
+import com.sap.fontus.utils.MethodUtils;
 import com.sap.fontus.utils.Utils;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
@@ -67,6 +69,10 @@ public class FunctionCall {
         }
         String descriptor = Type.getType(method).getDescriptor();
         return new FunctionCall(opcode, Utils.dotToSlash(method.getDeclaringClass().getName()), method.getName(), descriptor, method.getDeclaringClass().isInterface());
+    }
+
+    public static FunctionCall fromHandle(Handle handle) {
+        return new FunctionCall(MethodUtils.tagToOpcode(handle.getTag()), handle.getOwner(), handle.getName(), handle.getDesc(), handle.isInterface());
     }
 
     public static FunctionCall fromConstructor(Constructor<?> constructor) {

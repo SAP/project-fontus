@@ -3,6 +3,7 @@ package com.sap.fontus.instrumentation;
 import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.utils.MethodUtils;
 import com.sap.fontus.utils.Utils;
+import org.objectweb.asm.Type;
 
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -16,10 +17,10 @@ public class Method {
     private final String[] exceptions;
     private final boolean ownerIsInterface;
 
-    public Method(int access, String owner, String name, String descriptor, String signature, String[] exceptions, boolean ownerIsInterface) {
+    public Method(int access, String owner, String internalName, String descriptor, String signature, String[] exceptions, boolean ownerIsInterface) {
         this.access = access;
         this.owner = owner;
-        this.name = name;
+        this.name = internalName;
         this.descriptor = descriptor;
         this.signature = signature;
         this.exceptions = exceptions;
@@ -40,6 +41,14 @@ public class Method {
 
     public String getDescriptor() {
         return descriptor;
+    }
+
+    public Descriptor getParsedDescriptor() {
+        return Descriptor.parseDescriptor(descriptor);
+    }
+
+    public Type getDescriptorType() {
+        return Type.getMethodType(descriptor);
     }
 
     public String getSignature() {

@@ -35,13 +35,45 @@ public class ClassTraverser {
         return fields;
     }
 
+    public void readMethods(Type cls, ClassResolver resolver) {
+        if (combinedExcludedLookup.isJdkClass(cls.getInternalName())) {
+            Class<?> clazz = ClassUtils.findLoadedClass(cls.getInternalName());
+
+            java.lang.reflect.Method[] methods = clazz.getMethods();
+            for (java.lang.reflect.Method declaredMethod : methods) {
+                addMethodIfNotContained(Method.from(declaredMethod));
+            }
+        } else {
+            try {
+                ClassVisitor cv = new NopVisitor(Opcodes.ASM7) {
+                    @Override
+                    public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+                        Method method = new Method(access, cls.getInternalName(), name, descriptor, signature, exceptions, false);
+                        addMethodIfNotContained(method);
+                        return super.visitMethod(access, name, descriptor, signature, exceptions);
+                    }
+                };
+                ClassReader cr = new ClassReaderWithLoaderSupport(resolver, cls.getClassName());
+                cr.accept(cv, ClassReader.SKIP_FRAMES);
+
+                String superName = cr.getSuperName();
+                if (superName != null) {
+                    Type superType = Type.getObjectType(superName);
+                    this.readMethods(superType, resolver);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     /**
      * Returns for the given class all JDK-inherited instance methods which are public or protected
      * This includes the inherited ones (unlike getDeclaredMethods), but excludes the Object-class methods
      *
      * @param classToDiscover Class to discover
      */
-    public void getAllJdkMethods(String classToDiscover, ClassResolver resolver) {
+    public void readAllJdkMethods(String classToDiscover, ClassResolver resolver) {
         TypeHierarchyReaderWithLoaderSupport typeHierarchyReader = new TypeHierarchyReaderWithLoaderSupport(resolver);
         for (Type cls = Type.getObjectType(classToDiscover); cls != null; cls = typeHierarchyReader.getSuperClass(cls)) {
             if (this.combinedExcludedLookup.isPackageExcludedOrJdk(cls.getInternalName())) {

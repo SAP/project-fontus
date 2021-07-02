@@ -29,7 +29,7 @@ public class Descriptor {
         this.returnType = returnType.getDescriptor();
     }
 
-    private static String replaceSuffix(String s, String from, String to) {
+    public static String replaceSuffix(String s, String from, String to) {
         if (s.endsWith(from)) {
             int lIdx = s.lastIndexOf(from);
             assert lIdx != -1;

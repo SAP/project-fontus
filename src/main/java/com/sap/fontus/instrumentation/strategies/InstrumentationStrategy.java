@@ -10,6 +10,11 @@ public interface InstrumentationStrategy {
      */
     Descriptor instrumentForNormalCall(Descriptor desc);
 
+    /**
+     * Returns concrete type of the tainted type
+     */
+    String uninstrumentNormalCall(String typeDescriptor);
+
     String instrumentQN(String qn);
 
     /**
@@ -21,6 +26,8 @@ public interface InstrumentationStrategy {
     Optional<String> translateClassName(String className);
 
     boolean handlesType(String descriptor);
+
+    boolean isInstrumented(String descriptor);
 
     String getGetOriginalTypeMethod();
 }

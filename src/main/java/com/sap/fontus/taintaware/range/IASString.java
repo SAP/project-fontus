@@ -737,6 +737,19 @@ public final class IASString implements IASTaintRangeAware, IASStringable {
         return str.string;
     }
 
+    public static IASString toStringOf(Object o) {
+        if (o instanceof IASTaintAware) {
+            return (IASString) ((IASTaintAware) o).toIASString();
+        } else {
+            String val = o.toString();
+            if (val == null) {
+                return null;
+            } else {
+                return new IASString(val);
+            }
+        }
+    }
+
     public String getString() {
         return this.string;
     }
