@@ -80,6 +80,10 @@ public class Configuration {
     @XmlElement(name = "excludedPackages")
     private final List<String> excludedPackages;
 
+    @JacksonXmlElementWrapper(localName = "resourcesToInstrument")
+    @XmlElement(name = "resourcesToInstrument")
+    private final List<String> resourcesToInstrument;
+
     public Configuration() {
         this.verbose = false;
         this.sourceConfig = new SourceConfig();
@@ -89,9 +93,10 @@ public class Configuration {
         this.takeGeneric = new ArrayList<>();
         this.blacklistedMainClasses = new ArrayList<>();
         this.excludedPackages = new ArrayList<>();
+        this.resourcesToInstrument = new ArrayList<>();
     }
 
-    public Configuration(boolean verbose, SourceConfig sourceConfig, SinkConfig sinkConfig, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> blacklistedMainClasses, List<String> excludedPackages) {
+    public Configuration(boolean verbose, SourceConfig sourceConfig, SinkConfig sinkConfig, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> blacklistedMainClasses, List<String> excludedPackages, List<String> resourcesToInstrument) {
         this.verbose = verbose;
         this.sourceConfig = sourceConfig;
         this.sinkConfig = sinkConfig;
@@ -100,6 +105,7 @@ public class Configuration {
         this.takeGeneric = takeGeneric;
         this.blacklistedMainClasses = blacklistedMainClasses;
         this.excludedPackages = excludedPackages;
+        this.resourcesToInstrument = resourcesToInstrument;
     }
 
     public void append(Configuration other) {
@@ -112,6 +118,7 @@ public class Configuration {
             this.takeGeneric.addAll(other.takeGeneric);
             this.blacklistedMainClasses.addAll(other.blacklistedMainClasses);
             this.excludedPackages.addAll(other.excludedPackages);
+            this.resourcesToInstrument.addAll(other.resourcesToInstrument);
         }
     }
 
@@ -316,6 +323,14 @@ public class Configuration {
 
     public List<String> getExcludedPackages() {
         return excludedPackages;
+    }
+
+    public List<String> getResourcesToInstrument() {
+        return this.resourcesToInstrument;
+    }
+
+    public boolean isResourceToInstrument(String resource) {
+        return this.resourcesToInstrument != null && this.resourcesToInstrument.contains(resource);
     }
 
     public static void parseAgent(String args) {

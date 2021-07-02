@@ -21,7 +21,9 @@ public class IASProxyProxy {
         try {
             UNSAFE = Unsafe.getUnsafe();
         } catch (Throwable ex) {
-            System.err.println("Couldn't load unsafe!");
+            System.err.println("Couldn't load unsafe! Please make sure you added \"--add-opens java.base/jdk.internal.misc=ALL-UNNAMED\" as JVM parameter!");
+            ex.printStackTrace();
+            System.exit(1);
             throw ex;
         }
     }

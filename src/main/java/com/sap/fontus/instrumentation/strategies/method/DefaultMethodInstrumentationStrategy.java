@@ -54,7 +54,7 @@ public class DefaultMethodInstrumentationStrategy implements MethodInstrumentati
             int newOpcode = Opcodes.INVOKESTATIC;
             String newOwner = this.stringConfig.getTStringQN();
             String newDescriptor = "(" + Constants.ObjectDesc + ")" + this.stringConfig.getTStringDesc();
-            String newName = Constants.VALUE_OF;
+            String newName = Constants.TO_STRING_OF;
             boolean newIsInterface = false;
             logger.info("Rewriting toString invoke [{}] {}.{}{} to valueOf call {}.{}{}", Utils.opcodeToString(functionCall.getOpcode()), functionCall.getOwner(), functionCall.getName(), functionCall.getDescriptor(), newOwner, newName, newDescriptor);
             return new FunctionCall(newOpcode, newOwner, newName, newDescriptor, false);

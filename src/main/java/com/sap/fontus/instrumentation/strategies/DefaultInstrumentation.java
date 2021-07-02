@@ -18,6 +18,11 @@ public class DefaultInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
+    public String uninstrumentNormalCall(String typeDescriptor) {
+        return typeDescriptor;
+    }
+
+    @Override
     public String instrumentQN(String qn) {
         return qn;
     }
@@ -29,6 +34,11 @@ public class DefaultInstrumentation implements InstrumentationStrategy {
 
     @Override
     public boolean handlesType(String descriptor) {
+        return false;
+    }
+
+    @Override
+    public boolean isInstrumented(String descriptor) {
         return false;
     }
 
