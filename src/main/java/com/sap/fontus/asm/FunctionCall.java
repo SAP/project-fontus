@@ -82,6 +82,10 @@ public class FunctionCall {
         return this.name;
     }
 
+    public String getFqn() {
+        return getOwner() + "." + getName() + getDescriptor();
+    }
+
     public String getDescriptor() {
         return this.descriptor;
     }
