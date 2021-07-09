@@ -6,6 +6,7 @@ import com.sap.fontus.taintaware.shared.IASStringable;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import com.sap.fontus.sanitizer.Sanitization;
