@@ -4,7 +4,6 @@ import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.sap.fontus.sanitizer.Sanitization;
@@ -14,10 +13,8 @@ public class SanitizationAbort extends Abort {
         String taintedString = taintAware.toIASString().getString();
     public void abort(IASTaintAware taintAware, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
         List<IASTaintRange> ranges = taintAware.toIASString().getTaintRanges();
-        System.err.printf("String \"%s\" is tainted and reached sink \"%s\" of category \"%s\"! \n", taintAware, sink, category);
         // until categories are specified by the taint mechanism, use:
-        List<Sanitization.AttackCategory> categories = new ArrayList();
-        categories.add(Sanitization.AttackCategory.XSS);
+        System.err.printf("String \"%s\" is tainted and reached sink \"%s\" of categories %s! \n", taintAware, sinkFunction, categories);
         // sanitize here
         String sanitizedString = Sanitization.sanitizeSinks(taintedString, ranges, categories);
         System.err.println(taintedString + " was sanitized and resulted in: " + sanitizedString);
