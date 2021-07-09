@@ -24,21 +24,22 @@ public class Sink {
     @XmlElement(name = "parameter")
     private final List<SinkParameter> parameters;
 
-    @XmlElement
-    private final String category;
+    @JacksonXmlElementWrapper(localName = "categories")
+    @XmlElement(name = "category")
+    private final List<String> categories;
 
     public Sink() {
         this.name = "";
         this.function = new FunctionCall();
         this.parameters = new ArrayList<>();
-        this.category = null;
+        this.categories = new ArrayList<>();
     }
 
-    public Sink(String name, FunctionCall functionCall, List<SinkParameter> parameters, String category) {
+    public Sink(String name, FunctionCall functionCall, List<SinkParameter> parameters, List<String> categories) {
         this.name = name;
         this.function = functionCall;
         this.parameters = parameters;
-        this.category = category;
+        this.categories = categories;
     }
 
     public List<SinkParameter> getParameters() {
@@ -54,8 +55,8 @@ public class Sink {
         return null;
     }
 
-    public String getCategory() {
-        return category;
+    public List<String> getCategories() {
+        return Collections.unmodifiableList(this.categories);
     }
 
     public FunctionCall getFunction() {
@@ -72,6 +73,7 @@ public class Sink {
                 "name='" + name + '\'' +
                 ", function=" + function +
                 ", parameters=" + parameters +
+                ", categories=" + categories +
                 '}';
     }
 }
