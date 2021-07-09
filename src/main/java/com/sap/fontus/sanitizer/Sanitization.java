@@ -48,19 +48,19 @@ public class Sanitization {
     };
 
     public static String sanitizeSinks(String taintedString, List<IASTaintRange> taintRanges,
-                                       List<AttackCategory> sinkChecks) {
-        for (AttackCategory attCat : sinkChecks) {
+                                       List<String> sinkChecks) {
+        for (String attCat : sinkChecks) {
             switch (attCat) {
-                case SQLi:
+                case "SQLi":
                     // do something, e.g. sanitizeAndExecuteQuery(..)
                     // problem: how to detect whole query and connection to DB
                     // e.g. use sql sanitizer or log result or stop program
                     break;
-                case XSS:
-                default:
+                case "XSS":
                     taintedString = sanitizeHtml(taintedString, taintRanges);
-                    // problem: where do we get the context from? already part of taint info?
                     break;
+                default:
+                    // problem: where do we get the context from? already part of taint info?
             }
         }
         return taintedString;
