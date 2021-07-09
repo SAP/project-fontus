@@ -11,8 +11,8 @@ import com.sap.fontus.sanitizer.Sanitization;
 
 public class SanitizationAbort extends Abort {
     @Override
-    public void abort(IASTaintAware taintAware, String sink, String category, List<StackTraceElement> stackTrace) {
         String taintedString = taintAware.toIASString().getString();
+    public void abort(IASTaintAware taintAware, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
         List<IASTaintRange> ranges = taintAware.toIASString().getTaintRanges();
         System.err.printf("String \"%s\" is tainted and reached sink \"%s\" of category \"%s\"! \n", taintAware, sink, category);
         // until categories are specified by the taint mechanism, use:
