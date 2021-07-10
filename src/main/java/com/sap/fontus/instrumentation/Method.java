@@ -7,6 +7,7 @@ import org.objectweb.asm.Type;
 
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Optional;
 
 public class Method {
     private final int access;
@@ -69,10 +70,7 @@ public class Method {
     }
 
     public static Method from(java.lang.reflect.Method method) {
-        String signature = null;
-        if (MethodUtils.hasGenericInformation(method)) {
-            signature = Descriptor.getSignature(method);
-        }
+        String signature = MethodUtils.getSignature(method).orElse(null);
         return new Method(method.getModifiers(), Utils.dotToSlash(method.getDeclaringClass().getName()), method.getName(), org.objectweb.asm.commons.Method.getMethod(method).getDescriptor(), signature, Arrays.stream(method.getExceptionTypes()).map(Class::getName).map(Utils::dotToSlash).toArray(String[]::new), method.getDeclaringClass().isInterface());
     }
 }

@@ -68,6 +68,14 @@ public final class InstrumentationHelper {
         return newDesc;
     }
 
+    public Descriptor uninstrumentNormalCall(Descriptor typeDescriptor) {
+        String newDesc = typeDescriptor.toDescriptor();
+        for (InstrumentationStrategy is : this.strategies) {
+            newDesc = is.uninstrumentNormalCall(newDesc);
+        }
+        return Descriptor.parseDescriptor(newDesc);
+    }
+
     public String instrumentDescForIASCall(String desc) {
         String newDesc = desc;
         for (InstrumentationStrategy is : this.strategies) {
@@ -87,9 +95,9 @@ public final class InstrumentationHelper {
         return clazzName;
     }
 
-    public boolean canHandleType(String type) {
+    public boolean canHandleType(String typeDescriptor) {
         for (InstrumentationStrategy is : this.strategies) {
-            if (is.handlesType(type)) {
+            if (is.handlesType(typeDescriptor)) {
                 return true;
             }
         }

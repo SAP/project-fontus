@@ -112,6 +112,11 @@ public class FunctionCall {
         return this.getOpcode() == Opcodes.INVOKESPECIAL || this.getOpcode() == Opcodes.INVOKEVIRTUAL || this.getOpcode() == Opcodes.INVOKEINTERFACE;
     }
 
+    @JsonIgnore
+    public boolean isConstructor() {
+        return this.getOpcode() == Opcodes.INVOKESPECIAL && "<init>".equals(this.getName());
+    }
+
     @Override
     public String toString() {
         return "FunctionCall{" +

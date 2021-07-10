@@ -182,18 +182,6 @@ public class Descriptor {
 //        return new Descriptor(out, returnType.toString());
     }
 
-    public static String getSignature(Method m) {
-        // Hacky but better than generating it by hand
-        try {
-            Method getGenericSignature = Method.class.getDeclaredMethod("getGenericSignature");
-            getGenericSignature.setAccessible(true);
-            return (String) getGenericSignature.invoke(m);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            e.printStackTrace();
-            throw new UnsupportedOperationException("Cannot generate signature, because Method.getGenericSignature is not available");
-        }
-    }
-
     public static Descriptor parseMethod(Method m) {
         List<String> parameters = new ArrayList<>(m.getParameterCount());
         for (Class param : m.getParameterTypes()) {

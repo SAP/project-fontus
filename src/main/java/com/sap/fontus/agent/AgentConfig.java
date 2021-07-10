@@ -65,6 +65,7 @@ public class AgentConfig {
     private static Configuration parseParts(Iterable<String> parts) {
         Configuration c = ConfigurationLoader.defaultConfiguration();
         boolean verbose = false;
+        boolean welcome = false;
         Boolean loggingEnabled = null;
         TaintMethod taintMethod = TaintMethod.defaultTaintMethod();
         Boolean useCaching = null;
@@ -79,6 +80,9 @@ public class AgentConfig {
             }
             if ("logging_enabled".equals(part)) {
                 loggingEnabled = true;
+            }
+            if ("enable_welcome".equals(part)) {
+                welcome = true;
             }
             if (part.startsWith("taintmethod=")) {
                 String taintMethodArgName = afterEquals(part);
@@ -120,6 +124,7 @@ public class AgentConfig {
         }
         c.setVerbose(verbose || c.isVerbose());
         c.setTaintMethod(taintMethod);
+        c.setShowWelcomeMessage(welcome);
 
         if (useCaching != null) {
             c.setUseCaching(useCaching);

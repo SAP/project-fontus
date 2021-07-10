@@ -61,6 +61,13 @@ public class ClassTraverser {
                     Type superType = Type.getObjectType(superName);
                     this.readMethods(superType, resolver);
                 }
+                String[] interfaces = cr.getInterfaces();
+                if (interfaces != null) {
+                    for (String intf : interfaces) {
+                        Type interfaceType = Type.getObjectType(intf);
+                        this.readMethods(interfaceType, resolver);
+                    }
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
