@@ -294,7 +294,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             String param = originalDescriptor.getParameters().get(i + diff);
             mv.visitVarInsn(loadCodeByType(param), register);
             if (isDescriptorNameToInstrument(param) && !param.equals(instrumentedDescriptor.getParameters().get(i))) {
-                Type instrumentedType = Type.getType(this.instrumentQN(param));
+                Type instrumentedType = Type.getType(this.instrumentationHelper.instrumentQN(param));
 
                 if (Type.getType(param).equals(Type.getType(String.class))) {
                     mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringQN(), Constants.FROM_STRING, this.stringConfig.getFromStringDesc(), false);
@@ -376,16 +376,6 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
         return false;
     }
-
-    private String instrumentQN(String qn) {
-        for (InstrumentationStrategy instrumentationStrategy : this.instrumentation) {
-            if (instrumentationStrategy.handlesType(qn)) {
-                return instrumentationStrategy.instrumentQN(qn);
-            }
-        }
-        return qn;
-    }
-
 
     /**
      * Writes the code for a static initialization block.
@@ -650,7 +640,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             // Creating new Object if necessary and duplicating it for initialization
             if (isDescriptorNameToInstrument(param)) {
                 mv.visitVarInsn(loadCodeByType(param), i + 1);
-                Type instrumentedParam = Type.getType(this.instrumentQN(param));
+                Type instrumentedParam = Type.getType(this.instrumentationHelper.instrumentQN(param));
                 Type origParam = Type.getType(param);
                 int arrayDimensions = calculateDescArrayDimensions(param);
                 mv.visitInsn(Opcodes.DUP);
@@ -676,7 +666,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 
         // Converting the return type back
         if (isDescriptorNameToInstrument(origDescriptor.getReturnType())) {
-            Type returnType = Type.getType(this.instrumentQN(origDescriptor.getReturnType()));
+            Type returnType = Type.getType(this.instrumentationHelper.instrumentQN(origDescriptor.getReturnType()));
 
             int arrayDimensions = calculateDescArrayDimensions(returnType.getInternalName());
             if (arrayDimensions == 0) {
@@ -784,18 +774,8 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitEnd();
     }
 
-    /**
-     * This instruments the descriptor to call the taintaware string classes (uses the interface types (e.g. IASStringable) for replacement)
-     */
-    private String instrumentDescriptorStringlike(String descriptor) {
-        for (InstrumentationStrategy is : this.instrumentation) {
-            descriptor = is.instrumentDescForIASCall(descriptor);
-        }
-        return descriptor;
-    }
-
     private boolean shouldBeInstrumented(String descriptorString) {
-        String instrumented = this.instrumentDescriptorStringlike(descriptorString);
+        String instrumented = this.instrumentationHelper.instrumentDescForIASCall(descriptorString);
         return !instrumented.equals(descriptorString);
     }
 
