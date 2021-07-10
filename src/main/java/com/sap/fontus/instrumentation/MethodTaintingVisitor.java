@@ -615,11 +615,11 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         if ("java/lang/invoke/LambdaMetafactory".equals(bootstrapMethodHandle.getOwner()) &&
                 ("metafactory".equals(bootstrapMethodHandle.getName()) || "altMetafactory".equals(bootstrapMethodHandle.getName()))) {
             Handle realFunction = (Handle) bootstrapMethodArguments[1];
-            LambdaCall call = new LambdaCall(Type.getMethodType(descriptor).getReturnType(), FunctionCall.fromHandle(realFunction));
+            LambdaCall call = new LambdaCall(Type.getMethodType(descriptor).getReturnType(), realFunction);
 
-            MethodTaintingUtils.invokeVisitLambdaCall(this.stringConfig, this.getParentVisitor(), this.methodInstrumentation, call.getProxyDescriptor(this.loader, this.instrumentationHelper), name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
+            MethodTaintingUtils.invokeVisitLambdaCall(this.stringConfig, this.getParentVisitor(), this.methodInstrumentation, call.getProxyDescriptor(this.loader, this.instrumentationHelper), call, this.owner, name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
 
-            if (MethodTaintingUtils.isLambdaCallJdkOrExcluded(descriptor) && !MethodTaintingUtils.isMethodReferenceJdkOrExcluded(realFunction)) {
+            if (MethodTaintingUtils.needsLambdaProxy(descriptor, realFunction, (Type) bootstrapMethodArguments[2], InstrumentationHelper.getInstance(this.stringConfig))) {
                 this.jdkLambdaMethodProxies.add(call);
             }
         } else if ("makeConcatWithConstants".equals(name)) {

@@ -27,6 +27,8 @@ public class Configuration {
     @JsonIgnore
     private TaintStringConfig taintStringConfig;
 
+    private boolean showWelcomeMessage;
+
     private Map<String, List<BlackListEntry>> jdkInheritanceBlacklist = new HashMap<>();
 
     private boolean useCaching = defaultUseCaching();
@@ -418,5 +420,13 @@ public class Configuration {
 
     public void setTaintlossHandler(TaintlossHandler taintlossHandler) {
         this.taintlossHandler = taintlossHandler;
+    }
+
+    public boolean isShowWelcomeMessage() {
+        return showWelcomeMessage;
+    }
+
+    public void setShowWelcomeMessage(boolean showWelcomeMessage) {
+        this.showWelcomeMessage = showWelcomeMessage;
     }
 }
