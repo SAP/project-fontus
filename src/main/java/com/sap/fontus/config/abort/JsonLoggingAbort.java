@@ -17,7 +17,7 @@ public class JsonLoggingAbort extends Abort {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public void abort(IASTaintAware taintAware, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
+    public void abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
         IASStringable taintedString = taintAware.toIASString();
         Abort abort = new Abort(sinkFunction, sinkName, taintedString.getString(), taintedString.getTaintRanges(), convertStackTrace(stackTrace));
         previousAborts.add(abort);

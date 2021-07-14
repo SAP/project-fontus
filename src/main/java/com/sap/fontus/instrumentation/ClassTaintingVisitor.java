@@ -56,6 +56,12 @@ class ClassTaintingVisitor extends ClassVisitor {
     private boolean inEnd;
     private boolean extendsJdkSuperClass;
     private final List<DynamicCall> bootstrapMethods = new ArrayList<>();
+    /**
+     * Uninstrumented methods which are used as lambdas of JDK or excluded functions
+     * They will be proxied to their instrumented counterpart.
+     */
+    private final List<LambdaCall> jdkLambdaMethodProxies = new ArrayList<>();
+    private final InstrumentationHelper instrumentationHelper;
 
     public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config, ClassLoader loader, boolean containsJSRRET) {
         super(Opcodes.ASM7, cv);
@@ -72,6 +78,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.fillStrategies();
         this.signatureInstrumenter = new SignatureInstrumenter(this.api, this.instrumentation);
         this.combinedExcludedLookup = new CombinedExcludedLookup(loader);
+        this.instrumentationHelper = InstrumentationHelper.getInstance(this.stringConfig);
     }
 
     private void fillStrategies() {
@@ -148,7 +155,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         ClassTraverser classTraverser = new ClassTraverser(this.combinedExcludedLookup);
         if (!this.isAnnotation) {
             if (this.extendsJdkSuperClass) {
-                classTraverser.getAllJdkMethods(this.superName, this.resolver);
+                classTraverser.readAllJdkMethods(this.superName, this.resolver);
             }
             classTraverser.addNotContainedJdkInterfaceMethods(this.superName, this.interfaces, this.resolver, this.loader);
         }
@@ -228,14 +235,14 @@ class ClassTaintingVisitor extends ClassVisitor {
 
             this.overriddenJdkMethods.add(overriddenJdkSuperMethod(access, name, descriptor));
 
-            this.generateProxyToInstrumented(v, newName, descriptor);
+            this.generateProxyToInstrumented(v, newName, Descriptor.parseDescriptor(descriptor), null, Optional.empty());
 
-            desc = this.instrumentDescriptor(Descriptor.parseDescriptor(descriptor)).toDescriptor();
+            desc = this.instrumentationHelper.instrumentForNormalCall(descriptor);
             mv = super.visitMethod(access, newName, desc, instrumentedSignature, exceptions);
         } else if (this.blacklist.contains(new BlackListEntry(name, descriptor, access))) {
             mv = super.visitMethod(access, name, descriptor, signature, exceptions);
-        } else if (this.instrumentedMethods.contains(new org.objectweb.asm.commons.Method(name, this.instrumentDescriptor(descriptor)))) {
-            if (this.instrumentDescriptor(descriptor).equals(descriptor)) {
+        } else if (this.instrumentedMethods.contains(new org.objectweb.asm.commons.Method(name, this.instrumentationHelper.instrumentForNormalCall(descriptor)))) {
+            if (this.instrumentationHelper.instrumentForNormalCall(descriptor).equals(descriptor)) {
                 // If a not instrumented method has been instrumented and afterwards the same method with a instrumented descriptor occurs, it has to be ignored
                 return null;
             }
@@ -244,10 +251,10 @@ class ClassTaintingVisitor extends ClassVisitor {
 
             this.overriddenJdkMethods.add(overriddenJdkSuperMethod(access, name, descriptor));
 
-            this.generateProxyToInstrumented(v, newName, descriptor);
+            this.generateProxyToInstrumented(v, newName, Descriptor.parseDescriptor(descriptor), null, Optional.empty());
             return null;
         } else {
-            desc = this.instrumentDescriptor(Descriptor.parseDescriptor(descriptor)).toDescriptor();
+            desc = this.instrumentationHelper.instrumentForNormalCall(descriptor);
             if (!desc.equals(descriptor)) {
                 logger.info("Rewriting method signature {}{} to {}{}", name, descriptor, name, desc);
             }
@@ -255,25 +262,39 @@ class ClassTaintingVisitor extends ClassVisitor {
             mv = super.visitMethod(access, name, desc, instrumentedSignature, exceptions);
         }
 
-        MethodTaintingVisitor mtv = new MethodTaintingVisitor(access, this.owner, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler, this.instrumentation, this.combinedExcludedLookup, this.bootstrapMethods, this.superName);
+        MethodTaintingVisitor mtv = new MethodTaintingVisitor(access, this.owner, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler, this.instrumentationHelper, this.combinedExcludedLookup, this.bootstrapMethods, this.jdkLambdaMethodProxies, this.superName, this.loader);
         if (this.containsJSRRET) {
             return new JSRInlinerAdapter(mtv, access, newName, desc, instrumentedSignature, exceptions);
         }
         return mtv;
     }
 
-    private void generateProxyToInstrumented(MethodVisitor mv, String instrumentedName, String originalDescriptorString) {
-        Descriptor originalDescriptor = Descriptor.parseDescriptor(originalDescriptorString);
-        Descriptor instrumentedDescriptor = this.instrumentDescriptor(originalDescriptor);
-        mv.visitCode();
-        // TODO Handle lists
-        mv.visitVarInsn(Opcodes.ALOAD, 0);
-        int i = 1;
-        for (String param : originalDescriptor.getParameters()) {
+    private void generateProxyToInstrumented(MethodVisitor mv, String instrumentedName, Descriptor originalDescriptor, Descriptor instrumentedDescriptor, Optional<LambdaCall> lambdaCall) {
+        if (instrumentedDescriptor == null) {
+            instrumentedDescriptor = this.instrumentationHelper.instrumentForNormalCall(originalDescriptor);
+        }
 
-            mv.visitVarInsn(loadCodeByType(param), i);
-            if (isDescriptorNameToInstrument(param)) {
-                Type instrumentedType = Type.getType(this.instrumentQN(param));
+        mv.visitCode();
+
+        if (lambdaCall.isPresent() && lambdaCall.get().isConstructorCall()) {
+            mv.visitTypeInsn(Opcodes.NEW, lambdaCall.get().getImplementation().getOwner());
+            mv.visitInsn(Opcodes.DUP);
+        }
+
+        // TODO Handle lists
+        int register = 0;
+
+        if (!lambdaCall.isPresent() || (!lambdaCall.get().isStaticCall() && !lambdaCall.get().isConstructorCall())) {
+            mv.visitVarInsn(Opcodes.ALOAD, 0);
+            register++;
+        }
+
+        int diff = originalDescriptor.parameterCount() - instrumentedDescriptor.parameterCount();
+        for (int i = 0; i < instrumentedDescriptor.parameterCount(); i++) {
+            String param = originalDescriptor.getParameters().get(i + diff);
+            mv.visitVarInsn(loadCodeByType(param), register);
+            if (isDescriptorNameToInstrument(param) && !param.equals(instrumentedDescriptor.getParameters().get(i))) {
+                Type instrumentedType = Type.getType(this.instrumentationHelper.instrumentQN(param));
 
                 if (Type.getType(param).equals(Type.getType(String.class))) {
                     mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringQN(), Constants.FROM_STRING, this.stringConfig.getFromStringDesc(), false);
@@ -282,23 +303,41 @@ class ClassTaintingVisitor extends ClassVisitor {
                     mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedType.getInternalName());
                 }
             }
-            i += Type.getType(param).getSize();
+            register += Type.getType(param).getSize();
         }
 
         int opcode;
-        if ("<init>".equals(instrumentedName)) {
-            opcode = Opcodes.INVOKESPECIAL;
+
+        if (lambdaCall.isPresent()) {
+            opcode = lambdaCall.get().getImplementation().getOpcode();
         } else {
-            opcode = Opcodes.INVOKEVIRTUAL;
+            if ("<init>".equals(instrumentedName)) {
+                opcode = Opcodes.INVOKESPECIAL;
+            } else {
+                opcode = Opcodes.INVOKEVIRTUAL;
+            }
         }
 
-        mv.visitMethodInsn(opcode, this.owner, instrumentedName, instrumentedDescriptor.toDescriptor(), false);
+        String owner;
+        if (lambdaCall.isPresent()) {
+            owner = lambdaCall.get().getImplementation().getOwner();
+        } else {
+            owner = this.owner;
+        }
+
+        mv.visitMethodInsn(opcode, owner, instrumentedName, instrumentedDescriptor.toDescriptor(), opcode == Opcodes.INVOKEINTERFACE);
         if (isDescriptorNameToInstrument(originalDescriptor.getReturnType())) {
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
             mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(originalDescriptor.getReturnType()).getInternalName());
         }
 
-        mv.visitInsn(returnCodeByReturnType(originalDescriptor.getReturnType()));
+        int returnCode;
+        if (lambdaCall.isPresent() && lambdaCall.get().isConstructorCall()) {
+            returnCode = returnCodeByReturnType(Type.getObjectType(lambdaCall.get().getImplementation().getOwner()).getDescriptor());
+        } else {
+            returnCode = returnCodeByReturnType(originalDescriptor.getReturnType());
+        }
+        mv.visitInsn(returnCode);
         mv.visitMaxs(originalDescriptor.parameterCount() + 1, originalDescriptor.parameterCount() + 1);
         mv.visitEnd();
     }
@@ -315,8 +354,8 @@ class ClassTaintingVisitor extends ClassVisitor {
         return Type.getType(type).getOpcode(Opcodes.ILOAD);
     }
 
-    private int returnCodeByReturnType(String returnType) {
-        return Type.getType(returnType).getOpcode(Opcodes.IRETURN);
+    private int returnCodeByReturnType(String returnTypeDescriptor) {
+        return Type.getType(returnTypeDescriptor).getOpcode(Opcodes.IRETURN);
     }
 
     private String getToOriginalMethod(String qn) {
@@ -329,6 +368,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private boolean isDescriptorNameToInstrument(String qn) {
+        // TODO Use InstrumentationHelper.canHandleType
         for (InstrumentationStrategy instrumentationStrategy : this.instrumentation) {
             if (instrumentationStrategy.handlesType(qn)) {
                 return true;
@@ -336,16 +376,6 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
         return false;
     }
-
-    private String instrumentQN(String qn) {
-        for (InstrumentationStrategy instrumentationStrategy : this.instrumentation) {
-            if (instrumentationStrategy.handlesType(qn)) {
-                return instrumentationStrategy.instrumentQN(qn);
-            }
-        }
-        return qn;
-    }
-
 
     /**
      * Writes the code for a static initialization block.
@@ -386,7 +416,101 @@ class ClassTaintingVisitor extends ClassVisitor {
         if (!this.bootstrapMethods.isEmpty()) {
             this.generateBootstrapMethods();
         }
+
+        if (!this.jdkLambdaMethodProxies.isEmpty()) {
+            this.generateLambdaProxiesForJdk();
+        }
         super.visitEnd();
+    }
+
+    private void generateLambdaProxiesForJdk() {
+        List<LambdaCall> distinct = new ArrayList<>();
+
+        for (LambdaCall f : this.jdkLambdaMethodProxies) {
+            if (!distinct.contains(f)) {
+                distinct.add(f);
+            }
+        }
+
+        distinct.forEach(this::createLambdaProxyForJdk);
+    }
+
+    private void createLambdaProxyForJdk(LambdaCall call) {
+        int access = Opcodes.ACC_PUBLIC;
+        access |= Opcodes.ACC_STATIC;
+
+        Descriptor proxyDescriptor = call.getProxyDescriptor(this.loader, this.instrumentationHelper);
+
+        MethodVisitor mv = super.visitMethod(access, call.getProxyMethodName(), proxyDescriptor.toDescriptor(), null, null);
+
+        if (this.combinedExcludedLookup.isPackageExcludedOrJdk(call.getImplementationHandle().getOwner())) {
+            Descriptor uninstrumentedDescriptor = Descriptor.parseDescriptor(this.instrumentationHelper.uninstrumentNormalCall(call.getImplementation().getDescriptor()));
+            this.generateProxyToJdk(mv, call.getImplementation().getName(), proxyDescriptor, uninstrumentedDescriptor, call);
+        } else {
+            Descriptor instrumentedDescriptor = this.instrumentationHelper.instrumentForNormalCall(call.getImplementation().getParsedDescriptor());
+            this.generateProxyToInstrumented(mv, call.getImplementation().getName(), proxyDescriptor, instrumentedDescriptor, Optional.of(call));
+        }
+
+    }
+
+    private void generateProxyToJdk(MethodVisitor mv, String name, Descriptor proxyDescriptor, Descriptor uninstrumentedDescriptor, LambdaCall lambdaCall) {
+        Objects.requireNonNull(mv);
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(proxyDescriptor);
+        Objects.requireNonNull(uninstrumentedDescriptor);
+        Objects.requireNonNull(lambdaCall);
+
+        mv.visitCode();
+
+        if (lambdaCall.isConstructorCall()) {
+            mv.visitTypeInsn(Opcodes.NEW, lambdaCall.getImplementation().getOwner());
+            mv.visitInsn(Opcodes.DUP);
+        }
+
+        // TODO Handle lists
+        int register = 0;
+
+        if (!lambdaCall.isStaticCall() && !lambdaCall.isConstructorCall()) {
+            mv.visitVarInsn(Opcodes.ALOAD, 0);
+            register++;
+        }
+
+        int diff = proxyDescriptor.parameterCount() - uninstrumentedDescriptor.parameterCount();
+        for (int i = 0; i < uninstrumentedDescriptor.parameterCount(); i++) {
+            String param = proxyDescriptor.getParameters().get(i + diff);
+            mv.visitVarInsn(loadCodeByType(param), register);
+            if (this.instrumentationHelper.isInstrumented(param) && !param.equals(uninstrumentedDescriptor.getParameters().get(i))) {
+                Type uninstrumentedType = Type.getType(this.instrumentationHelper.uninstrumentNormalCall(param));
+
+                if (uninstrumentedType.equals(Type.getType(String.class))) {
+                    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.stringConfig.getTStringQN(), Constants.ToString, new Descriptor(Type.getType(String.class)).toDescriptor(), false);
+                } else {
+                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
+                    mv.visitTypeInsn(Opcodes.CHECKCAST, uninstrumentedType.getInternalName());
+                }
+            }
+            register += Type.getType(param).getSize();
+        }
+
+        int opcode = lambdaCall.getImplementation().getOpcode();
+
+        String owner = lambdaCall.getImplementation().getOwner();
+
+        mv.visitMethodInsn(opcode, owner, name, uninstrumentedDescriptor.toDescriptor(), opcode == Opcodes.INVOKEINTERFACE);
+        if (this.instrumentationHelper.isInstrumented(proxyDescriptor.getReturnType())) {
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
+            mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(proxyDescriptor.getReturnType()).getInternalName());
+        }
+
+        int returnCode;
+        if (lambdaCall.isConstructorCall()) {
+            returnCode = returnCodeByReturnType(Type.getObjectType(lambdaCall.getImplementation().getOwner()).getDescriptor());
+        } else {
+            returnCode = returnCodeByReturnType(proxyDescriptor.getReturnType());
+        }
+        mv.visitInsn(returnCode);
+        mv.visitMaxs(proxyDescriptor.parameterCount() + 1, proxyDescriptor.parameterCount() + 1);
+        mv.visitEnd();
     }
 
     private void generateBootstrapMethods() {
@@ -424,7 +548,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 //        }
         int access = method.getAccess();
         String name = method.getName();
-        String descriptor = this.instrumentDescriptor(Descriptor.parseDescriptor(method.getDescriptor())).toDescriptor();
+        String descriptor = this.instrumentationHelper.instrumentForNormalCall(method.getDescriptor());
         String[] exceptions = method.getExceptions();
         MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions);
         if (method.isDefault()) {
@@ -455,7 +579,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
         logger.info("Creating proxy for inherited, but not overridden JDK method " + m);
         Descriptor originalDescriptor = Descriptor.parseDescriptor(m.getDescriptor());
-        Descriptor instrumentedDescriptor = this.instrumentDescriptor(originalDescriptor);
+        Descriptor instrumentedDescriptor = this.instrumentationHelper.instrumentForNormalCall(originalDescriptor);
 
         if (this.instrumentedMethods.contains(new org.objectweb.asm.commons.Method(m.getName(), instrumentedDescriptor.toDescriptor()))) {
             return;
@@ -477,7 +601,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         int modifiers = (m.getAccess() & ~Modifier.ABSTRACT);
         if (!Modifier.isFinal(m.getAccess())) {
             MethodVisitor mv2 = super.visitMethod(modifiers, m.getName(), originalDescriptor.toDescriptor(), signature, exceptions);
-            this.generateProxyToInstrumented(mv2, m.getName(), originalDescriptor.toDescriptor());
+            this.generateProxyToInstrumented(mv2, m.getName(), originalDescriptor, null, Optional.empty());
         }
     }
 
@@ -516,7 +640,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             // Creating new Object if necessary and duplicating it for initialization
             if (isDescriptorNameToInstrument(param)) {
                 mv.visitVarInsn(loadCodeByType(param), i + 1);
-                Type instrumentedParam = Type.getType(this.instrumentQN(param));
+                Type instrumentedParam = Type.getType(this.instrumentationHelper.instrumentQN(param));
                 Type origParam = Type.getType(param);
                 int arrayDimensions = calculateDescArrayDimensions(param);
                 mv.visitInsn(Opcodes.DUP);
@@ -542,7 +666,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 
         // Converting the return type back
         if (isDescriptorNameToInstrument(origDescriptor.getReturnType())) {
-            Type returnType = Type.getType(this.instrumentQN(origDescriptor.getReturnType()));
+            Type returnType = Type.getType(this.instrumentationHelper.instrumentQN(origDescriptor.getReturnType()));
 
             int arrayDimensions = calculateDescArrayDimensions(returnType.getInternalName());
             if (arrayDimensions == 0) {
@@ -650,32 +774,8 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitEnd();
     }
 
-    /**
-     * This instruments the descriptor to call the taintaware string classes (uses the interface types (e.g. IASStringable) for replacement)
-     */
-    private String instrumentDescriptorStringlike(String descriptor) {
-        for (InstrumentationStrategy is : this.instrumentation) {
-            descriptor = is.instrumentDescForIASCall(descriptor);
-        }
-        return descriptor;
-    }
-
-    /**
-     * This instruments the descriptors for normal application classes (uses the actual taintaware classes (e.g. IASString))
-     */
-    private Descriptor instrumentDescriptor(Descriptor descriptor) {
-        for (InstrumentationStrategy is : this.instrumentation) {
-            descriptor = is.instrumentForNormalCall(descriptor);
-        }
-        return descriptor;
-    }
-
-    private String instrumentDescriptor(String descriptor) {
-        return this.instrumentDescriptor(Descriptor.parseDescriptor(descriptor)).toDescriptor();
-    }
-
     private boolean shouldBeInstrumented(String descriptorString) {
-        String instrumented = this.instrumentDescriptorStringlike(descriptorString);
+        String instrumented = this.instrumentationHelper.instrumentDescForIASCall(descriptorString);
         return !instrumented.equals(descriptorString);
     }
 

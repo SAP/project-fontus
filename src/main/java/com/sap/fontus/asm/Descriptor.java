@@ -29,7 +29,7 @@ public class Descriptor {
         this.returnType = returnType.getDescriptor();
     }
 
-    private static String replaceSuffix(String s, String from, String to) {
+    public static String replaceSuffix(String s, String from, String to) {
         if (s.endsWith(from)) {
             int lIdx = s.lastIndexOf(from);
             assert lIdx != -1;
@@ -180,18 +180,6 @@ public class Descriptor {
 //        }
 //
 //        return new Descriptor(out, returnType.toString());
-    }
-
-    public static String getSignature(Method m) {
-        // Hacky but better than generating it by hand
-        try {
-            Method getGenericSignature = Method.class.getDeclaredMethod("getGenericSignature");
-            getGenericSignature.setAccessible(true);
-            return (String) getGenericSignature.invoke(m);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            e.printStackTrace();
-            throw new UnsupportedOperationException("Cannot generate signature, because Method.getGenericSignature is not available");
-        }
     }
 
     public static Descriptor parseMethod(Method m) {

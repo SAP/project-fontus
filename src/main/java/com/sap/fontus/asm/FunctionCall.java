@@ -6,7 +6,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sap.fontus.Constants;
+import com.sap.fontus.utils.MethodUtils;
 import com.sap.fontus.utils.Utils;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
@@ -69,6 +71,10 @@ public class FunctionCall {
         return new FunctionCall(opcode, Utils.dotToSlash(method.getDeclaringClass().getName()), method.getName(), descriptor, method.getDeclaringClass().isInterface());
     }
 
+    public static FunctionCall fromHandle(Handle handle) {
+        return new FunctionCall(MethodUtils.tagToOpcode(handle.getTag()), handle.getOwner(), handle.getName(), handle.getDesc(), handle.isInterface());
+    }
+
     public static FunctionCall fromConstructor(Constructor<?> constructor) {
         String descriptor = Type.getType(constructor).getDescriptor();
         return new FunctionCall(Opcodes.INVOKESPECIAL, Utils.dotToSlash(constructor.getDeclaringClass().getName()), Constants.Init, descriptor, constructor.getDeclaringClass().isInterface());
@@ -103,6 +109,16 @@ public class FunctionCall {
 
     public boolean isInterface() {
         return this.isInterface;
+    }
+
+    @JsonIgnore
+    public boolean isInstanceMethod() {
+        return this.getOpcode() == Opcodes.INVOKESPECIAL || this.getOpcode() == Opcodes.INVOKEVIRTUAL || this.getOpcode() == Opcodes.INVOKEINTERFACE;
+    }
+
+    @JsonIgnore
+    public boolean isConstructor() {
+        return this.getOpcode() == Opcodes.INVOKESPECIAL && "<init>".equals(this.getName());
     }
 
     @Override

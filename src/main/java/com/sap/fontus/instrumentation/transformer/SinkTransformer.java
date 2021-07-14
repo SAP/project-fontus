@@ -16,10 +16,12 @@ public class SinkTransformer implements ParameterTransformation {
 
     private final Sink sink;
     private final TaintStringConfig config;
+    private final int usedLocalVars;
 
-    public SinkTransformer(Sink sink, TaintStringConfig configuration) {
+    public SinkTransformer(Sink sink, TaintStringConfig configuration, int usedLocalVars) {
         this.sink = sink;
         this.config = configuration;
+        this.usedLocalVars = usedLocalVars;
     }
 
     @Override
@@ -38,7 +40,15 @@ public class SinkTransformer implements ParameterTransformation {
             String sinkFunction = String.format("%s.%s%s", this.sink.getFunction().getOwner(), this.sink.getFunction().getName(), this.sink.getFunction().getDescriptor());
             String sinkName = this.sink.getName();
 
+            int size = this.sink.getFunction().getParsedDescriptor().getParameters().stream().mapToInt((param) -> Type.getType(param).getSize()).sum();
+
             MethodVisitor originalVisitor = mv.getParent();
+            if (this.sink.getFunction().isInstanceMethod()) {
+                originalVisitor.visitVarInsn(Type.getObjectType(this.sink.getFunction().getOwner()).getOpcode(Opcodes.ILOAD), size + this.usedLocalVars);
+            } else {
+                originalVisitor.visitInsn(Opcodes.ACONST_NULL);
+            }
+
             originalVisitor.visitLdcInsn(sinkFunction);
             originalVisitor.visitLdcInsn(sinkName);
             originalVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TaintHandlerQN, Constants.TaintHandlerCheckTaintName, Constants.TaintHandlerCheckTaintDesc, false);

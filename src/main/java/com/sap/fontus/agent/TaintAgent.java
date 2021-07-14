@@ -15,6 +15,11 @@ public class TaintAgent {
     public static void premain(String args, Instrumentation inst) {
         instrumentation = inst;
         Configuration.parseAgent(args);
+
+        if (Configuration.getConfiguration().isShowWelcomeMessage()) {
+            System.out.println("Starting application with Fontus Tainting!");
+        }
+
         transformer = new TaintingTransformer(Configuration.getConfiguration());
         inst.addTransformer(transformer);
     }

@@ -8,6 +8,8 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.sap.fontus.asm.Descriptor.replaceSuffix;
+
 public abstract class AbstractInstrumentation implements InstrumentationStrategy {
     private final Pattern qnMatcher;
     protected final String origDesc;
@@ -43,6 +45,11 @@ public abstract class AbstractInstrumentation implements InstrumentationStrategy
     }
 
     @Override
+    public String uninstrumentNormalCall(String typeDescriptor) {
+        return replaceSuffix(typeDescriptor, this.taintedDesc, this.origDesc);
+    }
+
+    @Override
     public String instrumentQN(String qn) {
         return this.qnMatcher.matcher(qn).replaceAll(Matcher.quoteReplacement(this.taintedQN));
     }
@@ -63,6 +70,11 @@ public abstract class AbstractInstrumentation implements InstrumentationStrategy
     @Override
     public boolean handlesType(String descriptor) {
         return descriptor.endsWith(this.origDesc);
+    }
+
+    @Override
+    public boolean isInstrumented(String descriptor) {
+        return descriptor.endsWith(this.taintedDesc);
     }
 
     @Override

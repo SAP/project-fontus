@@ -12,7 +12,7 @@ public final class InstrumentationHelper {
     private static InstrumentationHelper INSTANCE;
 
     public static InstrumentationHelper getInstance(TaintStringConfig configuration) {
-        if(INSTANCE == null) {
+        if (INSTANCE == null) {
             INSTANCE = new InstrumentationHelper(configuration);
         }
         return INSTANCE;
@@ -34,20 +34,46 @@ public final class InstrumentationHelper {
         String newQN = qn;
         for (InstrumentationStrategy is : this.strategies) {
             newQN = is.instrumentQN(newQN);
+            if (!qn.equals(newQN)) {
+                break;
+            }
         }
         return newQN;
     }
 
+
+    /**
+     * This instruments the descriptors for normal application classes (uses the actual taintaware classes (e.g. IASString))
+     */
     public String instrumentForNormalCall(String desc) {
         return this.instrumentForNormalCall(Descriptor.parseDescriptor(desc)).toDescriptor();
     }
 
+    /**
+     * This instruments the descriptors for normal application classes (uses the actual taintaware classes (e.g. IASString))
+     */
     public Descriptor instrumentForNormalCall(Descriptor desc) {
         Descriptor newDesc = desc;
         for (InstrumentationStrategy is : this.strategies) {
             newDesc = is.instrumentForNormalCall(newDesc);
         }
         return newDesc;
+    }
+
+    public String uninstrumentNormalCall(String typeDescriptor) {
+        String newDesc = typeDescriptor;
+        for (InstrumentationStrategy is : this.strategies) {
+            newDesc = is.uninstrumentNormalCall(newDesc);
+        }
+        return newDesc;
+    }
+
+    public Descriptor uninstrumentNormalCall(Descriptor typeDescriptor) {
+        String newDesc = typeDescriptor.toDescriptor();
+        for (InstrumentationStrategy is : this.strategies) {
+            newDesc = is.uninstrumentNormalCall(newDesc);
+        }
+        return Descriptor.parseDescriptor(newDesc);
     }
 
     public String instrumentDescForIASCall(String desc) {
@@ -69,9 +95,18 @@ public final class InstrumentationHelper {
         return clazzName;
     }
 
-    public boolean canHandleType(String type) {
+    public boolean canHandleType(String typeDescriptor) {
         for (InstrumentationStrategy is : this.strategies) {
-            if (is.handlesType(type)) {
+            if (is.handlesType(typeDescriptor)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isInstrumented(String descriptor) {
+        for (InstrumentationStrategy is : this.strategies) {
+            if (is.isInstrumented(descriptor)) {
                 return true;
             }
         }

@@ -3,9 +3,11 @@ package com.sap.fontus.instrumentation;
 import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.utils.MethodUtils;
 import com.sap.fontus.utils.Utils;
+import org.objectweb.asm.Type;
 
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Optional;
 
 public class Method {
     private final int access;
@@ -16,10 +18,10 @@ public class Method {
     private final String[] exceptions;
     private final boolean ownerIsInterface;
 
-    public Method(int access, String owner, String name, String descriptor, String signature, String[] exceptions, boolean ownerIsInterface) {
+    public Method(int access, String owner, String internalName, String descriptor, String signature, String[] exceptions, boolean ownerIsInterface) {
         this.access = access;
         this.owner = owner;
-        this.name = name;
+        this.name = internalName;
         this.descriptor = descriptor;
         this.signature = signature;
         this.exceptions = exceptions;
@@ -42,6 +44,14 @@ public class Method {
         return descriptor;
     }
 
+    public Descriptor getParsedDescriptor() {
+        return Descriptor.parseDescriptor(descriptor);
+    }
+
+    public Type getDescriptorType() {
+        return Type.getMethodType(descriptor);
+    }
+
     public String getSignature() {
         return signature;
     }
@@ -60,10 +70,7 @@ public class Method {
     }
 
     public static Method from(java.lang.reflect.Method method) {
-        String signature = null;
-        if (MethodUtils.hasGenericInformation(method)) {
-            signature = Descriptor.getSignature(method);
-        }
+        String signature = MethodUtils.getSignature(method).orElse(null);
         return new Method(method.getModifiers(), Utils.dotToSlash(method.getDeclaringClass().getName()), method.getName(), org.objectweb.asm.commons.Method.getMethod(method).getDescriptor(), signature, Arrays.stream(method.getExceptionTypes()).map(Class::getName).map(Utils::dotToSlash).toArray(String[]::new), method.getDeclaringClass().isInterface());
     }
 }

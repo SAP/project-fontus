@@ -7,7 +7,9 @@ import com.sap.fontus.instrumentation.Instrumenter;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
+import org.mutabilitydetector.asm.NonClassloadingClassWriter;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
@@ -66,6 +68,7 @@ class TaintingTransformer implements ClassFileTransformer {
             VerboseLogger.saveIfVerbose(className, outArray);
             return outArray;
         } catch (Exception e) {
+            e.printStackTrace();
             logger.error("Instrumentation failed for {}. Reason: {}", className, e.getMessage());
         }
         return null;
@@ -80,7 +83,7 @@ class TaintingTransformer implements ClassFileTransformer {
         try {
             outArray = this.instrumenter.instrumentClass(classfileBuffer, new ClassResolver(loader), this.config, loader, false);
         } catch (IllegalArgumentException ex) {
-            if (ex.getMessage().equals("JSR/RET are not supported with computeFrames option")) {
+            if ("JSR/RET are not supported with computeFrames option".equals(ex.getMessage())) {
                 outArray = this.instrumenter.instrumentClass(classfileBuffer, new ClassResolver(loader), this.config, loader, true);
             } else {
                 throw ex;

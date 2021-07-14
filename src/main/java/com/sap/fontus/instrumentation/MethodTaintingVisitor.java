@@ -7,7 +7,6 @@ import com.sap.fontus.config.Sink;
 import com.sap.fontus.config.Source;
 import com.sap.fontus.config.TaintStringConfig;
 import com.sap.fontus.instrumentation.strategies.InstrumentationHelper;
-import com.sap.fontus.instrumentation.strategies.InstrumentationStrategy;
 import com.sap.fontus.instrumentation.strategies.method.*;
 import com.sap.fontus.instrumentation.transformer.*;
 import com.sap.fontus.taintaware.shared.IASLookupUtils;
@@ -42,12 +41,13 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
      */
     private final HashMap<ProxiedDynamicFunctionEntry, Runnable> dynProxies;
     private final String ownerSuperClass;
+    private final List<LambdaCall> jdkLambdaMethodProxies;
 
     private int used;
     private int usedAfterInjection;
 
     private final List<MethodInstrumentationStrategy> methodInstrumentation = new ArrayList<>(4);
-    private final List<InstrumentationStrategy> instrumentation;
+    private final InstrumentationHelper instrumentationHelper;
 
     private final Configuration config;
 
@@ -61,8 +61,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
      * The owner should be the interface
      */
     private final Map<FunctionCall, Runnable> methodInterfaceProxies;
+    private final ClassLoader loader;
 
-    public MethodTaintingVisitor(int acc, String owner, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver, Configuration config, boolean implementsInvocationHandler, List<InstrumentationStrategy> instrumentation, CombinedExcludedLookup combinedExcludedLookup, List<DynamicCall> bootstrapMethods, String ownerSuperClass) {
+    public MethodTaintingVisitor(int acc, String owner, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver, Configuration config, boolean implementsInvocationHandler, InstrumentationHelper instrumentationHelper, CombinedExcludedLookup combinedExcludedLookup, List<DynamicCall> bootstrapMethods, List<LambdaCall> jdkLambdaMethodProxies, String ownerSuperClass, ClassLoader loader) {
         super(Opcodes.ASM7, methodVisitor);
         this.resolver = resolver;
         this.owner = owner;
@@ -74,11 +75,13 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         if ((acc & Opcodes.ACC_STATIC) != 0) this.used--; // no this
         this.name = name;
         this.methodDescriptor = methodDescriptor;
-        this.instrumentation = instrumentation;
+        this.instrumentationHelper = instrumentationHelper;
         this.implementsInvocationHandler = implementsInvocationHandler;
         this.methodProxies = new HashMap<>();
         this.methodInterfaceProxies = new HashMap<>();
         this.dynProxies = new HashMap<>();
+        this.jdkLambdaMethodProxies = jdkLambdaMethodProxies;
+        this.loader = loader;
         this.ownerSuperClass = ownerSuperClass;
         this.fillProxies();
         this.fillInterfaceProxies();
@@ -178,6 +181,10 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "getDeclaredConstructor", "(Ljava/lang/Class;[Ljava/lang/Class;)Ljava/lang/reflect/Constructor;", false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/reflect/Constructor", "newInstance", "([Ljava/lang/Object;)Ljava/lang/Object;", false),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "newInstance", "(Ljava/lang/reflect/Constructor;[Ljava/lang/Object;)Ljava/lang/Object;", false));
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;", false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "getResourceAsStream", "(Ljava/lang/Class;Lcom/sap/fontus/taintaware/shared/IASStringable;)Ljava/io/InputStream;", false));
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/ClassLoader", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;", false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "getResourceAsStream", "(Ljava/lang/ClassLoader;Lcom/sap/fontus/taintaware/shared/IASStringable;)Ljava/io/InputStream;", false));
     }
 
     private void fillInterfaceProxies() {
@@ -290,17 +297,14 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             return;
         }
 
-        Descriptor desc = Descriptor.parseDescriptor(descriptor);
-        for (InstrumentationStrategy s : this.instrumentation) {
-            desc = s.instrumentForNormalCall(desc);
-        }
+        String desc = this.instrumentationHelper.instrumentForNormalCall(descriptor);
 
-        if (desc.toDescriptor().equals(descriptor)) {
-            logger.info("Skipping invoke [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, desc.toDescriptor());
+        if (desc.equals(descriptor)) {
+            logger.info("Skipping invoke [{}] {}.{}{}", Utils.opcodeToString(opcode), owner, name, desc);
         } else {
-            logger.info("Rewriting invoke containing String-like type [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, desc.toDescriptor());
+            logger.info("Rewriting invoke containing String-like type [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(opcode), owner, name, descriptor, owner, name, desc);
         }
-        super.visitMethodInsn(opcode, owner, name, desc.toDescriptor(), isInterface);
+        super.visitMethodInsn(opcode, owner, name, desc, isInterface);
     }
 
     private void storeArgumentsToLocals(FunctionCall call) {
@@ -494,7 +498,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         Sink sink = this.config.getSinkConfig().getSinkForFunction(call);
         if (sink != null) {
             logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-            SinkTransformer t = new SinkTransformer(sink, this.stringConfig);
+            SinkTransformer t = new SinkTransformer(sink, this.stringConfig, this.used);
             transformer.addParameterTransformation(t);
         }
 
@@ -517,11 +521,8 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         // Instrument descriptor if source/sink is not a JDK class
         if (!isExcluded) {
-            Descriptor desc = Descriptor.parseDescriptor(call.getDescriptor());
-            for (InstrumentationStrategy s : this.instrumentation) {
-                desc = s.instrumentForNormalCall(desc);
-            }
-            call = new FunctionCall(call.getOpcode(), call.getOwner(), call.getName(), desc.toDescriptor(), call.isInterface());
+            String desc = this.instrumentationHelper.instrumentForNormalCall(call.getDescriptor());
+            call = new FunctionCall(call.getOpcode(), call.getOwner(), call.getName(), desc, call.isInterface());
         }
         // Make the call
         this.visitMethodInsn(call);
@@ -613,21 +614,22 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         if ("java/lang/invoke/LambdaMetafactory".equals(bootstrapMethodHandle.getOwner()) &&
                 ("metafactory".equals(bootstrapMethodHandle.getName()) || "altMetafactory".equals(bootstrapMethodHandle.getName()))) {
-            MethodTaintingUtils.invokeVisitLambdaCall(this.stringConfig, this.getParentVisitor(), this.methodInstrumentation, name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
+            Handle realFunction = (Handle) bootstrapMethodArguments[1];
+            LambdaCall call = new LambdaCall(Type.getMethodType(descriptor).getReturnType(), realFunction);
+
+            MethodTaintingUtils.invokeVisitLambdaCall(this.stringConfig, this.getParentVisitor(), this.methodInstrumentation, call.getProxyDescriptor(this.loader, this.instrumentationHelper), call, this.owner, name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
+
+            if (MethodTaintingUtils.needsLambdaProxy(descriptor, realFunction, (Type) bootstrapMethodArguments[2], InstrumentationHelper.getInstance(this.stringConfig))) {
+                this.jdkLambdaMethodProxies.add(call);
+            }
         } else if ("makeConcatWithConstants".equals(name)) {
             this.rewriteConcatWithConstants(name, descriptor, bootstrapMethodArguments);
         } else {
-            Descriptor desc = Descriptor.parseDescriptor(descriptor);
-            for (InstrumentationStrategy s : this.instrumentation) {
-                desc = s.instrumentForNormalCall(desc);
-            }
+            String desc = this.instrumentationHelper.instrumentForNormalCall(descriptor);
 
-            Descriptor instrumentedBootstrapDesc = Descriptor.parseDescriptor(bootstrapMethodHandle.getDesc());
-            for (InstrumentationStrategy s : this.instrumentation) {
-                instrumentedBootstrapDesc = s.instrumentForNormalCall(instrumentedBootstrapDesc);
-            }
+            String instrumentedBootstrapDesc = this.instrumentationHelper.instrumentForNormalCall(bootstrapMethodHandle.getDesc());
 
-            Handle instrumentedOriginalHandle = new Handle(bootstrapMethodHandle.getTag(), bootstrapMethodHandle.getOwner(), bootstrapMethodHandle.getName(), instrumentedBootstrapDesc.toDescriptor(), bootstrapMethodHandle.isInterface());
+            Handle instrumentedOriginalHandle = new Handle(bootstrapMethodHandle.getTag(), bootstrapMethodHandle.getOwner(), bootstrapMethodHandle.getName(), instrumentedBootstrapDesc, bootstrapMethodHandle.isInterface());
 
             Handle proxyHandle = new Handle(bootstrapMethodHandle.getTag(), this.owner, "$fontus$" + bootstrapMethodHandle.getName() + bootstrapMethodHandle.hashCode(), bootstrapMethodHandle.getDesc(), bootstrapMethodHandle.isInterface());
 
@@ -636,7 +638,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             this.bootstrapMethods.add(dynamicCall);
 
             logger.info("invokeDynamic {}{}", name, descriptor);
-            super.visitInvokeDynamicInsn(name, desc.toDescriptor(), proxyHandle, bootstrapMethodArguments);
+            super.visitInvokeDynamicInsn(name, desc, proxyHandle, bootstrapMethodArguments);
         }
     }
 
@@ -797,13 +799,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
     @Override
     public void visitMultiANewArrayInsn(String descriptor, int numDimensions) {
-        String instrumented = descriptor;
-        for (InstrumentationStrategy instrumentationStrategy : this.instrumentation) {
-            instrumented = instrumentationStrategy.instrumentQN(descriptor);
-            if (!instrumented.equals(descriptor)) {
-                break;
-            }
-        }
+        String instrumented = this.instrumentationHelper.instrumentQN(descriptor);
         super.visitMultiANewArrayInsn(instrumented, numDimensions);
     }
 

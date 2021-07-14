@@ -49,7 +49,7 @@ public class MethodParameterTransformer {
     }
 
     public int getExtraStackSlots() {
-        return Utils.getArgumentsStackSize(this.descriptor.toDescriptor());
+        return Utils.getArgumentsStackSize(this.descriptor.toDescriptor()) + (this.function.isInstanceMethod() ? Type.getObjectType(this.function.getOwner()).getSize() : 0);
     }
 
     public boolean needsTransformation() {
@@ -82,8 +82,36 @@ public class MethodParameterTransformer {
         Stack<Runnable> loadStack = new Stack<>();
         Stack<String> params = this.descriptor.getParameterStack();
 
-        // The current local variable slot
         int n = nUsedLocalVariables;
+
+        if (this.function.isInstanceMethod()) {
+            for (int i = params.size() - 1; i >= 0; i--) {
+                String p = params.pop();
+                Type t = Type.getType(p);
+
+                this.visitor.visitVarInsn(t.getOpcode(Opcodes.ISTORE), n);
+                n += t.getSize();
+            }
+
+            int ownerN = n;
+            this.visitor.visitInsn(Opcodes.DUP);
+            this.visitor.visitVarInsn(Type.getObjectType(this.function.getOwner()).getOpcode(Opcodes.ISTORE), ownerN);
+
+            List<String> paramList = new ArrayList<>(this.descriptor.getParameters());
+
+            for (int i = 0; i < paramList.size(); i++) {
+                String p = paramList.get(i);
+                Type t = Type.getType(p);
+
+                n -= t.getSize();
+
+                this.visitor.visitVarInsn(t.getOpcode(Opcodes.ILOAD), n);
+            }
+        }
+
+        params = this.descriptor.getParameterStack();
+        // The current local variable slot
+        n = nUsedLocalVariables;
         // The current method parameter, starting at the end (on top of the stack)
         int index = params.size() - 1;
         // With zero parameters, the loop is skipped
