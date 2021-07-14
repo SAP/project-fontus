@@ -14,7 +14,7 @@ public class SanitizationAbort extends Abort {
     private static List<IASStringable> alreadySanitized = new ArrayList<>();
 
     @Override
-    public void abort(IASTaintAware taintAware, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
+    public void abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
         IASStringable taintedIASString = taintAware.toIASString();
         String taintedString = taintedIASString.getString();
         List<IASTaintRange> ranges = taintAware.toIASString().getTaintRanges();
