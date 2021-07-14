@@ -88,6 +88,7 @@ public class FunctionCall {
         return this.name;
     }
 
+    @JsonIgnore
     public String getFqn() {
         return getOwner() + "." + getName() + getDescriptor();
     }
