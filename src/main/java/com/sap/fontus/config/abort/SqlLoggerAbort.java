@@ -17,7 +17,6 @@ public class SqlLoggerAbort extends Abort{
 
     @Override
     public void abort(IASTaintAware taintAware, String sink, String category, List<StackTraceElement> stackTrace) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, InterruptedException, IOException {
-
         IASStringable taintedString = taintAware.toIASString();
         Abort sql_checker_abort = new Abort(sink, category, taintedString.getString(), taintedString.getTaintRanges(), convertStackTrace(stackTrace));
 

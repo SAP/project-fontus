@@ -308,7 +308,7 @@
     <sinkConfig>
         <sinks>
             <sink>
-                <name>executeQuery</name>
+                <name>executeQueryI</name>
                 <function>
                     <opcode>185</opcode>
                     <owner>java/sql/Statement</owner>
@@ -322,6 +322,64 @@
                     </parameter>
                 </parameters>
             </sink>
+            <!-- Fontus Sundew Changes -->
+            <sink>
+                <name>executeQueryII</name>
+                <function>
+                    <opcode>185</opcode>
+                    <owner>java/sql/PreparedStatement</owner>
+                    <name>executeQuery</name>
+                    <descriptor>()Ljava/sql/ResultSet;</descriptor>
+                    <interface>true</interface>
+                </function>
+            </sink>
+            <sink>
+                <name>executeQueryIII</name>
+                <function>
+                    <opcode>185</opcode>
+                    <owner>java/sql/PreparedStatement</owner>
+                    <name>executeQuery</name>
+                    <descriptor>(Ljava/lang/String;)Ljava/sql/ResultSet;</descriptor>
+                    <interface>true</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>0</index>
+                    </parameter>
+                </parameters>
+            </sink>
+            <sink>
+                <name>querySetString</name>
+                <function>
+                    <opcode>185</opcode>
+                    <owner>java/sql/PreparedStatement</owner>
+                    <name>setString</name>
+                    <descriptor>(ILjava/lang/String;)V</descriptor>
+                    <interface>true</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>1</index>
+                    </parameter>
+                </parameters>
+            </sink>
+<!--        Not working currently : Reason Unknown-->
+<!--            <sink>-->
+<!--                <name>querySetInt</name>-->
+<!--                <function>-->
+<!--                    <opcode>185</opcode>-->
+<!--                    <owner>java/sql/PreparedStatement</owner>-->
+<!--                    <name>setInt</name>-->
+<!--                    <descriptor>(II)V</descriptor>-->
+<!--                    <interface>true</interface>-->
+<!--                </function>-->
+<!--                <parameters>-->
+<!--                    <parameter>-->
+<!--                        <index>1</index>-->
+<!--                    </parameter>-->
+<!--                </parameters>-->
+<!--            </sink>-->
+            <!-- End of changes -->
             <sink>
                 <name>executeUpdateI</name>
                 <function>
@@ -694,36 +752,36 @@
                     </parameter>
                 </parameters>
             </sink>
-            <sink>
-                <name>write-1091225008</name>
-                <function>
-                    <opcode>182</opcode>
-                    <owner>java/io/Writer</owner>
-                    <name>write</name>
-                    <descriptor>(Ljava/lang/String;)V</descriptor>
-                    <interface>false</interface>
-                </function>
-                <parameters>
-                    <parameter>
-                        <index>0</index>
-                    </parameter>
-                </parameters>
-            </sink>
-            <sink>
-                <name>write-1091225008</name>
-                <function>
-                    <opcode>182</opcode>
-                    <owner>java/io/Writer</owner>
-                    <name>write</name>
-                    <descriptor>(Ljava/lang/String;II)V</descriptor>
-                    <interface>false</interface>
-                </function>
-                <parameters>
-                    <parameter>
-                        <index>0</index>
-                    </parameter>
-                </parameters>
-            </sink>
+<!--            <sink>-->
+<!--                <name>write-1091225008</name>-->
+<!--                <function>-->
+<!--                    <opcode>182</opcode>-->
+<!--                    <owner>java/io/Writer</owner>-->
+<!--                    <name>write</name>-->
+<!--                    <descriptor>(Ljava/lang/String;)V</descriptor>-->
+<!--                    <interface>false</interface>-->
+<!--                </function>-->
+<!--                <parameters>-->
+<!--                    <parameter>-->
+<!--                        <index>0</index>-->
+<!--                    </parameter>-->
+<!--                </parameters>-->
+<!--            </sink>-->
+<!--            <sink>-->
+<!--                <name>write-1091225008</name>-->
+<!--                <function>-->
+<!--                    <opcode>182</opcode>-->
+<!--                    <owner>java/io/Writer</owner>-->
+<!--                    <name>write</name>-->
+<!--                    <descriptor>(Ljava/lang/String;II)V</descriptor>-->
+<!--                    <interface>false</interface>-->
+<!--                </function>-->
+<!--                <parameters>-->
+<!--                    <parameter>-->
+<!--                        <index>0</index>-->
+<!--                    </parameter>-->
+<!--                </parameters>-->
+<!--            </sink>-->
         </sinks>
     </sinkConfig>
     <converters>

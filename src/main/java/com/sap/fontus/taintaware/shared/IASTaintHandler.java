@@ -20,6 +20,10 @@ public class IASTaintHandler {
 
     public static Void handleTaint(IASTaintAware taintAware, String sink, String category) throws InterruptedException, NoSuchMethodException, IOException, IllegalAccessException, InvocationTargetException {
         boolean isTainted = taintAware.isTainted();
+//        System.out.println("isTainted : " + isTainted);
+//        System.out.println("taintaware : " + taintAware);
+//        System.out.println("sink : " + sink);
+//        System.out.println("stackTrace : " + Arrays.toString(Thread.currentThread().getStackTrace()));
 
         if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.recordTaintCheck(isTainted);

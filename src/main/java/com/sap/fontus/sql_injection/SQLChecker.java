@@ -3,6 +3,7 @@ package com.sap.fontus.sql_injection;
 import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.parser.*;
 import com.alibaba.druid.DbType;
+import com.sap.fontus.agent.TaintAgent;
 import com.sap.fontus.utils.NetworkRequestObject;
 import com.sap.fontus.utils.NetworkResponseObject;
 import org.json.JSONArray;
@@ -10,6 +11,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
@@ -19,12 +21,12 @@ import java.util.regex.Pattern;
 
 public class SQLChecker {
 
-    private static JSONArray getSqlInjectionInfo(List<SqlLexerToken> tokens, JSONArray taint_ranges, String sql_string){
+    private static JSONArray getSqlInjectionInfo(List<SqlLexerToken> tokens, JSONArray taint_ranges, int addl_pos){
         JSONArray injection_info_arr = new JSONArray();
         for(int i=0; i<taint_ranges.length(); i++){
             JSONObject taint_range = taint_ranges.getJSONObject(i);
-            int taint_start = taint_range.getInt("start");
-            int taint_end = taint_range.getInt("end");
+            int taint_start = addl_pos + taint_range.getInt("start");
+            int taint_end = addl_pos + taint_range.getInt("end");
             for(SqlLexerToken token: tokens){
                 if(checkBorders(token,taint_start,taint_end) || startsComment(token,taint_start,taint_end)){
                     JSONObject injection_info_obj = new JSONObject();
@@ -51,6 +53,7 @@ public class SQLChecker {
     }
 
     private static List<SqlLexerToken> getLexerTokens(String sql_query) {
+        System.out.println("SQL Query : " + sql_query);
         List<SqlLexerToken> lexer_tokens = new ArrayList<>();
 
         try {
@@ -104,22 +107,37 @@ public class SQLChecker {
 
     public static void reportTaintedString(String tainted_string) throws RuntimeException, IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InterruptedException {
         JSONObject json_obj = new JSONObject(tainted_string);
-
-        List<SqlLexerToken> token_ranges = getLexerTokens(json_obj.getString("payload"));
-        JSONArray taint_ranges = json_obj.getJSONArray("ranges");
         String sql_string = json_obj.getString("payload");
+        List<SqlLexerToken> token_ranges = getLexerTokens(sql_string);
+        JSONArray taint_ranges = json_obj.getJSONArray("ranges");
+        int addl_pos = 0;
 
-        JSONArray json_array = getSqlInjectionInfo(token_ranges,taint_ranges,sql_string);
+        JSONArray json_array = getSqlInjectionInfo(token_ranges,taint_ranges,addl_pos);
         System.out.println("checkTaintedString : " + json_array.toString());
         NetworkResponseObject.setResponseMessage(new NetworkRequestObject(),!json_array.isEmpty());
     }
 
     public static void logTaintedString(String tainted_string) throws RuntimeException, IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InterruptedException {
         JSONObject json_obj = new JSONObject(tainted_string);
-        List<SqlLexerToken> token_ranges = getLexerTokens(json_obj.getString("payload"));
-        JSONArray taint_ranges = json_obj.getJSONArray("ranges");
         String sql_string = json_obj.getString("payload");
-        JSONArray json_array = getSqlInjectionInfo(token_ranges,taint_ranges,sql_string);
+        int addl_pos = 0;
+
+        // Sql String template (temporary fix) if parameters are bound to the original string
+        if(json_obj.getString("sink").equals("java/sql/PreparedStatement.setString(ILjava/lang/String;)V")){
+            sql_string = "SELECT * FROM table1 WHERE username = '" + sql_string + "'";
+            addl_pos = 39;
+        }
+
+        // Sql Int template (temporary fix) if parameters are bound to the original string
+        if(json_obj.getString("sink").equals("java/sql/PreparedStatement.setInt(II)V")){
+            sql_string = "SELECT * FROM table1 WHERE id = " + sql_string + "";
+            addl_pos = 32;
+        }
+
+        List<SqlLexerToken> token_ranges = getLexerTokens(sql_string);
+        JSONArray taint_ranges = json_obj.getJSONArray("ranges");
+
+        JSONArray json_array = getSqlInjectionInfo(token_ranges,taint_ranges,addl_pos);
         System.out.println("logTaintedString : " + json_array.toString());
         if(!json_array.isEmpty()){
             Logger logger = Logger.getLogger("SqlInjectionLog");
@@ -138,13 +156,13 @@ public class SQLChecker {
             } catch (SecurityException | IOException e) {
                 e.printStackTrace();
             }
-            throw new InterruptedException("SQL Injection Error");
+            // throw new InterruptedException("SQL Injection Error");
         }
     }
 
     public static void main(String[] args) {
         //String sqlString = "insert into table1 values      (data1, data2)";
-        String sqlString = "select * from table1 where id = 3";
+        String sqlString = "SELECT * FROM table1 WHERE username = 'x' or 1=1#'";
 //        SQLStatementParser parser = SQLParserUtils.createSQLStatementParser(sqlString, DbType.mysql);
 //        parser.parseStatementList();
 //
