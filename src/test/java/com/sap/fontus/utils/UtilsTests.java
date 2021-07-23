@@ -4,13 +4,13 @@ import com.sap.fontus.Constants;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.config.TaintStringConfig;
+import com.sap.fontus.instrumentation.InstrumentationHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,7 +31,7 @@ class UtilsTests {
     @Test
     void testTypeReplacer() {
         Type t1 = Type.getType(desc);
-        Type t2 = Utils.instrumentType(t1, TAINT_STRING_CONFIG);
+        Type t2 = Utils.instrumentType(t1, new InstrumentationHelper(TAINT_STRING_CONFIG));
 
         assertEquals(expected, t2.getDescriptor(), "Both types shall be equal");
     }
@@ -39,7 +39,7 @@ class UtilsTests {
     @Test
     void testHandleReplacer() {
         Handle h = new Handle(Opcodes.H_INVOKESTATIC, "LambdaTest", "lambda$main$0", desc, false);
-        Handle h2 = Utils.instrumentHandle(h, TAINT_STRING_CONFIG, new ArrayList<>());
+        Handle h2 = Utils.instrumentHandle(h, new InstrumentationHelper(TAINT_STRING_CONFIG));
         assertEquals(expected, h2.getDesc(), "Descriptors shall be equal");
     }
 }

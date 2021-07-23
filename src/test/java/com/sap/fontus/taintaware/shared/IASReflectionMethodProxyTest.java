@@ -9,6 +9,7 @@ import outerpackage.ApplicationClass;
 
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;

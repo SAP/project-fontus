@@ -1,7 +1,7 @@
 package com.sap.fontus.taintaware.shared;
 
 import com.sap.fontus.config.Configuration;
-import com.sap.fontus.instrumentation.strategies.InstrumentationHelper;
+import com.sap.fontus.instrumentation.InstrumentationHelper;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.Type;
 
@@ -13,21 +13,21 @@ import static com.sap.fontus.utils.ConversionUtils.*;
 
 public class IASLookupUtils {
     private static final CombinedExcludedLookup lookup = new CombinedExcludedLookup();
+    private static final InstrumentationHelper instrumentationHelper = new InstrumentationHelper(Configuration.getConfiguration().getTaintStringConfig());
 
     public static boolean isJdkOrExcluded(Class cls) {
         return lookup.isJdkClass(cls) || lookup.isPackageExcluded(cls);
     }
 
     public static MethodHandle convertForJdk(MethodHandle methodHandle) {
-        InstrumentationHelper helper = InstrumentationHelper.getInstance(Configuration.getConfiguration().getTaintStringConfig());
         for (int i = 0; i < methodHandle.type().parameterCount(); i++) {
             Class<?> param = methodHandle.type().parameterType(i);
-            if (helper.canHandleType(Type.getDescriptor(param))) {
+            if (instrumentationHelper.canHandleType(Type.getDescriptor(param))) {
                 methodHandle = MethodHandles.filterArguments(methodHandle, i, getToOriginalConverter(convertClassToOrig(param)));
             }
         }
         Class<?> returnType = methodHandle.type().returnType();
-        if (helper.canHandleType(Type.getDescriptor(returnType))) {
+        if (instrumentationHelper.canHandleType(Type.getDescriptor(returnType))) {
             methodHandle = MethodHandles.filterReturnValue(methodHandle, getToInstrumentedConverter(convertClassToOrig(returnType)));
         }
         return methodHandle;

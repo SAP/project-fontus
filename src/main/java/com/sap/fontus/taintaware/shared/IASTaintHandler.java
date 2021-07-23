@@ -9,13 +9,14 @@ import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.sap.fontus.utils.ClassTraverser.getAllFields;
 
 public class IASTaintHandler {
     public static CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(ClassLoader.getSystemClassLoader());
 
-    public static Void handleTaint(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName) {
+    public static IASTaintAware handleTaint(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName) {
         boolean isTainted = taintAware.isTainted();
 
         if (Configuration.getConfiguration().collectStats()) {
@@ -39,24 +40,24 @@ public class IASTaintHandler {
         return null;
     }
 
-    private static Void setTaint(Object taintAware, int sourceId) {
+    private static IASTaintAware setTaint(IASTaintAware taintAware, int sourceId) {
         IASTaintSource source = IASTaintSourceRegistry.getInstance().get(sourceId);
-        ((IASTaintAware) taintAware).setTaint(source);
-        return null;
+        taintAware.setTaint(source);
+        return taintAware;
     }
 
-    public static Object traverseObject(Object object, Function<IASTaintAware, Void> atomicHandler) {
+    public static Object traverseObject(Object object, Function<IASTaintAware, IASTaintAware> atomicHandler) {
         List<Object> visited = new ArrayList<>();
-        return traverseObject(object, new Function<Object, Void>() {
+        return traverseObject(object, new Function<Object, Object>() {
             @Override
-            public Void apply(Object o) {
+            public Object apply(Object o) {
                 traverseObject(o, this, visited, atomicHandler);
                 return null;
             }
         }, visited, atomicHandler);
     }
 
-    public static Object traverseObject(Object object, Function<Object, Void> traverser, List<Object> visited, Function<IASTaintAware, Void> atomicHandler) {
+    public static Object traverseObject(Object object, Function<Object, Object> traverser, List<Object> visited, Function<IASTaintAware, IASTaintAware> atomicHandler) {
         if (object == null) {
             return null;
         } else if (visited.contains(object)) {
@@ -68,8 +69,9 @@ public class IASTaintHandler {
 
         boolean isArray = object.getClass().isArray();
         boolean isPrimitive = isArray ? object.getClass().getComponentType().isPrimitive() : object.getClass().isPrimitive();
-        boolean isIterable = Iterable.class.isAssignableFrom(object.getClass());
-        boolean isEnumerate = Enumeration.class.isAssignableFrom(object.getClass());
+//        boolean isIterable = Iterable.class.isAssignableFrom(object.getClass());
+//        boolean isEnumerate = Enumeration.class.isAssignableFrom(object.getClass());
+        boolean isList = List.class.isAssignableFrom(object.getClass());
         boolean isMap = Map.class.isAssignableFrom(object.getClass());
         Class<?> cls = object.getClass();
 
@@ -81,28 +83,34 @@ public class IASTaintHandler {
             atomicHandler.apply((IASTaintAware) object);
         } else if (isArray) {
             Object[] array = (Object[]) object;
-            for (Object o : array) {
-                traverser.apply(o);
+            for (int i = 0; i < array.length; i++) {
+                array[i] = traverser.apply(array[i]);
             }
-        } else if (isIterable) {
-            Iterable<Object> iterable = (Iterable<Object>) object;
-            for (Object o : iterable) {
-                traverser.apply(o);
+        } else if (isList) {
+            List list = (List) object;
+            for (int i = 0; i < list.size(); i++) {
+                list.set(i, traverser.apply(list.get(i)));
             }
-        } else if (isMap) {
+        }
+//        else if (isIterable) {
+//            Iterable<Object> iterable = (Iterable<Object>) object;
+//            for (Object o : iterable) {
+//                traverser.apply(o);
+//            }
+//        }
+        else if (isMap) {
             Map<Object, Object> map = (Map) object;
-            map.forEach((o, o2) -> {
-                traverser.apply(o);
-                traverser.apply(o2);
-            });
-        } else if (isEnumerate) {
-            Enumeration<Object> enumeration = (Enumeration<Object>) object;
-            List<Object> list = Collections.list(enumeration);
-            for (Object o : list) {
-                traverser.apply(o);
-            }
-            object = Collections.enumeration(list);
-        } else if (combinedExcludedLookup.isJdkClass(cls) || combinedExcludedLookup.isAnnotation(cls) || combinedExcludedLookup.isPackageExcluded(cls)) {
+            object = map.entrySet().stream().collect(Collectors.toMap(e -> traverser.apply(e.getKey()), e -> traverser.apply(e.getValue())));
+        }
+//        else if (isEnumerate) {
+//            Enumeration<Object> enumeration = (Enumeration<Object>) object;
+//            List<Object> list = Collections.list(enumeration);
+//            for (Object o : list) {
+//                traverser.apply(o);
+//            }
+//            object = Collections.enumeration(list);
+//        }
+        else if (combinedExcludedLookup.isJdkClass(cls) || combinedExcludedLookup.isAnnotation(cls) || combinedExcludedLookup.isPackageExcluded(cls)) {
             return object;
         } else if (Configuration.getConfiguration().isRecursiveTainting()) {
             List<Field> fields = getAllFields(cls);
@@ -122,8 +130,7 @@ public class IASTaintHandler {
 
     public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName) {
         if (object instanceof IASTaintAware) {
-            handleTaint((IASTaintAware) object, instance, sinkFunction, sinkName);
-            return object;
+            return handleTaint((IASTaintAware) object, instance, sinkFunction, sinkName);
         }
 
         return traverseObject(object, taintAware -> handleTaint(taintAware, instance, sinkFunction, sinkName));

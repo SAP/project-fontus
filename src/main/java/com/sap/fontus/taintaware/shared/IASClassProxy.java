@@ -3,16 +3,17 @@ package com.sap.fontus.taintaware.shared;
 import com.sap.fontus.Constants;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintStringConfig;
-import com.sap.fontus.instrumentation.strategies.InstrumentationHelper;
+import com.sap.fontus.instrumentation.InstrumentationHelper;
 import com.sap.fontus.utils.ReflectionUtils;
 
 public class IASClassProxy {
     private static final TaintStringConfig tsc = new TaintStringConfig(Configuration.getConfiguration().getTaintMethod());
+    private static final InstrumentationHelper instrumentationHelper = new InstrumentationHelper(tsc);
 
     @SuppressWarnings("Since15")
     public static Class<?> forName(IASStringable str) throws ClassNotFoundException {
         String s = str.getString();
-        String clazz = InstrumentationHelper.getInstance(tsc).translateClassName(s);
+        String clazz = instrumentationHelper.translateClassName(s).orElse(s);
 
         // Get caller class classloader
         Class<?> callerClass;
@@ -31,7 +32,7 @@ public class IASClassProxy {
     public static Class<?> forName(IASStringable str, boolean initialize,
                                    ClassLoader loader) throws ClassNotFoundException {
         String s = str.getString();
-        String clazz = InstrumentationHelper.getInstance(tsc).translateClassName(s);
+        String clazz = instrumentationHelper.translateClassName(s).orElse(s);
 
         if(loader == null) {
             // Get caller class classloader

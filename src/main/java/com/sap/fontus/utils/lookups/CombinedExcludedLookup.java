@@ -1,6 +1,7 @@
 package com.sap.fontus.utils.lookups;
 
 import com.sap.fontus.Constants;
+import com.sap.fontus.TaintStringHelper;
 import com.sap.fontus.asm.ClassResolver;
 import com.sap.fontus.utils.Utils;
 
@@ -50,7 +51,7 @@ public class CombinedExcludedLookup {
     }
 
     public boolean isFontusClass(String internalName) {
-        return internalName.startsWith(Utils.dotToSlash(Constants.PACKAGE));
+        return internalName.startsWith(Utils.dotToSlash(Constants.PACKAGE)) && !TaintStringHelper.class.getName().equals(Utils.slashToDot(internalName));
     }
 
     public boolean isFontusClass(Class<?> cls) {

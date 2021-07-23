@@ -2,15 +2,14 @@ package com.sap.fontus.instrumentation.strategies;
 
 import com.sap.fontus.Constants;
 import com.sap.fontus.config.TaintStringConfig;
-
-import java.util.regex.Pattern;
+import com.sap.fontus.instrumentation.InstrumentationHelper;
+import org.objectweb.asm.Type;
 
 public class StringBufferInstrumentation extends AbstractInstrumentation {
-    private static final Pattern STRING_BUFFER_QN_MATCHER = Pattern.compile(Constants.StringBufferQN, Pattern.LITERAL);
     private final TaintStringConfig stringConfig;
 
-    public StringBufferInstrumentation(TaintStringConfig configuration) {
-        super(Constants.StringBufferDesc, configuration.getTStringBufferDesc(), Constants.StringBufferQN, configuration.getTStringBufferQN(), Constants.TStringBufferToStringBufferName);
+    public StringBufferInstrumentation(TaintStringConfig configuration, InstrumentationHelper instrumentationHelper) {
+        super(Type.getType(StringBuffer.class), Type.getType(configuration.getTStringBufferDesc()), instrumentationHelper, Constants.TStringBufferToStringBufferName);
         this.stringConfig = configuration;
     }
 

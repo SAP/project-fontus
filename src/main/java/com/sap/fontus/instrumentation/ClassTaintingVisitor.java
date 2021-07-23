@@ -5,8 +5,6 @@ import com.sap.fontus.asm.*;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.config.TaintStringConfig;
-import com.sap.fontus.instrumentation.strategies.*;
-import com.sap.fontus.instrumentation.strategies.clazz.*;
 import com.sap.fontus.utils.*;
 import com.sap.fontus.utils.lookups.AnnotationLookup;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
@@ -37,8 +35,6 @@ class ClassTaintingVisitor extends ClassVisitor {
     private boolean implementsInvocationHandler;
     private MethodVisitRecording recording;
     private final ClassVisitor visitor;
-    private final List<InstrumentationStrategy> instrumentation = new ArrayList<>(7);
-    private final List<ClassInstrumentationStrategy> classInstrumentation = new ArrayList<>(7);
     private final Configuration config;
     private final ClassResolver resolver;
     /**
@@ -73,34 +69,14 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.config = config;
         this.containsJSRRET = containsJSRRET;
         this.stringConfig = this.config.getTaintStringConfig();
+        this.instrumentationHelper = new InstrumentationHelper(this.stringConfig);
         this.newMainDescriptor = "(" + this.stringConfig.getTStringArrayDesc() + ")V";
         this.fillBlacklist();
-        this.fillStrategies();
-        this.signatureInstrumenter = new SignatureInstrumenter(this.api, this.instrumentation);
+        this.signatureInstrumenter = new SignatureInstrumenter(this.api, this.instrumentationHelper);
         this.combinedExcludedLookup = new CombinedExcludedLookup(loader);
-        this.instrumentationHelper = InstrumentationHelper.getInstance(this.stringConfig);
     }
 
     private void fillStrategies() {
-        this.classInstrumentation.add(new StringClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.classInstrumentation.add(new StringBufferClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.classInstrumentation.add(new StringBuilderClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.classInstrumentation.add(new PatternClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.classInstrumentation.add(new FormatterClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.classInstrumentation.add(new MatcherClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.classInstrumentation.add(new PropertiesClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.classInstrumentation.add(new ProxyClassInstrumentationStrategy(this.visitor));
-        this.classInstrumentation.add(new DefaultClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-
-        this.instrumentation.add(new StringInstrumentation(this.config.getTaintStringConfig()));
-        this.instrumentation.add(new StringBuilderInstrumentation(this.config.getTaintStringConfig()));
-        this.instrumentation.add(new StringBufferInstrumentation(this.config.getTaintStringConfig()));
-        this.instrumentation.add(new PatternInstrumentation(this.config.getTaintStringConfig()));
-        this.instrumentation.add(new FormatterInstrumentation(this.config.getTaintStringConfig()));
-        this.instrumentation.add(new MatcherInstrumentation(this.config.getTaintStringConfig()));
-        this.instrumentation.add(new PropertiesStrategy(this.config.getTaintStringConfig()));
-        this.instrumentation.add(new ProxyInstrumentation());
-        this.instrumentation.add(new DefaultInstrumentation(this.config.getTaintStringConfig()));
     }
 
     private void fillBlacklist() {
@@ -120,10 +96,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             final String superName,
             final String[] interfaces) {
         this.owner = name;
-        this.superName = superName == null ? Type.getInternalName(Object.class) : superName;
-        for (ClassInstrumentationStrategy cis : this.classInstrumentation) {
-            this.superName = cis.instrumentSuperClass(this.superName);
-        }
+        this.superName = superName == null ? Type.getInternalName(Object.class) : this.instrumentationHelper.instrumentSuperClass(superName);
         this.interfaces = interfaces;
 
         this.isInterface = ((access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE);
@@ -172,18 +145,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             return super.visitField(access, name, descriptor, signature, value);
         }
 
-        FieldVisitor fv = null;
-        for (ClassInstrumentationStrategy is : this.classInstrumentation) {
-            Optional<FieldVisitor> ofv = is.instrumentFieldInstruction(
-                    access, name, descriptor, signature, value,
-                    (n, d, v) -> this.staticFinalFields.add(FieldData.of(n, d, v))
-            );
-            if (ofv.isPresent()) {
-                fv = ofv.get();
-                break;
-            }
-        }
-        return fv;
+        return this.instrumentationHelper.instrumentFieldInstruction(this.visitor, access, name, descriptor, signature, value, (n, d, v) -> staticFinalFields.add(FieldData.of(n, d, v))).orElse(null);
     }
 
 
@@ -358,23 +320,8 @@ class ClassTaintingVisitor extends ClassVisitor {
         return Type.getType(returnTypeDescriptor).getOpcode(Opcodes.IRETURN);
     }
 
-    private String getToOriginalMethod(String qn) {
-        for (InstrumentationStrategy instrumentationStrategy : this.instrumentation) {
-            if (instrumentationStrategy.handlesType(qn)) {
-                return instrumentationStrategy.getGetOriginalTypeMethod();
-            }
-        }
-        throw new IllegalArgumentException("Trying to get cast method for non instrumented type: " + qn);
-    }
-
     private boolean isDescriptorNameToInstrument(String qn) {
-        // TODO Use InstrumentationHelper.canHandleType
-        for (InstrumentationStrategy instrumentationStrategy : this.instrumentation) {
-            if (instrumentationStrategy.handlesType(qn)) {
-                return true;
-            }
-        }
-        return false;
+        return this.instrumentationHelper.handlesType(qn);
     }
 
     /**
@@ -648,7 +595,8 @@ class ClassTaintingVisitor extends ClassVisitor {
                 mv.visitJumpInsn(Opcodes.IFNULL, label);
                 if (arrayDimensions == 0) {
                     mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedParam.getInternalName());
-                    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, instrumentedParam.getInternalName(), this.getToOriginalMethod(param), new Descriptor(new String[]{}, param).toDescriptor(), false);
+                    this.instrumentationHelper.insertJdkMethodParameterConversion(mv, origParam);
+//                    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, instrumentedParam.getInternalName(), this.getToOriginalMethod(param), new Descriptor(new String[]{}, param).toDescriptor(), false);
                 } else {
                     mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
                     mv.visitTypeInsn(Opcodes.CHECKCAST, origParam.getInternalName());

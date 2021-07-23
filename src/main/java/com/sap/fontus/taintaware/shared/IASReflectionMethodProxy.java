@@ -1,8 +1,6 @@
 package com.sap.fontus.taintaware.shared;
 
 import com.sap.fontus.Constants;
-import com.sap.fontus.taintaware.bool.IASMatcher;
-import com.sap.fontus.taintaware.bool.IASPattern;
 import com.sap.fontus.utils.ConversionUtils;
 import com.sap.fontus.utils.ReflectionUtils;
 import com.sap.fontus.config.Configuration;
@@ -11,15 +9,12 @@ import com.sap.fontus.utils.Utils;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 
 import java.io.InputStream;
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @SuppressWarnings("rawtypes")
 public class IASReflectionMethodProxy {

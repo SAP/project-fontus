@@ -2,12 +2,16 @@ package com.sap.fontus.instrumentation.strategies;
 
 import com.sap.fontus.Constants;
 import com.sap.fontus.config.TaintStringConfig;
+import com.sap.fontus.instrumentation.InstrumentationHelper;
+import org.objectweb.asm.Type;
+
+import java.util.Formatter;
 
 public class FormatterInstrumentation extends AbstractInstrumentation {
     private final TaintStringConfig stringConfig;
 
-    public FormatterInstrumentation(TaintStringConfig configuration) {
-        super(Constants.FormatterDesc, configuration.getTFormatterDesc(), Constants.FormatterQN, configuration.getTFormatterQN(), Constants.TFormatterToFormatterName);
+    public FormatterInstrumentation(TaintStringConfig configuration, InstrumentationHelper instrumentationHelper) {
+        super(Type.getType(Formatter.class), Type.getType(configuration.getTFormatterDesc()), instrumentationHelper, Constants.TFormatterToFormatterName);
         this.stringConfig = configuration;
     }
 

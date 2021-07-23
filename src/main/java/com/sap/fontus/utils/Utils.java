@@ -4,9 +4,7 @@ import com.sap.fontus.Constants;
 import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.asm.FieldData;
 import com.sap.fontus.asm.FunctionCall;
-import com.sap.fontus.config.TaintStringConfig;
-import com.sap.fontus.instrumentation.strategies.InstrumentationHelper;
-import com.sap.fontus.instrumentation.strategies.method.MethodInstrumentationStrategy;
+import com.sap.fontus.instrumentation.InstrumentationHelper;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
@@ -63,28 +61,27 @@ public final class Utils {
         return (opcode == Opcodes.LSTORE || opcode == Opcodes.DSTORE ? 2 : 1);
     }
 
-    public static Type instrumentType(Type t, TaintStringConfig config) {
+    public static Type instrumentType(Type t, InstrumentationHelper instrumentationHelper) {
         Descriptor desc = Descriptor.parseDescriptor(t.getDescriptor());
-        desc = InstrumentationHelper.getInstance(config).instrumentForNormalCall(desc);
+        desc = instrumentationHelper.instrumentForNormalCall(desc);
         return Type.getType(desc.toDescriptor());
     }
 
-    public static Handle instrumentHandle(Handle h, TaintStringConfig config, List<MethodInstrumentationStrategy> strategies) {
-        if (combinedExcludedLookup.isPackageExcludedOrJdk(h.getOwner()) && !InstrumentationHelper.getInstance(config).canHandleType(Type.getObjectType(h.getOwner()).getDescriptor())) {
+    public static Handle instrumentHandle(Handle h, InstrumentationHelper instrumentationHelper) {
+        if (combinedExcludedLookup.isPackageExcludedOrJdk(h.getOwner()) && !instrumentationHelper.canHandleType(Type.getObjectType(h.getOwner()).getDescriptor())) {
             return h;
         }
 
         // If the Class is a taintaware one it should be handled by rewriteOwnerMethod, e.g. for toString => toIASString
-        for (MethodInstrumentationStrategy s : strategies) {
-            FunctionCall instrumented = s.rewriteOwnerMethod(new FunctionCall(h.getTag(), h.getOwner(), h.getName(), h.getDesc(), h.isInterface()));
-            if (instrumented != null) {
-                return new Handle(instrumented.getOpcode(), instrumented.getOwner(), instrumented.getName(), instrumented.getDescriptor(), instrumented.isInterface());
-            }
+
+        FunctionCall instrumented = instrumentationHelper.rewriteOwnerMethod(new FunctionCall(h.getTag(), h.getOwner(), h.getName(), h.getDesc(), h.isInterface()));
+        if (instrumented != null) {
+            return new Handle(instrumented.getOpcode(), instrumented.getOwner(), instrumented.getName(), instrumented.getDescriptor(), instrumented.isInterface());
         }
 
         Descriptor desc = Descriptor.parseDescriptor(h.getDesc());
-        desc = InstrumentationHelper.getInstance(config).instrumentForNormalCall(desc);
-        String owner = InstrumentationHelper.getInstance(config).instrumentQN(h.getOwner());
+        desc = instrumentationHelper.instrumentForNormalCall(desc);
+        String owner = instrumentationHelper.instrumentQN(h.getOwner());
         return new Handle(h.getTag(), owner, h.getName(), desc.toDescriptor(), h.isInterface());
     }
 
@@ -101,6 +98,15 @@ public final class Utils {
     }
 
 
+    public static void insertGenericConversionToOrig(MethodVisitor mv, String expectedTypeInternalName) {
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+                Constants.ConversionUtilsQN,
+                Constants.ConversionUtilsToOrigName,
+                Constants.ConversionUtilsToOrigDesc,
+                false);
+        mv.visitTypeInsn(Opcodes.CHECKCAST, expectedTypeInternalName);
+    }
+
     /**
      * Writes all static final String field initializations into the static initializer
      *
@@ -112,15 +118,6 @@ public final class Utils {
             mv.visitLdcInsn(value);
             mv.visitFieldInsn(Opcodes.PUTSTATIC, owner, field.getName(), field.getDescriptor());
         }
-    }
-
-    public static void insertGenericConversionToOrig(MethodVisitor mv, String expectedTypeInternalName) {
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC,
-                Constants.ConversionUtilsQN,
-                Constants.ConversionUtilsToOrigName,
-                Constants.ConversionUtilsToOrigDesc,
-                false);
-        mv.visitTypeInsn(Opcodes.CHECKCAST, expectedTypeInternalName);
     }
 
     public static boolean contains(String[] array, String value) {

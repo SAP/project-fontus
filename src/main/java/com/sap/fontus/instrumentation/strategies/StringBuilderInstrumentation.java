@@ -2,12 +2,14 @@ package com.sap.fontus.instrumentation.strategies;
 
 import com.sap.fontus.Constants;
 import com.sap.fontus.config.TaintStringConfig;
+import com.sap.fontus.instrumentation.InstrumentationHelper;
+import org.objectweb.asm.Type;
 
 public class StringBuilderInstrumentation extends AbstractInstrumentation {
     protected final TaintStringConfig stringConfig;
 
-    public StringBuilderInstrumentation(TaintStringConfig configuration) {
-        super(Constants.StringBuilderDesc, configuration.getTStringBuilderDesc(), Constants.StringBuilderQN, configuration.getTStringBuilderQN(), Constants.TStringBuilderToStringBuilderName);
+    public StringBuilderInstrumentation(TaintStringConfig configuration, InstrumentationHelper instrumentationHelper) {
+        super(Type.getType(StringBuilder.class), Type.getType(configuration.getTStringBuilderDesc()), instrumentationHelper, Constants.TStringBuilderToStringBuilderName);
         this.stringConfig = configuration;
     }
 

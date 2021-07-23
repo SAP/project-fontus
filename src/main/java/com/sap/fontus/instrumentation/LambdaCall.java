@@ -4,7 +4,6 @@ import com.sap.fontus.Constants;
 import com.sap.fontus.asm.ClassResolver;
 import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.asm.FunctionCall;
-import com.sap.fontus.instrumentation.strategies.InstrumentationHelper;
 import com.sap.fontus.utils.ClassTraverser;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.Handle;

@@ -30,6 +30,7 @@ public final class Constants {
     public static final String CompareProxyEqualsDesc;
     public static final String UNTAINTED_METHOD_NAME = "untainted";
     public static final String UNTAINTED_METHOD_PATH = "untainted/";
+    public static final String TMethodToMethodName = "getMethod";
 
     static {
         try {
@@ -142,6 +143,8 @@ public final class Constants {
      * Name of the method that converts taint-aware StringBuffers to regular ones
      */
     public static final String TStringBufferToStringBufferName = "getStringBuffer";
+
+    public static final String TProxyToProxyName = "getProxy";
 
     /**
      * Descriptor of the untainted init/constructor method.

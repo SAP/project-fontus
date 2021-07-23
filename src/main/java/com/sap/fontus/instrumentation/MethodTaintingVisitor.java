@@ -6,8 +6,6 @@ import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.Sink;
 import com.sap.fontus.config.Source;
 import com.sap.fontus.config.TaintStringConfig;
-import com.sap.fontus.instrumentation.strategies.InstrumentationHelper;
-import com.sap.fontus.instrumentation.strategies.method.*;
 import com.sap.fontus.instrumentation.transformer.*;
 import com.sap.fontus.taintaware.shared.IASLookupUtils;
 import com.sap.fontus.taintaware.shared.IASStringable;
@@ -46,7 +44,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     private int used;
     private int usedAfterInjection;
 
-    private final List<MethodInstrumentationStrategy> methodInstrumentation = new ArrayList<>(4);
     private final InstrumentationHelper instrumentationHelper;
 
     private final Configuration config;
@@ -87,19 +84,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.fillInterfaceProxies();
         this.config = config;
         this.stringConfig = config.getTaintStringConfig();
-        this.fillStrategies();
-    }
-
-    private void fillStrategies() {
-        this.methodInstrumentation.add(new StringMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
-        this.methodInstrumentation.add(new StringBuilderMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
-        this.methodInstrumentation.add(new StringBufferMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
-        this.methodInstrumentation.add(new FormatterMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
-        this.methodInstrumentation.add(new MatcherMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
-        this.methodInstrumentation.add(new PatternMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
-        this.methodInstrumentation.add(new PropertiesMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
-        this.methodInstrumentation.add(new ProxyMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
-        this.methodInstrumentation.add(new DefaultMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
     }
 
     @Override
@@ -220,7 +204,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     @Override
     public void visitFieldInsn(final int opcode, final String owner, final String name, final String descriptor) {
 
-        if (this.combinedExcludedLookup.isJdkClass(owner) && InstrumentationHelper.getInstance(this.stringConfig).canHandleType(descriptor)) {
+        if (this.combinedExcludedLookup.isJdkClass(owner) && this.instrumentationHelper.canHandleType(descriptor)) {
             if ((opcode == Opcodes.PUTFIELD || opcode == Opcodes.PUTSTATIC)) {
                 mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
                 mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(descriptor).getInternalName());
@@ -229,16 +213,14 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
                 mv.visitFieldInsn(opcode, owner, name, descriptor);
                 mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
                 Type fieldType = Type.getType(descriptor);
-                String instrumentedFieldDescriptor = InstrumentationHelper.getInstance(this.stringConfig).instrumentQN(fieldType.getInternalName());
+                String instrumentedFieldDescriptor = this.instrumentationHelper.instrumentQN(fieldType.getInternalName());
                 mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedFieldDescriptor);
             }
             return;
         }
 
-        for (MethodInstrumentationStrategy s : this.methodInstrumentation) {
-            if (s.instrumentFieldIns(opcode, owner, name, descriptor)) {
-                return;
-            }
+        if (this.instrumentationHelper.instrumentFieldIns(mv, opcode, owner, name, descriptor)) {
+            return;
         }
     }
 
@@ -254,17 +236,21 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             final boolean isInterface) {
         FunctionCall fc = new FunctionCall(opcode, owner, name, descriptor, isInterface);
 
+        if (this.combinedExcludedLookup.isFontusClass(owner)) {
+            super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+            return;
+        }
+
         // If a method has a defined proxy, apply it right away
         if (this.shouldBeProxied(fc)) {
             return;
         }
 
-        for (MethodInstrumentationStrategy s : this.methodInstrumentation) {
-            FunctionCall functionCall = s.rewriteOwnerMethod(fc);
-            if (functionCall != null) {
-                super.visitMethodInsn(functionCall.getOpcode(), functionCall.getOwner(), functionCall.getName(), functionCall.getDescriptor(), functionCall.isInterface());
-                return;
-            }
+
+        FunctionCall functionCall = this.instrumentationHelper.rewriteOwnerMethod(fc);
+        if (functionCall != null) {
+            super.visitMethodInsn(functionCall.getOpcode(), functionCall.getOwner(), functionCall.getName(), functionCall.getDescriptor(), functionCall.isInterface());
+            return;
         }
 
         if (this.name.equals("toString") && this.methodDescriptor.equals(Type.getMethodDescriptor(Type.getType(stringConfig.getTStringDesc())))
@@ -489,7 +475,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         // Add JDK transformations
         if (isExcluded) {
             logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-            JdkMethodTransformer t = new JdkMethodTransformer(call, this.methodInstrumentation, this.config);
+            JdkMethodTransformer t = new JdkMethodTransformer(call, this.instrumentationHelper, this.config);
             transformer.addParameterTransformation(t);
             transformer.addReturnTransformation(t);
         }
@@ -498,7 +484,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         Sink sink = this.config.getSinkConfig().getSinkForFunction(call);
         if (sink != null) {
             logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-            SinkTransformer t = new SinkTransformer(sink, this.stringConfig, this.used);
+            SinkTransformer t = new SinkTransformer(sink, this.instrumentationHelper, this.used);
             transformer.addParameterTransformation(t);
         }
 
@@ -553,27 +539,21 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             }
         }
 
-        for (MethodInstrumentationStrategy s : this.methodInstrumentation) {
-            if (s.handleLdc(value)) {
-                return;
-            }
+        if (this.instrumentationHelper.handleLdc(this.mv, value)) {
+            return;
         }
 
         if (value instanceof Type) {
             Type type = (Type) value;
             int sort = type.getSort();
             if (sort == Type.OBJECT) {
-                for (MethodInstrumentationStrategy s : this.methodInstrumentation) {
-                    if (s.handleLdcType(type)) {
-                        return;
-                    }
+                if (this.instrumentationHelper.handleLdcType(this.mv, type)) {
+                    return;
                 }
                 //TODO: handle Arrays etc..
             } else if (sort == Type.ARRAY) {
-                for (MethodInstrumentationStrategy s : this.methodInstrumentation) {
-                    if (s.handleLdcArray(type)) {
-                        return;
-                    }
+                if (this.instrumentationHelper.handleLdcArray(this.mv, type)) {
+                    return;
                 }
             }
         }
@@ -594,10 +574,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             return;
         }
         logger.info("Visiting type [{}] instruction: {}", type, opcode);
-        String newType = type;
-        for (MethodInstrumentationStrategy s : this.methodInstrumentation) {
-            newType = s.rewriteTypeIns(newType);
-        }
+        String newType = this.instrumentationHelper.rewriteTypeIns(type);
         super.visitTypeInsn(opcode, newType);
     }
 
@@ -617,9 +594,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             Handle realFunction = (Handle) bootstrapMethodArguments[1];
             LambdaCall call = new LambdaCall(Type.getMethodType(descriptor).getReturnType(), realFunction);
 
-            MethodTaintingUtils.invokeVisitLambdaCall(this.stringConfig, this.getParentVisitor(), this.methodInstrumentation, call.getProxyDescriptor(this.loader, this.instrumentationHelper), call, this.owner, name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
+            MethodTaintingUtils.invokeVisitLambdaCall(this.getParentVisitor(), this.instrumentationHelper, call.getProxyDescriptor(this.loader, this.instrumentationHelper), call, this.owner, name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
 
-            if (MethodTaintingUtils.needsLambdaProxy(descriptor, realFunction, (Type) bootstrapMethodArguments[2], InstrumentationHelper.getInstance(this.stringConfig))) {
+            if (MethodTaintingUtils.needsLambdaProxy(descriptor, realFunction, (Type) bootstrapMethodArguments[2], this.instrumentationHelper)) {
                 this.jdkLambdaMethodProxies.add(call);
             }
         } else if ("makeConcatWithConstants".equals(name)) {

@@ -2,6 +2,7 @@ package com.sap.fontus.config;
 
 import com.sap.fontus.taintaware.shared.IASClassProxy;
 import com.sap.fontus.utils.Utils;
+import org.objectweb.asm.Type;
 
 import static com.sap.fontus.Constants.StringDesc;
 
@@ -83,6 +84,7 @@ public class TaintStringConfig {
     private final String TPropertiesDesc;
     private final String TPropertiesQN;
     private final String TStringUtilsQN;
+    private final Type TMethodType;
 
     public String getTPackage() {
         return this.TPackage;
@@ -178,6 +180,7 @@ public class TaintStringConfig {
         this.TPatternQN = this.TPackage + "IASPattern";
         this.TPatternDesc = String.format("L%s;", this.TPatternQN);
         this.TPropertiesQN = this.TPackage + "IASProperties";
+        this.TMethodType = Type.getObjectType(this.TPackage + "IASMethod");
         this.TPropertiesDesc = String.format("L%s;", this.TPropertiesQN);
     }
 
@@ -239,5 +242,13 @@ public class TaintStringConfig {
 
     public String getTPropertiesQN() {
         return TPropertiesQN;
+    }
+
+    public Type getTMethodType() {
+        return this.TMethodType;
+    }
+
+    public Type getTMethodArrayType() {
+        return Type.getType("[" + this.TMethodType.getDescriptor());
     }
 }

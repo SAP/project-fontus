@@ -9,6 +9,7 @@ import org.objectweb.asm.Opcodes;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 
 public class ClassUtils {
     public static CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(null);
@@ -63,5 +64,9 @@ public class ClassUtils {
             }
         }
         return false;
+    }
+
+    public static Class<?> arrayType(Class<?> cls) {
+        return Array.newInstance(cls, 0).getClass();
     }
 }
