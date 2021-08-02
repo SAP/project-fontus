@@ -1,5 +1,6 @@
 package com.sap.fontus.taintaware.shared;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class IASTaintRangeUtils {
@@ -70,6 +71,36 @@ public class IASTaintRangeUtils {
                 ranges.set(i, new IASTaintRange(Math.max(tr.getStart(), startIndex) - leftShift, Math.min(tr.getEnd(), endIndex) - leftShift, tr.getSource()));
             }
         }
+    }
+
+    public static List<IASTaintRange> delete(List<IASTaintRange> ranges, int start, int end, boolean shift) {
+        List<IASTaintRange> before = new ArrayList<>(ranges);
+        List<IASTaintRange> after = new ArrayList<>(ranges);
+        IASTaintRangeUtils.adjustAndRemoveRanges(before, 0, start, 0);
+        IASTaintRangeUtils.adjustAndRemoveRanges(after, end, Integer.MAX_VALUE, shift ? end - start : 0);
+        List<IASTaintRange> taintRanges = new ArrayList<>(before.size() + after.size());
+        taintRanges.addAll(before);
+        taintRanges.addAll(after);
+        IASTaintRangeUtils.merge(taintRanges);
+
+        return taintRanges;
+    }
+
+    public static List<IASTaintRange> insertWithShift(List<IASTaintRange> ranges, List<IASTaintRange> incomingTaint, int start, int end) {
+        List<IASTaintRange> before = new ArrayList<>(ranges);
+        List<IASTaintRange> after = new ArrayList<>(ranges);
+
+        IASTaintRangeUtils.adjustAndRemoveRanges(before, 0, start, 0);
+        IASTaintRangeUtils.adjustAndRemoveRanges(after, start, Integer.MAX_VALUE, start - end);
+        IASTaintRangeUtils.adjustAndRemoveRanges(incomingTaint, 0, end - start, -start);
+
+        List<IASTaintRange> result = new ArrayList<>(before.size() + incomingTaint.size() + after.size());
+        result.addAll(before);
+        result.addAll(incomingTaint);
+        result.addAll(after);
+        IASTaintRangeUtils.merge(result);
+
+        return result;
     }
 
     /**

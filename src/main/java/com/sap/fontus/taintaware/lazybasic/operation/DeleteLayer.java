@@ -1,35 +1,37 @@
 package com.sap.fontus.taintaware.lazybasic.operation;
 
-import com.sap.fontus.taintaware.shared.IASTaintRange;
 import com.sap.fontus.taintaware.lazybasic.IASLayer;
-import com.sap.fontus.taintaware.shared.IASTaintRangeUtils;
+import com.sap.fontus.taintaware.shared.IASTaintRanges;
 
-import java.util.ArrayList;
-import java.util.List;
+public class DeleteLayer implements IASLayer {
+    protected final int start;
+    protected final Integer end;
 
-public class DeleteLayer extends IASLayer {
     public DeleteLayer(int start, int end) {
-        super(start, end);
+        this.checkBounds(start, end);
+        this.start = start;
+        this.end = end;
     }
 
     public DeleteLayer(int start) {
-        this(start, Integer.MAX_VALUE);
+        this.start = start;
+        this.end = null;
     }
 
-    public DeleteLayer() {
-        this(0);
+    protected void checkBounds(int start, int end) {
+        if (start < 0) {
+            throw new IllegalArgumentException("start cannot be smaller than 0. start was " + start);
+        }
+        if (end < start) {
+            throw new IllegalArgumentException("end cannot be smaller than start. start: " + start + " end: " + end);
+        }
     }
 
     @Override
-    protected List<IASTaintRange> apply(List<IASTaintRange> previousRanges) {
-        List<IASTaintRange> before = new ArrayList<>(previousRanges);
-        List<IASTaintRange> after = new ArrayList<>(previousRanges);
-        IASTaintRangeUtils.adjustAndRemoveRanges(before, 0, start, 0);
-        IASTaintRangeUtils.adjustAndRemoveRanges(after, end, Integer.MAX_VALUE, end - start);
-        List<IASTaintRange> taintRanges = new ArrayList<>(before.size() + after.size());
-        taintRanges.addAll(before);
-        taintRanges.addAll(after);
-        IASTaintRangeUtils.merge(taintRanges);
-        return taintRanges;
+    public IASTaintRanges apply(IASTaintRanges ranges) {
+        IASTaintRanges copied = ranges.copy();
+        int end = this.end == null ? copied.getLength() : this.end;
+        copied.delete(this.start, end, true);
+        return copied;
     }
 }

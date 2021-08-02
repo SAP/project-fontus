@@ -1,15 +1,14 @@
 package com.sap.fontus.taintaware.unified;
 
 import com.sap.fontus.Constants;
+import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.*;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.IntStream;
 
 @SuppressWarnings({"unused", "Since15"})
-public abstract class IASAbstractStringBuilder implements IASTaintRangeAware, Serializable, Comparable<IASAbstractStringBuilder>, Appendable, CharSequence {
+public abstract class IASAbstractStringBuilder implements Serializable, Comparable<IASAbstractStringBuilder>, Appendable, CharSequence, IASTaintAware {
     protected StringBuilder stringBuilder;
     private IASTaintInformationable taintInformation;
 
@@ -24,7 +23,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeAware, Se
     public IASAbstractStringBuilder(IASString str) {
         this.stringBuilder = new StringBuilder(str.getString());
         if (str.isTainted()) {
-            this.taintInformation = str.getTaintInformationInitialized().copy();
+            this.taintInformation = str.getTaintInformationCopied();
         }
     }
 
@@ -36,14 +35,17 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeAware, Se
 
     protected void appendShifted(IASTaintInformationable append, int length) {
         if (append == null) {
+            if (isInitialized()) {
+                this.taintInformation.resize(this.length() + length);
+            }
             return;
         }
 
         if (isUninitialized()) {
-            this.taintInformation = TaintInformationFactory.createTaintInformation(length);
+            this.taintInformation = TaintInformationFactory.createTaintInformation(this.length());
         }
 
-        this.taintInformation.insertTaint(this.length(), append, length);
+        this.taintInformation = this.taintInformation.insertWithShift(this.length(), append);
     }
 
 
@@ -75,18 +77,8 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeAware, Se
     @Override
     public void setContent(String content, IASTaintInformationable taintInformation) {
         this.stringBuilder = new StringBuilder(content);
-        this.taintInformation = taintInformation.copy();
+        this.taintInformation = taintInformation == null ? null : taintInformation.copy();
     }
-
-    @Override
-    public void setTaint(List<IASTaintRange> ranges) {
-        if (ranges == null || ranges.size() == 0) {
-            this.taintInformation = null;
-        } else {
-            this.taintInformation = TaintInformationFactory.createTaintInformation(this.length(), ranges);
-        }
-    }
-
 
     public boolean isTainted() {
         if (isUninitialized()) {
@@ -102,7 +94,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeAware, Se
     }
 
     public IASAbstractStringBuilder append(IASString str) {
-        this.appendShifted(str.getTaintInformationInitialized().copy(), str.length());
+        this.appendShifted(str.getTaintInformationCopied(), str.length());
 
         this.stringBuilder.append(str.getString());
         return this;
@@ -110,7 +102,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeAware, Se
 
     public IASAbstractStringBuilder append(IASAbstractStringBuilder strb) {
         IASString str = IASString.valueOf(strb);
-        this.appendShifted(str.getTaintInformationInitialized().copy(), str.length());
+        this.appendShifted(str.getTaintInformationCopied(), str.length());
 
         this.stringBuilder.append(str.getString());
 
@@ -175,7 +167,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeAware, Se
     public IASAbstractStringBuilder delete(int start, int end) {
         this.stringBuilder.delete(start, end);
         if (isTainted()) {
-            this.taintInformation.removeTaint(start, end, true);
+            this.taintInformation.deleteWithShift(start, end);
         }
         return this;
     }
@@ -183,7 +175,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeAware, Se
     public IASAbstractStringBuilder deleteCharAt(int index) {
         this.stringBuilder.deleteCharAt(index);
         if (isTainted()) {
-            this.taintInformation.removeTaint(index, index + 1, true);
+            this.taintInformation.deleteWithShift(index, index + 1);
         }
         return this;
     }
@@ -194,7 +186,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeAware, Se
             this.taintInformation = TaintInformationFactory.createTaintInformation(this.length());
         }
         if (this.isTainted() || str.isTainted()) {
-            this.taintInformation.replaceTaint(start, end, str.getTaintInformationInitialized().copy(), str.length(), true);
+            this.taintInformation.replaceTaint(start, end, str.getTaintInformationInitialized().copy());
         }
         return this;
     }
@@ -217,7 +209,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeAware, Se
             this.taintInformation = TaintInformationFactory.createTaintInformation(this.length());
         }
         if (this.isTainted() || str.isTainted()) {
-            this.taintInformation.insertTaint(offset, str.getTaintInformationInitialized().copy(), str.length());
+            this.taintInformation.insertWithShift(offset, str.getTaintInformationInitialized().copy());
         }
         this.stringBuilder.insert(offset, str);
         return this;
@@ -290,7 +282,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeAware, Se
     public IASAbstractStringBuilder reverse() {
         this.stringBuilder.reverse();
         if (isTainted()) {
-            this.taintInformation.reversed(this.length());
+            this.taintInformation.reversed();
         }
         handleSurrogatesForReversed();
 
@@ -307,21 +299,17 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeAware, Se
             char highSur = chars[i];
             char lowSur = chars[i + 1];
             if (Character.isLowSurrogate(lowSur) && Character.isHighSurrogate(highSur)) {
-                IASTaintRange oldHighRange = this.taintInformation.cutTaint(i);
-                IASTaintRange oldLowRange = this.taintInformation.cutTaint(i + 1);
+                IASTaintSource oldHighTaint = this.taintInformation.getTaint(i);
+                IASTaintSource oldLowTaint = this.taintInformation.getTaint(i + 1);
 
-                List<IASTaintRange> ranges = new ArrayList<IASTaintRange>(2);
+                this.taintInformation.clearTaint(i, i + 2);
 
-                if (oldLowRange != null) {
-                    IASTaintRange newHighRange = oldLowRange.shiftRight(-1);
-                    ranges.add(newHighRange);
+                if (oldHighTaint != null) {
+                    this.taintInformation.setTaint(i + 1, oldHighTaint);
                 }
-                if (oldHighRange != null) {
-                    IASTaintRange newLowRange = oldHighRange.shiftRight(1);
-                    ranges.add(newLowRange);
+                if (oldLowTaint != null) {
+                    this.taintInformation.setTaint(i, oldLowTaint);
                 }
-
-                this.taintInformation.replaceTaint(i, i + 2, ranges, 2, false);
             }
         }
     }
@@ -332,7 +320,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeAware, Se
     }
 
     public IASString toIASString() {
-        return new IASString(this.stringBuilder.toString(), this.taintInformation.copy());
+        return new IASString(this.stringBuilder.toString(), this.taintInformation == null ? null : this.taintInformation.copy());
     }
 
     public int capacity() {
@@ -350,7 +338,7 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeAware, Se
     public void setCharAt(int index, char c) {
         this.stringBuilder.setCharAt(index, c);
         if (isTainted()) {
-            this.taintInformation.removeTaint(index, index + 1, false);
+            this.taintInformation.clearTaint(index, index + 1);
         }
     }
 
@@ -419,8 +407,17 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeAware, Se
     public void setLength(int newLength) {
         this.stringBuilder.setLength(newLength);
         if (isTainted()) {
-            this.taintInformation.resize(0, newLength, 0);
+            this.taintInformation.resize(newLength);
         }
+    }
+
+    @Override
+    public boolean isTaintedAt(int index) {
+        if (isUninitialized()) {
+            return false;
+        }
+
+        return this.taintInformation.getTaint(index) != null;
     }
 
     @Override
@@ -436,10 +433,19 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeAware, Se
         return this.taintInformation;
     }
 
-    public boolean isUninitialized() {
-        return this.taintInformation == null;
+    public IASTaintInformationable getTaintInformationCopied() {
+        return this.taintInformation == null ? null : this.taintInformation.copy();
     }
 
+    @Override
+    public boolean isUninitialized() {
+        return !this.isInitialized();
+    }
+
+    @Override
+    public boolean isInitialized() {
+        return this.taintInformation != null;
+    }
 
     public int compareTo(IASAbstractStringBuilder o) {
         if (Constants.JAVA_VERSION < 11) {
@@ -447,13 +453,5 @@ public abstract class IASAbstractStringBuilder implements IASTaintRangeAware, Se
         } else {
             return this.stringBuilder.compareTo(o.getStringBuilder());
         }
-    }
-
-
-    public boolean isTaintedAt(int index) {
-        if (isUninitialized()) {
-            return false;
-        }
-        return this.taintInformation.isTaintedAt(index);
     }
 }

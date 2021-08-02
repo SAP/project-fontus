@@ -2,7 +2,7 @@ package com.sap.fontus.instrumentation.strategies;
 
 import com.sap.fontus.Constants;
 import com.sap.fontus.instrumentation.InstrumentationHelper;
-import com.sap.fontus.taintaware.shared.IASProxyProxy;
+import com.sap.fontus.taintaware.unified.IASProxyProxy;
 import org.objectweb.asm.Type;
 
 import java.lang.reflect.Proxy;

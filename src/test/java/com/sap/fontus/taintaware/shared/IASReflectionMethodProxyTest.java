@@ -2,7 +2,8 @@ package com.sap.fontus.taintaware.shared;
 
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
-import com.sap.fontus.taintaware.range.IASString;
+import com.sap.fontus.taintaware.unified.IASReflectionMethodProxy;
+import com.sap.fontus.taintaware.unified.IASString;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import outerpackage.ApplicationClass;
@@ -22,10 +23,10 @@ public class IASReflectionMethodProxyTest {
 
     @Test
     public void testGetMethodWithParameter() throws NoSuchMethodException {
-        Class<?> cls = IASStringable.class;
-        IASStringable methodName = new IASString("concat");
+        Class<?> cls = IASString.class;
+        IASString methodName = new IASString("concat");
         Class<?>[] parameters = {IASString.class};
-        Method expected = IASStringable.class.getMethod(methodName.getString(), IASStringable.class);
+        Method expected = IASString.class.getMethod(methodName.getString(), IASString.class);
 
         Method actual = IASReflectionMethodProxy.getMethodProxied(cls, methodName, parameters);
 
@@ -34,10 +35,10 @@ public class IASReflectionMethodProxyTest {
 
     @Test
     public void testGetMethodWithExternalParameter() throws NoSuchMethodException {
-        Class<?> cls = IASStringable.class;
-        IASStringable methodName = new IASString("charAt");
+        Class<?> cls = IASString.class;
+        IASString methodName = new IASString("charAt");
         Class<?>[] parameters = {int.class};
-        Method expected = IASStringable.class.getMethod(methodName.getString(), int.class);
+        Method expected = IASString.class.getMethod(methodName.getString(), int.class);
 
         Method actual = IASReflectionMethodProxy.getMethodProxied(cls, methodName, parameters);
 
@@ -46,10 +47,10 @@ public class IASReflectionMethodProxyTest {
 
     @Test
     public void testGetMethodWithEmptyParameter() throws NoSuchMethodException {
-        Class<?> cls = IASStringable.class;
-        IASStringable methodName = new IASString("trim");
+        Class<?> cls = IASString.class;
+        IASString methodName = new IASString("trim");
         Class<?>[] parameters = {};
-        Method expected = IASStringable.class.getMethod(methodName.getString());
+        Method expected = IASString.class.getMethod(methodName.getString());
 
         Method actual = IASReflectionMethodProxy.getMethodProxied(cls, methodName, parameters);
 
@@ -58,10 +59,10 @@ public class IASReflectionMethodProxyTest {
 
     @Test
     public void testGetMethodWithNullParameter() throws NoSuchMethodException {
-        Class<?> cls = IASStringable.class;
-        IASStringable methodName = new IASString("trim");
+        Class<?> cls = IASString.class;
+        IASString methodName = new IASString("trim");
         Class<?>[] parameters = null;
-        Method expected = IASStringable.class.getMethod(methodName.getString());
+        Method expected = IASString.class.getMethod(methodName.getString());
 
         Method actual = IASReflectionMethodProxy.getMethodProxied(cls, methodName, parameters);
 

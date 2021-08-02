@@ -135,7 +135,7 @@ public class MethodTaintingUtils {
             }
             bsArgs[1] = new Handle(lambdaCall.getProxyOpcodeTag(), owner, lambdaCall.getProxyMethodName(), instrumentedProxyDescriptor.toDescriptor(), false);
         }
-        String descr = instrumentationHelper.instrumentForNormalCall(desc).toDescriptor();
+        String descr = instrumentationHelper.instrument(desc).toDescriptor();
 
 
 //        Handle instrumentedBootstrapHandle = new Handle(bootstrapMethodHandle.getTag(), Type.getInternalName(LambdaMetafactory.class), bootstrapMethodHandle.getName(), bootstrapMethodHandle.getDesc(), bootstrapMethodHandle.isInterface());

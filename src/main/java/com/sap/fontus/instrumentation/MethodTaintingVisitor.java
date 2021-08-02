@@ -7,8 +7,8 @@ import com.sap.fontus.config.Sink;
 import com.sap.fontus.config.Source;
 import com.sap.fontus.config.TaintStringConfig;
 import com.sap.fontus.instrumentation.transformer.*;
-import com.sap.fontus.taintaware.shared.IASLookupUtils;
-import com.sap.fontus.taintaware.shared.IASStringable;
+import com.sap.fontus.taintaware.unified.IASLookupUtils;
+import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
 import com.sap.fontus.utils.Utils;
@@ -344,7 +344,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         super.visitVarInsn(Opcodes.ALOAD, classLocal);
         super.visitVarInsn(Opcodes.ALOAD, nameLocal);
-        super.visitMethodInsn(Opcodes.INVOKEINTERFACE, Type.getInternalName(IASStringable.class), "getString", Type.getMethodDescriptor(Type.getType(String.class)), true);
+        super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(IASString.class), "getString", Type.getMethodDescriptor(Type.getType(String.class)), false);
         super.visitVarInsn(Opcodes.ALOAD, methodTypeLocal);
 
         this.visitMethodInsn(fc);
@@ -424,7 +424,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         super.visitVarInsn(Opcodes.ALOAD, classLocal);
         super.visitVarInsn(Opcodes.ALOAD, nameLocal);
-        super.visitMethodInsn(Opcodes.INVOKEINTERFACE, Type.getInternalName(IASStringable.class), "getString", Type.getMethodDescriptor(Type.getType(String.class)), true);
+        super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(IASString.class), "getString", Type.getMethodDescriptor(Type.getType(String.class)), false);
         super.visitVarInsn(Opcodes.ALOAD, methodTypeLocal);
         super.visitVarInsn(Opcodes.ALOAD, callerLocal);
 

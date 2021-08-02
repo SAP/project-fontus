@@ -1,6 +1,6 @@
 package com.sap.fontus.config;
 
-import com.sap.fontus.taintaware.shared.IASClassProxy;
+import com.sap.fontus.taintaware.unified.IASClassProxy;
 import com.sap.fontus.utils.Utils;
 import org.objectweb.asm.Type;
 

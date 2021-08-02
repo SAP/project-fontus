@@ -5,6 +5,7 @@ import com.sap.fontus.TriConsumer;
 import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.TaintStringConfig;
+import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
 import com.sap.fontus.utils.MethodUtils;
@@ -19,10 +20,8 @@ import java.util.Set;
 public class DefaultInstrumentation implements InstrumentationStrategy {
     private static final Logger logger = LogUtils.getLogger();
     private static final Set<Type> requireValueOf = fillRequireValueOfSet();
-    protected final TaintStringConfig stringConfig;
 
-    public DefaultInstrumentation(TaintStringConfig configuration) {
-        this.stringConfig = configuration;
+    public DefaultInstrumentation() {
     }
 
     private static Set<Type> fillRequireValueOfSet() {
@@ -35,12 +34,12 @@ public class DefaultInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
-    public Descriptor instrumentForNormalCall(Descriptor desc) {
+    public Descriptor instrument(Descriptor desc) {
         return desc;
     }
 
     @Override
-    public String uninstrumentNormalCall(String typeDescriptor) {
+    public String uninstrument(String typeDescriptor) {
         return typeDescriptor;
     }
 
@@ -64,11 +63,6 @@ public class DefaultInstrumentation implements InstrumentationStrategy {
         return false;
     }
 
-
-    @Override
-    public String instrumentDescForIASCall(String desc) {
-        return desc;
-    }
 
     @Override
     public Optional<FieldVisitor> instrumentFieldInstruction(ClassVisitor classVisitor, int access, String name, String descriptor, String signature, Object value, TriConsumer tc) {
@@ -97,8 +91,8 @@ public class DefaultInstrumentation implements InstrumentationStrategy {
         Type tOwner = Type.getObjectType(functionCall.getOwner());
         if (MethodUtils.isToString(functionCall.getName(), functionCall.getDescriptor()) && requireValueOf.contains(tOwner) && functionCall.getOpcode() != Opcodes.INVOKESPECIAL) {
             int newOpcode = Opcodes.INVOKESTATIC;
-            String newOwner = this.stringConfig.getTStringQN();
-            String newDescriptor = "(" + Constants.ObjectDesc + ")" + this.stringConfig.getTStringDesc();
+            String newOwner = Type.getType(IASString.class).getInternalName();
+            String newDescriptor = "(" + Constants.ObjectDesc + ")" + Type.getType(IASString.class).getDescriptor();
             String newName = Constants.TO_STRING_OF;
             boolean newIsInterface = false;
             logger.info("Rewriting toString invoke [{}] {}.{}{} to valueOf call {}.{}{}", Utils.opcodeToString(functionCall.getOpcode()), functionCall.getOwner(), functionCall.getName(), functionCall.getDescriptor(), newOwner, newName, newDescriptor);

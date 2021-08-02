@@ -1,11 +1,11 @@
 package com.sap.fontus;
 
 import com.sap.fontus.taintaware.IASTaintAware;
-import com.sap.fontus.taintaware.bool.IASString;
-import com.sap.fontus.taintaware.bool.IASStringBuilder;
-import com.sap.fontus.taintaware.lazycomplex.IASStringBuffer;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
 import com.sap.fontus.config.Configuration;
+import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.taintaware.unified.IASStringBuffer;
+import com.sap.fontus.taintaware.unified.IASStringBuilder;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,28 +45,8 @@ public class TaintStringHelper {
         return ranges;
     }
 
-    public static void setTaintRanges(com.sap.fontus.taintaware.range.IASString s, int count) {
-        List<IASTaintRange> ranges = randomTaintRanges(s.length(), count);
-        s.setTaint(ranges);
-    }
-
-    public static void setTaintRanges(com.sap.fontus.taintaware.array.IASString s, int count) {
-        List<IASTaintRange> ranges = randomTaintRanges(s.length(), count);
-        s.setTaint(ranges);
-    }
-
     public static void setTaintRanges(IASString s, int count) {
         s.setTaint(count > 0);
-    }
-
-    public static void setTaintRanges(com.sap.fontus.taintaware.lazybasic.IASString s, int count) {
-        List<IASTaintRange> ranges = randomTaintRanges(s.length(), count);
-        s.setTaint(ranges);
-    }
-
-    public static void setTaintRanges(com.sap.fontus.taintaware.lazycomplex.IASString s, int count) {
-        List<IASTaintRange> ranges = randomTaintRanges(s.length(), count);
-        s.setTaint(ranges);
     }
 
     public static Boolean isTainted(String str) {
@@ -105,18 +85,6 @@ public class TaintStringHelper {
         taintAware.setTaint(b);
     }
 
-    public static void setTaint(com.sap.fontus.taintaware.range.IASString taintAware, Boolean b) {
-        taintAware.setTaint(b);
-    }
-
-    public static void setTaint(com.sap.fontus.taintaware.range.IASStringBuilder taintAware, Boolean b) {
-        taintAware.setTaint(b);
-    }
-
-    public static void setTaint(com.sap.fontus.taintaware.range.IASStringBuffer taintAware, Boolean b) {
-        taintAware.setTaint(b);
-    }
-
     public static void setTaint(IASString taintAware, Boolean b) {
         taintAware.setTaint(b);
     }
@@ -125,63 +93,11 @@ public class TaintStringHelper {
         taintAware.setTaint(b);
     }
 
-    public static void setTaint(com.sap.fontus.taintaware.bool.IASStringBuffer taintAware, Boolean b) {
-        taintAware.setTaint(b);
-    }
-
-    public static void setTaint(com.sap.fontus.taintaware.array.IASString taintAware, Boolean b) {
-        taintAware.setTaint(b);
-    }
-
-    public static void setTaint(com.sap.fontus.taintaware.array.IASStringBuilder taintAware, Boolean b) {
-        taintAware.setTaint(b);
-    }
-
-    public static void setTaint(com.sap.fontus.taintaware.array.IASStringBuffer taintAware, Boolean b) {
-        taintAware.setTaint(b);
-    }
-
-    public static void setTaint(com.sap.fontus.taintaware.lazycomplex.IASString taintAware, Boolean b) {
-        taintAware.setTaint(b);
-    }
-
-    public static void setTaint(com.sap.fontus.taintaware.lazycomplex.IASStringBuilder taintAware, Boolean b) {
-        taintAware.setTaint(b);
-    }
-
     public static void setTaint(IASStringBuffer taintAware, Boolean b) {
         taintAware.setTaint(b);
     }
 
-    public static void setTaint(com.sap.fontus.taintaware.lazybasic.IASString taintAware, Boolean b) {
-        taintAware.setTaint(b);
-    }
-
-    public static void setTaint(com.sap.fontus.taintaware.lazybasic.IASStringBuilder taintAware, Boolean b) {
-        taintAware.setTaint(b);
-    }
-
-    public static void setTaint(com.sap.fontus.taintaware.lazybasic.IASStringBuffer taintAware, Boolean b) {
-        taintAware.setTaint(b);
-    }
-
-    public static Boolean isTainted(com.sap.fontus.taintaware.range.IASString taintAware) {
-        return taintAware.isTainted();
-    }
-
-    public static Boolean isTainted(com.sap.fontus.taintaware.range.IASStringBuffer taintAware) {
-        return taintAware.isTainted();
-    }
-
-    public static Boolean isTainted(com.sap.fontus.taintaware.range.IASStringBuilder taintAware) {
-        return taintAware.isTainted();
-    }
-
     public static Boolean isTainted(IASString taintAware) {
-        return taintAware.isTainted();
-    }
-
-    public static Boolean isTainted(com.sap.fontus.taintaware.bool.IASStringBuffer taintAware) {
         return taintAware.isTainted();
     }
 
@@ -189,39 +105,7 @@ public class TaintStringHelper {
         return taintAware.isTainted();
     }
 
-    public static Boolean isTainted(com.sap.fontus.taintaware.array.IASString taintAware) {
-        return taintAware.isTainted();
-    }
-
-    public static Boolean isTainted(com.sap.fontus.taintaware.array.IASStringBuffer taintAware) {
-        return taintAware.isTainted();
-    }
-
-    public static Boolean isTainted(com.sap.fontus.taintaware.array.IASStringBuilder taintAware) {
-        return taintAware.isTainted();
-    }
-
-    public static Boolean isTainted(com.sap.fontus.taintaware.lazycomplex.IASString taintAware) {
-        return taintAware.isTainted();
-    }
-
     public static Boolean isTainted(IASStringBuffer taintAware) {
-        return taintAware.isTainted();
-    }
-
-    public static Boolean isTainted(com.sap.fontus.taintaware.lazycomplex.IASStringBuilder taintAware) {
-        return taintAware.isTainted();
-    }
-
-    public static Boolean isTainted(com.sap.fontus.taintaware.lazybasic.IASString taintAware) {
-        return taintAware.isTainted();
-    }
-
-    public static Boolean isTainted(com.sap.fontus.taintaware.lazybasic.IASStringBuffer taintAware) {
-        return taintAware.isTainted();
-    }
-
-    public static Boolean isTainted(com.sap.fontus.taintaware.lazybasic.IASStringBuilder taintAware) {
         return taintAware.isTainted();
     }
 }

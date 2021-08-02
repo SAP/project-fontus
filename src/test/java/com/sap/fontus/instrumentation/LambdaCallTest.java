@@ -3,7 +3,7 @@ package com.sap.fontus.instrumentation;
 import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
-import com.sap.fontus.taintaware.bool.IASString;
+import com.sap.fontus.taintaware.unified.IASString;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.Handle;
@@ -26,18 +26,18 @@ public class LambdaCallTest {
 
     @Test
     public void testPatternParameter() {
-        InstrumentationHelper instrumentationHelper = new InstrumentationHelper(Configuration.getConfiguration().getTaintStringConfig());
+        InstrumentationHelper instrumentationHelper = new InstrumentationHelper();
         Handle target = new Handle(Opcodes.H_INVOKESTATIC, "Test", "test", new Descriptor(new String[]{Type.getDescriptor(Pattern.class), Type.getDescriptor(File.class), Type.getDescriptor(String.class)}, Type.getDescriptor(boolean.class)).toDescriptor(), false);
         LambdaCall call = new LambdaCall(Type.getType(FilenameFilter.class), target);
 
         Descriptor descriptor = call.getProxyDescriptor(Thread.currentThread().getContextClassLoader(), instrumentationHelper);
 
-        assertEquals("(Lcom/sap/fontus/taintaware/bool/IASPattern;Ljava/io/File;Ljava/lang/String;)Z", descriptor.toDescriptor());
+        assertEquals("(Lcom/sap/fontus/taintaware/unified/IASPattern;Ljava/io/File;Ljava/lang/String;)Z", descriptor.toDescriptor());
     }
 
     @Test
     public void testObjectParameter() {
-        InstrumentationHelper instrumentationHelper = new InstrumentationHelper(Configuration.getConfiguration().getTaintStringConfig());
+        InstrumentationHelper instrumentationHelper = new InstrumentationHelper();
         Handle target = new Handle(Opcodes.H_INVOKESTATIC, "Test", "test", new Descriptor(new String[]{Type.getDescriptor(Integer.class), Type.getDescriptor(Integer.class)}, Type.getDescriptor(Integer.class)).toDescriptor(), false);
         LambdaCall call = new LambdaCall(Type.getType(Comparator.class), target);
 
@@ -48,7 +48,7 @@ public class LambdaCallTest {
 
     @Test
     public void testObjectReturnUninstrumented() {
-        InstrumentationHelper instrumentationHelper = new InstrumentationHelper(Configuration.getConfiguration().getTaintStringConfig());
+        InstrumentationHelper instrumentationHelper = new InstrumentationHelper();
         Handle target = new Handle(Opcodes.H_INVOKESTATIC, "Test", "test", new Descriptor(new String[]{Type.getDescriptor(Integer.class), Type.getDescriptor(Integer.class)}, Type.getDescriptor(Integer.class)).toDescriptor(), false);
         LambdaCall call = new LambdaCall(Type.getType(BiFunction.class), target);
 
@@ -59,7 +59,7 @@ public class LambdaCallTest {
 
     @Test
     public void testObjectReturnInstrumented() {
-        InstrumentationHelper instrumentationHelper = new InstrumentationHelper(Configuration.getConfiguration().getTaintStringConfig());
+        InstrumentationHelper instrumentationHelper = new InstrumentationHelper();
         Handle target = new Handle(Opcodes.H_INVOKESTATIC, "Test", "test", new Descriptor(new String[]{Type.getDescriptor(IASString.class), Type.getDescriptor(IASString.class)}, Type.getDescriptor(IASString.class)).toDescriptor(), false);
         LambdaCall call = new LambdaCall(Type.getType(BiFunction.class), target);
 

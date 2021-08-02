@@ -1,7 +1,6 @@
 package com.sap.fontus.taintaware.unified;
 
 import com.sap.fontus.config.Configuration;
-import com.sap.fontus.taintaware.shared.IASTaintInformationable;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
 
 import java.util.List;
@@ -12,13 +11,13 @@ public class TaintInformationFactory {
             case ARRAY:
                 return new com.sap.fontus.taintaware.array.IASTaintInformation(size);
             case RANGE:
-                return new com.sap.fontus.taintaware.range.IASTaintInformation();
+                return new com.sap.fontus.taintaware.range.IASTaintInformation(size);
             case BOOLEAN:
                 return com.sap.fontus.taintaware.bool.IASTaintInformation.UNTAINTED;
             case LAZYBASIC:
-                return new com.sap.fontus.taintaware.lazybasic.IASTaintInformation();
-            case LAZYCOMPLEX:
-                return new com.sap.fontus.taintaware.lazycomplex.IASTaintInformation();
+                return new com.sap.fontus.taintaware.lazybasic.IASTaintInformation(size);
+//            case LAZYCOMPLEX:
+//                return new com.sap.fontus.taintaware.lazycomplex.IASTaintInformation();
             case UNTAINTED:
                 return com.sap.fontus.taintaware.untainted.IASTaintInformation.INSTANCE;
             default:
@@ -35,13 +34,13 @@ public class TaintInformationFactory {
             case ARRAY:
                 return new com.sap.fontus.taintaware.array.IASTaintInformation(size, ranges);
             case RANGE:
-                return new com.sap.fontus.taintaware.range.IASTaintInformation(ranges);
+                return new com.sap.fontus.taintaware.range.IASTaintInformation(size, ranges);
             case BOOLEAN:
                 return com.sap.fontus.taintaware.bool.IASTaintInformation.TAINTED;
             case LAZYBASIC:
-                return new com.sap.fontus.taintaware.lazybasic.IASTaintInformation(ranges);
-            case LAZYCOMPLEX:
-                return new com.sap.fontus.taintaware.lazycomplex.IASTaintInformation(ranges);
+                return new com.sap.fontus.taintaware.lazybasic.IASTaintInformation(size, ranges);
+//            case LAZYCOMPLEX:
+//                return new com.sap.fontus.taintaware.lazycomplex.IASTaintInformation(ranges);
             case UNTAINTED:
                 return com.sap.fontus.taintaware.untainted.IASTaintInformation.INSTANCE;
             default:

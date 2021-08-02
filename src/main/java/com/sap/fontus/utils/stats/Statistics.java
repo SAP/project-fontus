@@ -2,6 +2,8 @@ package com.sap.fontus.utils.stats;
 
 import com.sap.fontus.Constants;
 import com.sap.fontus.agent.TaintAgent;
+import com.sap.fontus.taintaware.range.IASTaintInformation;
+import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 
 import javax.management.*;
 import java.lang.management.ManagementFactory;
@@ -61,8 +63,13 @@ public enum Statistics implements StatisticsMXBean {
         lazyThresholdExceededCount++;
     }
 
-    public synchronized void addRangeCount(int rangeCount) {
+    public synchronized void addRangeCount(IASTaintInformationable taintInformationable) {
         stringCount++;
+        int rangeCount = 0;
+        if (taintInformationable instanceof IASTaintInformation) {
+            rangeCount = ((IASTaintInformation) taintInformationable).getTaintRanges().getTaintRanges().size();
+        }
+
         taintRangeSum += rangeCount;
         if (rangeCount == 0) {
             untaintedStringCount++;

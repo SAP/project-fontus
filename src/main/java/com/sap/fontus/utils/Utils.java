@@ -63,7 +63,7 @@ public final class Utils {
 
     public static Type instrumentType(Type t, InstrumentationHelper instrumentationHelper) {
         Descriptor desc = Descriptor.parseDescriptor(t.getDescriptor());
-        desc = instrumentationHelper.instrumentForNormalCall(desc);
+        desc = instrumentationHelper.instrument(desc);
         return Type.getType(desc.toDescriptor());
     }
 
@@ -80,7 +80,7 @@ public final class Utils {
         }
 
         Descriptor desc = Descriptor.parseDescriptor(h.getDesc());
-        desc = instrumentationHelper.instrumentForNormalCall(desc);
+        desc = instrumentationHelper.instrument(desc);
         String owner = instrumentationHelper.instrumentQN(h.getOwner());
         return new Handle(h.getTag(), owner, h.getName(), desc.toDescriptor(), h.isInterface());
     }

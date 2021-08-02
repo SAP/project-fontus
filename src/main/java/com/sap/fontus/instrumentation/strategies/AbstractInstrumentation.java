@@ -40,12 +40,12 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
-    public Descriptor instrumentForNormalCall(Descriptor desc) {
+    public Descriptor instrument(Descriptor desc) {
         return desc.replaceType(this.origType.getDescriptor(), this.instrumentedType.getDescriptor());
     }
 
     @Override
-    public String uninstrumentNormalCall(String typeDescriptor) {
+    public String uninstrument(String typeDescriptor) {
         return replaceSuffix(typeDescriptor, this.instrumentedType.getDescriptor(), this.origType.getDescriptor());
     }
 
@@ -54,10 +54,10 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
         return this.qnMatcher.matcher(qn).replaceAll(Matcher.quoteReplacement(this.instrumentedType.getInternalName()));
     }
 
-    @Override
-    public String instrumentDescForIASCall(String desc) {
-        return this.descPattern.matcher(desc).replaceAll(this.instrumentedType.getDescriptor());
-    }
+//    @Override
+//    public String instrumentDescForIASCall(String desc) {
+//        return this.descPattern.matcher(desc).replaceAll(this.instrumentedType.getDescriptor());
+//    }
 
     @Override
     public Optional<String> translateClassName(String className) {
@@ -80,13 +80,13 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     @Override
     public FunctionCall rewriteOwnerMethod(FunctionCall functionCall) {
         if (Type.getObjectType(functionCall.getOwner()).equals(this.origType)) {
-            String newDescriptor = this.instrumentationHelper.instrumentDescForIASCall(functionCall.getDescriptor());
+            Descriptor newDescriptor = this.instrumentationHelper.instrument(functionCall.getParsedDescriptor());
             String newOwner = this.instrumentedType.getInternalName();
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up
             String newName = this.methodsToRename.getOrDefault(functionCall.getName(), functionCall.getName());
 
             logger.info("Rewriting {} invoke [{}] {}.{}{} to {}.{}{}", this.origType.getInternalName(), Utils.opcodeToString(functionCall.getOpcode()), functionCall.getOwner(), functionCall.getName(), functionCall.getName(), newOwner, newName, newDescriptor);
-            return new FunctionCall(functionCall.getOpcode(), newOwner, newName, newDescriptor, functionCall.isInterface());
+            return new FunctionCall(functionCall.getOpcode(), newOwner, newName, newDescriptor.toDescriptor(), functionCall.isInterface());
         }
         return null;
     }

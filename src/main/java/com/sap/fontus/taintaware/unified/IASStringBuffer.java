@@ -47,11 +47,6 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
-    public synchronized void setTaint(List<IASTaintRange> ranges) {
-        super.setTaint(ranges);
-    }
-
-    @Override
     public synchronized boolean isTainted() {
         return super.isTainted();
     }

@@ -1,7 +1,5 @@
 package com.sap.fontus.taintaware.unified;
 
-import com.sap.fontus.taintaware.shared.IASTaintInformationable;
-
 @SuppressWarnings("Since15")
 public final class IASStringBuilder extends IASAbstractStringBuilder {
 

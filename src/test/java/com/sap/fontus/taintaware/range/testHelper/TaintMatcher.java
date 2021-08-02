@@ -1,8 +1,8 @@
 package com.sap.fontus.taintaware.range.testHelper;
 
+import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.range.IASTaintInformation;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
-import com.sap.fontus.taintaware.shared.IASTaintRangeAware;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -30,23 +30,23 @@ public class TaintMatcher {
                     return;
                 }
 
-                mismatchDescription.appendText("was ").appendValue(((IASTaintInformation) ((IASTaintRangeAware) s).getTaintInformation()).getTaintRanges());
+                mismatchDescription.appendText("was ").appendValue(((IASTaintInformation) ((IASTaintAware) s).getTaintInformation()).getTaintRanges());
             }
 
             @Override
             public boolean matches(Object s) {
-                assert s instanceof IASTaintRangeAware;
+                assert s instanceof IASTaintAware;
 
                 operand = s;
-                taintNotInitialized = THelper.isUninitialized((IASTaintRangeAware) s);
+                taintNotInitialized = THelper.isUninitialized((IASTaintAware) s);
 
                 if (taintNotInitialized) {
                     return false;
                 }
 
-                IASTaintInformation tI = (IASTaintInformation) THelper.get((IASTaintRangeAware) s);
+                IASTaintInformation tI = (IASTaintInformation) THelper.get((IASTaintAware) s);
 
-                return tI.getTaintRanges().equals(ranges);
+                return tI.getTaintRanges().getTaintRanges().equals(ranges);
             }
         };
     }
@@ -63,7 +63,7 @@ public class TaintMatcher {
             public boolean matches(Object item) {
                 operand = item;
 
-                return THelper.isUninitialized((IASTaintRangeAware) item);
+                return THelper.isUninitialized((IASTaintAware) item);
             }
 
             @Override

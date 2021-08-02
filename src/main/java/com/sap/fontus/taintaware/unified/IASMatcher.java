@@ -1,7 +1,5 @@
 package com.sap.fontus.taintaware.unified;
 
-import com.sap.fontus.taintaware.shared.IASTaintInformationable;
-
 import java.lang.reflect.Field;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -44,9 +42,9 @@ public final class IASMatcher {
         int end = this.start();
 
         IASString first = this.input.substring(appendPos, end);
-        sb.append(first, true);
-        IASString currRepl = (IASString) replacer.doReplacement(this.matcher, this.input, new IASStringBuilder());
-        sb.append(currRepl, true);
+        sb.append(first);
+        IASString currRepl = replacer.doReplacement(this.matcher, this.input, new IASStringBuilder());
+        sb.append(currRepl);
         appendPos = this.end();
 
         return this;
@@ -55,7 +53,7 @@ public final class IASMatcher {
     public IASStringBuffer appendTail(IASStringBuffer sb) {
         if (appendPos < this.input.length()) {
             IASString last = this.input.substring(appendPos);
-            sb.append(last, true);
+            sb.append(last);
         }
         return sb;
     }
@@ -192,7 +190,7 @@ public final class IASMatcher {
                 final int start = this.start();
                 final int end = this.end();
 
-                taintInformation.replaceTaint(start, end, replacement.getTaintInformation());
+                taintInformation = taintInformation.replaceTaint(start, end, replacement.getTaintInformationInitialized().copy());
             }
         }
 

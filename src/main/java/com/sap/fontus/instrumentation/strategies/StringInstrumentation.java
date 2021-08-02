@@ -4,25 +4,15 @@ import com.sap.fontus.Constants;
 import com.sap.fontus.TriConsumer;
 import com.sap.fontus.config.TaintStringConfig;
 import com.sap.fontus.instrumentation.InstrumentationHelper;
+import com.sap.fontus.taintaware.unified.IASString;
 import org.objectweb.asm.*;
 
 import java.util.Optional;
 import java.util.regex.Matcher;
 
 public class StringInstrumentation extends AbstractInstrumentation {
-    private final TaintStringConfig taintStringConfig;
-    public StringInstrumentation(TaintStringConfig taintStringConfig, InstrumentationHelper instrumentationHelper) {
-        super(Type.getType(String.class), Type.getObjectType(taintStringConfig.getTStringQN()), instrumentationHelper, Constants.TStringToStringName);
-        this.taintStringConfig = taintStringConfig;
-    }
-
-    @Override
-    public String instrumentDescForIASCall(String desc) {
-        String parameters = desc.substring(desc.indexOf("(") + 1, desc.indexOf(")"));
-        parameters = Constants.strPattern.matcher(parameters).replaceAll(this.taintStringConfig.getMethodTStringDesc());
-        String returnType = desc.substring(desc.indexOf(")") + 1);
-        returnType = Constants.strPattern.matcher(returnType).replaceAll(this.taintStringConfig.getTStringDesc());
-        return desc.substring(0, desc.indexOf("(") + 1) + parameters + ")" + returnType;
+    public StringInstrumentation(InstrumentationHelper instrumentationHelper) {
+        super(Type.getType(String.class), Type.getType(IASString.class), instrumentationHelper, Constants.TStringToStringName);
     }
 
     @Override

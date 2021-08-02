@@ -69,7 +69,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.config = config;
         this.containsJSRRET = containsJSRRET;
         this.stringConfig = this.config.getTaintStringConfig();
-        this.instrumentationHelper = new InstrumentationHelper(this.stringConfig);
+        this.instrumentationHelper = new InstrumentationHelper();
         this.newMainDescriptor = "(" + this.stringConfig.getTStringArrayDesc() + ")V";
         this.fillBlacklist();
         this.signatureInstrumenter = new SignatureInstrumenter(this.api, this.instrumentationHelper);
@@ -233,7 +233,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 
     private void generateProxyToInstrumented(MethodVisitor mv, String instrumentedName, Descriptor originalDescriptor, Descriptor instrumentedDescriptor, Optional<LambdaCall> lambdaCall) {
         if (instrumentedDescriptor == null) {
-            instrumentedDescriptor = this.instrumentationHelper.instrumentForNormalCall(originalDescriptor);
+            instrumentedDescriptor = this.instrumentationHelper.instrument(originalDescriptor);
         }
 
         mv.visitCode();
@@ -391,10 +391,10 @@ class ClassTaintingVisitor extends ClassVisitor {
         MethodVisitor mv = super.visitMethod(access, call.getProxyMethodName(), proxyDescriptor.toDescriptor(), null, null);
 
         if (this.combinedExcludedLookup.isPackageExcludedOrJdk(call.getImplementationHandle().getOwner())) {
-            Descriptor uninstrumentedDescriptor = Descriptor.parseDescriptor(this.instrumentationHelper.uninstrumentNormalCall(call.getImplementation().getDescriptor()));
+            Descriptor uninstrumentedDescriptor = Descriptor.parseDescriptor(this.instrumentationHelper.uninstrument(call.getImplementation().getDescriptor()));
             this.generateProxyToJdk(mv, call.getImplementation().getName(), proxyDescriptor, uninstrumentedDescriptor, call);
         } else {
-            Descriptor instrumentedDescriptor = this.instrumentationHelper.instrumentForNormalCall(call.getImplementation().getParsedDescriptor());
+            Descriptor instrumentedDescriptor = this.instrumentationHelper.instrument(call.getImplementation().getParsedDescriptor());
             this.generateProxyToInstrumented(mv, call.getImplementation().getName(), proxyDescriptor, instrumentedDescriptor, Optional.of(call));
         }
 
@@ -427,7 +427,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             String param = proxyDescriptor.getParameters().get(i + diff);
             mv.visitVarInsn(loadCodeByType(param), register);
             if (this.instrumentationHelper.isInstrumented(param) && !param.equals(uninstrumentedDescriptor.getParameters().get(i))) {
-                Type uninstrumentedType = Type.getType(this.instrumentationHelper.uninstrumentNormalCall(param));
+                Type uninstrumentedType = Type.getType(this.instrumentationHelper.uninstrument(param));
 
                 if (uninstrumentedType.equals(Type.getType(String.class))) {
                     mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.stringConfig.getTStringQN(), Constants.ToString, new Descriptor(Type.getType(String.class)).toDescriptor(), false);
@@ -526,7 +526,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
         logger.info("Creating proxy for inherited, but not overridden JDK method " + m);
         Descriptor originalDescriptor = Descriptor.parseDescriptor(m.getDescriptor());
-        Descriptor instrumentedDescriptor = this.instrumentationHelper.instrumentForNormalCall(originalDescriptor);
+        Descriptor instrumentedDescriptor = this.instrumentationHelper.instrument(originalDescriptor);
 
         if (this.instrumentedMethods.contains(new org.objectweb.asm.commons.Method(m.getName(), instrumentedDescriptor.toDescriptor()))) {
             return;
@@ -723,7 +723,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private boolean shouldBeInstrumented(String descriptorString) {
-        String instrumented = this.instrumentationHelper.instrumentDescForIASCall(descriptorString);
+        String instrumented = this.instrumentationHelper.instrumentForNormalCall(descriptorString);
         return !instrumented.equals(descriptorString);
     }
 

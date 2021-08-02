@@ -1,9 +1,9 @@
 package com.sap.fontus;
 
-import com.sap.fontus.taintaware.shared.IASTaintHandler;
+import com.sap.fontus.taintaware.unified.IASCompareProxy;
+import com.sap.fontus.taintaware.unified.IASTaintHandler;
 import com.sap.fontus.utils.ConversionUtils;
 import com.sap.fontus.asm.Descriptor;
-import com.sap.fontus.taintaware.shared.IASCompareProxy;
 import com.sap.fontus.utils.Utils;
 
 import java.util.Properties;

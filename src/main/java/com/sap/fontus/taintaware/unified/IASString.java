@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 
 @SuppressWarnings("ALL")
-public final class IASString implements IASTaintRangeAware, Comparable<IASString>, CharSequence {
+public final class IASString implements IASTaintAware, Comparable<IASString>, CharSequence {
     private final static String SPLIT_LINE_REGEX = "(\\r|\\n|\\r\\n)";
 
     private String string;
@@ -56,16 +56,16 @@ public final class IASString implements IASTaintRangeAware, Comparable<IASString
     public IASString(IASAbstractStringBuilder strb) {
         IASString s = strb.toIASString();
         this.string = s.getString();
-        this.taintInformation = s.getTaintInformationInitialized().copy();
+        this.taintInformation = s.getTaintInformationCopied();
         if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.addRangeCount(this.taintInformation);
             Statistics.INSTANCE.incrementInitialized();
         }
     }
 
-    public IASString(String s, IASTaintInformation taintInformation) {
+    public IASString(String s, IASTaintInformationable taintInformation) {
         this(s);
-        this.taintInformation = taintInformation.clone();
+        this.taintInformation = taintInformation == null ? null : taintInformation.copy();
         if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.addRangeCount(taintInformation);
         }
@@ -73,7 +73,7 @@ public final class IASString implements IASTaintRangeAware, Comparable<IASString
 
     public IASString(CharSequence sequence, IASTaintInformationable taintInformation) {
         this(sequence.toString());
-        this.taintInformation = taintInformation.copy();
+        this.taintInformation = taintInformation == null ? null : taintInformation.copy();
         if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.addRangeCount(this.taintInformation);
         }
@@ -85,6 +85,14 @@ public final class IASString implements IASTaintRangeAware, Comparable<IASString
             return false;
         }
         return this.taintInformation.isTainted();
+    }
+
+    @Override
+    public boolean isTaintedAt(int index) {
+        if (isUninitialized()) {
+            return false;
+        }
+        return this.taintInformation.getTaint(index) != null;
     }
 
     public static IASString tainted(IASString tstr) {
@@ -108,14 +116,14 @@ public final class IASString implements IASTaintRangeAware, Comparable<IASString
     @Override
     public void setTaint(IASTaintSource source) {
         if (isTainted()) {
-            this.taintInformation = this.taintInformation.clear();
+            this.taintInformation = TaintInformationFactory.createTaintInformation(this.length());
         }
         if (source != null) {
             if (isUninitialized()) {
                 if (Configuration.getConfiguration().collectStats()) {
                     Statistics.INSTANCE.incrementInitialized();
                 }
-                this.taintInformation = new IASTaintInformation();
+                this.taintInformation = TaintInformationFactory.createTaintInformation(this.length());
             }
             this.taintInformation = this.taintInformation.addRange(0, this.string.length(), source);
         } else {
@@ -124,49 +132,18 @@ public final class IASString implements IASTaintRangeAware, Comparable<IASString
     }
 
     @Override
-    public void setContent(String content, List<IASTaintRange> taintRanges) {
+    public void setContent(String content, IASTaintInformationable taintInformation) {
         this.string = content;
-        this.setTaint(taintRanges);
-    }
-
-    @Override
-    public void setTaint(List<IASTaintRange> ranges) {
-        if (ranges == null || ranges.size() == 0) {
-            this.taintInformation = null;
-        } else {
-            if (Configuration.getConfiguration().collectStats() && isUninitialized()) {
-                Statistics.INSTANCE.incrementInitialized();
-            }
-            this.taintInformation = new IASTaintInformation(ranges);
-        }
+        this.taintInformation = taintInformation == null ? null : taintInformation.copy();
     }
 
     public void initialize() {
         if (isUninitialized()) {
-            this.taintInformation = new IASTaintInformation();
+            this.taintInformation = TaintInformationFactory.createTaintInformation(this.length());
 
             if (Configuration.getConfiguration().collectStats() && isUninitialized()) {
                 Statistics.INSTANCE.incrementInitialized();
             }
-        }
-    }
-
-    @Override
-    public boolean isTaintedAt(int index) {
-        if (isUninitialized()) {
-            return false;
-        }
-        return this.taintInformation.isTaintedAt(index);
-    }
-
-    private void addRangesFrom(List<IASTaintRange> ranges) {
-        if (isUninitialized() && ranges.size() > 0) {
-            this.taintInformation = new IASTaintInformation(ranges);
-            if (Configuration.getConfiguration().collectStats()) {
-                Statistics.INSTANCE.incrementInitialized();
-            }
-        } else if (ranges.size() > 0) {
-            this.taintInformation.addRanges(ranges);
         }
     }
 
@@ -220,15 +197,15 @@ public final class IASString implements IASTaintRangeAware, Comparable<IASString
     }
 
     public IASString(IASStringBuilder builder) {
-        this(builder.toString(), builder.getTaintInformation().copy());
+        this(builder.toString(), builder.getTaintInformationCopied());
     }
 
     public IASString(IASStringBuffer buffer) {
-        this(buffer.toString(), buffer.getTaintInformation().copy());
+        this(buffer.toString(), buffer.getTaintInformationCopied());
     }
 
     public IASString(IASString string) {
-        this(string.string, string.getTaintInformation());
+        this(string.string, string.getTaintInformationCopied());
     }
 
     /**
@@ -382,16 +359,6 @@ public final class IASString implements IASTaintRangeAware, Comparable<IASString
         return this.string.lastIndexOf(str.getString(), fromIndex);
     }
 
-    private List<IASTaintRange> getSubstringRanges(int beginIndex, int endIndex) {
-        if (isTainted()) {
-            List<IASTaintRange> ranges = this.taintInformation.getTaintRanges(beginIndex, endIndex);
-            IASTaintRangeUtils.adjustRanges(ranges, beginIndex, endIndex, beginIndex);
-            return ranges;
-        } else {
-            return new ArrayList<>(0);
-        }
-    }
-
     public IASString substring(int beginIndex) {
         IASTaintInformationable newInfo = this.taintInformation != null ? taintInformation.slice(beginIndex, this.string.length()) : null;
         return new IASString(this.string.substring(beginIndex), newInfo);
@@ -419,13 +386,9 @@ public final class IASString implements IASTaintRangeAware, Comparable<IASString
         IASTaintInformationable taintInformation = null;
         if (this.taintInformation != null || str.taintInformation != null) {
             taintInformation = this.taintInformation == null ? TaintInformationFactory.createTaintInformation(this.string.length()) : this.taintInformation.copy();
-            taintInformation = taintInformation.insertTaint(this.string.length(), taintInformation);
+            taintInformation = taintInformation.insertWithShift(this.string.length(), str.getTaintInformationInitialized());
         }
         return new IASString(this.string.concat(str.getString()), taintInformation);
-    }
-
-    List<IASTaintRange> getAllRanges() {
-        return isTainted() ? this.taintInformation.getTaintRanges(0, this.string.length()) : new ArrayList<>(0);
     }
 
     /**
@@ -437,7 +400,7 @@ public final class IASString implements IASTaintRangeAware, Comparable<IASString
      * @return
      */
     public IASString replace(char oldChar, char newChar) {
-        return new IASString(this.string.replace(oldChar, newChar), this.taintInformation.copy());
+        return new IASString(this.string.replace(oldChar, newChar), this.getTaintInformationCopied());
     }
 
     public boolean matches(IASString regex) {
@@ -519,19 +482,19 @@ public final class IASString implements IASTaintRangeAware, Comparable<IASString
     }
 
     public IASString toLowerCase(Locale locale) {
-        return new IASString(this.string.toLowerCase(locale), this.taintInformation.copy());
+        return new IASString(this.string.toLowerCase(locale), this.getTaintInformationCopied());
     }
 
     public IASString toLowerCase() {
-        return new IASString(this.string.toLowerCase(), this.taintInformation.copy());
+        return new IASString(this.string.toLowerCase(), this.getTaintInformationCopied());
     }
 
     public IASString toUpperCase(Locale locale) {
-        return new IASString(this.string.toUpperCase(locale), this.taintInformation.copy());
+        return new IASString(this.string.toUpperCase(locale), this.getTaintInformationCopied());
     }
 
     public IASString toUpperCase() {
-        return new IASString(this.string.toUpperCase(), this.taintInformation.copy());
+        return new IASString(this.string.toUpperCase(), this.getTaintInformationCopied());
     }
 
     public IASString trim() {
@@ -587,6 +550,11 @@ public final class IASString implements IASTaintRangeAware, Comparable<IASString
 
     public IASString toIASString() {
         return this;
+    }
+
+    @Override
+    public boolean isInitialized() {
+        return this.taintInformation != null;
     }
 
     public IntStream chars() {
@@ -731,19 +699,16 @@ public final class IASString implements IASTaintRangeAware, Comparable<IASString
         return taintInformation != null ? this.taintInformation : TaintInformationFactory.createTaintInformation(this.string.length());
     }
 
+    public IASTaintInformationable getTaintInformationCopied() {
+        return taintInformation != null ? this.taintInformation.copy() : null;
+    }
+
     public boolean isUninitialized() {
         return this.taintInformation == null;
     }
 
     public static final Comparator<IASString> CASE_INSENSITIVE_ORDER
             = new CaseInsensitiveComparator();
-
-    public IASTaintSource getTaintFor(int position) {
-        if (isUninitialized()) {
-            return null;
-        }
-        return this.taintInformation.getTaintFor(position);
-    }
 
     private static class CaseInsensitiveComparator
             implements Comparator<IASString>, java.io.Serializable {

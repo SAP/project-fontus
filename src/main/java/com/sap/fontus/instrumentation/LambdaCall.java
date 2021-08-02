@@ -77,7 +77,7 @@ public class LambdaCall implements Serializable {
         Descriptor interfaceDescriptor = method.getParsedDescriptor();
 
         Descriptor implementationDesc = this.implementation.getParsedDescriptor();
-        Descriptor instrumentedImplementationDesc = instrumentationHelper.instrumentForNormalCall(implementationDesc);
+        Descriptor instrumentedImplementationDesc = instrumentationHelper.instrument(implementationDesc);
 
         List<String> proxyParameters = new ArrayList<>(implementationDesc.parameterCount());
         if (this.isInstanceCall()) {
@@ -117,7 +117,7 @@ public class LambdaCall implements Serializable {
         Descriptor interfaceDescriptor = method.getParsedDescriptor();
 
         Descriptor implementationDesc = this.implementation.getParsedDescriptor();
-        Descriptor instrumentedImplementationDesc = instrumentationHelper.instrumentForNormalCall(implementationDesc);
+        Descriptor instrumentedImplementationDesc = instrumentationHelper.instrument(implementationDesc);
 
         List<String> mergedParameters = new ArrayList<>(implementationDesc.parameterCount());
         int enclosedCount = instrumentedImplementationDesc.parameterCount() - interfaceDescriptor.parameterCount();
@@ -132,7 +132,7 @@ public class LambdaCall implements Serializable {
             Type implementationParam = Type.getType(implementationDesc.getParameters().get(i));
 
             if (instrumentationHelper.isInstrumented(implementationParam.getDescriptor())) {
-                String uninstrumented = instrumentationHelper.uninstrumentNormalCall(implementationParam.getDescriptor());
+                String uninstrumented = instrumentationHelper.uninstrument(implementationParam.getDescriptor());
                 mergedParameters.add(uninstrumented);
             } else {
                 mergedParameters.add(implementationParam.getDescriptor());
@@ -149,7 +149,7 @@ public class LambdaCall implements Serializable {
 
         Type returnType;
         if (instrumentationHelper.isInstrumented(implementationReturn.getDescriptor())) {
-            String uninstrumented = instrumentationHelper.uninstrumentNormalCall(implementationReturn.getDescriptor());
+            String uninstrumented = instrumentationHelper.uninstrument(implementationReturn.getDescriptor());
             returnType = Type.getType(uninstrumented);
         } else {
             returnType = implementationReturn;

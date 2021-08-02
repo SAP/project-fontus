@@ -1,11 +1,13 @@
 package com.sap.fontus.taintaware.lazybasic;
 
 import com.sap.fontus.config.Configuration;
+import com.sap.fontus.taintaware.lazybasic.operation.DeleteLayer;
+import com.sap.fontus.taintaware.lazybasic.operation.InsertLayer;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
 import com.sap.fontus.utils.stats.Statistics;
 import com.sap.fontus.taintaware.lazybasic.operation.BaseLayer;
-import com.sap.fontus.taintaware.shared.IASTaintInformationable;
+import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 import com.sap.fontus.taintaware.shared.IASTaintRanges;
 
 import java.util.*;
@@ -23,15 +25,27 @@ public class IASTaintInformation implements IASTaintInformationable {
         }
     }
 
-    public IASTaintInformation(BaseLayer baseLayer) {
-        this.layers = new ArrayList<>(Collections.singletonList(baseLayer));
-    }
-
-    public IASTaintInformation() {
+    public IASTaintInformation(IASTaintInformation previous) {
         this.layers = new ArrayList<>();
+        this.previous = previous;
         if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.incrementLazyTaintInformationCreated();
         }
+    }
+
+    public IASTaintInformation(BaseLayer baseLayer) {
+        this.layers = new ArrayList<>(Collections.singletonList(baseLayer));
+        if (Configuration.getConfiguration().collectStats()) {
+            Statistics.INSTANCE.incrementLazyTaintInformationCreated();
+        }
+    }
+
+    public IASTaintInformation(int size) {
+        this(new BaseLayer(size));
+    }
+
+    public IASTaintInformation(int size, List<IASTaintRange> ranges) {
+        this(new BaseLayer(new IASTaintRanges(size, ranges)));
     }
 
     private synchronized void appendLayers(List<IASLayer> layers) {
@@ -50,8 +64,13 @@ public class IASTaintInformation implements IASTaintInformationable {
         this.layers.add(layer);
     }
 
-    public synchronized List<IASTaintRange> getTaintRanges() {
-        return new ArrayList<>(this.evaluate());
+    public synchronized IASTaintRanges getTaintRanges() {
+        return this.evaluate().copy();
+    }
+
+    @Override
+    public IASTaintRanges getTaintRanges(int length) {
+        return this.getTaintRanges();
     }
 
     private synchronized int getLayerDepth() {
@@ -66,9 +85,9 @@ public class IASTaintInformation implements IASTaintInformationable {
         return this.layers == null ? 0 : this.layers.size();
     }
 
-    private synchronized List<IASTaintRange> getPreviousRanges() {
+    private synchronized IASTaintRanges getPreviousRanges() {
         if (this.previous == null) {
-            return new ArrayList<>(0);
+            return null;
         }
         return this.previous.getTaintRanges();
     }
@@ -77,7 +96,7 @@ public class IASTaintInformation implements IASTaintInformationable {
         return this.layers.size() == 1 && this.layers.get(0) instanceof BaseLayer;
     }
 
-    private synchronized List<IASTaintRange> evaluate() {
+    private synchronized IASTaintRanges evaluate() {
         if (this.isBase()) {
             return ((BaseLayer) this.layers.get(0)).getBase();
         }
@@ -86,7 +105,7 @@ public class IASTaintInformation implements IASTaintInformationable {
             Statistics.INSTANCE.incrementLazyTaintInformationEvaluated();
         }
 
-        List<IASTaintRange> previousRanges = this.getPreviousRanges();
+        IASTaintRanges previousRanges = this.getPreviousRanges();
         for (IASLayer layer : this.layers) {
             previousRanges = layer.apply(previousRanges);
         }
@@ -96,7 +115,7 @@ public class IASTaintInformation implements IASTaintInformationable {
         return previousRanges;
     }
 
-    private synchronized void cache(List<IASTaintRange> ranges) {
+    private synchronized void cache(IASTaintRanges ranges) {
         if (Configuration.getConfiguration().useCaching()) {
             this.layers.clear();
             this.layers.add(new BaseLayer(ranges));
@@ -105,14 +124,92 @@ public class IASTaintInformation implements IASTaintInformationable {
     }
 
     public synchronized boolean isTainted() {
-        return this.getTaintRanges().size() > 0;
+        return this.getTaintRanges().isTainted();
     }
 
-    public synchronized IASTaintSource getTaintFor(int position) {
-        return new IASTaintRanges(this.getTaintRanges()).getTaintFor(position);
+    @Override
+    public IASTaintInformationable deleteWithShift(int start, int end) {
+        IASTaintInformation copied = this.copy();
+        copied.layers.add(new DeleteLayer(start, end));
+        return copied;
+    }
+
+    @Override
+    public IASTaintInformationable clearTaint(int start, int end) {
+        return this.replaceTaint(start, end, new IASTaintInformation(end - start));
+    }
+
+    @Override
+    public IASTaintInformationable replaceTaint(int start, int end, IASTaintInformationable taintInformation) {
+        IASTaintInformation copied = this.copy();
+        copied.layers.add(new DeleteLayer(start, end));
+        copied.layers.add(new InsertLayer(start, (IASTaintInformation) taintInformation));
+        return copied;
+    }
+
+    @Override
+    public IASTaintInformationable insertWithShift(int offset, IASTaintInformationable taintInformation) {
+        IASTaintInformation copied = this.copy();
+        copied.layers.add(new InsertLayer(offset, (IASTaintInformation) taintInformation));
+        return copied;
+    }
+
+    @Override
+    public IASTaintInformation copy() {
+        return new IASTaintInformation(this);
+    }
+
+    @Override
+    public void reversed() {
+        List<IASLayer> layers = new ArrayList<>();
+        IASTaintRanges ranges = this.getTaintRanges();
+        layers.add(new DeleteLayer(0, ranges.getLength()));
+        for (int i = 0; i < ranges.getLength(); i++) {
+            int swap = ranges.getLength() - i - 1;
+            IASTaintInformation other = new IASTaintInformation(Arrays.asList(
+                    new DeleteLayer(swap + 1, ranges.getLength()),
+                    new DeleteLayer(0, swap)
+            ), this);
+
+            InsertLayer layer = new InsertLayer(i, other);
+            layers.add(layer);
+        }
+        this.appendLayers(layers);
+    }
+
+    @Override
+    public synchronized IASTaintSource getTaint(int position) {
+        return this.getTaintRanges().getTaintFor(position);
+    }
+
+    @Override
+    public IASTaintInformationable setTaint(int start, int end, IASTaintSource taint) {
+        this.layers.add(new DeleteLayer(start, end));
+        this.layers.add(new InsertLayer(start, new IASTaintInformation(end - start, Arrays.asList(new IASTaintRange(0, end - start, taint)))));
+        return this;
+    }
+
+    @Override
+    public IASTaintInformationable resize(int length) {
+        IASTaintRanges ranges = this.getTaintRanges();
+        ranges.resize(length);
+        this.cache(ranges);
+        return this;
+    }
+
+    @Override
+    public IASTaintInformationable slice(int start, int end) {
+        IASTaintInformation sliced = this.copy();
+        sliced.appendLayer(new DeleteLayer(end));
+        sliced.appendLayer(new DeleteLayer(0, start));
+        return sliced;
     }
 
     public synchronized boolean isTaintedAt(int index) {
-        return new IASTaintRanges(this.getTaintRanges()).isTaintedAt(index);
+        return this.getTaintRanges().isTaintedAt(index);
+    }
+
+    public int getLength() {
+        return this.getTaintRanges().getLength();
     }
 }

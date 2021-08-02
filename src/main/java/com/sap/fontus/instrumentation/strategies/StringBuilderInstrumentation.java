@@ -3,22 +3,11 @@ package com.sap.fontus.instrumentation.strategies;
 import com.sap.fontus.Constants;
 import com.sap.fontus.config.TaintStringConfig;
 import com.sap.fontus.instrumentation.InstrumentationHelper;
+import com.sap.fontus.taintaware.unified.IASStringBuilder;
 import org.objectweb.asm.Type;
 
 public class StringBuilderInstrumentation extends AbstractInstrumentation {
-    protected final TaintStringConfig stringConfig;
-
-    public StringBuilderInstrumentation(TaintStringConfig configuration, InstrumentationHelper instrumentationHelper) {
-        super(Type.getType(StringBuilder.class), Type.getType(configuration.getTStringBuilderDesc()), instrumentationHelper, Constants.TStringBuilderToStringBuilderName);
-        this.stringConfig = configuration;
-    }
-
-    @Override
-    public String instrumentDescForIASCall(String desc) {
-        String parameters = desc.substring(desc.indexOf("(") + 1, desc.indexOf(")"));
-        parameters = Constants.strBuilderPattern.matcher(parameters).replaceAll(this.stringConfig.getMethodTStringBuilderDesc());
-        String returnType = desc.substring(desc.indexOf(")") + 1);
-        returnType = Constants.strBuilderPattern.matcher(returnType).replaceAll(this.stringConfig.getTStringBuilderDesc());
-        return desc.substring(0, desc.indexOf("(") + 1) + parameters + ")" + returnType;
+    public StringBuilderInstrumentation(InstrumentationHelper instrumentationHelper) {
+        super(Type.getType(StringBuilder.class), Type.getType(IASStringBuilder.class), instrumentationHelper, Constants.TStringBuilderToStringBuilderName);
     }
 }

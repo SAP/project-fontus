@@ -1,8 +1,10 @@
 package com.sap.fontus;
 
 import com.sap.fontus.asm.Descriptor;
+import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.config.TaintStringConfig;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -19,7 +21,12 @@ import java.util.stream.Stream;
 
 @SuppressWarnings({"DuplicateStringLiteralInspection", "SpellCheckingInspection", "ClassIndependentOfModule", "ClassOnlyUsedInOneModule"})
 class DescriptorTests {
-    private static final TaintStringConfig taintStringConfig = new TaintStringConfig(TaintMethod.defaultTaintMethod());
+    private static final TaintStringConfig taintStringConfig = new TaintStringConfig(TaintMethod.RANGE);
+
+    @BeforeAll
+    public static void init() {
+        Configuration.setTestConfig(TaintMethod.RANGE);
+    }
 
     @Test
     void parseCharArrayDescriptor() {

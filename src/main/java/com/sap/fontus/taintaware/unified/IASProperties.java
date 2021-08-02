@@ -355,7 +355,7 @@ public class IASProperties extends Hashtable<Object, Object> {
         return IASProperties.fromProperties((Properties) this.properties.clone());
     }
 
-    private static IASProperties fromProperties(Properties clone) {
+    public static IASProperties fromProperties(Properties clone) {
         return new IASProperties(clone);
     }
 

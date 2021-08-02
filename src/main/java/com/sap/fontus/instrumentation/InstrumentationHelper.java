@@ -3,7 +3,6 @@ package com.sap.fontus.instrumentation;
 import com.sap.fontus.TriConsumer;
 import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.asm.FunctionCall;
-import com.sap.fontus.config.TaintStringConfig;
 import com.sap.fontus.instrumentation.strategies.*;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
@@ -17,16 +16,16 @@ import java.util.Optional;
 public final class InstrumentationHelper implements InstrumentationStrategy {
     private final Collection<InstrumentationStrategy> strategies = new ArrayList<>(10);
 
-    public InstrumentationHelper(TaintStringConfig configuration) {
-        this.strategies.add(new FormatterInstrumentation(configuration, this));
-        this.strategies.add(new MatcherInstrumentation(configuration, this));
-        this.strategies.add(new PatternInstrumentation(configuration, this));
-        this.strategies.add(new StringInstrumentation(configuration, this));
-        this.strategies.add(new StringBuilderInstrumentation(configuration, this));
-        this.strategies.add(new StringBufferInstrumentation(configuration, this));
-        this.strategies.add(new PropertiesStrategy(configuration, this));
+    public InstrumentationHelper() {
+        this.strategies.add(new FormatterInstrumentation(this));
+        this.strategies.add(new MatcherInstrumentation(this));
+        this.strategies.add(new PatternInstrumentation(this));
+        this.strategies.add(new StringInstrumentation(this));
+        this.strategies.add(new StringBuilderInstrumentation(this));
+        this.strategies.add(new StringBufferInstrumentation(this));
+        this.strategies.add(new PropertiesStrategy(this));
         this.strategies.add(new ProxyInstrumentation(this));
-        this.strategies.add(new DefaultInstrumentation(configuration));
+        this.strategies.add(new DefaultInstrumentation());
     }
 
     @Override
@@ -46,42 +45,38 @@ public final class InstrumentationHelper implements InstrumentationStrategy {
      * This instruments the descriptors for normal application classes (uses the actual taintaware classes (e.g. IASString))
      */
     public String instrumentForNormalCall(String desc) {
-        return this.instrumentForNormalCall(Descriptor.parseDescriptor(desc)).toDescriptor();
+        return this.instrument(Descriptor.parseDescriptor(desc)).toDescriptor();
     }
 
     /**
      * This instruments the descriptors for normal application classes (uses the actual taintaware classes (e.g. IASString))
      */
     @Override
-    public Descriptor instrumentForNormalCall(Descriptor desc) {
+    public Descriptor instrument(Descriptor desc) {
         Descriptor newDesc = desc;
         for (InstrumentationStrategy is : this.strategies) {
-            newDesc = is.instrumentForNormalCall(newDesc);
+            newDesc = is.instrument(newDesc);
         }
         return newDesc;
     }
 
     @Override
-    public String uninstrumentNormalCall(String typeDescriptor) {
+    public String uninstrument(String typeDescriptor) {
         String newDesc = typeDescriptor;
         for (InstrumentationStrategy is : this.strategies) {
-            newDesc = is.uninstrumentNormalCall(newDesc);
+            newDesc = is.uninstrument(newDesc);
         }
         return newDesc;
     }
 
-    public Descriptor uninstrumentNormalCall(Descriptor typeDescriptor) {
-        return Descriptor.parseDescriptor(this.uninstrumentNormalCall(typeDescriptor.toDescriptor()));
-    }
-
-    @Override
-    public String instrumentDescForIASCall(String desc) {
-        String newDesc = desc;
-        for (InstrumentationStrategy is : this.strategies) {
-            newDesc = is.instrumentDescForIASCall(newDesc);
-        }
-        return newDesc;
-    }
+//    @Override
+//    public String instrumentDescForIASCall(String desc) {
+//        String newDesc = desc;
+//        for (InstrumentationStrategy is : this.strategies) {
+//            newDesc = is.instrumentDescForIASCall(newDesc);
+//        }
+//        return newDesc;
+//    }
 
     @Override
     public Optional<String> translateClassName(String clazzName) {
