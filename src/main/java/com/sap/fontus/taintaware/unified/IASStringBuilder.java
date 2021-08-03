@@ -44,7 +44,11 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
         return (IASStringBuilder) super.append(str);
     }
 
-    public IASStringBuilder append(IASAbstractStringBuilder strb) {
+    public IASStringBuilder append(IASStringBuilder strb) {
+        return (IASStringBuilder) super.append(strb);
+    }
+
+    public IASStringBuilder append(IASStringBuffer strb) {
         return (IASStringBuilder) super.append(strb);
     }
 
@@ -156,5 +160,9 @@ public final class IASStringBuilder extends IASAbstractStringBuilder {
 
     public IASStringBuilder reverse() {
         return (IASStringBuilder) super.reverse();
+    }
+
+    public int compareTo(IASStringBuilder o) {
+        return super.compareTo(o);
     }
 }

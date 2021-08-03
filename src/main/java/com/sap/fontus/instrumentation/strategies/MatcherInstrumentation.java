@@ -1,7 +1,6 @@
 package com.sap.fontus.instrumentation.strategies;
 
 import com.sap.fontus.Constants;
-import com.sap.fontus.config.TaintStringConfig;
 import com.sap.fontus.instrumentation.InstrumentationHelper;
 import com.sap.fontus.taintaware.unified.IASMatcher;
 import org.objectweb.asm.Type;

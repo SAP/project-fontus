@@ -4,7 +4,7 @@ import com.sap.fontus.Constants;
 import com.sap.fontus.asm.*;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
-import com.sap.fontus.config.TaintStringConfig;
+import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.utils.*;
 import com.sap.fontus.utils.lookups.AnnotationLookup;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
@@ -18,8 +18,6 @@ import java.util.stream.Collectors;
 
 class ClassTaintingVisitor extends ClassVisitor {
     private static final Logger logger = LogUtils.getLogger();
-
-    private final TaintStringConfig stringConfig;
 
     private final List<BlackListEntry> blacklist = new ArrayList<>();
     /**
@@ -68,15 +66,11 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.loader = loader;
         this.config = config;
         this.containsJSRRET = containsJSRRET;
-        this.stringConfig = this.config.getTaintStringConfig();
         this.instrumentationHelper = new InstrumentationHelper();
-        this.newMainDescriptor = "(" + this.stringConfig.getTStringArrayDesc() + ")V";
+        this.newMainDescriptor = "(" + Type.getDescriptor(IASString[].class) + ")V";
         this.fillBlacklist();
         this.signatureInstrumenter = new SignatureInstrumenter(this.api, this.instrumentationHelper);
         this.combinedExcludedLookup = new CombinedExcludedLookup(loader);
-    }
-
-    private void fillStrategies() {
     }
 
     private void fillBlacklist() {
@@ -259,7 +253,7 @@ class ClassTaintingVisitor extends ClassVisitor {
                 Type instrumentedType = Type.getType(this.instrumentationHelper.instrumentQN(param));
 
                 if (Type.getType(param).equals(Type.getType(String.class))) {
-                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringQN(), Constants.FROM_STRING, this.stringConfig.getFromStringDesc(), false);
+                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASString.class), Constants.FROM_STRING, Constants.FROM_STRING_DESCRIPTOR, false);
                 } else {
                     mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
                     mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedType.getInternalName());
@@ -430,7 +424,7 @@ class ClassTaintingVisitor extends ClassVisitor {
                 Type uninstrumentedType = Type.getType(this.instrumentationHelper.uninstrument(param));
 
                 if (uninstrumentedType.equals(Type.getType(String.class))) {
-                    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.stringConfig.getTStringQN(), Constants.ToString, new Descriptor(Type.getType(String.class)).toDescriptor(), false);
+                    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(IASString.class), Constants.ToString, new Descriptor(Type.getType(String.class)).toDescriptor(), false);
                 } else {
                     mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
                     mv.visitTypeInsn(Opcodes.CHECKCAST, uninstrumentedType.getInternalName());
@@ -567,7 +561,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             mv.visitVarInsn(loadCodeByType(instrOrigParam), i);
             if (!instrOrigParam.equals(proxyParam)) {
                 // Only strings are possible as tainted type, therefore it must always be a string conversion
-                mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringQN(), Constants.FROM_STRING, this.stringConfig.getFromStringDesc(), false);
+                mv.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASString.class), Constants.FROM_STRING, Constants.FROM_STRING_DESCRIPTOR, false);
             }
         }
 
@@ -682,7 +676,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitLabel(label0);
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitInsn(Opcodes.ARRAYLENGTH);
-        mv.visitTypeInsn(Opcodes.ANEWARRAY, this.stringConfig.getTStringQN());
+        mv.visitTypeInsn(Opcodes.ANEWARRAY, Type.getInternalName(IASString.class));
         mv.visitVarInsn(Opcodes.ASTORE, 1);
         Label label1 = new Label();
         mv.visitLabel(label1);
@@ -690,7 +684,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitVarInsn(Opcodes.ISTORE, 2);
         Label label2 = new Label();
         mv.visitLabel(label2);
-        mv.visitFrame(Opcodes.F_APPEND, 2, new Object[]{this.stringConfig.getTStringArrayDesc(), Opcodes.INTEGER}, 0, null);
+        mv.visitFrame(Opcodes.F_APPEND, 2, new Object[]{Type.getDescriptor(IASString[].class), Opcodes.INTEGER}, 0, null);
         mv.visitVarInsn(Opcodes.ILOAD, 2);
         mv.visitVarInsn(Opcodes.ALOAD, 1);
         mv.visitInsn(Opcodes.ARRAYLENGTH);
@@ -700,12 +694,12 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitLabel(label4);
         mv.visitVarInsn(Opcodes.ALOAD, 1);
         mv.visitVarInsn(Opcodes.ILOAD, 2);
-        mv.visitTypeInsn(Opcodes.NEW, this.stringConfig.getTStringQN());
+        mv.visitTypeInsn(Opcodes.NEW, Type.getInternalName(IASString.class));
         mv.visitInsn(Opcodes.DUP);
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitVarInsn(Opcodes.ILOAD, 2);
         mv.visitInsn(Opcodes.AALOAD);
-        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.stringConfig.getTStringQN(), Constants.Init, Constants.TStringInitUntaintedDesc, false);
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Type.getInternalName(IASString.class), Constants.Init, Constants.TStringInitUntaintedDesc, false);
         mv.visitInsn(Opcodes.AASTORE);
         Label label5 = new Label();
         mv.visitLabel(label5);

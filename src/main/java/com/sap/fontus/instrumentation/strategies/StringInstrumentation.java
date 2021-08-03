@@ -2,7 +2,6 @@ package com.sap.fontus.instrumentation.strategies;
 
 import com.sap.fontus.Constants;
 import com.sap.fontus.TriConsumer;
-import com.sap.fontus.config.TaintStringConfig;
 import com.sap.fontus.instrumentation.InstrumentationHelper;
 import com.sap.fontus.taintaware.unified.IASString;
 import org.objectweb.asm.*;

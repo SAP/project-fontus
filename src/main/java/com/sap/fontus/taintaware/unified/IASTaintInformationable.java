@@ -27,7 +27,7 @@ public interface IASTaintInformationable extends Serializable {
         return this.setTaint(start, end, IASTaintSourceRegistry.getInstance().get(sourceId));
     }
 
-    void reversed();
+    IASTaintInformationable reversed();
 
     IASTaintSource getTaint(int index);
 

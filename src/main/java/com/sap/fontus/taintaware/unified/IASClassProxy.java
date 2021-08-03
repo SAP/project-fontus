@@ -1,13 +1,10 @@
 package com.sap.fontus.taintaware.unified;
 
 import com.sap.fontus.Constants;
-import com.sap.fontus.config.Configuration;
-import com.sap.fontus.config.TaintStringConfig;
 import com.sap.fontus.instrumentation.InstrumentationHelper;
 import com.sap.fontus.utils.ReflectionUtils;
 
 public class IASClassProxy {
-    private static final TaintStringConfig tsc = new TaintStringConfig(Configuration.getConfiguration().getTaintMethod());
     private static final InstrumentationHelper instrumentationHelper = new InstrumentationHelper();
 
     @SuppressWarnings("Since15")

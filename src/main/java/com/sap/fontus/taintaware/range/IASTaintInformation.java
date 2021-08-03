@@ -58,8 +58,9 @@ public class IASTaintInformation implements IASTaintInformationable {
     }
 
     @Override
-    public void reversed() {
+    public IASTaintInformationable reversed() {
         this.ranges.reversed();
+        return this;
     }
 
     @Override

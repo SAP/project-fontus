@@ -94,9 +94,9 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
     }
 
     public IASAbstractStringBuilder append(IASString str) {
-        this.appendShifted(str.getTaintInformationCopied(), str.length());
+        this.appendShifted(str == null ? null : str.getTaintInformationCopied(), str == null ? 4 : str.length());
 
-        this.stringBuilder.append(str.getString());
+        this.stringBuilder.append(str == null ? null : str.getString());
         return this;
     }
 

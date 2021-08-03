@@ -61,9 +61,12 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
         return (IASStringBuffer) super.append(str);
     }
 
-    @Override
-    public synchronized IASStringBuffer append(IASAbstractStringBuilder strb) {
+    public synchronized IASStringBuffer append(IASStringBuffer strb) {
         return (IASStringBuffer) super.append(strb);
+    }
+
+    public synchronized IASStringBuilder append(IASStringBuilder strb) {
+        return (IASStringBuilder) super.append(strb);
     }
 
     @Override
@@ -291,6 +294,10 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
         return super.getStringBuilder();
     }
 
+    public synchronized StringBuffer getStringBuffer() {
+        return new StringBuffer(super.getStringBuilder());
+    }
+
     public synchronized StringBuffer getBuffer() {
         return new StringBuffer(super.getStringBuilder());
     }
@@ -325,8 +332,7 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
         super.setTaint(source);
     }
 
-    @Override
-    public synchronized int compareTo(IASAbstractStringBuilder o) {
+    public synchronized int compareTo(IASStringBuffer o) {
         return super.compareTo(o);
     }
 }

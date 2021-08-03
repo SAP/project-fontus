@@ -150,10 +150,11 @@ public class IASTaintInformation implements IASTaintInformationable {
     }
 
     @Override
-    public void reversed() {
+    public IASTaintInformationable reversed() {
         for (int i = 0; i < this.taints.length / 2; i++) {
             this.switchTaint(i, this.taints.length - i - 1);
         }
+        return this;
     }
 
     public void switchTaint(int first, int second) {

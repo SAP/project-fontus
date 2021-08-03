@@ -4,7 +4,6 @@ import com.sap.fontus.Constants;
 import com.sap.fontus.TriConsumer;
 import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.asm.FunctionCall;
-import com.sap.fontus.config.TaintStringConfig;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;

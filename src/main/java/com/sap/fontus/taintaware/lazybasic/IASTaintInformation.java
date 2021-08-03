@@ -48,6 +48,10 @@ public class IASTaintInformation implements IASTaintInformationable {
         this(new BaseLayer(new IASTaintRanges(size, ranges)));
     }
 
+    public IASTaintInformation(IASTaintRanges ranges) {
+        this(new BaseLayer(ranges));
+    }
+
     private synchronized void appendLayers(List<IASLayer> layers) {
         for (IASLayer layer : layers) {
             this.appendLayer(layer);
@@ -130,7 +134,7 @@ public class IASTaintInformation implements IASTaintInformationable {
     @Override
     public IASTaintInformationable deleteWithShift(int start, int end) {
         IASTaintInformation copied = this.copy();
-        copied.layers.add(new DeleteLayer(start, end));
+        copied.appendLayer(new DeleteLayer(start, end));
         return copied;
     }
 
@@ -142,15 +146,15 @@ public class IASTaintInformation implements IASTaintInformationable {
     @Override
     public IASTaintInformationable replaceTaint(int start, int end, IASTaintInformationable taintInformation) {
         IASTaintInformation copied = this.copy();
-        copied.layers.add(new DeleteLayer(start, end));
-        copied.layers.add(new InsertLayer(start, (IASTaintInformation) taintInformation));
+        copied.appendLayer(new DeleteLayer(start, end));
+        copied.appendLayer(new InsertLayer(start, (IASTaintInformation) taintInformation));
         return copied;
     }
 
     @Override
     public IASTaintInformationable insertWithShift(int offset, IASTaintInformationable taintInformation) {
         IASTaintInformation copied = this.copy();
-        copied.layers.add(new InsertLayer(offset, (IASTaintInformation) taintInformation));
+        copied.appendLayer(new InsertLayer(offset, (IASTaintInformation) taintInformation));
         return copied;
     }
 
@@ -160,21 +164,10 @@ public class IASTaintInformation implements IASTaintInformationable {
     }
 
     @Override
-    public void reversed() {
-        List<IASLayer> layers = new ArrayList<>();
+    public IASTaintInformationable reversed() {
         IASTaintRanges ranges = this.getTaintRanges();
-        layers.add(new DeleteLayer(0, ranges.getLength()));
-        for (int i = 0; i < ranges.getLength(); i++) {
-            int swap = ranges.getLength() - i - 1;
-            IASTaintInformation other = new IASTaintInformation(Arrays.asList(
-                    new DeleteLayer(swap + 1, ranges.getLength()),
-                    new DeleteLayer(0, swap)
-            ), this);
-
-            InsertLayer layer = new InsertLayer(i, other);
-            layers.add(layer);
-        }
-        this.appendLayers(layers);
+        ranges.reversed();
+        return new IASTaintInformation(ranges);
     }
 
     @Override
@@ -184,8 +177,8 @@ public class IASTaintInformation implements IASTaintInformationable {
 
     @Override
     public IASTaintInformationable setTaint(int start, int end, IASTaintSource taint) {
-        this.layers.add(new DeleteLayer(start, end));
-        this.layers.add(new InsertLayer(start, new IASTaintInformation(end - start, Arrays.asList(new IASTaintRange(0, end - start, taint)))));
+        this.appendLayer(new DeleteLayer(start, end));
+        this.appendLayer(new InsertLayer(start, new IASTaintInformation(end - start, Arrays.asList(new IASTaintRange(0, end - start, taint)))));
         return this;
     }
 
@@ -193,8 +186,7 @@ public class IASTaintInformation implements IASTaintInformationable {
     public IASTaintInformationable resize(int length) {
         IASTaintRanges ranges = this.getTaintRanges();
         ranges.resize(length);
-        this.cache(ranges);
-        return this;
+        return new IASTaintInformation(ranges);
     }
 
     @Override

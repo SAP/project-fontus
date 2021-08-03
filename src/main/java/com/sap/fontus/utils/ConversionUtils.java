@@ -1,9 +1,6 @@
 package com.sap.fontus.utils;
 
-import com.sap.fontus.config.Configuration;
-import com.sap.fontus.config.TaintStringConfig;
 import com.sap.fontus.taintaware.IASTaintAware;
-import com.sap.fontus.taintaware.shared.*;
 import com.sap.fontus.taintaware.unified.*;
 
 import java.lang.invoke.MethodHandle;
@@ -36,7 +33,7 @@ public class ConversionUtils {
 
         toOrig.put(IASString.class, (obj) -> ((IASString) obj).getString());
         toOrig.put(IASStringBuilder.class, (obj) -> ((IASStringBuilder) obj).getStringBuilder());
-        toOrig.put(IASStringBuffer.class, (obj) -> ((IASStringBuffer) obj).getBuffer());
+        toOrig.put(IASStringBuffer.class, (obj) -> ((IASStringBuffer) obj).getStringBuffer());
         toOrig.put(IASFormatter.class, (obj) -> ((IASFormatter) obj).getFormatter());
         toOrig.put(IASMatcher.class, (obj) -> ((IASMatcher) obj).getMatcher());
         toOrig.put(IASPattern.class, (obj) -> ((IASPattern) obj).getPattern());
@@ -58,15 +55,14 @@ public class ConversionUtils {
         toConcreteClass.put(Pattern.class, IASPattern.class);
         toConcreteClass.put(Properties.class, IASProperties.class);
 
-        TaintStringConfig stringConfig = Configuration.getConfiguration().getTaintStringConfig();
         try {
-            toConcreteMethods.put(String.class, lookup.findConstructor(Class.forName(Utils.slashToDot(stringConfig.getTStringQN())), MethodType.methodType(void.class, String.class)));
-            toConcreteMethods.put(StringBuilder.class, lookup.findConstructor(Class.forName(Utils.slashToDot(stringConfig.getTStringBuilderQN())), MethodType.methodType(void.class, StringBuilder.class)));
-            toConcreteMethods.put(StringBuffer.class, lookup.findConstructor(Class.forName(Utils.slashToDot(stringConfig.getTStringBufferQN())), MethodType.methodType(void.class, StringBuffer.class)));
-            toConcreteMethods.put(Formatter.class, lookup.findConstructor(Class.forName(Utils.slashToDot(stringConfig.getTFormatterQN())), MethodType.methodType(void.class, Formatter.class)));
-            toConcreteMethods.put(Matcher.class, lookup.findConstructor(Class.forName(Utils.slashToDot(stringConfig.getTMatcherQN())), MethodType.methodType(void.class, Matcher.class)));
-            toConcreteMethods.put(Pattern.class, lookup.findConstructor(Class.forName(Utils.slashToDot(stringConfig.getTPatternQN())), MethodType.methodType(void.class, Pattern.class)));
-            toConcreteMethods.put(Properties.class, lookup.findConstructor(Class.forName(Utils.slashToDot(stringConfig.getTPropertiesQN())), MethodType.methodType(void.class, Properties.class)));
+            toConcreteMethods.put(String.class, lookup.findConstructor(IASString.class, MethodType.methodType(void.class, String.class)));
+            toConcreteMethods.put(StringBuilder.class, lookup.findConstructor(IASStringBuilder.class, MethodType.methodType(void.class, StringBuilder.class)));
+            toConcreteMethods.put(StringBuffer.class, lookup.findConstructor(IASStringBuffer.class, MethodType.methodType(void.class, StringBuffer.class)));
+            toConcreteMethods.put(Formatter.class, lookup.findConstructor(IASFormatter.class, MethodType.methodType(void.class, Formatter.class)));
+            toConcreteMethods.put(Matcher.class, lookup.findConstructor(IASMatcher.class, MethodType.methodType(void.class, Matcher.class)));
+            toConcreteMethods.put(Pattern.class, lookup.findConstructor(IASPattern.class, MethodType.methodType(void.class, Pattern.class)));
+            toConcreteMethods.put(Properties.class, lookup.findConstructor(IASProperties.class, MethodType.methodType(void.class, Properties.class)));
             toConcreteMethods.put(List.class, lookup.findStatic(IASStringUtils.class, "convertStringList", MethodType.methodType(List.class, List.class)));
             toConcreteMethods.put(String[].class, lookup.findStatic(IASStringUtils.class, "convertStringArray", MethodType.methodType(IASString[].class, String[].class)));
 
@@ -79,7 +75,7 @@ public class ConversionUtils {
             toOrigMethods.put(Properties.class, lookup.findVirtual(IASProperties.class, "getProperties", MethodType.methodType(Properties.class)));
             toOrigMethods.put(List.class, lookup.findStatic(IASStringUtils.class, "convertTStringList", MethodType.methodType(List.class, List.class)));
             toOrigMethods.put(String[].class, lookup.findStatic(IASStringUtils.class, "convertTaintAwareStringArray", MethodType.methodType(String[].class, IASString[].class)));
-        } catch (NoSuchMethodException | IllegalAccessException | ClassNotFoundException e) {
+        } catch (NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
         }
     }

@@ -73,7 +73,8 @@ public enum IASTaintInformation implements IASTaintInformationable {
     }
 
     @Override
-    public void reversed() {
+    public IASTaintInformationable reversed() {
+        return this;
     }
 
     @Override
