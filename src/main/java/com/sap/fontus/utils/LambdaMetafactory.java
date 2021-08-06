@@ -13,8 +13,6 @@ public class LambdaMetafactory {
             MethodHandle implMethod,
             MethodType instantiatedMethodType) throws LambdaConversionException {
 
-        MethodHandle instrumented = IASLookupUtils.convertForJdk(implMethod);
-
         CallSite cs = java.lang.invoke.LambdaMetafactory.metafactory(caller, invokedName, invokedType, samMethodType, implMethod, instantiatedMethodType);
 
         return cs;

@@ -2,7 +2,6 @@ package com.sap.fontus.taintaware.shared;
 
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
-import com.sap.fontus.taintaware.unified.IASReflectionMethodProxy;
 import com.sap.fontus.taintaware.unified.IASString;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

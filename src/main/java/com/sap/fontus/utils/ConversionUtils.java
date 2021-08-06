@@ -2,11 +2,12 @@ package com.sap.fontus.utils;
 
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.unified.*;
+import com.sap.fontus.taintaware.unified.reflect.*;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-import java.lang.reflect.Array;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -30,6 +31,13 @@ public class ConversionUtils {
         toConcrete.put(Matcher.class, (obj) -> IASMatcher.fromMatcher((Matcher) obj));
         toConcrete.put(Pattern.class, (obj) -> IASPattern.fromPattern((Pattern) obj));
         toConcrete.put(Properties.class, (obj) -> IASProperties.fromProperties((Properties) obj));
+        toConcrete.put(AccessibleObject.class, (o -> IASReflectRegistry.getInstance().mapAccessibleObject((AccessibleObject) o)));
+        toConcrete.put(Executable.class, o -> IASReflectRegistry.getInstance().mapExecutable((Executable) o));
+        toConcrete.put(Constructor.class, o -> IASReflectRegistry.getInstance().map((Constructor) o));
+        toConcrete.put(Field.class, o -> IASReflectRegistry.getInstance().map((Field) o));
+        toConcrete.put(Member.class, o -> IASReflectRegistry.getInstance().mapAccessibleObject((AccessibleObject) o));
+        toConcrete.put(Method.class, o -> IASReflectRegistry.getInstance().map((Method) o));
+        toConcrete.put(Parameter.class, o -> new IASParameter((Parameter) o));
 
         toOrig.put(IASString.class, (obj) -> ((IASString) obj).getString());
         toOrig.put(IASStringBuilder.class, (obj) -> ((IASStringBuilder) obj).getStringBuilder());
@@ -38,6 +46,13 @@ public class ConversionUtils {
         toOrig.put(IASMatcher.class, (obj) -> ((IASMatcher) obj).getMatcher());
         toOrig.put(IASPattern.class, (obj) -> ((IASPattern) obj).getPattern());
         toOrig.put(IASProperties.class, (obj) -> ((IASProperties) obj).getProperties());
+        toOrig.put(IASAccessibleObject.class, o -> ((IASAccessibleObject) o).getAccessibleObject());
+        toOrig.put(IASExecutable.class, o -> ((IASAccessibleObject) o).getAccessibleObject());
+        toOrig.put(IASConstructor.class, o -> ((IASAccessibleObject) o).getAccessibleObject());
+        toOrig.put(IASField.class, o -> ((IASAccessibleObject) o).getAccessibleObject());
+        toOrig.put(IASMember.class, o -> ((IASMember) o).getMember());
+        toOrig.put(IASMethod.class, o -> ((IASAccessibleObject) o).getAccessibleObject());
+        toOrig.put(IASParameter.class, o -> ((IASParameter) o).getParameter());
 
         toOrigClass.put(IASString.class, String.class);
         toOrigClass.put(IASStringBuilder.class, StringBuilder.class);
@@ -46,6 +61,13 @@ public class ConversionUtils {
         toOrigClass.put(IASMatcher.class, Matcher.class);
         toOrigClass.put(IASPattern.class, Pattern.class);
         toOrigClass.put(IASProperties.class, Properties.class);
+        toOrigClass.put(IASAccessibleObject.class, AccessibleObject.class);
+        toOrigClass.put(IASExecutable.class, Executable.class);
+        toOrigClass.put(IASConstructor.class, Constructor.class);
+        toOrigClass.put(IASField.class, Field.class);
+        toOrigClass.put(IASMember.class, Member.class);
+        toOrigClass.put(IASMethod.class, Method.class);
+        toOrigClass.put(IASParameter.class, Parameter.class);
 
         toConcreteClass.put(String.class, IASString.class);
         toConcreteClass.put(StringBuilder.class, IASStringBuilder.class);
@@ -53,7 +75,13 @@ public class ConversionUtils {
         toConcreteClass.put(Formatter.class, IASFormatter.class);
         toConcreteClass.put(Matcher.class, IASMatcher.class);
         toConcreteClass.put(Pattern.class, IASPattern.class);
-        toConcreteClass.put(Properties.class, IASProperties.class);
+        toConcreteClass.put(AccessibleObject.class, IASAccessibleObject.class);
+        toConcreteClass.put(Executable.class, IASExecutable.class);
+        toConcreteClass.put(Field.class, IASField.class);
+        toConcreteClass.put(Member.class, IASMember.class);
+        toConcreteClass.put(Method.class, IASMethod.class);
+        toConcreteClass.put(Parameter.class, IASParameter.class);
+        toConcreteClass.put(Constructor.class, IASConstructor.class);
 
         try {
             toConcreteMethods.put(String.class, lookup.findConstructor(IASString.class, MethodType.methodType(void.class, String.class)));
@@ -63,6 +91,13 @@ public class ConversionUtils {
             toConcreteMethods.put(Matcher.class, lookup.findConstructor(IASMatcher.class, MethodType.methodType(void.class, Matcher.class)));
             toConcreteMethods.put(Pattern.class, lookup.findConstructor(IASPattern.class, MethodType.methodType(void.class, Pattern.class)));
             toConcreteMethods.put(Properties.class, lookup.findConstructor(IASProperties.class, MethodType.methodType(void.class, Properties.class)));
+            toConcreteMethods.put(AccessibleObject.class, lookup.findVirtual(IASReflectRegistry.class, "mapAccessibleObject", MethodType.methodType(IASAccessibleObject.class, AccessibleObject.class)).bindTo(IASReflectRegistry.getInstance()));
+            toConcreteMethods.put(Executable.class, lookup.findVirtual(IASReflectRegistry.class, "mapExecutable", MethodType.methodType(IASExecutable.class, Executable.class)).bindTo(IASReflectRegistry.getInstance()));
+            toConcreteMethods.put(Constructor.class, lookup.findVirtual(IASReflectRegistry.class, "map", MethodType.methodType(IASConstructor.class, Constructor.class)).bindTo(IASReflectRegistry.getInstance()));
+            toConcreteMethods.put(Method.class, lookup.findVirtual(IASReflectRegistry.class, "map", MethodType.methodType(IASMethod.class, Method.class)).bindTo(IASReflectRegistry.getInstance()));
+            toConcreteMethods.put(Field.class, lookup.findVirtual(IASReflectRegistry.class, "map", MethodType.methodType(IASField.class, Field.class)).bindTo(IASReflectRegistry.getInstance()));
+            toConcreteMethods.put(Member.class, lookup.findVirtual(IASReflectRegistry.class, "mapMember", MethodType.methodType(IASMember.class, Member.class)).bindTo(IASReflectRegistry.getInstance()));
+            toConcreteMethods.put(Parameter.class, lookup.findConstructor(IASParameter.class, MethodType.methodType(void.class, Parameter.class)));
             toConcreteMethods.put(List.class, lookup.findStatic(IASStringUtils.class, "convertStringList", MethodType.methodType(List.class, List.class)));
             toConcreteMethods.put(String[].class, lookup.findStatic(IASStringUtils.class, "convertStringArray", MethodType.methodType(IASString[].class, String[].class)));
 
@@ -73,6 +108,13 @@ public class ConversionUtils {
             toOrigMethods.put(Matcher.class, lookup.findVirtual(IASMatcher.class, "getMatcher", MethodType.methodType(Matcher.class)));
             toOrigMethods.put(Pattern.class, lookup.findVirtual(IASPattern.class, "getPattern", MethodType.methodType(Pattern.class)));
             toOrigMethods.put(Properties.class, lookup.findVirtual(IASProperties.class, "getProperties", MethodType.methodType(Properties.class)));
+            toOrigMethods.put(AccessibleObject.class, lookup.findVirtual(IASAccessibleObject.class, "getAccessibleObject", MethodType.methodType(AccessibleObject.class)));
+            toOrigMethods.put(Executable.class, lookup.findVirtual(IASExecutable.class, "getExecutable", MethodType.methodType(Executable.class)));
+            toOrigMethods.put(Constructor.class, lookup.findVirtual(IASConstructor.class, "getConstructor", MethodType.methodType(Constructor.class)));
+            toOrigMethods.put(Member.class, lookup.findVirtual(IASMember.class, "getMember", MethodType.methodType(Member.class)));
+            toOrigMethods.put(Method.class, lookup.findVirtual(IASMethod.class, "getMethod", MethodType.methodType(Method.class)));
+            toOrigMethods.put(Parameter.class, lookup.findVirtual(IASParameter.class, "getParameter", MethodType.methodType(Parameter.class)));
+            toOrigMethods.put(Field.class, lookup.findVirtual(IASField.class, "getField", MethodType.methodType(Field.class)));
             toOrigMethods.put(List.class, lookup.findStatic(IASStringUtils.class, "convertTStringList", MethodType.methodType(List.class, List.class)));
             toOrigMethods.put(String[].class, lookup.findStatic(IASStringUtils.class, "convertTaintAwareStringArray", MethodType.methodType(String[].class, IASString[].class)));
         } catch (NoSuchMethodException | IllegalAccessException e) {
@@ -185,7 +227,7 @@ public class ConversionUtils {
         return convertClass(cls, toConcreteClass);
     }
 
-    public static Class<?> convertClass(Class<?> cls, Map<Class<?>, Class<?>> converters) {
+    private static Class<?> convertClass(Class<?> cls, Map<Class<?>, Class<?>> converters) {
         Class<?> baseClass = cls;
         if (cls.isArray()) {
             baseClass = cls.getComponentType();

@@ -35,6 +35,12 @@ public final class Constants {
     public static final String TMethodToMethodName = "getMethod";
     public static final String FROM_STRING_DESCRIPTOR = Type.getMethodDescriptor(Type.getType(IASString.class), Type.getType(String.class));
     public static final String CONCAT_DESC = Type.getMethodDescriptor(Type.getType(IASString.class), Type.getType(String.class), Type.getType(Object[].class));
+    public static final String TAccessibleObjectToAccesibleObject = "getAccessibleObject";
+    public static final String TExecutableToExecutable = "getExecutable";
+    public static final String TParameterToParameter = "getParameter";
+    public static final String TConstructorToConstructor = "getConstructor";
+    public static final String TFieldToField = "getField";
+    public static final String TMemberToMember = "getMember";
 
     static {
         try {
