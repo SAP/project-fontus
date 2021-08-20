@@ -42,6 +42,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     private final HashMap<ProxiedDynamicFunctionEntry, Runnable> dynProxies;
     private final String ownerSuperClass;
     private final List<LambdaCall> jdkLambdaMethodProxies;
+    private final boolean isOwnerInterface;
 
     private int used;
     private int usedAfterInjection;
@@ -60,10 +61,11 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     private final Map<FunctionCall, Runnable> methodInterfaceProxies;
     private final ClassLoader loader;
 
-    public MethodTaintingVisitor(int acc, String owner, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver, Configuration config, boolean implementsInvocationHandler, InstrumentationHelper instrumentationHelper, CombinedExcludedLookup combinedExcludedLookup, List<DynamicCall> bootstrapMethods, List<LambdaCall> jdkLambdaMethodProxies, String ownerSuperClass, ClassLoader loader) {
-        super(Opcodes.ASM7, methodVisitor);
+    public MethodTaintingVisitor(int acc, String owner, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver, Configuration config, boolean implementsInvocationHandler, InstrumentationHelper instrumentationHelper, CombinedExcludedLookup combinedExcludedLookup, List<DynamicCall> bootstrapMethods, List<LambdaCall> jdkLambdaMethodProxies, String ownerSuperClass, ClassLoader loader, boolean isOwnerInterface) {
+        super(Opcodes.ASM9, methodVisitor);
         this.resolver = resolver;
         this.owner = owner;
+        this.isOwnerInterface = isOwnerInterface;
         this.combinedExcludedLookup = combinedExcludedLookup;
         this.bootstrapMethods = bootstrapMethods;
         logger.info("Instrumenting method: {}{}", name, methodDescriptor);
@@ -167,10 +169,10 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getDeclaredMethods", Type.getMethodDescriptor(Type.getType(IASMethod[].class), Type.getType(Class.class)), false));
 
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getMethod", Type.getMethodDescriptor(Type.getType(Method.class), Type.getType(String.class), Type.getType(Class[].class)), false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getMethod", Type.getMethodDescriptor(Type.getType(IASMethod.class), Type.getType(Class.class), Type.getType(String.class), Type.getType(Class[].class)), false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getMethod", Type.getMethodDescriptor(Type.getType(IASMethod.class), Type.getType(Class.class), Type.getType(IASString.class), Type.getType(Class[].class)), false));
 
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getDeclaredMethod", Type.getMethodDescriptor(Type.getType(Method.class), Type.getType(String.class), Type.getType(Class[].class)), false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getDeclaredMethod", Type.getMethodDescriptor(Type.getType(IASMethod.class), Type.getType(Class.class), Type.getType(String.class), Type.getType(Class[].class)), false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getDeclaredMethod", Type.getMethodDescriptor(Type.getType(IASMethod.class), Type.getType(Class.class), Type.getType(IASString.class), Type.getType(Class[].class)), false));
 
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getFields", Type.getMethodDescriptor(Type.getType(Field[].class)), false),
                 () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getFields", Type.getMethodDescriptor(Type.getType(IASField[].class), Type.getType(Class.class)), false));
@@ -626,7 +628,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             Handle realFunction = (Handle) bootstrapMethodArguments[1];
             LambdaCall call = new LambdaCall(Type.getMethodType(descriptor).getReturnType(), realFunction);
 
-            MethodTaintingUtils.invokeVisitLambdaCall(this.getParentVisitor(), this.instrumentationHelper, call.getProxyDescriptor(this.loader, this.instrumentationHelper), call, this.owner, name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
+            MethodTaintingUtils.invokeVisitLambdaCall(this.getParentVisitor(), this.instrumentationHelper, call.getProxyDescriptor(this.loader, this.instrumentationHelper), call, this.owner, name, descriptor, isOwnerInterface, bootstrapMethodHandle, bootstrapMethodArguments);
 
             if (MethodTaintingUtils.needsLambdaProxy(descriptor, realFunction, (Type) bootstrapMethodArguments[2], this.instrumentationHelper)) {
                 this.jdkLambdaMethodProxies.add(call);

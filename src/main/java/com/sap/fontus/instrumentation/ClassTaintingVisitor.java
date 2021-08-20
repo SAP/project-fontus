@@ -58,7 +58,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private final InstrumentationHelper instrumentationHelper;
 
     public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config, ClassLoader loader, boolean containsJSRRET) {
-        super(Opcodes.ASM7, cv);
+        super(Opcodes.ASM9, cv);
         this.visitor = cv;
         this.staticFinalFields = new ArrayList<>();
         this.overriddenJdkMethods = new ArrayList<>();
@@ -218,7 +218,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             mv = super.visitMethod(access, name, desc, instrumentedSignature, exceptions);
         }
 
-        MethodTaintingVisitor mtv = new MethodTaintingVisitor(access, this.owner, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler, this.instrumentationHelper, this.combinedExcludedLookup, this.bootstrapMethods, this.jdkLambdaMethodProxies, this.superName, this.loader);
+        MethodTaintingVisitor mtv = new MethodTaintingVisitor(access, this.owner, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler, this.instrumentationHelper, this.combinedExcludedLookup, this.bootstrapMethods, this.jdkLambdaMethodProxies, this.superName, this.loader, this.isInterface);
         if (this.containsJSRRET) {
             return new JSRInlinerAdapter(mtv, access, newName, desc, instrumentedSignature, exceptions);
         }

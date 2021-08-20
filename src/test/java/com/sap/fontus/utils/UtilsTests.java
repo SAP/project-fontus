@@ -3,7 +3,6 @@ package com.sap.fontus.utils;
 import com.sap.fontus.Constants;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
-import com.sap.fontus.config.TaintStringConfig;
 import com.sap.fontus.instrumentation.InstrumentationHelper;
 import com.sap.fontus.taintaware.unified.IASString;
 import org.junit.jupiter.api.BeforeAll;

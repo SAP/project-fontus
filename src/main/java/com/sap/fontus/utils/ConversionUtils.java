@@ -203,6 +203,8 @@ public class ConversionUtils {
                 }
                 return result;
             }
+        } else {
+            return convertObject(object, toConcrete, toConcreteClass);
         }
         return object;
 

@@ -45,7 +45,7 @@ public class ClassTraverser {
             }
         } else {
             try {
-                ClassVisitor cv = new NopVisitor(Opcodes.ASM7) {
+                ClassVisitor cv = new NopVisitor(Opcodes.ASM9) {
                     @Override
                     public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
                         Method method = new Method(access, cls.getInternalName(), name, descriptor, signature, exceptions, false);
@@ -94,7 +94,7 @@ public class ClassTraverser {
                 } else {
                     try {
                         final String clsName = cls.getInternalName();
-                        ClassVisitor cv = new NopVisitor(Opcodes.ASM7) {
+                        ClassVisitor cv = new NopVisitor(Opcodes.ASM9) {
                             @Override
                             public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
                                 Method method = new Method(access, clsName, name, descriptor, signature, exceptions, false);
@@ -218,7 +218,7 @@ public class ClassTraverser {
                     }
                 } else {
                     try {
-                        ClassVisitor cv = new NopVisitor(Opcodes.ASM7) {
+                        ClassVisitor cv = new NopVisitor(Opcodes.ASM9) {
                             @Override
                             public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
                                 Method method = new Method(access, interfaceName, name, descriptor, signature, exceptions, true);
@@ -257,7 +257,7 @@ public class ClassTraverser {
         private boolean superImplements = false;
 
         public MethodChecker(Method method) {
-            super(Opcodes.ASM7);
+            super(Opcodes.ASM9);
             this.method = method;
         }
 

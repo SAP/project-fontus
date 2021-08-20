@@ -49,7 +49,7 @@ public final class AnnotationLookup {
         boolean isAnnotation = false;
 
         try {
-            NopVisitor nv = new NopVisitor(Opcodes.ASM7);
+            NopVisitor nv = new NopVisitor(Opcodes.ASM9);
             ClassReader cr = new ClassReaderWithLoaderSupport(resolver, className);
             if (superName == null || interfaces == null) {
                 cr.accept(nv, ClassReader.SKIP_FRAMES);

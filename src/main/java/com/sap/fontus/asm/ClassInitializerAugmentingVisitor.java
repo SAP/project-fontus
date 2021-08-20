@@ -18,7 +18,7 @@ public class ClassInitializerAugmentingVisitor extends MethodVisitor {
     public ClassInitializerAugmentingVisitor(MethodVisitor methodVisitor,
                                              String owner,
                                              Collection<FieldData> staticFinalFields) {
-        super(Opcodes.ASM7, methodVisitor);
+        super(Opcodes.ASM9, methodVisitor);
         this.staticFinalFields = new ArrayList<>(staticFinalFields.size());
         this.staticFinalFields.addAll(staticFinalFields);
         this.owner = owner;

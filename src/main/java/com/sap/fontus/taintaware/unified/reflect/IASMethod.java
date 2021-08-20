@@ -39,7 +39,7 @@ public class IASMethod extends IASExecutable<Method> {
 
     @Override
     public Class<?> getDeclaringClass() {
-        return this.getDeclaringClass();
+        return this.original.getDeclaringClass();
     }
 
     @Override
@@ -74,7 +74,7 @@ public class IASMethod extends IASExecutable<Method> {
 
     @Override
     public Class<?>[] getParameterTypes() {
-        return Arrays.stream(this.getParameterTypes()).map(ConversionUtils::convertClassToConcrete).toArray(Class[]::new);
+        return Arrays.stream(this.original.getParameterTypes()).map(ConversionUtils::convertClassToConcrete).toArray(Class[]::new);
     }
 
     @Override

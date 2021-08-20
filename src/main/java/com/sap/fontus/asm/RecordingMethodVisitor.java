@@ -13,7 +13,7 @@ public class RecordingMethodVisitor extends MethodVisitor {
     private final MethodVisitRecording recording;
 
     public RecordingMethodVisitor() {
-        super(Opcodes.ASM7);
+        super(Opcodes.ASM9);
         this.recording = new MethodVisitRecording();
     }
 

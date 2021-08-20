@@ -14,7 +14,7 @@ public class MethodTaintingUtils {
     /**
      * Functional interfaces or packages with func interfaces which are JDK or excluded but should still not be uninstrumented as lmabda
      */
-    private static final String[] lambdaIncluded = new String[]{"java/util/function/", "java/lang/", "java/util/Comparator"};
+    private static final String[] lambdaIncluded = new String[]{"java/util/function/", "java/lang/", "java/util/Comparator", "java/util/concurrent/"};
 
     /**
      * Pushes an integer onto the stack.
@@ -102,6 +102,7 @@ public class MethodTaintingUtils {
                                       final String owner,
                                       final String name,
                                       final String descriptor,
+                                      final boolean isOwnerInterface,
                                       final Handle bootstrapMethodHandle,
                                       final Object... bootstrapMethodArguments) {
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
@@ -133,7 +134,7 @@ public class MethodTaintingUtils {
             if (lookup.isPackageExcludedOrJdk(lambdaCall.getImplementation().getOwner())) {
                 bsArgs[2] = Utils.instrumentType((Type) bsArgs[2], instrumentationHelper);
             }
-            bsArgs[1] = new Handle(lambdaCall.getProxyOpcodeTag(), owner, lambdaCall.getProxyMethodName(), instrumentedProxyDescriptor.toDescriptor(), false);
+            bsArgs[1] = new Handle(lambdaCall.getProxyOpcodeTag(), owner, lambdaCall.getProxyMethodName(), instrumentedProxyDescriptor.toDescriptor(), isOwnerInterface);
         }
         String descr = instrumentationHelper.instrument(desc).toDescriptor();
 

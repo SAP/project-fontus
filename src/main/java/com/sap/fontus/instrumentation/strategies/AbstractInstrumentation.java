@@ -79,9 +79,11 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
 
     @Override
     public FunctionCall rewriteOwnerMethod(FunctionCall functionCall) {
-        if (Type.getObjectType(functionCall.getOwner()).equals(this.origType)) {
+        boolean isInstrumentable = Type.getObjectType(functionCall.getOwner()).equals(this.origType);
+        boolean isArrayInstrumentable = Type.getObjectType(functionCall.getOwner()).equals(this.getOrigArrayType());
+        if (isInstrumentable || isArrayInstrumentable) {
             Descriptor newDescriptor = this.instrumentationHelper.instrument(functionCall.getParsedDescriptor());
-            String newOwner = this.instrumentedType.getInternalName();
+            String newOwner = isArrayInstrumentable ? this.getInstrumentedArrayType().getInternalName() : this.instrumentedType.getInternalName();
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up
             String newName = this.methodsToRename.getOrDefault(functionCall.getName(), functionCall.getName());
 
@@ -95,14 +97,14 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     public void instrumentStackTop(MethodVisitor mv, Type origType) {
         if (this.origType.equals(origType)) {
             this.origToTainted(mv);
-        } else if (this.getOrigArrayDescriptorType().equals(origType)) {
+        } else if (this.getOrigArrayType().equals(origType)) {
             this.arrayOrigToTainted(mv);
         }
     }
 
     private void arrayOrigToTainted(MethodVisitor mv) {
         mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
-        mv.visitTypeInsn(Opcodes.CHECKCAST, this.getInstrumentedArrayDescriptorType().getInternalName());
+        mv.visitTypeInsn(Opcodes.CHECKCAST, this.getInstrumentedArrayType().getInternalName());
     }
 
     protected void origToTainted(MethodVisitor mv) {
@@ -181,9 +183,9 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
             mv.visitTypeInsn(Opcodes.CHECKCAST, this.origType.getInternalName());
             return true;
         }
-        if (this.getOrigArrayDescriptorType().equals(parameter)) {
+        if (this.getOrigArrayType().equals(parameter)) {
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
-            mv.visitTypeInsn(Opcodes.CHECKCAST, this.getOrigArrayDescriptorType().getInternalName());
+            mv.visitTypeInsn(Opcodes.CHECKCAST, this.getOrigArrayType().getInternalName());
             return true;
         }
         return false;
@@ -194,15 +196,15 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
         return superClass;
     }
 
-    protected Type getOrigArrayDescriptorType() {
-        return this.getArrayDescriptorType(this.origType);
+    protected Type getOrigArrayType() {
+        return this.getArrayType(this.origType);
     }
 
-    private Type getArrayDescriptorType(Type type) {
+    private Type getArrayType(Type type) {
         return Type.getType("[" + type);
     }
 
-    protected Type getInstrumentedArrayDescriptorType() {
-        return this.getArrayDescriptorType(this.instrumentedType);
+    protected Type getInstrumentedArrayType() {
+        return this.getArrayType(this.instrumentedType);
     }
 }
