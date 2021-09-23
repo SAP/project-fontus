@@ -1,4 +1,6 @@
-package com.sap.fontus.taintaware.unified.reflect;
+package com.sap.fontus.taintaware.unified.reflect.type;
+
+import com.sap.fontus.utils.ConversionUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
@@ -7,16 +9,16 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 
-public class IASTypeVariable<T extends GenericDeclaration> implements TypeVariable<T> {
+public class IASTypeVariableImpl<T extends GenericDeclaration> implements TypeVariable<T> {
     public final TypeVariable<T> original;
 
-    public IASTypeVariable(TypeVariable<T> original) {
+    public IASTypeVariableImpl(TypeVariable<T> original) {
         this.original = original;
     }
 
     @Override
     public Type[] getBounds() {
-        return Arrays.stream(this.original.getBounds()).map(IASType::new).toArray(Type[]::new);
+        return Arrays.stream(this.original.getBounds()).map(ConversionUtils::convertTypeToInstrumented).toArray(Type[]::new);
     }
 
     @Override

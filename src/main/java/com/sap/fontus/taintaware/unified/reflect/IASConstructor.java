@@ -2,12 +2,11 @@ package com.sap.fontus.taintaware.unified.reflect;
 
 import com.sap.fontus.Constants;
 import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.taintaware.unified.reflect.type.IASTypeVariableImpl;
 import com.sap.fontus.utils.ConversionUtils;
 import com.sap.fontus.utils.ReflectionUtils;
 import com.sap.fontus.utils.Utils;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
-import jdk.internal.reflect.CallerSensitive;
-import jdk.internal.vm.annotation.ForceInline;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
@@ -41,7 +40,7 @@ public class IASConstructor<T> extends IASExecutable<Constructor<T>> {
 
     @Override
     public TypeVariable<Constructor<T>>[] getTypeParameters() {
-        return Arrays.stream(this.original.getTypeParameters()).map(IASTypeVariable::new).toArray(IASTypeVariable[]::new);
+        return Arrays.stream(this.original.getTypeParameters()).map(IASTypeVariableImpl::new).toArray(IASTypeVariableImpl[]::new);
     }
 
     @Override

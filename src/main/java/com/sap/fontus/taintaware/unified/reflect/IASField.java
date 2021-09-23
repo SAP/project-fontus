@@ -47,7 +47,7 @@ public class IASField extends IASAccessibleObject<Field> implements IASMember {
     }
 
     public Type getGenericType() {
-        return new IASType(this.original.getGenericType());
+        return ConversionUtils.convertTypeToInstrumented(this.original.getGenericType());
     }
 
     @Override

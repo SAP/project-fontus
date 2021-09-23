@@ -3,6 +3,10 @@ package com.sap.fontus.utils;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.unified.*;
 import com.sap.fontus.taintaware.unified.reflect.*;
+import com.sap.fontus.taintaware.unified.reflect.type.IASTypeVariableImpl;
+import com.sap.fontus.taintaware.unified.reflect.type.IASWildcardTypeImpl;
+import sun.reflect.generics.reflectiveObjects.GenericArrayTypeImpl;
+import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -129,10 +133,42 @@ public class ConversionUtils {
 
         if (object instanceof List) {
             List list = (List) object;
-            List result = new ArrayList<>();
+            List result = new ArrayList();
+
             for (Object listEntry : list) {
                 Object converted = convertObject(listEntry, converters, classConverters);
                 result.add(converted);
+            }
+
+            boolean hasChanged = false;
+            for (int i = 0; i < list.size(); i++) {
+                if (!Objects.equals(list.get(i), result.get(i))) {
+                    hasChanged = true;
+                    break;
+                }
+            }
+
+            if (!hasChanged) {
+                return list;
+            }
+
+            if (list.getClass().getName().startsWith("java.util.Collections$Unmodifiable")) {
+                result = Collections.unmodifiableList(result);
+            } else if (list.getClass().getName().startsWith("java.util.Collections$Singleton")) {
+                result = Collections.singletonList(result);
+            }
+//            } else if (list.getClass().getName().startsWith("java.util.Collections$Synchronized")){
+//                result = Collections.synchronizedList(result);
+//            }
+//            else if (list.getClass().getName().startsWith("java.util.Collections$Checked")){
+//                result = Collections.checkedList(result, );
+//            }
+            else {
+                for (int i = 0; i < list.size(); i++) {
+                    Object converted = result.get(i);
+                    list.set(i, converted);
+                    result = list;
+                }
             }
             return result;
         }
@@ -256,5 +292,25 @@ public class ConversionUtils {
 
     public static MethodHandle getToOriginalConverter(Class<?> uninstrumentedClass) {
         return toOrigMethods.get(uninstrumentedClass);
+    }
+
+    public static <T extends GenericDeclaration> Type convertTypeToInstrumented(Type type) {
+        if (type instanceof Class) {
+            return convertClassToConcrete((Class<?>) type);
+        } else if (type instanceof GenericArrayType) {
+            return GenericArrayTypeImpl.make(convertTypeToInstrumented(((GenericArrayType) type).getGenericComponentType()));
+        } else if (type instanceof ParameterizedType) {
+            ParameterizedType pType = (ParameterizedType) type;
+            return ParameterizedTypeImpl.make(
+                    (Class<?>) convertTypeToInstrumented(pType.getRawType()),
+                    Arrays.stream(pType.getActualTypeArguments()).map(ConversionUtils::convertTypeToInstrumented).toArray(Type[]::new),
+                    convertTypeToInstrumented(pType.getOwnerType())
+            );
+        } else if (type instanceof TypeVariable) {
+            return new IASTypeVariableImpl<>((TypeVariable<T>) type);
+        } else if (type instanceof WildcardType) {
+            return new IASWildcardTypeImpl((WildcardType) type);
+        }
+        return type;
     }
 }

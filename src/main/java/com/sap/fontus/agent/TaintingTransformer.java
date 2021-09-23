@@ -32,6 +32,10 @@ class TaintingTransformer implements ClassFileTransformer {
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
+        if ("org/springframework/data/repository/util/QueryExecutionConverters".equals(className)){
+            System.out.println("Test");
+        }
+
         if (loader == null) {
             return classfileBuffer;
         }
@@ -39,6 +43,7 @@ class TaintingTransformer implements ClassFileTransformer {
         if (className == null) {
             className = new ClassReader(classfileBuffer).getClassName();
         }
+
 
         CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(loader);
         if (combinedExcludedLookup.isJdkClass(className)) {
@@ -68,8 +73,9 @@ class TaintingTransformer implements ClassFileTransformer {
             VerboseLogger.saveIfVerbose(className, outArray);
             return outArray;
         } catch (Exception e) {
-            e.printStackTrace();
-            logger.error("Instrumentation failed for {}. Reason: {}", className, e.getMessage());
+            Configuration.getConfiguration().getExcludedPackages().add(className);
+//            e.printStackTrace();
+            logger.error("Instrumentation failed for {}. Reason: {}. Class added to excluded classes!", className, e.getMessage());
         }
         return null;
     }

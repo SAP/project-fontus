@@ -437,7 +437,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 
         String owner = lambdaCall.getImplementation().getOwner();
 
-        mv.visitMethodInsn(opcode, owner, name, uninstrumentedDescriptor.toDescriptor(), opcode == Opcodes.INVOKEINTERFACE);
+        mv.visitMethodInsn(opcode, owner, name, uninstrumentedDescriptor.toDescriptor(), lambdaCall.isCallOnInterface());
         if (this.instrumentationHelper.isInstrumented(proxyDescriptor.getReturnType())) {
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
             mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(proxyDescriptor.getReturnType()).getInternalName());

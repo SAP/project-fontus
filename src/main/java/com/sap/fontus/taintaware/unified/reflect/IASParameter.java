@@ -41,12 +41,12 @@ public class IASParameter implements AnnotatedElement {
         return this.parameter.getModifiers();
     }
 
-    public String getName() {
-        return this.parameter.getName();
+    public IASString getName() {
+        return IASString.valueOf(this.parameter.getName());
     }
 
     public Type getParameterizedType() {
-        return new IASType(this.parameter.getParameterizedType());
+        return ConversionUtils.convertTypeToInstrumented(this.parameter.getParameterizedType());
     }
 
     public Class<?> getType() {

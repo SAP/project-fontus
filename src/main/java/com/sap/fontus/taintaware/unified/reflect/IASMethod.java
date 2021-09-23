@@ -4,6 +4,7 @@ package com.sap.fontus.taintaware.unified.reflect;
 import com.sap.fontus.Constants;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASStringUtils;
+import com.sap.fontus.taintaware.unified.reflect.type.IASTypeVariableImpl;
 import com.sap.fontus.utils.ConversionUtils;
 import com.sap.fontus.utils.ReflectionUtils;
 import com.sap.fontus.utils.Utils;
@@ -27,6 +28,8 @@ public class IASMethod extends IASExecutable<Method> {
             throw new RuntimeException(e);
         }
     }
+
+    private Boolean isWrapperForUninstrumentedMethod;
 
     public IASMethod(Method method) {
         super(method);
@@ -54,7 +57,7 @@ public class IASMethod extends IASExecutable<Method> {
 
     @Override
     public TypeVariable<Method>[] getTypeParameters() {
-        return Arrays.stream(this.original.getTypeParameters()).map(IASTypeVariable::new).toArray(TypeVariable[]::new);
+        return Arrays.stream(this.original.getTypeParameters()).map(IASTypeVariableImpl::new).toArray(TypeVariable[]::new);
     }
 
     public Class<?> getReturnType() {
@@ -69,7 +72,7 @@ public class IASMethod extends IASExecutable<Method> {
     }
 
     public Type getGenericReturnType() {
-        return new IASType(this.original.getGenericReturnType());
+        return ConversionUtils.convertTypeToInstrumented(this.original.getGenericReturnType());
     }
 
     @Override
@@ -95,6 +98,13 @@ public class IASMethod extends IASExecutable<Method> {
     @Override
     public Type[] getGenericExceptionTypes() {
         return super.getGenericExceptionTypes();
+    }
+
+    private boolean isWrapperForUninstrumentedMethod() {
+        if (this.isWrapperForUninstrumentedMethod == null) {
+            this.isWrapperForUninstrumentedMethod = !this.getReturnType().equals(this.original.getReturnType()) || !Arrays.equals(this.getParameterTypes(), this.original.getParameterTypes());
+        }
+        return this.isWrapperForUninstrumentedMethod;
     }
 
     @Override
@@ -132,7 +142,7 @@ public class IASMethod extends IASExecutable<Method> {
                 String[] result = (String[]) this.original.invoke(instance, parameters);
                 return IASStringUtils.convertStringArray(result);
             }
-        } else if (lookup.isPackageExcludedOrJdk(Utils.getInternalName(this.original.getDeclaringClass()))) {
+        } else if (lookup.isPackageExcludedOrJdk(Utils.getInternalName(this.original.getDeclaringClass())) || isWrapperForUninstrumentedMethod()) {
             Object[] converted = convertParametersToOriginal(parameters);
 
             if (this.original.equals(forNameMethod)) {

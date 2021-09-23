@@ -15,6 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ClassTraverser {
+    private static final Logger logger = LogUtils.getLogger();
 
     private final CombinedExcludedLookup combinedExcludedLookup;
     private final List<Method> methodList = new ArrayList<>();
@@ -69,7 +70,7 @@ public class ClassTraverser {
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Could not load class " + cls.getInternalName() + " for ClassTraverser.readMethods");
             }
         }
     }
@@ -208,7 +209,7 @@ public class ClassTraverser {
 
         for (String interfaceName : interfaces) {
             if (this.combinedExcludedLookup.isPackageExcludedOrJdk(interfaceName) || this.combinedExcludedLookup.isAnnotation(interfaceName)) {
-                Class<?> cls = ClassUtils.findLoadedClass(interfaceName);
+                Class<?> cls = ClassUtils.findLoadedClass(interfaceName, loader);
                 List<Method> intfMethods = new ArrayList<>();
 
                 if (cls != null) {

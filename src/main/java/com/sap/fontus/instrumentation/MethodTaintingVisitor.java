@@ -626,7 +626,12 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         if ("java/lang/invoke/LambdaMetafactory".equals(bootstrapMethodHandle.getOwner()) &&
                 ("metafactory".equals(bootstrapMethodHandle.getName()) || "altMetafactory".equals(bootstrapMethodHandle.getName()))) {
             Handle realFunction = (Handle) bootstrapMethodArguments[1];
-            LambdaCall call = new LambdaCall(Type.getMethodType(descriptor).getReturnType(), realFunction);
+            Type desc = Type.getType(descriptor);
+
+            LambdaCall call = new LambdaCall(Type.getMethodType(descriptor).getReturnType(), realFunction, desc);
+            if (call.isInstanceCall()) {
+                call.setConcreteImplementationType(desc.getArgumentTypes().length == 1 ? desc.getArgumentTypes()[0] : null);
+            }
 
             MethodTaintingUtils.invokeVisitLambdaCall(this.getParentVisitor(), this.instrumentationHelper, call.getProxyDescriptor(this.loader, this.instrumentationHelper), call, this.owner, name, descriptor, isOwnerInterface, bootstrapMethodHandle, bootstrapMethodArguments);
 

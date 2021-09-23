@@ -1,6 +1,7 @@
 package com.sap.fontus.taintaware.unified;
 
 import com.sap.fontus.Constants;
+import com.sap.fontus.instrumentation.InstrumentationHelper;
 import com.sap.fontus.utils.Utils;
 import org.objectweb.asm.*;
 
@@ -21,6 +22,7 @@ public class IASProxyProxyBuilder {
     private final ClassWriter classWriter;
     //    private final Module module;
     private final ClassLoader classLoader;
+    private final InstrumentationHelper instrumentationHelper;
 
     public String getName() {
         return name;
@@ -31,6 +33,7 @@ public class IASProxyProxyBuilder {
         this.name = name;
         this.interfaces = interfaces;
         this.classLoader = classLoader;
+        this.instrumentationHelper = new InstrumentationHelper();
 //        this.module = findModule();
     }
 
@@ -220,6 +223,9 @@ public class IASProxyProxyBuilder {
             mv.visitTypeInsn(Opcodes.CHECKCAST, Utils.getInternalName(primitiveToWrapper(type)));
             mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Utils.getInternalName(primitiveToWrapper(type)), type.getCanonicalName() + "Value", MethodType.methodType(type).toMethodDescriptorString(), false);
         } else {
+            if (this.instrumentationHelper.canHandleType(Type.getDescriptor(type))) {
+                this.instrumentationHelper.insertJdkMethodParameterConversion(mv, Type.getType(type));
+            }
             mv.visitTypeInsn(Opcodes.CHECKCAST, Utils.getInternalName(type));
         }
     }

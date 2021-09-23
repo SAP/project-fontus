@@ -41,7 +41,7 @@ public class IASTaintHandler {
 
             abort.abort(taintAware, instance, sinkFunction, sinkName, cleanedStackTrace);
         }
-        return null;
+        return taintAware;
     }
 
     private static IASTaintAware setTaint(IASTaintAware taintAware, int sourceId) {

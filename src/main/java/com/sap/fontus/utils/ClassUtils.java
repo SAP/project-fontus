@@ -26,6 +26,18 @@ public class ClassUtils {
         return loaded;
     }
 
+    public static Class<?> findLoadedClass(String internalName, ClassLoader loader) {
+        Class<?> loaded = TaintAgent.findLoadedClass(Utils.slashToDot(internalName));
+        if (loaded == null && new CombinedExcludedLookup(loader).isJdkClass(internalName)) {
+            try {
+                loaded = Class.forName(Type.getObjectType(internalName).getClassName(), false, loader);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        return loaded;
+    }
+
     public static InputStream getClassInputStream(String internalName, ClassLoader loader) {
         String resourceName = internalName + ".class";
         InputStream resource = ClassLoader.getSystemResourceAsStream(resourceName);

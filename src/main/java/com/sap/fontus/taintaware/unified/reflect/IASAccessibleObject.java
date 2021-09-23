@@ -1,10 +1,12 @@
 package com.sap.fontus.taintaware.unified.reflect;
 
 import com.sap.fontus.taintaware.unified.IASString;
+import jdk.internal.reflect.CallerSensitive;
+import jdk.internal.reflect.Reflection;
+import jdk.internal.vm.annotation.ForceInline;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.*;
 
 public abstract class IASAccessibleObject<T extends AccessibleObject> implements AnnotatedElement {
     protected final T original;
@@ -62,5 +64,10 @@ public abstract class IASAccessibleObject<T extends AccessibleObject> implements
 
     public AccessibleObject getAccessibleObject() {
         return this.original;
+    }
+
+    @ForceInline
+    public final boolean canAccess(Object obj) {
+        return this.original.canAccess(obj);
     }
 }

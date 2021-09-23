@@ -21,13 +21,20 @@ public class LambdaCall implements Serializable {
      * Internal name of the functional interface
      */
     private final Type functionalInterface;
+    private final Type invokeDescriptor;
+    private Type concreteImplementationType;
     private final FunctionCall implementation;
     private final Handle implementationHandle;
 
-    public LambdaCall(Type functionalInterface, Handle implementationHandle) {
+    public LambdaCall(Type functionalInterface, Handle implementationHandle, Type invokeDescriptor) {
         this.functionalInterface = functionalInterface;
         this.implementation = FunctionCall.fromHandle(implementationHandle);
         this.implementationHandle = implementationHandle;
+        this.invokeDescriptor = invokeDescriptor;
+    }
+
+    public void setConcreteImplementationType(Type concreteImplementationType) {
+        this.concreteImplementationType = concreteImplementationType;
     }
 
     public Type getFunctionalInterface() {
@@ -60,28 +67,38 @@ public class LambdaCall implements Serializable {
                 .filter((m) -> objMethods.stream().noneMatch(om -> m.getName().equals(om.getName()) && m.getDescriptor().equals(om.getDescriptor())))
                 .collect(Collectors.toList());
 
-        if (methods.size() != 1) {
-            throw new IllegalArgumentException("Functional interface of lambda call does not have exactly one method: " + this.functionalInterface.getClassName());
+        int enclosedCount;
+        if (methods.size() > 1) {
+            throw new IllegalArgumentException("Functional interface of lambda call has more than one method: " + this.functionalInterface.getClassName());
+        } else if (methods.size() == 1) {
+            Method method = methods.get(0);
+            enclosedCount = this.implementation.getParsedDescriptor().parameterCount() - method.getParsedDescriptor().parameterCount();
+        } else {
+            if (this.invokeDescriptor.getArgumentTypes().length >= 1) {
+                if (this.invokeDescriptor.getArgumentTypes()[0].equals(Type.getObjectType(this.implementation.getOwner()))) {
+                    enclosedCount = this.invokeDescriptor.getArgumentTypes().length - 1;
+                } else {
+                    enclosedCount = this.invokeDescriptor.getArgumentTypes().length;
+                }
+            } else {
+                enclosedCount = 0;
+            }
         }
 
-        Method method = methods.get(0);
-
         if (lookup.isPackageExcludedOrJdk(this.implementation.getOwner())) {
-            return this.generateProxyToJdkDescriptor(method, instrumentationHelper);
+            return this.generateProxyToJdkDescriptor(instrumentationHelper);
         } else {
-            return this.generateProxyToInstrumentedDescriptor(method, instrumentationHelper);
+            return this.generateProxyToInstrumentedDescriptor(enclosedCount, instrumentationHelper);
         }
     }
 
-    private Descriptor generateProxyToJdkDescriptor(Method method, InstrumentationHelper instrumentationHelper) {
-        Descriptor interfaceDescriptor = method.getParsedDescriptor();
-
+    private Descriptor generateProxyToJdkDescriptor(InstrumentationHelper instrumentationHelper) {
         Descriptor implementationDesc = this.implementation.getParsedDescriptor();
         Descriptor instrumentedImplementationDesc = instrumentationHelper.instrument(implementationDesc);
 
         List<String> proxyParameters = new ArrayList<>(implementationDesc.parameterCount());
         if (this.isInstanceCall()) {
-            proxyParameters.add(Type.getObjectType(this.implementation.getOwner()).getDescriptor());
+            proxyParameters.add(this.concreteImplementationType == null ? Type.getObjectType(this.implementation.getOwner()).getDescriptor() : this.concreteImplementationType.getDescriptor());
         }
 
         for (int i = 0; i < instrumentedImplementationDesc.parameterCount(); i++) {
@@ -113,17 +130,14 @@ public class LambdaCall implements Serializable {
         return new Descriptor(proxyParameters.toArray(new String[]{}), returnType.getDescriptor());
     }
 
-    private Descriptor generateProxyToInstrumentedDescriptor(Method method, InstrumentationHelper instrumentationHelper) {
-        Descriptor interfaceDescriptor = method.getParsedDescriptor();
-
+    private Descriptor generateProxyToInstrumentedDescriptor(int enclosedCount, InstrumentationHelper instrumentationHelper) {
         Descriptor implementationDesc = this.implementation.getParsedDescriptor();
         Descriptor instrumentedImplementationDesc = instrumentationHelper.instrument(implementationDesc);
 
         List<String> mergedParameters = new ArrayList<>(implementationDesc.parameterCount());
-        int enclosedCount = instrumentedImplementationDesc.parameterCount() - interfaceDescriptor.parameterCount();
 
         if (this.isInstanceCall()) {
-            mergedParameters.add(Type.getObjectType(this.implementation.getOwner()).getDescriptor());
+            mergedParameters.add(this.concreteImplementationType == null ? Type.getObjectType(this.implementation.getOwner()).getDescriptor() : this.concreteImplementationType.getDescriptor());
         }
         for (int i = 0; i < enclosedCount; i++) {
             mergedParameters.add(instrumentedImplementationDesc.getParameters().get(i));
@@ -207,5 +221,9 @@ public class LambdaCall implements Serializable {
 
     public boolean isStaticCall() {
         return this.implementation.getOpcode() == Opcodes.INVOKESTATIC;
+    }
+
+    public boolean isCallOnInterface() {
+        return this.implementation.isInterface();
     }
 }

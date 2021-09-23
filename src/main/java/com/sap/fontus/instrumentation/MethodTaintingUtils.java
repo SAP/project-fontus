@@ -132,6 +132,7 @@ public class MethodTaintingUtils {
         } else {
             bsArgs = bootstrapMethodArguments.clone();
             if (lookup.isPackageExcludedOrJdk(lambdaCall.getImplementation().getOwner())) {
+                bsArgs[0] = Utils.instrumentType((Type) bsArgs[0], instrumentationHelper);
                 bsArgs[2] = Utils.instrumentType((Type) bsArgs[2], instrumentationHelper);
             }
             bsArgs[1] = new Handle(lambdaCall.getProxyOpcodeTag(), owner, lambdaCall.getProxyMethodName(), instrumentedProxyDescriptor.toDescriptor(), isOwnerInterface);

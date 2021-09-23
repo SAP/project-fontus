@@ -6,6 +6,7 @@ import com.sap.fontus.instrumentation.InstrumentationHelper;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.unified.IASInstrumenterInputStream;
 import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.taintaware.unified.reflect.type.IASTypeVariableImpl;
 import com.sap.fontus.utils.ConversionUtils;
 import com.sap.fontus.utils.ReflectionUtils;
 import com.sap.fontus.utils.Utils;
@@ -22,7 +23,7 @@ public class IASClassProxy {
     private final static CombinedExcludedLookup lookup = new CombinedExcludedLookup();
 
     public static TypeVariable<Class>[] getTypeParameters(Class cls) {
-        return Arrays.stream(cls.getTypeParameters()).map(IASTypeVariable<Class>::new).toArray(IASTypeVariable[]::new);
+        return Arrays.stream(cls.getTypeParameters()).map(IASTypeVariableImpl<Class>::new).toArray(IASTypeVariableImpl[]::new);
     }
 
     public static Class<?>[] getInterfaces(Class cls) {
@@ -30,7 +31,7 @@ public class IASClassProxy {
     }
 
     public static Type[] getGenericInterfaces(Class cls) {
-        return Arrays.stream(cls.getGenericInterfaces()).map(IASType::new).toArray(Type[]::new);
+        return Arrays.stream(cls.getGenericInterfaces()).map(ConversionUtils::convertTypeToInstrumented).toArray(Type[]::new);
     }
 
     public static IASMethod getEnclosingMethod(Class cls) throws SecurityException {
@@ -53,8 +54,8 @@ public class IASClassProxy {
         return Arrays.stream(cls.getConstructors()).map(IASReflectRegistry.getInstance()::map).toArray(IASConstructor[]::new);
     }
 
-    public static IASField getField(Class cls, String name) throws NoSuchFieldException, SecurityException {
-        return IASReflectRegistry.getInstance().map(cls.getField(name));
+    public static IASField getField(Class cls, IASString name) throws NoSuchFieldException, SecurityException {
+        return IASReflectRegistry.getInstance().map(cls.getField(name.getString()));
     }
 
     public static IASField[] getDeclaredFields(Class cls) throws SecurityException {
