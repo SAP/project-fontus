@@ -12,6 +12,10 @@ public class IASWildcardTypeImpl implements WildcardType {
         this.type = type;
     }
 
+    public WildcardType getType() {
+        return this.type;
+    }
+
     @Override
     public Type[] getUpperBounds() {
         return Arrays.stream(this.type.getUpperBounds()).map(ConversionUtils::convertTypeToInstrumented).toArray(Type[]::new);

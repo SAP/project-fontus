@@ -32,10 +32,6 @@ class TaintingTransformer implements ClassFileTransformer {
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-        if ("org/springframework/data/repository/util/QueryExecutionConverters".equals(className)){
-            System.out.println("Test");
-        }
-
         if (loader == null) {
             return classfileBuffer;
         }

@@ -10,10 +10,14 @@ import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 
 public class IASTypeVariableImpl<T extends GenericDeclaration> implements TypeVariable<T> {
-    public final TypeVariable<T> original;
+    private final TypeVariable<T> original;
 
     public IASTypeVariableImpl(TypeVariable<T> original) {
         this.original = original;
+    }
+
+    public TypeVariable<T> getType() {
+        return this.original;
     }
 
     @Override
@@ -49,5 +53,18 @@ public class IASTypeVariableImpl<T extends GenericDeclaration> implements TypeVa
     @Override
     public Annotation[] getDeclaredAnnotations() {
         return this.original.getDeclaredAnnotations();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof IASTypeVariableImpl) {
+            return this.original.equals(((IASTypeVariableImpl<?>) obj).original);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.original.hashCode();
     }
 }

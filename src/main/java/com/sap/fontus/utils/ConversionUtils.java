@@ -1,10 +1,10 @@
 package com.sap.fontus.utils;
 
-import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.unified.*;
 import com.sap.fontus.taintaware.unified.reflect.*;
 import com.sap.fontus.taintaware.unified.reflect.type.IASTypeVariableImpl;
 import com.sap.fontus.taintaware.unified.reflect.type.IASWildcardTypeImpl;
+import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import sun.reflect.generics.reflectiveObjects.GenericArrayTypeImpl;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
@@ -19,45 +19,70 @@ import java.util.regex.Pattern;
 
 public class ConversionUtils {
     private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
+    private static final CombinedExcludedLookup excludedLookup = new CombinedExcludedLookup();
 
-    private static final Map<Class<?>, Function<Object, Object>> toConcrete = new HashMap<>();
-    private static final Map<Class<?>, Function<Object, Object>> toOrig = new HashMap<>();
+    private static final List<Converter> instrumenter = Arrays.asList(
+            new NullConverter(),
+            new AlreadyTaintedConverter(),
+            new ClassConverter((cls) -> cls),
+            new TypeConverter(ConversionUtils::convertTypeToInstrumented),
+            new DefaultConverter<>(String.class, IASString::valueOf),
+            new DefaultConverter<>(StringBuilder.class, IASStringBuilder::fromStringBuilder),
+            new DefaultConverter<>(StringBuffer.class, IASStringBuffer::fromStringBuffer),
+            new DefaultConverter<>(Formatter.class, IASFormatter::fromFormatter),
+            new DefaultConverter<>(Matcher.class, IASMatcher::fromMatcher),
+            new DefaultConverter<>(Pattern.class, IASPattern::fromPattern),
+            new DefaultConverter<>(Properties.class, IASProperties::fromProperties),
+            new DefaultConverter<>(Method.class, IASReflectRegistry.getInstance()::map),
+            new DefaultConverter<>(AccessibleObject.class, IASReflectRegistry.getInstance()::mapAccessibleObject),
+            new DefaultConverter<>(Executable.class, IASReflectRegistry.getInstance()::mapExecutable),
+            new DefaultConverter<>(Field.class, IASReflectRegistry.getInstance()::map),
+            new DefaultConverter<>(Member.class, IASReflectRegistry.getInstance()::mapMember),
+            new DefaultConverter<>(Constructor.class, IASReflectRegistry.getInstance()::map),
+            new DefaultConverter<>(Parameter.class, IASParameter::new),
+            new ArrayConverter(ConversionUtils::convertToConcrete, ConversionUtils::convertClassToConcrete),
+            new ListConverter(ConversionUtils::convertToConcrete)
+    );
+
+    private static final List<Converter> uninstrumenter = Arrays.asList(
+            new NullConverter(),
+            new ClassConverter(ConversionUtils::convertClassToOrig),
+            new TypeConverter(ConversionUtils::convertTypeToUninstrumented),
+            new DefaultConverter<>(IASString.class, IASString::toString),
+            new DefaultConverter<>(IASStringBuilder.class, IASStringBuilder::getStringBuilder),
+            new DefaultConverter<>(IASStringBuffer.class, IASStringBuffer::getStringBuffer),
+            new DefaultConverter<>(IASFormatter.class, IASFormatter::getFormatter),
+            new DefaultConverter<>(IASMatcher.class, IASMatcher::getMatcher),
+            new DefaultConverter<>(IASPattern.class, IASPattern::getPattern),
+            new DefaultConverter<>(IASProperties.class, IASProperties::getProperties),
+            new DefaultConverter<>(IASMethod.class, IASMethod::getMethod),
+            new DefaultConverter<>(IASField.class, IASField::getField),
+            new DefaultConverter<>(IASConstructor.class, IASConstructor::getConstructor),
+            new DefaultConverter<>(IASMember.class, IASMember::getMember),
+            new DefaultConverter<>(IASExecutable.class, IASExecutable::getExecutable),
+            new DefaultConverter<>(IASAccessibleObject.class, IASAccessibleObject::getAccessibleObject),
+            new DefaultConverter<>(IASParameter.class, IASParameter::getParameter),
+            new ArrayConverter(ConversionUtils::convertToOrig, ConversionUtils::convertClassToOrig),
+            new ListConverter(ConversionUtils::convertToOrig),
+            new AlreadyUntaintedConverter()
+    );
+
+    public static Object convertToConcrete(Object object) {
+        for (Converter converter : instrumenter) {
+            if (converter.canConvert(object)) {
+                return converter.convert(object);
+            }
+        }
+        return object;
+    }
+
     private static final Map<Class<?>, MethodHandle> toOrigMethods = new HashMap<>();
     private static final Map<Class<?>, MethodHandle> toConcreteMethods = new HashMap<>();
     private static final Map<Class<?>, Class<?>> toConcreteClass = new HashMap<>();
+
     private static final Map<Class<?>, Class<?>> toOrigClass = new HashMap<>();
 
     static {
-        toConcrete.put(String.class, IASString::valueOf);
-        toConcrete.put(StringBuilder.class, (obj) -> IASStringBuilder.fromStringBuilder((StringBuilder) obj));
-        toConcrete.put(StringBuffer.class, (obj) -> IASStringBuffer.fromStringBuffer((StringBuffer) obj));
-        toConcrete.put(Formatter.class, (obj) -> IASFormatter.fromFormatter((Formatter) obj));
-        toConcrete.put(Matcher.class, (obj) -> IASMatcher.fromMatcher((Matcher) obj));
-        toConcrete.put(Pattern.class, (obj) -> IASPattern.fromPattern((Pattern) obj));
-        toConcrete.put(Properties.class, (obj) -> IASProperties.fromProperties((Properties) obj));
-        toConcrete.put(AccessibleObject.class, (o -> IASReflectRegistry.getInstance().mapAccessibleObject((AccessibleObject) o)));
-        toConcrete.put(Executable.class, o -> IASReflectRegistry.getInstance().mapExecutable((Executable) o));
-        toConcrete.put(Constructor.class, o -> IASReflectRegistry.getInstance().map((Constructor) o));
-        toConcrete.put(Field.class, o -> IASReflectRegistry.getInstance().map((Field) o));
-        toConcrete.put(Member.class, o -> IASReflectRegistry.getInstance().mapAccessibleObject((AccessibleObject) o));
-        toConcrete.put(Method.class, o -> IASReflectRegistry.getInstance().map((Method) o));
-        toConcrete.put(Parameter.class, o -> new IASParameter((Parameter) o));
-
-        toOrig.put(IASString.class, (obj) -> ((IASString) obj).getString());
-        toOrig.put(IASStringBuilder.class, (obj) -> ((IASStringBuilder) obj).getStringBuilder());
-        toOrig.put(IASStringBuffer.class, (obj) -> ((IASStringBuffer) obj).getStringBuffer());
-        toOrig.put(IASFormatter.class, (obj) -> ((IASFormatter) obj).getFormatter());
-        toOrig.put(IASMatcher.class, (obj) -> ((IASMatcher) obj).getMatcher());
-        toOrig.put(IASPattern.class, (obj) -> ((IASPattern) obj).getPattern());
-        toOrig.put(IASProperties.class, (obj) -> ((IASProperties) obj).getProperties());
-        toOrig.put(IASAccessibleObject.class, o -> ((IASAccessibleObject) o).getAccessibleObject());
-        toOrig.put(IASExecutable.class, o -> ((IASAccessibleObject) o).getAccessibleObject());
-        toOrig.put(IASConstructor.class, o -> ((IASAccessibleObject) o).getAccessibleObject());
-        toOrig.put(IASField.class, o -> ((IASAccessibleObject) o).getAccessibleObject());
-        toOrig.put(IASMember.class, o -> ((IASMember) o).getMember());
-        toOrig.put(IASMethod.class, o -> ((IASAccessibleObject) o).getAccessibleObject());
-        toOrig.put(IASParameter.class, o -> ((IASParameter) o).getParameter());
-
         toOrigClass.put(IASString.class, String.class);
         toOrigClass.put(IASStringBuilder.class, StringBuilder.class);
         toOrigClass.put(IASStringBuffer.class, StringBuffer.class);
@@ -126,135 +151,17 @@ public class ConversionUtils {
         }
     }
 
-    private static Object convertObject(Object object, Map<Class<?>, Function<Object, Object>> converters, Map<Class<?>, Class<?>> classConverters) {
-        if (object == null) {
-            return null;
-        }
-
-        if (object instanceof List) {
-            List list = (List) object;
-            List result = new ArrayList();
-
-            for (Object listEntry : list) {
-                Object converted = convertObject(listEntry, converters, classConverters);
-                result.add(converted);
-            }
-
-            boolean hasChanged = false;
-            for (int i = 0; i < list.size(); i++) {
-                if (!Objects.equals(list.get(i), result.get(i))) {
-                    hasChanged = true;
-                    break;
-                }
-            }
-
-            if (!hasChanged) {
-                return list;
-            }
-
-            if (list.getClass().getName().startsWith("java.util.Collections$Unmodifiable")) {
-                result = Collections.unmodifiableList(result);
-            } else if (list.getClass().getName().startsWith("java.util.Collections$Singleton")) {
-                result = Collections.singletonList(result);
-            }
-//            } else if (list.getClass().getName().startsWith("java.util.Collections$Synchronized")){
-//                result = Collections.synchronizedList(result);
-//            }
-//            else if (list.getClass().getName().startsWith("java.util.Collections$Checked")){
-//                result = Collections.checkedList(result, );
-//            }
-            else {
-                for (int i = 0; i < list.size(); i++) {
-                    Object converted = result.get(i);
-                    list.set(i, converted);
-                    result = list;
-                }
-            }
-            return result;
-        }
-
-        if (object instanceof Class) {
-            return convertClass((Class<?>) object, classConverters);
-        }
-
-        boolean isArray = object.getClass().isArray();
-        Class<?> cls = isArray ? object.getClass().getComponentType() : object.getClass();
-        for (Class<?> handler : converters.keySet()) {
-            if (handler.isAssignableFrom(cls)) {
-                if (isArray) {
-                    Object[] array = (Object[]) object;
-                    Class<?> arrayType = classConverters.get(handler);
-                    Object[] result = (Object[]) Array.newInstance(arrayType, array.length);
-                    for (int i = 0; i < array.length; i++) {
-                        result[i] = convertObject(array[i], converters, classConverters);
-                    }
-                    return result;
-                } else {
-                    return converters.get(handler).apply(object);
-                }
+    public static Object convertToOrig(Object object) {
+        for (Converter converter : uninstrumenter) {
+            if (converter.canConvert(object)) {
+                return converter.convert(object);
             }
         }
         return object;
-    }
-
-    public static Object convertToOrig(Object object) {
-        return convertObject(object, toOrig, toOrigClass);
     }
 
     private static boolean isHandlable(Class cls) {
-        return cls == String.class || cls == StringBuilder.class || cls == StringBuffer.class || cls == Formatter.class || cls == Pattern.class || cls == Matcher.class || cls == Properties.class;
-    }
-
-    public static Object convertToConcrete(Object object) {
-        if (object == null) {
-            return null;
-        } else if (object instanceof IASTaintAware) {
-            return object;
-        } else if (object instanceof Class) {
-            return object;
-        }
-        Class cls = object.getClass();
-        if (cls == String.class) {
-            return IASString.valueOf((String) object);
-        } else if (cls == StringBuilder.class) {
-            return IASStringBuilder.fromStringBuilder((StringBuilder) object);
-        } else if (cls == StringBuffer.class) {
-            return IASStringBuffer.fromStringBuffer((StringBuffer) object);
-        } else if (cls == Formatter.class) {
-            return IASFormatter.fromFormatter((Formatter) object);
-        } else if (cls == Matcher.class) {
-            return IASMatcher.fromMatcher((Matcher) object);
-        } else if (cls == Pattern.class) {
-            return IASPattern.fromPattern((Pattern) object);
-        } else if (cls == Properties.class) {
-            return IASProperties.fromProperties((Properties) object);
-        } else if (cls.isArray()) {
-            cls = object.getClass().getComponentType();
-            if (!cls.isPrimitive() && isHandlable(cls)) {
-                Object[] array = (Object[]) object;
-                Class<?> arrayType = (Class<?>) convertClassToConcrete(cls);
-                Object[] result = (Object[]) Array.newInstance(arrayType, array.length);
-                for (int i = 0; i < array.length; i++) {
-                    result[i] = convertToConcrete(array[i]);
-                }
-                return result;
-            }
-        } else {
-            return convertObject(object, toConcrete, toConcreteClass);
-        }
-        return object;
-
-        // Unoptimized version:
-//        Statistics.INSTANCE.countConversion(object);
-//        if (object instanceof IASTaintAware) {
-//            return object;
-//        }
-//        if (object instanceof String) {
-//            Statistics.INSTANCE.countConversionUtilsShortcut();
-//            return factory.createString((String) object);
-//        }
-//        Statistics.INSTANCE.countConversionUtilsLong();
-//        return convertObject(object, toConcrete);
+        return cls == String.class || cls == StringBuilder.class || cls == StringBuffer.class || cls == Formatter.class || cls == Pattern.class || cls == Matcher.class || cls == Properties.class || Type.class.isAssignableFrom(cls) || cls == Method.class;
     }
 
     public static Class<?> convertClassToOrig(Class<?> cls) {
@@ -294,6 +201,26 @@ public class ConversionUtils {
         return toOrigMethods.get(uninstrumentedClass);
     }
 
+    public static Type convertTypeToUninstrumented(Type type) {
+        if (type instanceof Class) {
+            return convertClassToOrig((Class<?>) type);
+        } else if (type instanceof GenericArrayType) {
+            return GenericArrayTypeImpl.make(convertTypeToUninstrumented(((GenericArrayType) type).getGenericComponentType()));
+        } else if (type instanceof ParameterizedType) {
+            ParameterizedType pType = (ParameterizedType) type;
+            return ParameterizedTypeImpl.make(
+                    (Class<?>) convertTypeToUninstrumented(pType.getRawType()),
+                    Arrays.stream(pType.getActualTypeArguments()).map(ConversionUtils::convertTypeToUninstrumented).toArray(Type[]::new),
+                    convertTypeToUninstrumented(pType.getOwnerType())
+            );
+        } else if (type instanceof IASTypeVariableImpl) {
+            return ((IASTypeVariableImpl<?>) type).getType();
+        } else if (type instanceof IASWildcardTypeImpl) {
+            return ((IASWildcardTypeImpl) type).getType();
+        }
+        return type;
+    }
+
     public static <T extends GenericDeclaration> Type convertTypeToInstrumented(Type type) {
         if (type instanceof Class) {
             return convertClassToConcrete((Class<?>) type);
@@ -312,5 +239,200 @@ public class ConversionUtils {
             return new IASWildcardTypeImpl((WildcardType) type);
         }
         return type;
+    }
+
+    private interface Converter {
+        boolean canConvert(Object o);
+
+        Object convert(Object o);
+    }
+
+    private static class NullConverter implements Converter {
+        @Override
+        public boolean canConvert(Object o) {
+            return o == null;
+        }
+
+        @Override
+        public Object convert(Object o) {
+            return null;
+        }
+    }
+
+    private static class AlreadyUntaintedConverter implements Converter {
+
+        @Override
+        public boolean canConvert(Object o) {
+            return o != null && excludedLookup.isPackageExcludedOrJdk(o.getClass());
+        }
+
+        @Override
+        public Object convert(Object o) {
+            return o;
+        }
+    }
+
+    private static class AlreadyTaintedConverter implements Converter {
+        @Override
+        public boolean canConvert(Object o) {
+            if (o == null) {
+                return false;
+            }
+            return excludedLookup.isFontusClass(o.getClass());
+        }
+
+        @Override
+        public Object convert(Object o) {
+            return o;
+        }
+    }
+
+    private static class TypeConverter implements Converter {
+        private final Function<Type, Type> atomicConverter;
+
+        private TypeConverter(Function<Type, Type> atomicConverter) {
+            this.atomicConverter = atomicConverter;
+        }
+
+        @Override
+        public boolean canConvert(Object o) {
+            return o instanceof Type && !excludedLookup.isFontusClass(o.getClass());
+        }
+
+        @Override
+        public Object convert(Object o) {
+            return atomicConverter.apply((Type) o);
+        }
+    }
+
+    private static class ClassConverter implements Converter {
+        private final Function<Class, Class> atomicConverter;
+
+        private ClassConverter(Function<Class, Class> atomicConverter) {
+            this.atomicConverter = atomicConverter;
+        }
+
+
+        @Override
+        public boolean canConvert(Object o) {
+            return o instanceof Class;
+        }
+
+        @Override
+        public Object convert(Object o) {
+            return this.atomicConverter.apply((Class) o);
+        }
+    }
+
+    private static class ArrayConverter implements Converter {
+        private final Function<Object, Object> atomicConverter;
+        private final Function<Class, Class> classConverter;
+
+        private ArrayConverter(Function<Object, Object> atomicConverter, Function<Class, Class> classConverter) {
+            this.atomicConverter = atomicConverter;
+            this.classConverter = classConverter;
+        }
+
+        @Override
+        public boolean canConvert(Object o) {
+            return o != null && o.getClass().isArray();
+        }
+
+        @Override
+        public Object convert(Object o) {
+            Class<?> cls = o.getClass().getComponentType();
+            if (!cls.isPrimitive() && isHandlable(convertClassToOrig(cls))) {
+                Object[] array = (Object[]) o;
+                Class<?> arrayType = classConverter.apply(cls);
+                Object[] result = (Object[]) Array.newInstance(arrayType, array.length);
+                for (int i = 0; i < array.length; i++) {
+                    result[i] = atomicConverter.apply(array[i]);
+                }
+                return result;
+            }
+            return o;
+        }
+    }
+
+    private static class DefaultConverter<T, R> implements Converter {
+        private final Class<T> convertable;
+        private final Function<T, R> converter;
+
+        public DefaultConverter(Class<T> convertable, Function<T, R> converter) {
+            this.convertable = convertable;
+            this.converter = converter;
+        }
+
+        @Override
+        public boolean canConvert(Object o) {
+            if (o == null) {
+                return false;
+            }
+            return this.convertable.isAssignableFrom(o.getClass());
+        }
+
+        @Override
+        public Object convert(Object o) {
+            return this.converter.apply((T) o);
+        }
+    }
+
+    private static class ListConverter implements Converter {
+        private final Function<Object, Object> atomicConverter;
+
+        private ListConverter(Function<Object, Object> atomicConverter) {
+            this.atomicConverter = atomicConverter;
+        }
+
+        @Override
+        public boolean canConvert(Object o) {
+            return o instanceof List;
+        }
+
+        @Override
+        public Object convert(Object o) {
+            if (o instanceof List) {
+                List list = (List) o;
+                List result = new ArrayList();
+
+                for (Object listEntry : list) {
+                    Object converted = atomicConverter.apply(listEntry);
+                    result.add(converted);
+                }
+
+                boolean hasChanged = false;
+                for (int i = 0; i < list.size(); i++) {
+                    if (!Objects.equals(list.get(i), result.get(i))) {
+                        hasChanged = true;
+                        break;
+                    }
+                }
+
+                if (!hasChanged) {
+                    return list;
+                }
+
+                if (list.getClass().getName().startsWith("java.util.Collections$Unmodifiable")) {
+                    result = Collections.unmodifiableList(result);
+                } else if (list.getClass().getName().startsWith("java.util.Collections$Singleton")) {
+                    result = Collections.singletonList(result);
+                }
+//            } else if (list.getClass().getName().startsWith("java.util.Collections$Synchronized")){
+//                result = Collections.synchronizedList(result);
+//            }
+//            else if (list.getClass().getName().startsWith("java.util.Collections$Checked")){
+//                result = Collections.checkedList(result, );
+//            }
+                else {
+                    for (int i = 0; i < list.size(); i++) {
+                        Object converted = result.get(i);
+                        list.set(i, converted);
+                        result = list;
+                    }
+                }
+                return result;
+            }
+            return null;
+        }
     }
 }
