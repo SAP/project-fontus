@@ -38,17 +38,6 @@ public class SQLChecker {
                     injection_info_obj.put("token_info",token_info);
                     injection_info_obj.put("taint_info",taint_range);
                     injection_info_arr.put(injection_info_obj);
-                    if(token.has_comment){
-                        JSONObject injection_info_obj2 = new JSONObject();
-                        JSONObject token_info2 = new JSONObject();
-                        token_info2.put("start",token.begin);
-                        token_info2.put("end",token.end);
-                        token_info2.put("sql_token","Comment");
-                        token_info2.put("sql_token_type",-1);
-                        injection_info_obj2.put("token_info",token_info2);
-                        injection_info_obj2.put("taint_info",taint_range);
-                        injection_info_arr.put(injection_info_obj2);
-                    }
                 }
             }
         }
@@ -63,14 +52,14 @@ public class SQLChecker {
     private static List<SqlLexerToken> getLexerTokens(String sql_query) {
         System.out.println("SQL Query : " + sql_query);
         List<SqlLexerToken> lexer_tokens = new ArrayList<>();
-        DbType db_type = DbType.mysql;
+        DbType db_type = DbType.postgresql;
 
         try {
             // Parse SQL Query
             SQLStatementParser parser = SQLParserUtils.createSQLStatementParser(sql_query, db_type);
             List<SQLStatement> statementList = parser.parseStatementList();
             if(statementList.size() > 1){
-                lexer_tokens.add(new SqlLexerToken(0,sql_query.length()-1,"Multiple_SQL_Queries",1,false));
+                lexer_tokens.add(new SqlLexerToken(0,sql_query.length()-1,"Multiple_SQL_Queries",1));
                 return lexer_tokens;
             }
             Lexer lexer = SQLParserUtils.createLexer(sql_query, db_type);
@@ -78,18 +67,18 @@ public class SQLChecker {
             lexer.nextToken();
             while(lexer.token() != Token.EOF){
                 // Create the corresponding LexerToken
-                lexer_tokens.add(new SqlLexerToken(startPos,lexer.pos(),lexer.token().toString(),0, lexer.hasComment()));
+                lexer_tokens.add(new SqlLexerToken(startPos,lexer.pos(),lexer.token().toString(),0));
                 System.out.println("tokenType : " + lexer.token() + ", startPos : " + startPos + ", endPos : " + lexer.pos());
                 startPos = lexer.pos();
                 lexer.nextToken();
             }
-            if(startPos != sql_query.length()){
-                lexer_tokens.add(new SqlLexerToken(startPos,sql_query.length(),"Unparsed_Segment",0,true));
-            }
+//            if(startPos != sql_query.length()){
+//                lexer_tokens.add(new SqlLexerToken(startPos,sql_query.length(),"Unparsed_Segment",0,true));
+//            }
         }
         catch (ParserException e) {
             System.out.println("SQL Parsing Exception");
-            lexer_tokens.add(new SqlLexerToken(0,sql_query.length()-1,"SQL_Parsing_Error",1,false));
+            lexer_tokens.add(new SqlLexerToken(0,sql_query.length()-1,"SQL_Parsing_Error",1));
             //return lexer_tokens;
         }
         catch (Exception ex){
@@ -137,17 +126,17 @@ public class SQLChecker {
             List<SqlLexerToken> token_ranges = getLexerTokens(sql_stmt);
             JSONArray taint_ranges = json_obj.getJSONArray("ranges");
 
-            JSONArray json_array = getSqlInjectionInfo(token_ranges,taint_ranges,32);
-            System.out.println("checkTaintedString : " + json_array.toString());
-            NetworkResponseObject.setResponseMessage(new NetworkRequestObject(),!json_array.isEmpty());
+            JSONArray inj_info_array = getSqlInjectionInfo(token_ranges,taint_ranges,32);
+            System.out.println("checkTaintedString : " + inj_info_array.toString());
+            NetworkResponseObject.setResponseMessage(new NetworkRequestObject(),!inj_info_array.isEmpty());
         }
         else{
             List<SqlLexerToken> token_ranges = getLexerTokens(sql_string);
             JSONArray taint_ranges = json_obj.getJSONArray("ranges");
 
-            JSONArray json_array = getSqlInjectionInfo(token_ranges,taint_ranges,addl_pos);
-            System.out.println("checkTaintedString : " + json_array.toString());
-            NetworkResponseObject.setResponseMessage(new NetworkRequestObject(),!json_array.isEmpty());
+            JSONArray inj_info_array = getSqlInjectionInfo(token_ranges,taint_ranges,addl_pos);
+            System.out.println("checkTaintedString : " + inj_info_array.toString());
+            NetworkResponseObject.setResponseMessage(new NetworkRequestObject(),!inj_info_array.isEmpty());
         }
     }
 
@@ -190,13 +179,13 @@ public class SQLChecker {
             } catch (SecurityException | IOException e) {
                 e.printStackTrace();
             }
-            // throw new InterruptedException("SQL Injection Error");
+            throw new InterruptedException("Logging: SQL Injection Error");
         }
     }
 
     public static void main(String[] args) {
         //String sqlString = "insert into table1 values      (data1, data2)";
-        String sqlString = "SELECT * FROM table1 WHERE username = \"<STYLE>BODY{-moz-binding:url(\"http://ha.ckers.org/xssmoz.xml#xss\")}</STYLE>\"";
+        String sqlString = "SELECT * FROM student_data where student_name = 1";
 //        SQLStatementParser parser = SQLParserUtils.createSQLStatementParser(sqlString, DbType.mysql);
 //        parser.parseStatementList();
 //
