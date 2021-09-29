@@ -1,5 +1,8 @@
 package com.sap.fontus.sanitizer;
 
+import com.sap.fontus.taintaware.shared.IASTaintRange;
+import org.owasp.encoder.Encode;
+
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -9,30 +12,14 @@ import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLSyntaxErrorException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
-import org.owasp.encoder.Encode;
-
-import com.sap.fontus.taintaware.shared.IASTaintRange;
-
 public class Sanitization {
-
-    public enum AttackCategory {
-        SQLi, XSS, LDAP, CMDi, XPATHi, PATHTRAVERS, TRUSTBOUND
-    }
-
-    protected enum XssContext {
-        HtmlAttributeName, HtmlAttributeValue, HtmlComment, HtmlTextContent, CssInlineString, CssInternalString, CssUrl,
-        Uri, UriComponent, XmlContent, XmlAttributeValue, XmlComment, XmlAttributeName, XHtmlContent,
-        XHtmlAttributeValue, XHtmlComment, XHtmlAttributeName, CDATA, Java, JavaScript
-    }
 
     private static Comparator<IASTaintRange> taintRangeComparator = new Comparator<IASTaintRange>() {
         // descending ordering, ranges are assumed to be disjoint
@@ -52,15 +39,24 @@ public class Sanitization {
         for (String attCat : sinkChecks) {
             switch (attCat) {
                 case "SQLi":
-                    // do something, e.g. sanitizeAndExecuteQuery(..)
+                    // do something, e.g. sanitizeAndExecuteQuery(..) (need something new -> wait for sanjit's sql parser)
                     // problem: how to detect whole query and connection to DB
                     // e.g. use sql sanitizer or log result or stop program
                     break;
                 case "XSS":
                     taintedString = sanitizeHtml(taintedString, taintRanges);
                     break;
+                case "LDAP":
+                    break;
+                case "PATHTRAVERS":
+                    break;
+                case "CMDi":
+                    break;
+                case "XPATHi":
+                case "TRUSTBOUND":
                 default:
                     // problem: where do we get the context from? already part of taint info?
+                    // abort if type not known?
             }
         }
         return taintedString;
@@ -71,13 +67,12 @@ public class Sanitization {
     // >london<, NOT >"london" and ID=2< (would also inclue column name and not only
     // value)
     //TODO: new classes
-    protected static ResultSet sanitizeAndExecuteQuery(String taintedString, List<IASTaintRange> taintRanges, Connection con)
-            throws SQLException {
+    protected static ResultSet sanitizeAndExecuteQuery(String taintedString, List<IASTaintRange> taintRanges, Connection con) {
         if (!taintRanges.isEmpty()) {
             // sort taint ranges
-            Collections.sort(taintRanges, taintRangeComparator);
+            taintRanges.sort(taintRangeComparator);
             // replaces all tainted chars, s
-            StringBuffer quoteCountingString = new StringBuffer(taintedString);
+            StringBuilder quoteCountingString = new StringBuilder(taintedString);
             for (IASTaintRange range : taintRanges) {
                 for (int i = range.getStart(); i < range.getEnd(); i++) {
                     quoteCountingString.setCharAt(i, ' ');
@@ -117,7 +112,7 @@ public class Sanitization {
 
                 if (numberOfDoubleQuotes % 2 == 0 && numberOfSingleQuotes % 2 == 0) {
                     // attribute value is NOT a text set in quotes
-                    char[] notTextChars = new char[] { ' ', ',', ';', '<', '>', '=', '(', ')' };
+                    char[] notTextChars = new char[]{' ', ',', ';', '<', '>', '=', '(', ')'};
                     String help = preparedString.substring(0, taintRangeStart);
                     for (char c : notTextChars) {
                         startTaintIndex = Math.max(startTaintIndex, help.lastIndexOf(c) + 1);
@@ -144,7 +139,7 @@ public class Sanitization {
                     // "range" to set the value
                     startTaintIndex = taintRangeStart;
                     endTaintIndex = preparedString.length() - 1;
-                    char[] textChars = new char[] { '\"', '\'' };
+                    char[] textChars = new char[]{'\"', '\''};
                     String temp = preparedString;
                     if (taintRangeStart > 0 && taintRangeEnd < preparedString.length()) {
                         char quoteType = '\"';
@@ -249,30 +244,22 @@ public class Sanitization {
                     }
                 }
                 // sanitization successful, execute query and return ResultSet
-                ResultSet rs = p.executeQuery();
-                return rs;
-            } catch (SQLSyntaxErrorException e) {
+                return p.executeQuery();
+            } catch (SQLException | NullPointerException | NumberFormatException e) {
                 // Cannot create prepared statement due to syntax error.
-                // sanitization NOT successful
+                // OR Input does not match sql syntax
+                // OR Input cannot be replaced by prepared statement
+                // OR Input does not match required data type!
+                // -> sanitization NOT successful
                 return null;
-            } catch (SQLException e) {
-                // Input does not match sql syntax
-                // sanitization NOT successful
-                return null;
-            } catch (NullPointerException e) {
-                // Input can't be replaced by prepared statement
-                // sanitization NOT successful
-                return null;
-            } catch (NumberFormatException e) {
-                // Input does not match required datatype!
-                // sanitization NOT successful
-                return null;
-            }
+            }// Input does not match sql syntax
+            // Input can't be replaced by prepared statement
+            // Input does not match required data type!
+
         } else {
             try {
                 // no sanatization necessary, use regular statement to execute the query
-                ResultSet rs = con.createStatement().executeQuery(taintedString);
-                return rs;
+                return con.createStatement().executeQuery(taintedString);
             } catch (Exception e) {
                 // Cannot create prepared statement due to syntax error.
                 // sanatization NOT successful
@@ -361,14 +348,14 @@ public class Sanitization {
 
                     // script context and inside a function call!
                     //For nearly all functions a possible attack i.e. don't allow it -> return null
-                    if(tags.contains("script") && insideRoundBracket) {
+                    if (tags.contains("script") && insideRoundBracket) {
                         return null;
                         // script context
-                    } else if(tags.contains("script")){
-                        sanitizedString.append(" \"" + Encode.forJavaScript(
-                                taintedString.substring(taintedRange.getStart(), taintedRange.getEnd())) + "\" ");
+                    } else if (tags.contains("script")) {
+                        sanitizedString.append(" \"").append(Encode.forJavaScript(
+                                taintedString.substring(taintedRange.getStart(), taintedRange.getEnd()))).append("\" ");
                         i = taintedRange.getEnd() - 1;
-                    }else{
+                    } else {
                         // html context
                         sanitizedString.append(Encode.forHtml(taintedString.substring(taintedRange.getStart(), taintedRange.getEnd())));
                         i = taintedRange.getEnd() - 1;
@@ -438,13 +425,6 @@ public class Sanitization {
                 // TODO:
                 sanitizedString.append(taintedString.charAt(i));
             }
-            /**System.out.println("char='" + taintedString.charAt(i) + "', inside=" + insideTag + ", closing=" + closingTag
-             + ", tagDec=" + tagDeclaration + ", attDec=" + attDeclaration + ", attName="
-             + attributeName.toString());
-             System.out.println("sanitizedStr=" + sanitizedString.toString());
-             for (String t : tags) { System.out.print("<" + t + "> ");}
-             System.out.println();*/
-
         }
         // return
         return sanitizedString.toString();
@@ -460,10 +440,10 @@ public class Sanitization {
 
             // check if html, css or else...
             // use owasp encode if fine with license
-            Collections.sort(taintRanges, taintRangeComparator);
+            taintRanges.sort(taintRangeComparator);
             StringBuilder sb = new StringBuilder(taintedString);
             for (IASTaintRange range : taintRanges) {
-                String sanitizedSubstring = new String();
+                String sanitizedSubstring = "";
 
                 // switch over context of different taintranges of the string
                 switch (contexts.get(range)) {
@@ -608,5 +588,11 @@ public class Sanitization {
         } else {
             return taintedString;
         }
+    }
+
+    protected enum XssContext {
+        HtmlAttributeName, HtmlAttributeValue, HtmlComment, HtmlTextContent, CssInlineString, CssInternalString, CssUrl,
+        Uri, UriComponent, XmlContent, XmlAttributeValue, XmlComment, XmlAttributeName, XHtmlContent,
+        XHtmlAttributeValue, XHtmlComment, XHtmlAttributeName, CDATA, Java, JavaScript
     }
 }
