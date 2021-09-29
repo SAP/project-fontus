@@ -5,9 +5,9 @@ import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASStringable;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
 
-import java.util.*;
-
-import com.sap.fontus.sanitizer.Sanitization;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 public class SanitizationAbort extends Abort {
 
@@ -31,11 +31,16 @@ public class SanitizationAbort extends Abort {
                 return;
             }
         }
-        String sanitizedString = Sanitization.sanitizeSinks(taintedString, ranges, categories);
-        alreadySanitized.add(taintedIASString);
-        alreadySanitized.sort(Comparator.comparing(IASStringable::toString));
-        System.err.println(taintedString + " was sanitized and resulted in: " + sanitizedString);
-        taintAware.setContent(sanitizedString, ranges);
+        String sanitizedString;
+        try {
+            sanitizedString = Sanitization.sanitizeSinks(taintedString, ranges, categories);
+            alreadySanitized.add(taintedIASString);
+            alreadySanitized.sort(Comparator.comparing(IASStringable::toString));
+            System.err.println(taintedString + " was sanitized and resulted in: " + sanitizedString);
+            taintAware.setContent(sanitizedString, ranges);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

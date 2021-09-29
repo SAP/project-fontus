@@ -34,8 +34,7 @@ public class Sanitization {
         }
     };
 
-    public static String sanitizeSinks(String taintedString, List<IASTaintRange> taintRanges,
-                                       List<String> sinkChecks) {
+    public static String sanitizeSinks(String taintedString, List<IASTaintRange> taintRanges, List<String> sinkChecks) throws Exception {
         for (String attCat : sinkChecks) {
             switch (attCat) {
                 case "SQLi":
@@ -51,15 +50,62 @@ public class Sanitization {
                 case "PATHTRAVERS":
                     break;
                 case "CMDi":
+                    throwRandomRuntimeException();
                     break;
                 case "XPATHi":
                 case "TRUSTBOUND":
                 default:
-                    // problem: where do we get the context from? already part of taint info?
                     // abort if type not known?
             }
         }
         return taintedString;
+    }
+
+    private static void throwRandomRuntimeException() {
+        // List of runtime exceptions (without parameter)
+        RuntimeException[] exceptions = {new ArithmeticException(), new ArrayStoreException(), new ClassCastException(), new IllegalArgumentException(),
+                new IllegalThreadStateException(), new NumberFormatException(), new IllegalCallerException(), new IllegalMonitorStateException(),
+                new IllegalStateException(), new IndexOutOfBoundsException(), new ArrayIndexOutOfBoundsException(), new StringIndexOutOfBoundsException(),
+                new LayerInstantiationException(), new NegativeArraySizeException(), new NullPointerException(), new RuntimeException(),
+                new SecurityException(), new UnsupportedOperationException()};
+        // Generate random number
+        Random r = new Random();
+        int pos = r.nextInt(exceptions.length);
+        // Throw random exception
+        throw exceptions[pos];
+
+        //todo: repace this with a list of runtime exceptions von denen eine zufällige ausgewählt wird
+        /**
+         * --- OLD ---
+         String des = functionCall.getDescriptor();
+         String[] paramNames = Utils.slashToDot(des.substring(des.indexOf("(") + 1, des.indexOf(")"))).replace("Ljava","java").split(";");
+         Class[] paramClasses = new Class[paramNames.length];
+         // when splitting the string [ must be considered for parameter that are arrays
+         for (int i = 0; i < paramNames.length; i++) {
+         if(paramNames[i].contains("[")) {
+         paramClasses[i] = Class.forName(paramNames[i]); // todo!
+         } else {
+         paramClasses[i] = Class.forName(paramNames[i]);
+         }
+
+         }
+         Class[] exceptionTypes = Class.forName(Utils.slashToDot(functionCall.getOwner())).getMethod(functionCall.getName(), paramClasses).getExceptionTypes();
+
+         // shuffled the exceptionTypes to get different exceptions thrown
+         List exceptionTypesList = Arrays.asList(exceptionTypes);
+         Collections.shuffle(exceptionTypesList);
+         Class[] shuffledExceptionTypes = (Class<?>[]) exceptionTypesList.toArray();
+
+         // some exceptions might have parameters, we ignore/skip those
+         for (Class e : shuffledExceptionTypes) {
+         if(e.getTypeParameters().length == 0) {
+         throw (Exception) e.getDeclaredConstructor().newInstance();
+         }
+         }
+
+         // if no exception without parameters was found in our list, throw a default exception
+         throw new NullPointerException();
+         */
     }
 
     // Sanitizes for SQL injection (SQLi) prevention
