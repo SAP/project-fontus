@@ -139,7 +139,6 @@ public class MethodTaintingUtils {
         }
         String descr = instrumentationHelper.instrument(desc).toDescriptor();
 
-
 //        Handle instrumentedBootstrapHandle = new Handle(bootstrapMethodHandle.getTag(), Type.getInternalName(LambdaMetafactory.class), bootstrapMethodHandle.getName(), bootstrapMethodHandle.getDesc(), bootstrapMethodHandle.isInterface());
         mv.visitInvokeDynamicInsn(name, descr, bootstrapMethodHandle, bsArgs);
     }

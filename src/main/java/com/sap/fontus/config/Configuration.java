@@ -27,6 +27,8 @@ public class Configuration {
 
     private boolean showWelcomeMessage;
 
+    private boolean showWelcomeMessage;
+
     private Map<String, List<BlackListEntry>> jdkInheritanceBlacklist = new HashMap<>();
 
     private boolean useCaching = defaultUseCaching();

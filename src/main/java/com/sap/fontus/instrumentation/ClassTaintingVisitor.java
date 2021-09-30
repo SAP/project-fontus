@@ -71,6 +71,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.fillBlacklist();
         this.signatureInstrumenter = new SignatureInstrumenter(this.api, this.instrumentationHelper);
         this.combinedExcludedLookup = new CombinedExcludedLookup(loader);
+        this.instrumentationHelper = InstrumentationHelper.getInstance(this.stringConfig);
     }
 
     private void fillBlacklist() {

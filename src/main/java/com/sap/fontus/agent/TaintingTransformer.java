@@ -70,7 +70,6 @@ class TaintingTransformer implements ClassFileTransformer {
             return outArray;
         } catch (Exception e) {
             Configuration.getConfiguration().getExcludedPackages().add(className);
-//            e.printStackTrace();
             logger.error("Instrumentation failed for {}. Reason: {}. Class added to excluded classes!", className, e.getMessage());
         }
         return null;

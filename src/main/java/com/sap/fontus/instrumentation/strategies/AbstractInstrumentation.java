@@ -50,6 +50,11 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
+    public String uninstrumentNormalCall(String typeDescriptor) {
+        return replaceSuffix(typeDescriptor, this.taintedDesc, this.origDesc);
+    }
+
+    @Override
     public String instrumentQN(String qn) {
         return this.qnMatcher.matcher(qn).replaceAll(Matcher.quoteReplacement(this.instrumentedType.getInternalName()));
     }
