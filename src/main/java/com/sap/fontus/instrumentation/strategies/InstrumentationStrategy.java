@@ -21,11 +21,6 @@ public interface InstrumentationStrategy {
      */
     String uninstrument(String typeDescriptor);
 
-    /**
-     * Returns concrete type of the tainted type
-     */
-    String uninstrumentNormalCall(String typeDescriptor);
-
     String instrumentQN(String qn);
 
     /**
