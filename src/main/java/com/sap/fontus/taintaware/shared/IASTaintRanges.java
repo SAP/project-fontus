@@ -146,13 +146,28 @@ public class IASTaintRanges {
      * @param insertions ranges to insert
      */
     public synchronized void insertTaint(int index, IASTaintRanges insertions) {
-        IASTaintRanges start = this.slice(0, index);
-        IASTaintRanges end = this.slice(index, this.length);
-        IASTaintRanges result = start.concat(insertions).concat(end);
-        result.merge();
+        if (index > this.length) {
+            // The ranges are inserted at the end of the existing string
+            IASTaintRanges copy = this.copy();
 
-        this.ranges = result.getTaintRanges();
-        this.length = result.length;
+            List<IASTaintRange> ranges = insertions.getTaintRanges();
+            IASTaintRangeUtils.shiftRight(ranges, index);
+            copy.ranges.addAll(ranges);
+            copy.length = this.length + insertions.length;
+            copy.merge();
+
+            this.ranges = copy.getTaintRanges();
+            this.length = copy.length;
+        } else {
+            // The ranges are inserted somewhere into the existing string
+            IASTaintRanges start = this.slice(0, index);
+            IASTaintRanges end = this.slice(index, this.length);
+            IASTaintRanges result = start.concat(insertions).concat(end);
+            result.merge();
+
+            this.ranges = result.getTaintRanges();
+            this.length = result.length;
+        }
     }
 
     public synchronized void reversed() {

@@ -40,7 +40,6 @@ public final class IASMatcher {
     public IASMatcher appendReplacement(IASStringBuffer sb, IASString replacement) {
         IASMatcherReplacement replacer = IASMatcherReplacement.createReplacement(replacement, new IASStringBuilder());
         int end = this.start();
-
         IASString first = this.input.substring(appendPos, end);
         sb.append(first);
         IASString currRepl = replacer.doReplacement(this.matcher, this.input, new IASStringBuilder());

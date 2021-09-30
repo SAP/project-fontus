@@ -2,6 +2,7 @@ package com.sap.fontus.taintaware.lazybasic.operation;
 
 import com.sap.fontus.taintaware.shared.IASTaintRange;
 import com.sap.fontus.taintaware.shared.IASTaintRanges;
+import com.sap.fontus.taintaware.shared.IASTaintRangeUtils;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
 import com.sap.fontus.taintaware.lazybasic.IASLayer;
 
@@ -33,4 +34,10 @@ public class BaseLayer implements IASLayer {
     public IASTaintRanges apply(IASTaintRanges previousRanges) {
         return this.base.copy();
     }
+
+    @Override
+    public String toString() {
+        return "BaseLayer: " + IASTaintRangeUtils.taintRangesAsString(base);
+    }
+
 }

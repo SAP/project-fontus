@@ -156,4 +156,24 @@ public class IASTaintRangeUtils {
     public static void shiftLeft(List<IASTaintRange> ranges, int shift) {
         shiftRight(ranges, -shift);
     }
+
+    public static String taintRangesAsString(IASTaintRanges ranges) {
+        StringBuilder sb = new StringBuilder();
+        if (ranges == null) {
+            sb.append("null");
+        } else {
+            List<IASTaintRange> rangeslist = ranges.getTaintRanges();
+            sb.append("length: ");
+            sb.append(ranges.getLength());
+            sb.append(" ranges: { ");
+            for (int i = 0; i < rangeslist.size(); i++) {
+                IASTaintRange range = rangeslist.get(i);
+                sb.append("[ ").append(range.getStart());
+                sb.append(", ").append(range.getEnd());
+                sb.append(" ), ");
+            }
+            sb.append("}");
+        }
+        return sb.toString();
+    }
 }

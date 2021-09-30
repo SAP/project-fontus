@@ -4,6 +4,7 @@ import com.sap.fontus.config.Configuration;
 import com.sap.fontus.taintaware.lazybasic.operation.DeleteLayer;
 import com.sap.fontus.taintaware.lazybasic.operation.InsertLayer;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
+import com.sap.fontus.taintaware.shared.IASTaintRangeUtils;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
 import com.sap.fontus.utils.stats.Statistics;
 import com.sap.fontus.taintaware.lazybasic.operation.BaseLayer;

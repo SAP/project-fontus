@@ -34,4 +34,9 @@ public class DeleteLayer implements IASLayer {
         copied.delete(this.start, end, true);
         return copied;
     }
+
+    @Override
+    public String toString() {
+        return "DeleteLayer: " + start + " end: " + end;
+    }
 }
