@@ -67,6 +67,11 @@ public class Descriptor {
         return String.format("(%s)%s", params, this.returnType);
     }
 
+    public Type toAsmMethodType() {
+        Type[] parameterTypes = this.parameters.stream().map(Type::getType).toArray(Type[]::new);
+        return Type.getMethodType(Type.getType(returnType), parameterTypes);
+    }
+
     @Override
     public String toString() {
         String params = String.join(",", this.parameters);
