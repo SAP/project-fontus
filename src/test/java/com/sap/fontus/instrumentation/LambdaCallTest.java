@@ -27,48 +27,48 @@ public class LambdaCallTest {
     @Test
     public void testPatternParameter() {
         InstrumentationHelper instrumentationHelper = new InstrumentationHelper();
-        Descriptor inputDescriptor = new Descriptor(new String[]{Type.getDescriptor(Pattern.class), Type.getDescriptor(File.class), Type.getDescriptor(String.class)}, Type.getDescriptor(boolean.class));
+        Descriptor inputDescriptor = new Descriptor(new String[]{Type.getDescriptor(Pattern.class), Type.getDescriptor(File.class), Type.getDescriptor(String.class)}, Type.getDescriptor(FilenameFilter.class));
         Handle target = new Handle(Opcodes.H_INVOKESTATIC, "Test", "test", inputDescriptor.toDescriptor(), false);
         LambdaCall call = new LambdaCall(Type.getType(FilenameFilter.class), target, inputDescriptor.toAsmMethodType());
 
         Descriptor descriptor = call.getProxyDescriptor(Thread.currentThread().getContextClassLoader(), instrumentationHelper);
 
-        assertEquals("(Lcom/sap/fontus/taintaware/unified/IASPattern;Ljava/io/File;Ljava/lang/String;)Z", descriptor.toDescriptor());
+        assertEquals("(Lcom/sap/fontus/taintaware/unified/IASPattern;Ljava/io/File;Ljava/lang/String;)Ljava/io/FilenameFilter;", descriptor.toDescriptor());
     }
 
     @Test
     public void testObjectParameter() {
         InstrumentationHelper instrumentationHelper = new InstrumentationHelper();
-        Descriptor inputDescriptor = new Descriptor(new String[]{Type.getDescriptor(Integer.class), Type.getDescriptor(Integer.class)}, Type.getDescriptor(Integer.class));
+        Descriptor inputDescriptor = new Descriptor(new String[]{Type.getDescriptor(Integer.class), Type.getDescriptor(Integer.class)}, Type.getDescriptor(Comparator.class));
         Handle target = new Handle(Opcodes.H_INVOKESTATIC, "Test", "test", inputDescriptor.toDescriptor(), false);
         LambdaCall call = new LambdaCall(Type.getType(Comparator.class), target, inputDescriptor.toAsmMethodType());
 
         Descriptor descriptor = call.getProxyDescriptor(Thread.currentThread().getContextClassLoader(), instrumentationHelper);
 
-        assertEquals("(Ljava/lang/Integer;Ljava/lang/Integer;)Ljava/lang/Integer;", descriptor.toDescriptor());
+        assertEquals("(Ljava/lang/Integer;Ljava/lang/Integer;)Ljava/util/Comparator;", descriptor.toDescriptor());
     }
 
     @Test
     public void testObjectReturnUninstrumented() {
         InstrumentationHelper instrumentationHelper = new InstrumentationHelper();
-        Descriptor inputDescriptor = new Descriptor(new String[]{Type.getDescriptor(Integer.class), Type.getDescriptor(Integer.class)}, Type.getDescriptor(Integer.class));
+        Descriptor inputDescriptor = new Descriptor(new String[]{Type.getDescriptor(Integer.class), Type.getDescriptor(Integer.class)}, Type.getDescriptor(BiFunction.class));
         Handle target = new Handle(Opcodes.H_INVOKESTATIC, "Test", "test", inputDescriptor.toDescriptor(), false);
         LambdaCall call = new LambdaCall(Type.getType(BiFunction.class), target, inputDescriptor.toAsmMethodType());
 
         Descriptor descriptor = call.getProxyDescriptor(Thread.currentThread().getContextClassLoader(), instrumentationHelper);
 
-        assertEquals("(Ljava/lang/Integer;Ljava/lang/Integer;)Ljava/lang/Integer;", descriptor.toDescriptor());
+        assertEquals("(Ljava/lang/Integer;Ljava/lang/Integer;)Ljava/util/function/BiFunction;", descriptor.toDescriptor());
     }
 
     @Test
     public void testObjectReturnInstrumented() {
         InstrumentationHelper instrumentationHelper = new InstrumentationHelper();
-        Descriptor inputDescriptor = new Descriptor(new String[]{Type.getDescriptor(IASString.class), Type.getDescriptor(IASString.class)}, Type.getDescriptor(IASString.class));
+        Descriptor inputDescriptor = new Descriptor(new String[]{Type.getDescriptor(IASString.class), Type.getDescriptor(IASString.class)}, Type.getDescriptor(BiFunction.class));
         Handle target = new Handle(Opcodes.H_INVOKESTATIC, "Test", "test", inputDescriptor.toDescriptor(), false);
         LambdaCall call = new LambdaCall(Type.getType(BiFunction.class), target, inputDescriptor.toAsmMethodType());
 
         Descriptor descriptor = call.getProxyDescriptor(Thread.currentThread().getContextClassLoader(), instrumentationHelper);
 
-        assertEquals("(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", descriptor.toDescriptor());
+        assertEquals("(Ljava/lang/String;Ljava/lang/String;)Ljava/util/function/BiFunction;", descriptor.toDescriptor());
     }
 }
