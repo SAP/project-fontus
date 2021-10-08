@@ -73,7 +73,7 @@ public class IASField extends IASAccessibleObject<Field> implements IASMember {
     }
 
     public Object get(Object obj) throws IllegalArgumentException, IllegalAccessException {
-        return ConversionUtils.convertToConcrete(this.original.get(obj));
+        return ConversionUtils.convertToInstrumented(this.original.get(obj));
     }
 
     public boolean getBoolean(Object obj) throws IllegalArgumentException, IllegalAccessException {
@@ -110,7 +110,7 @@ public class IASField extends IASAccessibleObject<Field> implements IASMember {
 
     public void set(Object obj, Object value) throws IllegalArgumentException, IllegalAccessException {
         if (lookup.isPackageExcludedOrJdk(this.getDeclaringClass())) {
-            this.original.set(obj, ConversionUtils.convertToOrig(value));
+            this.original.set(obj, ConversionUtils.convertToUninstrumented(value));
         } else {
             this.original.set(obj, value);
         }

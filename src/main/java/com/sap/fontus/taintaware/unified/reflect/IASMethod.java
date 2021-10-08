@@ -152,7 +152,7 @@ public class IASMethod extends IASExecutable<Method> {
             }
 
             Object result = this.original.invoke(instance, converted);
-            return ConversionUtils.convertToConcrete(result);
+            return ConversionUtils.convertToInstrumented(result);
         }
         if ((!Modifier.isPublic(this.original.getModifiers()) && !Modifier.isProtected(this.original.getModifiers()) && !Modifier.isPrivate(this.original.getModifiers()))
                 || (!Modifier.isPublic(this.original.getDeclaringClass().getModifiers()) && !Modifier.isProtected(this.original.getDeclaringClass().getModifiers()) && !Modifier.isPrivate(this.original.getDeclaringClass().getModifiers()))) {
@@ -191,7 +191,7 @@ public class IASMethod extends IASExecutable<Method> {
     }
 
     public Object getDefaultValue() {
-        return ConversionUtils.convertToConcrete(this.original.getDefaultValue());
+        return ConversionUtils.convertToInstrumented(this.original.getDefaultValue());
     }
 
     @Override

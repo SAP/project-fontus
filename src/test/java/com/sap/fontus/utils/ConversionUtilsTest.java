@@ -22,7 +22,7 @@ public class ConversionUtilsTest {
     public void testConvertMethodToTainted() throws NoSuchMethodException {
         Method m = Class.class.getMethod("forName", String.class);
 
-        Object converted = ConversionUtils.convertToConcrete(m);
+        Object converted = ConversionUtils.convertToInstrumented(m);
 
         assertTrue(converted instanceof IASMethod);
         assertEquals(((IASMethod) converted).getName().getString(), "forName");

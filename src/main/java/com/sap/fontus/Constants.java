@@ -44,10 +44,10 @@ public final class Constants {
 
     static {
         try {
-            ConversionUtilsToConcreteName = ConversionUtils.class.getMethod("convertToConcrete", Object.class).getName();
-            ConversionUtilsToConcreteDesc = Descriptor.parseMethod(ConversionUtils.class.getMethod("convertToConcrete", Object.class)).toDescriptor();
-            ConversionUtilsToOrigName = ConversionUtils.class.getMethod("convertToOrig", Object.class).getName();
-            ConversionUtilsToOrigDesc = Descriptor.parseMethod(ConversionUtils.class.getMethod("convertToOrig", Object.class)).toDescriptor();
+            ConversionUtilsToConcreteName = ConversionUtils.class.getMethod("convertToInstrumented", Object.class).getName();
+            ConversionUtilsToConcreteDesc = Descriptor.parseMethod(ConversionUtils.class.getMethod("convertToInstrumented", Object.class)).toDescriptor();
+            ConversionUtilsToOrigName = ConversionUtils.class.getMethod("convertToUninstrumented", Object.class).getName();
+            ConversionUtilsToOrigDesc = Descriptor.parseMethod(ConversionUtils.class.getMethod("convertToUninstrumented", Object.class)).toDescriptor();
             TaintHandlerQN = Utils.getInternalName(IASTaintHandler.class);
             TaintHandlerTaintName = IASTaintHandler.class.getMethod("taint", Object.class, int.class).getName();
             TaintHandlerTaintDesc = Descriptor.parseMethod(IASTaintHandler.class.getMethod("taint", Object.class, int.class)).toDescriptor();

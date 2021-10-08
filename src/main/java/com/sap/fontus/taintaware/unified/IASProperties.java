@@ -82,15 +82,15 @@ public class IASProperties extends Hashtable<Object, Object> {
     }
 
     public IASString getProperty(IASString key) {
-        Object orig = ConversionUtils.convertToConcrete(this.properties.getProperty(key.getString()));
+        Object orig = ConversionUtils.convertToInstrumented(this.properties.getProperty(key.getString()));
         IASString taintaware = this.shadow.get(key);
         return (IASString) chooseReturn(orig, taintaware);
     }
 
     public IASString getProperty(IASString key, IASString defaultValue) {
         String defaultStringValue = defaultValue != null ? defaultValue.getString() : null;
-        Object orig = ConversionUtils.convertToConcrete(this.properties.getProperty(key.getString(), defaultStringValue));
-        IASString taintaware = this.shadow.get(ConversionUtils.convertToConcrete(key));
+        Object orig = ConversionUtils.convertToInstrumented(this.properties.getProperty(key.getString(), defaultStringValue));
+        IASString taintaware = this.shadow.get(ConversionUtils.convertToInstrumented(key));
         return (IASString) chooseReturn(orig, taintaware);
     }
 
@@ -99,7 +99,7 @@ public class IASProperties extends Hashtable<Object, Object> {
                 Collections
                         .list(this.properties.propertyNames())
                         .stream()
-                        .map(ConversionUtils::convertToConcrete)
+                        .map(ConversionUtils::convertToInstrumented)
                         .collect(Collectors.toList())
         );
     }
@@ -132,7 +132,7 @@ public class IASProperties extends Hashtable<Object, Object> {
                 Collections
                         .list(this.properties.keys())
                         .stream()
-                        .map(ConversionUtils::convertToConcrete)
+                        .map(ConversionUtils::convertToInstrumented)
                         .collect(Collectors.toList())
         );
     }
@@ -143,7 +143,7 @@ public class IASProperties extends Hashtable<Object, Object> {
                 Collections
                         .list(this.properties.elements())
                         .stream()
-                        .map(ConversionUtils::convertToConcrete)
+                        .map(ConversionUtils::convertToInstrumented)
                         .collect(Collectors.toList())
         );
     }
@@ -165,17 +165,17 @@ public class IASProperties extends Hashtable<Object, Object> {
 
     @Override
     public Object get(Object key) {
-        Object orig = ConversionUtils.convertToConcrete(this.properties.get(ConversionUtils.convertToOrig(key)));
-        IASString taintaware = this.shadow.get(ConversionUtils.convertToConcrete(key));
+        Object orig = ConversionUtils.convertToInstrumented(this.properties.get(ConversionUtils.convertToUninstrumented(key)));
+        IASString taintaware = this.shadow.get(ConversionUtils.convertToInstrumented(key));
         return this.chooseReturn(orig, taintaware);
     }
 
     @Override
     public synchronized Object put(Object key, Object value) {
-        Object orig = ConversionUtils.convertToConcrete(this.properties.put(ConversionUtils.convertToOrig(key), ConversionUtils.convertToOrig(value)));
+        Object orig = ConversionUtils.convertToInstrumented(this.properties.put(ConversionUtils.convertToUninstrumented(key), ConversionUtils.convertToUninstrumented(value)));
         IASString taintaware = null;
         if (value instanceof IASString) {
-            taintaware = this.shadow.put(ConversionUtils.convertToConcrete(key), (IASString) value);
+            taintaware = this.shadow.put(ConversionUtils.convertToInstrumented(key), (IASString) value);
         }
         return chooseReturn(orig, taintaware);
     }
@@ -189,7 +189,7 @@ public class IASProperties extends Hashtable<Object, Object> {
 
     @Override
     public synchronized Object remove(Object key) {
-        return ConversionUtils.convertToConcrete(this.properties.remove(ConversionUtils.convertToOrig(key)));
+        return ConversionUtils.convertToInstrumented(this.properties.remove(ConversionUtils.convertToUninstrumented(key)));
     }
 
     @Override
@@ -219,7 +219,7 @@ public class IASProperties extends Hashtable<Object, Object> {
         return this.properties
                 .keySet()
                 .stream()
-                .map(ConversionUtils::convertToConcrete)
+                .map(ConversionUtils::convertToInstrumented)
                 .collect(Collectors.toSet());
     }
 
@@ -228,7 +228,7 @@ public class IASProperties extends Hashtable<Object, Object> {
         return this.properties
                 .values()
                 .stream()
-                .map(ConversionUtils::convertToConcrete)
+                .map(ConversionUtils::convertToInstrumented)
                 .collect(Collectors.toSet());
     }
 
@@ -240,17 +240,17 @@ public class IASProperties extends Hashtable<Object, Object> {
                 .map((entry) -> new Map.Entry<Object, Object>() {
                     @Override
                     public Object getKey() {
-                        return ConversionUtils.convertToConcrete(entry.getKey());
+                        return ConversionUtils.convertToInstrumented(entry.getKey());
                     }
 
                     @Override
                     public Object getValue() {
-                        return ConversionUtils.convertToConcrete(entry.getValue());
+                        return ConversionUtils.convertToInstrumented(entry.getValue());
                     }
 
                     @Override
                     public Object setValue(Object value) {
-                        return ConversionUtils.convertToConcrete(IASProperties.this.put(ConversionUtils.convertToOrig(entry.getKey()), ConversionUtils.convertToOrig(value)));
+                        return ConversionUtils.convertToInstrumented(IASProperties.this.put(ConversionUtils.convertToUninstrumented(entry.getKey()), ConversionUtils.convertToUninstrumented(value)));
                     }
                 })
                 .collect(Collectors.toSet());
@@ -275,74 +275,74 @@ public class IASProperties extends Hashtable<Object, Object> {
 
     @Override
     public Object getOrDefault(Object key, Object defaultValue) {
-        if (this.properties.containsKey(ConversionUtils.convertToOrig(key))) {
-            return this.get(ConversionUtils.convertToOrig(key));
+        if (this.properties.containsKey(ConversionUtils.convertToUninstrumented(key))) {
+            return this.get(ConversionUtils.convertToUninstrumented(key));
         }
-        return ConversionUtils.convertToConcrete(defaultValue);
+        return ConversionUtils.convertToInstrumented(defaultValue);
     }
 
 
 
     @Override
     public synchronized void forEach(BiConsumer<? super Object, ? super Object> action) {
-        this.properties.forEach((o, o2) -> action.accept(ConversionUtils.convertToOrig(o), ConversionUtils.convertToOrig(o2)));
+        this.properties.forEach((o, o2) -> action.accept(ConversionUtils.convertToUninstrumented(o), ConversionUtils.convertToUninstrumented(o2)));
     }
 
     @Override
     public synchronized void replaceAll(BiFunction<? super Object, ? super Object, ?> function) {
-        this.properties.replaceAll((o, o2) -> ConversionUtils.convertToConcrete(function.apply(ConversionUtils.convertToOrig(o), ConversionUtils.convertToOrig(o2))));
+        this.properties.replaceAll((o, o2) -> ConversionUtils.convertToInstrumented(function.apply(ConversionUtils.convertToUninstrumented(o), ConversionUtils.convertToUninstrumented(o2))));
     }
 
     @Override
     public synchronized Object putIfAbsent(Object key, Object value) {
-        return ConversionUtils.convertToConcrete(this.properties.putIfAbsent(ConversionUtils.convertToOrig(key), ConversionUtils.convertToOrig(value)));
+        return ConversionUtils.convertToInstrumented(this.properties.putIfAbsent(ConversionUtils.convertToUninstrumented(key), ConversionUtils.convertToUninstrumented(value)));
     }
 
     @Override
     public synchronized boolean remove(Object key, Object value) {
-        return this.properties.remove(ConversionUtils.convertToOrig(key), ConversionUtils.convertToOrig(value));
+        return this.properties.remove(ConversionUtils.convertToUninstrumented(key), ConversionUtils.convertToUninstrumented(value));
     }
 
     @Override
     public synchronized boolean replace(Object key, Object oldValue, Object newValue) {
-        return this.properties.replace(ConversionUtils.convertToOrig(key), ConversionUtils.convertToOrig(oldValue), ConversionUtils.convertToOrig(newValue));
+        return this.properties.replace(ConversionUtils.convertToUninstrumented(key), ConversionUtils.convertToUninstrumented(oldValue), ConversionUtils.convertToUninstrumented(newValue));
     }
 
     @Override
     public synchronized Object replace(Object key, Object value) {
-        return this.properties.replace(ConversionUtils.convertToOrig(key), ConversionUtils.convertToOrig(value));
+        return this.properties.replace(ConversionUtils.convertToUninstrumented(key), ConversionUtils.convertToUninstrumented(value));
     }
 
     @Override
     public synchronized Object computeIfAbsent(Object key, Function<? super Object, ?> mappingFunction) {
-        return ConversionUtils.convertToConcrete(this.properties.computeIfAbsent(ConversionUtils.convertToOrig(key), o -> ConversionUtils.convertToOrig(mappingFunction.apply(ConversionUtils.convertToConcrete(o)))));
+        return ConversionUtils.convertToInstrumented(this.properties.computeIfAbsent(ConversionUtils.convertToUninstrumented(key), o -> ConversionUtils.convertToUninstrumented(mappingFunction.apply(ConversionUtils.convertToInstrumented(o)))));
     }
 
     @Override
     public synchronized Object computeIfPresent(Object key, BiFunction<? super Object, ? super Object, ?> remappingFunction) {
-        return ConversionUtils.convertToConcrete(
-                this.properties.computeIfPresent(ConversionUtils.convertToOrig(key), (o, o2) -> ConversionUtils.convertToOrig(remappingFunction.apply(ConversionUtils.convertToConcrete(o), ConversionUtils.convertToConcrete(o2))))
+        return ConversionUtils.convertToInstrumented(
+                this.properties.computeIfPresent(ConversionUtils.convertToUninstrumented(key), (o, o2) -> ConversionUtils.convertToUninstrumented(remappingFunction.apply(ConversionUtils.convertToInstrumented(o), ConversionUtils.convertToInstrumented(o2))))
         );
     }
 
     @Override
     public synchronized Object compute(Object key, BiFunction<? super Object, ? super Object, ?> remappingFunction) {
-        return ConversionUtils.convertToConcrete(
-                this.properties.compute(ConversionUtils.convertToOrig(key), (o, o2) -> ConversionUtils.convertToOrig(remappingFunction.apply(ConversionUtils.convertToConcrete(o), ConversionUtils.convertToConcrete(o2))))
+        return ConversionUtils.convertToInstrumented(
+                this.properties.compute(ConversionUtils.convertToUninstrumented(key), (o, o2) -> ConversionUtils.convertToUninstrumented(remappingFunction.apply(ConversionUtils.convertToInstrumented(o), ConversionUtils.convertToInstrumented(o2))))
         );
     }
 
     @Override
     public synchronized Object merge(Object key, Object value, BiFunction<? super Object, ? super Object, ?> remappingFunction) {
-        return ConversionUtils.convertToConcrete(
+        return ConversionUtils.convertToInstrumented(
                 this.properties.merge(
-                        ConversionUtils.convertToOrig(key),
-                        ConversionUtils.convertToOrig(value),
+                        ConversionUtils.convertToUninstrumented(key),
+                        ConversionUtils.convertToUninstrumented(value),
                         (o, o2) ->
-                                ConversionUtils.convertToOrig(
+                                ConversionUtils.convertToUninstrumented(
                                         remappingFunction.apply(
-                                                ConversionUtils.convertToConcrete(o),
-                                                ConversionUtils.convertToConcrete(o2)
+                                                ConversionUtils.convertToInstrumented(o),
+                                                ConversionUtils.convertToInstrumented(o2)
                                         )
                                 )
                 )

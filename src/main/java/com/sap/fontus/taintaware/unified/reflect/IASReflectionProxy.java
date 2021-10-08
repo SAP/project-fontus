@@ -11,7 +11,7 @@ public class IASReflectionProxy {
             if (result instanceof IASString) {
                 return ((IASString) result).getString();
             } else if (result.getClass() == IASString[].class) {
-                return ConversionUtils.convertToOrig(result);
+                return ConversionUtils.convertToUninstrumented(result);
             }
         }
         return result;

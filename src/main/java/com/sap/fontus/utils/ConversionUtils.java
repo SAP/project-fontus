@@ -40,8 +40,8 @@ public class ConversionUtils {
             new DefaultConverter<>(Member.class, IASReflectRegistry.getInstance()::mapMember),
             new DefaultConverter<>(Constructor.class, IASReflectRegistry.getInstance()::map),
             new DefaultConverter<>(Parameter.class, IASParameter::new),
-            new ArrayConverter(ConversionUtils::convertToConcrete, ConversionUtils::convertClassToConcrete),
-            new ListConverter(ConversionUtils::convertToConcrete)
+            new ArrayConverter(ConversionUtils::convertToInstrumented, ConversionUtils::convertClassToConcrete),
+            new ListConverter(ConversionUtils::convertToInstrumented)
     );
 
     private static final List<Converter> uninstrumenter = Arrays.asList(
@@ -62,12 +62,12 @@ public class ConversionUtils {
             new DefaultConverter<>(IASExecutable.class, IASExecutable::getExecutable),
             new DefaultConverter<>(IASAccessibleObject.class, IASAccessibleObject::getAccessibleObject),
             new DefaultConverter<>(IASParameter.class, IASParameter::getParameter),
-            new ArrayConverter(ConversionUtils::convertToOrig, ConversionUtils::convertClassToOrig),
-            new ListConverter(ConversionUtils::convertToOrig),
+            new ArrayConverter(ConversionUtils::convertToUninstrumented, ConversionUtils::convertClassToOrig),
+            new ListConverter(ConversionUtils::convertToUninstrumented),
             new AlreadyUntaintedConverter()
     );
 
-    public static Object convertToConcrete(Object object) {
+    public static Object convertToInstrumented(Object object) {
         for (Converter converter : instrumenter) {
             if (converter.canConvert(object)) {
                 return converter.convert(object);
@@ -151,7 +151,7 @@ public class ConversionUtils {
         }
     }
 
-    public static Object convertToOrig(Object object) {
+    public static Object convertToUninstrumented(Object object) {
         for (Converter converter : uninstrumenter) {
             if (converter.canConvert(object)) {
                 return converter.convert(object);
@@ -222,7 +222,11 @@ public class ConversionUtils {
     }
 
     public static <T extends GenericDeclaration> Type convertTypeToInstrumented(Type type) {
-        if (type instanceof Class) {
+        if (type == null) {
+            return null;
+        } else if (excludedLookup.isFontusClass(type.getClass())) {
+            return type;
+        } else if (type instanceof Class) {
             return convertClassToConcrete((Class<?>) type);
         } else if (type instanceof GenericArrayType) {
             return GenericArrayTypeImpl.make(convertTypeToInstrumented(((GenericArrayType) type).getGenericComponentType()));

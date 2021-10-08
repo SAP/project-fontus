@@ -25,7 +25,7 @@ public abstract class IASExecutable<T extends Executable> extends IASAccessibleO
     }
 
     public Type[] getGenericExceptionTypes() {
-        return Arrays.stream(this.original.getGenericParameterTypes()).map(ConversionUtils::convertTypeToInstrumented).toArray(Type[]::new);
+        return Arrays.stream(this.original.getGenericExceptionTypes()).map(ConversionUtils::convertTypeToInstrumented).toArray(Type[]::new);
     }
 
     public boolean isVarArgs() {
@@ -84,7 +84,7 @@ public abstract class IASExecutable<T extends Executable> extends IASAccessibleO
         }
         Object[] converted = new Object[parameters.length];
         for (int i = 0; i < converted.length; i++) {
-            converted[i] = ConversionUtils.convertToOrig(parameters[i]);
+            converted[i] = ConversionUtils.convertToUninstrumented(parameters[i]);
         }
         return converted;
     }
