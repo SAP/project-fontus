@@ -1,8 +1,10 @@
 package com.sap.fontus.utils.lookups;
 
 import com.sap.fontus.Constants;
+import com.sap.fontus.TaintStringHelper;
 import com.sap.fontus.asm.ClassResolver;
 import com.sap.fontus.utils.Utils;
+import org.objectweb.asm.Type;
 
 public class CombinedExcludedLookup {
     private final ClassResolver resolver;
@@ -50,7 +52,7 @@ public class CombinedExcludedLookup {
     }
 
     public boolean isFontusClass(String internalName) {
-        return internalName.startsWith(Utils.dotToSlash(Constants.PACKAGE));
+        return internalName.startsWith(Utils.dotToSlash(Constants.PACKAGE)) && !TaintStringHelper.class.getName().equals(Utils.slashToDot(internalName));
     }
 
     public boolean isFontusClass(Class<?> cls) {
@@ -63,5 +65,9 @@ public class CombinedExcludedLookup {
 
     public boolean isPackageExcluded(Class<?> cls) {
         return isPackageExcluded(Utils.dotToSlash(cls.getName()));
+    }
+
+    public boolean isPackageExcludedOrJdk(Class<?> cls) {
+        return isPackageExcludedOrJdk(Type.getInternalName(cls));
     }
 }

@@ -2,6 +2,8 @@ package com.sap.fontus;
 
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.ConfigurationLoader;
+import com.sap.fontus.config.TaintMethod;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,6 +32,11 @@ class SourceSinkConfigTests {
 
     private Configuration getJsonConfiguration(String name) {
         return ConfigurationLoader.readJsonConfiguration(this.getClass().getResourceAsStream(name));
+    }
+
+    @BeforeAll
+    public static void init() {
+        Configuration.setTestConfig(TaintMethod.RANGE);
     }
 
     @Test

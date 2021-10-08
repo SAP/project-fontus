@@ -1,6 +1,6 @@
 package com.sap.fontus.utils;
 
-import com.sap.fontus.taintaware.shared.IASLookupUtils;
+import com.sap.fontus.taintaware.unified.IASLookupUtils;
 
 import java.lang.invoke.*;
 
@@ -12,8 +12,6 @@ public class LambdaMetafactory {
             MethodType samMethodType,
             MethodHandle implMethod,
             MethodType instantiatedMethodType) throws LambdaConversionException {
-
-        MethodHandle instrumented = IASLookupUtils.convertForJdk(implMethod);
 
         CallSite cs = java.lang.invoke.LambdaMetafactory.metafactory(caller, invokedName, invokedType, samMethodType, implMethod, instantiatedMethodType);
 

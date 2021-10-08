@@ -1,36 +1,25 @@
 package com.sap.fontus.instrumentation;
 
-import com.sap.fontus.instrumentation.strategies.InstrumentationStrategy;
 import org.objectweb.asm.signature.SignatureVisitor;
 
-import java.util.List;
-
 public class SignatureTaintingVisitor extends SignatureVisitor {
-    private final List<? extends InstrumentationStrategy> strategies;
     private final SignatureVisitor signatureVisitor;
+    private final InstrumentationHelper instrumentationHelper;
 
-    public SignatureTaintingVisitor(int api, List<? extends InstrumentationStrategy> strategies, SignatureVisitor signatureVisitor) {
+    public SignatureTaintingVisitor(int api, InstrumentationHelper instrumentationHelper, SignatureVisitor signatureVisitor) {
         super(api);
-        this.strategies = strategies;
+        this.instrumentationHelper = instrumentationHelper;
         this.signatureVisitor = signatureVisitor;
-    }
-
-    public String instrumentName(final String name) {
-        String instrumented = name;
-        for (InstrumentationStrategy cis : this.strategies) {
-            instrumented = cis.instrumentQN(instrumented);
-        }
-        return instrumented;
     }
 
     @Override
     public void visitFormalTypeParameter(String name) {
-        this.signatureVisitor.visitFormalTypeParameter(instrumentName(name));
+        this.signatureVisitor.visitFormalTypeParameter(this.instrumentationHelper.instrumentQN(name));
     }
 
     @Override
     public SignatureVisitor visitClassBound() {
-        return new SignatureTaintingVisitor(this.api, this.strategies, this.signatureVisitor.visitClassBound());
+        return new SignatureTaintingVisitor(this.api, this.instrumentationHelper, this.signatureVisitor.visitClassBound());
     }
 
     @Override
@@ -40,27 +29,27 @@ public class SignatureTaintingVisitor extends SignatureVisitor {
 
     @Override
     public SignatureVisitor visitSuperclass() {
-        return new SignatureTaintingVisitor(this.api, this.strategies, this.signatureVisitor.visitSuperclass());
+        return new SignatureTaintingVisitor(this.api, this.instrumentationHelper, this.signatureVisitor.visitSuperclass());
     }
 
     @Override
     public SignatureVisitor visitInterface() {
-        return new SignatureTaintingVisitor(this.api, this.strategies, this.signatureVisitor.visitInterface());
+        return new SignatureTaintingVisitor(this.api, this.instrumentationHelper, this.signatureVisitor.visitInterface());
     }
 
     @Override
     public SignatureVisitor visitParameterType() {
-        return new SignatureTaintingVisitor(this.api, this.strategies, this.signatureVisitor.visitParameterType());
+        return new SignatureTaintingVisitor(this.api, this.instrumentationHelper, this.signatureVisitor.visitParameterType());
     }
 
     @Override
     public SignatureVisitor visitReturnType() {
-        return new SignatureTaintingVisitor(this.api, this.strategies, this.signatureVisitor.visitReturnType());
+        return new SignatureTaintingVisitor(this.api, this.instrumentationHelper, this.signatureVisitor.visitReturnType());
     }
 
     @Override
     public SignatureVisitor visitExceptionType() {
-        return new SignatureTaintingVisitor(this.api, this.strategies, this.signatureVisitor.visitExceptionType());
+        return new SignatureTaintingVisitor(this.api, this.instrumentationHelper, this.signatureVisitor.visitExceptionType());
     }
 
     @Override
@@ -70,22 +59,22 @@ public class SignatureTaintingVisitor extends SignatureVisitor {
 
     @Override
     public void visitTypeVariable(String name) {
-        this.signatureVisitor.visitTypeVariable(instrumentName(name));
+        this.signatureVisitor.visitTypeVariable(this.instrumentationHelper.instrumentQN(name));
     }
 
     @Override
     public SignatureVisitor visitArrayType() {
-        return new SignatureTaintingVisitor(this.api, this.strategies, this.signatureVisitor.visitArrayType());
+        return new SignatureTaintingVisitor(this.api, this.instrumentationHelper, this.signatureVisitor.visitArrayType());
     }
 
     @Override
     public void visitClassType(String name) {
-        this.signatureVisitor.visitClassType(instrumentName(name));
+        this.signatureVisitor.visitClassType(this.instrumentationHelper.instrumentQN(name));
     }
 
     @Override
     public void visitInnerClassType(String name) {
-        this.signatureVisitor.visitInnerClassType(instrumentName(name));
+        this.signatureVisitor.visitInnerClassType(this.instrumentationHelper.instrumentQN(name));
     }
 
     @Override
@@ -95,7 +84,7 @@ public class SignatureTaintingVisitor extends SignatureVisitor {
 
     @Override
     public SignatureVisitor visitTypeArgument(char wildcard) {
-        return new SignatureTaintingVisitor(this.api, this.strategies, this.signatureVisitor.visitTypeArgument(wildcard));
+        return new SignatureTaintingVisitor(this.api, this.instrumentationHelper, this.signatureVisitor.visitTypeArgument(wildcard));
     }
 
     @Override

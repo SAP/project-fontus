@@ -40,6 +40,7 @@ class TaintingTransformer implements ClassFileTransformer {
             className = new ClassReader(classfileBuffer).getClassName();
         }
 
+
         CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(loader);
         if (combinedExcludedLookup.isJdkClass(className)) {
             logger.info("Skipping JDK class: {}", className);
@@ -68,8 +69,8 @@ class TaintingTransformer implements ClassFileTransformer {
             VerboseLogger.saveIfVerbose(className, outArray);
             return outArray;
         } catch (Exception e) {
-            e.printStackTrace();
-            logger.error("Instrumentation failed for {}. Reason: {}", className, e.getMessage());
+            Configuration.getConfiguration().getExcludedPackages().add(className);
+            logger.error("Instrumentation failed for {}. Reason: {}. Class added to excluded classes!", className, e.getMessage());
         }
         return null;
     }

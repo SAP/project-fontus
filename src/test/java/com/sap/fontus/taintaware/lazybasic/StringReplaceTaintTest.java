@@ -3,6 +3,7 @@ package com.sap.fontus.taintaware.lazybasic;
 import com.sap.fontus.AbstractTest;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
+import com.sap.fontus.taintaware.unified.IASString;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

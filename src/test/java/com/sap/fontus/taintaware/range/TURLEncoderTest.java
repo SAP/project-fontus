@@ -4,6 +4,8 @@ import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
+import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.taintaware.unified.TURLEncoder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -17,10 +19,12 @@ class TURLEncoderTest {
     @BeforeAll
     public static void init() {
         Configuration.setTestConfig(TaintMethod.RANGE);
+        cs = new IASString(csString);
     }
+
     private static final String csString = StandardCharsets.UTF_8.toString();
-    private static final IASString cs = new IASString(csString);
-    
+    private static IASString cs;
+
     @Test
     public void testEncodingUntainted1() throws UnsupportedEncodingException {
         IASString s = new IASString("hello");
@@ -71,7 +75,7 @@ class TURLEncoderTest {
         IASString encode = TURLEncoder.encode(s, cs);
 
         assertEquals(URLEncoder.encode(s.getString(), csString), encode.getString());
-        assertArrayEquals(new IASTaintRange[]{new IASTaintRange(3, 5, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)}, encode.getTaintRanges().toArray());
+        assertArrayEquals(new IASTaintRange[]{new IASTaintRange(3, 5, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)}, encode.getTaintInformationInitialized().getTaintRanges(encode.length()).getTaintRanges().toArray(new IASTaintRange[0]));
     }
 
     @Test
@@ -105,7 +109,7 @@ class TURLEncoderTest {
                 new IASTaintRange(5, 6, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
                 new IASTaintRange(7, 8, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
                 new IASTaintRange(9, 15, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
-        }, encode.getTaintRanges().toArray());
+        }, encode.getTaintInformationInitialized().getTaintRanges(encode.length()).getTaintRanges().toArray(new IASTaintRange[0]));
     }
 
     @Test
@@ -121,7 +125,7 @@ class TURLEncoderTest {
         assertEquals(URLEncoder.encode(s.getString(), csString), encode.getString());
         assertArrayEquals(new IASTaintRange[]{
                 new IASTaintRange(4, 10, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)
-        }, encode.getTaintRanges().toArray());
+        }, encode.getTaintInformationInitialized().getTaintRanges(encode.length()).getTaintRanges().toArray(new IASTaintRange[0]));
     }
 
     @Test
@@ -137,7 +141,7 @@ class TURLEncoderTest {
         assertEquals(URLEncoder.encode(s.getString(), csString), encode.getString());
         assertArrayEquals(new IASTaintRange[]{
                 new IASTaintRange(4, 13, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)
-        }, encode.getTaintRanges().toArray());
+        }, encode.getTaintInformationInitialized().getTaintRanges(encode.length()).getTaintRanges().toArray(new IASTaintRange[0]));
     }
 
     @Test
@@ -155,6 +159,6 @@ class TURLEncoderTest {
         assertArrayEquals(new IASTaintRange[]{
                 new IASTaintRange(0, 4, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
                 new IASTaintRange(13, 19, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)
-        }, encode.getTaintRanges().toArray());
+        }, encode.getTaintInformationInitialized().getTaintRanges(encode.length()).getTaintRanges().toArray(new IASTaintRange[0]));
     }
 }

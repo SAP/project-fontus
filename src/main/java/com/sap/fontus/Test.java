@@ -1,7 +1,7 @@
 package com.sap.fontus;
 
-import com.sap.fontus.taintaware.bool.IASString;
-import com.sap.fontus.taintaware.shared.IASLookupUtils;
+import com.sap.fontus.taintaware.unified.IASLookupUtils;
+import com.sap.fontus.taintaware.unified.IASString;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;

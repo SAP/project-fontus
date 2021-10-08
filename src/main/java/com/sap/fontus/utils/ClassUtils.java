@@ -9,6 +9,7 @@ import org.objectweb.asm.Opcodes;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 
 public class ClassUtils {
     public static CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(null);
@@ -18,6 +19,18 @@ public class ClassUtils {
         if (loaded == null && combinedExcludedLookup.isJdkClass(internalName)) {
             try {
                 loaded = Class.forName(Type.getObjectType(internalName).getClassName());
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        return loaded;
+    }
+
+    public static Class<?> findLoadedClass(String internalName, ClassLoader loader) {
+        Class<?> loaded = TaintAgent.findLoadedClass(Utils.slashToDot(internalName));
+        if (loaded == null && new CombinedExcludedLookup(loader).isJdkClass(internalName)) {
+            try {
+                loaded = Class.forName(Type.getObjectType(internalName).getClassName(), false, loader);
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
@@ -63,5 +76,9 @@ public class ClassUtils {
             }
         }
         return false;
+    }
+
+    public static Class<?> arrayType(Class<?> cls) {
+        return Array.newInstance(cls, 0).getClass();
     }
 }

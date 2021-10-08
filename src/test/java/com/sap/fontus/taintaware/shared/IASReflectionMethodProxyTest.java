@@ -2,13 +2,18 @@ package com.sap.fontus.taintaware.shared;
 
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
-import com.sap.fontus.taintaware.range.IASString;
+import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.taintaware.unified.reflect.IASMethod;
+import com.sap.fontus.taintaware.unified.reflect.IASClassProxy;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import outerpackage.Anno;
 import outerpackage.ApplicationClass;
 
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -21,96 +26,96 @@ public class IASReflectionMethodProxyTest {
 
     @Test
     public void testGetMethodWithParameter() throws NoSuchMethodException {
-        Class<?> cls = IASStringable.class;
-        IASStringable methodName = new IASString("concat");
+        Class<?> cls = IASString.class;
+        IASString methodName = new IASString("concat");
         Class<?>[] parameters = {IASString.class};
-        Method expected = IASStringable.class.getMethod(methodName.getString(), IASStringable.class);
+        Method expected = IASString.class.getMethod(methodName.getString(), IASString.class);
 
-        Method actual = IASReflectionMethodProxy.getMethodProxied(cls, methodName, parameters);
+        IASMethod actual = IASClassProxy.getMethod(cls, methodName, parameters);
 
-        assertEquals(expected, actual);
+        assertEquals(expected, actual.getMethod());
     }
 
     @Test
     public void testGetMethodWithExternalParameter() throws NoSuchMethodException {
-        Class<?> cls = IASStringable.class;
-        IASStringable methodName = new IASString("charAt");
+        Class<?> cls = IASString.class;
+        IASString methodName = new IASString("charAt");
         Class<?>[] parameters = {int.class};
-        Method expected = IASStringable.class.getMethod(methodName.getString(), int.class);
+        Method expected = IASString.class.getMethod(methodName.getString(), int.class);
 
-        Method actual = IASReflectionMethodProxy.getMethodProxied(cls, methodName, parameters);
+        IASMethod actual = IASClassProxy.getMethod(cls, methodName, parameters);
 
-        assertEquals(expected, actual);
+        assertEquals(expected, actual.getMethod());
     }
 
     @Test
     public void testGetMethodWithEmptyParameter() throws NoSuchMethodException {
-        Class<?> cls = IASStringable.class;
-        IASStringable methodName = new IASString("trim");
+        Class<?> cls = IASString.class;
+        IASString methodName = new IASString("trim");
         Class<?>[] parameters = {};
-        Method expected = IASStringable.class.getMethod(methodName.getString());
+        Method expected = IASString.class.getMethod(methodName.getString());
 
-        Method actual = IASReflectionMethodProxy.getMethodProxied(cls, methodName, parameters);
+        IASMethod actual = IASClassProxy.getMethod(cls, methodName, parameters);
 
-        assertEquals(expected, actual);
+        assertEquals(expected, actual.getMethod());
     }
 
     @Test
     public void testGetMethodWithNullParameter() throws NoSuchMethodException {
-        Class<?> cls = IASStringable.class;
-        IASStringable methodName = new IASString("trim");
+        Class<?> cls = IASString.class;
+        IASString methodName = new IASString("trim");
         Class<?>[] parameters = null;
-        Method expected = IASStringable.class.getMethod(methodName.getString());
+        Method expected = IASString.class.getMethod(methodName.getString());
 
-        Method actual = IASReflectionMethodProxy.getMethodProxied(cls, methodName, parameters);
+        IASMethod actual = IASClassProxy.getMethod(cls, methodName, parameters);
 
-        assertEquals(expected, actual);
+        assertEquals(expected, actual.getMethod());
     }
 
     // Not reproducible test failure: Test fails for normal execution with ArrayStoreException, test succeeds for debugging execution without any exceptions
-//    @Test
-//    public void testInvokeAnnotation() throws Throwable {
-//        Anno anno = ApplicationClass.class.getAnnotation(Anno.class);
-//        Method valueMethod = IASReflectionMethodProxy.getMethodProxied(Anno.class, new IASString("value"), new Class[0]);
-//        Method arrayMethod = IASReflectionMethodProxy.getMethodProxied(Anno.class, new IASString("array"), new Class[0]);
-//
-//        IASString value = (IASString) IASReflectionMethodProxy.invoke(valueMethod, anno);
-//        IASString[] array = (IASString[]) IASReflectionMethodProxy.invoke(arrayMethod, anno);
-//
-//        assertEquals("Hallo", value.getString());
-//        assertArrayEquals(new IASString[]{new IASString("Hallo"), new IASString("Welt")}, array);
-//    }
+    @Test
+    public void testInvokeAnnotation() throws Throwable {
+        Anno anno = ApplicationClass.class.getAnnotation(Anno.class);
+        IASMethod valueMethod = IASClassProxy.getMethod(Anno.class, new IASString("value"), new Class[0]);
+        IASMethod arrayMethod = IASClassProxy.getMethod(Anno.class, new IASString("array"), new Class[0]);
+
+        IASString value = (IASString) valueMethod.invoke(anno);
+        IASString[] array = (IASString[]) arrayMethod.invoke(anno);
+
+        assertEquals("Hallo", value.getString());
+        assertArrayEquals(new IASString[]{new IASString("Hallo"), new IASString("Welt")}, array);
+    }
 
     @Test
     public void testInvokeJdk() throws Throwable {
-        Method method = IASReflectionMethodProxy.getMethodProxied(MessageFormat.class, new IASString("format"), new Class[]{IASString.class, Object[].class});
+        IASMethod method = IASClassProxy.getMethod(MessageFormat.class, new IASString("format"), new Class[]{IASString.class, Object[].class});
         IASString format = new IASString("{0}, {1}");
         IASString insert0 = new IASString("insert0");
         IASString insert1 = new IASString("insert1");
 
-        IASString result = (IASString) IASReflectionMethodProxy.invoke(method, null, format, new Object[]{insert0, insert1});
+        IASString result = (IASString) method.invoke(null, format, new Object[]{insert0, insert1});
 
         assertEquals(new IASString("insert0, insert1"), result);
     }
 
     @Test
     public void testInvokeTaintaware() throws Throwable {
-        Method method = IASReflectionMethodProxy.getMethodProxied(IASString.class, new IASString("concat"), new Class[]{IASString.class});
+        IASMethod method = IASClassProxy.getMethod(IASString.class, new IASString("concat"), new Class[]{IASString.class});
         IASString first = new IASString("first");
         IASString second = new IASString("second");
 
-        IASString concatenated = (IASString) IASReflectionMethodProxy.invoke(method, first, second);
+        IASString concatenated = (IASString) method.invoke(first, second);
 
         assertEquals(new IASString("firstsecond"), concatenated);
     }
 
     @Test
     public void testInvokeApplicationClass() throws Throwable {
-        Method method = IASReflectionMethodProxy.getMethodProxied(ApplicationClass.class, new IASString("doStuff"), new Class[]{IASString.class});
+        IASMethod method = IASClassProxy.getMethod(ApplicationClass.class, new IASString("doStuff"), new Class[]{IASString.class});
         ApplicationClass applicationClass = new ApplicationClass();
         IASString input = new IASString("input");
 
-        IASString concatenated = (IASString) IASReflectionMethodProxy.invoke(method, applicationClass, input);
+        IASString concatenated = (IASString) method.invoke(applicationClass, input);
 
         assertEquals(new IASString("inputconcat"), concatenated);
 
@@ -120,9 +125,13 @@ public class IASReflectionMethodProxyTest {
     public void testGetDeclaredMethodsSorting() throws NoSuchMethodException {
         Method[] expected = new Method[]{MethodsToSortParameter.class.getMethod("method", IASString.class), MethodsToSortParameter.class.getMethod("method", String.class)};
 
-        Method[] actual = IASReflectionMethodProxy.getDeclaredMethods(MethodsToSortParameter.class);
+        IASMethod[] actual = IASClassProxy.getDeclaredMethods(MethodsToSortParameter.class);
 
-        assertArrayEquals(expected, actual);
+        ArrayList<Method> actualMethods = new ArrayList<Method>();
+        for (IASMethod m : actual) {
+            actualMethods.add(m.getMethod());
+        }
+        assertArrayEquals(expected, actualMethods.toArray());
     }
 
     private static class MethodsToSortParameter {

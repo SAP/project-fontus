@@ -2,8 +2,8 @@ package com.sap.fontus;
 
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
-import com.sap.fontus.taintaware.bool.IASString;
-import com.sap.fontus.taintaware.shared.IASStringUtils;
+import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.taintaware.unified.IASStringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +14,7 @@ class TaintStringUtilsTests {
 
     @BeforeAll
     public static void init() {
-        Configuration.setTestConfig(TaintMethod.BOOLEAN);
+        Configuration.setTestConfig(TaintMethod.RANGE);
     }
 
     @Test
