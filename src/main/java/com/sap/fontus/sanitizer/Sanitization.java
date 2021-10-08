@@ -5,8 +5,6 @@ import org.owasp.encoder.Encode;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.ParameterMetaData;
@@ -17,22 +15,19 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
 public class Sanitization {
 
-    private static Comparator<IASTaintRange> taintRangeComparator = new Comparator<IASTaintRange>() {
-        // descending ordering, ranges are assumed to be disjoint
-        public int compare(IASTaintRange range1, IASTaintRange range2) {
-            if (range1.getStart() != range2.getStart()) {
-                return range1.getStart() < range2.getStart() ? 1 : -1;
-            } else if (range1.getEnd() != range2.getEnd()) {
-                return range1.getEnd() < range2.getEnd() ? 1 : -1;
-            } else {
-                return 0;
-            }
+    // descending ordering, ranges are assumed to be disjoint
+    private static Comparator<IASTaintRange> taintRangeComparator = (range1, range2) -> {
+        if (range1.getStart() != range2.getStart()) {
+            return range1.getStart() < range2.getStart() ? 1 : -1;
+        } else if (range1.getEnd() != range2.getEnd()) {
+            return range1.getEnd() < range2.getEnd() ? 1 : -1;
+        } else {
+            return 0;
         }
     };
 
@@ -107,46 +102,10 @@ public class Sanitization {
         int pos = r.nextInt(exceptions.length);
         // Throw random exception
         throw exceptions[pos];
-
-        //todo: repace this with a list of runtime exceptions von denen eine zufällige ausgewählt wird
-        /**
-         * --- OLD ---
-         String des = functionCall.getDescriptor();
-         String[] paramNames = Utils.slashToDot(des.substring(des.indexOf("(") + 1, des.indexOf(")"))).replace("Ljava","java").split(";");
-         Class[] paramClasses = new Class[paramNames.length];
-         // when splitting the string [ must be considered for parameter that are arrays
-         for (int i = 0; i < paramNames.length; i++) {
-         if(paramNames[i].contains("[")) {
-         paramClasses[i] = Class.forName(paramNames[i]); // todo!
-         } else {
-         paramClasses[i] = Class.forName(paramNames[i]);
-         }
-
-         }
-         Class[] exceptionTypes = Class.forName(Utils.slashToDot(functionCall.getOwner())).getMethod(functionCall.getName(), paramClasses).getExceptionTypes();
-
-         // shuffled the exceptionTypes to get different exceptions thrown
-         List exceptionTypesList = Arrays.asList(exceptionTypes);
-         Collections.shuffle(exceptionTypesList);
-         Class[] shuffledExceptionTypes = (Class<?>[]) exceptionTypesList.toArray();
-
-         // some exceptions might have parameters, we ignore/skip those
-         for (Class e : shuffledExceptionTypes) {
-         if(e.getTypeParameters().length == 0) {
-         throw (Exception) e.getDeclaredConstructor().newInstance();
-         }
-         }
-
-         // if no exception without parameters was found in our list, throw a default exception
-         throw new NullPointerException();
-         */
     }
 
     // Sanitizes for SQL injection (SQLi) prevention
-    // Assumption: Only 1 sql value is included in taintrange. e.g. only
-    // >london<, NOT >"london" and ID=2< (would also inclue column name and not only
-    // value)
-    //TODO: new classes
+    // Assumption: Only 1 sql value is included in taintrange. e.g. only >london<, NOT >"london" and ID=2< (would also inclue column name and not only value)
     protected static ResultSet sanitizeAndExecuteQuery(String taintedString, List<IASTaintRange> taintRanges, Connection con) {
         if (!taintRanges.isEmpty()) {
             // sort taint ranges
@@ -348,16 +307,6 @@ public class Sanitization {
         }
     }
 
-    // check if char of string is tainted
-    private static boolean charIsTainted(int charPosition, List<IASTaintRange> taintRanges) {
-        for (IASTaintRange range : taintRanges) {
-            if (charPosition >= range.getStart() && charPosition < range.getEnd()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     // taint-aware html parser
     public static String sanitizeHtml(String taintedString, List<IASTaintRange> taintRanges) {
         boolean tagDeclaration = false;
@@ -391,12 +340,6 @@ public class Sanitization {
                     // <tag> should not be tainted i.e. not inserted by the user
                     return null;
                 } else if (insideTag && attDeclaration) {
-                    /**
-                     * Alternative for getting attribute name String attributeName =
-                     * taintedString.substring(0, taintedString.lastIndexOf("=")).trim();
-                     * attributeName = attributeName.substring(attributeName.lastIndexOf(" "),
-                     * attributeName.length());
-                     */
 
                     // attribute values are allowed to be inserted by the user
                     switch (attributeName.toString().toLowerCase()) {
@@ -496,183 +439,16 @@ public class Sanitization {
                     insideRoundBracket = true;
                 } else if (taintedString.charAt(i) == ')') {
                     insideRoundBracket = false;
-                } else {
-                    // ignore remaining chars
                 }
+                // else {  ignore remaining chars  }
+
                 // not tainted: parse the next character and calculate the context
                 // Keep track of the current HTML context (e.g. attributeName, attributeValue,
                 // innerHTML, ...)
-                // TODO:
                 sanitizedString.append(taintedString.charAt(i));
             }
         }
         // return
         return sanitizedString.toString();
-
-    }
-
-    // Not used method!!!
-    // XSS prevention
-    protected static String sanitizeForXssPrevention(String taintedString, List<IASTaintRange> taintRanges,
-                                                     HashMap<IASTaintRange, XssContext> contexts) {
-        // sanitization is only necessary if something is tainted
-        if (!taintRanges.isEmpty()) {
-
-            // check if html, css or else...
-            // use owasp encode if fine with license
-            taintRanges.sort(taintRangeComparator);
-            StringBuilder sb = new StringBuilder(taintedString);
-            for (IASTaintRange range : taintRanges) {
-                String sanitizedSubstring = "";
-
-                // switch over context of different taintranges of the string
-                switch (contexts.get(range)) {
-
-                    // Encodes for (X)HTML text content and text attributes but NOT comments or
-                    // attribute names
-                    case HtmlTextContent:
-                    case HtmlAttributeValue:
-                        sanitizedSubstring = Encode
-                                .forHtml(taintedString.substring(range.getStart(), range.getEnd()));
-                        break;
-
-                    // Encodes for CSS strings in style blocks and attributes in Html
-                    // MUST be surrounded by quotes
-                    // stricter alternative to current approach: only allow insertion of untrusted
-                    // data in property value of css
-                    // AND don't allow URL's to start with javascript or expression
-                    // TODO: decide whether or not these measures should be taken
-                    case CssInlineString:
-                        if (taintedString.substring(0, range.getStart()).trim().endsWith("\"")
-                                && taintedString.substring(range.getEnd()).trim().startsWith("\"")) {
-                            sanitizedSubstring = Encode
-                                    .forCssString(taintedString.substring(range.getStart(), range.getEnd()));
-                        } else {
-                            sanitizedSubstring = "\""
-                                    + Encode.forCssString(taintedString.substring(range.getStart(), range.getEnd()))
-                                    + "\"";
-                        }
-                        break;
-                    case CssInternalString:
-                        sanitizedSubstring = Encode
-                                .forCssString(taintedString.substring(range.getStart(), range.getEnd()));
-                        break;
-
-                    // Encodes for CSS URLs in style blocks and attributes in Html
-                    // Must be surrounded by "url(" and ")"
-                    // NOTE: this does NOT check the quality or safety of the URL itself
-                    // TODO: add method that checks if given URL is safe. If not abort.
-                    case CssUrl:
-                        if (taintedString.substring(0, range.getStart()).trim().endsWith("\"url(\"")
-                                && taintedString.substring(range.getEnd()).trim().startsWith("\")\"")) {
-                            sanitizedSubstring = Encode
-                                    .forCssUrl(taintedString.substring(range.getStart(), range.getEnd()));
-                        } else {
-                            sanitizedSubstring = "url("
-                                    + Encode.forCssUrl(taintedString.substring(range.getStart(), range.getEnd()))
-                                    + ")";
-                        }
-                        break;
-
-                    // Percent-encoding of a URL according to RFC 3986.
-                    // ONLY ADDITIONAL to the other contexts. Not safe on its own.
-                    // NOTE: this does NOT check the quality or safety of the URL itself
-                    // TODO: add method that checks if given URL is safe. If not abort.
-                    case Uri:
-                        try {
-                            sanitizedSubstring = new URI(taintedString.substring(range.getStart(), range.getEnd()))
-                                    .toString();
-                        } catch (URISyntaxException e) {
-                            e.printStackTrace();
-                        }
-                        break;
-
-                    // Percent-encoding of component of a URI, such as a query parameter, name or
-                    // value, path or query-string.
-                    case UriComponent:
-                        sanitizedSubstring = Encode
-                                .forUriComponent(taintedString.substring(range.getStart(), range.getEnd()));
-                        break;
-
-                    // Encodes XML and XHTML text content
-                    case XmlContent:
-                    case XHtmlContent:
-                        sanitizedSubstring = Encode
-                                .forXmlContent(taintedString.substring(range.getStart(), range.getEnd()));
-                        break;
-
-                    // Encodes XML and XHTML attribut content
-                    case XmlAttributeValue:
-                    case XHtmlAttributeValue:
-                        sanitizedSubstring = Encode
-                                .forXmlAttribute(taintedString.substring(range.getStart(), range.getEnd()));
-                        break;
-
-                    // ONLY encodes XML comments. NOT for XHTML comments
-                    case XmlComment:
-                        sanitizedSubstring = Encode
-                                .forXmlComment(taintedString.substring(range.getStart(), range.getEnd()));
-                        break;
-
-                    // Encodes XML CDATA
-                    case CDATA:
-                        sanitizedSubstring = Encode
-                                .forCDATA(taintedString.substring(range.getStart(), range.getEnd()));
-                        break;
-
-                    // Encodes java code given as string
-                    case Java:
-                        if (taintedString.substring(0, range.getStart()).trim().endsWith("\"")
-                                && taintedString.substring(range.getEnd()).trim().startsWith("\"")) {
-                            sanitizedSubstring = Encode
-                                    .forJava(taintedString.substring(range.getStart(), range.getEnd()));
-                        } else {
-                            sanitizedSubstring = "\""
-                                    + Encode.forJava(taintedString.substring(range.getStart(), range.getEnd()))
-                                    + "\"";
-                        }
-                        break;
-
-                    // Encodes javascript code given as string
-                    // safe for use in HTML, script attributes, script blocks, JSON files, and
-                    // JavaScript source.
-                    // BUT there are javascript functions which arn't safe when inserting untrusted
-                    // data even if escaped, e.g. in window.setInterval(...)
-                    // TODO: decide whether dynamically generated javascript code should be allowed
-                    case JavaScript:
-                        if (taintedString.substring(0, range.getStart()).trim().endsWith("\"")
-                                && taintedString.substring(range.getEnd()).trim().startsWith("\"")) {
-                            sanitizedSubstring = Encode
-                                    .forJavaScript(taintedString.substring(range.getStart(), range.getEnd()));
-                        } else {
-                            sanitizedSubstring = "\"" + Encode.forJavaScript(
-                                    taintedString.substring(range.getStart(), range.getEnd())) + "\"";
-                        }
-                        break;
-
-                    // none of the above? Then deny untrusted data insertion!
-                    // This includes nested data insertion!
-                    // Don't allow untrusted data directly in script, Html comment, attribute name,
-                    // tag name or directly in CSS in style content
-                    case HtmlAttributeName:
-                    case XmlAttributeName:
-                    case XHtmlAttributeName:
-                    case HtmlComment:
-                    case XHtmlComment:
-                    default:
-                        return null;
-                }
-                sb.replace(range.getStart(), range.getEnd(), sanitizedSubstring);
-            }
-            return sb.toString();
-        } else {
-            return taintedString;
-        }
-    }
-
-    protected enum XssContext {
-        HtmlAttributeName, HtmlAttributeValue, HtmlComment, HtmlTextContent, CssInlineString, CssInternalString, CssUrl,
-        Uri, UriComponent, XmlContent, XmlAttributeValue, XmlComment, XmlAttributeName, XHtmlContent,
-        XHtmlAttributeValue, XHtmlComment, XHtmlAttributeName, CDATA, Java, JavaScript
     }
 }
