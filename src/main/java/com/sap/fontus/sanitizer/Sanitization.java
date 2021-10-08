@@ -3,6 +3,7 @@ package com.sap.fontus.sanitizer;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
 import org.owasp.encoder.Encode;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 public class Sanitization {
 
@@ -34,29 +36,61 @@ public class Sanitization {
         }
     };
 
-    public static String sanitizeSinks(String taintedString, List<IASTaintRange> taintRanges, List<String> sinkChecks) throws Exception {
+    public static String sanitizeSinks(String taintedString, List<IASTaintRange> taintRanges, List<String> sinkChecks) {
+        String sanitizedString = taintedString;
         for (String attCat : sinkChecks) {
             switch (attCat) {
                 case "SQLi":
+                    System.out.println("Not yet implemented!");
+                    throwRandomRuntimeException();
                     // do something, e.g. sanitizeAndExecuteQuery(..) (need something new -> wait for sanjit's sql parser)
                     // problem: how to detect whole query and connection to DB
                     // e.g. use sql sanitizer or log result or stop program
                     break;
                 case "XSS":
-                    taintedString = sanitizeHtml(taintedString, taintRanges);
-                    break;
-                case "LDAP":
+                    sanitizedString = sanitizeHtml(taintedString, taintRanges);
                     break;
                 case "PATHTRAVERS":
+                    sanitizedString = sanitizePath(taintedString, taintRanges);
                     break;
                 case "CMDi":
-                    throwRandomRuntimeException();
+                    sanitizedString = sanitizeCommands(taintedString, taintRanges);
                     break;
+                case "LDAP":
                 case "XPATHi":
                 case "TRUSTBOUND":
                 default:
                     // abort if type not known?
+                    throwRandomRuntimeException();
             }
+        }
+        return sanitizedString;
+    }
+
+    private static String sanitizeCommands(String taintedString, List<IASTaintRange> taintRanges) {
+        if (!taintRanges.isEmpty()) {
+            throwRandomRuntimeException();
+        }
+        return taintedString;
+    }
+
+    private static String sanitizePath(String taintedString, List<IASTaintRange> taintRanges) {
+        int startIndex = 0;
+        while (startIndex < taintedString.length()) {
+            int i = taintedString.indexOf(".." + File.separator, startIndex);
+            // if sequence "../" doesn't occur end while loop
+            if (i == -1) {
+                break;
+            }
+            // check for each taint range if it overlaps with "../" of the taintedString
+            for (IASTaintRange range : taintRanges) {
+                // if either of the chars of "../" is tainted, then throw an exception
+                if ((range.getStart() <= i && i < range.getEnd()) || (range.getStart() <= i + 1 && i + 1 < range.getEnd()) || (range.getStart() <= i + 2 && i + 2 < range.getEnd())) {
+                    throwRandomRuntimeException();
+                }
+            }
+            // update start index to next char after the last occurance of "../"
+            startIndex = i + 3;
         }
         return taintedString;
     }
