@@ -33,7 +33,7 @@ public class LambdaCallTest {
 
         Descriptor descriptor = call.getProxyDescriptor(Thread.currentThread().getContextClassLoader(), instrumentationHelper);
 
-        assertEquals("(Lcom/sap/fontus/taintaware/unified/IASPattern;Ljava/io/File;Ljava/lang/String;)Ljava/io/FilenameFilter;", descriptor.toDescriptor());
+        assertEquals("(Lcom/sap/fontus/taintaware/unified/IASPattern;Ljava/io/File;Ljava/lang/String;)Z", descriptor.toDescriptor());
     }
 
     @Test
