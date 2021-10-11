@@ -123,7 +123,7 @@ public class IASReflectionMethodProxyTest {
 
     @Test
     public void testGetDeclaredMethodsSorting() throws NoSuchMethodException {
-        Method[] expected = new Method[]{MethodsToSortParameter.class.getMethod("method", IASString.class), MethodsToSortParameter.class.getMethod("method", String.class)};
+        Method[] expected = new Method[]{MethodsToSortParameter.class.getMethod("method", IASString.class)};
 
         IASMethod[] actual = IASClassProxy.getDeclaredMethods(MethodsToSortParameter.class);
 
