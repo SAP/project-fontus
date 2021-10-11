@@ -43,6 +43,11 @@ public class DefaultInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
+    public Descriptor uninstrumentForJdkCall(Descriptor descriptor) {
+        return descriptor;
+    }
+
+    @Override
     public String instrumentQN(String qn) {
         return qn;
     }

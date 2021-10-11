@@ -1,6 +1,7 @@
 package com.sap.fontus.taintaware.unified.reflect;
 
 import com.sap.fontus.Constants;
+import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.instrumentation.InstrumentationHelper;
 import com.sap.fontus.taintaware.IASTaintAware;
@@ -14,8 +15,7 @@ import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 
 import java.io.InputStream;
 import java.lang.reflect.*;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.*;
 import java.util.function.Function;
 
 public class IASClassProxy {
@@ -47,11 +47,34 @@ public class IASClassProxy {
     }
 
     public static IASMethod[] getMethods(Class cls) throws SecurityException {
-        return Arrays.stream(cls.getMethods()).sorted(new MethodSorter()).map(IASReflectRegistry.getInstance()::map).toArray(IASMethod[]::new);
+        return filterFontusProxies(cls.getMethods())
+                .stream()
+                .map(IASReflectRegistry.getInstance()::map)
+                .toArray(IASMethod[]::new);
+    }
+
+    private static <T extends Executable> List<T> filterFontusProxies(T[] methods) {
+        List<T> filtered = new ArrayList<>(methods.length);
+        for (T method : methods) {
+            Descriptor descriptor = Descriptor.parseExecutable(method);
+            Descriptor instrumented = instrumentationHelper.instrument(descriptor);
+            if (!descriptor.equals(instrumented)) {
+                Optional<T> instrumentation = Arrays.stream(methods)
+                        .filter((m) -> m.getName().equals(method.getName()))
+                        .filter((m) -> m.getParameterCount() == method.getParameterCount())
+                        .filter((m) -> instrumented.equals(Descriptor.parseExecutable(m)))
+                        .findFirst();
+                if (instrumentation.isPresent()) {
+                    continue;
+                }
+            }
+            filtered.add(method);
+        }
+        return filtered;
     }
 
     public static <T> IASConstructor<T>[] getConstructors(Class<T> cls) throws SecurityException {
-        return Arrays.stream(cls.getConstructors()).map(IASReflectRegistry.getInstance()::map).toArray(IASConstructor[]::new);
+        return filterFontusProxies(cls.getConstructors()).stream().map(IASReflectRegistry.getInstance()::map).toArray(IASConstructor[]::new);
     }
 
     public static IASField getField(Class cls, IASString name) throws NoSuchFieldException, SecurityException {
@@ -63,11 +86,11 @@ public class IASClassProxy {
     }
 
     public static IASMethod[] getDeclaredMethods(Class cls) throws SecurityException {
-        return Arrays.stream(cls.getDeclaredMethods()).sorted(new MethodSorter()).map(IASReflectRegistry.getInstance()::map).toArray(IASMethod[]::new);
+        return filterFontusProxies(cls.getDeclaredMethods()).stream().map(IASReflectRegistry.getInstance()::map).toArray(IASMethod[]::new);
     }
 
     public static <T> IASConstructor<T>[] getDeclaredConstructors(Class<T> cls) throws SecurityException {
-        return Arrays.stream(cls.getDeclaredConstructors()).map(IASReflectRegistry.getInstance()::map).toArray(IASConstructor[]::new);
+        return filterFontusProxies(cls.getDeclaredConstructors()).stream().map(IASReflectRegistry.getInstance()::map).toArray(IASConstructor[]::new);
     }
 
     public static IASField getDeclaredField(Class cls, IASString name) throws NoSuchFieldException, SecurityException {
@@ -231,7 +254,7 @@ public class IASClassProxy {
         String s = str.getString();
         String clazz = instrumentationHelper.translateClassName(s).orElse(s);
 
-        if(loader == null) {
+        if (loader == null) {
             // Get caller class classloader
             Class<?> callerClass;
             if (Constants.JAVA_VERSION >= 9) {
