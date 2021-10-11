@@ -495,10 +495,14 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
     private boolean rewriteParametersAndReturnType(FunctionCall call) {
+        boolean isExcluded = this.combinedExcludedLookup.isJdkOrAnnotation(call.getOwner()) || this.combinedExcludedLookup.isPackageExcluded(call.getOwner());
+
+        if (isExcluded) {
+            String desc = this.instrumentationHelper.uninstrumentForJdkCall(call.getDescriptor());
+            call = new FunctionCall(call.getOpcode(), call.getOwner(), call.getName(), desc, call.isInterface());
+        }
 
         MethodParameterTransformer transformer = new MethodParameterTransformer(this, call);
-
-        boolean isExcluded = this.combinedExcludedLookup.isJdkOrAnnotation(call.getOwner()) || this.combinedExcludedLookup.isPackageExcluded(call.getOwner());
 
         // Add always apply transformer
         FunctionCall converter = this.config.getConverterForReturnValue(call, true);
@@ -544,7 +548,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             String desc = this.instrumentationHelper.instrumentForNormalCall(call.getDescriptor());
             call = new FunctionCall(call.getOpcode(), call.getOwner(), call.getName(), desc, call.isInterface());
         }
-        // Make the call
         this.visitMethodInsn(call);
 
         // Modify Return parameters

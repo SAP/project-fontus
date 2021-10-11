@@ -274,15 +274,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         return this.string.equals(other.string);
     }
 
-    public boolean contentEquals(IASAbstractStringBuilder sb) {
-        return this.string.contentEquals(sb);
-    }
-
     public boolean contentEquals(IASStringBuffer sb) {
-        return this.string.contentEquals(sb);
-    }
-
-    public boolean contentEquals(StringBuffer sb) {
         return this.string.contentEquals(sb);
     }
 

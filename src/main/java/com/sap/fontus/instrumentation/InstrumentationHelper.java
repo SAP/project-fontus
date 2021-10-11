@@ -71,6 +71,22 @@ public final class InstrumentationHelper implements InstrumentationStrategy {
         return newDesc;
     }
 
+    public String uninstrumentForJdkCall(String desc) {
+        return this.uninstrumentForJdkCall(Descriptor.parseDescriptor(desc)).toDescriptor();
+    }
+
+    /**
+     * This uninstruments the descriptors for jdk/excluded calls
+     */
+    @Override
+    public Descriptor uninstrumentForJdkCall(Descriptor desc) {
+        Descriptor newDesc = desc;
+        for (InstrumentationStrategy is : this.strategies) {
+            newDesc = is.uninstrumentForJdkCall(newDesc);
+        }
+        return newDesc;
+    }
+
     @Override
     public String uninstrument(String typeDescriptor) {
         String newDesc = typeDescriptor;

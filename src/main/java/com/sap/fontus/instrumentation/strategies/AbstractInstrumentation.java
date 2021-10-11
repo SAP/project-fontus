@@ -50,6 +50,11 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
+    public Descriptor uninstrumentForJdkCall(Descriptor descriptor) {
+        return descriptor.replaceType(this.instrumentedType.getDescriptor(), this.origType.getDescriptor());
+    }
+
+    @Override
     public String instrumentQN(String qn) {
         return this.qnMatcher.matcher(qn).replaceAll(Matcher.quoteReplacement(this.instrumentedType.getInternalName()));
     }

@@ -161,7 +161,7 @@ public class ConversionUtils {
     }
 
     private static boolean isHandlable(Class cls) {
-        return cls == String.class || cls == StringBuilder.class || cls == StringBuffer.class || cls == Formatter.class || cls == Pattern.class || cls == Matcher.class || cls == Properties.class || Type.class.isAssignableFrom(cls) || cls == Method.class;
+        return cls == String.class || cls == StringBuilder.class || cls == StringBuffer.class || cls == Formatter.class || cls == Pattern.class || cls == Matcher.class || cls == Properties.class || Type.class.isAssignableFrom(cls) || cls == Method.class || cls == Field.class;
     }
 
     public static Class<?> convertClassToOrig(Class<?> cls) {
