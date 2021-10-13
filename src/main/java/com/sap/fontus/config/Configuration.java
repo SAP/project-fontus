@@ -24,8 +24,6 @@ public class Configuration {
     private static final Logger logger = LogUtils.getLogger();
     @JsonIgnore
     private TaintMethod taintMethod;
-    @JsonIgnore
-    private TaintStringConfig taintStringConfig;
 
     private boolean showWelcomeMessage;
 
@@ -126,7 +124,6 @@ public class Configuration {
 
     public void setTaintMethod(TaintMethod taintMethod) {
         this.taintMethod = taintMethod;
-        this.taintStringConfig = new TaintStringConfig(taintMethod);
     }
 
     public void transformConverters() {
@@ -134,10 +131,6 @@ public class Configuration {
 
         this.converters.clear();
         this.converters.addAll(converted);
-    }
-
-    public TaintStringConfig getTaintStringConfig() {
-        return this.taintStringConfig;
     }
 
     void appendBlacklist(Collection<String> other) {

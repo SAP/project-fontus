@@ -15,6 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ClassTraverser {
+    private static final Logger logger = LogUtils.getLogger();
 
     private final CombinedExcludedLookup combinedExcludedLookup;
     private final List<Method> methodList = new ArrayList<>();
@@ -45,7 +46,7 @@ public class ClassTraverser {
             }
         } else {
             try {
-                ClassVisitor cv = new NopVisitor(Opcodes.ASM7) {
+                ClassVisitor cv = new NopVisitor(Opcodes.ASM9) {
                     @Override
                     public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
                         Method method = new Method(access, cls.getInternalName(), name, descriptor, signature, exceptions, false);
@@ -69,7 +70,7 @@ public class ClassTraverser {
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Could not load class " + cls.getInternalName() + " for ClassTraverser.readMethods");
             }
         }
     }
@@ -94,7 +95,7 @@ public class ClassTraverser {
                 } else {
                     try {
                         final String clsName = cls.getInternalName();
-                        ClassVisitor cv = new NopVisitor(Opcodes.ASM7) {
+                        ClassVisitor cv = new NopVisitor(Opcodes.ASM9) {
                             @Override
                             public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
                                 Method method = new Method(access, clsName, name, descriptor, signature, exceptions, false);
@@ -208,7 +209,7 @@ public class ClassTraverser {
 
         for (String interfaceName : interfaces) {
             if (this.combinedExcludedLookup.isPackageExcludedOrJdk(interfaceName) || this.combinedExcludedLookup.isAnnotation(interfaceName)) {
-                Class<?> cls = ClassUtils.findLoadedClass(interfaceName);
+                Class<?> cls = ClassUtils.findLoadedClass(interfaceName, loader);
                 List<Method> intfMethods = new ArrayList<>();
 
                 if (cls != null) {
@@ -218,7 +219,7 @@ public class ClassTraverser {
                     }
                 } else {
                     try {
-                        ClassVisitor cv = new NopVisitor(Opcodes.ASM7) {
+                        ClassVisitor cv = new NopVisitor(Opcodes.ASM9) {
                             @Override
                             public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
                                 Method method = new Method(access, interfaceName, name, descriptor, signature, exceptions, true);
@@ -257,7 +258,7 @@ public class ClassTraverser {
         private boolean superImplements = false;
 
         public MethodChecker(Method method) {
-            super(Opcodes.ASM7);
+            super(Opcodes.ASM9);
             this.method = method;
         }
 

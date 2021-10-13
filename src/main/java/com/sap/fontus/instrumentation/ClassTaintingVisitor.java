@@ -4,9 +4,7 @@ import com.sap.fontus.Constants;
 import com.sap.fontus.asm.*;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
-import com.sap.fontus.config.TaintStringConfig;
-import com.sap.fontus.instrumentation.strategies.*;
-import com.sap.fontus.instrumentation.strategies.clazz.*;
+import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.utils.*;
 import com.sap.fontus.utils.lookups.AnnotationLookup;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
@@ -20,8 +18,6 @@ import java.util.stream.Collectors;
 
 class ClassTaintingVisitor extends ClassVisitor {
     private static final Logger logger = LogUtils.getLogger();
-
-    private final TaintStringConfig stringConfig;
 
     private final List<BlackListEntry> blacklist = new ArrayList<>();
     /**
@@ -37,8 +33,6 @@ class ClassTaintingVisitor extends ClassVisitor {
     private boolean implementsInvocationHandler;
     private MethodVisitRecording recording;
     private final ClassVisitor visitor;
-    private final List<InstrumentationStrategy> instrumentation = new ArrayList<>(7);
-    private final List<ClassInstrumentationStrategy> classInstrumentation = new ArrayList<>(7);
     private final Configuration config;
     private final ClassResolver resolver;
     /**
@@ -64,7 +58,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private final InstrumentationHelper instrumentationHelper;
 
     public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config, ClassLoader loader, boolean containsJSRRET) {
-        super(Opcodes.ASM7, cv);
+        super(Opcodes.ASM9, cv);
         this.visitor = cv;
         this.staticFinalFields = new ArrayList<>();
         this.overriddenJdkMethods = new ArrayList<>();
@@ -72,35 +66,11 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.loader = loader;
         this.config = config;
         this.containsJSRRET = containsJSRRET;
-        this.stringConfig = this.config.getTaintStringConfig();
-        this.newMainDescriptor = "(" + this.stringConfig.getTStringArrayDesc() + ")V";
+        this.instrumentationHelper = new InstrumentationHelper();
+        this.newMainDescriptor = "(" + Type.getDescriptor(IASString[].class) + ")V";
         this.fillBlacklist();
-        this.fillStrategies();
-        this.signatureInstrumenter = new SignatureInstrumenter(this.api, this.instrumentation);
+        this.signatureInstrumenter = new SignatureInstrumenter(this.api, this.instrumentationHelper);
         this.combinedExcludedLookup = new CombinedExcludedLookup(loader);
-        this.instrumentationHelper = InstrumentationHelper.getInstance(this.stringConfig);
-    }
-
-    private void fillStrategies() {
-        this.classInstrumentation.add(new StringClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.classInstrumentation.add(new StringBufferClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.classInstrumentation.add(new StringBuilderClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.classInstrumentation.add(new PatternClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.classInstrumentation.add(new FormatterClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.classInstrumentation.add(new MatcherClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.classInstrumentation.add(new PropertiesClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-        this.classInstrumentation.add(new ProxyClassInstrumentationStrategy(this.visitor));
-        this.classInstrumentation.add(new DefaultClassInstrumentationStrategy(this.visitor, this.config.getTaintStringConfig()));
-
-        this.instrumentation.add(new StringInstrumentation(this.config.getTaintStringConfig()));
-        this.instrumentation.add(new StringBuilderInstrumentation(this.config.getTaintStringConfig()));
-        this.instrumentation.add(new StringBufferInstrumentation(this.config.getTaintStringConfig()));
-        this.instrumentation.add(new PatternInstrumentation(this.config.getTaintStringConfig()));
-        this.instrumentation.add(new FormatterInstrumentation(this.config.getTaintStringConfig()));
-        this.instrumentation.add(new MatcherInstrumentation(this.config.getTaintStringConfig()));
-        this.instrumentation.add(new PropertiesStrategy(this.config.getTaintStringConfig()));
-        this.instrumentation.add(new ProxyInstrumentation());
-        this.instrumentation.add(new DefaultInstrumentation(this.config.getTaintStringConfig()));
     }
 
     private void fillBlacklist() {
@@ -120,10 +90,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             final String superName,
             final String[] interfaces) {
         this.owner = name;
-        this.superName = superName == null ? Type.getInternalName(Object.class) : superName;
-        for (ClassInstrumentationStrategy cis : this.classInstrumentation) {
-            this.superName = cis.instrumentSuperClass(this.superName);
-        }
+        this.superName = superName == null ? Type.getInternalName(Object.class) : this.instrumentationHelper.instrumentSuperClass(superName);
         this.interfaces = interfaces;
 
         this.isInterface = ((access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE);
@@ -172,18 +139,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             return super.visitField(access, name, descriptor, signature, value);
         }
 
-        FieldVisitor fv = null;
-        for (ClassInstrumentationStrategy is : this.classInstrumentation) {
-            Optional<FieldVisitor> ofv = is.instrumentFieldInstruction(
-                    access, name, descriptor, signature, value,
-                    (n, d, v) -> this.staticFinalFields.add(FieldData.of(n, d, v))
-            );
-            if (ofv.isPresent()) {
-                fv = ofv.get();
-                break;
-            }
-        }
-        return fv;
+        return this.instrumentationHelper.instrumentFieldInstruction(this.visitor, access, name, descriptor, signature, value, (n, d, v) -> staticFinalFields.add(FieldData.of(n, d, v))).orElse(null);
     }
 
 
@@ -262,7 +218,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             mv = super.visitMethod(access, name, desc, instrumentedSignature, exceptions);
         }
 
-        MethodTaintingVisitor mtv = new MethodTaintingVisitor(access, this.owner, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler, this.instrumentationHelper, this.combinedExcludedLookup, this.bootstrapMethods, this.jdkLambdaMethodProxies, this.superName, this.loader);
+        MethodTaintingVisitor mtv = new MethodTaintingVisitor(access, this.owner, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler, this.instrumentationHelper, this.combinedExcludedLookup, this.bootstrapMethods, this.jdkLambdaMethodProxies, this.superName, this.loader, this.isInterface);
         if (this.containsJSRRET) {
             return new JSRInlinerAdapter(mtv, access, newName, desc, instrumentedSignature, exceptions);
         }
@@ -271,7 +227,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 
     private void generateProxyToInstrumented(MethodVisitor mv, String instrumentedName, Descriptor originalDescriptor, Descriptor instrumentedDescriptor, Optional<LambdaCall> lambdaCall) {
         if (instrumentedDescriptor == null) {
-            instrumentedDescriptor = this.instrumentationHelper.instrumentForNormalCall(originalDescriptor);
+            instrumentedDescriptor = this.instrumentationHelper.instrument(originalDescriptor);
         }
 
         mv.visitCode();
@@ -297,7 +253,7 @@ class ClassTaintingVisitor extends ClassVisitor {
                 Type instrumentedType = Type.getType(this.instrumentationHelper.instrumentQN(param));
 
                 if (Type.getType(param).equals(Type.getType(String.class))) {
-                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringQN(), Constants.FROM_STRING, this.stringConfig.getFromStringDesc(), false);
+                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASString.class), Constants.FROM_STRING, Constants.FROM_STRING_DESCRIPTOR, false);
                 } else {
                     mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
                     mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedType.getInternalName());
@@ -358,23 +314,8 @@ class ClassTaintingVisitor extends ClassVisitor {
         return Type.getType(returnTypeDescriptor).getOpcode(Opcodes.IRETURN);
     }
 
-    private String getToOriginalMethod(String qn) {
-        for (InstrumentationStrategy instrumentationStrategy : this.instrumentation) {
-            if (instrumentationStrategy.handlesType(qn)) {
-                return instrumentationStrategy.getGetOriginalTypeMethod();
-            }
-        }
-        throw new IllegalArgumentException("Trying to get cast method for non instrumented type: " + qn);
-    }
-
     private boolean isDescriptorNameToInstrument(String qn) {
-        // TODO Use InstrumentationHelper.canHandleType
-        for (InstrumentationStrategy instrumentationStrategy : this.instrumentation) {
-            if (instrumentationStrategy.handlesType(qn)) {
-                return true;
-            }
-        }
-        return false;
+        return this.instrumentationHelper.handlesType(qn);
     }
 
     /**
@@ -444,10 +385,10 @@ class ClassTaintingVisitor extends ClassVisitor {
         MethodVisitor mv = super.visitMethod(access, call.getProxyMethodName(), proxyDescriptor.toDescriptor(), null, null);
 
         if (this.combinedExcludedLookup.isPackageExcludedOrJdk(call.getImplementationHandle().getOwner())) {
-            Descriptor uninstrumentedDescriptor = Descriptor.parseDescriptor(this.instrumentationHelper.uninstrumentNormalCall(call.getImplementation().getDescriptor()));
+            Descriptor uninstrumentedDescriptor = Descriptor.parseDescriptor(this.instrumentationHelper.uninstrument(call.getImplementation().getDescriptor()));
             this.generateProxyToJdk(mv, call.getImplementation().getName(), proxyDescriptor, uninstrumentedDescriptor, call);
         } else {
-            Descriptor instrumentedDescriptor = this.instrumentationHelper.instrumentForNormalCall(call.getImplementation().getParsedDescriptor());
+            Descriptor instrumentedDescriptor = this.instrumentationHelper.instrument(call.getImplementation().getParsedDescriptor());
             this.generateProxyToInstrumented(mv, call.getImplementation().getName(), proxyDescriptor, instrumentedDescriptor, Optional.of(call));
         }
 
@@ -480,10 +421,10 @@ class ClassTaintingVisitor extends ClassVisitor {
             String param = proxyDescriptor.getParameters().get(i + diff);
             mv.visitVarInsn(loadCodeByType(param), register);
             if (this.instrumentationHelper.isInstrumented(param) && !param.equals(uninstrumentedDescriptor.getParameters().get(i))) {
-                Type uninstrumentedType = Type.getType(this.instrumentationHelper.uninstrumentNormalCall(param));
+                Type uninstrumentedType = Type.getType(this.instrumentationHelper.uninstrument(param));
 
                 if (uninstrumentedType.equals(Type.getType(String.class))) {
-                    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.stringConfig.getTStringQN(), Constants.ToString, new Descriptor(Type.getType(String.class)).toDescriptor(), false);
+                    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(IASString.class), Constants.ToString, new Descriptor(Type.getType(String.class)).toDescriptor(), false);
                 } else {
                     mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
                     mv.visitTypeInsn(Opcodes.CHECKCAST, uninstrumentedType.getInternalName());
@@ -496,7 +437,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 
         String owner = lambdaCall.getImplementation().getOwner();
 
-        mv.visitMethodInsn(opcode, owner, name, uninstrumentedDescriptor.toDescriptor(), opcode == Opcodes.INVOKEINTERFACE);
+        mv.visitMethodInsn(opcode, owner, name, uninstrumentedDescriptor.toDescriptor(), lambdaCall.isCallOnInterface());
         if (this.instrumentationHelper.isInstrumented(proxyDescriptor.getReturnType())) {
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
             mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(proxyDescriptor.getReturnType()).getInternalName());
@@ -579,7 +520,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
         logger.info("Creating proxy for inherited, but not overridden JDK method " + m);
         Descriptor originalDescriptor = Descriptor.parseDescriptor(m.getDescriptor());
-        Descriptor instrumentedDescriptor = this.instrumentationHelper.instrumentForNormalCall(originalDescriptor);
+        Descriptor instrumentedDescriptor = this.instrumentationHelper.instrument(originalDescriptor);
 
         if (this.instrumentedMethods.contains(new org.objectweb.asm.commons.Method(m.getName(), instrumentedDescriptor.toDescriptor()))) {
             return;
@@ -620,7 +561,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             mv.visitVarInsn(loadCodeByType(instrOrigParam), i);
             if (!instrOrigParam.equals(proxyParam)) {
                 // Only strings are possible as tainted type, therefore it must always be a string conversion
-                mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringQN(), Constants.FROM_STRING, this.stringConfig.getFromStringDesc(), false);
+                mv.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASString.class), Constants.FROM_STRING, Constants.FROM_STRING_DESCRIPTOR, false);
             }
         }
 
@@ -648,7 +589,8 @@ class ClassTaintingVisitor extends ClassVisitor {
                 mv.visitJumpInsn(Opcodes.IFNULL, label);
                 if (arrayDimensions == 0) {
                     mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedParam.getInternalName());
-                    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, instrumentedParam.getInternalName(), this.getToOriginalMethod(param), new Descriptor(new String[]{}, param).toDescriptor(), false);
+                    this.instrumentationHelper.insertJdkMethodParameterConversion(mv, origParam);
+//                    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, instrumentedParam.getInternalName(), this.getToOriginalMethod(param), new Descriptor(new String[]{}, param).toDescriptor(), false);
                 } else {
                     mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
                     mv.visitTypeInsn(Opcodes.CHECKCAST, origParam.getInternalName());
@@ -734,7 +676,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitLabel(label0);
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitInsn(Opcodes.ARRAYLENGTH);
-        mv.visitTypeInsn(Opcodes.ANEWARRAY, this.stringConfig.getTStringQN());
+        mv.visitTypeInsn(Opcodes.ANEWARRAY, Type.getInternalName(IASString.class));
         mv.visitVarInsn(Opcodes.ASTORE, 1);
         Label label1 = new Label();
         mv.visitLabel(label1);
@@ -742,7 +684,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitVarInsn(Opcodes.ISTORE, 2);
         Label label2 = new Label();
         mv.visitLabel(label2);
-        mv.visitFrame(Opcodes.F_APPEND, 2, new Object[]{this.stringConfig.getTStringArrayDesc(), Opcodes.INTEGER}, 0, null);
+        mv.visitFrame(Opcodes.F_APPEND, 2, new Object[]{Type.getDescriptor(IASString[].class), Opcodes.INTEGER}, 0, null);
         mv.visitVarInsn(Opcodes.ILOAD, 2);
         mv.visitVarInsn(Opcodes.ALOAD, 1);
         mv.visitInsn(Opcodes.ARRAYLENGTH);
@@ -752,12 +694,12 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitLabel(label4);
         mv.visitVarInsn(Opcodes.ALOAD, 1);
         mv.visitVarInsn(Opcodes.ILOAD, 2);
-        mv.visitTypeInsn(Opcodes.NEW, this.stringConfig.getTStringQN());
+        mv.visitTypeInsn(Opcodes.NEW, Type.getInternalName(IASString.class));
         mv.visitInsn(Opcodes.DUP);
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitVarInsn(Opcodes.ILOAD, 2);
         mv.visitInsn(Opcodes.AALOAD);
-        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.stringConfig.getTStringQN(), Constants.Init, Constants.TStringInitUntaintedDesc, false);
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Type.getInternalName(IASString.class), Constants.Init, Constants.TStringInitUntaintedDesc, false);
         mv.visitInsn(Opcodes.AASTORE);
         Label label5 = new Label();
         mv.visitLabel(label5);
@@ -775,7 +717,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private boolean shouldBeInstrumented(String descriptorString) {
-        String instrumented = this.instrumentationHelper.instrumentDescForIASCall(descriptorString);
+        String instrumented = this.instrumentationHelper.instrumentForNormalCall(descriptorString);
         return !instrumented.equals(descriptorString);
     }
 

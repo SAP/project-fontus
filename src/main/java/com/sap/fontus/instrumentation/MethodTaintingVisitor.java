@@ -5,12 +5,9 @@ import com.sap.fontus.asm.*;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.Sink;
 import com.sap.fontus.config.Source;
-import com.sap.fontus.config.TaintStringConfig;
-import com.sap.fontus.instrumentation.strategies.InstrumentationHelper;
-import com.sap.fontus.instrumentation.strategies.method.*;
 import com.sap.fontus.instrumentation.transformer.*;
-import com.sap.fontus.taintaware.shared.IASLookupUtils;
-import com.sap.fontus.taintaware.shared.IASStringable;
+import com.sap.fontus.taintaware.unified.*;
+import com.sap.fontus.taintaware.unified.reflect.*;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
 import com.sap.fontus.utils.Utils;
@@ -19,7 +16,10 @@ import org.objectweb.asm.*;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.TypeVariable;
 import java.util.*;
 
 
@@ -42,16 +42,14 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     private final HashMap<ProxiedDynamicFunctionEntry, Runnable> dynProxies;
     private final String ownerSuperClass;
     private final List<LambdaCall> jdkLambdaMethodProxies;
+    private final boolean isOwnerInterface;
 
     private int used;
     private int usedAfterInjection;
 
-    private final List<MethodInstrumentationStrategy> methodInstrumentation = new ArrayList<>(4);
     private final InstrumentationHelper instrumentationHelper;
 
     private final Configuration config;
-
-    private final TaintStringConfig stringConfig;
 
     private final CombinedExcludedLookup combinedExcludedLookup;
     private final List<DynamicCall> bootstrapMethods;
@@ -63,10 +61,11 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     private final Map<FunctionCall, Runnable> methodInterfaceProxies;
     private final ClassLoader loader;
 
-    public MethodTaintingVisitor(int acc, String owner, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver, Configuration config, boolean implementsInvocationHandler, InstrumentationHelper instrumentationHelper, CombinedExcludedLookup combinedExcludedLookup, List<DynamicCall> bootstrapMethods, List<LambdaCall> jdkLambdaMethodProxies, String ownerSuperClass, ClassLoader loader) {
-        super(Opcodes.ASM7, methodVisitor);
+    public MethodTaintingVisitor(int acc, String owner, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver, Configuration config, boolean implementsInvocationHandler, InstrumentationHelper instrumentationHelper, CombinedExcludedLookup combinedExcludedLookup, List<DynamicCall> bootstrapMethods, List<LambdaCall> jdkLambdaMethodProxies, String ownerSuperClass, ClassLoader loader, boolean isOwnerInterface) {
+        super(Opcodes.ASM9, methodVisitor);
         this.resolver = resolver;
         this.owner = owner;
+        this.isOwnerInterface = isOwnerInterface;
         this.combinedExcludedLookup = combinedExcludedLookup;
         this.bootstrapMethods = bootstrapMethods;
         logger.info("Instrumenting method: {}{}", name, methodDescriptor);
@@ -86,20 +85,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.fillProxies();
         this.fillInterfaceProxies();
         this.config = config;
-        this.stringConfig = config.getTaintStringConfig();
-        this.fillStrategies();
-    }
-
-    private void fillStrategies() {
-        this.methodInstrumentation.add(new StringMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
-        this.methodInstrumentation.add(new StringBuilderMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
-        this.methodInstrumentation.add(new StringBufferMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
-        this.methodInstrumentation.add(new FormatterMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
-        this.methodInstrumentation.add(new MatcherMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
-        this.methodInstrumentation.add(new PatternMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
-        this.methodInstrumentation.add(new PropertiesMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
-        this.methodInstrumentation.add(new ProxyMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
-        this.methodInstrumentation.add(new DefaultMethodInstrumentationStrategy(this.getParentVisitor(), this.stringConfig));
     }
 
     @Override
@@ -146,52 +131,85 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
      */
     private void fillProxies() {
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/System", "arraycopy", "(Ljava/lang/Object;ILjava/lang/Object;II)V", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getSharedTStringUtilsQN(), "arraycopy", "(Ljava/lang/Object;ILjava/lang/Object;II)V", false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASStringUtils.class), "arraycopy", "(Ljava/lang/Object;ILjava/lang/Object;II)V", false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionProxiesQN(), "forName", String.format("(%s)Ljava/lang/Class;", this.stringConfig.getMethodTStringDesc()), false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "forName", String.format("(%s)Ljava/lang/Class;", Type.getDescriptor(IASString.class)), false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionProxiesQN(), "forName", String.format("(%sZLjava/lang/ClassLoader;)Ljava/lang/Class;", this.stringConfig.getMethodTStringDesc()), false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "forName", String.format("(%sZLjava/lang/ClassLoader;)Ljava/lang/Class;", Type.getDescriptor(IASString.class)), false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/net/URLEncoder", "encode", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, String.format("%sTURLEncoder", this.stringConfig.getTPackage()), "encode", String.format("(%s%s)%s", this.stringConfig.getTStringDesc(), this.stringConfig.getTStringDesc(), this.stringConfig.getTStringDesc()), false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(TURLEncoder.class), "encode", String.format("(%s%s)%s", Type.getDescriptor(IASString.class), Type.getDescriptor(IASString.class), Type.getDescriptor(IASString.class)), false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/net/URLEncoder", "encode", "(Ljava/lang/String;)Ljava/lang/String;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, String.format("%sTURLEncoder", this.stringConfig.getTPackage()), "encode", String.format("(%s)%s", this.stringConfig.getTStringDesc(), this.stringConfig.getTStringDesc()), false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(TURLEncoder.class), "encode", String.format("(%s)%s", Type.getDescriptor(IASString.class), Type.getDescriptor(IASString.class)), false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/net/URLDecoder", "decode", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, String.format("%sTURLDecoder", this.stringConfig.getTPackage()), "decode", String.format("(%s%s)%s", this.stringConfig.getTStringDesc(), this.stringConfig.getTStringDesc(), this.stringConfig.getTStringDesc()), false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(TURLDecoder.class), "decode", String.format("(%s%s)%s", Type.getDescriptor(IASString.class), Type.getDescriptor(IASString.class), Type.getDescriptor(IASString.class)), false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/net/URLDecoder", "decode", "(Ljava/lang/String;)Ljava/lang/String;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, String.format("%sTURLDecoder", this.stringConfig.getTPackage()), "decode", String.format("(%s)%s", this.stringConfig.getTStringDesc(), this.stringConfig.getTStringDesc()), false));
-        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getMethod", "(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "getMethodProxied", String.format("(Ljava/lang/Class;%s[Ljava/lang/Class;)Ljava/lang/reflect/Method;", this.stringConfig.getMethodTStringDesc()), false));
-        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getDeclaredMethod", "(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "getDeclaredMethodProxied", String.format("(Ljava/lang/Class;%s[Ljava/lang/Class;)Ljava/lang/reflect/Method;", this.stringConfig.getMethodTStringDesc()), false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(TURLDecoder.class), "decode", String.format("(%s)%s", Type.getDescriptor(IASString.class), Type.getDescriptor(IASString.class)), false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/System", "getenv", "()Ljava/util/Map;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getSharedTStringUtilsQN(), "getenv", "()Ljava/util/Map;", false));
-        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, Utils.dotToSlash(Method.class.getName()), "invoke", "(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "invoke", "(Ljava/lang/reflect/Method;Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;", false));
-        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/reflect/Method", "getDefaultValue", "()Ljava/lang/Object;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "getDefaultValue", "(Ljava/lang/reflect/Method;)Ljava/lang/Object;", false));
-        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/reflect/Method", "getReturnType", "()Ljava/lang/Class;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "getReturnType", "(Ljava/lang/reflect/Method;)Ljava/lang/Class;", false));
-        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getMethods", "()[Ljava/lang/reflect/Method;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "getMethods", "(Ljava/lang/Class;)[Ljava/lang/reflect/Method;", false));
-        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getDeclaredMethods", "()[Ljava/lang/reflect/Method;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "getDeclaredMethods", "(Ljava/lang/Class;)[Ljava/lang/reflect/Method;", false));
-        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getConstructor", "([Ljava/lang/Class;)Ljava/lang/reflect/Constructor;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "getConstructor", "(Ljava/lang/Class;[Ljava/lang/Class;)Ljava/lang/reflect/Constructor;", false));
-        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getDeclaredConstructor", "([Ljava/lang/Class;)Ljava/lang/reflect/Constructor;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "getDeclaredConstructor", "(Ljava/lang/Class;[Ljava/lang/Class;)Ljava/lang/reflect/Constructor;", false));
-        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/reflect/Constructor", "newInstance", "([Ljava/lang/Object;)Ljava/lang/Object;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "newInstance", "(Ljava/lang/reflect/Constructor;[Ljava/lang/Object;)Ljava/lang/Object;", false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASStringUtils.class), "getenv", "()Ljava/util/Map;", false));
+
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getTypeParameters", Type.getMethodDescriptor(Type.getType(TypeVariable[].class)), false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getTypeParameters", Type.getMethodDescriptor(Type.getType(TypeVariable[].class), Type.getType(Class.class)), false));
+
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getInterfaces", Type.getMethodDescriptor(Type.getType(Class[].class)), false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getInterfaces", Type.getMethodDescriptor(Type.getType(Class[].class), Type.getType(Class.class)), false));
+
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getGenericInterfaces", Type.getMethodDescriptor(Type.getType(java.lang.reflect.Type.class)), false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getGenericInterfaces", Type.getMethodDescriptor(Type.getType(java.lang.reflect.Type[].class), Type.getType(Class.class)), false));
+
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getEnclosingMethod", Type.getMethodDescriptor(Type.getType(Method.class)), false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getEnclosingMethod", Type.getMethodDescriptor(Type.getType(IASMethod.class), Type.getType(Class.class)), false));
+
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getEnclosingConstructor", Type.getMethodDescriptor(Type.getType(Constructor.class)), false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getEnclosingConstructor", Type.getMethodDescriptor(Type.getType(IASConstructor.class), Type.getType(Class.class)), false));
+
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getMethods", Type.getMethodDescriptor(Type.getType(Method[].class)), false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getMethods", Type.getMethodDescriptor(Type.getType(IASMethod[].class), Type.getType(Class.class)), false));
+
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getDeclaredMethods", Type.getMethodDescriptor(Type.getType(Method[].class)), false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getDeclaredMethods", Type.getMethodDescriptor(Type.getType(IASMethod[].class), Type.getType(Class.class)), false));
+
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getMethod", Type.getMethodDescriptor(Type.getType(Method.class), Type.getType(String.class), Type.getType(Class[].class)), false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getMethod", Type.getMethodDescriptor(Type.getType(IASMethod.class), Type.getType(Class.class), Type.getType(IASString.class), Type.getType(Class[].class)), false));
+
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getDeclaredMethod", Type.getMethodDescriptor(Type.getType(Method.class), Type.getType(String.class), Type.getType(Class[].class)), false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getDeclaredMethod", Type.getMethodDescriptor(Type.getType(IASMethod.class), Type.getType(Class.class), Type.getType(IASString.class), Type.getType(Class[].class)), false));
+
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getFields", Type.getMethodDescriptor(Type.getType(Field[].class)), false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getFields", Type.getMethodDescriptor(Type.getType(IASField[].class), Type.getType(Class.class)), false));
+
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getDeclaredFields", Type.getMethodDescriptor(Type.getType(Field[].class)), false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getDeclaredFields", Type.getMethodDescriptor(Type.getType(IASField[].class), Type.getType(Class.class)), false));
+
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getField", Type.getMethodDescriptor(Type.getType(Field.class), Type.getType(String.class)), false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getField", Type.getMethodDescriptor(Type.getType(IASField.class), Type.getType(Class.class), Type.getType(IASString.class)), false));
+
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getDeclaredField", Type.getMethodDescriptor(Type.getType(Field.class), Type.getType(String.class)), false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getDeclaredField", Type.getMethodDescriptor(Type.getType(IASField.class), Type.getType(Class.class), Type.getType(IASString.class)), false));
+
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getConstructors", Type.getMethodDescriptor(Type.getType(Constructor[].class)), false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getConstructors", Type.getMethodDescriptor(Type.getType(IASConstructor[].class), Type.getType(Class.class)), false));
+
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getDeclaredConstructors", Type.getMethodDescriptor(Type.getType(Constructor[].class)), false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getDeclaredConstructors", Type.getMethodDescriptor(Type.getType(IASConstructor[].class), Type.getType(Class.class)), false));
+
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getConstructor", Type.getMethodDescriptor(Type.getType(Constructor.class), Type.getType(Class[].class)), false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getConstructor", Type.getMethodDescriptor(Type.getType(IASConstructor.class), Type.getType(Class.class), Type.getType(Class[].class)), false));
+
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getDeclaredConstructor", Type.getMethodDescriptor(Type.getType(Constructor.class), Type.getType(Class[].class)), false),
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getDeclaredConstructor", Type.getMethodDescriptor(Type.getType(IASConstructor.class), Type.getType(Class.class), Type.getType(Class[].class)), false));
+
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "getResourceAsStream", "(Ljava/lang/Class;Lcom/sap/fontus/taintaware/shared/IASStringable;)Ljava/io/InputStream;", false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getResourceAsStream", "(Ljava/lang/Class;Lcom/sap/fontus/taintaware/unified/IASString;)Ljava/io/InputStream;", false));
+
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/ClassLoader", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;", false),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "getResourceAsStream", "(Ljava/lang/ClassLoader;Lcom/sap/fontus/taintaware/shared/IASStringable;)Ljava/io/InputStream;", false));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassLoaderProxy.class), "getResourceAsStream", "(Ljava/lang/ClassLoader;Lcom/sap/fontus/taintaware/unified/IASString;)Ljava/io/InputStream;", false));
     }
 
     private void fillInterfaceProxies() {
         this.methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/util/Collection", "toArray", "([Ljava/lang/Object;)[Ljava/lang/Object;", true),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getToArrayProxyQN(), "toArray", String.format("(L%s;[Ljava/lang/Object;)[Ljava/lang/Object;", Utils.dotToSlash(Collection.class.getName()))));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASToArrayProxy.class), "toArray", String.format("(L%s;[Ljava/lang/Object;)[Ljava/lang/Object;", Utils.dotToSlash(Collection.class.getName()))));
         this.methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/util/Collection", "toArray", "()[Ljava/lang/Object;", true),
-                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getToArrayProxyQN(), "toArray", String.format("(L%s;)[Ljava/lang/Object;", Utils.dotToSlash(Collection.class.getName()))));
+                () -> super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASToArrayProxy.class), "toArray", String.format("(L%s;)[Ljava/lang/Object;", Utils.dotToSlash(Collection.class.getName()))));
     }
 
     @Override
@@ -202,7 +220,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             super.visitVarInsn(Opcodes.ALOAD, 2); // Load method param
             super.visitVarInsn(Opcodes.ALOAD, 3); // Load args param
             String resultConverterDescriptor = String.format("(L%s;L%s;L%s;[L%s;)L%s;", Utils.dotToSlash(Object.class.getName()), Utils.dotToSlash(Object.class.getName()), Utils.dotToSlash(Method.class.getName()), Utils.dotToSlash(Object.class.getName()), Utils.dotToSlash(Object.class.getName()));
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getReflectionMethodProxyQN(), "handleInvocationProxyCall", resultConverterDescriptor, false);
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASReflectionProxy.class), "handleInvocationProxyCall", resultConverterDescriptor, false);
         }
         super.visitInsn(opcode);
     }
@@ -220,7 +238,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     @Override
     public void visitFieldInsn(final int opcode, final String owner, final String name, final String descriptor) {
 
-        if (this.combinedExcludedLookup.isJdkClass(owner) && InstrumentationHelper.getInstance(this.stringConfig).canHandleType(descriptor)) {
+        if (this.combinedExcludedLookup.isJdkClass(owner) && this.instrumentationHelper.canHandleType(descriptor)) {
             if ((opcode == Opcodes.PUTFIELD || opcode == Opcodes.PUTSTATIC)) {
                 mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
                 mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(descriptor).getInternalName());
@@ -229,16 +247,14 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
                 mv.visitFieldInsn(opcode, owner, name, descriptor);
                 mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
                 Type fieldType = Type.getType(descriptor);
-                String instrumentedFieldDescriptor = InstrumentationHelper.getInstance(this.stringConfig).instrumentQN(fieldType.getInternalName());
+                String instrumentedFieldDescriptor = this.instrumentationHelper.instrumentQN(fieldType.getInternalName());
                 mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedFieldDescriptor);
             }
             return;
         }
 
-        for (MethodInstrumentationStrategy s : this.methodInstrumentation) {
-            if (s.instrumentFieldIns(opcode, owner, name, descriptor)) {
-                return;
-            }
+        if (this.instrumentationHelper.instrumentFieldIns(mv, opcode, owner, name, descriptor)) {
+            return;
         }
     }
 
@@ -254,24 +270,28 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             final boolean isInterface) {
         FunctionCall fc = new FunctionCall(opcode, owner, name, descriptor, isInterface);
 
+        if (this.combinedExcludedLookup.isFontusClass(owner)) {
+            super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+            return;
+        }
+
         // If a method has a defined proxy, apply it right away
         if (this.shouldBeProxied(fc)) {
             return;
         }
 
-        for (MethodInstrumentationStrategy s : this.methodInstrumentation) {
-            FunctionCall functionCall = s.rewriteOwnerMethod(fc);
-            if (functionCall != null) {
-                super.visitMethodInsn(functionCall.getOpcode(), functionCall.getOwner(), functionCall.getName(), functionCall.getDescriptor(), functionCall.isInterface());
-                return;
-            }
+
+        FunctionCall functionCall = this.instrumentationHelper.rewriteOwnerMethod(fc);
+        if (functionCall != null) {
+            super.visitMethodInsn(functionCall.getOpcode(), functionCall.getOwner(), functionCall.getName(), functionCall.getDescriptor(), functionCall.isInterface());
+            return;
         }
 
-        if (this.name.equals("toString") && this.methodDescriptor.equals(Type.getMethodDescriptor(Type.getType(stringConfig.getTStringDesc())))
+        if (this.name.equals("toString") && this.methodDescriptor.equals(Type.getMethodDescriptor(Type.getType(IASString.class)))
                 && opcode == Opcodes.INVOKESPECIAL && name.equals("toString") && descriptor.equals(Type.getMethodDescriptor(Type.getType(String.class)))
                 && this.combinedExcludedLookup.isPackageExcludedOrJdk(owner)
                 && !this.combinedExcludedLookup.isPackageExcludedOrJdk(this.ownerSuperClass)) {
-            Descriptor instrumented = new Descriptor(Type.getType(stringConfig.getTStringDesc()));
+            Descriptor instrumented = new Descriptor(Type.getType(IASString.class));
             super.visitMethodInsn(Opcodes.INVOKESPECIAL, this.ownerSuperClass, name, instrumented.toDescriptor(), false);
             return;
         }
@@ -358,7 +378,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         super.visitVarInsn(Opcodes.ALOAD, classLocal);
         super.visitVarInsn(Opcodes.ALOAD, nameLocal);
-        super.visitMethodInsn(Opcodes.INVOKEINTERFACE, Type.getInternalName(IASStringable.class), "getString", Type.getMethodDescriptor(Type.getType(String.class)), true);
+        super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(IASString.class), "getString", Type.getMethodDescriptor(Type.getType(String.class)), false);
         super.visitVarInsn(Opcodes.ALOAD, methodTypeLocal);
 
         this.visitMethodInsn(fc);
@@ -438,7 +458,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         super.visitVarInsn(Opcodes.ALOAD, classLocal);
         super.visitVarInsn(Opcodes.ALOAD, nameLocal);
-        super.visitMethodInsn(Opcodes.INVOKEINTERFACE, Type.getInternalName(IASStringable.class), "getString", Type.getMethodDescriptor(Type.getType(String.class)), true);
+        super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(IASString.class), "getString", Type.getMethodDescriptor(Type.getType(String.class)), false);
         super.visitVarInsn(Opcodes.ALOAD, methodTypeLocal);
         super.visitVarInsn(Opcodes.ALOAD, callerLocal);
 
@@ -475,10 +495,14 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
     private boolean rewriteParametersAndReturnType(FunctionCall call) {
+        boolean isExcluded = this.combinedExcludedLookup.isJdkOrAnnotation(call.getOwner()) || this.combinedExcludedLookup.isPackageExcluded(call.getOwner());
+
+        if (isExcluded) {
+            String desc = this.instrumentationHelper.uninstrumentForJdkCall(call.getDescriptor());
+            call = new FunctionCall(call.getOpcode(), call.getOwner(), call.getName(), desc, call.isInterface());
+        }
 
         MethodParameterTransformer transformer = new MethodParameterTransformer(this, call);
-
-        boolean isExcluded = this.combinedExcludedLookup.isJdkOrAnnotation(call.getOwner()) || this.combinedExcludedLookup.isPackageExcluded(call.getOwner());
 
         // Add always apply transformer
         FunctionCall converter = this.config.getConverterForReturnValue(call, true);
@@ -489,7 +513,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         // Add JDK transformations
         if (isExcluded) {
             logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-            JdkMethodTransformer t = new JdkMethodTransformer(call, this.methodInstrumentation, this.config);
+            JdkMethodTransformer t = new JdkMethodTransformer(call, this.instrumentationHelper, this.config);
             transformer.addParameterTransformation(t);
             transformer.addReturnTransformation(t);
         }
@@ -498,7 +522,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         Sink sink = this.config.getSinkConfig().getSinkForFunction(call);
         if (sink != null) {
             logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-            SinkTransformer t = new SinkTransformer(sink, this.stringConfig, this.used);
+            SinkTransformer t = new SinkTransformer(sink, this.instrumentationHelper, this.used);
             transformer.addParameterTransformation(t);
         }
 
@@ -506,7 +530,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         Source source = this.config.getSourceConfig().getSourceForFunction(call);
         if (source != null) {
             logger.info("Adding source tainting for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-            ReturnTransformation t = new SourceTransformer(source, this.stringConfig);
+            ReturnTransformation t = new SourceTransformer(source);
             transformer.addReturnTransformation(t);
         }
 
@@ -524,7 +548,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             String desc = this.instrumentationHelper.instrumentForNormalCall(call.getDescriptor());
             call = new FunctionCall(call.getOpcode(), call.getOwner(), call.getName(), desc, call.isInterface());
         }
-        // Make the call
         this.visitMethodInsn(call);
 
         // Modify Return parameters
@@ -546,34 +569,28 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         if (value instanceof String) {
             if (value.equals("java.lang.String")) {
                 logger.info("Replaced original class name in string with instrumented one in {}.{}{}", this.owner, this.name, this.methodDescriptor);
-                value = Utils.slashToDot(Configuration.getConfiguration().getTaintStringConfig().getTStringQN());
+                value = IASString.class.getName();
             } else if (value.equals("[Ljava.lang.String;")) {
                 logger.info("Replaced original class name in string with instrumented one in {}.{}{}", this.owner, this.name, this.methodDescriptor);
-                value = Utils.slashToDot(Configuration.getConfiguration().getTaintStringConfig().getTStringArrayDesc());
+                value = IASString.class.getName();
             }
         }
 
-        for (MethodInstrumentationStrategy s : this.methodInstrumentation) {
-            if (s.handleLdc(value)) {
-                return;
-            }
+        if (this.instrumentationHelper.handleLdc(this.mv, value)) {
+            return;
         }
 
         if (value instanceof Type) {
             Type type = (Type) value;
             int sort = type.getSort();
             if (sort == Type.OBJECT) {
-                for (MethodInstrumentationStrategy s : this.methodInstrumentation) {
-                    if (s.handleLdcType(type)) {
-                        return;
-                    }
+                if (this.instrumentationHelper.handleLdcType(this.mv, type)) {
+                    return;
                 }
                 //TODO: handle Arrays etc..
             } else if (sort == Type.ARRAY) {
-                for (MethodInstrumentationStrategy s : this.methodInstrumentation) {
-                    if (s.handleLdcArray(type)) {
-                        return;
-                    }
+                if (this.instrumentationHelper.handleLdcArray(this.mv, type)) {
+                    return;
                 }
             }
         }
@@ -589,15 +606,12 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         // TODO All instrumented classes not only strings
         if (/*this.shouldRewriteCheckCast &&*/ opcode == Opcodes.CHECKCAST && Constants.StringQN.equals(type)) {
             logger.info("Rewriting checkcast to call to TString.fromObject(Object obj)");
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getSharedTStringUtilsQN(), "fromObject", String.format("(%s)%s", Constants.ObjectDesc, this.stringConfig.getMethodTStringDesc()), false);
-            super.visitTypeInsn(Opcodes.CHECKCAST, this.stringConfig.getTStringQN());
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASStringUtils.class), "fromObject", String.format("(%s)%s", Constants.ObjectDesc, Type.getDescriptor(IASString.class)), false);
+            super.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(IASString.class));
             return;
         }
         logger.info("Visiting type [{}] instruction: {}", type, opcode);
-        String newType = type;
-        for (MethodInstrumentationStrategy s : this.methodInstrumentation) {
-            newType = s.rewriteTypeIns(newType);
-        }
+        String newType = this.instrumentationHelper.rewriteTypeIns(type);
         super.visitTypeInsn(opcode, newType);
     }
 
@@ -615,11 +629,16 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         if ("java/lang/invoke/LambdaMetafactory".equals(bootstrapMethodHandle.getOwner()) &&
                 ("metafactory".equals(bootstrapMethodHandle.getName()) || "altMetafactory".equals(bootstrapMethodHandle.getName()))) {
             Handle realFunction = (Handle) bootstrapMethodArguments[1];
-            LambdaCall call = new LambdaCall(Type.getMethodType(descriptor).getReturnType(), realFunction);
+            Type desc = Type.getType(descriptor);
 
-            MethodTaintingUtils.invokeVisitLambdaCall(this.stringConfig, this.getParentVisitor(), this.methodInstrumentation, call.getProxyDescriptor(this.loader, this.instrumentationHelper), call, this.owner, name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
+            LambdaCall call = new LambdaCall(Type.getMethodType(descriptor).getReturnType(), realFunction, desc);
+            if (call.isInstanceCall()) {
+                call.setConcreteImplementationType(desc.getArgumentTypes().length == 1 ? desc.getArgumentTypes()[0] : null);
+            }
 
-            if (MethodTaintingUtils.needsLambdaProxy(descriptor, realFunction, (Type) bootstrapMethodArguments[2], InstrumentationHelper.getInstance(this.stringConfig))) {
+            MethodTaintingUtils.invokeVisitLambdaCall(this.getParentVisitor(), this.instrumentationHelper, call.getProxyDescriptor(this.loader, this.instrumentationHelper), call, this.owner, name, descriptor, isOwnerInterface, bootstrapMethodHandle, bootstrapMethodArguments);
+
+            if (MethodTaintingUtils.needsLambdaProxy(descriptor, realFunction, (Type) bootstrapMethodArguments[2], this.instrumentationHelper)) {
                 this.jdkLambdaMethodProxies.add(call);
             }
         } else if ("makeConcatWithConstants".equals(name)) {
@@ -680,7 +699,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         // Load the param array
         super.visitVarInsn(Opcodes.ALOAD, currRegister);
         // Call our concat method
-        super.visitMethodInsn(Opcodes.INVOKESTATIC, this.stringConfig.getTStringUtilsQN(), "concat", this.stringConfig.getConcatDesc(), false);
+        super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASStringUtils.class), "concat", Constants.CONCAT_DESC, false);
     }
 
     /**

@@ -6,6 +6,9 @@ import com.sap.fontus.taintaware.range.testHelper.THelper;
 import com.sap.fontus.taintaware.range.testHelper.TaintMatcher;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
+import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.taintaware.unified.IASStringBuffer;
+import com.sap.fontus.taintaware.unified.IASStringBuilder;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,7 +67,7 @@ public class StringBuilderTest {
     public void setLength_1() {
         IASStringBuilder sb = new IASStringBuilder("Hello World!");
 
-        ((IASTaintInformation) THelper.get(sb)).appendRanges(RangeChainer.range(0, 4, 3).add(4, 6, 1).add(6, 12, 2).done());
+        ((IASTaintInformation) THelper.get(sb)).addRange(0, 4, 3).addRange(4, 6, 1).addRange(6, 12, 2);
 
         sb.setLength(5);
 
@@ -75,7 +78,7 @@ public class StringBuilderTest {
     @Test
     public void setLength_2() {
         // Range of size 0 should be removed
-        ((IASTaintInformation) THelper.get(foo)).appendRanges(RangeChainer.range(0, 2, 3).add(2, 3, 1).done());
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 2, 3).addRange(2, 3, 1);
 
         foo.setLength(2);
 
@@ -86,7 +89,7 @@ public class StringBuilderTest {
     @Test
     public void setLength_3() {
         // Until now range will get end < start (end: 1, start: 2), which is absolutely wrong
-        ((IASTaintInformation) THelper.get(foo)).appendRanges(RangeChainer.range(0, 1, 3).add(2, 3, 1).done());
+        ((IASTaintInformation) THelper.get(foo)).addRange(0, 1, 3).addRange(2, 3, 1);
 
         foo.setLength(1);
 

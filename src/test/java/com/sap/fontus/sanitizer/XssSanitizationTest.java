@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.sap.fontus.taintaware.shared.IASTaintRange;
+import com.sap.fontus.taintaware.shared.IASTaintRanges;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
 import org.junit.Test;
 
@@ -22,9 +23,8 @@ public class XssSanitizationTest {
     @Test
     public void testHtmlAttributeNameTainted_1() {
         String taintedString = "<html> <body> <img src=\"test.jpg\" width=\"200\" height=\"100\"> </body> </html>";
-        IASTaintRange r = new IASTaintRange(19, 22, new IASTaintSource("dummy", 1234)); // src is tainted
-        List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(r);
+        IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
+        ranges.setTaint(19, 22, new IASTaintSource("dummy", 1234)); // src is tainted
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
 
         // check if sanitization was performed, since taintRange IS NOT empty
@@ -36,9 +36,8 @@ public class XssSanitizationTest {
     @Test
     public void testHtmlAttributeNameTainted_2() {
         String taintedString = "<html> <body> <img src=\"test.jpg\" width=\"200\" height=\"100\"> </body> </html>";
-        IASTaintRange r = new IASTaintRange(34, 39, new IASTaintSource("dummy", 1234)); // width is tainted
-        List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(r);
+        IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
+        ranges.setTaint(34, 39, new IASTaintSource("dummy", 1234)); // width is tainted
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
 
         // check if sanitization was performed, since taintRange IS NOT empty
@@ -53,9 +52,8 @@ public class XssSanitizationTest {
     @Test
     public void testHtmlAttributeValueTainted_1() {
         String taintedString = "<html> <body> <img src=\"test.jpg\" width=\"200\" height=\"100\"> </body> </html>";
-        IASTaintRange r = new IASTaintRange(24, 32, new IASTaintSource("dummy", 1234)); // test.jpg is tainted
-        List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(r);
+        IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
+        ranges.setTaint(24, 32, new IASTaintSource("dummy", 1234)); // test.jpg is tainted;
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
 
         // check if sanitization was performed, since taintRange IS NOT empty
@@ -69,9 +67,8 @@ public class XssSanitizationTest {
     @Test
     public void testHtmlAttributeValueTainted_2() {
         String taintedString = "<html> <body> <img src=\"test.jpg\" width=\"200\" height=\"100\"> </body> </html>";
-        IASTaintRange r = new IASTaintRange(41, 44, new IASTaintSource("dummy", 1234)); // 200 is tainted
-        List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(r);
+        IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
+        ranges.setTaint(41, 44, new IASTaintSource("dummy", 1234)); // 200 is tainted
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
 
         // check if sanitization was performed, since taintRange IS NOT empty
@@ -85,9 +82,8 @@ public class XssSanitizationTest {
     @Test
     public void testHtmlAttributeValueTainted_3() {
         String taintedString = "<html> <body> <img src=\"t&st.jpg\" width=\"200\" height=\"100\"> </body> </html>";
-        IASTaintRange r = new IASTaintRange(24, 32, new IASTaintSource("dummy", 1234)); // t&st.jpg is tainted
-        List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(r);
+        IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
+        ranges.setTaint(24, 32, new IASTaintSource("dummy", 1234)); // t&st.jpg is tainted
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
 
         // check if sanitization was performed, since taintRange IS NOT empty
@@ -101,11 +97,9 @@ public class XssSanitizationTest {
     @Test
     public void testHtmlAttributeValueTainted_4() {
         String taintedString = "<html> <body> <img src=\"t&st.jpg\" width=\"200\" height=\"100\"> </body> </html>";
-        IASTaintRange r1 = new IASTaintRange(24, 32, new IASTaintSource("dummy", 1234)); // t&st.jpg is tainted
-        IASTaintRange r2 = new IASTaintRange(41, 44, new IASTaintSource("dummy", 1234)); // 200 is tainted
-        List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(r1);
-        ranges.add(r2);
+        IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
+        ranges.setTaint(24, 32, new IASTaintSource("dummy", 1234)); // t&st.jpg is tainted
+        ranges.setTaint(41, 44, new IASTaintSource("dummy", 1234)); // 200 is tainted
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
 
         // check if sanitization was performed, since taintRange IS NOT empty
@@ -122,9 +116,8 @@ public class XssSanitizationTest {
     @Test
     public void testHtmlCommentTainted() {
         String taintedString = "<html> <body> <!-- This is a comment --> <img src=\"test.jpg\" width=\"200\" height=\"100\"> </body> </html>";
-        IASTaintRange r = new IASTaintRange(18, 37, new IASTaintSource("dummy", 1234)); // This is a comment is tainted
-        List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(r);
+        IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
+        ranges.setTaint(18, 37, new IASTaintSource("dummy", 1234)); // This is a comment is tainted
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
 
         // check if sanitization was performed, since taintRange IS NOT empty
@@ -139,9 +132,8 @@ public class XssSanitizationTest {
     @Test
     public void testHtmlTextContentTainted_1() {
         String taintedString = "<html> <body> hello world </body> </html>";
-        IASTaintRange r = new IASTaintRange(14, 25, new IASTaintSource("dummy", 1234)); // hello world is tainted
-        List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(r);
+        IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
+        ranges.setTaint(14, 25, new IASTaintSource("dummy", 1234)); // hello world is tainted
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
 
         // check if sanitization was performed, since taintRange IS NOT empty
@@ -154,9 +146,8 @@ public class XssSanitizationTest {
     @Test
     public void testHtmlTextContentTainted_2() {
         String taintedString = "<html> <body> Hello & Bye! </body> </html>";
-        IASTaintRange r = new IASTaintRange(14, 26, new IASTaintSource("dummy", 1234)); // Hello & Bye! is tainted
-        List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(r);
+        IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
+        ranges.setTaint(14, 26, new IASTaintSource("dummy", 1234)); // Hello & Bye! is tainted
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
 
         // check if sanitization was performed, since taintRange IS NOT empty
@@ -169,9 +160,8 @@ public class XssSanitizationTest {
     @Test
     public void testHtmlTextContentTainted_3() {
         String taintedString = "<html> <body> Hello & Bye! </body> </html>";
-        IASTaintRange r = new IASTaintRange(14, 19, new IASTaintSource("dummy", 1234)); // Hello is tainted
-        List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(r);
+        IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
+        ranges.setTaint(14, 19, new IASTaintSource("dummy", 1234)); // Hello is tainted
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
 
         // check if sanitization was performed, since taintRange IS NOT empty
@@ -188,9 +178,8 @@ public class XssSanitizationTest {
     public void testCssStringTainted_1() {
         // inline css string
         String taintedString = "<html> <body> <h1 style=\"color:red;\">Red Heading</h1> </body> </html>";
-        IASTaintRange r = new IASTaintRange(25, 35, new IASTaintSource("dummy", 1234)); // color:red; is tainted
-        List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(r);
+        IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
+        ranges.setTaint(25, 35, new IASTaintSource("dummy", 1234)); // color:red; is tainted
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
 
         // check if sanitization was performed, since taintRange IS NOT empty
@@ -204,9 +193,8 @@ public class XssSanitizationTest {
     public void testCssStringTainted_2() {
         // missing quotation in inline css string
         String taintedString = "<html> <body> <h1 style=color:red;>Red Heading</h1> </body> </html>";
-        IASTaintRange r = new IASTaintRange(24, 34, new IASTaintSource("dummy", 1234)); // color:red; is tainted
-        List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(r);
+        IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
+        ranges.setTaint(24, 34, new IASTaintSource("dummy", 1234)); // color:red; is tainted
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
 
         // check if sanitization was performed, since taintRange IS NOT empty
@@ -220,9 +208,8 @@ public class XssSanitizationTest {
     public void testCssStringTainted_3() {
         // internal css string
         String taintedString = "<html> <style> body {color: red;} </style> <body> hello </body> </html>";
-        IASTaintRange r = new IASTaintRange(15, 33, new IASTaintSource("dummy", 1234)); // body {color:red;} is tainted
-        List<IASTaintRange> ranges = new ArrayList<>();
-        ranges.add(r);
+        IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
+        ranges.setTaint(15, 33, new IASTaintSource("dummy", 1234)); // body {color:red;} is tainted
         String encodedString = Sanitization.sanitizeHtml(taintedString, ranges);
 
         // check if sanitization was performed, since taintRange IS NOT empty

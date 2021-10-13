@@ -1,9 +1,7 @@
 package com.sap.fontus.taintaware.array;
 
-import com.sap.fontus.taintaware.shared.IASTaintRange;
-import com.sap.fontus.taintaware.shared.IASTaintInformationable;
-import com.sap.fontus.taintaware.shared.IASTaintSource;
-import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
+import com.sap.fontus.taintaware.shared.*;
+import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 
 import java.util.List;
 import java.util.Objects;
@@ -17,6 +15,10 @@ public class IASTaintInformation implements IASTaintInformationable {
 
     public IASTaintInformation(int[] taints) {
         this.taints = Objects.requireNonNull(taints);
+    }
+
+    public IASTaintInformation(int size, List<IASTaintRange> ranges) {
+        this.taints = TaintConverter.toTaintArray(size, ranges);
     }
 
     /**
@@ -42,8 +44,9 @@ public class IASTaintInformation implements IASTaintInformationable {
      * @param end    Exclusive end index. start < end <= length
      * @param source Taint information to set
      */
-    public void setTaint(int start, int end, IASTaintSource source) {
+    public IASTaintInformationable setTaint(int start, int end, IASTaintSource source) {
         setTaint(start, end, source.getId());
+        return this;
     }
 
     public void setTaint(int offset, int[] taints) {
@@ -63,9 +66,13 @@ public class IASTaintInformation implements IASTaintInformationable {
         return dst;
     }
 
+    public IASTaintRanges getTaintRanges() {
+        return new IASTaintRanges(this.taints.length, TaintConverter.toTaintRanges(this.taints));
+    }
+
     @Override
-    public List<IASTaintRange> getTaintRanges() {
-        return TaintConverter.toTaintRanges(this.taints);
+    public IASTaintRanges getTaintRanges(int length) {
+        return this.getTaintRanges();
     }
 
     public boolean isTainted() {
@@ -80,9 +87,60 @@ public class IASTaintInformation implements IASTaintInformationable {
         return false;
     }
 
+    @Override
+    public IASTaintInformationable deleteWithShift(int start, int end) {
+        this.checkBounds(start, end);
+        int removeLength = end - start;
+        int[] changed = new int[this.taints.length - removeLength];
+        System.arraycopy(this.taints, 0, changed, 0, start);
+        System.arraycopy(this.taints, end, changed, start, this.taints.length - end);
+        this.taints = changed;
+        return this;
+    }
+
+    @Override
+    public IASTaintInformationable clearTaint(int start, int end) {
+        for (int i = start; i < end; i++) {
+            this.taints[i] = 0;
+        }
+        return this;
+    }
+
+    @Override
+    public IASTaintInformationable replaceTaint(int start, int end, IASTaintInformationable taintInformation) {
+        IASTaintInformation ti = (IASTaintInformation) taintInformation;
+        int replacedLength = this.taints.length - (end - start) + ti.getLength();
+        int[] replaced = new int[replacedLength];
+        System.arraycopy(this.taints, 0, replaced, 0, start);
+        System.arraycopy(ti.getTaints(), 0, replaced, start, ti.getLength());
+        System.arraycopy(this.taints, end, replaced, start + ti.getLength(), this.taints.length - end);
+        this.taints = replaced;
+
+        return this;
+    }
+
+    @Override
+    public IASTaintInformationable insertWithShift(int offset, IASTaintInformationable taintInformation) {
+        return this.replaceTaint(offset, offset, taintInformation);
+    }
+
     @SuppressWarnings("MethodDoesntCallSuperMethod")
-    public IASTaintInformation clone() {
+    public IASTaintInformation copy() {
         return new IASTaintInformation(this.taints.clone());
+    }
+
+    @Override
+    public IASTaintSource getTaint(int index) {
+        return IASTaintSourceRegistry.getInstance().get(this.taints[index]);
+    }
+
+    @Override
+    public IASTaintInformationable slice(int start, int end) {
+        int length = end - start;
+        int[] sliced = new int[length];
+        System.arraycopy(this.taints, start, sliced, 0, length);
+
+        return new IASTaintInformation(sliced);
     }
 
     public int[] getTaints() {
@@ -91,24 +149,12 @@ public class IASTaintInformation implements IASTaintInformationable {
         return dst;
     }
 
-    public void removeTaintFor(int start, int end, boolean leftShiftRangesAfterClearedArea) {
-        this.checkBounds(start, end);
-        if (leftShiftRangesAfterClearedArea) {
-            int length = end - start;
-            int remainder = this.taints.length - end;
-            System.arraycopy(this.taints, end, this.taints, start, remainder);
-            System.arraycopy(new int[length], 0, this.taints, start + remainder, length);
-        } else {
-            for (int i = start; i < end; i++) {
-                this.taints[i] = 0;
-            }
-        }
-    }
-
-    public void reversed() {
+    @Override
+    public IASTaintInformationable reversed() {
         for (int i = 0; i < this.taints.length / 2; i++) {
             this.switchTaint(i, this.taints.length - i - 1);
         }
+        return this;
     }
 
     public void switchTaint(int first, int second) {
@@ -118,22 +164,20 @@ public class IASTaintInformation implements IASTaintInformationable {
         this.taints[second] = buffer;
     }
 
-    public void resize(int size) {
+    @Override
+    public IASTaintInformationable resize(int size) {
         if (this.taints.length == size) {
-            return;
+            return this;
         }
         int[] old = this.taints;
         this.taints = new int[size];
         int copyLength = Math.min(old.length, size);
         System.arraycopy(old, 0, this.taints, 0, copyLength);
-    }
-
-    public void removeAll() {
-        this.taints = null;
+        return this;
     }
 
     public void replaceTaint(int start, int end, int[] taints) {
-        this.removeTaintFor(start, end, true);
+        this.deleteWithShift(start, end);
         this.insertTaint(start, taints);
     }
 
@@ -150,6 +194,8 @@ public class IASTaintInformation implements IASTaintInformationable {
     private void checkBounds(int start, int end) {
         if (end > this.taints.length || start < 0) {
             throw new IndexOutOfBoundsException();
+        } else if (end < start) {
+            throw new IllegalArgumentException("Start index greater then end index");
         }
     }
 

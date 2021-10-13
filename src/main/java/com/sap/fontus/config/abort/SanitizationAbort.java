@@ -1,24 +1,23 @@
 package com.sap.fontus.config.abort;
 
 import com.sap.fontus.config.Configuration;
-import com.sap.fontus.sanitizer.Sanitization;
 import com.sap.fontus.taintaware.IASTaintAware;
-import com.sap.fontus.taintaware.shared.IASStringable;
-import com.sap.fontus.taintaware.shared.IASTaintRange;
+import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+
+import com.sap.fontus.sanitizer.Sanitization;
 
 public class SanitizationAbort extends Abort {
 
-    private static List<IASStringable> alreadySanitized = new ArrayList<>();
+    private static List<IASString> alreadySanitized = new ArrayList<>();
 
     @Override
     public void abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
-        IASStringable taintedIASString = taintAware.toIASString();
+        IASString taintedIASString = taintAware.toIASString();
         String taintedString = taintedIASString.getString();
-        List<IASTaintRange> ranges = taintAware.toIASString().getTaintRanges();
+        IASTaintInformationable taintInfo = taintAware.getTaintInformation();
         System.err.print("List: ");
         alreadySanitized.forEach(s -> System.err.print(s.toString() + ", "));
         System.err.println();
@@ -26,22 +25,17 @@ public class SanitizationAbort extends Abort {
         List<String> categories = Configuration.getConfiguration().getSinkConfig().getSinkForFqn(sinkFunction).getCategories();
         System.err.printf("String \"%s\" is tainted and reached sink \"%s\" of categories %s! \n", taintAware, sinkFunction, categories);
         // sanitize here
-        for (IASStringable s : alreadySanitized) {
+        for (IASString s : alreadySanitized) {
             if (s == taintedIASString) {
                 System.err.println(taintedString + " was NOT sanitized since it was already sanitized before.");
                 return;
             }
         }
-        String sanitizedString;
-        try {
-            sanitizedString = Sanitization.sanitizeSinks(taintedString, ranges, categories);
-            alreadySanitized.add(taintedIASString);
-            alreadySanitized.sort(Comparator.comparing(IASStringable::toString));
-            System.err.println(taintedString + " was sanitized and resulted in: " + sanitizedString);
-            taintAware.setContent(sanitizedString, ranges);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        String sanitizedString = Sanitization.sanitizeSinks(taintedString, taintInfo, categories);
+        alreadySanitized.add(taintedIASString);
+        alreadySanitized.sort(Comparator.comparing(IASString::toString));
+        System.err.println(taintedString + " was sanitized and resulted in: " + sanitizedString);
+        taintAware.setContent(sanitizedString, taintInfo);
     }
 
     @Override

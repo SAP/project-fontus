@@ -2,15 +2,11 @@ package com.sap.fontus.instrumentation;
 
 import com.sap.fontus.Constants;
 import com.sap.fontus.asm.Descriptor;
-import com.sap.fontus.config.TaintStringConfig;
 import com.sap.fontus.utils.Utils;
-import com.sap.fontus.instrumentation.strategies.InstrumentationHelper;
-import com.sap.fontus.instrumentation.strategies.method.MethodInstrumentationStrategy;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.*;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class MethodTaintingUtils {
@@ -18,13 +14,7 @@ public class MethodTaintingUtils {
     /**
      * Functional interfaces or packages with func interfaces which are JDK or excluded but should still not be uninstrumented as lmabda
      */
-    private static final String[] lambdaIncluded = new String[]{"java/util/function/", "java/lang/", "java/util/Comparator"};
-
-    /**
-     * If a taint-aware string is on the top of the stack, we can call this function to add a check to handle tainted strings.
-     */
-    public static void callCheckTaintGeneric(MethodVisitor mv, String typeDescriptor, String sink) {
-    }
+    private static final String[] lambdaIncluded = new String[]{"java/util/function/", "java/lang/", "java/util/Comparator", "java/util/concurrent/"};
 
     /**
      * Pushes an integer onto the stack.
@@ -105,20 +95,20 @@ public class MethodTaintingUtils {
     /**
      * Translates the call to a lambda function
      */
-    static void invokeVisitLambdaCall(final TaintStringConfig configuration,
-                                      MethodVisitor mv,
-                                      List<MethodInstrumentationStrategy> strategies,
+    static void invokeVisitLambdaCall(MethodVisitor mv,
+                                      InstrumentationHelper instrumentationHelper,
                                       Descriptor instrumentedProxyDescriptor,
                                       final LambdaCall lambdaCall,
                                       final String owner,
                                       final String name,
                                       final String descriptor,
+                                      final boolean isOwnerInterface,
                                       final Handle bootstrapMethodHandle,
                                       final Object... bootstrapMethodArguments) {
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
         Handle realFunction = (Handle) bootstrapMethodArguments[1];
 
-        boolean isExcludedOrJdk = needsLambdaProxy(descriptor, realFunction, (Type) bootstrapMethodArguments[2], InstrumentationHelper.getInstance(configuration));
+        boolean isExcludedOrJdk = needsLambdaProxy(descriptor, realFunction, (Type) bootstrapMethodArguments[2], instrumentationHelper);
 
         Object[] bsArgs;
         if (!isExcludedOrJdk) {
@@ -127,13 +117,13 @@ public class MethodTaintingUtils {
                 Object arg = bootstrapMethodArguments[i];
                 if (arg instanceof Handle) {
                     Handle a = (Handle) arg;
-                    bsArgs[i] = Utils.instrumentHandle(a, configuration, strategies);
+                    bsArgs[i] = Utils.instrumentHandle(a, instrumentationHelper);
                 } else if (arg instanceof Type) {
                     Type a = (Type) arg;
                     if (a.getSort() == Type.OBJECT) {
-                        bsArgs[i] = Type.getObjectType(InstrumentationHelper.getInstance(configuration).instrumentQN(a.getInternalName()));
+                        bsArgs[i] = Type.getObjectType(instrumentationHelper.instrumentQN(a.getInternalName()));
                     } else {
-                        bsArgs[i] = Utils.instrumentType(a, configuration);
+                        bsArgs[i] = Utils.instrumentType(a, instrumentationHelper);
                     }
                 } else {
                     bsArgs[i] = arg;
@@ -142,12 +132,12 @@ public class MethodTaintingUtils {
         } else {
             bsArgs = bootstrapMethodArguments.clone();
             if (lookup.isPackageExcludedOrJdk(lambdaCall.getImplementation().getOwner())) {
-                bsArgs[2] = Utils.instrumentType((Type) bsArgs[2], configuration);
+                bsArgs[0] = Utils.instrumentType((Type) bsArgs[0], instrumentationHelper);
+                bsArgs[2] = Utils.instrumentType((Type) bsArgs[2], instrumentationHelper);
             }
-            bsArgs[1] = new Handle(lambdaCall.getProxyOpcodeTag(), owner, lambdaCall.getProxyMethodName(), instrumentedProxyDescriptor.toDescriptor(), false);
+            bsArgs[1] = new Handle(lambdaCall.getProxyOpcodeTag(), owner, lambdaCall.getProxyMethodName(), instrumentedProxyDescriptor.toDescriptor(), isOwnerInterface);
         }
-        String descr = InstrumentationHelper.getInstance(configuration).instrumentForNormalCall(desc).toDescriptor();
-
+        String descr = instrumentationHelper.instrument(desc).toDescriptor();
 
 //        Handle instrumentedBootstrapHandle = new Handle(bootstrapMethodHandle.getTag(), Type.getInternalName(LambdaMetafactory.class), bootstrapMethodHandle.getName(), bootstrapMethodHandle.getDesc(), bootstrapMethodHandle.isInterface());
         mv.visitInvokeDynamicInsn(name, descr, bootstrapMethodHandle, bsArgs);

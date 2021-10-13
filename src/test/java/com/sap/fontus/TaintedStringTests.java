@@ -1,12 +1,20 @@
 package com.sap.fontus;
 
-import com.sap.fontus.taintaware.bool.IASString;
+import com.sap.fontus.config.Configuration;
+import com.sap.fontus.config.TaintMethod;
+import com.sap.fontus.taintaware.unified.IASString;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings({"DuplicateStringLiteralInspection", "ClassIndependentOfModule", "ClassOnlyUsedInOneModule", "ClassUnconnectedToPackage", "ClassOnlyUsedInOnePackage"})
 class TaintedStringTests {
+
+    @BeforeAll
+    public static void init() {
+        Configuration.setTestConfig(TaintMethod.RANGE);
+    }
 
     @Test
     void regularlyCreatedStringIsUntainted() {

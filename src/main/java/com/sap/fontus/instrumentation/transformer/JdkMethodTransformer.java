@@ -5,31 +5,28 @@ import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.instrumentation.MethodTaintingVisitor;
-import com.sap.fontus.instrumentation.strategies.method.MethodInstrumentationStrategy;
+import com.sap.fontus.instrumentation.InstrumentationHelper;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-
-import java.util.Collection;
 
 public class JdkMethodTransformer implements ParameterTransformation, ReturnTransformation {
 
     private final FunctionCall call;
-    private final Collection<MethodInstrumentationStrategy> instrumentation;
+    private final InstrumentationHelper instrumentationHelper;
     private final Configuration configuration;
 
-    public JdkMethodTransformer(FunctionCall call, Collection<MethodInstrumentationStrategy> instrumentation, Configuration configuration) {
+    public JdkMethodTransformer(FunctionCall call, InstrumentationHelper instrumentationHelper, Configuration configuration) {
         this.call = call;
-        this.instrumentation = instrumentation;
+        this.instrumentationHelper = instrumentationHelper;
         this.configuration = configuration;
     }
 
     @Override
     public void transform(int index, String typeString, MethodTaintingVisitor visitor) {
+        Type type = Type.getType(typeString);
 
-        for (MethodInstrumentationStrategy s : this.instrumentation) {
-            if (s.insertJdkMethodParameterConversion(typeString)) {
-                return;
-            }
+        if (this.instrumentationHelper.insertJdkMethodParameterConversion(visitor.getParentVisitor(), type)) {
+            return;
         }
 
         FunctionCall converter = this.configuration.getConverterForParameter(this.call, index);
@@ -47,10 +44,7 @@ public class JdkMethodTransformer implements ParameterTransformation, ReturnTran
 
     @Override
     public void transform(MethodTaintingVisitor visitor, Descriptor desc) {
-
-        for (MethodInstrumentationStrategy s : this.instrumentation) {
-            s.instrumentReturnType(this.call.getOwner(), this.call.getName(), desc);
-        }
+        this.instrumentationHelper.instrumentStackTop(visitor.getParentVisitor(), Type.getType(desc.getReturnType()));
 
         FunctionCall converter = this.configuration.getConverterForReturnValue(this.call);
         if (converter != null) {

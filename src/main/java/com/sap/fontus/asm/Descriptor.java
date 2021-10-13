@@ -3,7 +3,7 @@ package com.sap.fontus.asm;
 import com.sap.fontus.utils.Utils;
 import org.objectweb.asm.Type;
 
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -65,6 +65,11 @@ public class Descriptor {
     public String toDescriptor() {
         String params = String.join("", this.parameters);
         return String.format("(%s)%s", params, this.returnType);
+    }
+
+    public Type toAsmMethodType() {
+        Type[] parameterTypes = this.parameters.stream().map(Type::getType).toArray(Type[]::new);
+        return Type.getMethodType(Type.getType(returnType), parameterTypes);
     }
 
     @Override
@@ -189,6 +194,18 @@ public class Descriptor {
         }
         String returnType = classNameToDescriptorName(m.getReturnType().getName());
         return new Descriptor(parameters, returnType);
+    }
+
+    public static Descriptor parseExecutable(Executable m) {
+        if (m instanceof Method) {
+            return parseMethod((Method) m);
+        } else {
+            List<String> parameters = new ArrayList<>(m.getParameterCount());
+            for (Class param : m.getParameterTypes()) {
+                parameters.add(Descriptor.classNameToDescriptorName(param.getName()));
+            }
+            return new Descriptor(parameters, "V");
+        }
     }
 
 }

@@ -209,7 +209,7 @@ public class TaintInformationTest {
     public void testRemoveAll1() {
         IASTaintInformation ti = new IASTaintInformation(0);
 
-        ti.removeAll();
+        ti.clearTaint(0,0);
 
         assertFalse(ti.isTainted());
     }
@@ -218,7 +218,7 @@ public class TaintInformationTest {
     public void testRemoveAll2() {
         IASTaintInformation ti = new IASTaintInformation(3);
 
-        ti.removeAll();
+        ti.clearTaint(0, 3);
 
         assertFalse(ti.isTainted());
     }
@@ -227,7 +227,7 @@ public class TaintInformationTest {
     public void testRemoveAll3() {
         IASTaintInformation ti = new IASTaintInformation(new int[]{1, 2, 3});
 
-        ti.removeAll();
+        ti.clearTaint(0, 3);
 
         assertFalse(ti.isTainted());
     }
@@ -263,25 +263,16 @@ public class TaintInformationTest {
     public void testRemoveTaintFor1() {
         IASTaintInformation ti = new IASTaintInformation(new int[]{1, 2, 3, 4, 5});
 
-        ti.removeTaintFor(1, 4, false);
+        ti.deleteWithShift(1, 4);
 
-        assertArrayEquals(new int[]{1, 0, 0, 0, 5}, ti.getTaints());
-    }
-
-    @Test
-    public void testRemoveTaintFor2() {
-        IASTaintInformation ti = new IASTaintInformation(new int[]{1, 2, 3, 4, 5});
-
-        ti.removeTaintFor(1, 4, true);
-
-        assertArrayEquals(new int[]{1, 5, 0, 0, 0}, ti.getTaints());
+        assertArrayEquals(new int[]{1, 5}, ti.getTaints());
     }
 
     @Test
     public void testRemoveTaintFor3() {
         IASTaintInformation ti = new IASTaintInformation(5);
 
-        ti.removeTaintFor(1, 4, false);
+        ti.deleteWithShift(1, 4);
 
         assertFalse(ti.isTainted());
     }
@@ -290,7 +281,7 @@ public class TaintInformationTest {
     public void testRemoveTaintFor4() {
         IASTaintInformation ti = new IASTaintInformation(5);
 
-        ti.removeTaintFor(1, 4, true);
+        ti.deleteWithShift(1, 4);
 
         assertFalse(ti.isTainted());
     }
@@ -299,13 +290,13 @@ public class TaintInformationTest {
     public void testRemoveTaintFor5() {
         IASTaintInformation ti = new IASTaintInformation(0);
 
-        assertThrows(IndexOutOfBoundsException.class, () -> ti.removeTaintFor(1, 4, false));
+        assertThrows(IndexOutOfBoundsException.class, () -> ti.deleteWithShift(1, 4));
     }
 
     @Test
     public void testRemoveTaintFor6() {
         IASTaintInformation ti = new IASTaintInformation(0);
 
-        assertThrows(IndexOutOfBoundsException.class, () -> ti.removeTaintFor(1, 4, true));
+        assertThrows(IndexOutOfBoundsException.class, () -> ti.deleteWithShift(1, 4));
     }
 }

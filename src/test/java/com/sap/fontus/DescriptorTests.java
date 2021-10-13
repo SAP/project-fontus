@@ -1,8 +1,10 @@
 package com.sap.fontus;
 
 import com.sap.fontus.asm.Descriptor;
+import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
-import com.sap.fontus.config.TaintStringConfig;
+import com.sap.fontus.taintaware.unified.IASString;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -19,7 +21,11 @@ import java.util.stream.Stream;
 
 @SuppressWarnings({"DuplicateStringLiteralInspection", "SpellCheckingInspection", "ClassIndependentOfModule", "ClassOnlyUsedInOneModule"})
 class DescriptorTests {
-    private static final TaintStringConfig taintStringConfig = new TaintStringConfig(TaintMethod.defaultTaintMethod());
+
+    @BeforeAll
+    public static void init() {
+        Configuration.setTestConfig(TaintMethod.RANGE);
+    }
 
     @Test
     void parseCharArrayDescriptor() {
@@ -87,10 +93,10 @@ class DescriptorTests {
                                 Type.getType(Float.class)
                         ),
                         Constants.StringDesc,
-                        taintStringConfig.getTStringDesc(),
+                        Type.getDescriptor(IASString.class),
                         new Descriptor(Type.getType(List.class),
                                 Type.getType(int.class),
-                                Type.getType(taintStringConfig.getTStringDesc()),
+                                Type.getType(IASString.class),
                                 Type.getType(Object[].class),
                                 Type.getType(float.class),
                                 Type.getType(Function.class),
@@ -100,13 +106,13 @@ class DescriptorTests {
                 Arguments.of(
                         new Descriptor(Type.getType(List.class), Type.getType(Object[].class)),
                         Constants.StringDesc,
-                        taintStringConfig.getTStringDesc(),
+                        Type.getDescriptor(IASString.class),
                         new Descriptor(Type.getType(List.class), Type.getType(Object[].class))),
                 Arguments.of(
                         new Descriptor(Type.getType(void.class), Type.getType(String[].class)),
                         Constants.StringDesc,
-                        taintStringConfig.getTStringDesc(),
-                        new Descriptor(Type.getType(void.class), Type.getType("[" + taintStringConfig.getTStringDesc()))
+                        Type.getDescriptor(IASString.class),
+                        new Descriptor(Type.getType(void.class), Type.getType("[" + Type.getDescriptor(IASString.class)))
                 )
         );
     }

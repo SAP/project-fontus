@@ -1,6 +1,8 @@
 package com.sap.fontus.sanitizer;
 
 import com.sap.fontus.taintaware.shared.IASTaintRange;
+import com.sap.fontus.taintaware.shared.IASTaintRanges;
+import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 import org.owasp.encoder.Encode;
 
 import java.io.File;
@@ -31,8 +33,9 @@ public class Sanitization {
         }
     };
 
-    public static String sanitizeSinks(String taintedString, List<IASTaintRange> taintRanges, List<String> sinkChecks) {
+    public static String sanitizeSinks(String taintedString, IASTaintInformationable taintInfo, List<String> sinkChecks) {
         String sanitizedString = taintedString;
+        IASTaintRanges taintRanges = taintInfo.getTaintRanges(sanitizedString.length());
         for (String attCat : sinkChecks) {
             switch (attCat) {
                 case "SQLi":
@@ -62,14 +65,14 @@ public class Sanitization {
         return sanitizedString;
     }
 
-    private static String sanitizeCommands(String taintedString, List<IASTaintRange> taintRanges) {
+    private static String sanitizeCommands(String taintedString, IASTaintRanges taintRanges) {
         if (!taintRanges.isEmpty()) {
             throwRandomRuntimeException();
         }
         return taintedString;
     }
 
-    private static String sanitizePath(String taintedString, List<IASTaintRange> taintRanges) {
+    private static String sanitizePath(String taintedString, IASTaintRanges taintRanges) {
         int startIndex = 0;
         while (startIndex < taintedString.length()) {
             int i = taintedString.indexOf(".." + File.separator, startIndex);
@@ -106,7 +109,7 @@ public class Sanitization {
 
     // Sanitizes for SQL injection (SQLi) prevention
     // Assumption: Only 1 sql value is included in taintrange. e.g. only >london<, NOT >"london" and ID=2< (would also inclue column name and not only value)
-    protected static ResultSet sanitizeAndExecuteQuery(String taintedString, List<IASTaintRange> taintRanges, Connection con) {
+    protected static ResultSet sanitizeAndExecuteQuery(String taintedString, IASTaintRanges taintRanges, Connection con) {
         if (!taintRanges.isEmpty()) {
             // sort taint ranges
             taintRanges.sort(taintRangeComparator);
@@ -308,7 +311,7 @@ public class Sanitization {
     }
 
     // taint-aware html parser
-    public static String sanitizeHtml(String taintedString, List<IASTaintRange> taintRanges) {
+    public static String sanitizeHtml(String taintedString, IASTaintRanges taintRanges) {
         boolean tagDeclaration = false;
         boolean insideTag = false;
         boolean attDeclaration = false;
