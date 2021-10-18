@@ -35,10 +35,6 @@ public class IASTaintRanges implements Iterable<IASTaintRange> {
         return ranges.isEmpty();
     }
 
-    public void sort(Comparator<IASTaintRange> comparator) {
-        ranges.sort(comparator);
-    }
-
     public synchronized void setTaint(int start, int end, IASTaintSource source) {
         this.setTaint(start, end, source != null ? source.getId() : 0);
         this.merge();

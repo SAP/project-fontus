@@ -22,17 +22,6 @@ import java.util.Random;
 
 public class Sanitization {
 
-    // descending ordering, ranges are assumed to be disjoint
-    private static Comparator<IASTaintRange> taintRangeComparator = (range1, range2) -> {
-        if (range1.getStart() != range2.getStart()) {
-            return range1.getStart() < range2.getStart() ? 1 : -1;
-        } else if (range1.getEnd() != range2.getEnd()) {
-            return range1.getEnd() < range2.getEnd() ? 1 : -1;
-        } else {
-            return 0;
-        }
-    };
-
     public static String sanitizeSinks(String taintedString, IASTaintInformationable taintInfo, List<String> sinkChecks) {
         String sanitizedString = taintedString;
         IASTaintRanges taintRanges = taintInfo.getTaintRanges(sanitizedString.length());
@@ -111,8 +100,6 @@ public class Sanitization {
     // Assumption: Only 1 sql value is included in taintrange. e.g. only >london<, NOT >"london" and ID=2< (would also inclue column name and not only value)
     protected static ResultSet sanitizeAndExecuteQuery(String taintedString, IASTaintRanges taintRanges, Connection con) {
         if (!taintRanges.isEmpty()) {
-            // sort taint ranges
-            taintRanges.sort(taintRangeComparator);
             // replaces all tainted chars, s
             StringBuilder quoteCountingString = new StringBuilder(taintedString);
             for (IASTaintRange range : taintRanges) {
