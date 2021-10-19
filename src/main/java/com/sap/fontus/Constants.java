@@ -1,10 +1,12 @@
 package com.sap.fontus;
 
-import com.sap.fontus.taintaware.shared.IASTaintHandler;
+import com.sap.fontus.taintaware.unified.IASCompareProxy;
+import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.taintaware.unified.IASTaintHandler;
 import com.sap.fontus.utils.ConversionUtils;
 import com.sap.fontus.asm.Descriptor;
-import com.sap.fontus.taintaware.shared.IASCompareProxy;
 import com.sap.fontus.utils.Utils;
+import org.objectweb.asm.Type;
 
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -30,18 +32,27 @@ public final class Constants {
     public static final String CompareProxyEqualsDesc;
     public static final String UNTAINTED_METHOD_NAME = "untainted";
     public static final String UNTAINTED_METHOD_PATH = "untainted/";
+    public static final String TMethodToMethodName = "getMethod";
+    public static final String FROM_STRING_DESCRIPTOR = Type.getMethodDescriptor(Type.getType(IASString.class), Type.getType(String.class));
+    public static final String CONCAT_DESC = Type.getMethodDescriptor(Type.getType(IASString.class), Type.getType(String.class), Type.getType(Object[].class));
+    public static final String TAccessibleObjectToAccesibleObject = "getAccessibleObject";
+    public static final String TExecutableToExecutable = "getExecutable";
+    public static final String TParameterToParameter = "getParameter";
+    public static final String TConstructorToConstructor = "getConstructor";
+    public static final String TFieldToField = "getField";
+    public static final String TMemberToMember = "getMember";
 
     static {
         try {
-            ConversionUtilsToConcreteName = ConversionUtils.class.getMethod("convertToConcrete", Object.class).getName();
-            ConversionUtilsToConcreteDesc = Descriptor.parseMethod(ConversionUtils.class.getMethod("convertToConcrete", Object.class)).toDescriptor();
-            ConversionUtilsToOrigName = ConversionUtils.class.getMethod("convertToOrig", Object.class).getName();
-            ConversionUtilsToOrigDesc = Descriptor.parseMethod(ConversionUtils.class.getMethod("convertToOrig", Object.class)).toDescriptor();
+            ConversionUtilsToConcreteName = ConversionUtils.class.getMethod("convertToInstrumented", Object.class).getName();
+            ConversionUtilsToConcreteDesc = Descriptor.parseMethod(ConversionUtils.class.getMethod("convertToInstrumented", Object.class)).toDescriptor();
+            ConversionUtilsToOrigName = ConversionUtils.class.getMethod("convertToUninstrumented", Object.class).getName();
+            ConversionUtilsToOrigDesc = Descriptor.parseMethod(ConversionUtils.class.getMethod("convertToUninstrumented", Object.class)).toDescriptor();
             TaintHandlerQN = Utils.getInternalName(IASTaintHandler.class);
             TaintHandlerTaintName = IASTaintHandler.class.getMethod("taint", Object.class, int.class).getName();
             TaintHandlerTaintDesc = Descriptor.parseMethod(IASTaintHandler.class.getMethod("taint", Object.class, int.class)).toDescriptor();
-            TaintHandlerCheckTaintName = IASTaintHandler.class.getMethod("checkTaint", Object.class, String.class, String.class).getName();
-            TaintHandlerCheckTaintDesc = Descriptor.parseMethod(IASTaintHandler.class.getMethod("checkTaint", Object.class, String.class, String.class)).toDescriptor();
+            TaintHandlerCheckTaintName = IASTaintHandler.class.getMethod("checkTaint", Object.class, Object.class, String.class, String.class).getName();
+            TaintHandlerCheckTaintDesc = Descriptor.parseMethod(IASTaintHandler.class.getMethod("checkTaint", Object.class, Object.class, String.class, String.class)).toDescriptor();
             CompareProxyEqualsDesc = Descriptor.parseMethod(IASCompareProxy.class.getMethod("compareRefEquals", Object.class, Object.class)).toDescriptor();
 
             PropertyDesc = Descriptor.classNameToDescriptorName(Properties.class.getName());
@@ -143,6 +154,8 @@ public final class Constants {
      */
     public static final String TStringBufferToStringBufferName = "getStringBuffer";
 
+    public static final String TProxyToProxyName = "getProxy";
+
     /**
      * Descriptor of the untainted init/constructor method.
      */
@@ -216,6 +229,7 @@ public final class Constants {
     public static final String XML_FILE_SUFFIX = ".xml";
     public static final String CONFIGURATION_XML_FILENAME = "configuration.xml";
     public static final String VALUE_OF = "valueOf";
+    public static final String TO_STRING_OF = "toStringOf";
     public static final String MatcherQN = "java/util/regex/Matcher";
     public static final String MatcherDesc = java.lang.String.format("L%s;", MatcherQN);
     public static final String TMatcherToMatcherName = "getMatcher";

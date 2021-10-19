@@ -1,8 +1,12 @@
 package com.sap.fontus.taintaware.array;
 
 import com.sap.fontus.config.TaintMethod;
+import com.sap.fontus.taintaware.array.IASTaintInformation;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.config.Configuration;
+import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.taintaware.unified.IASStringBuffer;
+import com.sap.fontus.taintaware.unified.IASStringBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -71,7 +75,7 @@ public class StringBuilderTest {
         sb.append(toAppend);
 
         assertEquals("Hello World", sb.toString());
-        assertArrayEquals(new int[]{0, 0, 0, 0, 0, TAINT, TAINT, TAINT, TAINT, TAINT, TAINT}, sb.getTaints());
+        assertArrayEquals(new int[]{0, 0, 0, 0, 0, TAINT, TAINT, TAINT, TAINT, TAINT, TAINT}, ((IASTaintInformation) sb.getTaintInformationInitialized()).getTaints());
     }
 
     @Test
@@ -83,7 +87,7 @@ public class StringBuilderTest {
         sb.append(toAppend);
 
         assertEquals("Hello World", sb.toString());
-        assertArrayEquals(new int[]{TAINT, TAINT, TAINT, TAINT, TAINT, TAINT, TAINT, TAINT, TAINT, TAINT, TAINT}, sb.getTaints());
+        assertArrayEquals(new int[]{TAINT, TAINT, TAINT, TAINT, TAINT, TAINT, TAINT, TAINT, TAINT, TAINT, TAINT}, ((IASTaintInformation) sb.getTaintInformationInitialized()).getTaints());
     }
 
     @Test
@@ -95,7 +99,7 @@ public class StringBuilderTest {
         sb.append(toAppend);
 
         assertEquals("Hello World", sb.toString());
-        assertArrayEquals(new int[]{TAINT, TAINT, TAINT, TAINT, TAINT, 0, 0, 0, 0, 0, 0}, sb.getTaints());
+        assertArrayEquals(new int[]{TAINT, TAINT, TAINT, TAINT, TAINT, 0, 0, 0, 0, 0, 0}, ((IASTaintInformation) sb.getTaintInformationInitialized()).getTaints());
     }
 
     @Test
@@ -114,8 +118,8 @@ public class StringBuilderTest {
         assertFalse(s2.isTainted());
         assertTrue(sb1.isTainted());
         assertTrue(sb2.isTainted());
-        assertArrayEquals(new int[]{0, 0, 0, 0, 0, 0, TAINT, TAINT, TAINT, TAINT, TAINT}, sb1.getTaints());
-        assertArrayEquals(new int[]{0, 0, 0, 0, 0, 0, TAINT, TAINT, TAINT, TAINT, TAINT}, sb2.getTaints());
+        assertArrayEquals(new int[]{0, 0, 0, 0, 0, 0, TAINT, TAINT, TAINT, TAINT, TAINT}, ((IASTaintInformation) sb1.getTaintInformationInitialized()).getTaints());
+        assertArrayEquals(new int[]{0, 0, 0, 0, 0, 0, TAINT, TAINT, TAINT, TAINT, TAINT}, ((IASTaintInformation) sb2.getTaintInformationInitialized()).getTaints());
     }
 
     @Test
@@ -131,7 +135,7 @@ public class StringBuilderTest {
         assertEquals("HELLOllo", sb1.toString());
         assertEquals("HELLOllo", sb2.toString());
         assertFalse(s.isTainted());
-        assertArrayEquals(new int[]{0, 0, 0, 0, 0, TAINT, TAINT, TAINT}, sb1.getTaints());
-        assertArrayEquals(new int[]{0, 0, 0, 0, 0, TAINT, TAINT, TAINT}, sb2.getTaints());
+        assertArrayEquals(new int[]{0, 0, 0, 0, 0, TAINT, TAINT, TAINT}, ((IASTaintInformation) sb1.getTaintInformationInitialized()).getTaints());
+        assertArrayEquals(new int[]{0, 0, 0, 0, 0, TAINT, TAINT, TAINT}, ((IASTaintInformation) sb2.getTaintInformationInitialized()).getTaints());
     }
 }

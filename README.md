@@ -72,6 +72,7 @@ It is also possible to pass multiple parameters to the agent
 - **config**: Specifies a path for a config file
 - **blacklisted_main_classes**: Specifies a filepath to a file which contains blacklisted main classes
 - **abort**: Specifies what happens if a tainted string reaches a sink. For all options see [Abort types](#Abort types). The default is *stderr_logging*
+- **taintloss_handler**: Specifies what happens if a method is called which potentially causes taintloss (e.g. String.toCharArray()). For all options see [Taintloss handler types](#Taintloss handler types). By default no taintloss handler is used 
 
 The arguments are appended to the agent path like this: ``-javaagent:jarpath[=options]``. Therefore options are defined as ``key=value`` pair and ``,`` is used as delimiter between key-value-pairs.
 
@@ -90,12 +91,17 @@ Currently there are 5 different tainting mechanisms available:
 - **untainted**: An wrapper class is used to redirect all calls to the original classes. No taint calculation is performed! The taint is always "false"
 
 ## Abort types
-Currently there are three possibilities what can happen, if a tainted string reaches a sink:
+Currently there are four possibilities what can happen, if a tainted string reaches a sink:
 
 - **exit**: Exits the application through System.exit(int). Beforehands the string is printed to stderr
 - **nothing**: Nothing happens if a tainted string reaches a sink
 - **stderr_logging**: Logs the tainted string to stderr as well as an stacktrace
 - **json_logging**: Logs the tainted string to a json file in ``./fontus-results.json``
+
+## Taintloss handler types
+- **stderr_logging**: Logs to stderr if a potentially taintlossy method is called
+- **file_logging**: Logs to file``./taintloss.log`` formatted in the same way we stderr_logging
+- **statistics_logging**: Logs to the statistics MXBean in the format "Caller.method -> Taintloss.method: Hits"
 
 ## Inspect bytecode of a class
 

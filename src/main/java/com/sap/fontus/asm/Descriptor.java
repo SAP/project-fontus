@@ -1,16 +1,15 @@
 package com.sap.fontus.asm;
 
 import com.sap.fontus.utils.Utils;
+import org.objectweb.asm.Type;
 
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Descriptor {
-
     private static final Pattern PRIMITIVE_DATA_TYPES = Pattern.compile("[ZBCSIFDJ]");
     private final List<String> parameters;
     private final String returnType;
@@ -25,15 +24,12 @@ public class Descriptor {
         this.returnType = returnType;
     }
 
-    @SuppressWarnings("OverloadedVarargsMethod")
-    public Descriptor(String... args) {
-        List<String> arguments = Arrays.asList(args);
-        int lastIndex = arguments.size() - 1;
-        this.returnType = arguments.get(lastIndex);
-        this.parameters = arguments.subList(0, lastIndex);
+    public Descriptor(Type returnType, Type... arguments) {
+        this.parameters = Arrays.stream(arguments).map(Type::getDescriptor).collect(Collectors.toList());
+        this.returnType = returnType.getDescriptor();
     }
 
-    private static String replaceSuffix(String s, String from, String to) {
+    public static String replaceSuffix(String s, String from, String to) {
         if (s.endsWith(from)) {
             int lIdx = s.lastIndexOf(from);
             assert lIdx != -1;
@@ -69,6 +65,11 @@ public class Descriptor {
     public String toDescriptor() {
         String params = String.join("", this.parameters);
         return String.format("(%s)%s", params, this.returnType);
+    }
+
+    public Type toAsmMethodType() {
+        Type[] parameterTypes = this.parameters.stream().map(Type::getType).toArray(Type[]::new);
+        return Type.getMethodType(Type.getType(returnType), parameterTypes);
     }
 
     @Override
@@ -131,9 +132,9 @@ public class Descriptor {
         } else if (className.startsWith("[") && !className.endsWith(";")) {
             // Primitive array
             return className;
-        } else{
+        } else {
             String converted = className;
-            if(!converted.startsWith("[")) {
+            if (!converted.startsWith("[")) {
                 converted = "L" + converted + ";";
             }
             return Utils.dotToSlash(converted);
@@ -147,53 +148,43 @@ public class Descriptor {
      * TODO: think of a nicer structure, this is really messy
      */
     public static Descriptor parseDescriptor(String descriptor) {
-        ArrayList<String> out;
-        StringBuilder returnType;
-        try (Scanner sc = new Scanner(descriptor)) {
-            sc.useDelimiter("");
-            String opening = sc.next();
-            assert "(".equals(opening);
-            out = new ArrayList<>();
-            String next = sc.next();
-            StringBuilder buffer = new StringBuilder();
-            boolean inType = false;
-            while (!")".equals(next)) {
-                buffer.append(next);
-                Matcher primitivesMatcher = PRIMITIVE_DATA_TYPES.matcher(next);
-                if (!inType && primitivesMatcher.matches()) {
-                    out.add(buffer.toString());
-                    buffer = new StringBuilder();
-                } else if (!"[".equals(next)) {
-                    inType = true;
-                    if (";".equals(next)) {
-                        out.add(buffer.toString());
-                        buffer = new StringBuilder();
-                        inType = false;
-                    }
-                }
-
-                next = sc.next();
-            }
-
-            returnType = new StringBuilder();
-            while (sc.hasNext()) {
-                returnType.append(sc.next());
-            }
-        }
-
-        return new Descriptor(out, returnType.toString());
-    }
-
-    public static String getSignature(Method m) {
-        // Hacky but better than generating it by hand
-        try {
-            Method getGenericSignature = Method.class.getDeclaredMethod("getGenericSignature");
-            getGenericSignature.setAccessible(true);
-            return (String) getGenericSignature.invoke(m);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            e.printStackTrace();
-            throw new UnsupportedOperationException("Cannot generate signature, because Method.getGenericSignature is not available");
-        }
+        Type typeDescriptor = Type.getMethodType(descriptor);
+        return new Descriptor(typeDescriptor.getReturnType(), typeDescriptor.getArgumentTypes());
+//        ArrayList<String> out;
+//        StringBuilder returnType;
+//        try (Scanner sc = new Scanner(descriptor)) {
+//            sc.useDelimiter("");
+//            String opening = sc.next();
+//            assert "(".equals(opening);
+//            out = new ArrayList<>();
+//            String next = sc.next();
+//            StringBuilder buffer = new StringBuilder();
+//            boolean inType = false;
+//            while (!")".equals(next)) {
+//                buffer.append(next);
+//                Matcher primitivesMatcher = PRIMITIVE_DATA_TYPES.matcher(next);
+//                if (!inType && primitivesMatcher.matches()) {
+//                    out.add(buffer.toString());
+//                    buffer = new StringBuilder();
+//                } else if (!"[".equals(next)) {
+//                    inType = true;
+//                    if (";".equals(next)) {
+//                        out.add(buffer.toString());
+//                        buffer = new StringBuilder();
+//                        inType = false;
+//                    }
+//                }
+//
+//                next = sc.next();
+//            }
+//
+//            returnType = new StringBuilder();
+//            while (sc.hasNext()) {
+//                returnType.append(sc.next());
+//            }
+//        }
+//
+//        return new Descriptor(out, returnType.toString());
     }
 
     public static Descriptor parseMethod(Method m) {
@@ -203,6 +194,18 @@ public class Descriptor {
         }
         String returnType = classNameToDescriptorName(m.getReturnType().getName());
         return new Descriptor(parameters, returnType);
+    }
+
+    public static Descriptor parseExecutable(Executable m) {
+        if (m instanceof Method) {
+            return parseMethod((Method) m);
+        } else {
+            List<String> parameters = new ArrayList<>(m.getParameterCount());
+            for (Class param : m.getParameterTypes()) {
+                parameters.add(Descriptor.classNameToDescriptorName(param.getName()));
+            }
+            return new Descriptor(parameters, "V");
+        }
     }
 
 }

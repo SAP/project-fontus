@@ -2,6 +2,9 @@ package com.sap.fontus.taintaware.array;
 
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
+import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.taintaware.unified.IASStringBuffer;
+import com.sap.fontus.taintaware.unified.IASStringBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

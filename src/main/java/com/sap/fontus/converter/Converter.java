@@ -117,9 +117,9 @@ public class Converter implements Callable<Void> {
                 }
                 if (!isContained) {
                     List<SinkParameter> sinkParameters = parseParameters(sinkJson);
-                    String category = parseCategory(sinkJson);
+                    List<String> categories = parseCategories(sinkJson);
                     String sinkName = generateName(call);
-                    sinks.add(new Sink(sinkName, call, sinkParameters, category));
+                    sinks.add(new Sink(sinkName, call, sinkParameters, categories));
                 }
             } catch (Exception e) {
                 System.err.println("Some error occured with this:");
@@ -157,14 +157,14 @@ public class Converter implements Callable<Void> {
         }
     }
 
-    private String parseCategory(JSONObject sinkJson) {
-        JSONArray array = (JSONArray) sinkJson.get("parameters");
-        String category = null;
-        for (Object parameterObject : array) {
-            JSONObject parameter = (JSONObject) parameterObject;
-            category = parameter.getString("category");
+    private List<String> parseCategories(JSONObject sinkJson) {
+        List<String> list = new ArrayList<>();
+        JSONArray array = (JSONArray) sinkJson.get("categories");
+        for (Object categoryObject : array) {
+            JSONObject category = (JSONObject) categoryObject;
+            list.add(category.getString("category"));
         }
-        return category;
+        return list;
     }
 
     private String generateName(FunctionCall call) {

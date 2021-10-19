@@ -3,6 +3,11 @@ language: java
 
 jdk:
   - openjdk11
+  - openjdk-ea
+
+matrix:
+  allow_failures:
+    - jdk: openjdk-ea
 
 before_install:
 - sudo apt-get update

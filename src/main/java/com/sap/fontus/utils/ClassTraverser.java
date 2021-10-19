@@ -15,6 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ClassTraverser {
+    private static final Logger logger = LogUtils.getLogger();
 
     private final CombinedExcludedLookup combinedExcludedLookup;
     private final List<Method> methodList = new ArrayList<>();
@@ -35,13 +36,52 @@ public class ClassTraverser {
         return fields;
     }
 
+    public void readMethods(Type cls, ClassResolver resolver) {
+        if (combinedExcludedLookup.isJdkClass(cls.getInternalName())) {
+            Class<?> clazz = ClassUtils.findLoadedClass(cls.getInternalName());
+
+            java.lang.reflect.Method[] methods = clazz.getMethods();
+            for (java.lang.reflect.Method declaredMethod : methods) {
+                addMethodIfNotContained(Method.from(declaredMethod));
+            }
+        } else {
+            try {
+                ClassVisitor cv = new NopVisitor(Opcodes.ASM9) {
+                    @Override
+                    public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+                        Method method = new Method(access, cls.getInternalName(), name, descriptor, signature, exceptions, false);
+                        addMethodIfNotContained(method);
+                        return super.visitMethod(access, name, descriptor, signature, exceptions);
+                    }
+                };
+                ClassReader cr = new ClassReaderWithLoaderSupport(resolver, cls.getClassName());
+                cr.accept(cv, ClassReader.SKIP_FRAMES);
+
+                String superName = cr.getSuperName();
+                if (superName != null) {
+                    Type superType = Type.getObjectType(superName);
+                    this.readMethods(superType, resolver);
+                }
+                String[] interfaces = cr.getInterfaces();
+                if (interfaces != null) {
+                    for (String intf : interfaces) {
+                        Type interfaceType = Type.getObjectType(intf);
+                        this.readMethods(interfaceType, resolver);
+                    }
+                }
+            } catch (IOException e) {
+                logger.error("Could not load class " + cls.getInternalName() + " for ClassTraverser.readMethods");
+            }
+        }
+    }
+
     /**
      * Returns for the given class all JDK-inherited instance methods which are public or protected
      * This includes the inherited ones (unlike getDeclaredMethods), but excludes the Object-class methods
      *
      * @param classToDiscover Class to discover
      */
-    public void getAllJdkMethods(String classToDiscover, ClassResolver resolver) {
+    public void readAllJdkMethods(String classToDiscover, ClassResolver resolver) {
         TypeHierarchyReaderWithLoaderSupport typeHierarchyReader = new TypeHierarchyReaderWithLoaderSupport(resolver);
         for (Type cls = Type.getObjectType(classToDiscover); cls != null; cls = typeHierarchyReader.getSuperClass(cls)) {
             if (this.combinedExcludedLookup.isPackageExcludedOrJdk(cls.getInternalName())) {
@@ -55,7 +95,7 @@ public class ClassTraverser {
                 } else {
                     try {
                         final String clsName = cls.getInternalName();
-                        ClassVisitor cv = new NopVisitor(Opcodes.ASM7) {
+                        ClassVisitor cv = new NopVisitor(Opcodes.ASM9) {
                             @Override
                             public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
                                 Method method = new Method(access, clsName, name, descriptor, signature, exceptions, false);
@@ -169,7 +209,7 @@ public class ClassTraverser {
 
         for (String interfaceName : interfaces) {
             if (this.combinedExcludedLookup.isPackageExcludedOrJdk(interfaceName) || this.combinedExcludedLookup.isAnnotation(interfaceName)) {
-                Class<?> cls = ClassUtils.findLoadedClass(interfaceName);
+                Class<?> cls = ClassUtils.findLoadedClass(interfaceName, loader);
                 List<Method> intfMethods = new ArrayList<>();
 
                 if (cls != null) {
@@ -179,7 +219,7 @@ public class ClassTraverser {
                     }
                 } else {
                     try {
-                        ClassVisitor cv = new NopVisitor(Opcodes.ASM7) {
+                        ClassVisitor cv = new NopVisitor(Opcodes.ASM9) {
                             @Override
                             public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
                                 Method method = new Method(access, interfaceName, name, descriptor, signature, exceptions, true);
@@ -218,7 +258,7 @@ public class ClassTraverser {
         private boolean superImplements = false;
 
         public MethodChecker(Method method) {
-            super(Opcodes.ASM7);
+            super(Opcodes.ASM9);
             this.method = method;
         }
 

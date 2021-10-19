@@ -4,6 +4,8 @@ import com.sap.fontus.taintaware.range.testHelper.TaintMatcher;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
+import com.sap.fontus.taintaware.unified.IASFormatter;
+import com.sap.fontus.taintaware.unified.IASString;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

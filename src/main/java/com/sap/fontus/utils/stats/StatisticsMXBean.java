@@ -1,5 +1,7 @@
 package com.sap.fontus.utils.stats;
 
+import java.util.Map;
+
 public interface StatisticsMXBean {
     void reset();
 
@@ -26,4 +28,8 @@ public interface StatisticsMXBean {
     long getTaintCheckUntainted();
 
     long getTaintCheckTainted();
+
+    Map<String, Long> getTaintlossHits();
+
+    void saveClassBytecode(String qn);
 }

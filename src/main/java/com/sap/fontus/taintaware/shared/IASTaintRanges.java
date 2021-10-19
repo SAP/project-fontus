@@ -1,130 +1,86 @@
 package com.sap.fontus.taintaware.shared;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
-public class IASTaintRanges {
+public class IASTaintRanges implements Iterable<IASTaintRange> {
+    private int length;
     protected List<IASTaintRange> ranges;
 
-    public IASTaintRanges() {
+    public IASTaintRanges(int length) {
+        this.length = length;
         this.ranges = new ArrayList<>(1);
     }
 
-    public IASTaintRanges(List<IASTaintRange> ranges) {
+    public IASTaintRanges(int length, List<IASTaintRange> ranges) {
+        this.length = length;
         this.ranges = new ArrayList<>(ranges);
     }
 
-    public synchronized IASTaintRanges addRange(int start, int end, IASTaintSource source) {
-        return this.addRange(start, end, source.getId());
+    public IASTaintRanges(int length, int source) {
+        this.length = length;
+        this.ranges = new ArrayList<>();
+        this.ranges.add(new IASTaintRange(0, length, source));
     }
 
-    public synchronized IASTaintRanges addRange(int start, int end, int sourceId) {
+    public IASTaintRanges(int length, IASTaintSource taintSource) {
+        this(length, taintSource.getId());
+    }
+
+    @Override
+    public Iterator<IASTaintRange> iterator() {
+        return ranges.iterator();
+    }
+
+    public boolean isEmpty() {
+        return ranges.isEmpty();
+    }
+
+    public synchronized void setTaint(int start, int end, IASTaintSource source) {
+        this.setTaint(start, end, source != null ? source.getId() : 0);
+        this.merge();
+    }
+
+    public synchronized void setTaint(int start, int end, int sourceId) {
         if (start == end) {
             // No need to process ranges with length 0
-            return this;
+            return;
+        }
+        if (this.length < end) {
+            end = this.length;
         }
 
-        final IASTaintRange newRange = new IASTaintRange(start, end, sourceId);
+        int insertionLength = end - start;
 
-        final int containedOrAdjacentTo_index = getListIndexOfFirstContainingOrAdjacentRange(start);
+        IASTaintRanges begin = this.slice(0, start);
+        IASTaintRanges after = this.slice(end, this.length);
+        IASTaintRanges insertion = new IASTaintRanges(insertionLength, sourceId);
 
-        int rightNeighbour_index = containedOrAdjacentTo_index;
+        this.ranges = begin.concat(insertion).concat(after).getTaintRanges();
+        this.merge();
+    }
 
-        // Is the start contained in another range?
-        if (containedOrAdjacentTo_index >= 0) {
-            final IASTaintRange containedOrAdjacentToOrig = this.ranges.get(containedOrAdjacentTo_index);
-            final IASTaintRange containedOrAdjacentTo = new IASTaintRange(containedOrAdjacentToOrig.getStart(), start, containedOrAdjacentToOrig.getSource());
-            final int containedOrAdjacentToEnd = this.ranges.get(containedOrAdjacentTo_index).getEnd();
+    public void delete(int start, int end, boolean shift) {
+        IASTaintRanges before = this.slice(0, start);
+        IASTaintRanges after = this.slice(end, this.length);
 
-            // Remove the original range in case it got shrinked down to a length of zero (start == containedOrAdjaventTo.end, this might be some instructions faster)
-            if (containedOrAdjacentTo.getStart() == start) {
-                ranges.remove(containedOrAdjacentTo_index);
-                rightNeighbour_index--;
-            } else {
-                // replace the immutable range with its shrinked version
-                this.ranges.set(containedOrAdjacentTo_index, containedOrAdjacentTo);
-            }
-            // is the end of the new range in the same, already existing, range? If so it is completely contained in it
-            // and we have to split it - we can also skip the rest of the algorithm because there are no neighbours for sure
-            if (end <= containedOrAdjacentToEnd) {
-                final IASTaintRange secondHalf = new IASTaintRange(end, containedOrAdjacentToEnd, containedOrAdjacentTo.getSource());
-
-                this.ranges.add(rightNeighbour_index + 1, newRange);
-
-                // we do not add the second half range if its length is zero
-                if (secondHalf.getStart() < secondHalf.getEnd()) {
-                    ranges.add(rightNeighbour_index + 2, secondHalf);
-                }
-
-                return this;
-            }
-
-            // not completely contained, shift rightNeighbour_index to actual right neighbour
-            rightNeighbour_index++;
+        if (shift) {
+            this.ranges = before.concat(after).getTaintRanges();
+            this.length = this.length - (end - start);
         } else {
-            // containedOrAdjacentTo_index contains a negative value; its inverse would be the index where to insert the new range
-            // in order to keep the list sorted
-            rightNeighbour_index = containedOrAdjacentTo_index * -1 - 1;
+            IASTaintRanges empty = new IASTaintRanges(end - start);
+            this.ranges = before.concat(empty).concat(after).getTaintRanges();
         }
 
-        // Are there any (more) neighbours on the right?
-        while (rightNeighbour_index < this.ranges.size()) {
-            final IASTaintRange rightNeighbour = this.ranges.get(rightNeighbour_index);
-
-            if (rightNeighbour.getEnd() <= end) {
-                // right neighbour is completely covered by new range
-                ranges.remove(rightNeighbour_index);
-            } else if (rightNeighbour.getStart() < end) {
-                // it is at least partially covered by the new range.
-                // we have to terminate the loop because we do not need to go the right anymore
-                this.ranges.set(rightNeighbour_index, new IASTaintRange(end, rightNeighbour.getEnd(), rightNeighbour.getSource()));
-                break;
-            } else {
-                // right neighbour is not even partially covered, i.e. there must be a gap between the range we partially covered and this neighbour.
-                // We will not touch the neighbour at all and will terminate the loop because we do not need to go the right anymore
-                break;
-            }
-        }
-
-        ranges.add(rightNeighbour_index, newRange);
-
-        return this;
+        this.merge();
     }
 
-    /**
-     * This method "cuts out" the tainted ranges from start to end.
-     * If start or end lies within a range, the range will be cut at this point and only the part within the interval removed.
-     *
-     * @param start            inclusive
-     * @param end              exclusive
-     * @param newRanges        the ranges do not have to be adopted to the new place, this is done by this method
-     * @param replacementWidth "width" of the newly inserted ranges (determines shift for the ranges behind the insertion)
-     */
-    public void replaceTaintInformation(int start, int end, List<IASTaintRange> newRanges, int replacementWidth, boolean shiftNewRanges) {
-        List<IASTaintRange> leftSide = this.getTaintRanges(0, start);
-        if (start > 0) {
-            IASTaintRangeUtils.adjustRanges(leftSide, 0, start, 0);
-        }
-
-        int leftShift = (end - start) - replacementWidth;
-
-        List<IASTaintRange> rightSide = this.getAllRangesStartingAt(end);
-        IASTaintRangeUtils.adjustRanges(rightSide, end, Integer.MAX_VALUE, leftShift);
-
-        if (shiftNewRanges) {
-            IASTaintRangeUtils.shiftRight(newRanges, start);
-        }
-
-        this.ranges.clear();
-        this.appendRanges(leftSide);
-        this.appendRanges(newRanges);
-        this.appendRanges(rightSide);
-        this.mergeRanges();
+    public IASTaintRanges slice(int start, int end) {
+        List<IASTaintRange> ranges = new ArrayList<>(this.ranges);
+        IASTaintRangeUtils.adjustAndRemoveRanges(ranges, start, end, start);
+        return new IASTaintRanges(end - start, ranges);
     }
 
-    private void mergeRanges() {
+    public void merge() {
         this.ranges.sort(Comparator.comparingInt(IASTaintRange::getStart));
 
         for (int i = 0; i < this.ranges.size() - 1; i++) {
@@ -141,100 +97,13 @@ public class IASTaintRanges {
         }
     }
 
-    private int getListIndexOfFirstContainingOrAdjacentRange(int index) {
-        return Collections.binarySearch(this.ranges, null, (range, irrelevant) -> {
-            if (range.getStart() <= index && range.getEnd() > index) {
-                return 0;
-            } else if (range.getStart() > index) {
-                return 1;
-            } else {
-                return -1;
-            }
-        });
-    }
-
     public boolean isTainted() {
         return !ranges.isEmpty();
     }
 
-    public void removeAll() {
-        this.ranges.clear();
-    }
-
-    public synchronized void appendRangesFrom(IASTaintRanges other) {
-        this.appendRangesFrom(other, 0);
-    }
-
-    /**
-     * By default no merging of ranges
-     */
-    public synchronized void appendRangesFrom(IASTaintRanges other, int rightShift) {
-        appendRangesFrom(other, rightShift, false);
-    }
-
-    public synchronized void appendRangesFrom(IASTaintRanges other, int rightShift, boolean merge) {
-        List<IASTaintRange> ranges = other.getTaintRanges();
-        if (rightShift != 0) {
-            IASTaintRangeUtils.shiftRight(ranges, rightShift);
-        }
-        this.appendRanges(ranges, merge);
-    }
-
-    public synchronized void resize(int start, int end, int leftShift) {
-        List<IASTaintRange> ranges = this.getTaintRanges(start, end);
-        IASTaintRangeUtils.adjustRanges(ranges, start, end, leftShift);
-        this.removeAll();
-        this.appendRanges(ranges);
-    }
-
-    /**
-     * This appends the ranges to the current range set
-     * If there are merging is wanted, neighbors of the inserted ranges will be checked if they have the same source, if yes they will be merges to one range.
-     * The merging will also affect the appended ranges itself, if they are next to each other and have the same source
-     */
-    public synchronized void appendRanges(List<IASTaintRange> ranges, boolean merge) {
-        if (!merge) {
-            this.ranges.addAll(ranges);
-            return;
-        }
-        this.ranges.sort(Comparator.comparingInt(IASTaintRange::getStart));
-
-        for (IASTaintRange range : ranges) {
-            // Merge with range after, if existent
-            int afterIndex = Collections.binarySearch(this.ranges, range, (o1, o2) -> o2.getEnd() - o1.getStart());
-            if (afterIndex >= 0) {
-                IASTaintRange afterRange = this.ranges.get(afterIndex);
-                if (afterRange.getSource() == range.getSource()) {
-                    range = new IASTaintRange(afterRange.getStart(), range.getEnd(), range.getSource());
-                    this.ranges.remove(afterIndex);
-                }
-            }
-
-            // Merge with range before, if existent
-            int beforeIndex = Collections.binarySearch(this.ranges, range, (o1, o2) -> o1.getEnd() - o2.getStart());
-            if (beforeIndex >= 0) {
-                IASTaintRange beforeRange = this.ranges.get(beforeIndex);
-                if (beforeRange.getSource() == range.getSource()) {
-                    range = new IASTaintRange(beforeRange.getStart(), range.getEnd(), range.getSource());
-                    this.ranges.remove(beforeIndex);
-                } else {
-                    beforeIndex++;
-                }
-            } else {
-                beforeIndex = -(beforeIndex + 1);
-            }
-            this.ranges.add(beforeIndex, range);
-        }
-    }
-
-    /**
-     * This appends the ranges to the current range set
-     * The ranges will not be merged
-     *
-     * @param ranges
-     */
-    public synchronized void appendRanges(List<IASTaintRange> ranges) {
-        this.appendRanges(ranges, false);
+    public synchronized void resize(int length) {
+        IASTaintRangeUtils.adjustAndRemoveRanges(this.ranges, 0, length, 0);
+        this.length = length;
     }
 
     /**
@@ -267,67 +136,50 @@ public class IASTaintRanges {
         return new ArrayList<>(this.ranges);
     }
 
-    public synchronized void removeTaintFor(int start, int end, boolean leftShiftRangesAfterClearedArea) {
-        if (end < start || start < 0) {
-            throw new IllegalArgumentException("start: " + start + ", end: " + end);
-        }
+    public IASTaintRanges concat(IASTaintRanges append) {
+        IASTaintRanges copy = this.copy();
 
-        if (ranges.isEmpty() || start == end) {
-            return;
-        }
+        List<IASTaintRange> appendRanges = append.getTaintRanges();
+        IASTaintRangeUtils.shiftRight(appendRanges, copy.length);
+        copy.ranges.addAll(appendRanges);
+        copy.length = this.length + append.length;
+        copy.merge();
 
-        final List<IASTaintRange> r1 = getTaintRanges(0, start);
-        if (!r1.isEmpty()) {
-            // if r1 is not empty we can be sure, that start > 0 (and by this conditional
-            // we also avoid an unnecessary methods call
-            IASTaintRangeUtils.adjustRanges(r1, 0, start, 0);
-        }
-
-        final List<IASTaintRange> r2 = getAllRangesStartingAt(end);
-        if (!r2.isEmpty()) {
-            int leftShift = 0;
-            if (leftShiftRangesAfterClearedArea) {
-                leftShift = end - start;
-            }
-            IASTaintRangeUtils.adjustRanges(r2, end, r2.get(r2.size() - 1).getEnd(), leftShift);
-        }
-
-        ranges.clear();
-        ranges.addAll(r1);
-        ranges.addAll(r2);
+        return copy;
     }
 
-    private synchronized List<IASTaintRange> getAllRangesStartingAt(int startIndex) {
-        // Requesting all ranges starting from behind the last range should be valid, therefore we have to make sure that the end index
-        // is >= startIndex, otherwise getRanges() will throw an Exception
-        int endIndex = startIndex;
-        if (!ranges.isEmpty()) {
-            endIndex = Math.max(ranges.get(ranges.size() - 1).getEnd(), startIndex);
+    /**
+     * Inserts the given ranges at the passed position.
+     * This shifts the inserted ranges by the index and also moves the ranges after the index by the length of the insertion.
+     * @param index Position where the insertion is inserted
+     * @param insertions ranges to insert
+     */
+    public synchronized void insertTaint(int index, IASTaintRanges insertions) {
+        if (index > this.length) {
+            // The ranges are inserted at the end of the existing string
+            IASTaintRanges copy = this.copy();
+
+            List<IASTaintRange> ranges = insertions.getTaintRanges();
+            IASTaintRangeUtils.shiftRight(ranges, index);
+            copy.ranges.addAll(ranges);
+            copy.length = this.length + insertions.length;
+            copy.merge();
+
+            this.ranges = copy.getTaintRanges();
+            this.length = copy.length;
+        } else {
+            // The ranges are inserted somewhere into the existing string
+            IASTaintRanges start = this.slice(0, index);
+            IASTaintRanges end = this.slice(index, this.length);
+            IASTaintRanges result = start.concat(insertions).concat(end);
+            result.merge();
+
+            this.ranges = result.getTaintRanges();
+            this.length = result.length;
         }
-        return getTaintRanges(startIndex, endIndex);
     }
 
-    public synchronized void insert(int index, List<IASTaintRange> insertions, int width) {
-        List<IASTaintRange> startRanges = new ArrayList<>();
-        if (index < 0) {
-            throw new IllegalArgumentException("Index must be 0 or greater!");
-        } else if (index > 0) {
-            startRanges.addAll(this.getTaintRanges(0, index));
-            IASTaintRangeUtils.adjustRanges(startRanges, 0, index, 0);
-        }
-
-        IASTaintRangeUtils.shiftRight(insertions, index);
-
-        List<IASTaintRange> endRanges = this.getAllRangesStartingAt(index);
-        IASTaintRangeUtils.adjustRanges(endRanges, index, Integer.MAX_VALUE, -width);
-
-        this.ranges.clear();
-        this.ranges.addAll(startRanges);
-        this.ranges.addAll(insertions);
-        this.ranges.addAll(endRanges);
-    }
-
-    public synchronized void reversed(int length) {
+    public synchronized void reversed() {
         List<IASTaintRange> r = this.getTaintRanges();
         List<IASTaintRange> newRanges = new ArrayList<IASTaintRange>(r.size());
 
@@ -342,30 +194,7 @@ public class IASTaintRanges {
     }
 
     public synchronized IASTaintRanges copy() {
-        return new IASTaintRanges(this.getTaintRanges());
-    }
-
-    public IASTaintRange getRange(int listIndex) {
-        return this.ranges.get(listIndex);
-    }
-
-    /**
-     * Performs a getRanges and cuts of the endings
-     *
-     * @param end exclusive
-     */
-    public List<IASTaintRange> cutTaint(int start, int end) {
-        List<IASTaintRange> ranges = getTaintRanges(start, end);
-        IASTaintRangeUtils.adjustRanges(ranges, start, end, 0);
-        return ranges;
-    }
-
-    public IASTaintRange cutTaint(int index) {
-        List<IASTaintRange> ranges = cutTaint(index, index + 1);
-        if (ranges.size() == 0) {
-            return null;
-        }
-        return ranges.get(0);
+        return new IASTaintRanges(this.length, this.getTaintRanges());
     }
 
     public boolean isTaintedAt(int index) {
@@ -373,11 +202,15 @@ public class IASTaintRanges {
     }
 
     public IASTaintSource getTaintFor(int position) {
-        List<IASTaintRange> range = getTaintRanges(position, position + 1);
-        if (range.isEmpty()) {
-            return null;
-        } else {
-            return range.get(0).getSource();
+        for (IASTaintRange range : this.ranges) {
+            if (range.getStart() <= position && position < range.getEnd()) {
+                return range.getSource();
+            }
         }
+        return null;
+    }
+
+    public int getLength() {
+        return length;
     }
 }

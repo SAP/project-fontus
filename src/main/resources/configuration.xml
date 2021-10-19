@@ -787,35 +787,35 @@
     <converters>
         <converter>
             <opcode>184</opcode>
-            <owner>com/sap/fontus/taintaware/shared/IASStringUtils</owner>
+            <owner>com/sap/fontus/taintaware/unified/IASStringUtils</owner>
             <name>convertStringList</name>
             <descriptor>(Ljava/util/List;)Ljava/util/List;</descriptor>
             <interface>false</interface>
         </converter>
         <converter>
             <opcode>184</opcode>
-            <owner>com/sap/fontus/taintaware/shared/IASStringUtils</owner>
+            <owner>com/sap/fontus/taintaware/unified/IASStringUtils</owner>
             <name>convertTStringList</name>
             <descriptor>(Ljava/util/List;)Ljava/util/List;</descriptor>
             <interface>false</interface>
         </converter>
         <converter>
             <opcode>184</opcode>
-            <owner>com/sap/fontus/taintaware/shared/IASStringUtils</owner>
+            <owner>com/sap/fontus/taintaware/unified/IASStringUtils</owner>
             <name>convertTStringToTStringHashTable</name>
             <descriptor>(Ljava/util/Hashtable;)Ljava/util/Hashtable;</descriptor>
             <interface>false</interface>
         </converter>
         <converter>
             <opcode>184</opcode>
-            <owner>com/sap/fontus/taintaware/shared/IASStringUtils</owner>
+            <owner>com/sap/fontus/taintaware/unified/IASStringUtils</owner>
             <name>convertStringMapToTStringMap</name>
             <descriptor>(Ljava/util/Map;)Ljava/util/Map;</descriptor>
             <interface>false</interface>
         </converter>
         <converter>
             <opcode>184</opcode>
-            <owner>com/sap/fontus/taintaware/shared/IASStringUtils</owner>
+            <owner>com/sap/fontus/taintaware/unified/IASStringUtils</owner>
             <name>convertStringHashtableToTStringHashtable</name>
             <descriptor>(Ljava/util/Hashtable;)Ljava/util/Hashtable;</descriptor>
             <interface>false</interface>

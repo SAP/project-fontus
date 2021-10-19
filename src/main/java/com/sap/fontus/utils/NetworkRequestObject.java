@@ -1,7 +1,7 @@
 package com.sap.fontus.utils;
 
 import com.sap.fontus.agent.TaintAgent;
-import com.sap.fontus.taintaware.lazybasic.IASString;
+import com.sap.fontus.taintaware.unified.IASString;
 import org.json.Cookie;
 import org.json.JSONArray;
 import org.json.JSONObject;

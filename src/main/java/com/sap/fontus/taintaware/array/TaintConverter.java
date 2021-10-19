@@ -31,8 +31,10 @@ public class TaintConverter {
 
     public static int[] toTaintArray(int size, List<IASTaintRange> ranges) {
         int[] taints = new int[size];
-        for (IASTaintRange range : ranges) {
-            Arrays.fill(taints, range.getStart(), range.getEnd(), range.getSource().getId());
+        if (ranges != null) {
+            for (IASTaintRange range : ranges) {
+                Arrays.fill(taints, range.getStart(), range.getEnd(), range.getSource().getId());
+            }
         }
         return taints;
     }

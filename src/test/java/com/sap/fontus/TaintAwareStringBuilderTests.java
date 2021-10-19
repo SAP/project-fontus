@@ -1,13 +1,22 @@
 package com.sap.fontus;
 
-import com.sap.fontus.taintaware.bool.IASString;
-import com.sap.fontus.taintaware.bool.IASStringBuilder;
+import com.sap.fontus.config.Configuration;
+import com.sap.fontus.config.TaintMethod;
+import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.taintaware.unified.IASStringBuilder;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings({"ClassIndependentOfModule", "ClassOnlyUsedInOneModule", "ClassUnconnectedToPackage", "ClassOnlyUsedInOnePackage", "DuplicateStringLiteralInspection", "TypeMayBeWeakened"})
 class TaintAwareStringBuilderTests {
+
+    @BeforeAll
+    public static void init() {
+        Configuration.setTestConfig(TaintMethod.RANGE);
+    }
+
     @Test
     void emptyStringBuilderIsUntainted() {
         IASStringBuilder sb = new IASStringBuilder();

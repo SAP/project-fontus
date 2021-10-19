@@ -33,6 +33,15 @@ public class SinkConfig {
         return null;
     }
 
+    public Sink getSinkForFqn(String fqn) {
+        for (Sink s : this.sinks) {
+            if (s.getFunction().getFqn().equals(fqn)) {
+                return s;
+            }
+        }
+        return null;
+    }
+
     public boolean containsFunction(FunctionCall fc) {
         return (this.getSinkForFunction(fc) != null);
     }

@@ -12,6 +12,7 @@ import picocli.CommandLine;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -73,12 +74,13 @@ public class Generator implements Callable<Void> {
         if (this.sinkClasses != null) {
             for (String sink : this.sinkClasses) {
                 String className = sink;
-                String category = "unknown";
+                List<String> categories = new ArrayList<>();
                 if (sink.contains("=")) {
                     className = sink.substring(0, sink.indexOf("="));
-                    category = sink.substring(sink.indexOf("=") + 1);
+                    String[] categoriesArray = sink.substring(sink.indexOf("=") + 1).split("=");
+                    categories = Arrays.asList(categoriesArray);
                 }
-                SinkGenerator sinkGenerator = new SinkGenerator(className, category);
+                SinkGenerator sinkGenerator = new SinkGenerator(className, categories);
                 sinks.addAll(sinkGenerator.readSinks(this.sinkObjects));
             }
         }

@@ -8,6 +8,9 @@ import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
+import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.taintaware.unified.IASStringBuffer;
+import com.sap.fontus.taintaware.unified.IASStringBuilder;
 import org.hamcrest.MatcherAssert;
 import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
@@ -173,7 +176,7 @@ public class StringTest {
         assertEquals("llo W", s1.toString());
         MatcherAssert.assertThat(s1, TaintMatcher.taintEquals(range(0, 5, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)));
         assertEquals("", s2.toString());
-        assertTrue(s2.isUninitialized());
+        assertFalse(THelper.get(s2).isTainted());
     }
 
     @Test
@@ -188,10 +191,10 @@ public class StringTest {
         IASString s3 = (IASString) s.subSequence(5, 9);
         IASString s4 = (IASString) s.subSequence(8, 12);
 
-        assertTrue(s1.isUninitialized());
+        assertFalse(s1.isTainted());
         MatcherAssert.assertThat(s2, TaintMatcher.taintEquals(range(2, 5, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)));
         MatcherAssert.assertThat(s3, TaintMatcher.taintEquals(range(0, 2, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)));
-        assertTrue(s4.isUninitialized());
+        assertFalse(s4.isTainted());
     }
 
     @Test
@@ -218,7 +221,7 @@ public class StringTest {
         IASString s = new IASString("foobar");
         ((IASTaintInformation) THelper.get(s)).addRange(1, 4, 3);
         IASString s1 = s.substring(0, 2);
-        assertThat(THelper.get(s1).getTaintRanges(), equalTo(RangeChainer.range(1, 2, 3).done()));
+        assertThat(THelper.get(s1).getTaintRanges(s1.length()).getTaintRanges(), equalTo(RangeChainer.range(1, 2, 3).done()));
 
         // A substring created from an untainted region should not have its taint field initialized
         IASString s2 = s.substring(4, 6);
@@ -243,7 +246,7 @@ public class StringTest {
 
         // TODO Here we could also test interning, can't we?
 
-        assertThat(((IASTaintInformation) THelper.get(s)).getTaintRanges(), equalTo(RangeChainer.range(0, 1, 3).add(4, 5, 3).done()));
+        assertThat(((IASTaintInformation) THelper.get(s)).getTaintRanges().getTaintRanges(), equalTo(RangeChainer.range(0, 1, 3).add(4, 5, 3).done()));
     }
 
     @Test
@@ -252,7 +255,7 @@ public class StringTest {
 
         IASString s = foo.concat(bar);
 
-        assertThat(((IASTaintInformation) THelper.get(s)).getTaintRanges(), equalTo(RangeChainer.range(4, 5, 3).done()));
+        assertThat(((IASTaintInformation) THelper.get(s)).getTaintRanges().getTaintRanges(), equalTo(RangeChainer.range(4, 5, 3).done()));
     }
 
     @Test
@@ -261,7 +264,7 @@ public class StringTest {
 
         IASString s = foo.concat(bar);
 
-        assertThat(((IASTaintInformation) THelper.get(s)).getTaintRanges(), equalTo(RangeChainer.range(0, 1, 3).done()));
+        assertThat(((IASTaintInformation) THelper.get(s)).getTaintRanges().getTaintRanges(), equalTo(RangeChainer.range(0, 1, 3).done()));
     }
 
     @Test
@@ -281,7 +284,7 @@ public class StringTest {
 
         assertThat(s2.toString(), equalTo("fee"));
         // Every replaced char gets its own ranges...
-        assertThat(THelper.get(s2).getTaintRanges(), equalTo(RangeChainer.range(0, 1, 3).add(1, 2, IASTaintSourceRegistry.TS_CHAR_UNKNOWN_ORIGIN).add(2, 3, IASTaintSourceRegistry.TS_CHAR_UNKNOWN_ORIGIN).done()));
+        assertThat(THelper.get(s2).getTaintRanges(s2.length()), equalTo(RangeChainer.range(0, 1, 3).add(1, 2, IASTaintSourceRegistry.TS_CHAR_UNKNOWN_ORIGIN).add(2, 3, IASTaintSourceRegistry.TS_CHAR_UNKNOWN_ORIGIN).done()));
         // .. but usually the adjacent ranges get merged on retrieval
         MatcherAssert.assertThat(s2, TaintMatcher.taintEquals(RangeChainer.range(0, 1, 3).add(1, 3, IASTaintSourceRegistry.TS_CHAR_UNKNOWN_ORIGIN).done()));
 
@@ -340,7 +343,7 @@ public class StringTest {
         MatcherAssert.assertThat(s1, TaintMatcher.taintEquals(range(2, 4, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN.getId())));
         assertTrue(THelper.isUninitialized(s2));
         assertTrue(THelper.isUninitialized(s3));
-        assertTrue(THelper.isUninitialized(s));
+        assertFalse(THelper.get(s).isTainted());
     }
 
     @Test

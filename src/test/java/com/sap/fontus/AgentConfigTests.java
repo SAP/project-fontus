@@ -17,10 +17,12 @@ import static org.junit.jupiter.api.Assertions.*;
 @SuppressWarnings({ "DuplicateStringLiteralInspection", "SpellCheckingInspection", "ClassIndependentOfModule",
         "ClassOnlyUsedInOneModule" })
 class AgentConfigTests {
+
     @BeforeAll
     public static void init() {
-        Configuration.setTestConfig(TaintMethod.defaultTaintMethod());
+        Configuration.setTestConfig(TaintMethod.RANGE);
     }
+
     @Test
     void parseNull() {
         Configuration cfg = AgentConfig.parseConfig(null);

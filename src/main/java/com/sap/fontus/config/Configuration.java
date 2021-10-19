@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.abort.Abort;
 import com.sap.fontus.config.abort.StdErrLoggingAbort;
+import com.sap.fontus.config.taintloss.TaintlossHandler;
 import com.sap.fontus.instrumentation.BlackListEntry;
 import com.sap.fontus.agent.AgentConfig;
 import com.sap.fontus.utils.LogUtils;
@@ -23,8 +24,8 @@ public class Configuration {
     private static final Logger logger = LogUtils.getLogger();
     @JsonIgnore
     private TaintMethod taintMethod;
-    @JsonIgnore
-    private TaintStringConfig taintStringConfig;
+
+    private boolean showWelcomeMessage;
 
     private Map<String, List<BlackListEntry>> jdkInheritanceBlacklist = new HashMap<>();
 
@@ -36,6 +37,9 @@ public class Configuration {
 
     @JsonIgnore
     private Abort abort = defaultAbort();
+
+    @JsonIgnore
+    private TaintlossHandler taintlossHandler = null;
 
     private boolean isOfflineInstrumentation = true;
 
@@ -76,6 +80,10 @@ public class Configuration {
     @XmlElement(name = "excludedPackages")
     private final List<String> excludedPackages;
 
+    @JacksonXmlElementWrapper(localName = "resourcesToInstrument")
+    @XmlElement(name = "resourcesToInstrument")
+    private final List<String> resourcesToInstrument;
+
     public Configuration() {
         this.verbose = false;
         this.sourceConfig = new SourceConfig();
@@ -85,9 +93,10 @@ public class Configuration {
         this.takeGeneric = new ArrayList<>();
         this.blacklistedMainClasses = new ArrayList<>();
         this.excludedPackages = new ArrayList<>();
+        this.resourcesToInstrument = new ArrayList<>();
     }
 
-    public Configuration(boolean verbose, SourceConfig sourceConfig, SinkConfig sinkConfig, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> blacklistedMainClasses, List<String> excludedPackages) {
+    public Configuration(boolean verbose, SourceConfig sourceConfig, SinkConfig sinkConfig, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> blacklistedMainClasses, List<String> excludedPackages, List<String> resourcesToInstrument) {
         this.verbose = verbose;
         this.sourceConfig = sourceConfig;
         this.sinkConfig = sinkConfig;
@@ -96,6 +105,7 @@ public class Configuration {
         this.takeGeneric = takeGeneric;
         this.blacklistedMainClasses = blacklistedMainClasses;
         this.excludedPackages = excludedPackages;
+        this.resourcesToInstrument = resourcesToInstrument;
     }
 
     public void append(Configuration other) {
@@ -108,12 +118,12 @@ public class Configuration {
             this.takeGeneric.addAll(other.takeGeneric);
             this.blacklistedMainClasses.addAll(other.blacklistedMainClasses);
             this.excludedPackages.addAll(other.excludedPackages);
+            this.resourcesToInstrument.addAll(other.resourcesToInstrument);
         }
     }
 
     public void setTaintMethod(TaintMethod taintMethod) {
         this.taintMethod = taintMethod;
-        this.taintStringConfig = new TaintStringConfig(taintMethod);
     }
 
     public void transformConverters() {
@@ -121,10 +131,6 @@ public class Configuration {
 
         this.converters.clear();
         this.converters.addAll(converted);
-    }
-
-    public TaintStringConfig getTaintStringConfig() {
-        return this.taintStringConfig;
     }
 
     void appendBlacklist(Collection<String> other) {
@@ -243,12 +249,18 @@ public class Configuration {
     }
 
     public FunctionCall getConverterForReturnValue(FunctionCall c) {
+        return this.getConverterForReturnValue(c, false);
+    }
+
+    public FunctionCall getConverterForReturnValue(FunctionCall c, boolean onlyAlwaysApply) {
         for (ReturnsGeneric rg : this.returnGeneric) {
             if (rg.getFunctionCall().equals(c)) {
-                String converterName = rg.getConverter();
-                FunctionCall converter = this.getConverter(converterName);
-                logger.info("Found converter for rv of {}: {}", c, converter);
-                return converter;
+                if (!(onlyAlwaysApply && !rg.isAlwaysApply())) {
+                    String converterName = rg.getConverter();
+                    FunctionCall converter = this.getConverter(converterName);
+                    logger.info("Found converter for rv of {}: {}", c, converter);
+                    return converter;
+                }
             }
         }
         return null;
@@ -306,6 +318,14 @@ public class Configuration {
 
     public List<String> getExcludedPackages() {
         return excludedPackages;
+    }
+
+    public List<String> getResourcesToInstrument() {
+        return this.resourcesToInstrument;
+    }
+
+    public boolean isResourceToInstrument(String resource) {
+        return this.resourcesToInstrument != null && this.resourcesToInstrument.contains(resource);
     }
 
     public static void parseAgent(String args) {
@@ -381,5 +401,25 @@ public class Configuration {
 
     public boolean isRecursiveTainting() {
         return recursiveTainting;
+    }
+
+    public boolean handleTaintloss() {
+        return this.taintlossHandler != null;
+    }
+
+    public TaintlossHandler getTaintlossHandler() {
+        return taintlossHandler;
+    }
+
+    public void setTaintlossHandler(TaintlossHandler taintlossHandler) {
+        this.taintlossHandler = taintlossHandler;
+    }
+
+    public boolean isShowWelcomeMessage() {
+        return showWelcomeMessage;
+    }
+
+    public void setShowWelcomeMessage(boolean showWelcomeMessage) {
+        this.showWelcomeMessage = showWelcomeMessage;
     }
 }

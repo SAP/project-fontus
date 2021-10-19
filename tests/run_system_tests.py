@@ -1,3 +1,4 @@
+import shutil
 from os import path
 import argparse
 import pprint
@@ -134,7 +135,7 @@ def build_jars():
 
 class ExecutionResult:
     def __init__(self, rv, stdout, stderr):
-        self._stdout = stdout
+        self._stdout = stdout.decode('utf-8').replace('Starting application with Fontus Tainting!\n', '').encode('utf-8')
 
         pattern = re.compile('WARNING(.)*\n')
         self._stderr = pattern.sub('', stderr.decode('utf8')).encode('utf8')
@@ -303,6 +304,7 @@ class Configuration:
         self._test_cases = test_cases
         self._jar_test_cases = jar_test_cases
         self._verbose = False
+        self._fontus_verbose = False
         self._version = "0.0.1-SNAPSHOT"
 
     @property
@@ -328,6 +330,14 @@ class Configuration:
     @verbose.setter
     def verbose(self, value):
         self._verbose = value
+
+    @property
+    def fontus_verbose(self):
+        return self._fontus_verbose
+
+    @fontus_verbose.setter
+    def fontus_verbose(self, value):
+        self._fontus_verbose = value
 
     def __repr__(self):
         return ('Configuration(version={self._version!r}, verbose={self._verbose!r}, '
@@ -397,8 +407,9 @@ class TestRunner:
                      "--illegal-access=permit",
                      "-classpath",
                      '.',
-                     '-javaagent:{}=taintmethod={}'.format(format_jar_filename(
-                         "fontus", self._config.version), self._config.taintmethod),
+                     '-javaagent:{}=taintmethod={}{}'.format(format_jar_filename(
+                         "fontus", self._config.version), self._config.taintmethod,
+                         ',verbose' if self._config.fontus_verbose else ''),
                      name
                      ] + arguments
         return await run_command(cwd, arguments)
@@ -413,8 +424,9 @@ class TestRunner:
                         "java",
                         "--add-opens",
                         "java.base/jdk.internal.misc=ALL-UNNAMED",
-                        '-javaagent:{}=taintmethod={}'.format(format_jar_filename(
-                            "fontus", self._config.version), self._config.taintmethod),
+                        '-javaagent:{}=taintmethod={}{}'.format(format_jar_filename(
+                            "fontus", self._config.version), self._config.taintmethod,
+                            ',verbose' if self._config.fontus_verbose else ''),
                         '-jar',
                         name
                     ] + additional_arguments
@@ -515,7 +527,12 @@ class TestRunner:
         with tempfile.TemporaryDirectory() as tmpdir:
             out_dir = Path(path.join(tmpdir, TMPDIR_OUTPUT_DIR_SUFFIX))
             out_dir.mkdir()
+            out_verbose = Path(path.join(tmpdir, 'tmp'))
+            print(f'Running tests in {out_dir}')
             test_results = await self._run_tests(tmpdir)
+            if self._config.fontus_verbose:
+                shutil.rmtree('./tmp')
+                shutil.copytree(out_verbose, './tmp')
 
         return TestRunResult(test_results)
 
@@ -533,6 +550,7 @@ def main(args):
     config = parse_config(args.config)
     config.version = args.version
     config.verbose = args.verbose
+    config.fontus_verbose = args.fontus_verbose
     config.taintmethod = args.taint_type
     # pprint.pprint(config)
     runner = TestRunner(config, args.safe)
@@ -544,7 +562,8 @@ def main(args):
 
 
 async def check_java_version():
-    proc = await asyncio.create_subprocess_shell('java -version', stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    proc = await asyncio.create_subprocess_shell('java -version', stdout=asyncio.subprocess.PIPE,
+                                                 stderr=asyncio.subprocess.PIPE)
     stdout, stderr = await proc.communicate()
     print(stdout)
     print(stderr)
@@ -554,6 +573,7 @@ if __name__ == "__main__":
     ARG_PARSER = argparse.ArgumentParser()
     ARG_PARSER.add_argument("--build-first", action="store_true")
     ARG_PARSER.add_argument("--verbose", action="store_true")
+    ARG_PARSER.add_argument("--fontus-verbose", action="store_true")
     ARG_PARSER.add_argument("--version", default="0.0.1-SNAPSHOT")
     ARG_PARSER.add_argument("--safe", action="store_true",
                             help="Runs all tests in safe mode.")

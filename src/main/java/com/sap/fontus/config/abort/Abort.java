@@ -8,10 +8,10 @@ import java.util.List;
 
 public abstract class Abort {
     private static final Abort[] aborts = {
-            new NothingAbort(), new ExitAbort(), new StdErrLoggingAbort(), new JsonLoggingAbort(), new SqlCheckerAbort(), new SqlLoggerAbort()
+            new NothingAbort(), new ExitAbort(), new StdErrLoggingAbort(), new JsonLoggingAbort(), new SanitizationAbort(), new SqlCheckerAbort(), new SqlLoggerAbort()
     };
 
-    public abstract void abort(IASTaintAware taintAware, String sink, String category, List<StackTraceElement> stackTrace) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, InterruptedException, IOException;
+    public abstract void abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace);
 
     public abstract String getName();
 

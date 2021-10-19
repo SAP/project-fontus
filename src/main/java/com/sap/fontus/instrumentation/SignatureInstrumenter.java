@@ -1,22 +1,19 @@
 package com.sap.fontus.instrumentation;
 
-import com.sap.fontus.instrumentation.strategies.InstrumentationStrategy;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.signature.SignatureVisitor;
 import org.objectweb.asm.signature.SignatureWriter;
 
-import java.util.List;
-
 public class SignatureInstrumenter {
     private static final Logger logger = LogUtils.getLogger();
-    private final List<? extends InstrumentationStrategy> instrumentation;
     private final int api;
+    private final InstrumentationHelper instrumentationHelper;
 
-    public SignatureInstrumenter(int api, List<? extends InstrumentationStrategy> instrumentation) {
+    public SignatureInstrumenter(int api, InstrumentationHelper instrumentationHelper) {
         this.api = api;
-        this.instrumentation = instrumentation;
+        this.instrumentationHelper = instrumentationHelper;
     }
 
     public String instrumentSignature(String signature) {
@@ -25,7 +22,7 @@ public class SignatureInstrumenter {
             return null;
         }
         SignatureWriter sw = new SignatureWriter();
-        SignatureVisitor sv = new SignatureTaintingVisitor(this.api, this.instrumentation, sw);
+        SignatureVisitor sv = new SignatureTaintingVisitor(this.api, this.instrumentationHelper, sw);
         SignatureReader sr = new SignatureReader(signature);
         sr.accept(sv);
         return sw.toString();

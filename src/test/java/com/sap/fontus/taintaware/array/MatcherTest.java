@@ -3,6 +3,9 @@ package com.sap.fontus.taintaware.array;
 
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
+import com.sap.fontus.taintaware.unified.IASMatcher;
+import com.sap.fontus.taintaware.unified.IASPattern;
+import com.sap.fontus.taintaware.unified.IASString;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +16,7 @@ public class MatcherTest {
 
     @BeforeAll
     public static void init() {
-        Configuration.setTestConfig(TaintMethod.BOOLEAN);
+        Configuration.setTestConfig(TaintMethod.ARRAY);
     }
 
     /**

@@ -3,9 +3,12 @@ package com.sap.fontus.asm;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sap.fontus.Constants;
+import com.sap.fontus.utils.MethodUtils;
 import com.sap.fontus.utils.Utils;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
@@ -24,6 +27,7 @@ public class FunctionCall {
         this.owner = "";
         this.name = "";
         this.descriptor = "";
+        this.parsedDescriptor = null;
         this.isInterface = false;
     }
 
@@ -40,11 +44,15 @@ public class FunctionCall {
     @JsonProperty(value = "interface")
     private final boolean isInterface;
 
+    @JsonIgnore
+    private Descriptor parsedDescriptor;
+
     public FunctionCall(final int opcode, final String owner, final String name, final String descriptor, final boolean isInterface) {
         this.opcode = opcode;
         this.owner = owner;
         this.name = name;
         this.descriptor = descriptor;
+        this.parsedDescriptor = Descriptor.parseDescriptor(descriptor);
         this.isInterface = isInterface;
     }
 
@@ -54,13 +62,17 @@ public class FunctionCall {
             opcode = Opcodes.INVOKESTATIC;
         } else if (method.getDeclaringClass().isInterface()) {
             opcode = Opcodes.INVOKEINTERFACE;
-        } else if( Modifier.isPrivate(method.getModifiers())) {
+        } else if (Modifier.isPrivate(method.getModifiers())) {
             opcode = Opcodes.INVOKESPECIAL;
         } else {
             opcode = Opcodes.INVOKEVIRTUAL;
         }
         String descriptor = Type.getType(method).getDescriptor();
         return new FunctionCall(opcode, Utils.dotToSlash(method.getDeclaringClass().getName()), method.getName(), descriptor, method.getDeclaringClass().isInterface());
+    }
+
+    public static FunctionCall fromHandle(Handle handle) {
+        return new FunctionCall(MethodUtils.tagToOpcode(handle.getTag()), handle.getOwner(), handle.getName(), handle.getDesc(), handle.isInterface());
     }
 
     public static FunctionCall fromConstructor(Constructor<?> constructor) {
@@ -76,8 +88,20 @@ public class FunctionCall {
         return this.name;
     }
 
+    @JsonIgnore
+    public String getFqn() {
+        return getOwner() + "." + getName() + getDescriptor();
+    }
+
     public String getDescriptor() {
         return this.descriptor;
+    }
+
+    public Descriptor getParsedDescriptor() {
+        if (this.parsedDescriptor == null) {
+            this.parsedDescriptor = Descriptor.parseDescriptor(this.descriptor);
+        }
+        return this.parsedDescriptor;
     }
 
     public int getOpcode() {
@@ -86,6 +110,16 @@ public class FunctionCall {
 
     public boolean isInterface() {
         return this.isInterface;
+    }
+
+    @JsonIgnore
+    public boolean isInstanceMethod() {
+        return this.getOpcode() == Opcodes.INVOKESPECIAL || this.getOpcode() == Opcodes.INVOKEVIRTUAL || this.getOpcode() == Opcodes.INVOKEINTERFACE;
+    }
+
+    @JsonIgnore
+    public boolean isConstructor() {
+        return this.getOpcode() == Opcodes.INVOKESPECIAL && "<init>".equals(this.getName());
     }
 
     @Override

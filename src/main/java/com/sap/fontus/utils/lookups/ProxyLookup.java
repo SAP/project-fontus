@@ -1,6 +1,6 @@
 package com.sap.fontus.utils.lookups;
 
-import com.sap.fontus.taintaware.shared.IASProxyProxy;
+import com.sap.fontus.taintaware.unified.IASProxyProxy;
 
 public class ProxyLookup {
     public static boolean isProxyClass(String internalName, byte[] bytes) {

@@ -2,6 +2,9 @@ package com.sap.fontus.taintaware.bool;
 
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
+import com.sap.fontus.taintaware.unified.IASMatcher;
+import com.sap.fontus.taintaware.unified.IASPattern;
+import com.sap.fontus.taintaware.unified.IASString;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

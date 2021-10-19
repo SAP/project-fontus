@@ -1,10 +1,9 @@
 package com.sap.fontus.instrumentation.transformer;
 
 import com.sap.fontus.config.Sink;
-import com.sap.fontus.config.TaintStringConfig;
 import com.sap.fontus.Constants;
 import com.sap.fontus.instrumentation.MethodTaintingVisitor;
-import com.sap.fontus.instrumentation.strategies.InstrumentationHelper;
+import com.sap.fontus.instrumentation.InstrumentationHelper;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
 import org.objectweb.asm.MethodVisitor;
@@ -15,11 +14,13 @@ public class SinkTransformer implements ParameterTransformation {
     private static final Logger logger = LogUtils.getLogger();
 
     private final Sink sink;
-    private final TaintStringConfig config;
+    private final InstrumentationHelper instrumentationHelper;
+    private final int usedLocalVars;
 
-    public SinkTransformer(Sink sink, TaintStringConfig configuration) {
+    public SinkTransformer(Sink sink, InstrumentationHelper instrumentationHelper, int usedLocalVars) {
         this.sink = sink;
-        this.config = configuration;
+        this.instrumentationHelper = instrumentationHelper;
+        this.usedLocalVars = usedLocalVars;
     }
 
     @Override
@@ -33,14 +34,22 @@ public class SinkTransformer implements ParameterTransformation {
         logger.debug("Type: {}", type);
         // Check whether this parameter needs to be checked for taint
         if (this.sink.findParameter(index) != null) {
-            String instrumentedType = InstrumentationHelper.getInstance(this.config).instrumentQN(type);
+            String instrumentedType = instrumentationHelper.instrumentQN(type);
             logger.info("Adding taint check for sink {}, paramater {} ({})", this.sink.getName(), index, type);
-            String sinkName = String.format("%s.%s%s", this.sink.getFunction().getOwner(), this.sink.getFunction().getName(), this.sink.getFunction().getDescriptor());
-            String sink = this.sink.getCategory() == null ? "unknown" : this.sink.getCategory();
+            String sinkFunction = String.format("%s.%s%s", this.sink.getFunction().getOwner(), this.sink.getFunction().getName(), this.sink.getFunction().getDescriptor());
+            String sinkName = this.sink.getName();
+
+            int size = this.sink.getFunction().getParsedDescriptor().getParameters().stream().mapToInt((param) -> Type.getType(param).getSize()).sum();
 
             MethodVisitor originalVisitor = mv.getParent();
+            if (this.sink.getFunction().isInstanceMethod()) {
+                originalVisitor.visitVarInsn(Type.getObjectType(this.sink.getFunction().getOwner()).getOpcode(Opcodes.ILOAD), size + this.usedLocalVars);
+            } else {
+                originalVisitor.visitInsn(Opcodes.ACONST_NULL);
+            }
+
+            originalVisitor.visitLdcInsn(sinkFunction);
             originalVisitor.visitLdcInsn(sinkName);
-            originalVisitor.visitLdcInsn(sink);
             originalVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TaintHandlerQN, Constants.TaintHandlerCheckTaintName, Constants.TaintHandlerCheckTaintDesc, false);
             originalVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(instrumentedType).getInternalName());
         }

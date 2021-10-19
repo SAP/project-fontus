@@ -2,15 +2,40 @@ package com.sap.fontus.utils;
 
 import com.sap.fontus.agent.TaintAgent;
 import com.sap.fontus.config.Configuration;
+import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 
 public class ClassUtils {
+    public static CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(null);
+
     public static Class<?> findLoadedClass(String internalName) {
-        return TaintAgent.findLoadedClass(Utils.slashToDot(internalName));
+        Class<?> loaded = TaintAgent.findLoadedClass(Utils.slashToDot(internalName));
+        if (loaded == null && combinedExcludedLookup.isJdkClass(internalName)) {
+            try {
+                loaded = Class.forName(Type.getObjectType(internalName).getClassName());
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        return loaded;
+    }
+
+    public static Class<?> findLoadedClass(String internalName, ClassLoader loader) {
+        Class<?> loaded = TaintAgent.findLoadedClass(Utils.slashToDot(internalName));
+        if (loaded == null && new CombinedExcludedLookup(loader).isJdkClass(internalName)) {
+            try {
+                loaded = Class.forName(Type.getObjectType(internalName).getClassName(), false, loader);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        return loaded;
     }
 
     public static InputStream getClassInputStream(String internalName, ClassLoader loader) {
@@ -51,5 +76,9 @@ public class ClassUtils {
             }
         }
         return false;
+    }
+
+    public static Class<?> arrayType(Class<?> cls) {
+        return Array.newInstance(cls, 0).getClass();
     }
 }
