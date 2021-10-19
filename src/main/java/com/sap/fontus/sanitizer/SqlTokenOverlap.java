@@ -19,4 +19,12 @@ public class SqlTokenOverlap {
     public IASTaintRange getRange() {
         return this.range;
     }
+
+    @Override
+    public String toString() {
+        return "SqlTokenOverlap{" +
+                "token=" + token +
+                ", range=" + range +
+                '}';
+    }
 }
