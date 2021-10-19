@@ -18,12 +18,22 @@ public class NetworkRequestObject implements Serializable {
 
     private final Object reqObject;
 
-    public NetworkRequestObject() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        Class cls = TaintAgent.findLoadedClass("org.springframework.web.context.request.RequestContextHolder");
-        Method reqAttributeMethod = cls.getMethod("getRequestAttributes");
-        Object reqAttributeObject = reqAttributeMethod.invoke(null);
-        Method reqObjectMethod = reqAttributeObject.getClass().getMethod("getRequest");
-        this.reqObject = reqObjectMethod.invoke(reqAttributeObject);
+    private static Object fillRequestObject() {
+        Object req = null;
+        try {
+            Class cls = TaintAgent.findLoadedClass("org.springframework.web.context.request.RequestContextHolder");
+            Method reqAttributeMethod = cls.getMethod("getRequestAttributes");
+            Object reqAttributeObject = reqAttributeMethod.invoke(null);
+            Method reqObjectMethod = reqAttributeObject.getClass().getMethod("getRequest");
+            req = reqObjectMethod.invoke(reqAttributeObject);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            System.err.println("Error getting Spring HTTP request via reflection");
+        }
+        return req;
+    }
+    
+    public NetworkRequestObject() {
+        this.reqObject = fillRequestObject();
     }
 
     public String getHeaderByName(String header_name) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {

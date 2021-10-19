@@ -177,7 +177,7 @@ public class SQLChecker {
             } catch (SecurityException | IOException e) {
                 e.printStackTrace();
             }
-            throw new InterruptedException("Logging: SQL Injection Error");
+            throw new RuntimeException("Logging: SQL Injection Error");
         }
     }
 
