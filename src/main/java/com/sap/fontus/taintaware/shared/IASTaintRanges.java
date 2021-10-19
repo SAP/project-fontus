@@ -2,7 +2,7 @@ package com.sap.fontus.taintaware.shared;
 
 import java.util.*;
 
-public class IASTaintRanges {
+public class IASTaintRanges implements Iterable<IASTaintRange> {
     private int length;
     protected List<IASTaintRange> ranges;
 
@@ -24,6 +24,15 @@ public class IASTaintRanges {
 
     public IASTaintRanges(int length, IASTaintSource taintSource) {
         this(length, taintSource.getId());
+    }
+
+    @Override
+    public Iterator<IASTaintRange> iterator() {
+        return ranges.iterator();
+    }
+
+    public boolean isEmpty() {
+        return ranges.isEmpty();
     }
 
     public synchronized void setTaint(int start, int end, IASTaintSource source) {

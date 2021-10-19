@@ -18,9 +18,9 @@ public class JsonLoggingAbort extends Abort {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public void abort(IASTaintAware taintAware, Object instance, String sink, String category, List<StackTraceElement> stackTrace) {
+    public void abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
         IASString taintedString = taintAware.toIASString();
-        Abort abort = new Abort(sink, category, taintedString.getString(), taintedString.getTaintInformationInitialized().getTaintRanges(taintedString.length()), convertStackTrace(stackTrace));
+        Abort abort = new Abort(sinkFunction, sinkName, taintedString.getString(), taintedString.getTaintInformationInitialized().getTaintRanges(taintedString.length()), convertStackTrace(stackTrace));
         previousAborts.add(abort);
 
         saveAborts();
@@ -40,22 +40,26 @@ public class JsonLoggingAbort extends Abort {
     }
 
     public static class Abort {
-        private final String sink;
-        private final String category;
+        private final String sinkFunction;
+        private final String sinkName;
         private final String payload;
         private final IASTaintRanges ranges;
         private final List<String> stackTrace;
 
-        private Abort(String sink, String category, String payload, IASTaintRanges ranges, List<String> stackTrace) {
-            this.sink = sink;
-            this.category = category;
+        private Abort(String sinkFunction, String sinkName, String payload, IASTaintRanges ranges, List<String> stackTrace) {
+            this.sinkFunction = sinkFunction;
+            this.sinkName = sinkName;
             this.payload = payload;
             this.ranges = ranges;
             this.stackTrace = stackTrace;
         }
 
-        public String getSink() {
-            return sink;
+        public String getSinkFunction() {
+            return sinkFunction;
+        }
+
+        public String getSinkName() {
+            return sinkName;
         }
 
         public String getPayload() {
@@ -68,10 +72,6 @@ public class JsonLoggingAbort extends Abort {
 
         public List<String> getStackTrace() {
             return stackTrace;
-        }
-
-        public String getCategory() {
-            return category;
         }
     }
 }

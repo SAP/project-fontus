@@ -12,11 +12,11 @@ import java.util.List;
 
 public class SinkGenerator extends AbstractGenerator {
     private final String className;
-    private final String category;
+    private final List<String> categories;
 
-    public SinkGenerator(String className, String category) {
+    public SinkGenerator(String className, List<String> categories) {
         this.className = Utils.slashToDot(className);
-        this.category = category;
+        this.categories = categories;
     }
 
     public List<Sink> readSinks(boolean isObject) {
@@ -27,7 +27,7 @@ public class SinkGenerator extends AbstractGenerator {
             for (Method method : methods) {
                 List<SinkParameter> sinkParameters = extractParameters(isObject, method.getParameterTypes());
                 if (!sinkParameters.isEmpty()) {
-                    Sink sink = new Sink(generateName(method), FunctionCall.fromMethod(method), sinkParameters, this.category);
+                    Sink sink = new Sink(generateName(method), FunctionCall.fromMethod(method), sinkParameters, this.categories);
                     sinks.add(sink);
                 }
             }
@@ -35,7 +35,7 @@ public class SinkGenerator extends AbstractGenerator {
             for (Constructor<?> constructor : constructors) {
                 List<SinkParameter> sinkParameters = extractParameters(isObject, constructor.getParameterTypes());
                 if (!sinkParameters.isEmpty()) {
-                    Sink sink = new Sink(generateName(constructor), FunctionCall.fromConstructor(constructor), sinkParameters, this.category);
+                    Sink sink = new Sink(generateName(constructor), FunctionCall.fromConstructor(constructor), sinkParameters, this.categories);
                     sinks.add(sink);
                 }
             }
