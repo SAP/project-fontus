@@ -6,7 +6,7 @@ public class SqlLexerToken {
     public String token;
     public int token_type;
 
-    public SqlLexerToken(int begin,int end,String token,int token_type){
+    public SqlLexerToken(int begin, int end, String token, int token_type){
         this.begin = begin;
         this.end = end;
         this.token = token;

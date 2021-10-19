@@ -11,7 +11,6 @@ import com.sap.fontus.utils.stats.Statistics;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -144,14 +143,7 @@ public class IASTaintHandler {
             return handleTaint((IASTaintAware) object, instance, sinkFunction, sinkName);
         }
 
-        return traverseObject(object, taintAware -> {
-            try {
-                return handleTaint(taintAware, object, sinkFunction, sinkName);
-            } catch (InterruptedException | NoSuchMethodException | IOException | IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
-            }
-            return null;
-        });
+        return traverseObject(object, taintAware -> handleTaint(taintAware, instance, sinkFunction, sinkName));
     }
 
     public static Object taint(Object object, int sourceId) {

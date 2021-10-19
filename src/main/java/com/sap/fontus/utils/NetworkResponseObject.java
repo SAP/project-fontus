@@ -15,7 +15,7 @@ public class NetworkResponseObject {
         Method respObjectMethod = reqAttributeObject.getClass().getMethod("getResponse");
         Object respObject = respObjectMethod.invoke(reqAttributeObject);
 
-        if(sql_injected){
+        if (sql_injected) {
             respObject.getClass().getMethod("addHeader", IASString.class, IASString.class).invoke(respObject, new IASString("message"), new IASString("sql_injected"));
             respObject.getClass().getMethod("setHeader", IASString.class, IASString.class).invoke(respObject, new IASString("Content-Type"), new IASString("text/plain"));
             respObject.getClass().getMethod("setStatus", int.class).invoke(respObject, 418);
@@ -24,8 +24,7 @@ public class NetworkResponseObject {
             pw_res.getClass().getMethod("flush").invoke(pw_res);
             pw_res.getClass().getMethod("close").invoke(pw_res);
             throw new InterruptedException("SQL Injection Error");
-        }
-        else{
+        } else {
             respObject.getClass().getMethod("addHeader", IASString.class, IASString.class).invoke(respObject, new IASString("message"), new IASString("sql_not_injected"));
         }
     }

@@ -4,6 +4,9 @@ import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.parser.*;
 import com.alibaba.druid.DbType;
 import com.sap.fontus.agent.TaintAgent;
+import com.sap.fontus.config.abort.AbortObject;
+import com.sap.fontus.taintaware.shared.IASTaintRange;
+import com.sap.fontus.taintaware.shared.IASTaintRanges;
 import com.sap.fontus.utils.NetworkRequestObject;
 import com.sap.fontus.utils.NetworkResponseObject;
 import org.json.JSONArray;
@@ -21,14 +24,13 @@ import java.util.regex.Pattern;
 
 public class SQLChecker {
 
-    private static JSONArray getSqlInjectionInfo(List<SqlLexerToken> tokens, JSONArray taint_ranges, int addl_pos){
+    private static JSONArray getSqlInjectionInfo(List<SqlLexerToken> tokens, IASTaintRanges taint_ranges, int addl_pos){
         JSONArray injection_info_arr = new JSONArray();
-        for(int i=0; i<taint_ranges.length(); i++){
-            JSONObject taint_range = taint_ranges.getJSONObject(i);
-            int taint_start = addl_pos + taint_range.getInt("start");
-            int taint_end = addl_pos + taint_range.getInt("end");
-            for(SqlLexerToken token: tokens){
-                if(checkBorders(token,taint_start,taint_end) || (token.token_type == 1)){
+        for (IASTaintRange taint_range : taint_ranges) {
+            int taint_start = addl_pos + taint_range.getStart();
+            int taint_end = addl_pos + taint_range.getEnd();
+            for (SqlLexerToken token : tokens) {
+                if (checkBorders(token, taint_start, taint_end) || (token.token_type == 1)) {
                     JSONObject injection_info_obj = new JSONObject();
                     JSONObject token_info = new JSONObject();
                     token_info.put("start",token.begin);
@@ -44,7 +46,7 @@ public class SQLChecker {
         return injection_info_arr;
     }
 
-    private static boolean checkBorders(SqlLexerToken token,int taint_start,int taint_end){
+    private static boolean checkBorders(SqlLexerToken token, int taint_start, int taint_end){
         return taint_start < token.begin && token.begin < taint_end ||
                 taint_start < token.end && token.end < taint_end;
     }
@@ -88,13 +90,15 @@ public class SQLChecker {
         return lexer_tokens;
     }
 
-    public static void reportTaintedString(String tainted_string) throws RuntimeException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InterruptedException {
-        JSONObject json_obj = new JSONObject(tainted_string);
-        String sql_string = json_obj.getString("payload");
+    public static void reportTaintedString(AbortObject abortObject) {
+        String sql_string = abortObject.getPayload();
+        String sink = abortObject.getSinkFunction();
         int addl_pos = 0;
 
+        IASTaintRanges taint_ranges = abortObject.getRanges();;
+
         // Sql String template (temporary fix) if parameters are bound to the original string
-        if(json_obj.getString("sink").equals("java/sql/PreparedStatement.setString(ILjava/lang/String;)V")){
+        if(sink.equals("java/sql/PreparedStatement.setString(ILjava/lang/String;)V")) {
             class SQLElement{
                 public String sql_statement;
                 public int start_pos;
@@ -110,55 +114,50 @@ public class SQLChecker {
 
             boolean sql_injection_present = false;
 
-            for(SQLElement sql_element : sql_element_list){
+            for(SQLElement sql_element : sql_element_list) {
                 List<SqlLexerToken> token_ranges = getLexerTokens(sql_element.sql_statement);
-                JSONArray taint_ranges = json_obj.getJSONArray("ranges");
                 JSONArray inj_info_array = getSqlInjectionInfo(token_ranges,taint_ranges,sql_element.start_pos);
                 System.out.println("checkTaintedString : " + inj_info_array.toString());
                 if(!inj_info_array.isEmpty()){
                     sql_injection_present = true;
                 }
             }
-            NetworkResponseObject.setResponseMessage(new NetworkRequestObject(),sql_injection_present);
-        }
-        else if(json_obj.getString("sink").equals("java/sql/PreparedStatement.setInt(II)V")){
+            NetworkResponseObject.setResponseMessage(new NetworkRequestObject(), sql_injection_present);
+        } else if (sink.equals("java/sql/PreparedStatement.setInt(II)V")) {
             String sql_stmt = "SELECT * FROM table1 WHERE id = " + sql_string;
             List<SqlLexerToken> token_ranges = getLexerTokens(sql_stmt);
-            JSONArray taint_ranges = json_obj.getJSONArray("ranges");
 
             JSONArray inj_info_array = getSqlInjectionInfo(token_ranges,taint_ranges,32);
             System.out.println("checkTaintedString : " + inj_info_array.toString());
-            NetworkResponseObject.setResponseMessage(new NetworkRequestObject(),!inj_info_array.isEmpty());
-        }
-        else{
+            NetworkResponseObject.setResponseMessage(new NetworkRequestObject(), !inj_info_array.isEmpty());
+        } else {
             List<SqlLexerToken> token_ranges = getLexerTokens(sql_string);
-            JSONArray taint_ranges = json_obj.getJSONArray("ranges");
 
             JSONArray inj_info_array = getSqlInjectionInfo(token_ranges,taint_ranges,addl_pos);
             System.out.println("checkTaintedString : " + inj_info_array.toString());
-            NetworkResponseObject.setResponseMessage(new NetworkRequestObject(),!inj_info_array.isEmpty());
+            NetworkResponseObject.setResponseMessage(new NetworkRequestObject(), !inj_info_array.isEmpty());
         }
     }
 
-    public static void logTaintedString(String tainted_string) throws RuntimeException, IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InterruptedException {
-        JSONObject json_obj = new JSONObject(tainted_string);
-        String sql_string = json_obj.getString("payload");
+    public static void logTaintedString(AbortObject abortObject) {
+        String sql_string = abortObject.getPayload();
+        String sink = abortObject.getSinkFunction();
         int addl_pos = 0;
 
         // Sql String template (temporary fix) if parameters are bound to the original string
-        if(json_obj.getString("sink").equals("java/sql/PreparedStatement.setString(ILjava/lang/String;)V")){
+        if(sink.equals("java/sql/PreparedStatement.setString(ILjava/lang/String;)V")){
             sql_string = "SELECT * FROM table1 WHERE username = '" + sql_string + "'";
             addl_pos = 39;
         }
 
         // Sql Int template (temporary fix) if parameters are bound to the original string
-        if(json_obj.getString("sink").equals("java/sql/PreparedStatement.setInt(II)V")){
+        if(sink.equals("java/sql/PreparedStatement.setInt(II)V")){
             sql_string = "SELECT * FROM table1 WHERE id = " + sql_string + "";
             addl_pos = 32;
         }
 
         List<SqlLexerToken> token_ranges = getLexerTokens(sql_string);
-        JSONArray taint_ranges = json_obj.getJSONArray("ranges");
+        IASTaintRanges taint_ranges = abortObject.getRanges();;
 
         JSONArray json_array = getSqlInjectionInfo(token_ranges,taint_ranges,addl_pos);
         System.out.println("logTaintedString : " + json_array.toString());
@@ -166,7 +165,6 @@ public class SQLChecker {
             Logger logger = Logger.getLogger("SqlInjectionLog");
             FileHandler fh;
             try {
-
                 // This block configures the logger with handler and formatter
                 fh = new FileHandler("sql_injection_logger.log", true);
                 logger.addHandler(fh);
