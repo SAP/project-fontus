@@ -328,8 +328,8 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     }
 
     @Override
-    public synchronized void setTaint(IASTaintSource source) {
-        super.setTaint(source);
+    public synchronized void setTaint(IASTaintMetadata data) {
+        super.setTaint(data);
     }
 
     public synchronized int compareTo(IASStringBuffer o) {

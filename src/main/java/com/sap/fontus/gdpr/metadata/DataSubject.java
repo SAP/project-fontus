@@ -1,4 +1,4 @@
-package com.sap.fontus.gdpr;
+package com.sap.fontus.gdpr.metadata;
 
 import java.util.Objects;
 

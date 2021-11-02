@@ -1,6 +1,7 @@
 package com.sap.fontus;
 
 import com.sap.fontus.taintaware.IASTaintAware;
+import com.sap.fontus.taintaware.shared.IASBasicMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.taintaware.unified.IASString;
@@ -39,7 +40,7 @@ public class TaintStringHelper {
         List<IASTaintRange> ranges = new ArrayList<>(count);
 
         for (int start = 0, end = width, i = 0; i < count; start += width, end += width, i++) {
-            ranges.add(new IASTaintRange(start, end, (i + 1)));
+            ranges.add(new IASTaintRange(start, end, new IASBasicMetadata(i + 1)));
         }
 
         return ranges;

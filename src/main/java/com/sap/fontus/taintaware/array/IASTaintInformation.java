@@ -7,13 +7,13 @@ import java.util.List;
 import java.util.Objects;
 
 public class IASTaintInformation implements IASTaintInformationable {
-    private int[] taints;
+    private IASTaintMetadata[] taints;
 
     public IASTaintInformation(int length) {
-        this.taints = new int[length];
+        this.taints = new IASTaintMetadata[length];
     }
 
-    public IASTaintInformation(int[] taints) {
+    public IASTaintInformation(IASTaintMetadata[] taints) {
         this.taints = Objects.requireNonNull(taints);
     }
 
@@ -24,32 +24,24 @@ public class IASTaintInformation implements IASTaintInformationable {
     /**
      * Sets the taint for a specific range. If a taint already exists it will be overwritten.
      *
-     * @param start Inclusive start index. 0 <= start < length
-     * @param end   Exclusive end index. start < end <= length
-     * @param taint Taint information to set
+     * @param start  Inclusive start index. 0 <= start < length
+     * @param end    Exclusive end index. start < end <= length
+     * @param data Taint information to set
      */
-    public void setTaint(int start, int end, int taint) {
+    public IASTaintInformationable setTaint(int start, int end, IASTaintMetadata data) {
+        if (start < 0) {
+            start = 0;
+        }
         if (end > this.taints.length) {
             this.resize(end);
         }
-        for (int i = start; i < end && i < this.taints.length && i >= 0; i++) {
-            this.taints[i] = taint;
+        for (int i = start; i < end; i++) {
+            this.taints[i] = data;
         }
-    }
-
-    /**
-     * Sets the taint for a specific range. If a taint already exists it will be overwritten.
-     *
-     * @param start  Inclusive start index. 0 <= start < length
-     * @param end    Exclusive end index. start < end <= length
-     * @param source Taint information to set
-     */
-    public IASTaintInformationable setTaint(int start, int end, IASTaintSource source) {
-        setTaint(start, end, source.getId());
         return this;
     }
 
-    public void setTaint(int offset, int[] taints) {
+    public void setTaint(int offset, IASTaintMetadata[] taints) {
         if (offset + taints.length > this.taints.length) {
             int size = offset + taints.length;
             this.resize(size);
@@ -58,10 +50,14 @@ public class IASTaintInformation implements IASTaintInformationable {
         System.arraycopy(taints, 0, this.taints, offset, taints.length);
     }
 
-    public int[] getTaints(int start, int end) {
+    public IASTaintMetadata[] getTaints() {
+        return getTaints(0, this.taints.length);
+    }
+
+    public IASTaintMetadata[] getTaints(int start, int end) {
         this.checkBounds(start, end);
         int length = end - start;
-        int[] dst = new int[length];
+        IASTaintMetadata[] dst = new IASTaintMetadata[length];
         System.arraycopy(this.taints, start, dst, 0, length);
         return dst;
     }
@@ -79,8 +75,8 @@ public class IASTaintInformation implements IASTaintInformationable {
         if (this.taints == null) {
             return false;
         }
-        for (int taint : this.taints) {
-            if (taint != 0) {
+        for (IASTaintMetadata taint : this.taints) {
+            if (taint != null) {
                 return true;
             }
         }
@@ -91,7 +87,7 @@ public class IASTaintInformation implements IASTaintInformationable {
     public IASTaintInformationable deleteWithShift(int start, int end) {
         this.checkBounds(start, end);
         int removeLength = end - start;
-        int[] changed = new int[this.taints.length - removeLength];
+        IASTaintMetadata[] changed = new IASTaintMetadata[this.taints.length - removeLength];
         System.arraycopy(this.taints, 0, changed, 0, start);
         System.arraycopy(this.taints, end, changed, start, this.taints.length - end);
         this.taints = changed;
@@ -101,7 +97,7 @@ public class IASTaintInformation implements IASTaintInformationable {
     @Override
     public IASTaintInformationable clearTaint(int start, int end) {
         for (int i = start; i < end; i++) {
-            this.taints[i] = 0;
+            this.taints[i] = null;
         }
         return this;
     }
@@ -110,7 +106,7 @@ public class IASTaintInformation implements IASTaintInformationable {
     public IASTaintInformationable replaceTaint(int start, int end, IASTaintInformationable taintInformation) {
         IASTaintInformation ti = (IASTaintInformation) taintInformation;
         int replacedLength = this.taints.length - (end - start) + ti.getLength();
-        int[] replaced = new int[replacedLength];
+        IASTaintMetadata[] replaced = new IASTaintMetadata[replacedLength];
         System.arraycopy(this.taints, 0, replaced, 0, start);
         System.arraycopy(ti.getTaints(), 0, replaced, start, ti.getLength());
         System.arraycopy(this.taints, end, replaced, start + ti.getLength(), this.taints.length - end);
@@ -130,23 +126,17 @@ public class IASTaintInformation implements IASTaintInformationable {
     }
 
     @Override
-    public IASTaintSource getTaint(int index) {
-        return IASTaintSourceRegistry.getInstance().get(this.taints[index]);
+    public IASTaintMetadata getTaint(int index) {
+        return this.taints[index];
     }
 
     @Override
     public IASTaintInformationable slice(int start, int end) {
         int length = end - start;
-        int[] sliced = new int[length];
+        IASTaintMetadata[] sliced = new IASTaintMetadata[length];
         System.arraycopy(this.taints, start, sliced, 0, length);
 
         return new IASTaintInformation(sliced);
-    }
-
-    public int[] getTaints() {
-        int[] dst = new int[this.taints.length];
-        System.arraycopy(this.taints, 0, dst, 0, this.taints.length);
-        return dst;
     }
 
     @Override
@@ -159,7 +149,7 @@ public class IASTaintInformation implements IASTaintInformationable {
 
     public void switchTaint(int first, int second) {
         this.checkBounds(first, second);
-        int buffer = this.taints[first];
+        IASTaintMetadata buffer = this.taints[first];
         this.taints[first] = this.taints[second];
         this.taints[second] = buffer;
     }
@@ -169,22 +159,22 @@ public class IASTaintInformation implements IASTaintInformationable {
         if (this.taints.length == size) {
             return this;
         }
-        int[] old = this.taints;
-        this.taints = new int[size];
+        IASTaintMetadata[] old = this.taints;
+        this.taints = new IASTaintMetadata[size];
         int copyLength = Math.min(old.length, size);
         System.arraycopy(old, 0, this.taints, 0, copyLength);
         return this;
     }
 
-    public void replaceTaint(int start, int end, int[] taints) {
+    public void replaceTaint(int start, int end, IASTaintMetadata[] taints) {
         this.deleteWithShift(start, end);
         this.insertTaint(start, taints);
     }
 
-    public void insertTaint(int start, int[] taints) {
+    public void insertTaint(int start, IASTaintMetadata[] taints) {
         int newStart = start + taints.length;
         if (start < this.taints.length) {
-            int[] buffer = new int[this.taints.length - start];
+            IASTaintMetadata[] buffer = new IASTaintMetadata[this.taints.length - start];
             System.arraycopy(this.taints, start, buffer, 0, this.taints.length - start);
             this.setTaint(newStart, buffer);
         }
@@ -203,14 +193,14 @@ public class IASTaintInformation implements IASTaintInformationable {
         return this.taints.length;
     }
 
-    public IASTaintSource getTaintFor(int position) {
-        if (this.taints[position] == 0) {
+    public IASTaintMetadata getTaintFor(int position) {
+        if (this.taints[position] == null) {
             return null;
         }
-        return IASTaintSourceRegistry.getInstance().get(this.taints[position]);
+        return this.taints[position];
     }
 
     public boolean isTaintedAt(int index) {
-        return this.taints[index] != 0;
+        return this.taints[index] != null;
     }
 }

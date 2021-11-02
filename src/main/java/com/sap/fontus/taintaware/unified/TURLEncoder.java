@@ -1,5 +1,6 @@
 package com.sap.fontus.taintaware.unified;
 
+import com.sap.fontus.taintaware.shared.IASTaintMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
 
 import java.io.IOException;
@@ -55,7 +56,7 @@ public class TURLEncoder {
     private static void encodeNonValid(IASString url, IASAbstractStringBuilder strb, int start, int end, IASString enc) throws UnsupportedEncodingException {
         for (int i = start; i < end; i++) {
             IASString s = url.substring(i, i + 1);
-            IASTaintSource source = s.getTaintInformationInitialized().getTaint(0);
+            IASTaintMetadata source = s.getTaintInformationInitialized().getTaint(0);
             if (s.getString().equals(" ")) {
                 IASAbstractStringBuilder toAppend = new IASStringBuilder();
                 toAppend.append('+');

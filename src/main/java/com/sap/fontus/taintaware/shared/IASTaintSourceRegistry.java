@@ -8,6 +8,10 @@ public class IASTaintSourceRegistry {
     public static final IASTaintSource TS_CHAR_UNKNOWN_ORIGIN = getInstance().getOrRegisterTaintSource("CharUnknownOrigin");
     public static final IASTaintSource TS_CS_UNKNOWN_ORIGIN = getInstance().getOrRegisterTaintSource("CharSequenceUnknownOrigin");
 
+    public static final IASTaintMetadata MD_STRING_CREATED_FROM_CHAR_ARRAY = new IASBasicMetadata(TS_STRING_CREATED_FROM_CHAR_ARRAY);
+    public static final IASTaintMetadata MD_CHAR_UNKNOWN_ORIGIN = new IASBasicMetadata(TS_CHAR_UNKNOWN_ORIGIN);
+    public static final IASTaintMetadata MD_CS_UNKNOWN_ORIGIN = new IASBasicMetadata(TS_CS_UNKNOWN_ORIGIN);
+
     private static IASTaintSourceRegistry instance;
     private final List<IASTaintSource> sources = new ArrayList<>();
     private int counter = 0;

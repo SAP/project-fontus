@@ -26,14 +26,14 @@ public class IASTaintRangeUtils {
 
         // Special handling for ranges.size == 1, because its faster and it avoids problems of touching the same range twice when using the > 1 logic
         if (ranges.size() == 1) {
-            ranges.set(0, new IASTaintRange(Math.max(first.getStart(), startIndex) - leftShift, Math.min(first.getEnd(), endIndex) - leftShift, first.getSource()));
+            ranges.set(0, new IASTaintRange(Math.max(first.getStart(), startIndex) - leftShift, Math.min(first.getEnd(), endIndex) - leftShift, first.getMetadata()));
             return;
         }
 
-        ranges.set(0, new IASTaintRange(Math.max(first.getStart(), startIndex) - leftShift, first.getEnd() - leftShift, first.getSource()));
+        ranges.set(0, new IASTaintRange(Math.max(first.getStart(), startIndex) - leftShift, first.getEnd() - leftShift, first.getMetadata()));
 
         IASTaintRange last = ranges.get(ranges.size() - 1);
-        ranges.set(ranges.size() - 1, new IASTaintRange(last.getStart() - leftShift, Math.min(last.getEnd(), endIndex) - leftShift, last.getSource()));
+        ranges.set(ranges.size() - 1, new IASTaintRange(last.getStart() - leftShift, Math.min(last.getEnd(), endIndex) - leftShift, last.getMetadata()));
 
         if (leftShift == 0) return;
 
@@ -68,7 +68,7 @@ public class IASTaintRangeUtils {
                 ranges.remove(i);
                 i--;
             } else {
-                ranges.set(i, new IASTaintRange(Math.max(tr.getStart(), startIndex) - leftShift, Math.min(tr.getEnd(), endIndex) - leftShift, tr.getSource()));
+                ranges.set(i, new IASTaintRange(Math.max(tr.getStart(), startIndex) - leftShift, Math.min(tr.getEnd(), endIndex) - leftShift, tr.getMetadata()));
             }
         }
     }
@@ -133,8 +133,8 @@ public class IASTaintRangeUtils {
                 continue;
             }
 
-            if (first.getSource() == second.getSource() && first.getEnd() == second.getStart()) {
-                IASTaintRange merged = new IASTaintRange(first.getStart(), second.getEnd(), first.getSource());
+            if (first.getMetadata() == second.getMetadata() && first.getEnd() == second.getStart()) {
+                IASTaintRange merged = new IASTaintRange(first.getStart(), second.getEnd(), first.getMetadata());
                 taintRanges.set(i, merged);
                 taintRanges.remove(i + 1);
                 i--;

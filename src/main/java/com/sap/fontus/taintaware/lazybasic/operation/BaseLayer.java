@@ -1,9 +1,6 @@
 package com.sap.fontus.taintaware.lazybasic.operation;
 
-import com.sap.fontus.taintaware.shared.IASTaintRange;
-import com.sap.fontus.taintaware.shared.IASTaintRanges;
-import com.sap.fontus.taintaware.shared.IASTaintRangeUtils;
-import com.sap.fontus.taintaware.shared.IASTaintSource;
+import com.sap.fontus.taintaware.shared.*;
 import com.sap.fontus.taintaware.lazybasic.IASLayer;
 
 import java.util.ArrayList;
@@ -22,8 +19,8 @@ public class BaseLayer implements IASLayer {
         this(new IASTaintRanges(size));
     }
 
-    public BaseLayer(int start, int end, IASTaintSource taintSource) {
-        this(new IASTaintRanges(end, Arrays.asList(new IASTaintRange(start, end, taintSource))));
+    public BaseLayer(int start, int end, IASTaintMetadata data) {
+        this(new IASTaintRanges(end, Arrays.asList(new IASTaintRange(start, end, data))));
     }
 
     public IASTaintRanges getBase() {

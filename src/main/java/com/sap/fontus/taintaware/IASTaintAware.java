@@ -1,5 +1,6 @@
 package com.sap.fontus.taintaware;
 
+import com.sap.fontus.taintaware.shared.IASTaintMetadata;
 import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
 import com.sap.fontus.taintaware.unified.IASString;
@@ -13,7 +14,7 @@ public interface IASTaintAware extends Serializable {
 
     void setTaint(boolean taint);
 
-    void setTaint(IASTaintSource source);
+    void setTaint(IASTaintMetadata data);
 
     IASTaintInformationable getTaintInformation();
 

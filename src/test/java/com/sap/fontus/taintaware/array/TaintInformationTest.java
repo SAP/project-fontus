@@ -2,6 +2,9 @@ package com.sap.fontus.taintaware.array;
 
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
+import com.sap.fontus.taintaware.shared.IASBasicMetadata;
+import com.sap.fontus.taintaware.shared.IASTaintMetadata;
+import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -14,111 +17,118 @@ public class TaintInformationTest {
         Configuration.setTestConfig(TaintMethod.ARRAY);
     }
 
+    private final static IASTaintMetadata md0 = null;
+    private final static IASTaintMetadata md1 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("dummy"));
+    private final static IASTaintMetadata md2 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("dummy2"));
+    private final static IASTaintMetadata md3 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("dummy3"));
+    private final static IASTaintMetadata md4 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("dummy4"));
+    private final static IASTaintMetadata md5 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("dummy5"));
+
     @Test
     public void testSetTaint1() {
         IASTaintInformation ti = new IASTaintInformation(5);
 
-        ti.setTaint(0, 5, 1);
+        ti.setTaint(0, 5, md1);
 
         assertTrue(ti.isTainted());
-        assertArrayEquals(new int[]{1, 1, 1, 1, 1}, ti.getTaints());
+        assertArrayEquals(new IASTaintMetadata[]{md1, md1, md1, md1, md1}, ti.getTaints());
     }
 
     @Test
     public void testSetTaint2() {
         IASTaintInformation ti = new IASTaintInformation(5);
 
-        ti.setTaint(1, 4, 1);
+        ti.setTaint(1, 4, md1);
 
         assertTrue(ti.isTainted());
-        assertArrayEquals(new int[]{0, 1, 1, 1, 0}, ti.getTaints());
+        assertArrayEquals(new IASTaintMetadata[]{md0, md1, md1, md1, md0}, ti.getTaints());
     }
 
     @Test
     public void testSetTaint3() {
         IASTaintInformation ti = new IASTaintInformation(0);
 
-        ti.setTaint(0, 5, 1);
+        ti.setTaint(0, 5, md1);
 
         assertTrue(ti.isTainted());
-        assertArrayEquals(new int[]{1, 1, 1, 1, 1}, ti.getTaints());
+        assertArrayEquals(new IASTaintMetadata[]{md1, md1, md1, md1, md1}, ti.getTaints());
     }
 
     @Test
     public void testSetTaint4() {
         IASTaintInformation ti = new IASTaintInformation(0);
 
-        ti.setTaint(1, 4, 1);
+        ti.setTaint(1, 4, md1);
 
         assertTrue(ti.isTainted());
-        assertArrayEquals(new int[]{0, 1, 1, 1}, ti.getTaints());
+        assertArrayEquals(new IASTaintMetadata[]{md0, md1, md1, md1}, ti.getTaints());
     }
 
     @Test
     public void testSetTaint5() {
         IASTaintInformation ti = new IASTaintInformation(3);
 
-        ti.setTaint(0, 5, 1);
+        ti.setTaint(0, 5, md1);
 
         assertTrue(ti.isTainted());
-        assertArrayEquals(new int[]{1, 1, 1, 1, 1}, ti.getTaints());
+        assertArrayEquals(new IASTaintMetadata[]{md1, md1, md1, md1, md1}, ti.getTaints());
     }
 
     @Test
     public void testSetTaint6() {
         IASTaintInformation ti = new IASTaintInformation(3);
 
-        ti.setTaint(1, 4, 1);
+        ti.setTaint(1, 4, md2);
 
         assertTrue(ti.isTainted());
-        assertArrayEquals(new int[]{0, 1, 1, 1}, ti.getTaints());
+        assertArrayEquals(new IASTaintMetadata[]{md0, md2, md2, md2}, ti.getTaints());
     }
 
     @Test
     public void testSetTaint7() {
-        IASTaintInformation ti = new IASTaintInformation(new int[]{2, 2, 2, 2, 2});
+        IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md2, md2, md2, md2, md2});
 
-        ti.setTaint(0, 5, 1);
+        ti.setTaint(0, 5, md1);
 
         assertTrue(ti.isTainted());
-        assertArrayEquals(new int[]{1, 1, 1, 1, 1}, ti.getTaints());
+        assertArrayEquals(new IASTaintMetadata[]{md1, md1, md1, md1, md1}, ti.getTaints());
     }
 
     @Test
     public void testSetTaint8() {
-        IASTaintInformation ti = new IASTaintInformation(new int[]{2, 2, 2, 2, 2});
+        IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md2, md2, md2, md2, md2});
 
-        ti.setTaint(1, 4, 1);
+        ti.setTaint(1, 4, md1);
 
         assertTrue(ti.isTainted());
-        assertArrayEquals(new int[]{2, 1, 1, 1, 2}, ti.getTaints());
+        assertArrayEquals(new IASTaintMetadata[]{md2, md1, md1, md1, md2}, ti.getTaints());
     }
 
     @Test
     public void testGetTaint1() {
         IASTaintInformation ti = new IASTaintInformation(0);
 
-        int[] taint = ti.getTaints();
+        IASTaintMetadata[] taint = ti.getTaints();
 
-        assertArrayEquals(new int[0], taint);
+        assertArrayEquals(new IASTaintMetadata[0], taint);
     }
 
     @Test
     public void testGetTaint2() {
         IASTaintInformation ti = new IASTaintInformation(1);
 
-        int[] taint = ti.getTaints();
+        IASTaintMetadata[] taint = ti.getTaints();
 
-        assertArrayEquals(new int[1], taint);
+        assertArrayEquals(new IASTaintMetadata[1], taint);
     }
 
     @Test
     public void testGetTaint3() {
-        IASTaintInformation ti = new IASTaintInformation(new int[]{1, 2, 3});
+        IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md1, md2, md3});
 
-        int[] taint = ti.getTaints();
+        IASTaintMetadata[] taint = ti.getTaints();
 
-        assertArrayEquals(new int[]{1, 2, 3}, taint);
+        assertArrayEquals(new IASTaintMetadata[]{md1, md2, md3}, taint);
     }
 
     @Test
@@ -141,11 +151,11 @@ public class TaintInformationTest {
 
     @Test
     public void testGetTaintByIndex3() {
-        IASTaintInformation ti = new IASTaintInformation(new int[]{1, 2, 3, 4, 5});
+        IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md1, md2, md3, md4, md5});
 
-        int[] taint = ti.getTaints(1, 4);
+        IASTaintMetadata[] taint = ti.getTaints(1, 4);
 
-        assertArrayEquals(new int[]{2, 3, 4}, taint);
+        assertArrayEquals(new IASTaintMetadata[]{md2, md3, md4}, taint);
     }
 
     @Test
@@ -168,32 +178,32 @@ public class TaintInformationTest {
 
     @Test
     public void testResize3() {
-        IASTaintInformation ti = new IASTaintInformation(new int[]{0, 0});
+        IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md0, md0});
 
         ti.resize(5);
 
         assertEquals(5, ti.getLength());
-        assertArrayEquals(new int[]{0, 0, 0, 0, 0}, ti.getTaints());
+        assertArrayEquals(new IASTaintMetadata[]{md0, md0, md0, md0, md0}, ti.getTaints());
     }
 
     @Test
     public void testResize4() {
-        IASTaintInformation ti = new IASTaintInformation(new int[]{1, 2});
+        IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md1, md2});
 
         ti.resize(5);
 
         assertEquals(5, ti.getLength());
-        assertArrayEquals(new int[]{1, 2, 0, 0, 0}, ti.getTaints());
+        assertArrayEquals(new IASTaintMetadata[]{md1, md2, md0, md0, md0}, ti.getTaints());
     }
 
     @Test
     public void testResize5() {
-        IASTaintInformation ti = new IASTaintInformation(new int[]{1, 2, 3, 4, 5});
+        IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md1, md2, md3, md4, md5});
 
         ti.resize(2);
 
         assertEquals(2, ti.getLength());
-        assertArrayEquals(new int[]{1, 2}, ti.getTaints());
+        assertArrayEquals(new IASTaintMetadata[]{md1, md2}, ti.getTaints());
     }
 
     @Test
@@ -225,7 +235,7 @@ public class TaintInformationTest {
 
     @Test
     public void testRemoveAll3() {
-        IASTaintInformation ti = new IASTaintInformation(new int[]{1, 2, 3});
+        IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md1, md2, md3});
 
         ti.clearTaint(0, 3);
 
@@ -236,36 +246,36 @@ public class TaintInformationTest {
     public void testInsert1() {
         IASTaintInformation ti = new IASTaintInformation(0);
 
-        ti.insertTaint(5, new int[]{1, 2, 3});
+        ti.insertTaint(5, new IASTaintMetadata[]{md1, md2, md3});
 
-        assertArrayEquals(new int[]{0, 0, 0, 0, 0, 1, 2, 3}, ti.getTaints());
+        assertArrayEquals(new IASTaintMetadata[]{md0, md0, md0, md0, md0, md1, md2, md3}, ti.getTaints());
     }
 
     @Test
     public void testInsert2() {
-        IASTaintInformation ti = new IASTaintInformation(new int[]{0, 0, 0, 0, 0});
+        IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md0, md0, md0, md0, md0});
 
-        ti.insertTaint(5, new int[]{1, 2, 3});
+        ti.insertTaint(5, new IASTaintMetadata[]{md1, md2, md3});
 
-        assertArrayEquals(new int[]{0, 0, 0, 0, 0, 1, 2, 3}, ti.getTaints());
+        assertArrayEquals(new IASTaintMetadata[]{md0, md0, md0, md0, md0, md1, md2, md3}, ti.getTaints());
     }
 
     @Test
     public void testInsert3() {
-        IASTaintInformation ti = new IASTaintInformation(new int[]{0, 0, 0});
+        IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md0, md0, md0});
 
-        ti.insertTaint(2, new int[]{1, 2, 3});
+        ti.insertTaint(2, new IASTaintMetadata[]{md1, md2, md3});
 
-        assertArrayEquals(new int[]{0, 0, 1, 2, 3, 0}, ti.getTaints());
+        assertArrayEquals(new IASTaintMetadata[]{md0, md0, md1, md2, md3, md0}, ti.getTaints());
     }
 
     @Test
     public void testRemoveTaintFor1() {
-        IASTaintInformation ti = new IASTaintInformation(new int[]{1, 2, 3, 4, 5});
+        IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md1, md2, md3, md4, md5});
 
         ti.deleteWithShift(1, 4);
 
-        assertArrayEquals(new int[]{1, 5}, ti.getTaints());
+        assertArrayEquals(new IASTaintMetadata[]{md1, md5}, ti.getTaints());
     }
 
     @Test

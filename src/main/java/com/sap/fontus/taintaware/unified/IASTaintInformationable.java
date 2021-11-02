@@ -1,5 +1,6 @@
 package com.sap.fontus.taintaware.unified;
 
+import com.sap.fontus.taintaware.shared.IASTaintMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintRanges;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
@@ -19,17 +20,13 @@ public interface IASTaintInformationable extends Serializable {
 
     IASTaintInformationable copy();
 
-    default IASTaintInformationable addRange(int start, int end, IASTaintSource source) {
-        return this.setTaint(start, end, source);
-    }
-
-    default IASTaintInformationable addRange(int start, int end, int sourceId) {
-        return this.setTaint(start, end, IASTaintSourceRegistry.getInstance().get(sourceId));
+    default IASTaintInformationable addRange(int start, int end, IASTaintMetadata data) {
+        return this.setTaint(start, end, data);
     }
 
     IASTaintInformationable reversed();
 
-    IASTaintSource getTaint(int index);
+    IASTaintMetadata getTaint(int index);
 
     /**
      * Overwrites the existing taint information at this index
@@ -37,11 +34,11 @@ public interface IASTaintInformationable extends Serializable {
      * @param index index of the taint information to overwrite
      * @param taint taint to set at the position
      */
-    default IASTaintInformationable setTaint(int index, IASTaintSource taint) {
+    default IASTaintInformationable setTaint(int index, IASTaintMetadata taint) {
         return this.setTaint(index, index + 1, taint);
     }
 
-    IASTaintInformationable setTaint(int start, int end, IASTaintSource taint);
+    IASTaintInformationable setTaint(int start, int end, IASTaintMetadata taint);
 
     IASTaintInformationable resize(int length);
 

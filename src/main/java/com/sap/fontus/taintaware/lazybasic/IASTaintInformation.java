@@ -3,13 +3,10 @@ package com.sap.fontus.taintaware.lazybasic;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.taintaware.lazybasic.operation.DeleteLayer;
 import com.sap.fontus.taintaware.lazybasic.operation.InsertLayer;
-import com.sap.fontus.taintaware.shared.IASTaintRange;
-import com.sap.fontus.taintaware.shared.IASTaintRangeUtils;
-import com.sap.fontus.taintaware.shared.IASTaintSource;
+import com.sap.fontus.taintaware.shared.*;
 import com.sap.fontus.utils.stats.Statistics;
 import com.sap.fontus.taintaware.lazybasic.operation.BaseLayer;
 import com.sap.fontus.taintaware.unified.IASTaintInformationable;
-import com.sap.fontus.taintaware.shared.IASTaintRanges;
 
 import java.util.*;
 
@@ -172,12 +169,12 @@ public class IASTaintInformation implements IASTaintInformationable {
     }
 
     @Override
-    public synchronized IASTaintSource getTaint(int position) {
+    public synchronized IASTaintMetadata getTaint(int position) {
         return this.getTaintRanges().getTaintFor(position);
     }
 
     @Override
-    public IASTaintInformationable setTaint(int start, int end, IASTaintSource taint) {
+    public IASTaintInformationable setTaint(int start, int end, IASTaintMetadata taint) {
         this.appendLayer(new DeleteLayer(start, end));
         this.appendLayer(new InsertLayer(start, new IASTaintInformation(end - start, Arrays.asList(new IASTaintRange(0, end - start, taint)))));
         return this;

@@ -28,14 +28,14 @@ public class DeletionLayerTest {
 
     @Test
     public void testDeleteInTR1() {
-        IASTaintRanges previous = new IASTaintRanges(10, Arrays.asList(new IASTaintRange(0, 10, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)));
+        IASTaintRanges previous = new IASTaintRanges(10, Arrays.asList(new IASTaintRange(0, 10, IASTaintSourceRegistry.MD_CHAR_UNKNOWN_ORIGIN)));
         DeleteLayer deleteLayer = new DeleteLayer(2, 5);
 
         IASTaintRanges result = deleteLayer.apply(previous);
 
         assertArrayEquals(
                 new IASTaintRange[]{
-                        new IASTaintRange(0, 7, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)
+                        new IASTaintRange(0, 7, IASTaintSourceRegistry.MD_CHAR_UNKNOWN_ORIGIN)
                 },
                 result.getTaintRanges().toArray(new IASTaintRange[0])
         );
@@ -44,8 +44,8 @@ public class DeletionLayerTest {
     @Test
     public void testDeleteInTR2() {
         IASTaintRanges previous = new IASTaintRanges(10, Arrays.asList(
-                new IASTaintRange(0, 5, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
-                new IASTaintRange(5, 10, IASTaintSourceRegistry.TS_CHAR_UNKNOWN_ORIGIN)
+                new IASTaintRange(0, 5, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN),
+                new IASTaintRange(5, 10, IASTaintSourceRegistry.MD_CHAR_UNKNOWN_ORIGIN)
         ));
         DeleteLayer deleteLayer = new DeleteLayer(3, 7);
 
@@ -53,8 +53,8 @@ public class DeletionLayerTest {
 
         assertArrayEquals(
                 new IASTaintRange[]{
-                        new IASTaintRange(0, 3, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
-                        new IASTaintRange(3, 6, IASTaintSourceRegistry.TS_CHAR_UNKNOWN_ORIGIN)
+                        new IASTaintRange(0, 3, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN),
+                        new IASTaintRange(3, 6, IASTaintSourceRegistry.MD_CHAR_UNKNOWN_ORIGIN)
                 },
                 result.getTaintRanges().toArray(new IASTaintRange[0])
         );
@@ -63,8 +63,8 @@ public class DeletionLayerTest {
     @Test
     public void testDeleteInTR3() {
         IASTaintRanges previous = new IASTaintRanges(10, Arrays.asList(
-                new IASTaintRange(0, 5, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
-                new IASTaintRange(5, 10, IASTaintSourceRegistry.TS_CHAR_UNKNOWN_ORIGIN)
+                new IASTaintRange(0, 5, IASTaintSourceRegistry.MD_CHAR_UNKNOWN_ORIGIN),
+                new IASTaintRange(5, 10, IASTaintSourceRegistry.MD_CHAR_UNKNOWN_ORIGIN)
         ));
         DeleteLayer deleteLayer = new DeleteLayer(3, 10);
 
@@ -72,7 +72,7 @@ public class DeletionLayerTest {
 
         assertArrayEquals(
                 new IASTaintRange[]{
-                        new IASTaintRange(0, 3, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
+                        new IASTaintRange(0, 3, IASTaintSourceRegistry.MD_CHAR_UNKNOWN_ORIGIN),
                 },
                 result.getTaintRanges().toArray(new IASTaintRange[0])
         );
@@ -81,9 +81,9 @@ public class DeletionLayerTest {
     @Test
     public void testDeleteInTR4() {
         IASTaintRanges previous = new IASTaintRanges(15, Arrays.asList(
-                new IASTaintRange(0, 5, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
-                new IASTaintRange(5, 10, IASTaintSourceRegistry.TS_CHAR_UNKNOWN_ORIGIN),
-                new IASTaintRange(10, 15, IASTaintSourceRegistry.TS_STRING_CREATED_FROM_CHAR_ARRAY)
+                new IASTaintRange(0, 5, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN),
+                new IASTaintRange(5, 10, IASTaintSourceRegistry.MD_CHAR_UNKNOWN_ORIGIN),
+                new IASTaintRange(10, 15, IASTaintSourceRegistry.MD_STRING_CREATED_FROM_CHAR_ARRAY)
         ));
         DeleteLayer deleteLayer = new DeleteLayer(3, 13);
 
@@ -91,8 +91,8 @@ public class DeletionLayerTest {
 
         assertArrayEquals(
                 new IASTaintRange[]{
-                        new IASTaintRange(0, 3, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
-                        new IASTaintRange(3, 5, IASTaintSourceRegistry.TS_STRING_CREATED_FROM_CHAR_ARRAY)
+                        new IASTaintRange(0, 3, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN),
+                        new IASTaintRange(3, 5, IASTaintSourceRegistry.MD_STRING_CREATED_FROM_CHAR_ARRAY)
                 },
                 result.getTaintRanges().toArray(new IASTaintRange[0])
         );
@@ -100,7 +100,7 @@ public class DeletionLayerTest {
 
     @Test
     public void testDeleteInTR5() {
-        IASTaintRanges previous = new IASTaintRanges(10, Arrays.asList(new IASTaintRange(0, 5, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)));
+        IASTaintRanges previous = new IASTaintRanges(10, Arrays.asList(new IASTaintRange(0, 5, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN)));
         DeleteLayer deleteLayer = new DeleteLayer(0, 5);
 
         IASTaintRanges result = deleteLayer.apply(previous);

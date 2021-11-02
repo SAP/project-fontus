@@ -11,35 +11,34 @@ public class IASTaintRange implements Cloneable, Serializable {
      * Exclusive the end index
      */
     private final int end;
-    private final IASTaintSource source;
+    /**
+     * Taint metadata (contains the source information and optional other stuff)
+     */
+    private final IASTaintMetadata data;
 
-    public IASTaintRange(int start, int end, IASTaintSource source) {
+    public IASTaintRange(int start, int end, IASTaintMetadata data) {
         if (end < start) {
             throw new IllegalArgumentException("TaintRange size cannot be smaller than 0");
         }
-        if (source == null) {
+        if (data == null) {
             throw new NullPointerException("Source was null");
         }
         this.start = start;
         this.end = end;
-        this.source = source;
-    }
-
-    public IASTaintRange(int start, int end, int sourceId) {
-        this(start, end, IASTaintSourceRegistry.getInstance().get(sourceId));
+        this.data = data;
     }
 
     public IASTaintRange shiftRight(int shift) {
         if (start + shift < 0) {
             throw new IllegalArgumentException("Illegal shift argument. Through shifting start index would be negative!");
         }
-        return new IASTaintRange(start + shift, end + shift, source);
+        return new IASTaintRange(start + shift, end + shift, data);
     }
 
     @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     protected Object clone() {
-        return new IASTaintRange(start, end, source);
+        return new IASTaintRange(start, end, data);
     }
 
     public int getStart() {
@@ -50,8 +49,8 @@ public class IASTaintRange implements Cloneable, Serializable {
         return end;
     }
 
-    public IASTaintSource getSource() {
-        return source;
+    public IASTaintMetadata getMetadata() {
+        return data;
     }
 
     @Override
@@ -63,14 +62,14 @@ public class IASTaintRange implements Cloneable, Serializable {
 
         if (start != that.start) return false;
         if (end != that.end) return false;
-        return source.equals(that.source);
+        return data.equals(that.data);
     }
 
     @Override
     public int hashCode() {
         int result = start;
         result = 31 * result + end;
-        result = 31 * result + source.hashCode();
+        result = 31 * result + data.hashCode();
         return result;
     }
 
@@ -79,7 +78,7 @@ public class IASTaintRange implements Cloneable, Serializable {
         return "TRange{" +
                 "b=" + start +
                 ", e=" + end +
-                ", src=" + source +
+                ", data=" + data +
                 '}';
     }
 }
