@@ -404,6 +404,7 @@ class TestRunner:
         arguments = ["java",
                      "--add-opens",
                      "java.base/jdk.internal.misc=ALL-UNNAMED",
+                     "--illegal-access=permit",
                      "-classpath",
                      '.',
                      '-javaagent:{}=taintmethod={}{}'.format(format_jar_filename(

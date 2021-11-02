@@ -22,6 +22,7 @@ tasks.jar.configure {
 }
 
 dependencies {
+    implementation group: 'com.alibaba', name: 'druid', version: '1.2.5'
     implementation 'org.ow2.asm:asm:9.2'
     implementation 'org.ow2.asm:asm-commons:9.2'
     implementation 'org.ow2.asm:asm-analysis:9.2'
@@ -37,8 +38,6 @@ dependencies {
 
     implementation 'org.owasp.encoder:encoder:1.2.2'
     implementation 'org.owasp.encoder:encoder-jsp:1.2.2'
-    testImplementation 'org.dbunit:dbunit:2.5.1'
-    testImplementation 'com.h2database:h2:1.4.200'
 }
 
 apply plugin: 'java'
@@ -106,6 +105,7 @@ shadowJar {
     relocate 'javax.activation', 'com.sap.fontus.javax.activation'
     relocate 'javax.xml.bind', 'com.sap.fontus.javax.xml.bind'
     relocate 'picocli', 'com.sap.fontus.picocli'
+    relocate 'com.alibaba', 'com.sap.fontus.com.alibaba'
     relocate 'org.owasp.encoder', 'com.sap.fontus.org.owasp.encoder'
     relocate 'org.owasp.encoder-jsp', 'com.sap.fontus.org.owasp.encoder-jsp'
     dependsOn utilJar

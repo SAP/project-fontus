@@ -1,44 +1,79 @@
 <configuration>
     <sourceConfig>
-      <sources>
-      </sources>
+        <sources>
+            <source>
+                <name>next</name>
+                <function>
+                    <opcode>182</opcode>
+                    <owner>java/util/Scanner</owner>
+                    <name>next</name>
+                    <descriptor>()Ljava/lang/String;</descriptor>
+                    <interface>false</interface>
+                </function>
+            </source>
+            <source>
+                <name>nextLine</name>
+                <function>
+                    <opcode>182</opcode>
+                    <owner>java/util/Scanner</owner>
+                    <name>nextLine</name>
+                    <descriptor>()Ljava/lang/String;</descriptor>
+                    <interface>false</interface>
+                </function>
+            </source>
+        </sources>
     </sourceConfig>
     <sinkConfig>
         <sinks>
+            <sink>
+                <name>println</name>
+                <function>
+                    <opcode>182</opcode>
+                    <owner>java/io/PrintStream</owner>
+                    <name>println</name>
+                    <descriptor>(Ljava/lang/String;)V</descriptor>
+                    <interface>false</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>0</index>
+                    </parameter>
+                </parameters>
+            </sink>
         </sinks>
     </sinkConfig>
     <converters>
         <converter>
             <opcode>184</opcode>
-            <owner>com/sap/fontus/taintaware/unified/IASStringUtils</owner>
+            <owner>de/tubs/cs/ias/asm_test/taintaware/shared/IASStringUtils</owner>
             <name>convertStringList</name>
             <descriptor>(Ljava/util/List;)Ljava/util/List;</descriptor>
             <interface>false</interface>
         </converter>
         <converter>
             <opcode>184</opcode>
-            <owner>com/sap/fontus/taintaware/unified/IASStringUtils</owner>
+            <owner>de/tubs/cs/ias/asm_test/taintaware/shared/IASStringUtils</owner>
             <name>convertTStringList</name>
             <descriptor>(Ljava/util/List;)Ljava/util/List;</descriptor>
             <interface>false</interface>
         </converter>
         <converter>
             <opcode>184</opcode>
-            <owner>com/sap/fontus/taintaware/unified/IASStringUtils</owner>
+            <owner>de/tubs/cs/ias/asm_test/taintaware/shared/IASStringUtils</owner>
             <name>convertTStringToTStringHashTable</name>
             <descriptor>(Ljava/util/Hashtable;)Ljava/util/Hashtable;</descriptor>
             <interface>false</interface>
         </converter>
         <converter>
             <opcode>184</opcode>
-            <owner>com/sap/fontus/taintaware/unified/IASStringUtils</owner>
+            <owner>de/tubs/cs/ias/asm_test/taintaware/shared/IASStringUtils</owner>
             <name>convertStringMapToTStringMap</name>
             <descriptor>(Ljava/util/Map;)Ljava/util/Map;</descriptor>
             <interface>false</interface>
         </converter>
         <converter>
             <opcode>184</opcode>
-            <owner>com/sap/fontus/taintaware/unified/IASStringUtils</owner>
+            <owner>de/tubs/cs/ias/asm_test/taintaware/shared/IASStringUtils</owner>
             <name>convertStringHashtableToTStringHashtable</name>
             <descriptor>(Ljava/util/Hashtable;)Ljava/util/Hashtable;</descriptor>
             <interface>false</interface>

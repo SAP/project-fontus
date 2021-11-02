@@ -28,11 +28,7 @@ public class Sanitization {
         for (String attCat : sinkChecks) {
             switch (attCat) {
                 case "SQLi":
-                    System.out.println("Not yet implemented!");
-                    throwRandomRuntimeException();
-                    // do something, e.g. sanitizeAndExecuteQuery(..) (need something new -> wait for sanjit's sql parser)
-                    // problem: how to detect whole query and connection to DB
-                    // e.g. use sql sanitizer or log result or stop program
+                    sanitizedString = sanitizeSQL(taintedString, taintRanges);
                     break;
                 case "XSS":
                     sanitizedString = sanitizeHtml(taintedString, taintRanges);
@@ -94,6 +90,10 @@ public class Sanitization {
         int pos = r.nextInt(exceptions.length);
         // Throw random exception
         throw exceptions[pos];
+    }
+
+    protected static String sanitizeSQL(String taintedString, IASTaintRanges taintRanges) {
+        return SQLChecker.sqlInjectionDetected(taintedString, taintRanges) ? "" : taintedString;
     }
 
     // Sanitizes for SQL injection (SQLi) prevention

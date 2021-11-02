@@ -23,7 +23,7 @@ public class SanitizationAbort extends Abort {
         System.err.println();
         // until categories are specified by the taint mechanism, use:
         List<String> categories = Configuration.getConfiguration().getSinkConfig().getSinkForFqn(sinkFunction).getCategories();
-        System.err.printf("String \"%s\" is tainted and reached sink \"%s\" of categories %s! \n", taintAware, sinkFunction, categories);
+        System.err.printf("String \"%s\" is tainted and reached sink \"%s\": \"%s\" of categories %s! \n", taintAware, sinkName, sinkFunction, categories);
         // sanitize here
         for (IASString s : alreadySanitized) {
             if (s == taintedIASString) {

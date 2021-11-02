@@ -8,7 +8,9 @@ import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import com.sap.fontus.utils.stats.Statistics;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +24,10 @@ public class IASTaintHandler {
 
     public static IASTaintAware handleTaint(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName) {
         boolean isTainted = taintAware.isTainted();
+//        System.out.println("isTainted : " + isTainted);
+//        System.out.println("taintaware : " + taintAware);
+//        System.out.println("sink : " + sink);
+//        System.out.println("stackTrace : " + Arrays.toString(Thread.currentThread().getStackTrace()));
 
         if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.recordTaintCheck(isTainted);
