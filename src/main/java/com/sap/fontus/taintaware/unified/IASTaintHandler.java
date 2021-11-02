@@ -1,5 +1,6 @@
 package com.sap.fontus.taintaware.unified;
 
+import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.abort.Abort;
 import com.sap.fontus.taintaware.IASTaintAware;
@@ -170,5 +171,20 @@ public class IASTaintHandler {
             return object;
         }
         return traverseObject(object, taintAware -> setTaint(taintAware, sourceId));
+    }
+
+    private static FunctionCall taintHandlerFunction;
+
+    static {
+        try {
+            taintHandlerFunction = FunctionCall.fromMethod(IASTaintHandler.class.getMethod("taint", Object.class, int.class));
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static boolean isValidTaintHandler(FunctionCall function) {
+        // Check at least the descriptor is right
+        return (function.getDescriptor().equals(taintHandlerFunction.getDescriptor()));
     }
 }

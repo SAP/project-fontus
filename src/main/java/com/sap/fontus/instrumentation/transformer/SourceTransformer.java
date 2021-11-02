@@ -9,6 +9,7 @@ import com.sap.fontus.instrumentation.MethodTaintingVisitor;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.taintaware.unified.IASTaintHandler;
 import com.sap.fontus.utils.Logger;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.Opcodes;
@@ -33,12 +34,20 @@ public class SourceTransformer implements ReturnTransformation {
 
         MethodTaintingUtils.pushNumberOnTheStack(visitor, source.getId());
 
-        // TODO: Make this configurable
-        FunctionCall taint = new FunctionCall(Opcodes.INVOKESTATIC,
-                Constants.TaintHandlerQN,                             // IASTaintHandler Class
-                Constants.TaintHandlerTaintName,                      // taint Method
-                Constants.TaintHandlerTaintDesc,                      // Object taint(Object object, int sourceId)
-                false);
+        // Get the source taint handler from the configuration file
+        FunctionCall taint = this.source.getTaintHandler();
+
+        // Add default values if not already defined
+        if (taint.isEmpty()) {
+            taint = new FunctionCall(Opcodes.INVOKESTATIC,
+                    Constants.TaintHandlerQN,                             // IASTaintHandler Class
+                    Constants.TaintHandlerTaintName,                      // taint Method
+                    Constants.TaintHandlerTaintDesc,                      // Object taint(Object object, int sourceId)
+                    false);
+        } else if (!IASTaintHandler.isValidTaintHandler(taint)) {
+            throw new RuntimeException("Invalid Taint Handler in configuration file!");
+        }
+
         visitor.visitMethodInsn(taint);
         visitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(desc.getReturnType()).getInternalName());
     }
