@@ -32,10 +32,12 @@ public class SourceTransformer implements ReturnTransformation {
         IASTaintSource source = IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource(this.source.getName());
 
         MethodTaintingUtils.pushNumberOnTheStack(visitor, source.getId());
+
+        // TODO: Make this configurable
         FunctionCall taint = new FunctionCall(Opcodes.INVOKESTATIC,
-                Constants.TaintHandlerQN,
-                Constants.TaintHandlerTaintName,
-                Constants.TaintHandlerTaintDesc,
+                Constants.TaintHandlerQN,                             // IASTaintHandler Class
+                Constants.TaintHandlerTaintName,                      // taint Method
+                Constants.TaintHandlerTaintDesc,                      // Object taint(Object object, int sourceId)
                 false);
         visitor.visitMethodInsn(taint);
         visitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(desc.getReturnType()).getInternalName());

@@ -31,6 +31,8 @@ public class FunctionCall {
         this.isInterface = false;
     }
 
+    public static final FunctionCall EmptyFunctionCall = new FunctionCall();
+
     @XmlElement
     private final int opcode;
     @XmlElement
@@ -120,6 +122,11 @@ public class FunctionCall {
     @JsonIgnore
     public boolean isConstructor() {
         return this.getOpcode() == Opcodes.INVOKESPECIAL && "<init>".equals(this.getName());
+    }
+
+    @JsonIgnore
+    public boolean isEmpty() {
+        return this.equals(EmptyFunctionCall);
     }
 
     @Override

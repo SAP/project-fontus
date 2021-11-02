@@ -23,6 +23,7 @@ class SourceSinkConfigTests {
 
     private static final String config_path = Constants.CONFIGURATION_XML_FILENAME;
     private static final String config_json = "configuration.json";
+    private static final String config_with_handler_path = "configuration_with_handler.xml";
     private static final String config_black = "blacklist.json";
 
     @SuppressWarnings("SameParameterValue")
@@ -73,6 +74,26 @@ class SourceSinkConfigTests {
         assertEquals(2, config.getReturnGeneric().size(), "Shall parse the correct number of returnGeneric entries");
         assertEquals(2, config.getTakeGeneric().size(), "Shall parse the correct number of takeGeneric entries");
         assertEquals(6, config.getBlacklistedMainClasses().size(), "Shall parse the correct number of blacklisted main classes");
+    }
+
+    @Test
+    void testLoadConfigWithSourceHandler() {
+        Configuration config = this.getConfiguration(config_with_handler_path);
+        assertNotNull(config, "Config shall not be null");
+
+        assertEquals(2, config.getSourceConfig().getSources().size(), "Shall parse the correct number of Sources");
+        assertEquals(1, config.getSinkConfig().getSinks().size(), "Shall parse the correct number of Sinks");
+        assertEquals(2, config.getConverters().size(), "Shall parse the correct number of converters");
+        assertEquals(1, config.getReturnGeneric().size(), "Shall parse the correct number of returnGeneric entries");
+        assertEquals(1, config.getTakeGeneric().size(), "Shall parse the correct number of takeGeneric entries");
+
+        // Check the custom taint handler has been read properly
+        assertEquals("next", config.getSourceConfig().getSources().get(0).getName(), "next is the first defined source");
+        assertNotNull(config.getSourceConfig().getSources().get(0).getTaintHandler());
+        assertFalse(config.getSourceConfig().getSources().get(0).getTaintHandler().isEmpty());
+
+        assertEquals("com/sap/fontus/taintaware/unified/TaintHandler", config.getSourceConfig().getSources().get(0).getTaintHandler().getOwner());
+
     }
 
     @Test

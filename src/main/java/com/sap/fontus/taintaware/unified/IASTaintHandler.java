@@ -19,9 +19,20 @@ import java.util.stream.Collectors;
 
 import static com.sap.fontus.utils.ClassTraverser.getAllFields;
 
+/**
+ * This class provides the interface between the instrumented bytecode and taint setters / getters
+ */
 public class IASTaintHandler {
     public static CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(ClassLoader.getSystemClassLoader());
 
+    /**
+     * Hook function called before a sink function is called
+     * @param taintAware The taint aware object (normally a string)
+     * @param instance The specific instance of the object on which the method is called
+     * @param sinkFunction The name of the function
+     * @param sinkName The name of the sink
+     * @return
+     */
     public static IASTaintAware handleTaint(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName) {
         boolean isTainted = taintAware.isTainted();
 //        System.out.println("isTainted : " + isTainted);
@@ -146,6 +157,12 @@ public class IASTaintHandler {
         return traverseObject(object, taintAware -> handleTaint(taintAware, instance, sinkFunction, sinkName));
     }
 
+    /**
+     * Hook function called at all taint sources added to bytecode
+     * @param object The object to be tainted (can be a string, or something which needs traversing, like a list)
+     * @param sourceId The source as an integer
+     * @return A tainted version of the input object
+     */
     public static Object taint(Object object, int sourceId) {
         if (object instanceof IASTaintAware) {
             IASTaintSource source = IASTaintSourceRegistry.getInstance().get(sourceId);
