@@ -121,6 +121,7 @@ public class IASTaintHandler {
 //                traverser.apply(o);
 //            }
 //        }
+        // TODO: This seems to set the map objects to null in the return object!!
         else if (isMap) {
             Map<Object, Object> map = (Map) object;
             object = map.entrySet().stream().collect(Collectors.toMap(e -> traverser.apply(e.getKey()), e -> traverser.apply(e.getValue())));
@@ -167,8 +168,7 @@ public class IASTaintHandler {
      */
     public static Object taint(Object object, int sourceId) {
         if (object instanceof IASTaintAware) {
-            IASTaintSource source = IASTaintSourceRegistry.getInstance().get(sourceId);
-            ((IASTaintAware) object).setTaint(new IASBasicMetadata(source));
+            setTaint((IASTaintAware) object, sourceId);
             return object;
         }
         return traverseObject(object, taintAware -> setTaint(taintAware, sourceId));
