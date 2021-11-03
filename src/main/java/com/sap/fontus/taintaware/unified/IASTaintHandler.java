@@ -74,8 +74,7 @@ public class IASTaintHandler {
         return traverseObject(object, new Function<Object, Object>() {
             @Override
             public Object apply(Object o) {
-                traverseObject(o, this, visited, atomicHandler);
-                return null;
+                return traverseObject(o, this, visited, atomicHandler);
             }
         }, visited, atomicHandler);
     }
@@ -121,7 +120,7 @@ public class IASTaintHandler {
 //                traverser.apply(o);
 //            }
 //        }
-        // TODO: This seems to set the map objects to null in the return object!!
+
         else if (isMap) {
             Map<Object, Object> map = (Map) object;
             object = map.entrySet().stream().collect(Collectors.toMap(e -> traverser.apply(e.getKey()), e -> traverser.apply(e.getValue())));
