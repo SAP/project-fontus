@@ -8,10 +8,15 @@ import com.sap.fontus.taintaware.unified.IASTaintHandler;
 
 public class GdprTaintHandler {
 
-    private static IASTaintAware setTaint(IASTaintAware taintAware, int sourceId) {
+    private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
         IASTaintSource source = IASTaintSourceRegistry.getInstance().get(sourceId);
         taintAware.setTaint(new IASBasicMetadata(source));
         System.out.println("FONTUS: Source: " + source.toString() + " taintAware: " + taintAware.toString());
+        System.out.println("        Caller Type:" + parent.toString());
+        System.out.println("        Input Parameters: " + parameters.length);
+        for (int i = 0; i < parameters.length; i++) {
+            System.out.println("                  " + i + ": " + parameters[i].toString());
+        }
         return taintAware;
     }
 
@@ -27,15 +32,15 @@ public class GdprTaintHandler {
      *     <opcode>184</opcode>
      *     <owner>com/sap/fontus/gdpr/GdprTaintHandler/handler</owner>
      *     <name>taint</name>
-     *     <descriptor>(Ljava/lang/Object;I)Ljava/lang/Object;</descriptor>
+     *     <descriptor>(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object[];I)Ljava/lang/Object;</descriptor>
      *     <interface>false</interface>
      * </tainthandler>
      *
      */
-    public static Object taint(Object object, int sourceId) {
+    public static Object taint(Object object, Object parent, Object[] parameters, int sourceId) {
         if (object instanceof IASTaintAware) {
-            return setTaint((IASTaintAware) object, sourceId);
+            return setTaint((IASTaintAware) object, parent, parameters, sourceId);
         }
-        return IASTaintHandler.traverseObject(object, taintAware -> setTaint(taintAware, sourceId));
+        return IASTaintHandler.traverseObject(object, taintAware -> setTaint(taintAware, parent, parameters, sourceId));
     }
 }
