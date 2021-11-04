@@ -32,7 +32,7 @@ public class GdprTaintHandler {
      *     <opcode>184</opcode>
      *     <owner>com/sap/fontus/gdpr/GdprTaintHandler/handler</owner>
      *     <name>taint</name>
-     *     <descriptor>(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object[];I)Ljava/lang/Object;</descriptor>
+     *     <descriptor>(Ljava/lang/Object;Ljava/lang/Object;[Ljava/lang/Object;I)Ljava/lang/Object;</descriptor>
      *     <interface>false</interface>
      * </tainthandler>
      *

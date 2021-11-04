@@ -26,7 +26,7 @@ public abstract class SourceOrSinkTransformer {
         MethodTaintingUtils.pushNumberOnTheStack(visitor, desc.parameterCount());
         // Create single dimension array of objects
         // Stack: number --> array reference
-        visitor.visitMultiANewArrayInsn(Constants.ObjectQN, 1);
+        visitor.visitTypeInsn(Opcodes.ANEWARRAY, Constants.ObjectQN);
 
         // Now set array values
         List<String> paramList = desc.getParameters();
