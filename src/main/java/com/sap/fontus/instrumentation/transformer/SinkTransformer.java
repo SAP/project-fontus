@@ -1,5 +1,6 @@
 package com.sap.fontus.instrumentation.transformer;
 
+import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.Sink;
 import com.sap.fontus.Constants;
 import com.sap.fontus.instrumentation.MethodTaintingVisitor;
@@ -10,17 +11,16 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-public class SinkTransformer implements ParameterTransformation {
+public class SinkTransformer extends SourceOrSinkTransformer implements ParameterTransformation {
     private static final Logger logger = LogUtils.getLogger();
 
     private final Sink sink;
     private final InstrumentationHelper instrumentationHelper;
-    private final int usedLocalVars;
 
     public SinkTransformer(Sink sink, InstrumentationHelper instrumentationHelper, int usedLocalVars) {
+        super(usedLocalVars);
         this.sink = sink;
         this.instrumentationHelper = instrumentationHelper;
-        this.usedLocalVars = usedLocalVars;
     }
 
     @Override
@@ -39,15 +39,9 @@ public class SinkTransformer implements ParameterTransformation {
             String sinkFunction = String.format("%s.%s%s", this.sink.getFunction().getOwner(), this.sink.getFunction().getName(), this.sink.getFunction().getDescriptor());
             String sinkName = this.sink.getName();
 
-            int size = this.sink.getFunction().getParsedDescriptor().getParameters().stream().mapToInt((param) -> Type.getType(param).getSize()).sum();
-
             // Put the owning object instance onto the stack
             MethodVisitor originalVisitor = mv.getParent();
-            if (this.sink.getFunction().isInstanceMethod()) {
-                originalVisitor.visitVarInsn(Type.getObjectType(this.sink.getFunction().getOwner()).getOpcode(Opcodes.ILOAD), size + this.usedLocalVars);
-            } else {
-                originalVisitor.visitInsn(Opcodes.ACONST_NULL);
-            }
+            addParentObjectToStack(originalVisitor, this.sink.getFunction());
 
             originalVisitor.visitLdcInsn(sinkFunction);
             originalVisitor.visitLdcInsn(sinkName);

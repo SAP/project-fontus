@@ -1,5 +1,6 @@
 package com.sap.fontus.asm;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sap.fontus.utils.Utils;
 import org.objectweb.asm.Type;
 
@@ -46,6 +47,11 @@ public class Descriptor {
 
     public int parameterCount() {
         return this.parameters.size();
+    }
+
+    public int getParameterTotalSize() {
+        // Sum up the total size of the parameters
+        return getParameters().stream().mapToInt((param) -> Type.getType(param).getSize()).sum();
     }
 
     public Stack<String> getParameterStack() {

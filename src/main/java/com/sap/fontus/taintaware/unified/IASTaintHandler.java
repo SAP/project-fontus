@@ -1,5 +1,6 @@
 package com.sap.fontus.taintaware.unified;
 
+import com.sap.fontus.Constants;
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.abort.Abort;
@@ -165,7 +166,7 @@ public class IASTaintHandler {
      * @param sourceId The source as an integer
      * @return A tainted version of the input object
      */
-    public static Object taint(Object object, int sourceId) {
+    public static Object taint(Object object, Object parentObject, Object[] parameters, int sourceId) {
         if (object instanceof IASTaintAware) {
             setTaint((IASTaintAware) object, sourceId);
             return object;
@@ -173,18 +174,8 @@ public class IASTaintHandler {
         return traverseObject(object, taintAware -> setTaint(taintAware, sourceId));
     }
 
-    private static FunctionCall taintHandlerFunction;
-
-    static {
-        try {
-            taintHandlerFunction = FunctionCall.fromMethod(IASTaintHandler.class.getMethod("taint", Object.class, int.class));
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public static boolean isValidTaintHandler(FunctionCall function) {
         // Check at least the descriptor is right
-        return (function.getDescriptor().equals(taintHandlerFunction.getDescriptor()));
+        return (function.getDescriptor().equals(Constants.TaintHandlerTaintDesc));
     }
 }

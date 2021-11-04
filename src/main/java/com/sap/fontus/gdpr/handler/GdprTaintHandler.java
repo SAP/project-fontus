@@ -25,7 +25,7 @@ public class GdprTaintHandler {
      *
      * <tainthandler>
      *     <opcode>184</opcode>
-     *     <owner>com/sap/fontus/gdpr/GdprTaintHandler</owner>
+     *     <owner>com/sap/fontus/gdpr/GdprTaintHandler/handler</owner>
      *     <name>taint</name>
      *     <descriptor>(Ljava/lang/Object;I)Ljava/lang/Object;</descriptor>
      *     <interface>false</interface>

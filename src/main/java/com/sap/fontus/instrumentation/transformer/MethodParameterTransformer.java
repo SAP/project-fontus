@@ -84,7 +84,9 @@ public class MethodParameterTransformer {
 
         int n = nUsedLocalVariables;
 
+        // Store the owning object in the local variables
         if (this.function.isInstanceMethod()) {
+            // First store all variables as local variables
             for (int i = params.size() - 1; i >= 0; i--) {
                 String p = params.pop();
                 Type t = Type.getType(p);
@@ -93,12 +95,14 @@ public class MethodParameterTransformer {
                 n += t.getSize();
             }
 
+            // Then store the owning object as a local variable
             int ownerN = n;
             this.visitor.visitInsn(Opcodes.DUP);
             this.visitor.visitVarInsn(Type.getObjectType(this.function.getOwner()).getOpcode(Opcodes.ISTORE), ownerN);
 
             List<String> paramList = new ArrayList<>(this.descriptor.getParameters());
 
+            // Reload the local variables onto the stack
             for (int i = 0; i < paramList.size(); i++) {
                 String p = paramList.get(i);
                 Type t = Type.getType(p);
