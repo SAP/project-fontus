@@ -1,13 +1,12 @@
 package com.sap.fontus.gdpr.handler;
 
+import com.sap.fontus.gdpr.servlet.ReflectedHttpServlet;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASBasicMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.List;
 
 public class GdprTaintHandler {
@@ -25,14 +24,9 @@ public class GdprTaintHandler {
             }
         }
 
-        if (source instanceof HttpServletRequest) {
-            // Do something with the request object
-            HttpServletRequest request = (HttpServletRequest) source;
-            String[] names = request.getParameterValues("name");
-            HttpSession session = request.getSession();
-            System.out.println("Session: " + session);
-            System.out.println("Parameters: " + names);
-        }
+        // This might not work as we relocate the HttpServletRequest object...
+        ReflectedHttpServlet servlet = new ReflectedHttpServlet(parent);
+        System.out.println("URL: " + servlet.getRequestURL());
 
         //taintAware.setTaint(new IASBasicMetadata(source));
         return taintAware;
