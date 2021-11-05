@@ -109,6 +109,7 @@ shadowJar {
     relocate 'com.alibaba', 'com.sap.fontus.com.alibaba'
     relocate 'org.owasp.encoder', 'com.sap.fontus.org.owasp.encoder'
     relocate 'org.owasp.encoder-jsp', 'com.sap.fontus.org.owasp.encoder-jsp'
+    relocate 'javax.servlet.http', 'com.sap.fontus.javax.servlet.http'
     dependsOn utilJar
 //    dependsOn converterJar
 //    dependsOn generatorJar
