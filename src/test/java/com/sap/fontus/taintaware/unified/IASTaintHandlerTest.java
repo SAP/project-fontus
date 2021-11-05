@@ -46,8 +46,8 @@ public class IASTaintHandlerTest {
 
     @Test
     public void testTaintMap() {
-        Map<String, Object> map = new HashMap<String, Object>();
-        List<String> types = new ArrayList<String>();
+        Map<String, Object> map = new HashMap<>();
+        List<String> types = new ArrayList<>();
 
         types.add("element1");
         types.add("element2");
@@ -72,7 +72,7 @@ public class IASTaintHandlerTest {
 
         Object result = IASTaintHandler.taint(map, null, null,1);
         assertTrue(result instanceof Map);
-        Map<String, List<IASString>> resultMap = (Map) result;
+        Map<String, List<IASString>> resultMap = (Map<String, List<IASString>>) result;
         assertEquals(map, resultMap);
         assertTrue(resultMap.get("key").get(0).isTainted());
         assertEquals(1, resultMap.get("key").get(0).getTaintInformation().getTaint(0).getSource().getId());
@@ -80,7 +80,7 @@ public class IASTaintHandlerTest {
 
     @Test
     public void testTaintList() {
-        List<String> types = new ArrayList<String>();
+        List<String> types = new ArrayList<>();
 
         types.add("element1");
         types.add("element2");

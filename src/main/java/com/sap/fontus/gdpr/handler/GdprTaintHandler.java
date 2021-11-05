@@ -6,17 +6,35 @@ import com.sap.fontus.taintaware.shared.IASTaintSource;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.util.List;
+
 public class GdprTaintHandler {
 
     private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
         IASTaintSource source = IASTaintSourceRegistry.getInstance().get(sourceId);
-        taintAware.setTaint(new IASBasicMetadata(source));
-        System.out.println("FONTUS: Source: " + source.toString() + " taintAware: " + taintAware.toString());
-        System.out.println("        Caller Type:" + parent.toString());
-        System.out.println("        Input Parameters: " + parameters.length);
-        for (int i = 0; i < parameters.length; i++) {
-            System.out.println("                  " + i + ": " + parameters[i].toString());
+
+        System.out.println("FONTUS: Source: " + source);
+        System.out.println("        taintAware: " + taintAware);
+        System.out.println("        Caller Type:" + parent);
+        System.out.println("        Input Parameters: " + parameters);
+        if (parameters != null) {
+            for (int i = 0; i < parameters.length; i++) {
+                System.out.println("                  " + i + ": " + parameters[i].toString());
+            }
         }
+
+        if (source instanceof HttpServletRequest) {
+            // Do something with the request object
+            HttpServletRequest request = (HttpServletRequest) source;
+            String[] names = request.getParameterValues("name");
+            HttpSession session = request.getSession();
+            System.out.println("Session: " + session);
+            System.out.println("Parameters: " + names);
+        }
+
+        //taintAware.setTaint(new IASBasicMetadata(source));
         return taintAware;
     }
 
