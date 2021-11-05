@@ -28,10 +28,13 @@ public class GdprTaintHandler {
         // This might not work as we relocate the HttpServletRequest object...
         ReflectedHttpServlet servlet = new ReflectedHttpServlet(parent);
         System.out.println("URL: " + servlet.getRequestURL());
-        System.out.println("Cookies:");
+
         ReflectedCookie[] cookies = servlet.getCookies();
-        for (ReflectedCookie cookie : cookies) {
-            System.out.println(cookie);
+        System.out.println("Cookies: " + cookies);
+        if (cookies != null) {
+            for (ReflectedCookie cookie : cookies) {
+                System.out.println(cookie);
+            }
         }
 
         //taintAware.setTaint(new IASBasicMetadata(source));

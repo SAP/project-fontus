@@ -7,6 +7,9 @@ import javax.servlet.http.Cookie;
 public class ReflectedCookie extends ReflectedObject {
 
     public static ReflectedCookie[] reflectedArray(Object o) {
+        if (o == null) {
+            return null;
+        }
         Object[] a = (Object[]) o;
         ReflectedCookie[] cookieArray = new ReflectedCookie[a.length];
         for (int i = 0; i < a.length; i++) {
@@ -79,8 +82,16 @@ public class ReflectedCookie extends ReflectedObject {
         this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod(), v);
     }
 
+    @Override
     public Object clone() {
         return new ReflectedCookie(o);
     }
 
+    @Override
+    public String toString() {
+        return "ReflectedCookie{" +
+                "name=" + getName().toString() +
+                ", value=" + getValue().toString() +
+                '}';
+    }
 }
