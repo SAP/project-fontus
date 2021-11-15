@@ -1,4 +1,5 @@
 package com.sap.fontus.gdpr.metadata;
 
-public class Identifiability {
+public enum Identifiability {
+    Undefined, Explicit, NotExplicit
 }

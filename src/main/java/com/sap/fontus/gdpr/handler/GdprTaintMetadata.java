@@ -1,5 +1,6 @@
-package com.sap.fontus.gdpr.metadata;
+package com.sap.fontus.gdpr.handler;
 
+import com.sap.fontus.gdpr.metadata.GdprMetadata;
 import com.sap.fontus.taintaware.shared.IASBasicMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
 

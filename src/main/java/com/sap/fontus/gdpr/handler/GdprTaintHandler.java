@@ -57,23 +57,7 @@ public class GdprTaintHandler {
         if (vendorConsent != null) {
             System.out.println("TCF Cookie: " + vendorConsent.toString());
         } else {
-            final VendorConsent vc = new VendorConsentBuilder()
-                    .withConsentRecordCreatedOn(Instant.now())
-                    .withConsentRecordLastUpdatedOn(Instant.now())
-                    .withCmpID(5)
-                    .withCmpVersion(1)
-                    .withConsentScreenID(1)
-                    .withConsentLanguage("en")
-                    .withVendorListVersion(1)
-                    .withAllowedPurposes(Stream.of(Purpose.AD_SELECTION, Purpose.STORAGE_AND_ACCESS, Purpose.PERSONALIZATION)
-                            .collect(Collectors.toCollection(HashSet::new)))
-                    .withMaxVendorId(10)
-                    .withVendorEncodingType(1)
-                    .withDefaultConsent(false)
-                    .build();
-            final String base64String = VendorConsentEncoder.toBase64String(vendorConsent);
-            System.out.println("No euconsent Cookie found, try this one: " + base64String);
-            // BOEFEAyOEFEAyAHABDENAI4AAAB9vABAASA
+            System.out.println("No euconsent Cookie found, try this one: BOEFEAyOEFEAyAHABDENAI4AAAB9vABAASA");
         }
         //taintAware.setTaint(new IASBasicMetadata(source));
         return taintAware;

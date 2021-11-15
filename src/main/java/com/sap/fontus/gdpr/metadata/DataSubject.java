@@ -1,39 +1,8 @@
 package com.sap.fontus.gdpr.metadata;
 
-import java.util.Objects;
 
-public class DataSubject {
-    private String name;
+public interface DataSubject {
 
-    public DataSubject(String name) {
-        this.name = name;
-    }
+    public String getIdentifier();
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        DataSubject that = (DataSubject) o;
-        return Objects.equals(name, that.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name);
-    }
-
-    @Override
-    public String toString() {
-        return "DataSubject{" +
-                "name='" + name + '\'' +
-                '}';
-    }
 }
