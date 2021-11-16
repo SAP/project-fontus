@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 public final class Constants {
     public static final String AGENT_DELIMITER = ",";
+    public static final String TAINT_PREFIX = "__taint__";
 
     public static final String ConversionUtilsQN = Utils.getInternalName(ConversionUtils.class);
     public static final String ConversionUtilsToConcreteName;
