@@ -1,10 +1,8 @@
 package com.sap.fontus.gdpr.handler;
 
-import com.iab.gdpr.Purpose;
-import com.iab.gdpr.consent.VendorConsent;
-import com.iab.gdpr.consent.VendorConsentDecoder;
-import com.iab.gdpr.consent.VendorConsentEncoder;
-import com.iab.gdpr.consent.implementation.v1.VendorConsentBuilder;
+import com.iabtcf.decoder.TCString;
+import com.sap.fontus.gdpr.metadata.GdprMetadata;
+import com.sap.fontus.gdpr.metadata.tcf.TcfBackedGdprMetadata;
 import com.sap.fontus.gdpr.servlet.ReflectedCookie;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServlet;
 import com.sap.fontus.taintaware.IASTaintAware;
@@ -48,14 +46,22 @@ public class GdprTaintHandler {
         }
 
         String euconsent_name = "euconsent";
-        VendorConsent vendorConsent = null;
+        String euconsent_v2_name = "euconsent_v2";
+        TCString vendorConsent = null;
         for (ReflectedCookie cookie : cookies) {
-            if (cookie.getName().equals(euconsent_name)) {
-                vendorConsent = VendorConsentDecoder.fromBase64String(cookie.getValue().getString());
+            // Make sure v2 is given priority
+            if (cookie.getName().equals(euconsent_v2_name)) {
+                vendorConsent = TCString.decode(cookie.getValue().getString());
+                break;
+            } else if (cookie.getName().equals(euconsent_name)) {
+                vendorConsent = TCString.decode(cookie.getValue().getString());
+                break;
             }
         }
         if (vendorConsent != null) {
             System.out.println("TCF Cookie: " + vendorConsent.toString());
+            GdprMetadata metadata = new TcfBackedGdprMetadata(vendorConsent);
+            System.out.println("Metadata: " + metadata);
         } else {
             System.out.println("No euconsent Cookie found, try this one: BOEFEAyOEFEAyAHABDENAI4AAAB9vABAASA");
         }

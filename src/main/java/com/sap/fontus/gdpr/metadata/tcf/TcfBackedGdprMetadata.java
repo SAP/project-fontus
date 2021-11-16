@@ -1,9 +1,9 @@
 package com.sap.fontus.gdpr.metadata.tcf;
 
-import com.iab.gdpr.Purpose;
-import com.iab.gdpr.consent.VendorConsent;
+import com.iabtcf.decoder.TCString;
 import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.simple.SimpleAllowedPurpose;
+import com.sap.fontus.gdpr.metadata.simple.SimpleDataId;
 import com.sap.fontus.gdpr.metadata.simple.SimpleExpiryDate;
 import com.sap.fontus.gdpr.metadata.simple.SimpleVendor;
 
@@ -12,10 +12,12 @@ import java.util.Set;
 
 public class TcfBackedGdprMetadata implements GdprMetadata {
 
-    VendorConsent vc;
+    TCString tcString;
+    DataId dataId;
 
-    public TcfBackedGdprMetadata(VendorConsent vendorConsent) {
-        this.vc = vendorConsent;
+    public TcfBackedGdprMetadata(TCString tcString){
+        this.tcString = tcString;
+        this.dataId = new SimpleDataId();
     }
 
     @Override
@@ -24,15 +26,15 @@ public class TcfBackedGdprMetadata implements GdprMetadata {
 
         // Convert Vendors
         Set<Vendor> vendors = new HashSet<>();
-        for (int v: vc.getAllowedVendorIds()) {
+        for (int v: tcString.getAllowedVendors()) {
             vendors.add(new SimpleVendor(v));
         }
 
         // Convert purposes
-        for (Purpose p : vc.getAllowedPurposes()) {
+        for (int p : tcString.getPurposesConsent()) {
             purposes.add(new SimpleAllowedPurpose(
                     new SimpleExpiryDate(),
-                    PurposeMap.ConvertFromTcfPurpose(p),
+                    VendorList.ConvertFromTcfId(p),
                     vendors));
         }
         return purposes;
@@ -50,7 +52,7 @@ public class TcfBackedGdprMetadata implements GdprMetadata {
 
     @Override
     public DataId getId() {
-        return null;
+        return dataId;
     }
 
     @Override
@@ -67,4 +69,5 @@ public class TcfBackedGdprMetadata implements GdprMetadata {
     public Identifiability isIdentifiabible() {
         return Identifiability.Undefined;
     }
+
 }

@@ -1,14 +1,13 @@
 package com.sap.fontus.gdpr.metadata;
 
-public enum Purpose {
-    Undefined,
-    StorageAndAccess,
-    Personalisation,
-    AdSelection,
-    ContentSelection,
-    Measurement,
-    // These are features of TCF
-    Matching,
-    Linking,
-    LocationData
+public interface Purpose {
+
+    int getId();
+
+    String getName();
+
+    String getDescription();
+
+    String getLegalDescription();
+
 }

@@ -30,7 +30,9 @@ dependencies {
     implementation 'org.ow2.asm:asm-util:9.2'
     implementation 'info.picocli:picocli:4.1.4'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.3'
-    implementation group: 'com.conversantmedia.gdpr', name: 'consent-string-sdk-java', version: '3.0.2'
+    implementation 'com.iabtcf:iabtcf-decoder:2.0.10'
+    implementation 'com.iabtcf:iabtcf-extras:2.0.10'
+    implementation 'com.iabtcf:iabtcf-extras-jackson:2.0.10'
     implementation group: 'org.json', name: 'json', version: '20200518'
     implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
     implementation 'javax.servlet:servlet-api:2.5'
@@ -112,7 +114,7 @@ shadowJar {
     relocate 'org.owasp.encoder', 'com.sap.fontus.org.owasp.encoder'
     relocate 'org.owasp.encoder-jsp', 'com.sap.fontus.org.owasp.encoder-jsp'
     relocate 'javax.servlet', 'com.sap.fontus.javax.servlet'
-    relocate 'com.iab.gdpr', 'com.sap.fontus.com.iab.gdpr'
+    relocate 'com.iabtcf', 'com.sap.fontus.com.iabtcf'
     dependsOn utilJar
 //    dependsOn converterJar
 //    dependsOn generatorJar
