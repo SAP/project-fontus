@@ -1,51 +1,43 @@
-package com.sap.fontus.gdpr.handler;
+package com.sap.fontus.gdpr.tcf;
 
 import com.iabtcf.decoder.TCString;
 import com.sap.fontus.gdpr.metadata.GdprMetadata;
-import com.sap.fontus.gdpr.tcf.TcfBackedGdprMetadata;
+import com.sap.fontus.gdpr.metadata.GdprTaintMetadata;
 import com.sap.fontus.gdpr.servlet.ReflectedCookie;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.taintaware.IASTaintAware;
-import com.sap.fontus.taintaware.shared.IASTaintSource;
-import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
 
-public class GdprTaintHandler extends IASTaintHandler {
+public class TcfTaintHandler extends IASTaintHandler {
 
+    private static String consent_name = "euconsent";
+    private static String consent_v2_name = "euconsent_v2";
+
+    /**
+     * Extracts the TCF consent string from a cookie and attaches it as the taint metadata
+     * @param taintAware The Taint Aware String-like object
+     * @param parent The object on which this method is being called
+     * @param parameters The parameters used to make the method call
+     * @param sourceId The ID of the source function (internal)
+     * @return A possibly tainted version of the input object
+     */
     private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
-        IASTaintSource source = IASTaintSourceRegistry.getInstance().get(sourceId);
 
-        System.out.println("FONTUS: Source: " + source);
-        System.out.println("        taintAware: " + taintAware);
-        System.out.println("        Caller Type:" + parent);
-        System.out.println("        Input Parameters: " + parameters);
-        if (parameters != null) {
-            for (int i = 0; i < parameters.length; i++) {
-                System.out.println("                  " + i + ": " + parameters[i].toString());
-            }
-        }
+        IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
 
         // This might not work as we relocate the HttpServletRequest object...
         ReflectedHttpServletRequest servlet = new ReflectedHttpServletRequest(parent);
-        System.out.println("URL: " + servlet.getRequestURL());
+
+        System.out.print(servlet.toString());
 
         ReflectedCookie[] cookies = servlet.getCookies();
-        System.out.println("Cookies: " + cookies);
-        if (cookies != null) {
-            for (ReflectedCookie cookie : cookies) {
-                System.out.println(cookie);
-            }
-        }
-
-        String euconsent_name = "euconsent";
-        String euconsent_v2_name = "euconsent_v2";
         TCString vendorConsent = null;
         for (ReflectedCookie cookie : cookies) {
             // Make sure v2 is given priority
-            if (cookie.getName().equals(euconsent_v2_name)) {
+            if (cookie.getName().equals(consent_v2_name)) {
                 vendorConsent = TCString.decode(cookie.getValue().getString());
                 break;
-            } else if (cookie.getName().equals(euconsent_name)) {
+            } else if (cookie.getName().equals(consent_name)) {
                 vendorConsent = TCString.decode(cookie.getValue().getString());
                 break;
             }
@@ -53,11 +45,10 @@ public class GdprTaintHandler extends IASTaintHandler {
         if (vendorConsent != null) {
             System.out.println("TCF Cookie: " + vendorConsent.toString());
             GdprMetadata metadata = new TcfBackedGdprMetadata(vendorConsent);
-            System.out.println("Metadata: " + metadata);
+            taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
         } else {
-            System.out.println("No euconsent Cookie found, try this one: BOEFEAyOEFEAyAHABDENAI4AAAB9vABAASA");
+            System.out.println("No euconsent[_v2] Cookie found!");
         }
-        //taintAware.setTaint(new IASBasicMetadata(source));
         return taintAware;
     }
 

@@ -1,4 +1,4 @@
-package com.sap.fontus.gdpr.metadata.tcf;
+package com.sap.fontus.gdpr.tcf;
 
 
 import com.iabtcf.extras.jackson.Loader;
@@ -7,8 +7,6 @@ import com.sap.fontus.gdpr.metadata.Purpose;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 
 public class VendorList {
@@ -29,12 +27,15 @@ public class VendorList {
         }
     }
 
-    public static Purpose ConvertFromTcfId(int p) {
-        for (com.iabtcf.extras.gvl.Purpose purpose : gvl.getPurposes()) {
-            if (purpose.getId() == p) {
-                return new TcfPurpose(purpose);
+    public static Purpose GetPurposeFromTcfId(int p) {
+        if (gvl != null) {
+            for (com.iabtcf.extras.gvl.Purpose purpose : gvl.getPurposes()) {
+                if (purpose.getId() == p) {
+                    return new TcfPurpose(purpose);
+                }
             }
         }
         return null;
     }
+
 }

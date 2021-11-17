@@ -18,9 +18,9 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
 
-public class ReflectedHttpServlet extends ReflectedObject {
+public class ReflectedHttpServletRequest extends ReflectedObject {
 
-    public ReflectedHttpServlet(Object object) {
+    public ReflectedHttpServletRequest(Object object) {
         super(object);
     }
 
@@ -291,5 +291,36 @@ public class ReflectedHttpServlet extends ReflectedObject {
     
     public int getLocalPort() {
         return 0;
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("URL: " + this.getRequestURL());
+        sb.append(System.getProperty("line.separator"));
+
+        Enumeration e = this.getParameterNames();
+        sb.append("Query Parameters:");
+        sb.append(System.getProperty("line.separator"));
+        while (e.hasMoreElements()) {
+            IASString s = (IASString) e.nextElement();
+            sb.append(s.getString() + " = ");
+            for (IASString value : this.getParameterValues(s)) {
+                sb.append(value.getString() + ", ");
+            }
+        }
+        sb.append(System.getProperty("line.separator"));
+
+        ReflectedCookie[] cookies = this.getCookies();
+        sb.append("Cookies: " + cookies);
+        sb.append(System.getProperty("line.separator"));
+        if (cookies != null) {
+            for (ReflectedCookie cookie : cookies) {
+                sb.append(cookie.toString());
+                sb.append(System.getProperty("line.separator"));
+            }
+        }
+
+        return sb.toString();
     }
 }

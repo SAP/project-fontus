@@ -28,6 +28,23 @@ import static com.sap.fontus.utils.ClassTraverser.getAllFields;
 public class IASTaintHandler {
     public static CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(ClassLoader.getSystemClassLoader());
 
+    protected static void printObjectInfo(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
+
+        IASTaintSource source = IASTaintSourceRegistry.getInstance().get(sourceId);
+
+        System.out.println("FONTUS: Source: " + source);
+        System.out.println("        taintAware: " + taintAware);
+        System.out.println("        Caller Type:" + parent);
+        System.out.println("        Input Parameters: " + parameters);
+
+        if (parameters != null) {
+            for (int i = 0; i < parameters.length; i++) {
+                System.out.println("                  " + i + ": " + parameters[i].toString());
+            }
+        }
+
+    }
+
     /**
      * Hook function called before a sink function is called
      * @param taintAware The taint aware object (normally a string)
@@ -70,7 +87,7 @@ public class IASTaintHandler {
         return taintAware;
     }
 
-    public static Object traverseObject(Object object, Function<IASTaintAware, IASTaintAware> atomicHandler) {
+    protected static Object traverseObject(Object object, Function<IASTaintAware, IASTaintAware> atomicHandler) {
         List<Object> visited = new ArrayList<>();
         return traverseObject(object, new Function<Object, Object>() {
             @Override
@@ -80,7 +97,7 @@ public class IASTaintHandler {
         }, visited, atomicHandler);
     }
 
-    public static Object traverseObject(Object object, Function<Object, Object> traverser, List<Object> visited, Function<IASTaintAware, IASTaintAware> atomicHandler) {
+    protected static Object traverseObject(Object object, Function<Object, Object> traverser, List<Object> visited, Function<IASTaintAware, IASTaintAware> atomicHandler) {
         if (object == null) {
             return null;
         } else if (visited.contains(object)) {

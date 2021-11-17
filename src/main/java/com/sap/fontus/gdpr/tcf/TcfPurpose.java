@@ -1,4 +1,4 @@
-package com.sap.fontus.gdpr.metadata.tcf;
+package com.sap.fontus.gdpr.tcf;
 
 import com.sap.fontus.gdpr.metadata.Purpose;
 
