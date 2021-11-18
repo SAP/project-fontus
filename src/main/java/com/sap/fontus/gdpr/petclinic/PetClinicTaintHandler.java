@@ -55,15 +55,24 @@ public class PetClinicTaintHandler extends IASTaintHandler {
             System.out.println(o);
             Method m = obj.getClass().getMethod("getBean", IASString.class);
             Object bean = m.invoke(obj, new IASString("ownerRepository"));
+            // This actully returns some funky fontus proxy object
             System.out.println(bean);
-            Method m2 = bean.getClass().getMethod("findById", int.class);
-            Object owner = m2.invoke(bean, id);
+            Method m2 = bean.getClass().getMethod("findById", Integer.class);
+            Object owner = m2.invoke(bean, Integer.valueOf(id));
             System.out.println(owner);
-            Method m3 = owner.getClass().getMethod("getName");
+
+            Method m3 = owner.getClass().getMethod("getFirstName");
             Object n = m3.invoke(owner);
             System.out.println(n);
             IASString s = (IASString) n;
-            name = s.toString();
+
+            Method m4 = owner.getClass().getMethod("getLastName");
+            Object n2 = m4.invoke(owner);
+            System.out.println(n2);
+            IASString s2 = (IASString) n2;
+
+            name = s.getString() + " " + s2.getString();
+
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
