@@ -50,6 +50,9 @@ public class PetClinicTaintHandler extends IASTaintHandler {
             Object obj = servlet.getAttribute(new IASString("org.springframework.web.servlet.DispatcherServlet.CONTEXT"));
             // Should be a org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext
             System.out.println(obj);
+            Method mn = obj.getClass().getMethod("getDisplayName");
+            Object o = mn.invoke(obj);
+            System.out.println(o);
             Method m = obj.getClass().getMethod("getBean", IASString.class);
             Object bean = m.invoke(obj, new IASString("ownerRepository"));
             System.out.println(bean);
