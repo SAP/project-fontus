@@ -1,5 +1,8 @@
 package com.sap.fontus.sql.driver;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.sap.fontus.taintaware.shared.IASTaintRanges;
 import com.sap.fontus.taintaware.unified.IASString;
 
 import java.io.InputStream;
@@ -454,12 +457,18 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         //System.out.println(Arrays.toString(this.setVariables));
         //System.out.println(Arrays.toString(this.newIndex));
         this.setVariables[newIndex[parameterIndex-1]-1]=true;
-        this.setVariables[newIndex[parameterIndex-1]]=true;
-        //System.out.printf("Setting String at idx %d: %s/%s%n", parameterIndex, x.getString(), "foo");
-        //System.out.println(Arrays.toString(this.setVariables));
-        //System.out.println(Arrays.toString(this.newIndex));
         delegate.setString(newIndex[parameterIndex-1], x.getString());
-        delegate.setString(newIndex[parameterIndex-1]+1, "foo");
+        if(x.isTainted()) {
+            this.setVariables[newIndex[parameterIndex - 1]] = true;
+            //System.out.printf("Setting String at idx %d: %s/%s%n", parameterIndex, x.getString(), "foo");
+            //System.out.println(Arrays.toString(this.setVariables));
+            //System.out.println(Arrays.toString(this.newIndex));
+            Gson gson = new GsonBuilder().serializeNulls().create();
+            String json = gson.toJson(x.getTaintInformationInitialized().getTaintRanges(x.length()));
+            //to restore:
+            // IASTaintRanges ranges = gson.fromJson(json, IASTaintRanges.class);
+            delegate.setString(newIndex[parameterIndex-1]+1, json);
+        }
     }
 }
 
