@@ -12,7 +12,7 @@ import java.util.List;
 
 public class ItemsListTainter extends ItemsListVisitorAdapter {
 
-	private List<Taint> taints;
+	private final List<Taint> taints;
 	private List<AssignmentValue> assignmentValues;
 
 	ItemsListTainter(List<Taint> taints) {
@@ -21,7 +21,7 @@ public class ItemsListTainter extends ItemsListVisitorAdapter {
 	}
 
 	public List<AssignmentValue> getAssignmentValues() {
-		return assignmentValues;
+		return this.assignmentValues;
 	}
 
 	public void setAssignmentValues(List<AssignmentValue> assignmentValues) {
@@ -30,13 +30,13 @@ public class ItemsListTainter extends ItemsListVisitorAdapter {
 
 	@Override
 	public void visit(SubSelect subSelect) {
-		SelectTainter selectTainter =  new SelectTainter(taints);
-		selectTainter.setAssignmentValues(assignmentValues);
+		SelectTainter selectTainter =  new SelectTainter(this.taints);
+		selectTainter.setAssignmentValues(this.assignmentValues);
 		subSelect.getSelectBody().accept(selectTainter);
 		if (subSelect.getWithItemsList() != null)
 			for (WithItem withItem : subSelect.getWithItemsList()) {
-				SelectTainter innerSelectTainter = new SelectTainter(taints);
-				innerSelectTainter.setAssignmentValues(assignmentValues);
+				SelectTainter innerSelectTainter = new SelectTainter(this.taints);
+				innerSelectTainter.setAssignmentValues(this.assignmentValues);
 				withItem.accept(innerSelectTainter);
 			}
 	}
@@ -44,8 +44,8 @@ public class ItemsListTainter extends ItemsListVisitorAdapter {
 	@Override
 	public void visit(ExpressionList expressionList) {
 		List<Expression> newExpressionList = new ArrayList<>();
-		ExpressionTainter insertExpressionTainter = new ExpressionTainter(taints, newExpressionList);
-		insertExpressionTainter.setAssignmentValues(assignmentValues);
+		ExpressionTainter insertExpressionTainter = new ExpressionTainter(this.taints, newExpressionList);
+		insertExpressionTainter.setAssignmentValues(this.assignmentValues);
 		for (Expression expression : expressionList.getExpressions()) {
 			newExpressionList.add(expression);
 			expression.accept(insertExpressionTainter);

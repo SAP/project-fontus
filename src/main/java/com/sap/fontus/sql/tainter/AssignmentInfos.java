@@ -10,32 +10,32 @@ import static com.sap.fontus.Constants.TAINT_PREFIX;
 
 public class AssignmentInfos {
 
-    private LinkedHashMap<AssignmentVariable, AssignmentValue> assignmentInfos;
+    private final LinkedHashMap<AssignmentVariable, AssignmentValue> assignmentInfos;
     private List<String> temporaryAssignVariables;
     private List<AssignmentValue> temporaryAssignValues;
     private LinkedHashMap<Integer, Integer> indices;
 
     public AssignmentInfos() {
-        assignmentInfos = new LinkedHashMap<>();
-        temporaryAssignVariables = new ArrayList<>();
-        temporaryAssignValues = new ArrayList<>();
+        this.assignmentInfos = new LinkedHashMap<>();
+        this.temporaryAssignVariables = new ArrayList<>();
+        this.temporaryAssignValues = new ArrayList<>();
     }
 
     public void setAssignmentVariableWithPlaceholder(String variableName) {
-        assignmentInfos.put(new AssignmentVariable(variableName), null);
+        this.assignmentInfos.put(new AssignmentVariable(variableName), null);
     }
 
     public AssignmentValue getAssignmentValue(AssignmentVariable assignmentVariable) {
-        return assignmentInfos.get(assignmentVariable);
+        return this.assignmentInfos.get(assignmentVariable);
     }
 
     public Map<AssignmentVariable, AssignmentValue> getAssignmentInfos() {
-        return assignmentInfos;
+        return this.assignmentInfos;
     }
 
     public LinkedHashMap<String, String> getAssignmentInfosAsString() {
         LinkedHashMap<String, String> temporary = new LinkedHashMap<>();
-        assignmentInfos.forEach((k,v) -> temporary.put(k.getName(), v.getValueAsString()));
+        this.assignmentInfos.forEach((k, v) -> temporary.put(k.getName(), v.getValueAsString()));
         return temporary;
     }
 
@@ -49,18 +49,18 @@ public class AssignmentInfos {
 
     public LinkedHashMap<Integer, Integer> getIndices() {
         int countOriginalColumns = 1;
-        indices = new LinkedHashMap<>();
-        if (temporaryAssignVariables.size() == temporaryAssignValues.size()) {
-            for (int i = 0; i < temporaryAssignVariables.size(); i++) {
-                if (!temporaryAssignVariables.get(i).contains(TAINT_PREFIX)) {
-                    if (temporaryAssignValues.get(i).getValueAsString().equalsIgnoreCase("?")) {
-                        indices.put(countOriginalColumns, i+1);
+        this.indices = new LinkedHashMap<>();
+        if (this.temporaryAssignVariables.size() == this.temporaryAssignValues.size()) {
+            for (int i = 0; i < this.temporaryAssignVariables.size(); i++) {
+                if (!this.temporaryAssignVariables.get(i).contains(TAINT_PREFIX)) {
+                    if (this.temporaryAssignValues.get(i).getValueAsString().equalsIgnoreCase("?")) {
+                        this.indices.put(countOriginalColumns, i+1);
                     }
                     countOriginalColumns++;
                 }
-                assignmentInfos.put(new AssignmentVariable(temporaryAssignVariables.get(i)), temporaryAssignValues.get(i));
+                this.assignmentInfos.put(new AssignmentVariable(this.temporaryAssignVariables.get(i)), this.temporaryAssignValues.get(i));
             }
         }
-        return indices;
+        return this.indices;
     }
 }

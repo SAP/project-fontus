@@ -2,59 +2,59 @@ package com.sap.fontus.sql.tainter;
 
 public class AssignmentValue {
 
-    private Object value;
-    private SupportedTypes type;
+    private final Object value;
+    private final SupportedTypes type;
 
     public AssignmentValue(char c) {
-        value = c;
-        type = SupportedTypes.CHAR;
+        this.value = c;
+        this.type = SupportedTypes.CHAR;
     }
 
     public AssignmentValue(byte b) {
-        value = b;
-        type = SupportedTypes.BYTE;
+        this.value = b;
+        this.type = SupportedTypes.BYTE;
     }
 
     public AssignmentValue(short s) {
-        value = s;
-        type = SupportedTypes.SHORT;
+        this.value = s;
+        this.type = SupportedTypes.SHORT;
     }
 
     public AssignmentValue(int i) {
-        value = i;
-        type = SupportedTypes.INT;
+        this.value = i;
+        this.type = SupportedTypes.INT;
     }
 
     public AssignmentValue(long l) {
-        value = l;
-        type = SupportedTypes.LONG;
+        this.value = l;
+        this.type = SupportedTypes.LONG;
     }
 
     public AssignmentValue(float f) {
-        value = f;
-        type = SupportedTypes.FLOAT;
+        this.value = f;
+        this.type = SupportedTypes.FLOAT;
     }
 
     public AssignmentValue(double d) {
-        value = d;
-        type = SupportedTypes.DOUBLE;
+        this.value = d;
+        this.type = SupportedTypes.DOUBLE;
     }
 
     public AssignmentValue(boolean b) {
-        value = b;
-        type = SupportedTypes.BOOLEAN;
+        this.value = b;
+        this.type = SupportedTypes.BOOLEAN;
     }
 
     public AssignmentValue(String s) {
-        value = s;
-        type = SupportedTypes.STRING;
+        this.value = s;
+        this.type = SupportedTypes.STRING;
     }
 
     public Object getValue() {
-        return value;
+        return this.value;
     }
 
     public String getValueAsString() {
-        return String.valueOf(value);
+        return String.valueOf(this.value);
     }
 }

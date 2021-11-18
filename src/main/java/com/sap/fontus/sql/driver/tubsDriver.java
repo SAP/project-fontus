@@ -33,7 +33,7 @@ public class tubsDriver implements Driver {
      * @return the parsed URL
      */
     private String extractRealUrl(String url) {
-        return acceptsURL(url) ? url.replace("tubs:", "") : url;
+        return this.acceptsURL(url) ? url.replace("tubs:", "") : url;
     }
 
     static List<Driver> registeredDrivers() {
@@ -51,17 +51,17 @@ public class tubsDriver implements Driver {
             throw new SQLException("url is required");
         }
 
-        if( !acceptsURL(url) ) {
+        if( !this.acceptsURL(url) ) {
             return null;
         }
 
         // find the real driver for the URL
-        Driver passThru = findPassthru(url);
+        Driver passThru = this.findPassthru(url);
 
         final Connection conn;
 
         try {
-            conn =  passThru.connect(extractRealUrl(url), properties);
+            conn =  passThru.connect(this.extractRealUrl(url), properties);
         } catch (SQLException e) {
             throw e;
         }
@@ -71,11 +71,11 @@ public class tubsDriver implements Driver {
 
     protected Driver findPassthru(String url) throws SQLException {
 
-        String realUrl = extractRealUrl(url);
+        String realUrl = this.extractRealUrl(url);
         Driver passthru = null;
         for (Driver driver: registeredDrivers() ) {
             try {
-                if (driver.acceptsURL(extractRealUrl(url))) {
+                if (driver.acceptsURL(this.extractRealUrl(url))) {
                     passthru = driver;
                     break;
                 }
@@ -92,7 +92,7 @@ public class tubsDriver implements Driver {
 
     @Override
     public DriverPropertyInfo[] getPropertyInfo(String url, Properties properties) throws SQLException {
-        return findPassthru(url).getPropertyInfo(url, properties);
+        return this.findPassthru(url).getPropertyInfo(url, properties);
     }
 
     @Override

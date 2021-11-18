@@ -13,9 +13,9 @@ import static com.sap.fontus.Constants.TAINT_PREFIX;
 
 public class SelectItemTainter extends SelectItemVisitorAdapter {
 
-	private List<Taint> taints;
-	private List<SelectItem> selectItemReference;
-	private List<Expression> expressionReference;
+	private final List<Taint> taints;
+	private final List<SelectItem> selectItemReference;
+	private final List<Expression> expressionReference;
 	private List<AssignmentValue> assignmentValues;
 
 	SelectItemTainter(List<Taint> taints, List<SelectItem> selectItemReference) {
@@ -27,7 +27,7 @@ public class SelectItemTainter extends SelectItemVisitorAdapter {
 	}
 
 	public List<AssignmentValue> getAssignmentValues() {
-		return assignmentValues;
+		return this.assignmentValues;
 	}
 
 	public void setAssignmentValues(List<AssignmentValue> assignmentValues) {
@@ -36,20 +36,20 @@ public class SelectItemTainter extends SelectItemVisitorAdapter {
 
 	@Override
 	public void visit(SelectExpressionItem selectExpressionItem) {
-		ExpressionTainter selectExpressionTainter = new ExpressionTainter(taints, expressionReference);
-		selectExpressionTainter.setAssignmentValues(assignmentValues);
+		ExpressionTainter selectExpressionTainter = new ExpressionTainter(this.taints, this.expressionReference);
+		selectExpressionTainter.setAssignmentValues(this.assignmentValues);
 		selectExpressionItem.getExpression().accept(selectExpressionTainter);
-		if (!expressionReference.isEmpty()) {
+		if (!this.expressionReference.isEmpty()) {
 			// get new created expression by reference and clear list
-			SelectExpressionItem item = new SelectExpressionItem(expressionReference.get(0));
-			expressionReference.clear();
+			SelectExpressionItem item = new SelectExpressionItem(this.expressionReference.get(0));
+			this.expressionReference.clear();
 			// copy and add taint prefix for alias
 			if (selectExpressionItem.getAlias() != null) {
 				//assignmentValues.add(new AssignmentValue(selectExpressionItem.getAlias().getName()));
 				item.setAlias(new Alias("`" + TAINT_PREFIX + selectExpressionItem.getAlias().getName().replace("\"", "").replace("`", "") + "`"));
 			}
 			//'return' selectItem via global list
-			selectItemReference.add(item);
+			this.selectItemReference.add(item);
 		}
 	}
 }

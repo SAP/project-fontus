@@ -2,8 +2,8 @@ package com.sap.fontus.sql.tainter;
 
 public class Taint {
 	
-	private String name;
-	private String taintBits;
+	private final String name;
+	private final String taintBits;
 	
 	public Taint(String name, String taintBits){
 		this.name = name;
@@ -11,10 +11,10 @@ public class Taint {
 	}
 
 	String getName() {
-		return name;
+		return this.name;
 	}
 
 	String getTaintBits() {
-		return taintBits;
+		return this.taintBits;
 	}
 }
