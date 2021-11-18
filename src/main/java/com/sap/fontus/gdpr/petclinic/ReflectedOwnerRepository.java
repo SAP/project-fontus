@@ -1,13 +1,14 @@
 package com.sap.fontus.gdpr.petclinic;
 
 import com.sap.fontus.agent.TaintAgent;
+import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.gdpr.servlet.ReflectedObject;
 
 import java.lang.reflect.Method;
 
 public class ReflectedOwnerRepository  {
 
-    public static void dumpRequestContextHolder() {
+    public static void dumpRequestContextHolder(ReflectedHttpServletRequest request) {
         Class cls = TaintAgent.findLoadedClass("org.springframework.web.context.request.RequestContextHolder");
         try {
             Method m = cls.getMethod("getRequest");

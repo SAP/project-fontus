@@ -1,6 +1,7 @@
 package com.sap.fontus.gdpr.petclinic;
 
 import com.iabtcf.decoder.TCString;
+import com.sap.fontus.agent.TaintAgent;
 import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.simple.*;
 import com.sap.fontus.gdpr.servlet.ReflectedCookie;
@@ -11,6 +12,8 @@ import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
 import com.sap.fontus.utils.Utils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -40,6 +43,29 @@ public class PetClinicTaintHandler extends IASTaintHandler {
 
         return metadata;
     }
+
+    private static String getNameFromRequest(ReflectedHttpServletRequest servlet, int id) {
+        String name = null;
+        try {
+            Object obj = servlet.getAttribute(new IASString("org.springframework.web.servlet.DispatcherServlet.CONTEXT"));
+            Method m = obj.getClass().getMethod("getBean", IASString.class);
+            Object bean = m.invoke(obj, new IASString("ownerRepository"));
+            Method m2 = bean.getClass().getMethod("findById", int.class);
+            Object owner = m2.invoke(bean, id);
+            Method m3 = owner.getClass().getMethod("getName");
+            Object n = m3.invoke(owner);
+            IASString s = (IASString) n;
+            name = s.toString();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return name;
+    }
+
     /**
      * Extracts the TCF consent string from a cookie and attaches it as the taint metadata
      * @param taintAware The Taint Aware String-like object

@@ -317,15 +317,17 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
             for (IASString value : this.getParameterValues(s)) {
                 sb.append(value.getString() + ", ");
             }
+            sb.append(System.getProperty("line.separator"));
         }
         sb.append(System.getProperty("line.separator"));
 
         Enumeration a = this.getAttributeNames();
-        sb.append("Query Parameters:");
+        sb.append("Attributes:");
         sb.append(System.getProperty("line.separator"));
         while (a.hasMoreElements()) {
             IASString s = (IASString) a.nextElement();
             sb.append(s.getString() + " = " + this.getAttribute(s));
+            sb.append(System.getProperty("line.separator"));
         }
 
         ReflectedCookie[] cookies = this.getCookies();
