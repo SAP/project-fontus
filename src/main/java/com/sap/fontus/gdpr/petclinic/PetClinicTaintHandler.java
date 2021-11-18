@@ -48,12 +48,17 @@ public class PetClinicTaintHandler extends IASTaintHandler {
         String name = null;
         try {
             Object obj = servlet.getAttribute(new IASString("org.springframework.web.servlet.DispatcherServlet.CONTEXT"));
+            // Should be a org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext
+            System.out.println(obj);
             Method m = obj.getClass().getMethod("getBean", IASString.class);
             Object bean = m.invoke(obj, new IASString("ownerRepository"));
+            System.out.println(bean);
             Method m2 = bean.getClass().getMethod("findById", int.class);
             Object owner = m2.invoke(bean, id);
+            System.out.println(owner);
             Method m3 = owner.getClass().getMethod("getName");
             Object n = m3.invoke(owner);
+            System.out.println(n);
             IASString s = (IASString) n;
             name = s.toString();
         } catch (NoSuchMethodException e) {
@@ -108,7 +113,7 @@ public class PetClinicTaintHandler extends IASTaintHandler {
                     int id = Integer.valueOf(id_match);
                     // Can we get the Owner object corresponding to this?
                     String name = getNameFromRequest(request, id);
-                    System.out.println("Found corresponding owner with name: " + name);
+                    System.out.println("Found id = " + id + " with name: " + name);
                     //taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
                 }
             }
