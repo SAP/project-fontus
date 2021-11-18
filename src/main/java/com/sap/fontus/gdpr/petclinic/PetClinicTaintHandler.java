@@ -107,6 +107,8 @@ public class PetClinicTaintHandler extends IASTaintHandler {
                     // Let it throw...
                     int id = Integer.valueOf(id_match);
                     // Can we get the Owner object corresponding to this?
+                    String name = getNameFromRequest(request, id);
+                    System.out.println("Found corresponding owner with name: " + name);
                     //taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
                 }
             }
