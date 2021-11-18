@@ -103,7 +103,7 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
         return null;
     }
 
-    
+
     public IASString getRequestURI() {
         return (IASString) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod());
     }
@@ -184,8 +184,7 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
     }
 
     public String getParameter(String name) {
-        IASString result = (IASString) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod(), new IASString(name));
-        return result.toString();
+        return getParameter(new IASString(name)).getString();
     }
     
     public IASString getParameter(IASString name) {
@@ -304,6 +303,9 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
         sb.append(System.getProperty("line.separator"));
 
         sb.append("PathInfo: " + this.getPathInfo());
+        sb.append(System.getProperty("line.separator"));
+
+        sb.append("URI: " + this.getRequestURI());
         sb.append(System.getProperty("line.separator"));
 
         Enumeration e = this.getParameterNames();

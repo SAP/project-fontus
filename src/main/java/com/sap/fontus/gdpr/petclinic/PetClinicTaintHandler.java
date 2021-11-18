@@ -54,14 +54,17 @@ public class PetClinicTaintHandler extends IASTaintHandler {
         System.out.println("Servlet: " + request);
 
         // Write the taint policy by hand
-        String path = request.getPathInfo().getString();
+        IASString uri = request.getRequestURI();
 
-        if (path.equals("owners/new")) {
-            GdprMetadata metadata = getMetadataFromRequest(request);
-            taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
-        } else if (path.matches("owners\\/[0-9]+\\/edit]")) {
-            GdprMetadata metadata = getMetadataFromRequest(request);
-            taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
+        if (uri != null) {
+            String path = uri.getString();
+            if (path.equals("owners/new")) {
+                GdprMetadata metadata = getMetadataFromRequest(request);
+                taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
+            } else if (path.matches("owners\\/[0-9]+\\/edit]")) {
+                GdprMetadata metadata = getMetadataFromRequest(request);
+                taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
+            }
         }
 
         return taintAware;
