@@ -58,10 +58,10 @@ public class PetClinicTaintHandler extends IASTaintHandler {
 
         if (uri != null) {
             String path = uri.getString();
-            if (path.equals("owners/new")) {
+            if (path.equals("/owners/new")) {
                 GdprMetadata metadata = getMetadataFromRequest(request);
                 taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
-            } else if (path.matches("owners\\/[0-9]+\\/edit]")) {
+            } else if (path.matches("\\/owners\\/[0-9]+\\/edit]")) {
                 GdprMetadata metadata = getMetadataFromRequest(request);
                 taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
             }
