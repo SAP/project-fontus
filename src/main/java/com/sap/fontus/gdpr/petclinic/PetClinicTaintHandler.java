@@ -9,11 +9,16 @@ import com.sap.fontus.gdpr.tcf.TcfBackedGdprMetadata;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
+import com.sap.fontus.utils.Utils;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class PetClinicTaintHandler extends IASTaintHandler {
+
+    private static final Pattern addPetsPattern = Pattern.compile("\\/owners\\/([0-9]+)\\/pets\\/new");
 
     private static GdprMetadata getMetadataFromRequest(ReflectedHttpServletRequest servlet) {
         // TODO: Check flag of request for consent...
@@ -52,6 +57,7 @@ public class PetClinicTaintHandler extends IASTaintHandler {
 
         // Debugging
         System.out.println("Servlet: " + request);
+        Utils.printCurrentStackTrace();
 
         // Write the taint policy by hand
         IASString uri = request.getRequestURI();
@@ -59,11 +65,26 @@ public class PetClinicTaintHandler extends IASTaintHandler {
         if (uri != null) {
             String path = uri.getString();
             if (path.equals("/owners/new")) {
+                // New owner
                 GdprMetadata metadata = getMetadataFromRequest(request);
                 taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
-            } else if (path.matches("\\/owners\\/[0-9]+\\/edit]")) {
+            } else if (path.matches("\\/owners\\/[0-9]+\\/edit")) {
+                // Update owner
                 GdprMetadata metadata = getMetadataFromRequest(request);
                 taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
+            } else {
+                Matcher m = addPetsPattern.matcher(path);
+                if (m.find()) {
+                    // See if we can retrieve original the name using the PetClinic interface...
+                    String id_match = m.group(1);
+                    // Let it throw...
+                    int id = Integer.valueOf(id_match);
+                    // Can we get the Owner object corresponding to this?
+
+
+                    GdprMetadata metadata = getMetadataFromRequest(request);
+                    taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
+                }
             }
         }
 
