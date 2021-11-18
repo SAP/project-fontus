@@ -5,7 +5,7 @@ import com.sap.fontus.gdpr.metadata.*;
 import java.util.Objects;
 import java.util.Set;
 
-public class SimpleGdprMetadata implements GdprMetadata {
+public class SimpleGdprMetadata extends GdprMetadataBase {
 
     private Set<AllowedPurpose> allowedPurposes;
     private ProtectionLevel protectionLevel;
@@ -73,16 +73,4 @@ public class SimpleGdprMetadata implements GdprMetadata {
         return Objects.hash(allowedPurposes, protectionLevel, dataSubject, dataId, portability, consent, identifiability);
     }
 
-    @Override
-    public String toString() {
-        return "SimpleGdprMetadata{" +
-                "allowedPurposes=" + allowedPurposes +
-                ", protectionLevel=" + protectionLevel +
-                ", dataSubject=" + dataSubject +
-                ", dataId=" + dataId +
-                ", portability=" + portability +
-                ", consent=" + consent +
-                ", identifiability=" + identifiability +
-                '}';
-    }
 }

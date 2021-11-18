@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class TcfBackedGdprMetadata implements GdprMetadata {
+public class TcfBackedGdprMetadata extends GdprMetadataBase {
 
     TCString tcString;
     DataId dataId;
@@ -88,11 +88,4 @@ public class TcfBackedGdprMetadata implements GdprMetadata {
         return Objects.hash(tcString, dataId);
     }
 
-    @Override
-    public String toString() {
-        return "TcfBackedGdprMetadata{" +
-                "tcString=" + tcString +
-                ", dataId=" + dataId +
-                '}';
-    }
 }

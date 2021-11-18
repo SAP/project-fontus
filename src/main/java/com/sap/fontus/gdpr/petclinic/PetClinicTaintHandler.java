@@ -1,18 +1,40 @@
-package com.sap.fontus.gdpr.tcf;
+package com.sap.fontus.gdpr.petclinic;
 
 import com.iabtcf.decoder.TCString;
-import com.sap.fontus.gdpr.metadata.GdprMetadata;
-import com.sap.fontus.gdpr.metadata.GdprTaintMetadata;
+import com.sap.fontus.gdpr.metadata.*;
+import com.sap.fontus.gdpr.metadata.simple.*;
 import com.sap.fontus.gdpr.servlet.ReflectedCookie;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
+import com.sap.fontus.gdpr.tcf.TcfBackedGdprMetadata;
 import com.sap.fontus.taintaware.IASTaintAware;
+import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
 
-public class TcfTaintHandler extends IASTaintHandler {
+import java.util.HashSet;
+import java.util.Set;
 
-    private static String consent_name = "euconsent";
-    private static String consent_v2_name = "euconsent_v2";
+public class PetClinicTaintHandler extends IASTaintHandler {
 
+    private static GdprMetadata getMetadataFromRequest(ReflectedHttpServletRequest servlet) {
+        // TODO: Check flag of request for consent...
+
+        // Create some metadata from the name
+        String subjectName = servlet.getParameter("firstName") + servlet.getParameter("lastName");
+        DataSubject dataSubject = new SimpleDataSubject(subjectName);
+
+        Purpose purpose = new SimplePurpose(1, "Process and Store", "Allow process and Storage", "");
+        Set<Vendor> vendors = new HashSet<>();
+        vendors.add(new SimpleVendor(1));
+        AllowedPurpose allowedPurpose = new SimpleAllowedPurpose(new SimpleExpiryDate(), purpose, vendors);
+
+        Set<AllowedPurpose> allowedPurposes = new HashSet<>();
+        allowedPurposes.add(allowedPurpose);
+
+        GdprMetadata metadata = new SimpleGdprMetadata(allowedPurposes, ProtectionLevel.Normal, dataSubject,
+                new SimpleDataId(), true, true, Identifiability.Explicit);
+
+        return metadata;
+    }
     /**
      * Extracts the TCF consent string from a cookie and attaches it as the taint metadata
      * @param taintAware The Taint Aware String-like object
@@ -26,30 +48,22 @@ public class TcfTaintHandler extends IASTaintHandler {
         IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
 
         // This might not work as we relocate the HttpServletRequest object...
-        ReflectedHttpServletRequest servlet = new ReflectedHttpServletRequest(parent);
+        ReflectedHttpServletRequest request = new ReflectedHttpServletRequest(parent);
 
-        System.out.print(servlet.toString());
+        // Debugging
+        System.out.println("Servlet: " + request);
 
-        ReflectedCookie[] cookies = servlet.getCookies();
-        TCString vendorConsent = null;
-        for (ReflectedCookie cookie : cookies) {
-            // Make sure v2 is given priority
-            if (cookie.getName().equals(consent_v2_name)) {
-                vendorConsent = TCString.decode(cookie.getValue().getString());
-                break;
-            } else if (cookie.getName().equals(consent_name)) {
-                vendorConsent = TCString.decode(cookie.getValue().getString());
-                break;
-            }
-        }
-        if (vendorConsent != null) {
-            System.out.println("TCF Cookie: " + vendorConsent.toString());
-            GdprMetadata metadata = new TcfBackedGdprMetadata(vendorConsent);
-            System.out.println("Metadata: " + metadata.toString());
+        // Write the taint policy by hand
+        String path = request.getPathInfo().getString();
+
+        if (path.equals("owners/new")) {
+            GdprMetadata metadata = getMetadataFromRequest(request);
             taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
-        } else {
-            System.out.println("No euconsent[_v2] Cookie found!");
+        } else if (path.matches("owners\\/[0-9]+\\/edit]")) {
+            GdprMetadata metadata = getMetadataFromRequest(request);
+            taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
         }
+
         return taintAware;
     }
 
