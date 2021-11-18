@@ -1,15 +1,18 @@
 package com.sap.fontus.sql.driver;
 
+import com.sap.fontus.taintaware.unified.IASString;
+
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class PreparedStatementWrapper extends StatementWrapper implements PreparedStatement {
+public class PreparedStatementWrapper extends StatementWrapper implements IASPreparedStatement {
 
     private final PreparedStatement delegate;
 
@@ -446,5 +449,17 @@ public class PreparedStatementWrapper extends StatementWrapper implements Prepar
         return ResultSetMetaDataWrapper.wrap(this.delegate.getMetaData());
     }
 
+    @Override
+    public void setString(int parameterIndex, IASString x) throws SQLException {
+        //System.out.println(Arrays.toString(this.setVariables));
+        //System.out.println(Arrays.toString(this.newIndex));
+        this.setVariables[newIndex[parameterIndex-1]-1]=true;
+        this.setVariables[newIndex[parameterIndex-1]]=true;
+        //System.out.printf("Setting String at idx %d: %s/%s%n", parameterIndex, x.getString(), "foo");
+        //System.out.println(Arrays.toString(this.setVariables));
+        //System.out.println(Arrays.toString(this.newIndex));
+        delegate.setString(newIndex[parameterIndex-1], x.getString());
+        delegate.setString(newIndex[parameterIndex-1]+1, "foo");
+    }
 }
 
