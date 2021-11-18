@@ -3,14 +3,28 @@ package com.sap.fontus.gdpr.petclinic;
 import com.sap.fontus.agent.TaintAgent;
 import com.sap.fontus.gdpr.servlet.ReflectedObject;
 
-public class ReflectedOwnerRepository extends ReflectedObject {
+import java.lang.reflect.Method;
 
-    protected ReflectedOwnerRepository(Object o) {
-        super(o);
+public class ReflectedOwnerRepository  {
+
+    public static void dumpRequestContextHolder() {
+        Class cls = TaintAgent.findLoadedClass("org.springframework.web.context.request.RequestContextHolder");
+        try {
+            Method m = cls.getMethod("getRequestAttributes");
+            Object reqAttributeObject = ReflectedObject.callMethodWithReflection(cls, m);
+            Method m2 = reqAttributeObject.getClass().getMethod("getAttributeNames");
+            String[] names = (String[]) ReflectedObject.callMethodWithReflection(reqAttributeObject.getClass(), m2);
+            for (String s : names) {
+                System.out.println(s);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
-//    protected ReflectedOwnerRepository(String repositoryName) {
-//        Class cls = TaintAgent.findLoadedClass("org.springframework.web.context.request.RequestContextHolder");
+//    protected ReflectedOwnerRepository() {
+//
 //        Method reqAttributeMethod = cls.getMethod("getRequestAttributes");
 //        Object reqAttributeObject = reqAttributeMethod.invoke(null);
 //        Method respObjectMethod = reqAttributeObject.getClass().getMethod("getResponse");

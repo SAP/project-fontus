@@ -57,6 +57,9 @@ public class PetClinicTaintHandler extends IASTaintHandler {
 
         // Debugging
         System.out.println("Servlet: " + request);
+        System.out.println("Request Attributes:");
+        ReflectedOwnerRepository.dumpRequestContextHolder();
+        System.out.println("Stack Trace:");
         Utils.printCurrentStackTrace();
 
         // Write the taint policy by hand

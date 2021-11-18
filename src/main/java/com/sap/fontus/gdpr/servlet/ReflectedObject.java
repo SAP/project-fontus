@@ -7,6 +7,21 @@ public abstract class ReflectedObject {
 
     protected Object o;
 
+    public static Object callMethodWithReflection(Class c, Method m, Object... args) {
+        Object result = null;
+        try {
+            Method original_method = c.getMethod(m.getName(), m.getParameterTypes());
+            result = original_method.invoke(args);
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
     protected Object callMethodWithReflection(Method m, Object... args) {
         Object result = null;
         try {
