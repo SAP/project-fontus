@@ -149,13 +149,13 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
     }
 
     
-    public Object getAttribute(String name) {
-        return null;
+    public Object getAttribute(IASString name) {
+        return (Object) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod(), name);
     }
 
     
     public Enumeration getAttributeNames() {
-        return null;
+        return (Enumeration) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod());
     }
 
     
@@ -319,6 +319,14 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
             }
         }
         sb.append(System.getProperty("line.separator"));
+
+        Enumeration a = this.getAttributeNames();
+        sb.append("Query Parameters:");
+        sb.append(System.getProperty("line.separator"));
+        while (a.hasMoreElements()) {
+            IASString s = (IASString) a.nextElement();
+            sb.append(s.getString() + " = " + this.getAttribute(s));
+        }
 
         ReflectedCookie[] cookies = this.getCookies();
         sb.append("Cookies: " + cookies);

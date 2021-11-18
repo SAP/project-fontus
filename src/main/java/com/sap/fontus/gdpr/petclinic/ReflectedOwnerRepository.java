@@ -10,7 +10,7 @@ public class ReflectedOwnerRepository  {
     public static void dumpRequestContextHolder() {
         Class cls = TaintAgent.findLoadedClass("org.springframework.web.context.request.RequestContextHolder");
         try {
-            Method m = cls.getMethod("getRequestAttributes");
+            Method m = cls.getMethod("getRequest");
             Object reqAttributeObject = ReflectedObject.callMethodWithReflection(cls, m);
             Method m2 = reqAttributeObject.getClass().getMethod("getAttributeNames");
             String[] names = (String[]) ReflectedObject.callMethodWithReflection(reqAttributeObject.getClass(), m2);

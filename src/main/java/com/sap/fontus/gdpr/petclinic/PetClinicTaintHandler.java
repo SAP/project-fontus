@@ -57,8 +57,6 @@ public class PetClinicTaintHandler extends IASTaintHandler {
 
         // Debugging
         System.out.println("Servlet: " + request);
-        System.out.println("Request Attributes:");
-        ReflectedOwnerRepository.dumpRequestContextHolder();
         System.out.println("Stack Trace:");
         Utils.printCurrentStackTrace();
 
@@ -83,10 +81,7 @@ public class PetClinicTaintHandler extends IASTaintHandler {
                     // Let it throw...
                     int id = Integer.valueOf(id_match);
                     // Can we get the Owner object corresponding to this?
-
-
-                    GdprMetadata metadata = getMetadataFromRequest(request);
-                    taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
+                    //taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
                 }
             }
         }
