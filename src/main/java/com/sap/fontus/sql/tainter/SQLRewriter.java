@@ -8,6 +8,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class SQLRewriter {
 
@@ -20,7 +21,7 @@ public class SQLRewriter {
 
 		//array of commands that should be taken into account when creating the new sql file
 		String [] relevantSqlCommands = {"ALTER","CREATE","DELETE","INSERT",
-				"UPDATE","WITH","DROP","LOCK","UNLOCK"};
+				"UPDATE","WITH","DROP","LOCK","UNLOCK", "SELECT"};
 		keyWords = Arrays.asList(relevantSqlCommands);
 
 		try {
@@ -69,7 +70,8 @@ public class SQLRewriter {
 			while((line = br.readLine()) != null ){
 				if(!(line.isEmpty() ||line.charAt(0)=='-' || line.charAt(0) == '/')) {
 					StringBuilder build = new StringBuilder();
-					if (keyWords.contains(line.substring(0, line.indexOf(' ')))) {
+					//if (keyWords.contains(line.substring(0, line.indexOf(' ')))) {
+					if (keyWords.stream().anyMatch(line.substring(0, line.indexOf(' '))::equalsIgnoreCase)) {
 						build.append(line);
 					}
 					while (!line.endsWith(";")) {
@@ -84,6 +86,9 @@ public class SQLRewriter {
 						StatementTainter tainter = new StatementTainter(taints);
 						System.out.println("Tainting: " + build.toString());
 						stmts.accept(tainter);
+						System.out.println("Tainted: " + stmts.toString());
+						Map<Integer, Integer> map = tainter.getIndices();
+						map.forEach((k,v) -> System.out.println("key: "+k+" value:"+v));
 						pr.println(stmts.toString());
 					} catch (JSQLParserException e) {
 						System.err.println(e.getMessage() + "\n" + e.getStackTrace() + "\n\n" + build.toString());

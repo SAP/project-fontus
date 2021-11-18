@@ -13,30 +13,47 @@ import java.util.List;
 
 import static com.sap.fontus.Constants.TAINT_PREFIX;
 
+
 public class ExpressionTainter extends ExpressionVisitorAdapter {
 
 	private List<Taint> taints;
 	private List<Expression> expressionReference;
+	private List<AssignmentValue> assignmentValues;
 
 	ExpressionTainter(List<Taint> taints, List<Expression> expressionReference) {
 		this.taints = taints;
 		this.expressionReference = expressionReference;
 	}
 
+	public void setAssignmentValues(List<AssignmentValue> assignmentValues) {
+		this.assignmentValues = assignmentValues;
+	}
+
+	public List<AssignmentValue> getAssignmentValues() {
+		return assignmentValues;
+	}
+
 	@Override
 	public void visit(Column column) {
-		if(column.getColumnName().compareToIgnoreCase("DEFAULT") == 0
+		if (column.getColumnName().compareToIgnoreCase("DEFAULT") == 0
 				|| column.getColumnName().compareToIgnoreCase("FALSE") == 0
-				|| column.getColumnName().compareToIgnoreCase("TRUE") == 0)
+				|| column.getColumnName().compareToIgnoreCase("TRUE") == 0) {
 			//Missmatched keywords, that are seen as columns, but are values
+			addAssignmentValue(new AssignmentValue("0"));
 			expressionReference.add(new StringValue("'0'"));
-		else if (column.getTable() == null || column.getTable().getName() == null)
+			addAssignmentValue(new AssignmentValue("0"));
+		} else if (column.getTable() == null || column.getTable().getName() == null) {
+			addAssignmentValue(new AssignmentValue(column.getColumnName()));
 			// 'return' expression via global list
+			Column newColumn = new Column("`" + TAINT_PREFIX + column.getColumnName().replace("\"", "").replace("`", "") + "`");
+			addAssignmentValue(new AssignmentValue(newColumn.getColumnName()));
 			expressionReference
-					.add(new Column("`" + TAINT_PREFIX + column.getColumnName().replace("\"", "").replace("`", "")  + "`"));
-		else
+					.add(newColumn);
+		} else {
+			addAssignmentValue(new AssignmentValue(column.getColumnName()));
 			expressionReference.add(new Column(column.getTable() + "." + "`" + TAINT_PREFIX
 					+ column.getColumnName().replace("\"", "").replace("`", "") + "`"));
+		}
 	}
 
 	@Override
@@ -58,20 +75,25 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 
 	@Override
 	public void visit(JdbcParameter jdbcParameter) {
+		addAssignmentValue(new AssignmentValue("?"));
 		JdbcParameter newJdbcParamter = new JdbcParameter();
 		newJdbcParamter.setIndex(jdbcParameter.getIndex());
 		expressionReference.add(newJdbcParamter);
+		addAssignmentValue(new AssignmentValue("?"));
 	}
 
 	@Override
 	public void visit(JdbcNamedParameter jdbcNamedParameter) {
+		addAssignmentValue(new AssignmentValue(jdbcNamedParameter.getName()));
 		JdbcNamedParameter newJdbcNamedParamter = new JdbcNamedParameter();
 		newJdbcNamedParamter.setName(TAINT_PREFIX + jdbcNamedParameter.getName());
 		expressionReference.add(newJdbcNamedParamter);
+		addAssignmentValue(new AssignmentValue(jdbcNamedParameter.getName()));
 	}
 
 	@Override
 	public void visit(StringValue stringValue) {
+		addAssignmentValue(new AssignmentValue(stringValue.getValue()));
 		// '' around new String Values needed, otherwise first and last char
 		// replaced
 		String taintBits = "0";
@@ -82,15 +104,21 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 			}
 		}
 		// 'return' expression via global list
-		expressionReference.add(new StringValue("'" + taintBits + "'"));
+		StringValue newStringValue = new StringValue("'" + taintBits + "'");
+		expressionReference.add(newStringValue);
+		addAssignmentValue(new AssignmentValue(newStringValue.getValue()));
 	}
 
 	@Override
 	public void visit(SubSelect subSelect) {
-		subSelect.getSelectBody().accept(new SelectTainter(taints));
+		SelectTainter selectTainter = new SelectTainter(taints);
+		selectTainter.setAssignmentValues(assignmentValues);
+		subSelect.getSelectBody().accept(selectTainter);
 		if (subSelect.getWithItemsList() != null) {
 			for (WithItem withItem : subSelect.getWithItemsList()) {
-				withItem.accept(new SelectTainter(taints));
+				SelectTainter innerSelectTainter = new SelectTainter(taints);
+				innerSelectTainter.setAssignmentValues(assignmentValues);
+				withItem.accept(innerSelectTainter);
 			}
 		}
 	}
@@ -108,12 +136,15 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 
 	@Override
 	public void visit(NullValue arg0) {
+		addAssignmentValue(new AssignmentValue("0"));
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(DoubleValue doubleValue) {
+		addAssignmentValue(new AssignmentValue(doubleValue.getValue()));
 		// '' around new String Values needed, otherwise first and last char
 		// replaced
 		String taintBits = "0";
@@ -123,11 +154,14 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 				break;
 			}
 		}
-		expressionReference.add(new StringValue("'" + taintBits + "'"));
+		StringValue newStringValue = new StringValue("'" + taintBits + "'");
+		expressionReference.add(newStringValue);
+		addAssignmentValue(new AssignmentValue(newStringValue.getValue()));
 	}
 
 	@Override
 	public void visit(LongValue longValue) {
+		addAssignmentValue(new AssignmentValue(longValue.getValue()));
 		// '' around new String Values needed, otherwise first and last char
 		// replaced
 		String taintBits = "0";
@@ -137,7 +171,9 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 				break;
 			}
 		}
-		expressionReference.add(new StringValue("'" + taintBits + "'"));
+		StringValue newStringValue = new StringValue("'" + taintBits + "'");
+		expressionReference.add(newStringValue);
+		addAssignmentValue(new AssignmentValue(newStringValue.getValue()));
 	}
 
 	@Override
@@ -151,7 +187,9 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 				break;
 			}
 		}
-		expressionReference.add(new StringValue("'" + taintBits + "'"));
+		StringValue newStringValue = new StringValue("'" + taintBits + "'");
+		expressionReference.add(newStringValue);
+		addAssignmentValue(new AssignmentValue(newStringValue.getValue()));
 	}
 
 	@Override
@@ -165,7 +203,9 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 				break;
 			}
 		}
-		expressionReference.add(new StringValue("'" + taintBits + "'"));
+		StringValue newStringValue = new StringValue("'" + taintBits + "'");
+		expressionReference.add(newStringValue);
+		addAssignmentValue(new AssignmentValue(newStringValue.getValue()));
 	}
 
 	@Override
@@ -179,7 +219,9 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 				break;
 			}
 		}
-		expressionReference.add(new StringValue("'" + taintBits + "'"));
+		StringValue newStringValue = new StringValue("'" + taintBits + "'");
+		expressionReference.add(newStringValue);
+		addAssignmentValue(new AssignmentValue(newStringValue.getValue()));
 	}
 
 	@Override
@@ -193,258 +235,308 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 				break;
 			}
 		}
-		expressionReference.add(new StringValue("'" + taintBits + "'"));
+		StringValue newStringValue = new StringValue("'" + taintBits + "'");
+		expressionReference.add(newStringValue);
+		addAssignmentValue(new AssignmentValue(newStringValue.getValue()));
 	}
 
 	@Override
 	public void visit(InExpression arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(Function arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(SignedExpression arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(Addition arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(Division arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(Multiplication arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(Subtraction arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(AndExpression arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(OrExpression arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(Between arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(EqualsTo arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(GreaterThan arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(GreaterThanEquals arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(LikeExpression arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(MinorThan arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(MinorThanEquals arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(NotEqualsTo arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(CaseExpression arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(WhenClause arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(ExistsExpression arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(AnyComparisonExpression arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(Matches arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(BitwiseAnd arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(BitwiseOr arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(BitwiseXor arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(CastExpression arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(Modulo arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(AnalyticExpression arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(ExtractExpression arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(IntervalExpression arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(OracleHierarchicalExpression arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(RegExpMatchOperator arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(JsonExpression arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(RegExpMySQLOperator arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(UserVariable arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(NumericBind arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(KeepExpression arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(MySQLGroupConcat arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(RowConstructor arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(OracleHint arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(TimeKeyExpression arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
 	}
 
 	@Override
 	public void visit(DateTimeLiteralExpression arg0) {
 		// add '0' for correct column count
 		expressionReference.add(new StringValue("'0'"));
+		addAssignmentValue(new AssignmentValue("'0'"));
+	}
+
+	private void addAssignmentValue(AssignmentValue value) {
+		if (assignmentValues != null) {
+			assignmentValues.add(value);
+		}
 	}
 }
