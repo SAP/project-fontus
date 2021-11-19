@@ -91,7 +91,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public ResultSet executeQuery() throws SQLException {
         for(int i=0;i<setVariables.length;i++){
             if(setVariables[i]!=true){
-                delegate.setNull(i+1, Types.VARCHAR);
+                delegate.setString(i+1, "0");
             }
         }
         return ResultSetWrapper.wrap(delegate.executeQuery());
@@ -102,7 +102,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         int rowCount = 0;
         for(int i=0;i<setVariables.length;i++){
             if(setVariables[i]!=true){
-                delegate.setNull(i+1, Types.VARCHAR);
+                delegate.setString(i+1, "0");
             }
         }
         rowCount = delegate.executeUpdate();
@@ -248,7 +248,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public boolean execute() throws SQLException {
         for(int i=0;i<setVariables.length;i++){
             if(setVariables[i]!=true){
-                delegate.setNull(i+1, Types.VARCHAR);
+                delegate.setString(i+1, "0");
             }
         }
         return delegate.execute();
@@ -258,7 +258,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void addBatch() throws SQLException {
         for(int i=0;i<setVariables.length;i++){
             if(setVariables[i]!=true){
-                delegate.setNull(i+1, Types.VARCHAR);
+                delegate.setString(i+1, "0");
             }
         }
         delegate.addBatch();
