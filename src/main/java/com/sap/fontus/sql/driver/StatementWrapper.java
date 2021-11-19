@@ -223,7 +223,7 @@ public class StatementWrapper extends AbstractWrapper implements Statement {
 
     @Override
     public ResultSet getGeneratedKeys() throws SQLException {
-        return ResultSetWrapper.wrap(delegate.getGeneratedKeys());
+        return delegate.getGeneratedKeys();
     }
 
     @Override
