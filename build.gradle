@@ -38,6 +38,9 @@ dependencies {
 
     implementation 'org.owasp.encoder:encoder:1.2.2'
     implementation 'org.owasp.encoder:encoder-jsp:1.2.2'
+    implementation 'com.github.jsqlparser:jsqlparser:4.2'
+    implementation 'mysql:mysql-connector-java:8.0.19'
+
 }
 
 apply plugin: 'java'
@@ -108,6 +111,9 @@ shadowJar {
     relocate 'com.alibaba', 'com.sap.fontus.com.alibaba'
     relocate 'org.owasp.encoder', 'com.sap.fontus.org.owasp.encoder'
     relocate 'org.owasp.encoder-jsp', 'com.sap.fontus.org.owasp.encoder-jsp'
+    relocate 'net.sf.jsqlparser', 'com.sap.fontus.net.sf.jsqlparser'
+    relocate 'com.mysql', 'com.sap.fontus.com.mysql'
+
     dependsOn utilJar
 //    dependsOn converterJar
 //    dependsOn generatorJar

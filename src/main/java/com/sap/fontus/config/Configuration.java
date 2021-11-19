@@ -47,6 +47,9 @@ public class Configuration {
     private boolean verbose = false;
 
     @XmlElement
+    private boolean taintPersistence = false;
+
+    @XmlElement
     private boolean loggingEnabled = false;
 
     @XmlElement
@@ -272,6 +275,14 @@ public class Configuration {
 
     public boolean isVerbose() {
         return this.verbose;
+    }
+
+    public void setTaintPersistence(boolean taintPersistence) {
+        this.taintPersistence = taintPersistence;
+    }
+
+    public boolean hasTaintPersistence() {
+        return this.taintPersistence;
     }
 
     public boolean isClassMainBlacklisted(String owner) {

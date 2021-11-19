@@ -17,6 +17,7 @@ import java.util.*;
 public class AgentConfig {
     private static final Logger logger = LogUtils.getLogger();
     private final boolean verbose;
+    private final boolean taintPersistence;
     private final List<String> blacklist;
     private final TaintMethod taintMethod;
 
@@ -36,10 +37,12 @@ public class AgentConfig {
         this.verbose = false;
         this.blacklist = new ArrayList<>();
         this.taintMethod = TaintMethod.defaultTaintMethod();
+        taintPersistence = false;
     }
 
-    private AgentConfig(boolean verbose, List<String> blacklist, TaintMethod taintMethod) {
+    private AgentConfig(boolean verbose, List<String> blacklist, TaintMethod taintMethod, boolean taintPersistence) {
         this.verbose = verbose;
+        this.taintPersistence = taintPersistence;
         this.blacklist = blacklist;
         this.taintMethod = taintMethod;
     }
@@ -65,6 +68,7 @@ public class AgentConfig {
     private static Configuration parseParts(Iterable<String> parts) {
         Configuration c = ConfigurationLoader.defaultConfiguration();
         boolean verbose = false;
+        boolean taintPersistence = false;
         boolean welcome = false;
         Boolean loggingEnabled = null;
         TaintMethod taintMethod = TaintMethod.defaultTaintMethod();
@@ -77,6 +81,9 @@ public class AgentConfig {
         for (String part : parts) {
             if ("verbose".equals(part)) {
                 verbose = true;
+            }
+            if ("persistence".equals(part)) {
+                taintPersistence = true;
             }
             if ("logging_enabled".equals(part)) {
                 loggingEnabled = true;
@@ -123,6 +130,7 @@ public class AgentConfig {
             c = ConfigurationLoader.defaultConfiguration();
         }
         c.setVerbose(verbose || c.isVerbose());
+        c.setTaintPersistence(taintPersistence || c.hasTaintPersistence());
         c.setTaintMethod(taintMethod);
         c.setShowWelcomeMessage(welcome);
 
