@@ -3,7 +3,6 @@ package com.sap.fontus.gdpr.servlet;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASStringBuffer;
 
-import javax.servlet.http.HttpSession;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -113,14 +112,14 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
     }
 
     
-    public HttpSession getSession(boolean create) {
-        return (HttpSession) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod(), create);
-    }
-
-    
-    public HttpSession getSession() {
-        return (HttpSession) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod());
-    }
+//    public HttpSession getSession(boolean create) {
+//        return (HttpSession) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod(), create);
+//    }
+//
+//
+//    public HttpSession getSession() {
+//        return (HttpSession) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod());
+//    }
 
     
     public boolean isRequestedSessionIdValid() {
