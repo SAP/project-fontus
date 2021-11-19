@@ -1,12 +1,8 @@
 package com.sap.fontus.gdpr.petclinic;
 
-import com.iabtcf.decoder.TCString;
-import com.sap.fontus.agent.TaintAgent;
 import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.simple.*;
-import com.sap.fontus.gdpr.servlet.ReflectedCookie;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
-import com.sap.fontus.gdpr.tcf.TcfBackedGdprMetadata;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
@@ -21,15 +17,11 @@ import java.util.regex.Pattern;
 
 public class PetClinicTaintHandler extends IASTaintHandler {
 
-    private static final Pattern addPetsPattern = Pattern.compile("\\/owners\\/([0-9]+)\\/pets\\/new");
+    private static final Pattern addNewPetsPattern = Pattern.compile("\\/owners\\/([0-9]+)\\/pets\\/new");
+    private static final Pattern editPetsPattern = Pattern.compile("\\/owners\\/([0-9]+)\\/pets\\/([0-9]+)\\/edit");
+    private static final Pattern addVisitPattern = Pattern.compile("\\/owners\\/([0-9]+)\\/pets\\/([0-9]+)\\/visits/new");
 
-    private static GdprMetadata getMetadataFromRequest(ReflectedHttpServletRequest servlet) {
-        // TODO: Check flag of request for consent...
-
-        // Create some metadata from the name
-        String subjectName = servlet.getParameter("firstName") + servlet.getParameter("lastName");
-        DataSubject dataSubject = new SimpleDataSubject(subjectName);
-
+    private static Set<AllowedPurpose> getPurposesFromRequest(ReflectedHttpServletRequest servlet) {
         Purpose purpose = new SimplePurpose(1, "Process and Store", "Allow process and Storage", "");
         Set<Vendor> vendors = new HashSet<>();
         vendors.add(new SimpleVendor(1));
@@ -37,8 +29,17 @@ public class PetClinicTaintHandler extends IASTaintHandler {
 
         Set<AllowedPurpose> allowedPurposes = new HashSet<>();
         allowedPurposes.add(allowedPurpose);
+        return allowedPurposes;
+    }
 
-        GdprMetadata metadata = new SimpleGdprMetadata(allowedPurposes, ProtectionLevel.Normal, dataSubject,
+    private static GdprMetadata getMetadataFromOwnerRequest(ReflectedHttpServletRequest servlet) {
+        // TODO: Check flag of request for consent...
+
+        // Create some metadata from the name
+        String subjectName = servlet.getParameter("firstName") + " " + servlet.getParameter("lastName");
+        DataSubject dataSubject = new SimpleDataSubject(subjectName);
+
+        GdprMetadata metadata = new SimpleGdprMetadata(getPurposesFromRequest(servlet), ProtectionLevel.Normal, dataSubject,
                 new SimpleDataId(), true, true, Identifiability.Explicit);
 
         return metadata;
@@ -47,20 +48,19 @@ public class PetClinicTaintHandler extends IASTaintHandler {
     private static String getNameFromRequest(ReflectedHttpServletRequest servlet, int id) {
         String name = null;
         try {
-            Object obj = servlet.getAttribute(new IASString("org.springframework.web.servlet.DispatcherServlet.CONTEXT"));
+            // Spring stores the application context in the HttpRequest attributes
             // Should be a org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext
-            System.out.println(obj);
-            Method mn = obj.getClass().getMethod("getDisplayName");
-            Object o = mn.invoke(obj);
-            System.out.println(o);
+            Object obj = servlet.getAttribute(new IASString("org.springframework.web.servlet.DispatcherServlet.CONTEXT"));
+            // Through this context we can access each of the Spring Beans
             Method m = obj.getClass().getMethod("getBean", IASString.class);
+            // The PetClinic has a bean called ownerRepository, with class OwnerRepository
             Object bean = m.invoke(obj, new IASString("ownerRepository"));
-            // This actully returns some funky fontus proxy object
-            System.out.println(bean);
+
+            // This interface will be proxied by Fontus, but the method names are the samn
             Method m2 = bean.getClass().getMethod("findById", Integer.class);
             Object owner = m2.invoke(bean, Integer.valueOf(id));
-            System.out.println(owner);
 
+            // Now we can extract information about the to create the ID:
             Method m3 = owner.getClass().getMethod("getFirstName");
             Object n = m3.invoke(owner);
             System.out.println(n);
@@ -80,8 +80,35 @@ public class PetClinicTaintHandler extends IASTaintHandler {
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
+        System.out.println("Found id = " + id + " with name: " + name);
         return name;
     }
+
+    private static DataSubject getDataSubjectFromRequest(ReflectedHttpServletRequest servlet, int id) {
+        return new SimpleDataSubject(getNameFromRequest(servlet, id));
+    }
+
+    private static GdprMetadata getMetadataFromPetRequest(ReflectedHttpServletRequest servlet, Matcher m, String path, ProtectionLevel protectionLevel) {
+        GdprMetadata metadata = null;
+        if (addNewPetsPattern.matcher(path).find()) {
+            // See if we can retrieve original the name using the PetClinic interface...
+            String id_match = m.group(1);
+            // Let it throw...
+            int id = Integer.valueOf(id_match);
+            // Can we get the Owner object corresponding to this?
+            metadata = new SimpleGdprMetadata(
+                    getPurposesFromRequest(servlet),
+                    protectionLevel,
+                    getDataSubjectFromRequest(servlet, id),
+                    new SimpleDataId(),
+                    true,
+                    true,
+                    Identifiability.NotExplicit);
+        }
+        return metadata;
+    }
+
+
 
     /**
      * Extracts the TCF consent string from a cookie and attaches it as the taint metadata
@@ -95,8 +122,18 @@ public class PetClinicTaintHandler extends IASTaintHandler {
 
         IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
 
+        // TODO Check we are calling the right method
+
         // This might not work as we relocate the HttpServletRequest object...
         ReflectedHttpServletRequest request = new ReflectedHttpServletRequest(parent);
+
+        String name = null;
+        if (parameters.length > 1) {
+            IASString s = (IASString) parameters[0];
+            if (s != null) {
+                name = s.getString();
+            }
+        }
 
         // Debugging
         System.out.println("Servlet: " + request);
@@ -107,27 +144,36 @@ public class PetClinicTaintHandler extends IASTaintHandler {
         IASString uri = request.getRequestURI();
 
         if (uri != null) {
+            GdprMetadata metadata = null;
+
+            // Check path
             String path = uri.getString();
+            Matcher addnewPetsMatcher = addNewPetsPattern.matcher(path);
+            Matcher editPetsMatcher = editPetsPattern.matcher(path);
+            Matcher newVisitMatcher = addVisitPattern.matcher(path);
+
             if (path.equals("/owners/new")) {
                 // New owner
-                GdprMetadata metadata = getMetadataFromRequest(request);
-                taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
+                metadata = getMetadataFromOwnerRequest(request);
             } else if (path.matches("\\/owners\\/[0-9]+\\/edit")) {
                 // Update owner
-                GdprMetadata metadata = getMetadataFromRequest(request);
-                taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
-            } else {
-                Matcher m = addPetsPattern.matcher(path);
-                if (m.find()) {
-                    // See if we can retrieve original the name using the PetClinic interface...
-                    String id_match = m.group(1);
-                    // Let it throw...
-                    int id = Integer.valueOf(id_match);
-                    // Can we get the Owner object corresponding to this?
-                    String name = getNameFromRequest(request, id);
-                    System.out.println("Found id = " + id + " with name: " + name);
-                    //taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
+                metadata = getMetadataFromOwnerRequest(request);
+            } else if (addnewPetsMatcher.matches()) {
+                metadata = getMetadataFromPetRequest(request, addnewPetsMatcher, path, ProtectionLevel.Normal);
+            } else if (editPetsMatcher.matches()) {
+                metadata = getMetadataFromPetRequest(request, editPetsMatcher, path, ProtectionLevel.Normal);
+            } else if (newVisitMatcher.matches()) {
+                // The description should be higher sensitivity
+                if ((name != null) && name.equals("description")) {
+                    metadata = getMetadataFromPetRequest(request, newVisitMatcher, path, ProtectionLevel.Sensitive);
+                } else {
+                    metadata = getMetadataFromPetRequest(request, newVisitMatcher, path, ProtectionLevel.Normal);
                 }
+            }
+
+            // Add taint information if match was found
+            if (metadata != null) {
+                taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
             }
         }
 
