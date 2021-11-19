@@ -19,7 +19,7 @@ public class PetClinicTaintHandler extends IASTaintHandler {
 
     private static final Pattern addNewPetsPattern = Pattern.compile("\\/owners\\/([0-9]+)\\/pets\\/new");
     private static final Pattern editPetsPattern = Pattern.compile("\\/owners\\/([0-9]+)\\/pets\\/([0-9]+)\\/edit");
-    private static final Pattern addVisitPattern = Pattern.compile("\\/owners\\/([0-9]+)\\/pets\\/([0-9]+)\\/visits/new");
+    private static final Pattern addVisitPattern = Pattern.compile("\\/owners\\/([0-9]+)\\/pets\\/([0-9]+)\\/visits\\/new");
 
     private static Set<AllowedPurpose> getPurposesFromRequest(ReflectedHttpServletRequest servlet) {
         Purpose purpose = new SimplePurpose(1, "Process and Store", "Allow process and Storage", "");
@@ -63,12 +63,10 @@ public class PetClinicTaintHandler extends IASTaintHandler {
             // Now we can extract information about the to create the ID:
             Method m3 = owner.getClass().getMethod("getFirstName");
             Object n = m3.invoke(owner);
-            System.out.println(n);
             IASString s = (IASString) n;
 
             Method m4 = owner.getClass().getMethod("getLastName");
             Object n2 = m4.invoke(owner);
-            System.out.println(n2);
             IASString s2 = (IASString) n2;
 
             name = s.getString() + " " + s2.getString();
@@ -137,8 +135,8 @@ public class PetClinicTaintHandler extends IASTaintHandler {
 
         // Debugging
         System.out.println("Servlet: " + request);
-        System.out.println("Stack Trace:");
-        Utils.printCurrentStackTrace();
+        //System.out.println("Stack Trace:");
+        //Utils.printCurrentStackTrace();
 
         // Write the taint policy by hand
         IASString uri = request.getRequestURI();
@@ -173,6 +171,7 @@ public class PetClinicTaintHandler extends IASTaintHandler {
 
             // Add taint information if match was found
             if (metadata != null) {
+                System.out.println("Adding Taint metadata: " + metadata);
                 taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
             }
         }
