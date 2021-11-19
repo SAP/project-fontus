@@ -14,17 +14,17 @@ public abstract class AbstractWrapper implements Wrapper {
     @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
         final Object result;
-        if (iface.isAssignableFrom(getClass())) {
+        if (iface.isAssignableFrom(this.getClass())) {
             // if the proxy directly implements the interface or extends it, return the proxy
             result = this;
-        } else if (iface.isAssignableFrom(delegate.getClass())) {
+        } else if (iface.isAssignableFrom(this.delegate.getClass())) {
             // if the proxied object directly implements the interface or extends it, return
             // the proxied object
-            result = unwrapProxy();
-        } else if (Wrapper.class.isAssignableFrom(delegate.getClass())) {
+            result = this.unwrapProxy();
+        } else if (Wrapper.class.isAssignableFrom(this.delegate.getClass())) {
             // if the proxied object implements the wrapper interface, then
             // return the result of it's unwrap method.
-            result = ((Wrapper) unwrapProxy()).unwrap(iface);
+            result = ((Wrapper) this.unwrapProxy()).unwrap(iface);
         } else {
       /*
          This line of code can only be reached when the underlying object does not implement the wrapper
@@ -38,32 +38,32 @@ public abstract class AbstractWrapper implements Wrapper {
 
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        if (iface.isAssignableFrom(getClass())) {
+        if (iface.isAssignableFrom(this.getClass())) {
             // if the proxy directly proxy the interface or extends it, return true
             return true;
-        } else if (iface.isAssignableFrom(delegate.getClass())) {
+        } else if (iface.isAssignableFrom(this.delegate.getClass())) {
             // if the proxied object directly implements the interface or extends it, return true
             return true;
-        } else if (Wrapper.class.isAssignableFrom(delegate.getClass())) {
+        } else if (Wrapper.class.isAssignableFrom(this.delegate.getClass())) {
             // if the proxied object implements the wrapper interface, then
             // return the result of it's isWrapperFor method.
-            return ((Wrapper) unwrapProxy()).isWrapperFor(iface);
+            return ((Wrapper) this.unwrapProxy()).isWrapperFor(iface);
         }
         return false;
     }
 
     @Override
     public boolean equals(Object obj) {
-        return delegate.equals(obj);
+        return this.delegate.equals(obj);
     }
 
     @Override
     public int hashCode() {
-        return delegate.hashCode();
+        return this.delegate.hashCode();
     }
 
     public Object unwrapProxy() {
-        return delegate;
+        return this.delegate;
     }
 }
 
