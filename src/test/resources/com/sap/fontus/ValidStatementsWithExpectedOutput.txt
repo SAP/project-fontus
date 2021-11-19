@@ -52,6 +52,9 @@ INSERT INTO users VALUES ('peter', '0') RETURNING id, `__taint__id`, name, `__ta
 insert into users (name, vorname) (select name, 'Max' from customers);
 INSERT INTO users (name, `__taint__name`, vorname, `__taint__vorname`) (SELECT name, `__taint__name`, 'Max', '777' FROM customers);
 
+update users set name = 'Max', age = 10 where id = 1;
+UPDATE users SET name = 'Max', `__taint__name` = '777', age = 10, `__taint__age` = '0' WHERE id = 1;
+
 update users set name = 'Max' where id = 1;
 UPDATE users SET name = 'Max', `__taint__name` = '777' WHERE id = 1;
 

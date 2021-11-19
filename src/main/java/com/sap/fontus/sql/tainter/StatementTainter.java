@@ -101,39 +101,44 @@ public class StatementTainter extends StatementVisitorAdapter {
 		List<UpdateSet> updateSets = update.getUpdateSets();
 		List<Column> taintedCols = new ArrayList<>();
 		List<Expression> taintedExprs = new ArrayList<>();
+		List<UpdateSet> fixedSets = new ArrayList<>();
+		//System.out.println(update);
 		for(UpdateSet updateSet : updateSets) {
+
 			List<Column> columns = updateSet.getColumns();
 			ArrayList<Column> tcols = (ArrayList<Column>) this.taintColumns(columns);
-
-			for (Column c : tcols) {
-				columnNames.add(c.getColumnName());
-			}
-
 			List<Expression> expressions = updateSet.getExpressions();
-			Expression expr = expressions.get(0);
-			ArrayList<Expression> texprs = (ArrayList<Expression>) this.taintExpressions(updateSet.getExpressions());
-
-			if(expr instanceof SubSelect) {
-				updateSet.setColumns(tcols);
-				updateSet.setExpressions(texprs);
+			ArrayList<Expression> texprs = (ArrayList<Expression>) this.taintExpressions(expressions);
+			// This seems to be relevant for subselects, not 100% sure why/how
+			if (texprs.get(0) instanceof SubSelect) {
+				UpdateSet us = new UpdateSet();
+				us.setColumns(tcols);
+				us.setExpressions(texprs);
+				us.setUsingBracketsForColumns(true);
+				fixedSets.add(us);
 			} else {
-				if(texprs.size() <= 1) {
-					/*for(Column c : tcols) {
-						System.out.println(c.toString());
-					}
-					for(Expression e : texprs) {
-						System.out.println(e.toString());
-					}*/
-				}
-				taintedCols.add(tcols.get(1));
-				taintedExprs.add(texprs.get(1));
+				for (int i = 0; i < tcols.size(); i++) {
+					Column c = tcols.get(i);
+					columnNames.add(c.getColumnName());
+					Expression e = texprs.get(i);
+					UpdateSet us = new UpdateSet(c, e);
+					//System.out.println(c + " = " + e);
 
+					if (i == 0 && e instanceof SubSelect) {
+						us.setColumns(tcols);
+						us.setExpressions(texprs);
+						fixedSets.add(us);
+						break;
+					}
+					fixedSets.add(us);
+				}
 			}
-			//update.addUpdateSet(cols.get(1), exprs.get(1));
 		}
-		for (int i = 0; i < taintedCols.size(); i++) {
-			update.addUpdateSet(taintedCols.get(i), taintedExprs.get(i));
+		updateSets.clear();
+		for(UpdateSet u : fixedSets) {
+			updateSets.add(u);
 		}
+
 
 		this.addTemporaryAssingVariables(columnNames);
 		this.addTemporaryAssignValues(this.columnValues);
