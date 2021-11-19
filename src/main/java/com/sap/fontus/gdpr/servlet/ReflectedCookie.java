@@ -2,8 +2,6 @@ package com.sap.fontus.gdpr.servlet;
 
 import com.sap.fontus.taintaware.unified.IASString;
 
-import javax.servlet.http.Cookie;
-
 public class ReflectedCookie extends ReflectedObject {
 
     public static ReflectedCookie[] reflectedArray(Object o) {

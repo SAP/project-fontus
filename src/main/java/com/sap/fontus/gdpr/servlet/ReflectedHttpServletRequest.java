@@ -3,16 +3,10 @@ package com.sap.fontus.gdpr.servlet;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASStringBuffer;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.Cookie;
-
 import javax.servlet.http.HttpSession;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.security.Principal;
 import java.util.Enumeration;
 import java.util.Locale;
@@ -179,9 +173,9 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
     }
 
     
-    public ServletInputStream getInputStream() throws IOException {
-        return null;
-    }
+//    public ServletInputStream getInputStream() throws IOException {
+//        return null;
+//    }
 
     public String getParameter(String name) {
         return getParameter(new IASString(name)).getString();
@@ -267,9 +261,9 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
     }
 
     
-    public RequestDispatcher getRequestDispatcher(String path) {
-        return null;
-    }
+//    public RequestDispatcher getRequestDispatcher(String path) {
+//        return null;
+//    }
 
     
     public String getRealPath(String path) {
