@@ -33,7 +33,7 @@ public class SourceConfig {
         return null;
     }
 
-    public Source getSinkWithName(String name) {
+    public Source getSourceWithName(String name) {
         for (Source s : this.sources) {
             if (s.getName().equals(name)) {
                 return s;

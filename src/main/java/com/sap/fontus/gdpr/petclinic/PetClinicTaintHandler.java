@@ -11,7 +11,6 @@ import com.sap.fontus.taintaware.shared.IASTaintSource;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
-import com.sap.fontus.utils.Utils;
 import org.objectweb.asm.Opcodes;
 
 import java.lang.reflect.InvocationTargetException;
@@ -147,7 +146,7 @@ public class PetClinicTaintHandler extends IASTaintHandler {
 
         // Get source information from configuration
         IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
-        Source source = Configuration.getConfiguration().getSourceConfig().getSinkWithName(taintSource.getName());
+        Source source = Configuration.getConfiguration().getSourceConfig().getSourceWithName(taintSource.getName());
         // Check for ServletRequest getParameter function
         if ((source != null) &&
                 (source.getFunction().equals(getParameterFunctionCall) ||
@@ -209,6 +208,11 @@ public class PetClinicTaintHandler extends IASTaintHandler {
                 // Add taint information if match was found
                 if (metadata != null) {
                     System.out.println("Adding Taint metadata: " + metadata);
+                    // Check if encryption is needed
+                    IASString content = taintAware.toIASString();
+                    if (metadata.getProtectionLevel().equals(ProtectionLevel.Sensitive)) {
+
+                    }
                     taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
                 }
             }
