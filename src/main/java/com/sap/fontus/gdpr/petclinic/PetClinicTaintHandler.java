@@ -1,12 +1,18 @@
 package com.sap.fontus.gdpr.petclinic;
 
+import com.sap.fontus.asm.FunctionCall;
+import com.sap.fontus.config.Configuration;
+import com.sap.fontus.config.Source;
 import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.simple.*;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.taintaware.IASTaintAware;
+import com.sap.fontus.taintaware.shared.IASTaintSource;
+import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
 import com.sap.fontus.utils.Utils;
+import org.objectweb.asm.Opcodes;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -20,6 +26,27 @@ public class PetClinicTaintHandler extends IASTaintHandler {
     private static final Pattern addNewPetsPattern = Pattern.compile("^\\/owners\\/([0-9]+)\\/pets\\/new$");
     private static final Pattern editPetsPattern = Pattern.compile("^\\/owners\\/([0-9]+)\\/pets\\/([0-9]+)\\/edit$");
     private static final Pattern addVisitPattern = Pattern.compile("^\\/owners\\/([0-9]+)\\/pets\\/([0-9]+)\\/visits\\/new$");
+
+    private static final FunctionCall getParameterFunctionCall = new FunctionCall(
+            Opcodes.INVOKEINTERFACE,
+            "javax/servlet/ServletRequest",
+            "getParameter",
+            "(Ljava/lang/String;)Ljava/lang/String;",
+            true);
+
+    private static final FunctionCall getParameterValuesFunctionCall = new FunctionCall(
+            Opcodes.INVOKEINTERFACE,
+            "javax/servlet/ServletRequest",
+            "getParameterValues",
+            "(Ljava/lang/String;)[Ljava/lang/String;",
+            true);
+
+    private static final FunctionCall getParameterMapFunctionCall = new FunctionCall(
+            Opcodes.INVOKEINTERFACE,
+            "javax/servlet/ServletRequest",
+            "getParameterMap",
+            "()Ljava/util/Map;",
+            true);
 
     private static Set<AllowedPurpose> getPurposesFromRequest(ReflectedHttpServletRequest servlet) {
         Purpose purpose = new SimplePurpose(1, "Process and Store", "Allow process and Storage", "");
@@ -115,70 +142,77 @@ public class PetClinicTaintHandler extends IASTaintHandler {
      * @return A possibly tainted version of the input object
      */
     private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
-
+        // General debug info
         IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
 
-        // TODO Check we are calling the right method
+        // Get source information from configuration
+        IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
+        Source source = Configuration.getConfiguration().getSourceConfig().getSinkWithName(taintSource.getName());
+        // Check for ServletRequest getParameter function
+        if ((source != null) &&
+                (source.getFunction().equals(getParameterFunctionCall) ||
+                 source.getFunction().equals(getParameterValuesFunctionCall) ||
+                 source.getFunction().equals(getParameterMapFunctionCall))) {
 
-        // This might not work as we relocate the HttpServletRequest object...
-        ReflectedHttpServletRequest request = new ReflectedHttpServletRequest(parent);
+            // This might not work as we relocate the HttpServletRequest object...
+            ReflectedHttpServletRequest request = new ReflectedHttpServletRequest(parent);
 
-        String name = null;
-        if (parameters.length > 1) {
-            IASString s = (IASString) parameters[0];
-            if (s != null) {
-                name = s.getString();
-            }
-        }
-
-        // Debugging
-        System.out.println("Servlet: " + request);
-        //System.out.println("Stack Trace:");
-        //Utils.printCurrentStackTrace();
-
-        // Write the taint policy by hand
-        IASString uri = request.getRequestURI();
-
-        if (uri != null) {
-            GdprMetadata metadata = null;
-
-            // Check path
-            String path = uri.getString();
-            Matcher addNewPetsMatcher = addNewPetsPattern.matcher(path);
-            Matcher editPetsMatcher = editPetsPattern.matcher(path);
-            Matcher newVisitMatcher = addVisitPattern.matcher(path);
-
-            System.out.println("Matchers: ");
-            System.out.println("New Pets: " + addNewPetsMatcher.matches());
-            System.out.println("Edit Pets: " + editPetsMatcher.matches());
-            System.out.println("New Visit: " + newVisitMatcher.matches());
-
-            if (path.equals("/owners/new")) {
-                // New owner
-                metadata = getMetadataFromOwnerRequest(request);
-            } else if (path.matches("\\/owners\\/[0-9]+\\/edit")) {
-                // Update owner
-                metadata = getMetadataFromOwnerRequest(request);
-            } else if (addNewPetsMatcher.matches()) {
-                metadata = getMetadataFromPetRequest(request, addNewPetsMatcher, ProtectionLevel.Normal);
-            } else if (editPetsMatcher.matches()) {
-                metadata = getMetadataFromPetRequest(request, editPetsMatcher, ProtectionLevel.Normal);
-            } else if (newVisitMatcher.matches()) {
-                // The description should be higher sensitivity
-                if ((name != null) && name.equals("description")) {
-                    metadata = getMetadataFromPetRequest(request, newVisitMatcher, ProtectionLevel.Sensitive);
-                } else {
-                    metadata = getMetadataFromPetRequest(request, newVisitMatcher, ProtectionLevel.Normal);
+            String name = null;
+            if (parameters.length > 1) {
+                IASString s = (IASString) parameters[0];
+                if (s != null) {
+                    name = s.getString();
                 }
             }
 
-            // Add taint information if match was found
-            if (metadata != null) {
-                System.out.println("Adding Taint metadata: " + metadata);
-                taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
+            // Debugging
+            // System.out.println("Servlet: " + request);
+            // System.out.println("Stack Trace:");
+            // Utils.printCurrentStackTrace();
+
+            // Write the taint policy by hand
+            IASString uri = request.getRequestURI();
+
+            if (uri != null) {
+                GdprMetadata metadata = null;
+
+                // Check path
+                String path = uri.getString();
+                Matcher addNewPetsMatcher = addNewPetsPattern.matcher(path);
+                Matcher editPetsMatcher = editPetsPattern.matcher(path);
+                Matcher newVisitMatcher = addVisitPattern.matcher(path);
+
+                System.out.println("Matchers: ");
+                System.out.println("New Pets: " + addNewPetsMatcher.matches());
+                System.out.println("Edit Pets: " + editPetsMatcher.matches());
+                System.out.println("New Visit: " + newVisitMatcher.matches());
+
+                if (path.equals("/owners/new")) {
+                    // New owner
+                    metadata = getMetadataFromOwnerRequest(request);
+                } else if (path.matches("\\/owners\\/[0-9]+\\/edit")) {
+                    // Update owner
+                    metadata = getMetadataFromOwnerRequest(request);
+                } else if (addNewPetsMatcher.matches()) {
+                    metadata = getMetadataFromPetRequest(request, addNewPetsMatcher, ProtectionLevel.Normal);
+                } else if (editPetsMatcher.matches()) {
+                    metadata = getMetadataFromPetRequest(request, editPetsMatcher, ProtectionLevel.Normal);
+                } else if (newVisitMatcher.matches()) {
+                    // The description should be higher sensitivity
+                    if ((name != null) && name.equals("description")) {
+                        metadata = getMetadataFromPetRequest(request, newVisitMatcher, ProtectionLevel.Sensitive);
+                    } else {
+                        metadata = getMetadataFromPetRequest(request, newVisitMatcher, ProtectionLevel.Normal);
+                    }
+                }
+
+                // Add taint information if match was found
+                if (metadata != null) {
+                    System.out.println("Adding Taint metadata: " + metadata);
+                    taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
+                }
             }
         }
-
         return taintAware;
     }
 
