@@ -2,8 +2,10 @@ package com.sap.fontus.sql.driver;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASTaintRanges;
 import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.taintaware.unified.TaintInformationFactory;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -466,8 +468,77 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
             Gson gson = new GsonBuilder().serializeNulls().create();
             String json = gson.toJson(x.getTaintInformationInitialized().getTaintRanges(x.length()));
             //to restore:
-            // IASTaintRanges ranges = gson.fromJson(json, IASTaintRanges.class);
+            //IASTaintRanges ranges = gson.fromJson(json, IASTaintRanges.class);
+            //TaintInformationFactory.createTaintInformation(ranges.getLength(), ranges.getTaintRanges());
+
             delegate.setString(newIndex[parameterIndex-1]+1, json);
+        }
+    }
+
+    @Override
+    public void setNString(int parameterIndex, IASString value) throws SQLException {
+        this.setVariables[this.newIndex[parameterIndex-1]-1]=true;
+        this.delegate.setNString(this.newIndex[parameterIndex-1], value.getString());
+        if(value.isTainted()) {
+            this.setVariables[this.newIndex[parameterIndex - 1]] = true;
+            //System.out.printf("Setting String at idx %d: %s/%s%n", parameterIndex, x.getString(), "foo");
+            //System.out.println(Arrays.toString(this.setVariables));
+            //System.out.println(Arrays.toString(this.newIndex));
+            Gson gson = new GsonBuilder().serializeNulls().create();
+            String json = gson.toJson(value.getTaintInformationInitialized().getTaintRanges(value.length()));
+            //to restore:
+            //IASTaintRanges ranges = gson.fromJson(json, IASTaintRanges.class);
+            //TaintInformationFactory.createTaintInformation(ranges.getLength(), ranges.getTaintRanges());
+
+            this.delegate.setString(this.newIndex[parameterIndex-1]+1, json);
+        }
+    }
+
+    @Override
+    public void setTObject(int parameterIndex, Object x, int targetSqlType) throws SQLException {
+        this.setVariables[this.newIndex[parameterIndex-1]-1]=true;
+        this.delegate.setObject(this.newIndex[parameterIndex-1], x, targetSqlType);
+        if(x instanceof IASString && (
+                targetSqlType == Types.VARCHAR ||
+                targetSqlType == Types.NVARCHAR ||
+                targetSqlType == Types.LONGNVARCHAR ||
+                targetSqlType == Types.LONGVARCHAR)) {
+            IASString value = (IASString) x;
+            if(value.isTainted()) {
+                this.setVariables[this.newIndex[parameterIndex - 1]] = true;
+                //System.out.printf("Setting String at idx %d: %s/%s%n", parameterIndex, x.getString(), "foo");
+                //System.out.println(Arrays.toString(this.setVariables));
+                //System.out.println(Arrays.toString(this.newIndex));
+                Gson gson = new GsonBuilder().serializeNulls().create();
+                String json = gson.toJson(value.getTaintInformationInitialized().getTaintRanges(value.length()));
+                //to restore:
+                //IASTaintRanges ranges = gson.fromJson(json, IASTaintRanges.class);
+                //TaintInformationFactory.createTaintInformation(ranges.getLength(), ranges.getTaintRanges());
+
+                this.delegate.setString(this.newIndex[parameterIndex-1]+1, json);
+            }
+        }
+    }
+
+    @Override
+    public void setTObject(int parameterIndex, Object x) throws SQLException {
+        this.setVariables[this.newIndex[parameterIndex-1]-1]=true;
+        this.delegate.setObject(this.newIndex[parameterIndex-1], x);
+        if(x instanceof IASString) {
+            IASString value = (IASString) x;
+            if(value.isTainted()) {
+                this.setVariables[this.newIndex[parameterIndex - 1]] = true;
+                //System.out.printf("Setting String at idx %d: %s/%s%n", parameterIndex, x.getString(), "foo");
+                //System.out.println(Arrays.toString(this.setVariables));
+                //System.out.println(Arrays.toString(this.newIndex));
+                Gson gson = new GsonBuilder().serializeNulls().create();
+                String json = gson.toJson(value.getTaintInformationInitialized().getTaintRanges(value.length()));
+                //to restore:
+                //IASTaintRanges ranges = gson.fromJson(json, IASTaintRanges.class);
+                //TaintInformationFactory.createTaintInformation(ranges.getLength(), ranges.getTaintRanges());
+
+                this.delegate.setString(this.newIndex[parameterIndex-1]+1, json);
+            }
         }
     }
 }

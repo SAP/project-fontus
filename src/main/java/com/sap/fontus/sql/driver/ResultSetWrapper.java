@@ -1,6 +1,13 @@
 package com.sap.fontus.sql.driver;
 
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.sap.fontus.taintaware.shared.IASTaintRanges;
+import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.taintaware.unified.IASTaintInformationable;
+import com.sap.fontus.taintaware.unified.TaintInformationFactory;
+
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -9,7 +16,7 @@ import java.sql.*;
 import java.util.Calendar;
 import java.util.Map;
 
-public class ResultSetWrapper extends AbstractWrapper implements ResultSet {
+public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
     private final ResultSet delegate;
 
     public static ResultSet wrap(ResultSet delegate) {
@@ -1125,5 +1132,43 @@ public class ResultSetWrapper extends AbstractWrapper implements ResultSet {
         return value;
     }
 
+    @Override
+    public IASString getTString(int columnIndex) throws SQLException {
+        columnIndex = (columnIndex*2)-1;
+        return getTStringHelper(columnIndex);
+    }
+
+    @Override
+    public IASString getTString(String columnLabel) throws SQLException {
+        int columnIndex = this.getColumnIndex(columnLabel);
+        return getTStringHelper(columnIndex);
+    }
+
+    private IASString getTStringHelper(int idx) throws SQLException {
+        String value = this.delegate.getString(idx);
+        String taint = this.delegate.getString(idx+1);
+        IASString rv = new IASString(value);
+        if(taint != null && !taint.equals("0")) {
+            System.out.printf("Restoring taint for '%s': %s%n", value, taint);
+            Gson gson = new GsonBuilder().serializeNulls().create();
+            IASTaintRanges ranges = gson.fromJson(taint, IASTaintRanges.class);
+            IASTaintInformationable tis = TaintInformationFactory.createTaintInformation(ranges.getLength(), ranges.getTaintRanges());
+            rv.setTaint(tis);
+        }
+        return rv;
+
+    }
+
+    // TODO: Ugly Hack, requires caching I suppose
+    private int getColumnIndex(String name) throws SQLException {
+        ResultSetMetaData meta = this.delegate.getMetaData();
+        for(int i = 1; i <= meta.getColumnCount(); i++) {
+            String columnName = meta.getColumnName(i);
+            if(columnName.equalsIgnoreCase(name)) {
+                return i;
+            }
+        }
+        return -1;
+    }
 }
 

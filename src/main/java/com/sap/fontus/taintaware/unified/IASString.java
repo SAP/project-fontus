@@ -699,6 +699,10 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         return taintInformation != null ? this.taintInformation.copy() : null;
     }
 
+    public void setTaint(IASTaintInformationable taint) {
+        this.taintInformation = taint;
+    }
+
     public boolean isUninitialized() {
         return this.taintInformation == null;
     }

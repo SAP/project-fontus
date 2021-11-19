@@ -70,8 +70,8 @@ public class IASTaintHandler {
         boolean isTainted = taintAware.isTainted();
 //        System.out.println("isTainted : " + isTainted);
 //        System.out.println("taintaware : " + taintAware);
-//        System.out.println("sink : " + sink);
-//        System.out.println("stackTrace : " + Arrays.toString(Thread.currentThread().getStackTrace()));
+//        System.out.println("sink : " + sinkFunction);
+//        System.out.println("stackTrace : " + java.util.Arrays.toString(Thread.currentThread().getStackTrace()));
 
         if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.recordTaintCheck(isTainted);
