@@ -86,9 +86,9 @@ public class PetClinicTaintHandler extends IASTaintHandler {
         return new SimpleDataSubject(getNameFromRequest(servlet, id));
     }
 
-    private static GdprMetadata getMetadataFromPetRequest(ReflectedHttpServletRequest servlet, Matcher m, String path, ProtectionLevel protectionLevel) {
+    private static GdprMetadata getMetadataFromPetRequest(ReflectedHttpServletRequest servlet, Matcher m, ProtectionLevel protectionLevel) {
         GdprMetadata metadata = null;
-        if (addNewPetsPattern.matcher(path).find()) {
+        if (m.find()) {
             // See if we can retrieve original the name using the PetClinic interface...
             String id_match = m.group(1);
             // Let it throw...
@@ -160,15 +160,15 @@ public class PetClinicTaintHandler extends IASTaintHandler {
                 // Update owner
                 metadata = getMetadataFromOwnerRequest(request);
             } else if (addNewPetsMatcher.matches()) {
-                metadata = getMetadataFromPetRequest(request, addNewPetsMatcher, path, ProtectionLevel.Normal);
+                metadata = getMetadataFromPetRequest(request, addNewPetsMatcher, ProtectionLevel.Normal);
             } else if (editPetsMatcher.matches()) {
-                metadata = getMetadataFromPetRequest(request, editPetsMatcher, path, ProtectionLevel.Normal);
+                metadata = getMetadataFromPetRequest(request, editPetsMatcher, ProtectionLevel.Normal);
             } else if (newVisitMatcher.matches()) {
                 // The description should be higher sensitivity
                 if ((name != null) && name.equals("description")) {
-                    metadata = getMetadataFromPetRequest(request, newVisitMatcher, path, ProtectionLevel.Sensitive);
+                    metadata = getMetadataFromPetRequest(request, newVisitMatcher, ProtectionLevel.Sensitive);
                 } else {
-                    metadata = getMetadataFromPetRequest(request, newVisitMatcher, path, ProtectionLevel.Normal);
+                    metadata = getMetadataFromPetRequest(request, newVisitMatcher, ProtectionLevel.Normal);
                 }
             }
 
