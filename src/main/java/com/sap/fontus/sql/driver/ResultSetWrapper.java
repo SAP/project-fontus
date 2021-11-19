@@ -1135,20 +1135,21 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
     @Override
     public IASString getTString(int columnIndex) throws SQLException {
         columnIndex = (columnIndex*2)-1;
-        return getTStringHelper(columnIndex);
+        return this.getTStringHelper(columnIndex);
     }
 
     @Override
     public IASString getTString(String columnLabel) throws SQLException {
         int columnIndex = this.getColumnIndex(columnLabel);
-        return getTStringHelper(columnIndex);
+        return this.getTStringHelper(columnIndex);
     }
 
     private IASString getTStringHelper(int idx) throws SQLException {
         String value = this.delegate.getString(idx);
         String taint = this.delegate.getString(idx+1);
-        IASString rv = new IASString(value);
-        if(taint != null && !taint.equals("0")) {
+
+        IASString rv = IASString.fromString(value);
+        if (taint != null && !taint.equals("0")) {
             System.out.printf("Restoring taint for '%s': %s%n", value, taint);
             Gson gson = new GsonBuilder().serializeNulls().create();
             IASTaintRanges ranges = gson.fromJson(taint, IASTaintRanges.class);
@@ -1156,15 +1157,17 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
             rv.setTaint(tis);
         }
         return rv;
-
     }
 
     // TODO: Ugly Hack, requires caching I suppose
     private int getColumnIndex(String name) throws SQLException {
         ResultSetMetaData meta = this.delegate.getMetaData();
+        //System.out.println("Looking for column index for: " + name);
+        //System.out.println("Column count: " + meta.getColumnCount());
         for(int i = 1; i <= meta.getColumnCount(); i++) {
             String columnName = meta.getColumnName(i);
-            if(columnName.equalsIgnoreCase(name)) {
+            //System.out.printf("Column %d:%s [%s]%n", i, columnName, meta.getColumnLabel(i));
+            if(columnName.equalsIgnoreCase(name) || meta.getColumnLabel(i).equalsIgnoreCase(name)) {
                 return i;
             }
         }
