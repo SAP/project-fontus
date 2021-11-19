@@ -88,7 +88,7 @@ public class PetClinicTaintHandler extends IASTaintHandler {
 
     private static GdprMetadata getMetadataFromPetRequest(ReflectedHttpServletRequest servlet, Matcher m, ProtectionLevel protectionLevel) {
         GdprMetadata metadata = null;
-        if (m.find()) {
+        if (m.matches()) {
             // See if we can retrieve original the name using the PetClinic interface...
             String id_match = m.group(1);
             // Let it throw...
