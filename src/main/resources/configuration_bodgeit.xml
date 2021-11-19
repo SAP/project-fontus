@@ -20,6 +20,13 @@
                     <descriptor>(Ljava/lang/String;)Ljava/lang/String;</descriptor>
                     <interface>true</interface>
                 </function>
+                <tainthandler>
+                    <opcode>184</opcode>
+                    <owner>com/sap/fontus/taintaware/unified/TaintHandler</owner>
+                    <name>taint</name>
+                    <descriptor>(Ljava/lang/Object;I)Ljava/lang/Object;</descriptor>
+                    <interface>false</interface>
+                </tainthandler>
             </source>
             <source>
                 <name>getAttribute</name>

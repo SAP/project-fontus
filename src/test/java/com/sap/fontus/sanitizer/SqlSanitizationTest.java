@@ -1,12 +1,10 @@
 package com.sap.fontus.sanitizer;
 
 import com.alibaba.druid.sql.parser.Token;
-import com.sap.fontus.taintaware.shared.IASTaintRanges;
-import com.sap.fontus.taintaware.shared.IASTaintSource;
+import com.sap.fontus.taintaware.shared.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -38,7 +36,7 @@ public class SqlSanitizationTest {
     public SqlSanitizationTest() {
     }
 
-    private static IASTaintSource source = IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("dummy");
+    private static IASTaintMetadata source = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("dummy"));
     /**
      * One complete attribute value is tainted. Wouldn't have changed syntax of
      * query.

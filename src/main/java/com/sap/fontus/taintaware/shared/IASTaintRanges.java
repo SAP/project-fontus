@@ -16,14 +16,10 @@ public class IASTaintRanges implements Iterable<IASTaintRange> {
         this.ranges = new ArrayList<>(ranges);
     }
 
-    public IASTaintRanges(int length, int source) {
+    public IASTaintRanges(int length, IASTaintMetadata data) {
         this.length = length;
         this.ranges = new ArrayList<>();
-        this.ranges.add(new IASTaintRange(0, length, source));
-    }
-
-    public IASTaintRanges(int length, IASTaintSource taintSource) {
-        this(length, taintSource.getId());
+        this.ranges.add(new IASTaintRange(0, length, data));
     }
 
     @Override
@@ -35,12 +31,7 @@ public class IASTaintRanges implements Iterable<IASTaintRange> {
         return ranges.isEmpty();
     }
 
-    public synchronized void setTaint(int start, int end, IASTaintSource source) {
-        this.setTaint(start, end, source != null ? source.getId() : 0);
-        this.merge();
-    }
-
-    public synchronized void setTaint(int start, int end, int sourceId) {
+    public synchronized void setTaint(int start, int end, IASTaintMetadata data) {
         if (start == end) {
             // No need to process ranges with length 0
             return;
@@ -53,7 +44,7 @@ public class IASTaintRanges implements Iterable<IASTaintRange> {
 
         IASTaintRanges begin = this.slice(0, start);
         IASTaintRanges after = this.slice(end, this.length);
-        IASTaintRanges insertion = new IASTaintRanges(insertionLength, sourceId);
+        IASTaintRanges insertion = new IASTaintRanges(insertionLength, data);
 
         this.ranges = begin.concat(insertion).concat(after).getTaintRanges();
         this.merge();
@@ -88,8 +79,8 @@ public class IASTaintRanges implements Iterable<IASTaintRange> {
             IASTaintRange nextRange = this.ranges.get(i + 1);
 
             // Is merge possible?
-            if (currRange.getEnd() == nextRange.getStart() && currRange.getSource() == nextRange.getSource()) {
-                IASTaintRange newRange = new IASTaintRange(currRange.getStart(), nextRange.getEnd(), nextRange.getSource());
+            if (currRange.getEnd() == nextRange.getStart() && currRange.getMetadata() == nextRange.getMetadata()) {
+                IASTaintRange newRange = new IASTaintRange(currRange.getStart(), nextRange.getEnd(), nextRange.getMetadata());
                 this.ranges.set(i, newRange);
                 this.ranges.remove(i + 1);
                 i--;
@@ -186,7 +177,7 @@ public class IASTaintRanges implements Iterable<IASTaintRange> {
         for (IASTaintRange range : r) {
             int newEnd = length - range.getStart();
             int newStart = newEnd - (range.getEnd() - range.getStart());
-            IASTaintRange newRange = new IASTaintRange(newStart, newEnd, range.getSource());
+            IASTaintRange newRange = new IASTaintRange(newStart, newEnd, range.getMetadata());
             newRanges.add(0, newRange);
         }
         this.ranges.clear();
@@ -201,10 +192,10 @@ public class IASTaintRanges implements Iterable<IASTaintRange> {
         return getTaintFor(index) != null;
     }
 
-    public IASTaintSource getTaintFor(int position) {
+    public IASTaintMetadata getTaintFor(int position) {
         for (IASTaintRange range : this.ranges) {
             if (range.getStart() <= position && position < range.getEnd()) {
-                return range.getSource();
+                return range.getMetadata();
             }
         }
         return null;

@@ -36,7 +36,7 @@ public class FormatterTests {
 
         IASString s1 = f.toIASString();
         assertEquals("Hello World!", s1.toString());
-        MatcherAssert.assertThat(s1, TaintMatcher.taintEquals(range(0, 12, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)));
+        MatcherAssert.assertThat(s1, TaintMatcher.taintEquals(range(0, 12, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN)));
     }
 
     @Test
@@ -62,7 +62,7 @@ public class FormatterTests {
 
         IASString s1 = f.toIASString();
         assertEquals("Hello 1 World!", s1.toString());
-        MatcherAssert.assertThat(s1, TaintMatcher.taintEquals(range(0, 6, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN).add(7, 14, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)));
+        MatcherAssert.assertThat(s1, TaintMatcher.taintEquals(range(0, 6, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN).add(7, 14, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)));
     }
 
 
@@ -76,7 +76,7 @@ public class FormatterTests {
 
         IASString s1 = f.toIASString();
         assertEquals("Hello 1 World!", s1.toString());
-        MatcherAssert.assertThat(s1, TaintMatcher.taintEquals(range(0, 6, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN).add(7, 14, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)));
+        MatcherAssert.assertThat(s1, TaintMatcher.taintEquals(range(0, 6, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN).add(7, 14, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)));
     }
 
     @Test
@@ -89,7 +89,7 @@ public class FormatterTests {
 
         IASString s1 = f.toIASString();
         assertEquals("Hello 1 World!", s1.toString());
-        MatcherAssert.assertThat(s1, TaintMatcher.taintEquals(range(6, 7, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)));
+        MatcherAssert.assertThat(s1, TaintMatcher.taintEquals(range(6, 7, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN)));
     }
 
     @Test
@@ -102,6 +102,6 @@ public class FormatterTests {
 
         IASString s1 = f.toIASString();
         assertEquals("5e918d2", s1.toString());
-        MatcherAssert.assertThat(s1, TaintMatcher.taintEquals(range(0, 7, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)));
+        MatcherAssert.assertThat(s1, TaintMatcher.taintEquals(range(0, 7, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN)));
     }
 }

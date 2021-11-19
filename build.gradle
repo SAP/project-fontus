@@ -6,6 +6,7 @@ plugins {
 }
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
+apply plugin: 'idea'
 
 version '0.0.1-SNAPSHOT'
 
@@ -29,6 +30,9 @@ dependencies {
     implementation 'org.ow2.asm:asm-util:9.2'
     implementation 'info.picocli:picocli:4.1.4'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.3'
+    implementation 'com.iabtcf:iabtcf-decoder:2.0.10'
+    implementation 'com.iabtcf:iabtcf-extras:2.0.10'
+    implementation 'com.iabtcf:iabtcf-extras-jackson:2.0.10'
     implementation group: 'org.json', name: 'json', version: '20200518'
     implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
     implementation group: 'org.mutabilitydetector', name: 'asm-nonclassloadingextensions', version: '1.0-rc2'
@@ -111,6 +115,7 @@ shadowJar {
     relocate 'com.alibaba', 'com.sap.fontus.com.alibaba'
     relocate 'org.owasp.encoder', 'com.sap.fontus.org.owasp.encoder'
     relocate 'org.owasp.encoder-jsp', 'com.sap.fontus.org.owasp.encoder-jsp'
+    relocate 'com.iabtcf', 'com.sap.fontus.com.iabtcf'
     relocate 'net.sf.jsqlparser', 'com.sap.fontus.net.sf.jsqlparser'
     relocate 'com.mysql', 'com.sap.fontus.com.mysql'
 

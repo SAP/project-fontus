@@ -1,5 +1,6 @@
 package com.sap.fontus.taintaware.array;
 
+import com.sap.fontus.taintaware.shared.IASTaintMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
@@ -9,31 +10,30 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TaintConverter {
-    public static List<IASTaintRange> toTaintRanges(int[] taints) {
+    public static List<IASTaintRange> toTaintRanges(IASTaintMetadata[] taints) {
         List<IASTaintRange> ranges = new ArrayList<>();
         int start = 0;
-        int taint = 0;
+        IASTaintMetadata taint = null;
         for (int i = 0; i < taints.length; i++) {
             if (taints[i] != taint) {
-                if (taint != 0 && start != i) {
-                    IASTaintSource source = IASTaintSourceRegistry.getInstance().get(taint);
-                    ranges.add(new IASTaintRange(start, i, source));
+                if (taint != null && start != i) {
+                    ranges.add(new IASTaintRange(start, i, taint));
                 }
                 start = i;
                 taint = taints[i];
             }
         }
-        if (taint != 0) {
+        if (taint != null) {
             ranges.add(new IASTaintRange(start, taints.length, taint));
         }
         return ranges;
     }
 
-    public static int[] toTaintArray(int size, List<IASTaintRange> ranges) {
-        int[] taints = new int[size];
+    public static IASTaintMetadata[] toTaintArray(int size, List<IASTaintRange> ranges) {
+        IASTaintMetadata[] taints = new IASTaintMetadata[size];
         if (ranges != null) {
             for (IASTaintRange range : ranges) {
-                Arrays.fill(taints, range.getStart(), range.getEnd(), range.getSource().getId());
+                Arrays.fill(taints, range.getStart(), range.getEnd(), range.getMetadata());
             }
         }
         return taints;

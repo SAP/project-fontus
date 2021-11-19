@@ -57,17 +57,17 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
 
 
     public void setTaint(boolean taint) {
-        this.setTaint(taint ? IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN : null);
+        this.setTaint(taint ? IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN : null);
     }
 
 
-    public void setTaint(IASTaintSource source) {
-        if (source != null) {
+    public void setTaint(IASTaintMetadata data) {
+        if (data != null) {
             if (!this.isTainted()) {
                 if (isUninitialized()) {
                     this.taintInformation = TaintInformationFactory.createTaintInformation(this.length());
                 }
-                this.taintInformation.addRange(0, this.length(), source);
+                this.taintInformation.addRange(0, this.length(), data);
             }
         } else {
             this.taintInformation = null;
@@ -299,8 +299,8 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
             char highSur = chars[i];
             char lowSur = chars[i + 1];
             if (Character.isLowSurrogate(lowSur) && Character.isHighSurrogate(highSur)) {
-                IASTaintSource oldHighTaint = this.taintInformation.getTaint(i);
-                IASTaintSource oldLowTaint = this.taintInformation.getTaint(i + 1);
+                IASTaintMetadata oldHighTaint = this.taintInformation.getTaint(i);
+                IASTaintMetadata oldLowTaint = this.taintInformation.getTaint(i + 1);
 
                 this.taintInformation.clearTaint(i, i + 2);
 

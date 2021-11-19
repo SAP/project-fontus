@@ -1,11 +1,9 @@
 package com.sap.fontus.sanitizer;
 
-import com.sap.fontus.taintaware.shared.IASTaintRanges;
-import com.sap.fontus.taintaware.shared.IASTaintSource;
+import com.sap.fontus.taintaware.shared.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.migrationsupport.EnableJUnit4MigrationSupport;
@@ -16,7 +14,7 @@ import org.junit.jupiter.migrationsupport.EnableJUnit4MigrationSupport;
 @EnableJUnit4MigrationSupport
 public class XssSanitizationTest {
 
-    private static IASTaintSource source = IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("dummy");
+    private static IASTaintMetadata source = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("dummy"));
     
     /**
      * Html attribute name tests

@@ -73,7 +73,7 @@ public class TURLDecoderTest {
         IASString encode = TURLDecoder.decode(s, cs);
 
         assertEquals(URLDecoder.decode(s.getString(), csString), encode.getString());
-        assertArrayEquals(new IASTaintRange[]{new IASTaintRange(3, 5, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)}, encode.getTaintInformationInitialized().getTaintRanges(encode.length()).getTaintRanges().toArray(new IASTaintRange[0]));
+        assertArrayEquals(new IASTaintRange[]{new IASTaintRange(3, 5, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN)}, encode.getTaintInformationInitialized().getTaintRanges(encode.length()).getTaintRanges().toArray(new IASTaintRange[0]));
     }
 
     @Test
@@ -102,11 +102,11 @@ public class TURLDecoderTest {
         assertEquals(URLDecoder.decode(s.getString(), csString), encode.getString());
         assertFalse(s1.isTainted());
         assertArrayEquals(new IASTaintRange[]{
-                new IASTaintRange(1, 2, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
-                new IASTaintRange(3, 4, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
-                new IASTaintRange(5, 6, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
-                new IASTaintRange(7, 8, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
-                new IASTaintRange(9, 15, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
+                new IASTaintRange(1, 2, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN),
+                new IASTaintRange(3, 4, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN),
+                new IASTaintRange(5, 6, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN),
+                new IASTaintRange(7, 8, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN),
+                new IASTaintRange(9, 15, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN),
         }, encode.getTaintInformationInitialized().getTaintRanges(encode.length()).getTaintRanges().toArray(new IASTaintRange[0]));
     }
 
@@ -122,7 +122,7 @@ public class TURLDecoderTest {
 
         assertEquals(URLDecoder.decode(s.getString(), csString), encode.getString());
         assertArrayEquals(new IASTaintRange[]{
-                new IASTaintRange(4, 5, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)
+                new IASTaintRange(4, 5, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN)
         }, encode.getTaintInformationInitialized().getTaintRanges(encode.length()).getTaintRanges().toArray(new IASTaintRange[0]));
     }
 
@@ -138,7 +138,7 @@ public class TURLDecoderTest {
 
         assertEquals(URLDecoder.decode(s.getString(), csString), encode.getString());
         assertArrayEquals(new IASTaintRange[]{
-                new IASTaintRange(4, 5, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)
+                new IASTaintRange(4, 5, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN)
         }, encode.getTaintInformationInitialized().getTaintRanges(encode.length()).getTaintRanges().toArray(new IASTaintRange[0]));
     }
 
@@ -155,8 +155,8 @@ public class TURLDecoderTest {
 
         assertEquals(URLDecoder.decode(s.getString(), csString), encode.getString());
         assertArrayEquals(new IASTaintRange[]{
-                new IASTaintRange(0, 4, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
-                new IASTaintRange(5, 11, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)
+                new IASTaintRange(0, 4, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN),
+                new IASTaintRange(5, 11, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN)
         }, encode.getTaintInformationInitialized().getTaintRanges(encode.length()).getTaintRanges().toArray(new IASTaintRange[0]));
     }
 
@@ -174,8 +174,8 @@ public class TURLDecoderTest {
 
         assertEquals(URLDecoder.decode(s.getString(), csString), encode.getString());
         assertArrayEquals(new IASTaintRange[]{
-                new IASTaintRange(0, 4, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN),
-                new IASTaintRange(5, 6, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN)
+                new IASTaintRange(0, 4, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN),
+                new IASTaintRange(5, 6, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN)
         }, encode.getTaintInformationInitialized().getTaintRanges(encode.length()).getTaintRanges().toArray(new IASTaintRange[0]));
     }
 }

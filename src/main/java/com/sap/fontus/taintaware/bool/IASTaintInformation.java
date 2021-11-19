@@ -1,10 +1,7 @@
 package com.sap.fontus.taintaware.bool;
 
-import com.sap.fontus.taintaware.shared.IASTaintRanges;
+import com.sap.fontus.taintaware.shared.*;
 import com.sap.fontus.taintaware.unified.IASTaintInformationable;
-import com.sap.fontus.taintaware.shared.IASTaintRange;
-import com.sap.fontus.taintaware.shared.IASTaintSource;
-import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,17 +27,17 @@ public enum IASTaintInformation implements IASTaintInformationable {
     }
 
 
-    public IASTaintSource getTaint(int position) {
-        return this.taint ? IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN : null;
+    public IASTaintMetadata getTaint(int position) {
+        return this.taint ? IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN : null;
     }
 
     @Override
-    public IASTaintInformationable setTaint(int index, IASTaintSource taint) {
+    public IASTaintInformationable setTaint(int index, IASTaintMetadata taint) {
         return IASTaintInformationable.super.setTaint(index, taint);
     }
 
     @Override
-    public IASTaintInformationable setTaint(int start, int end, IASTaintSource taint) {
+    public IASTaintInformationable setTaint(int start, int end, IASTaintMetadata taint) {
         return this.mergeTaint(taint == null ? UNTAINTED : TAINTED);
     }
 
@@ -93,7 +90,7 @@ public enum IASTaintInformation implements IASTaintInformationable {
     @Override
     public IASTaintRanges getTaintRanges(int length) {
         if (this.taint) {
-            return new IASTaintRanges(length, IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN);
+            return new IASTaintRanges(length, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN);
         } else {
             return new IASTaintRanges(length);
         }

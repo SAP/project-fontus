@@ -1,5 +1,6 @@
 package com.sap.fontus.taintaware.untainted;
 
+import com.sap.fontus.taintaware.shared.IASTaintMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintRanges;
 import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
@@ -49,12 +50,12 @@ public class IASTaintInformation implements IASTaintInformationable {
     }
 
     @Override
-    public IASTaintSource getTaint(int index) {
+    public IASTaintMetadata getTaint(int index) {
         return null;
     }
 
     @Override
-    public IASTaintInformationable setTaint(int start, int end, IASTaintSource taint) {
+    public IASTaintInformationable setTaint(int start, int end, IASTaintMetadata taint) {
         return this;
     }
 

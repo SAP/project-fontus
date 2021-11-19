@@ -1,6 +1,7 @@
 package com.sap.fontus.taintaware.unified;
 
 
+import com.sap.fontus.taintaware.shared.IASTaintMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 
@@ -28,7 +29,7 @@ public class TURLDecoder {
                 if (c == '+') {
                     IASAbstractStringBuilder s = new IASStringBuilder();
                     s.append(' ');
-                    IASTaintSource source = url.getTaintInformationInitialized().getTaint(i);
+                    IASTaintMetadata source = url.getTaintInformationInitialized().getTaint(i);
                     s.setTaint(source);
                     strb.append(s);
                 } else {
@@ -82,13 +83,13 @@ public class TURLDecoder {
 
             // Iterating through every character of the encoded string, which belongs to the decoded character
             // If the taint information is homogeneous it is used, otherwise the taint information for the String is set to IASTaintSource.TS_CHAR_UNKNOWN_ORIGIN
-            IASTaintSource source = null;
+            IASTaintMetadata source = null;
             for (int i = 0; i < origChars.length(); i++) {
-                IASTaintSource curr = origChars.getTaintInformationInitialized().getTaint(i);
+                IASTaintMetadata curr = origChars.getTaintInformationInitialized().getTaint(i);
                 if (source == null) {
                     source = curr;
                 } else if(source != curr) {
-                    source = IASTaintSourceRegistry.TS_CHAR_UNKNOWN_ORIGIN;
+                    source = IASTaintSourceRegistry.MD_CHAR_UNKNOWN_ORIGIN;
                     break;
                 }
             }

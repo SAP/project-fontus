@@ -110,22 +110,22 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
      */
     @Override
     public void setTaint(boolean taint) {
-        setTaint(taint ? IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN : null);
+        setTaint(taint ? IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN : null);
     }
 
     @Override
-    public void setTaint(IASTaintSource source) {
+    public void setTaint(IASTaintMetadata data) {
         if (isTainted()) {
             this.taintInformation = TaintInformationFactory.createTaintInformation(this.length());
         }
-        if (source != null) {
+        if (data != null) {
             if (isUninitialized()) {
                 if (Configuration.getConfiguration().collectStats()) {
                     Statistics.INSTANCE.incrementInitialized();
                 }
                 this.taintInformation = TaintInformationFactory.createTaintInformation(this.length());
             }
-            this.taintInformation = this.taintInformation.addRange(0, this.string.length(), source);
+            this.taintInformation = this.taintInformation.addRange(0, this.string.length(), data);
         } else {
             this.taintInformation = null;
         }

@@ -1,5 +1,6 @@
 package com.sap.fontus;
 
+import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.taintaware.unified.IASCompareProxy;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
@@ -50,8 +51,8 @@ public final class Constants {
             ConversionUtilsToOrigName = ConversionUtils.class.getMethod("convertToUninstrumented", Object.class).getName();
             ConversionUtilsToOrigDesc = Descriptor.parseMethod(ConversionUtils.class.getMethod("convertToUninstrumented", Object.class)).toDescriptor();
             TaintHandlerQN = Utils.getInternalName(IASTaintHandler.class);
-            TaintHandlerTaintName = IASTaintHandler.class.getMethod("taint", Object.class, int.class).getName();
-            TaintHandlerTaintDesc = Descriptor.parseMethod(IASTaintHandler.class.getMethod("taint", Object.class, int.class)).toDescriptor();
+            TaintHandlerTaintName = IASTaintHandler.class.getMethod("taint", Object.class, Object.class, Object[].class, int.class).getName();
+            TaintHandlerTaintDesc = Descriptor.parseMethod(IASTaintHandler.class.getMethod("taint", Object.class, Object.class, Object[].class, int.class)).toDescriptor();
             TaintHandlerCheckTaintName = IASTaintHandler.class.getMethod("checkTaint", Object.class, Object.class, String.class, String.class).getName();
             TaintHandlerCheckTaintDesc = Descriptor.parseMethod(IASTaintHandler.class.getMethod("checkTaint", Object.class, Object.class, String.class, String.class)).toDescriptor();
             CompareProxyEqualsDesc = Descriptor.parseMethod(IASCompareProxy.class.getMethod("compareRefEquals", Object.class, Object.class)).toDescriptor();
