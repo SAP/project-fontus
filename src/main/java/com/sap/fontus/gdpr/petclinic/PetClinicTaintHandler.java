@@ -17,9 +17,9 @@ import java.util.regex.Pattern;
 
 public class PetClinicTaintHandler extends IASTaintHandler {
 
-    private static final Pattern addNewPetsPattern = Pattern.compile("\\/owners\\/([0-9]+)\\/pets\\/new");
-    private static final Pattern editPetsPattern = Pattern.compile("\\/owners\\/([0-9]+)\\/pets\\/([0-9]+)\\/edit");
-    private static final Pattern addVisitPattern = Pattern.compile("\\/owners\\/([0-9]+)\\/pets\\/([0-9]+)\\/visits\\/new");
+    private static final Pattern addNewPetsPattern = Pattern.compile("^\\/owners\\/([0-9]+)\\/pets\\/new$");
+    private static final Pattern editPetsPattern = Pattern.compile("^\\/owners\\/([0-9]+)\\/pets\\/([0-9]+)\\/edit$");
+    private static final Pattern addVisitPattern = Pattern.compile("^\\/owners\\/([0-9]+)\\/pets\\/([0-9]+)\\/visits\\/new$");
 
     private static Set<AllowedPurpose> getPurposesFromRequest(ReflectedHttpServletRequest servlet) {
         Purpose purpose = new SimplePurpose(1, "Process and Store", "Allow process and Storage", "");
@@ -106,8 +106,6 @@ public class PetClinicTaintHandler extends IASTaintHandler {
         return metadata;
     }
 
-
-
     /**
      * Extracts the TCF consent string from a cookie and attaches it as the taint metadata
      * @param taintAware The Taint Aware String-like object
@@ -146,9 +144,14 @@ public class PetClinicTaintHandler extends IASTaintHandler {
 
             // Check path
             String path = uri.getString();
-            Matcher addnewPetsMatcher = addNewPetsPattern.matcher(path);
+            Matcher addNewPetsMatcher = addNewPetsPattern.matcher(path);
             Matcher editPetsMatcher = editPetsPattern.matcher(path);
             Matcher newVisitMatcher = addVisitPattern.matcher(path);
+
+            System.out.println("Matchers: ");
+            System.out.println("New Pets: " + addNewPetsMatcher.matches());
+            System.out.println("Edit Pets: " + editPetsMatcher.matches());
+            System.out.println("New Visit: " + newVisitMatcher.matches());
 
             if (path.equals("/owners/new")) {
                 // New owner
@@ -156,8 +159,8 @@ public class PetClinicTaintHandler extends IASTaintHandler {
             } else if (path.matches("\\/owners\\/[0-9]+\\/edit")) {
                 // Update owner
                 metadata = getMetadataFromOwnerRequest(request);
-            } else if (addnewPetsMatcher.matches()) {
-                metadata = getMetadataFromPetRequest(request, addnewPetsMatcher, path, ProtectionLevel.Normal);
+            } else if (addNewPetsMatcher.matches()) {
+                metadata = getMetadataFromPetRequest(request, addNewPetsMatcher, path, ProtectionLevel.Normal);
             } else if (editPetsMatcher.matches()) {
                 metadata = getMetadataFromPetRequest(request, editPetsMatcher, path, ProtectionLevel.Normal);
             } else if (newVisitMatcher.matches()) {
