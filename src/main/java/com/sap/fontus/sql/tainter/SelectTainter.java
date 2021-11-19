@@ -53,7 +53,7 @@ public class SelectTainter extends SelectVisitorAdapter {
 		GroupByElement groupBy = plainSelect.getGroupBy();
 		if(groupBy != null) {
 			List<Expression> groupByExpressions = groupBy.getGroupByExpressions();
-			List<Expression> taintedGroupByExpressions = taintGroupBy(groupByExpressions);
+			List<Expression> taintedGroupByExpressions = this.taintGroupBy(groupByExpressions);
 			groupBy.setGroupByExpressions(taintedGroupByExpressions);
 		}
 	}

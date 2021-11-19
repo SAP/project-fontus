@@ -45,8 +45,8 @@ public class StatementTainter extends StatementVisitorAdapter {
 	}
 
 	@Override
-	public void visit(Statements statements) {
-		for (Statement statement : statements.getStatements()) {
+	public void visit(Statements stmts) {
+		for (Statement statement : stmts.getStatements()) {
 			statement.accept(this);
 		}
 	}
@@ -135,9 +135,7 @@ public class StatementTainter extends StatementVisitorAdapter {
 			}
 		}
 		updateSets.clear();
-		for(UpdateSet u : fixedSets) {
-			updateSets.add(u);
-		}
+		updateSets.addAll(fixedSets);
 
 
 		this.addTemporaryAssingVariables(columnNames);
