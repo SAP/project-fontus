@@ -18,6 +18,13 @@ public class SimplePurpose implements Purpose {
         this.legal = legal;
     }
 
+    public SimplePurpose(int id, String name) {
+        this.id = id;
+        this.name = name;
+        this.description = new String();
+        this.legal = new String();
+    }
+
     @Override
     public int getId() {
         return id;
@@ -37,6 +44,10 @@ public class SimplePurpose implements Purpose {
     public String getLegalDescription() {
         return legal;
     }
+
+    public void setDescription(String description) { this.description = description; }
+
+    public void setLegalDescription(String legal) { this.legal = legal; }
 
     @Override
     public boolean equals(Object o) {

@@ -280,7 +280,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             return;
         }
 
-
         FunctionCall functionCall = this.instrumentationHelper.rewriteOwnerMethod(fc);
         if (functionCall != null) {
             super.visitMethodInsn(functionCall.getOpcode(), functionCall.getOwner(), functionCall.getName(), functionCall.getDescriptor(), functionCall.isInterface());

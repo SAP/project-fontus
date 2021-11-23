@@ -1,9 +1,11 @@
 package com.sap.fontus.taintaware.shared;
 
+import com.sap.fontus.utils.GenericRegistry;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class IASTaintSourceRegistry {
+public class IASTaintSourceRegistry extends GenericRegistry<IASTaintSource> {
     public static final IASTaintSource TS_STRING_CREATED_FROM_CHAR_ARRAY = getInstance().getOrRegisterTaintSource("StringCreatedFromCharArray");
     public static final IASTaintSource TS_CHAR_UNKNOWN_ORIGIN = getInstance().getOrRegisterTaintSource("CharUnknownOrigin");
     public static final IASTaintSource TS_CS_UNKNOWN_ORIGIN = getInstance().getOrRegisterTaintSource("CharSequenceUnknownOrigin");
@@ -13,31 +15,10 @@ public class IASTaintSourceRegistry {
     public static final IASTaintMetadata MD_CS_UNKNOWN_ORIGIN = new IASBasicMetadata(TS_CS_UNKNOWN_ORIGIN);
 
     private static IASTaintSourceRegistry instance;
-    private final List<IASTaintSource> sources = new ArrayList<>();
-    private int counter = 0;
 
-    public synchronized IASTaintSource getOrRegisterTaintSource(String name) {
-        for (IASTaintSource source : sources) {
-            if (source.getName().equals(name)) {
-                return source;
-            }
-        }
-        this.counter++;
-        IASTaintSource source = new IASTaintSource(name, this.counter);
-        this.sources.add(source);
-        return source;
-    }
-
-    public synchronized IASTaintSource get(int id) {
-        if (id <= 0 || id > this.counter) {
-            return null;
-        }
-        return this.sources.get(id - 1);
-    }
-
-    public synchronized void clear() {
-        this.sources.clear();
-        this.counter = 0;
+    @Override
+    protected synchronized IASTaintSource getNewObject(String name, int id) {
+        return new IASTaintSource(name, id);
     }
 
     public static synchronized IASTaintSourceRegistry getInstance() {

@@ -1,6 +1,8 @@
 package com.sap.fontus.gdpr.metadata;
 
-public interface Purpose {
+import com.sap.fontus.utils.NamedObject;
+
+public interface Purpose extends NamedObject {
 
     int getId();
 

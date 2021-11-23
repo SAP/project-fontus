@@ -80,7 +80,8 @@ public class Generator implements Callable<Void> {
                     String[] categoriesArray = sink.substring(sink.indexOf("=") + 1).split("=");
                     categories = Arrays.asList(categoriesArray);
                 }
-                SinkGenerator sinkGenerator = new SinkGenerator(className, categories);
+                // For now don't support generating sinks with purposes and vendors
+                SinkGenerator sinkGenerator = new SinkGenerator(className, categories, new ArrayList<>(), new ArrayList<>());
                 sinks.addAll(sinkGenerator.readSinks(this.sinkObjects));
             }
         }

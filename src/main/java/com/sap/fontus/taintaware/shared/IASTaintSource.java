@@ -1,11 +1,13 @@
 package com.sap.fontus.taintaware.shared;
 
+import com.sap.fontus.utils.NamedObject;
+
 import java.util.*;
 
 /**
  * Created by d059349 on 15.07.17.
  */
-public class IASTaintSource {
+public class IASTaintSource implements NamedObject {
 
     private final String name;
     private final int id;
@@ -37,6 +39,7 @@ public class IASTaintSource {
         return Objects.hash(name, id);
     }
 
+    @Override
     public String getName() {
         return name;
     }

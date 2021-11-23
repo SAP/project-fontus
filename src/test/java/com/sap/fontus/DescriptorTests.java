@@ -1,9 +1,11 @@
 package com.sap.fontus;
 
+import com.sap.fontus.Constants;
 import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.taintaware.unified.IASString;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

@@ -9,7 +9,7 @@ public interface GdprMetadata {
     // List of allowed purposes for a given receiver, together with expiry information
     // Metadatum 1
     // TCF - getAllowedPurposes and getAllowedVendorIds
-    public Set<AllowedPurpose> getAllowedPurposes();
+    public AllowedPurposes getAllowedPurposes();
 
     // Level of protection required, e.g. sensitive medical data
     // Metadatum 2

@@ -58,11 +58,17 @@ public class Configuration {
     @XmlElement
     private final SourceConfig sourceConfig;
 
-    /**
-     * All functions listed here consume Strings that need to be checked first.
-     */
     @XmlElement
     private final SinkConfig sinkConfig;
+
+    @JacksonXmlElementWrapper(localName = "vendors")
+    @XmlElement(name = "vendor")
+    private final List<Vendor> vendors;
+
+    @JacksonXmlElementWrapper(localName = "purposes")
+    @XmlElement(name = "purpose")
+    private final List<Purpose> purposes;
+
     @JacksonXmlElementWrapper(localName = "converters")
     @XmlElement(name = "converter")
     private final List<FunctionCall> converters;
@@ -91,6 +97,8 @@ public class Configuration {
         this.verbose = false;
         this.sourceConfig = new SourceConfig();
         this.sinkConfig = new SinkConfig();
+        this.purposes = new ArrayList<>();
+        this.vendors = new ArrayList<>();
         this.converters = new ArrayList<>();
         this.returnGeneric = new ArrayList<>();
         this.takeGeneric = new ArrayList<>();
@@ -99,10 +107,13 @@ public class Configuration {
         this.resourcesToInstrument = new ArrayList<>();
     }
 
-    public Configuration(boolean verbose, SourceConfig sourceConfig, SinkConfig sinkConfig, List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> blacklistedMainClasses, List<String> excludedPackages, List<String> resourcesToInstrument) {
+    public Configuration(boolean verbose, SourceConfig sourceConfig, SinkConfig sinkConfig, List<Purpose> purposes, List<Vendor> vendors,
+                         List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> blacklistedMainClasses, List<String> excludedPackages, List<String> resourcesToInstrument) {
         this.verbose = verbose;
         this.sourceConfig = sourceConfig;
         this.sinkConfig = sinkConfig;
+        this.purposes = purposes;
+        this.vendors = vendors;
         this.converters = converters;
         this.returnGeneric = returnGeneric;
         this.takeGeneric = takeGeneric;
@@ -116,6 +127,8 @@ public class Configuration {
             this.verbose |= other.verbose;
             this.sourceConfig.append(other.sourceConfig);
             this.sinkConfig.append(other.sinkConfig);
+            this.vendors.addAll(other.vendors);
+            this.purposes.addAll(other.purposes);
             this.converters.addAll(other.converters);
             this.returnGeneric.addAll(other.returnGeneric);
             this.takeGeneric.addAll(other.takeGeneric);
@@ -201,6 +214,10 @@ public class Configuration {
     public SinkConfig getSinkConfig() {
         return this.sinkConfig;
     }
+
+    public List<Purpose> getPurposes() { return this.purposes; }
+
+    public List<Vendor> getVendors() { return this.vendors; }
 
     public List<FunctionCall> getConverters() {
         return this.converters;
@@ -342,7 +359,6 @@ public class Configuration {
     public static void parseAgent(String args) {
         Configuration configuration = AgentConfig.parseConfig(args);
         configuration.setOfflineInstrumentation(false);
-
         setConfiguration(configuration);
     }
 

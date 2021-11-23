@@ -118,8 +118,10 @@ public class Converter implements Callable<Void> {
                 if (!isContained) {
                     List<SinkParameter> sinkParameters = parseParameters(sinkJson);
                     List<String> categories = parseCategories(sinkJson);
+                    List<String> vendors = parseVendors(sinkJson);
+                    List<String> purposes = parsePurposes(sinkJson);
                     String sinkName = generateName(call);
-                    sinks.add(new Sink(sinkName, call, sinkParameters, categories));
+                    sinks.add(new Sink(sinkName, call, sinkParameters, categories, vendors, purposes));
                 }
             } catch (Exception e) {
                 System.err.println("Some error occured with this:");
@@ -157,14 +159,26 @@ public class Converter implements Callable<Void> {
         }
     }
 
-    private List<String> parseCategories(JSONObject sinkJson) {
+    private List<String> parseStringList(JSONObject sinkJson, String listName, String elementName) {
         List<String> list = new ArrayList<>();
-        JSONArray array = (JSONArray) sinkJson.get("categories");
+        JSONArray array = (JSONArray) sinkJson.get(listName);
         for (Object categoryObject : array) {
             JSONObject category = (JSONObject) categoryObject;
-            list.add(category.getString("category"));
+            list.add(category.getString(elementName));
         }
         return list;
+    }
+
+    private List<String> parseCategories(JSONObject sinkJson) {
+        return parseStringList(sinkJson, "categories", "category");
+    }
+
+    private List<String> parseVendors(JSONObject sinkJson) {
+        return parseStringList(sinkJson, "vendors", "vendor");
+    }
+
+    private List<String> parsePurposes(JSONObject sinkJson) {
+        return parseStringList(sinkJson, "purposes", "purpose");
     }
 
     private String generateName(FunctionCall call) {

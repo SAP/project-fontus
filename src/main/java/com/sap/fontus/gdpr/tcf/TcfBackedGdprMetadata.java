@@ -22,14 +22,14 @@ public class TcfBackedGdprMetadata extends GdprMetadataBase {
     }
 
     @Override
-    public Set<AllowedPurpose> getAllowedPurposes() {
-        Set<AllowedPurpose> purposes = new HashSet<>();
+    public AllowedPurposes getAllowedPurposes() {
+        AllowedPurposes purposes = new AllowedPurposeSet();
 
         // Convert Vendors
         Set<Vendor> vendors = new HashSet<>();
         try {
             for (int v : tcString.getAllowedVendors()) {
-                vendors.add(new SimpleVendor(v));
+                vendors.add(new SimpleVendor(v, "Acme"));
             }
         } catch (Exception e) {
             //

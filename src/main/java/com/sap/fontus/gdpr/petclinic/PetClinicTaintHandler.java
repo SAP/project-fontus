@@ -47,13 +47,13 @@ public class PetClinicTaintHandler extends IASTaintHandler {
             "()Ljava/util/Map;",
             true);
 
-    private static Set<AllowedPurpose> getPurposesFromRequest(ReflectedHttpServletRequest servlet) {
+    private static AllowedPurposes getPurposesFromRequest(ReflectedHttpServletRequest servlet) {
         Purpose purpose = new SimplePurpose(1, "Process and Store", "Allow process and Storage", "");
         Set<Vendor> vendors = new HashSet<>();
-        vendors.add(new SimpleVendor(1));
+        vendors.add(new SimpleVendor(1, "Acme"));
         AllowedPurpose allowedPurpose = new SimpleAllowedPurpose(new SimpleExpiryDate(), purpose, vendors);
 
-        Set<AllowedPurpose> allowedPurposes = new HashSet<>();
+        AllowedPurposes allowedPurposes = new AllowedPurposeSet();
         allowedPurposes.add(allowedPurpose);
         return allowedPurposes;
     }
