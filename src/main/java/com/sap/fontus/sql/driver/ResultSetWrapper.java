@@ -4,6 +4,7 @@ package com.sap.fontus.sql.driver;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
+import com.sap.fontus.gdpr.metadata.GdprTaintMetadata;
 import com.sap.fontus.taintaware.shared.IASBasicMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintRanges;
@@ -1088,16 +1089,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
         IASString rv = IASString.fromString(value);
         if (taint != null && !"0".equals(taint)) {
             System.out.printf("Restoring taint for '%s': %s%n", value, taint);
-            Gson gson = new GsonBuilder().serializeNulls().registerTypeAdapter(IASTaintMetadata.class, new InstanceCreator<IASTaintMetadata>() {
-                @Override
-                public IASTaintMetadata createInstance(Type type) {
-                    return new IASBasicMetadata(IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN);
-                }
-            }).create();
-
-            IASTaintRanges ranges = gson.fromJson(taint, IASTaintRanges.class);
-            IASTaintInformationable tis = TaintInformationFactory.createTaintInformation(ranges.getLength(), ranges.getTaintRanges());
-            rv.setTaint(tis);
+            Utils.restoreTaint(rv, taint);
         }
         return rv;
     }
