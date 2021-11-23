@@ -14,7 +14,7 @@ import org.junit.jupiter.migrationsupport.EnableJUnit4MigrationSupport;
 @EnableJUnit4MigrationSupport
 public class XssSanitizationTest {
 
-    private static IASTaintMetadata source = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("dummy"));
+    private static IASTaintMetadata source = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy"));
     
     /**
      * Html attribute name tests

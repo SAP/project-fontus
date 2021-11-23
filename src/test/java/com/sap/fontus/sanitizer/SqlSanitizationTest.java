@@ -36,7 +36,7 @@ public class SqlSanitizationTest {
     public SqlSanitizationTest() {
     }
 
-    private static IASTaintMetadata source = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("dummy"));
+    private static IASTaintMetadata source = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy"));
     /**
      * One complete attribute value is tainted. Wouldn't have changed syntax of
      * query.

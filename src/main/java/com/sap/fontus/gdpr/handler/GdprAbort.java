@@ -4,9 +4,7 @@ import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.Sink;
 import com.sap.fontus.config.abort.Abort;
 import com.sap.fontus.gdpr.metadata.*;
-import com.sap.fontus.gdpr.metadata.simple.SimplePurpose;
-import com.sap.fontus.gdpr.metadata.simple.SimpleRequiredPurpose;
-import com.sap.fontus.gdpr.metadata.simple.SimpleVendor;
+import com.sap.fontus.gdpr.metadata.simple.*;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
 import com.sap.fontus.taintaware.shared.IASTaintRanges;
@@ -17,15 +15,7 @@ import java.util.List;
 public class GdprAbort extends Abort {
 
     public RequiredPurposes getPurposedFromSink(Sink sink) {
-        RequiredPurposes requiredPurposes = new RequiredPurposeSet();
-        if (sink != null) {
-            for (String cat : sink.getCategories()) {
-                // Purpose p = new SimplePurpose();
-                //Vendor v = new SimpleVendor();
-                //RequiredPurpose rp = new SimpleRequiredPurpose(p, v);
-            }
-        }
-        return requiredPurposes;
+        return RequiredPurposeRegistry.getPurposeFromSink(sink);
     }
 
     @Override
@@ -35,6 +25,8 @@ public class GdprAbort extends Abort {
         Sink sink = Configuration.getConfiguration().getSinkConfig().getSinkForFqn(sinkFunction);
         RequiredPurposes requiredPurposes = getPurposedFromSink(sink);
 
+        // Create a policy
+        PurposePolicy policy = new SimplePurposePolicy();
 
         // Extract taint information
         IASString taintedString = taintAware.toIASString();
@@ -43,7 +35,10 @@ public class GdprAbort extends Abort {
             if (range.getMetadata() instanceof GdprTaintMetadata) {
                 GdprTaintMetadata taintMetadata = (GdprTaintMetadata) range.getMetadata();
                 GdprMetadata metadata = taintMetadata.getMetadata();
-
+                if (policy.areRequiredPurposesAllowed(requiredPurposes, metadata.getAllowedPurposes())) {
+                    // Block / Sanitize / etc...
+                    System.out.println("GDPR violation detection!");
+                }
             }
         }
     }

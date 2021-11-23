@@ -12,6 +12,8 @@ import com.sap.fontus.taintaware.unified.IASTaintHandler;
 
 public class GdprTaintHandler extends IASTaintHandler {
 
+
+
     private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
         IASTaintSource source = IASTaintSourceRegistry.getInstance().get(sourceId);
 

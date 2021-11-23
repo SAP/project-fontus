@@ -10,16 +10,23 @@ public abstract class GenericRegistry<T extends NamedObject> {
 
     protected abstract T getNewObject(String name, int id);
 
-    public synchronized T getOrRegisterTaintSource(String name) {
+    public synchronized T getOrRegisterObject(String name) {
+        T o = this.get(name);
+        if (o == null) {
+            this.counter++;
+            o = getNewObject(name, this.counter);
+            this.objects.add(o);
+        }
+        return o;
+    }
+
+    public synchronized T get(String name) {
         for (T o : objects) {
             if (o.getName().equals(name)) {
                 return o;
             }
         }
-        this.counter++;
-        T o = getNewObject(name, this.counter);
-        this.objects.add(o);
-        return o;
+        return null;
     }
 
     public synchronized T get(int id) {

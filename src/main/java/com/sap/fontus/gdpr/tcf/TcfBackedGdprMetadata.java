@@ -7,6 +7,7 @@ import com.sap.fontus.gdpr.metadata.simple.SimpleDataId;
 import com.sap.fontus.gdpr.metadata.simple.SimpleExpiryDate;
 import com.sap.fontus.gdpr.metadata.simple.SimpleVendor;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -22,8 +23,8 @@ public class TcfBackedGdprMetadata extends GdprMetadataBase {
     }
 
     @Override
-    public AllowedPurposes getAllowedPurposes() {
-        AllowedPurposes purposes = new AllowedPurposeSet();
+    public Collection<AllowedPurpose> getAllowedPurposes() {
+        Collection<AllowedPurpose> purposes = new HashSet<>();
 
         // Convert Vendors
         Set<Vendor> vendors = new HashSet<>();

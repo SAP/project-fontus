@@ -40,9 +40,9 @@ public class StringTest {
     }
 
     private final static IASTaintSource SAMPLE_SOURCE = IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN;
-    private final static IASTaintMetadata md = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("dummy"));
-    private final static IASTaintMetadata md2 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("dummy2"));
-    private final static IASTaintMetadata md3 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("dummy3"));
+    private final static IASTaintMetadata md = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy"));
+    private final static IASTaintMetadata md2 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy2"));
+    private final static IASTaintMetadata md3 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy3"));
     private IASString foo = null;
     private IASString bar = null;
 

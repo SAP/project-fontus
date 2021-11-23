@@ -2,13 +2,10 @@ package com.sap.fontus.taintaware.shared;
 
 import com.sap.fontus.utils.GenericRegistry;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class IASTaintSourceRegistry extends GenericRegistry<IASTaintSource> {
-    public static final IASTaintSource TS_STRING_CREATED_FROM_CHAR_ARRAY = getInstance().getOrRegisterTaintSource("StringCreatedFromCharArray");
-    public static final IASTaintSource TS_CHAR_UNKNOWN_ORIGIN = getInstance().getOrRegisterTaintSource("CharUnknownOrigin");
-    public static final IASTaintSource TS_CS_UNKNOWN_ORIGIN = getInstance().getOrRegisterTaintSource("CharSequenceUnknownOrigin");
+    public static final IASTaintSource TS_STRING_CREATED_FROM_CHAR_ARRAY = getInstance().getOrRegisterObject("StringCreatedFromCharArray");
+    public static final IASTaintSource TS_CHAR_UNKNOWN_ORIGIN = getInstance().getOrRegisterObject("CharUnknownOrigin");
+    public static final IASTaintSource TS_CS_UNKNOWN_ORIGIN = getInstance().getOrRegisterObject("CharSequenceUnknownOrigin");
 
     public static final IASTaintMetadata MD_STRING_CREATED_FROM_CHAR_ARRAY = new IASBasicMetadata(TS_STRING_CREATED_FROM_CHAR_ARRAY);
     public static final IASTaintMetadata MD_CHAR_UNKNOWN_ORIGIN = new IASBasicMetadata(TS_CHAR_UNKNOWN_ORIGIN);

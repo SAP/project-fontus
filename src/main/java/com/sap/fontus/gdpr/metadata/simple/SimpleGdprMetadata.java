@@ -2,12 +2,13 @@ package com.sap.fontus.gdpr.metadata.simple;
 
 import com.sap.fontus.gdpr.metadata.*;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
 public class SimpleGdprMetadata extends GdprMetadataBase {
 
-    private AllowedPurposes allowedPurposes;
+    private Collection<AllowedPurpose> allowedPurposes;
     private ProtectionLevel protectionLevel;
     private DataSubject dataSubject;
     private DataId dataId;
@@ -15,7 +16,7 @@ public class SimpleGdprMetadata extends GdprMetadataBase {
     private boolean consent;
     private Identifiability identifiability;
 
-    public SimpleGdprMetadata(AllowedPurposes allowedPurposes, ProtectionLevel protectionLevel, DataSubject dataSubject, DataId dataId, boolean portability, boolean consent, Identifiability identifiability) {
+    public SimpleGdprMetadata(Collection<AllowedPurpose> allowedPurposes, ProtectionLevel protectionLevel, DataSubject dataSubject, DataId dataId, boolean portability, boolean consent, Identifiability identifiability) {
         this.allowedPurposes = allowedPurposes;
         this.protectionLevel = protectionLevel;
         this.dataSubject = dataSubject;
@@ -26,7 +27,7 @@ public class SimpleGdprMetadata extends GdprMetadataBase {
     }
 
     @Override
-    public AllowedPurposes getAllowedPurposes() {
+    public Collection<AllowedPurpose> getAllowedPurposes() {
         return allowedPurposes;
     }
 

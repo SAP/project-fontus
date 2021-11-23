@@ -15,6 +15,7 @@ import org.objectweb.asm.Opcodes;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -47,13 +48,13 @@ public class PetClinicTaintHandler extends IASTaintHandler {
             "()Ljava/util/Map;",
             true);
 
-    private static AllowedPurposes getPurposesFromRequest(ReflectedHttpServletRequest servlet) {
+    private static Collection<AllowedPurpose> getPurposesFromRequest(ReflectedHttpServletRequest servlet) {
         Purpose purpose = new SimplePurpose(1, "Process and Store", "Allow process and Storage", "");
         Set<Vendor> vendors = new HashSet<>();
         vendors.add(new SimpleVendor(1, "Acme"));
         AllowedPurpose allowedPurpose = new SimpleAllowedPurpose(new SimpleExpiryDate(), purpose, vendors);
 
-        AllowedPurposes allowedPurposes = new AllowedPurposeSet();
+        Collection<AllowedPurpose> allowedPurposes = new HashSet();
         allowedPurposes.add(allowedPurpose);
         return allowedPurposes;
     }

@@ -31,7 +31,7 @@ public class SourceTransformer extends SourceOrSinkTransformer implements Return
         FunctionCall fc = this.source.getFunction();
         logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", fc.getOwner(), fc.getName(), fc.getDescriptor(), Type.getInternalName(IASString.class));
 
-        IASTaintSource source = IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource(this.source.getName());
+        IASTaintSource source = IASTaintSourceRegistry.getInstance().getOrRegisterObject(this.source.getName());
 
         // Stack will already contain return value from the source function
         // Stack: return obj,

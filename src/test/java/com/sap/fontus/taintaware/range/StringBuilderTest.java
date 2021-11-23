@@ -38,11 +38,11 @@ import static org.hamcrest.Matchers.is;
 public class StringBuilderTest {
 
     private final static IASTaintMetadata md0 = null;
-    private final static IASTaintMetadata md1 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("dummy"));
-    private final static IASTaintMetadata md2 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("dummy2"));
-    private final static IASTaintMetadata md3 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("dummy3"));
-    private final static IASTaintMetadata md4 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("dummy4"));
-    private final static IASTaintMetadata md5 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("dummy5"));
+    private final static IASTaintMetadata md1 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy"));
+    private final static IASTaintMetadata md2 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy2"));
+    private final static IASTaintMetadata md3 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy3"));
+    private final static IASTaintMetadata md4 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy4"));
+    private final static IASTaintMetadata md5 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy5"));
 
 
     @BeforeAll

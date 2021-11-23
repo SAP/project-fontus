@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class IASTaintHandlerTest {
     @BeforeAll
     static void before() {
-        IASTaintSourceRegistry.getInstance().getOrRegisterTaintSource("mySource");
+        IASTaintSourceRegistry.getInstance().getOrRegisterObject("mySource");
         Configuration.setTestConfig(TaintMethod.RANGE);
         Configuration.getConfiguration().setRecursiveTainting(true);
     }
