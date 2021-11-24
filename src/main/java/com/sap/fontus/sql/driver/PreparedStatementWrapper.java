@@ -138,7 +138,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
 
     @Override
     public void setLong(int parameterIndex, long x) throws SQLException {
-        System.out.printf("Set at idx %d to value %d%nQuery: %s (%s)", parameterIndex, x, this.taintedQuery, this.originalQuery);
+        //System.out.printf("Set at idx %d to value %d%nQuery: %s (%s)", parameterIndex, x, this.taintedQuery, this.originalQuery);
         this.setVariables[this.newIndex[parameterIndex-1]-1]=true;
         this.delegate.setLong(this.newIndex[parameterIndex-1], x);
     }
@@ -453,7 +453,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         //System.out.println(Arrays.toString(this.newIndex));
         this.setVariables[this.newIndex[parameterIndex-1]-1]=true;
         this.delegate.setString(this.newIndex[parameterIndex-1], x.getString());
-        System.out.printf("Setting tainted? (%b) string in prep statement: %s%n", x.isTainted(), x.getString());
+        //System.out.printf("Setting tainted? (%b) string in prep statement: %s%n", x.isTainted(), x.getString());
         if(x.isTainted()) {
             this.setVariables[this.newIndex[parameterIndex - 1]] = true;
             //System.out.printf("Setting String at idx %d: %s/%s%n", parameterIndex, x.getString(), "foo");
@@ -485,10 +485,6 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
             //System.out.println(Arrays.toString(this.setVariables));
             //System.out.println(Arrays.toString(this.newIndex));
             String json = Utils.serializeTaints(value);
-            //to restore:
-            //IASTaintRanges ranges = gson.fromJson(json, IASTaintRanges.class);
-            //TaintInformationFactory.createTaintInformation(ranges.getLength(), ranges.getTaintRanges());
-
             this.delegate.setString(this.newIndex[parameterIndex-1]+1, json);
         }
     }
@@ -508,10 +504,6 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
                 //System.out.println(Arrays.toString(this.setVariables));
                 //System.out.println(Arrays.toString(this.newIndex));
                 String json = Utils.serializeTaints(value);
-                //to restore:
-                //IASTaintRanges ranges = gson.fromJson(json, IASTaintRanges.class);
-                //TaintInformationFactory.createTaintInformation(ranges.getLength(), ranges.getTaintRanges());
-
                 this.delegate.setString(this.newIndex[parameterIndex-1]+1, json);
             }
         }
@@ -529,10 +521,6 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
                 //System.out.println(Arrays.toString(this.setVariables));
                 //System.out.println(Arrays.toString(this.newIndex));
                 String json = Utils.serializeTaints(value);
-                //to restore:
-                //IASTaintRanges ranges = gson.fromJson(json, IASTaintRanges.class);
-                //TaintInformationFactory.createTaintInformation(ranges.getLength(), ranges.getTaintRanges());
-
                 this.delegate.setString(this.newIndex[parameterIndex-1]+1, json);
             }
         }

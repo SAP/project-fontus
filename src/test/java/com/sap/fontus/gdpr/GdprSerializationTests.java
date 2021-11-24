@@ -37,14 +37,12 @@ public class GdprSerializationTests {
                 Identifiability.NotExplicit);
         IASString foo = IASString.fromString("foo");
         foo.setTaint(new GdprTaintMetadata(1, metadata));
+        assertNotNull(foo.getTaintInformation().getTaint(0));
         String json = Utils.serializeTaints(foo);
-        System.out.println(json);
         IASString restored = IASString.fromString("foo");
         Utils.restoreTaint(restored, json);
         String json2 = Utils.serializeTaints(restored);
-        System.out.println(json2);
         assertEquals(json, json2);
-        assertNotNull(foo.getTaintInformation().getTaint(0));
 
     }
 }
