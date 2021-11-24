@@ -33,7 +33,7 @@ class SqlStatementTainterTests {
         taints.add(new Taint("PCA", "22222"));
         StatementTainter tainter = new StatementTainter(taints);
 
-        Statements stmts = CCJSqlParserUtil.parseStatements(input);
+        Statements stmts = CCJSqlParserUtil.parseStatements(input.trim());
         stmts.accept(tainter);
 
         String actualOutput = stmts.toString().trim();

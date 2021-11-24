@@ -256,14 +256,15 @@ public class StatementTainter extends StatementVisitorAdapter {
 			ColumnDefinition newColumnDefinition = new ColumnDefinition();
 			newColumnDefinition.setColumnName("`" + TAINT_PREFIX + columnDefinition.getColumnName().replace("\"", "").replace("`", "") + "`");
 			String dataType = columnDefinition.getColDataType().getDataType().toUpperCase();
-			if (dataType.contains("VARCHAR") || dataType.contains("TEXT") || dataType.contains("NVARCHAR"))
+			if (dataType.contains("TEXT"))
 				newColumnDefinition.setColDataType(columnDefinition.getColDataType());
 			else {
 				ColDataType colDataType = new ColDataType();
-				colDataType.setDataType("VARCHAR");
-				List<String> argumentsStringList = new ArrayList<>();
-				argumentsStringList.add("55");
-				colDataType.setArgumentsStringList(argumentsStringList);
+				colDataType.setDataType("TEXT");
+				//colDataType.setDataType("VARCHAR");
+				//List<String> argumentsStringList = new ArrayList<>();
+				//argumentsStringList.add("55");
+				//colDataType.setArgumentsStringList(argumentsStringList);
 				newColumnDefinition.setColDataType(colDataType);
 			}
 			newColumnDefinitions.add(newColumnDefinition);
@@ -317,19 +318,14 @@ public class StatementTainter extends StatementVisitorAdapter {
 					if(dataType.getColDataType() != null) {
 						String dataTypeString = dataType.getColDataType().getDataType().toUpperCase();
 						switch(dataTypeString) {
-							case "VARCHAR":
+							//case "VARCHAR":
 							case "TEXT":
-							case "NVARCHAR":
+							//case "NVARCHAR":
 								taintAlterExpression.addColDataType(dataType);
 							    break;
 							default:
 								ColDataType colDataType = new ColDataType();
-								colDataType.setDataType("VARCHAR");
-								// I ported this code to JsqlParser 2.0 and I wonder what "55" means.
-								// If you know more, please add a comment or introduce a constant. - Nico Grashoff
-								List<String> argumentsStringList = new ArrayList<>();
-								argumentsStringList.add("55");
-								colDataType.setArgumentsStringList(argumentsStringList);
+								colDataType.setDataType("TEXT");
 							    taintAlterExpression.addColDataType(new AlterExpression.ColumnDataType(taintColumnName, true, colDataType, null));
 								break;
 						}
