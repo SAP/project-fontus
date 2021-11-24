@@ -8,6 +8,10 @@ public class SimpleDataSubject implements DataSubject {
 
     private String id;
 
+    public SimpleDataSubject() {
+        this.id = "DEFAULT";
+    }
+
     public SimpleDataSubject(String id) {
         this.id = id;
     }

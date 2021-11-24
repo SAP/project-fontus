@@ -6,6 +6,11 @@ public class IASTaintRanges implements Iterable<IASTaintRange> {
     private int length;
     protected List<IASTaintRange> ranges;
 
+    public IASTaintRanges() {
+        this.length = 0;
+        this.ranges = new ArrayList<>();
+    }
+
     public IASTaintRanges(int length) {
         this.length = length;
         this.ranges = new ArrayList<>(1);

@@ -1,18 +1,12 @@
 package com.sap.fontus.sql.driver;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.sap.fontus.taintaware.IASTaintAware;
-import com.sap.fontus.taintaware.shared.IASTaintRanges;
 import com.sap.fontus.taintaware.unified.IASString;
-import com.sap.fontus.taintaware.unified.TaintInformationFactory;
 
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

@@ -2,12 +2,18 @@ package com.sap.fontus.gdpr.metadata;
 
 import com.sap.fontus.taintaware.shared.IASBasicMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
+import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 
 import java.util.Objects;
 
 public class GdprTaintMetadata extends IASBasicMetadata {
 
     private GdprMetadata metadata;
+
+    public GdprTaintMetadata() {
+        super(IASTaintSourceRegistry.TS_CS_UNKNOWN_ORIGIN);
+        this.metadata = null;
+    }
 
     public GdprTaintMetadata(IASTaintSource source, GdprMetadata metadata) {
         super(source);

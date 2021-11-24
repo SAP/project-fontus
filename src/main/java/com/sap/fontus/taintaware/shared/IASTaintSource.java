@@ -12,6 +12,11 @@ public class IASTaintSource implements NamedObject {
     private final String name;
     private final int id;
 
+    public IASTaintSource() {
+        this.name = "DEFAULT";
+        this.id = -1;
+    }
+
     public IASTaintSource(String name, int id) {
         this.name = name;
         this.id = id;

@@ -1,21 +1,10 @@
 package com.sap.fontus.sql.driver;
 
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.InstanceCreator;
-import com.sap.fontus.gdpr.metadata.GdprTaintMetadata;
-import com.sap.fontus.taintaware.shared.IASBasicMetadata;
-import com.sap.fontus.taintaware.shared.IASTaintMetadata;
-import com.sap.fontus.taintaware.shared.IASTaintRanges;
-import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.taintaware.unified.IASString;
-import com.sap.fontus.taintaware.unified.IASTaintInformationable;
-import com.sap.fontus.taintaware.unified.TaintInformationFactory;
 
 import java.io.InputStream;
 import java.io.Reader;
-import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
@@ -54,8 +43,8 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public String getString(int columnIndex) throws SQLException {
-        columnIndex = (columnIndex * 2) - 1;
-        return this.delegate.getString(columnIndex);
+        int idx = (columnIndex * 2) - 1;
+        return this.delegate.getString(idx);
     }
 
     @Override
