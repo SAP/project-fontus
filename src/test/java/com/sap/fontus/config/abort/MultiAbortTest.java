@@ -1,9 +1,12 @@
 package com.sap.fontus.config.abort;
 
+import com.sap.fontus.config.Configuration;
+import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.taintaware.range.IASTaintInformation;
 import com.sap.fontus.taintaware.shared.IASBasicMetadata;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -13,6 +16,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class MultiAbortTest {
+
+    @BeforeAll
+    public static void init() {
+        Configuration.setTestConfig(TaintMethod.RANGE);
+    }
 
     @Test
     public void throwAbortTest() {
