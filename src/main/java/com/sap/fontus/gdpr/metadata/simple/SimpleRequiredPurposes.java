@@ -5,6 +5,7 @@ import com.sap.fontus.gdpr.metadata.RequiredPurposes;
 import com.sap.fontus.gdpr.metadata.Vendor;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
 
 public class SimpleRequiredPurposes implements RequiredPurposes {
@@ -19,6 +20,8 @@ public class SimpleRequiredPurposes implements RequiredPurposes {
     }
 
     public SimpleRequiredPurposes() {
+        this.purposeCollection = new HashSet<>();
+        this.vendorCollection = new HashSet<>();
     }
 
     @Override
