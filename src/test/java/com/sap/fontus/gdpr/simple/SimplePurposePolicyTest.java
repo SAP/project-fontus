@@ -158,7 +158,7 @@ public class SimplePurposePolicyTest {
         required.addVendor(v1);
         required.addVendor(v2);
         // Required Purposes
-        required.addPurpose(p2);
+        required.addPurpose(p1);
 
         Collection<AllowedPurpose> allowed = new ArrayList<>();
         Set<Vendor> allowedVendors = new HashSet<>();
