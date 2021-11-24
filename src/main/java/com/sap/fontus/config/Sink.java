@@ -29,30 +29,23 @@ public class Sink {
     @XmlElement(name = "category")
     private final List<String> categories;
 
-    @JacksonXmlElementWrapper(localName = "vendors")
-    @XmlElement(name = "vendor")
-    private final List<String> vendors;
-
-    @JacksonXmlElementWrapper(localName = "purposes")
-    @XmlElement(name = "purpose")
-    private final List<String> purposes;
+    @XmlElement(name = "dataProtection")
+    private final DataProtection dataProtection;
 
     public Sink() {
         this.name = "";
         this.function = new FunctionCall();
         this.parameters = new ArrayList<>();
         this.categories = new ArrayList<>();
-        this.vendors = new ArrayList<>();
-        this.purposes = new ArrayList<>();
+        this.dataProtection = new DataProtection();
     }
 
-    public Sink(String name, FunctionCall functionCall, List<SinkParameter> parameters, List<String> categories, List<String> vendors, List<String> purposes) {
+    public Sink(String name, FunctionCall functionCall, List<SinkParameter> parameters, List<String> categories, DataProtection dataProtection) {
         this.name = name;
         this.function = functionCall;
         this.parameters = parameters;
         this.categories = categories;
-        this.vendors = vendors;
-        this.purposes = purposes;
+        this.dataProtection = dataProtection;
     }
 
     public List<SinkParameter> getParameters() {
@@ -68,14 +61,7 @@ public class Sink {
         return null;
     }
 
-    public List<String> getVendors() {
-        return Collections.unmodifiableList(this.vendors);
-    }
-
-    public List<String> getPurposes() {
-        return Collections.unmodifiableList(this.purposes);
-    }
-
+    public DataProtection getDataProtection() { return dataProtection; }
     public List<String> getCategories() {
         return Collections.unmodifiableList(this.categories);
     }
@@ -95,6 +81,7 @@ public class Sink {
                 ", function=" + function +
                 ", parameters=" + parameters +
                 ", categories=" + categories +
+                ", dataProtection=" + dataProtection +
                 '}';
     }
 }

@@ -1,10 +1,12 @@
 package com.sap.fontus.generator;
 
 import com.sap.fontus.asm.FunctionCall;
+import com.sap.fontus.config.DataProtection;
 import com.sap.fontus.config.Sink;
 import com.sap.fontus.config.SinkParameter;
 import com.sap.fontus.utils.Utils;
 
+import javax.xml.crypto.Data;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -13,14 +15,12 @@ import java.util.List;
 public class SinkGenerator extends AbstractGenerator {
     private final String className;
     private final List<String> categories;
-    private final List<String> vendors;
-    private final List<String> purposes;
+    private final DataProtection dp;
 
-    public SinkGenerator(String className, List<String> categories, List<String> vendors, List<String> purposes) {
+    public SinkGenerator(String className, List<String> categories, DataProtection dp) {
         this.className = Utils.slashToDot(className);
         this.categories = categories;
-        this.vendors = vendors;
-        this.purposes = purposes;
+        this.dp = dp;
     }
 
     public List<Sink> readSinks(boolean isObject) {
@@ -31,7 +31,7 @@ public class SinkGenerator extends AbstractGenerator {
             for (Method method : methods) {
                 List<SinkParameter> sinkParameters = extractParameters(isObject, method.getParameterTypes());
                 if (!sinkParameters.isEmpty()) {
-                    Sink sink = new Sink(generateName(method), FunctionCall.fromMethod(method), sinkParameters, this.categories, this.vendors, this.purposes);
+                    Sink sink = new Sink(generateName(method), FunctionCall.fromMethod(method), sinkParameters, this.categories, this.dp);
                     sinks.add(sink);
                 }
             }
@@ -39,7 +39,7 @@ public class SinkGenerator extends AbstractGenerator {
             for (Constructor<?> constructor : constructors) {
                 List<SinkParameter> sinkParameters = extractParameters(isObject, constructor.getParameterTypes());
                 if (!sinkParameters.isEmpty()) {
-                    Sink sink = new Sink(generateName(constructor), FunctionCall.fromConstructor(constructor), sinkParameters, this.categories, this.vendors, this.purposes);
+                    Sink sink = new Sink(generateName(constructor), FunctionCall.fromConstructor(constructor), sinkParameters, this.categories, this.dp);
                     sinks.add(sink);
                 }
             }

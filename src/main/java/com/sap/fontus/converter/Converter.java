@@ -118,10 +118,8 @@ public class Converter implements Callable<Void> {
                 if (!isContained) {
                     List<SinkParameter> sinkParameters = parseParameters(sinkJson);
                     List<String> categories = parseCategories(sinkJson);
-                    List<String> vendors = parseVendors(sinkJson);
-                    List<String> purposes = parsePurposes(sinkJson);
                     String sinkName = generateName(call);
-                    sinks.add(new Sink(sinkName, call, sinkParameters, categories, vendors, purposes));
+                    sinks.add(new Sink(sinkName, call, sinkParameters, categories, new DataProtection()));
                 }
             } catch (Exception e) {
                 System.err.println("Some error occured with this:");

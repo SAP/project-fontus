@@ -17,6 +17,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -45,6 +46,18 @@ public class IASTaintHandler {
 
     }
 
+    public static List<StackTraceElement> getCleanedStackTrace() {
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        List<StackTraceElement> cleanedStackTrace = new ArrayList<>();
+        for (int i = 1; i < stackTrace.length; i++) {
+            StackTraceElement ste = stackTrace[i];
+            if (!ste.getClassName().startsWith(IASTaintHandler.class.getName())) {
+                cleanedStackTrace.add(ste);
+            }
+        }
+        return cleanedStackTrace;
+    }
+
     /**
      * Hook function called before a sink function is called
      * @param taintAware The taint aware object (normally a string)
@@ -66,17 +79,7 @@ public class IASTaintHandler {
 
         if (isTainted) {
             Abort abort = Configuration.getConfiguration().getAbort();
-
-            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-            List<StackTraceElement> cleanedStackTrace = new ArrayList<>();
-            for (int i = 1; i < stackTrace.length; i++) {
-                StackTraceElement ste = stackTrace[i];
-                if (!ste.getClassName().startsWith(IASTaintHandler.class.getName())) {
-                    cleanedStackTrace.add(ste);
-                }
-            }
-
-            abort.abort(taintAware, instance, sinkFunction, sinkName, cleanedStackTrace);
+            abort.abort(taintAware, instance, sinkFunction, sinkName, getCleanedStackTrace());
         }
         return taintAware;
     }

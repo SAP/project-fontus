@@ -15,7 +15,7 @@ public class RequiredPurposeRegistry {
         VendorRegistry vr = VendorRegistry.getInstance();
 
         Collection<Purpose> purposes = new HashSet<>();
-        for (String purposeString : sink.getPurposes()) {
+        for (String purposeString : sink.getDataProtection().getPurposes()) {
             Purpose p = pr.get(purposeString);
             if (p != null) {
                 purposes.add(p);
@@ -23,7 +23,7 @@ public class RequiredPurposeRegistry {
         }
 
         Collection<Vendor> vendors = new HashSet<>();
-        for (String vendorString : sink.getVendors()) {
+        for (String vendorString : sink.getDataProtection().getVendors()) {
             Vendor v = vr.get(vendorString);
             if (v != null) {
                 vendors.add(v);

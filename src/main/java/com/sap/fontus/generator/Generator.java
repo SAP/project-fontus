@@ -9,6 +9,7 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import com.sap.fontus.config.*;
 import picocli.CommandLine;
 
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -81,7 +82,7 @@ public class Generator implements Callable<Void> {
                     categories = Arrays.asList(categoriesArray);
                 }
                 // For now don't support generating sinks with purposes and vendors
-                SinkGenerator sinkGenerator = new SinkGenerator(className, categories, new ArrayList<>(), new ArrayList<>());
+                SinkGenerator sinkGenerator = new SinkGenerator(className, categories, new DataProtection());
                 sinks.addAll(sinkGenerator.readSinks(this.sinkObjects));
             }
         }
