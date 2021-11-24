@@ -49,12 +49,13 @@ public class PetClinicTaintHandler extends IASTaintHandler {
             true);
 
     private static Collection<AllowedPurpose> getPurposesFromRequest(ReflectedHttpServletRequest servlet) {
-        Purpose purpose = new SimplePurpose(1, "Process and Store", "Allow process and Storage", "");
+        // For the moment just get the first entry
+        Purpose purpose = PurposeRegistry.getInstance().getOrRegisterObject("storage");
         Set<Vendor> vendors = new HashSet<>();
-        vendors.add(new SimpleVendor(1, "Acme"));
+        vendors.add(VendorRegistry.getInstance().getOrRegisterObject("acme"));
         AllowedPurpose allowedPurpose = new SimpleAllowedPurpose(new SimpleExpiryDate(), purpose, vendors);
 
-        Collection<AllowedPurpose> allowedPurposes = new HashSet();
+        Collection<AllowedPurpose> allowedPurposes = new HashSet<>();
         allowedPurposes.add(allowedPurpose);
         return allowedPurposes;
     }
@@ -66,10 +67,8 @@ public class PetClinicTaintHandler extends IASTaintHandler {
         String subjectName = servlet.getParameter("firstName") + " " + servlet.getParameter("lastName");
         DataSubject dataSubject = new SimpleDataSubject(subjectName);
 
-        GdprMetadata metadata = new SimpleGdprMetadata(getPurposesFromRequest(servlet), ProtectionLevel.Normal, dataSubject,
+        return new SimpleGdprMetadata(getPurposesFromRequest(servlet), ProtectionLevel.Normal, dataSubject,
                 new SimpleDataId(), true, true, Identifiability.Explicit);
-
-        return metadata;
     }
 
     private static String getNameFromRequest(ReflectedHttpServletRequest servlet, int id) {
@@ -98,11 +97,7 @@ public class PetClinicTaintHandler extends IASTaintHandler {
 
             name = s.getString() + " " + s2.getString();
 
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
         System.out.println("Found id = " + id + " with name: " + name);
