@@ -15,7 +15,9 @@ public class MultiAbort extends Abort {
     @Override
     public void abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
         for (Abort a : aborts) {
-            a.abort(taintAware, instance, sinkFunction, sinkName, stackTrace);
+            if (a != null) {
+                a.abort(taintAware, instance, sinkFunction, sinkName, stackTrace);
+            }
         }
     }
 
