@@ -1,6 +1,7 @@
 package com.sap.fontus.config.abort;
 
 import com.sap.fontus.taintaware.IASTaintAware;
+import com.sap.fontus.gdpr.handler.GdprAbort;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -17,6 +18,7 @@ public abstract class Abort {
             new SqlLoggerAbort(),
             new ThrowingAbort(),
             new CensoringAbort(),
+            new GdprAbort()
     };
 
     public abstract void abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace);
