@@ -215,9 +215,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/sql/PreparedStatement", "setNString", "(ILjava/lang/String;)V", true),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASPreparedStatementUtils.class), "setNString", String.format("(L%s;ILcom/sap/fontus/taintaware/unified/IASString;)V", Utils.dotToSlash(java.sql.PreparedStatement.class.getName())), false));
         this.methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/sql/PreparedStatement", "setObject", "(ILjava/lang/Object;I)V", true),
-                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASPreparedStatementUtils.class), "setObject", String.format("(L%s;ILjava/lang/Object;)V", Utils.dotToSlash(java.sql.PreparedStatement.class.getName())), false));
+                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASPreparedStatementUtils.class), "setObject", String.format("(L%s;ILjava/lang/Object;I)V", Utils.dotToSlash(java.sql.PreparedStatement.class.getName())), false));
         this.methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/sql/PreparedStatement", "setObject", "(ILjava/lang/Object;I)V", true),
-                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASPreparedStatementUtils.class), "setObject", String.format("(L%s;ILjava/lang/Object;)V", Utils.dotToSlash(java.sql.PreparedStatement.class.getName())), false));
+                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASPreparedStatementUtils.class), "setObject", String.format("(L%s;ILjava/lang/Object;I)V", Utils.dotToSlash(java.sql.PreparedStatement.class.getName())), false));
         this.methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/sql/ResultSet", "getString", "(I)Ljava/lang/String;", true),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASResultSetUtils.class), "getString", String.format("(L%s;I)Lcom/sap/fontus/taintaware/unified/IASString;", Utils.dotToSlash(java.sql.ResultSet.class.getName())), false));
         this.methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/sql/ResultSet", "getString", "(Ljava/lang/String;)Ljava/lang/String;", true),
