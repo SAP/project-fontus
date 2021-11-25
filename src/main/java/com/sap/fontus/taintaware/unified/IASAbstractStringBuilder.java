@@ -27,6 +27,13 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
         }
     }
 
+    public IASAbstractStringBuilder(IASAbstractStringBuilder sb) {
+        this.stringBuilder = new StringBuilder(sb.stringBuilder);
+        if (sb.isTainted()) {
+            this.taintInformation = sb.getTaintInformationCopied();
+        }
+    }
+
     public IASAbstractStringBuilder(CharSequence seq) {
         IASString str = IASString.valueOf(seq);
         this.stringBuilder = new StringBuilder(str.length() + 16);

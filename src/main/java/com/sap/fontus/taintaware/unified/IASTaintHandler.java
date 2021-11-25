@@ -79,7 +79,7 @@ public class IASTaintHandler {
 
         if (isTainted) {
             Abort abort = Configuration.getConfiguration().getAbort();
-            abort.abort(taintAware, instance, sinkFunction, sinkName, getCleanedStackTrace());
+            taintAware = abort.abort(taintAware, instance, sinkFunction, sinkName, getCleanedStackTrace());
         }
         return taintAware;
     }

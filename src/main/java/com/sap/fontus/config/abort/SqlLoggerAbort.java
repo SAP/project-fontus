@@ -14,12 +14,14 @@ import static com.sap.fontus.utils.Utils.convertStackTrace;
 public class SqlLoggerAbort extends Abort{
 
     @Override
-    public void abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
+    public IASTaintAware abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
 
         IASString taintedString = taintAware.toIASString();
         AbortObject sql_checker_abort = new AbortObject(sinkFunction, sinkName, taintedString.getString(), taintedString.getTaintInformationInitialized().getTaintRanges(taintedString.length()), convertStackTrace(stackTrace));
 
         SQLChecker.logTaintedString(sql_checker_abort);
+
+        return taintAware;
     }
 
     @Override

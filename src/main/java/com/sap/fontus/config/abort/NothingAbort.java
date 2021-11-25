@@ -6,8 +6,9 @@ import java.util.List;
 
 public class NothingAbort extends Abort {
     @Override
-    public void abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
+    public IASTaintAware abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
         // Nothing to do here
+        return taintAware;
     }
 
     @Override

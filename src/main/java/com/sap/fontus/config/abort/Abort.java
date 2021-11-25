@@ -21,7 +21,7 @@ public abstract class Abort {
             new GdprAbort()
     };
 
-    public abstract void abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace);
+    public abstract IASTaintAware abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace);
 
     public abstract String getName();
 

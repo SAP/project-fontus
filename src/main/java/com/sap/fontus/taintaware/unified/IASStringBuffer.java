@@ -1,5 +1,6 @@
 package com.sap.fontus.taintaware.unified;
 
+import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.*;
 
 import java.util.List;
@@ -325,6 +326,16 @@ public final class IASStringBuffer extends IASAbstractStringBuilder {
     @Override
     public synchronized void initialize() {
         super.initialize();
+    }
+
+    @Override
+    public IASTaintAware copy() {
+        return new IASStringBuffer(this);
+    }
+
+    @Override
+    public IASTaintAware newInstance() {
+        return new IASStringBuffer();
     }
 
     @Override

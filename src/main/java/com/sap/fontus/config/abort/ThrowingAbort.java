@@ -8,7 +8,7 @@ import java.util.List;
 public class ThrowingAbort extends Abort {
 
     @Override
-    public void abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
+    public IASTaintAware abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
         StringBuilder sb = new StringBuilder();
         IASString s = taintAware.toIASString();
         sb.append("Taint Violation: String: \"").append(s.getString()).append("\" entered function: ").append(sinkFunction);

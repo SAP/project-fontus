@@ -147,6 +147,16 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         }
     }
 
+    @Override
+    public IASTaintAware copy() {
+        return new IASString(this);
+    }
+
+    @Override
+    public IASTaintAware newInstance() {
+        return new IASString();
+    }
+
     public IASString(char value[]) {
         this(new String(value));
     }

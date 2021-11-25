@@ -14,7 +14,7 @@ public class SanitizationAbort extends Abort {
     private static List<IASString> alreadySanitized = new ArrayList<>();
 
     @Override
-    public void abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
+    public IASTaintAware abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
         IASString taintedIASString = taintAware.toIASString();
         String taintedString = taintedIASString.getString();
         IASTaintInformationable taintInfo = taintAware.getTaintInformation();
@@ -28,14 +28,17 @@ public class SanitizationAbort extends Abort {
         for (IASString s : alreadySanitized) {
             if (s == taintedIASString) {
                 System.err.println(taintedString + " was NOT sanitized since it was already sanitized before.");
-                return;
+                return taintAware;
             }
         }
         String sanitizedString = Sanitization.sanitizeSinks(taintedString, taintInfo, categories);
         alreadySanitized.add(taintedIASString);
         alreadySanitized.sort(Comparator.comparing(IASString::toString));
         System.err.println(taintedString + " was sanitized and resulted in: " + sanitizedString);
+
+        taintAware = taintAware.newInstance();
         taintAware.setContent(sanitizedString, taintInfo);
+        return taintAware;
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.sap.fontus.config.abort;
 
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
+import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.range.IASTaintInformation;
 import com.sap.fontus.taintaware.shared.IASBasicMetadata;
 import com.sap.fontus.taintaware.unified.IASString;
@@ -28,9 +29,9 @@ public class CensoringAbortTest {
         IASString t = new IASString("This is sensitive information", i);
 
         Abort a = new CensoringAbort();
-        a.abort(t, o, "fakeFunction", "fake", IASTaintHandler.getCleanedStackTrace());
+        IASTaintAware ta = a.abort(t, o, "fakeFunction", "fake", IASTaintHandler.getCleanedStackTrace());
 
-        assertEquals("This is ********* information", t.getString());
+        assertEquals("This is ********* information", ta.toIASString().getString());
     }
 
     @Test
@@ -42,9 +43,9 @@ public class CensoringAbortTest {
         IASString t = new IASString(s);
 
         Abort a = new CensoringAbort();
-        a.abort(t, o, "fakeFunction", "fake", IASTaintHandler.getCleanedStackTrace());
+        IASTaintAware ta = a.abort(t, o, "fakeFunction", "fake", IASTaintHandler.getCleanedStackTrace());
 
-        assertEquals("This is sensitive information", t.getString());
+        assertEquals("This is sensitive information", ta.toIASString().getString());
     }
 
     @Test
@@ -58,9 +59,9 @@ public class CensoringAbortTest {
         IASString t = new IASString("This is sensitive information", i);
 
         Abort a = new CensoringAbort();
-        a.abort(t, o, "fakeFunction", "fake", IASTaintHandler.getCleanedStackTrace());
+        IASTaintAware ta = a.abort(t, o, "fakeFunction", "fake", IASTaintHandler.getCleanedStackTrace());
 
-        assertEquals("This is ********* ***********", t.getString());
+        assertEquals("This is ********* ***********", ta.toIASString().getString());
     }
 
 }

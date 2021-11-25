@@ -31,4 +31,9 @@ public interface IASTaintAware extends Serializable {
     }
 
     void initialize();
+
+    IASTaintAware copy();
+
+    IASTaintAware newInstance();
+
 }

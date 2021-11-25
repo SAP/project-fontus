@@ -32,7 +32,7 @@ public class GdprAbort extends Abort {
     }
 
     @Override
-    public void abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
+    public IASTaintAware abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
 
         // Use the categories from the configuration as "purpose" labels
         Sink sink = Configuration.getConfiguration().getSinkConfig().getSinkForFqn(sinkFunction);
@@ -57,8 +57,9 @@ public class GdprAbort extends Abort {
         // Block / Sanitize / etc...
         if (policyViolation) {
             Abort a = getAbortFromSink(sink);
-            a.abort(taintAware, instance, sinkFunction, sinkName, stackTrace);
+            taintAware = a.abort(taintAware, instance, sinkFunction, sinkName, stackTrace);
         }
+        return taintAware;
     }
 
     @Override
