@@ -3,6 +3,7 @@ package com.sap.fontus.taintaware.shared;
 import java.io.Serializable;
 
 public class IASTaintRange implements Cloneable, Serializable {
+
     /**
      * Inclusive the start index
      */
@@ -15,6 +16,12 @@ public class IASTaintRange implements Cloneable, Serializable {
      * Taint metadata (contains the source information and optional other stuff)
      */
     private final IASTaintMetadata data;
+
+    public IASTaintRange() {
+        this.start = -1;
+        this.end = -1;
+        this.data = null;
+    }
 
     public IASTaintRange(int start, int end, IASTaintMetadata data) {
         if (end < start) {

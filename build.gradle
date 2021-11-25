@@ -44,7 +44,7 @@ dependencies {
     implementation 'org.owasp.encoder:encoder-jsp:1.2.2'
     implementation 'com.github.jsqlparser:jsqlparser:4.2'
     implementation 'mysql:mysql-connector-java:8.0.19'
-
+    implementation 'com.owlike:genson:1.6'
 }
 
 apply plugin: 'java'
@@ -118,6 +118,7 @@ shadowJar {
     relocate 'com.iabtcf', 'com.sap.fontus.com.iabtcf'
     relocate 'net.sf.jsqlparser', 'com.sap.fontus.net.sf.jsqlparser'
     relocate 'com.mysql', 'com.sap.fontus.com.mysql'
+    relocate 'com.owlike.genson', 'com.sap.fontus.com.owlike.genson'
 
     dependsOn utilJar
 //    dependsOn converterJar

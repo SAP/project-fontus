@@ -14,6 +14,12 @@ public class SimpleAllowedPurpose implements AllowedPurpose {
     private Purpose purpose;
     private Set<Vendor> vendors;
 
+    public SimpleAllowedPurpose() {
+        this.expiryDate = new SimpleExpiryDate();
+        this.purpose = new SimplePurpose();
+        this.vendors = Set.of();
+    }
+
     public SimpleAllowedPurpose(ExpiryDate expiryDate, Purpose purpose, Set<Vendor> vendors) {
         this.expiryDate = expiryDate;
         this.purpose = purpose;

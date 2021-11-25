@@ -16,6 +16,16 @@ public class SimpleGdprMetadata extends GdprMetadataBase {
     private boolean consent;
     private Identifiability identifiability;
 
+    public SimpleGdprMetadata() {
+        this.allowedPurposes = Set.of();
+        this.protectionLevel = ProtectionLevel.Undefined;
+        this.dataSubject = null;
+        this.dataId = null;
+        this.portability = false;
+        this.consent = false;
+        this.identifiability = Identifiability.Undefined;
+    }
+
     public SimpleGdprMetadata(Collection<AllowedPurpose> allowedPurposes, ProtectionLevel protectionLevel, DataSubject dataSubject, DataId dataId, boolean portability, boolean consent, Identifiability identifiability) {
         this.allowedPurposes = allowedPurposes;
         this.protectionLevel = protectionLevel;

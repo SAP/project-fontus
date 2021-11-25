@@ -203,7 +203,7 @@ public class PetClinicTaintHandler extends IASTaintHandler {
 
                 // Add taint information if match was found
                 if (metadata != null) {
-                    System.out.println("Adding Taint metadata: " + metadata);
+                    System.out.println("Adding Taint metadata to string '" + taintAware.toString() + "': " + metadata);
                     // Check if encryption is needed
                     IASString content = taintAware.toIASString();
                     if (metadata.getProtectionLevel().equals(ProtectionLevel.Sensitive)) {

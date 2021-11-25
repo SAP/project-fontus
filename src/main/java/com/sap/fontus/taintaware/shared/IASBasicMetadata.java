@@ -6,6 +6,10 @@ public class IASBasicMetadata implements IASTaintMetadata {
 
     private IASTaintSource source;
 
+    public IASBasicMetadata() {
+        this.source = new IASTaintSource();
+    }
+
     public IASBasicMetadata(IASTaintSource source) {
         this.source = source;
     }

@@ -210,9 +210,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASToArrayProxy.class), "toArray", String.format("(L%s;[Ljava/lang/Object;)[Ljava/lang/Object;", Utils.dotToSlash(Collection.class.getName())), false));
         this.methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/util/Collection", "toArray", "()[Ljava/lang/Object;", true),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASToArrayProxy.class), "toArray", String.format("(L%s;)[Ljava/lang/Object;", Utils.dotToSlash(Collection.class.getName())), false));
-
-        /*
-         * TODO: uncomment
         this.methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/sql/PreparedStatement", "setString", "(ILjava/lang/String;)V", true),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASPreparedStatementUtils.class), "setString", String.format("(L%s;ILcom/sap/fontus/taintaware/unified/IASString;)V", Utils.dotToSlash(java.sql.PreparedStatement.class.getName())), false));
         this.methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/sql/PreparedStatement", "setNString", "(ILjava/lang/String;)V", true),
@@ -225,7 +222,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASResultSetUtils.class), "getString", String.format("(L%s;I)Lcom/sap/fontus/taintaware/unified/IASString;", Utils.dotToSlash(java.sql.ResultSet.class.getName())), false));
         this.methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/sql/ResultSet", "getString", "(Ljava/lang/String;)Ljava/lang/String;", true),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASResultSetUtils.class), "getString", String.format("(L%s;Lcom/sap/fontus/taintaware/unified/IASString;)Lcom/sap/fontus/taintaware/unified/IASString;", Utils.dotToSlash(java.sql.ResultSet.class.getName())), false));
-        */
     }
 
 

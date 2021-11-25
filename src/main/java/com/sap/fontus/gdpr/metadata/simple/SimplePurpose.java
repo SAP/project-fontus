@@ -11,6 +11,13 @@ public class SimplePurpose implements Purpose {
     private String description;
     private String legal;
 
+    public SimplePurpose() {
+        this.id = -1;
+        this.name = "DEFAULT";
+        this.description = "DEFAULT";
+        this.legal = "DEFAULT";
+    }
+
     public SimplePurpose(int id, String name, String description, String legal) {
         this.id = id;
         this.name = name;

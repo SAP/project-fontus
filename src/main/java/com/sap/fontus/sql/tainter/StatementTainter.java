@@ -45,8 +45,8 @@ public class StatementTainter extends StatementVisitorAdapter {
 	}
 
 	@Override
-	public void visit(Statements statements) {
-		for (Statement statement : statements.getStatements()) {
+	public void visit(Statements stmts) {
+		for (Statement statement : stmts.getStatements()) {
 			statement.accept(this);
 		}
 	}
@@ -101,39 +101,42 @@ public class StatementTainter extends StatementVisitorAdapter {
 		List<UpdateSet> updateSets = update.getUpdateSets();
 		List<Column> taintedCols = new ArrayList<>();
 		List<Expression> taintedExprs = new ArrayList<>();
+		List<UpdateSet> fixedSets = new ArrayList<>();
+		//System.out.println(update);
 		for(UpdateSet updateSet : updateSets) {
+
 			List<Column> columns = updateSet.getColumns();
 			ArrayList<Column> tcols = (ArrayList<Column>) this.taintColumns(columns);
-
-			for (Column c : tcols) {
-				columnNames.add(c.getColumnName());
-			}
-
 			List<Expression> expressions = updateSet.getExpressions();
-			Expression expr = expressions.get(0);
-			ArrayList<Expression> texprs = (ArrayList<Expression>) this.taintExpressions(updateSet.getExpressions());
-
-			if(expr instanceof SubSelect) {
-				updateSet.setColumns(tcols);
-				updateSet.setExpressions(texprs);
+			ArrayList<Expression> texprs = (ArrayList<Expression>) this.taintExpressions(expressions);
+			// This seems to be relevant for subselects, not 100% sure why/how
+			if (texprs.get(0) instanceof SubSelect) {
+				UpdateSet us = new UpdateSet();
+				us.setColumns(tcols);
+				us.setExpressions(texprs);
+				us.setUsingBracketsForColumns(true);
+				fixedSets.add(us);
 			} else {
-				if(texprs.size() <= 1) {
-					/*for(Column c : tcols) {
-						System.out.println(c.toString());
-					}
-					for(Expression e : texprs) {
-						System.out.println(e.toString());
-					}*/
-				}
-				taintedCols.add(tcols.get(1));
-				taintedExprs.add(texprs.get(1));
+				for (int i = 0; i < tcols.size(); i++) {
+					Column c = tcols.get(i);
+					columnNames.add(c.getColumnName());
+					Expression e = texprs.get(i);
+					UpdateSet us = new UpdateSet(c, e);
+					//System.out.println(c + " = " + e);
 
+					if (i == 0 && e instanceof SubSelect) {
+						us.setColumns(tcols);
+						us.setExpressions(texprs);
+						fixedSets.add(us);
+						break;
+					}
+					fixedSets.add(us);
+				}
 			}
-			//update.addUpdateSet(cols.get(1), exprs.get(1));
 		}
-		for (int i = 0; i < taintedCols.size(); i++) {
-			update.addUpdateSet(taintedCols.get(i), taintedExprs.get(i));
-		}
+		updateSets.clear();
+		updateSets.addAll(fixedSets);
+
 
 		this.addTemporaryAssingVariables(columnNames);
 		this.addTemporaryAssignValues(this.columnValues);
@@ -253,14 +256,15 @@ public class StatementTainter extends StatementVisitorAdapter {
 			ColumnDefinition newColumnDefinition = new ColumnDefinition();
 			newColumnDefinition.setColumnName("`" + TAINT_PREFIX + columnDefinition.getColumnName().replace("\"", "").replace("`", "") + "`");
 			String dataType = columnDefinition.getColDataType().getDataType().toUpperCase();
-			if (dataType.contains("VARCHAR") || dataType.contains("TEXT") || dataType.contains("NVARCHAR"))
+			if (dataType.contains("TEXT"))
 				newColumnDefinition.setColDataType(columnDefinition.getColDataType());
 			else {
 				ColDataType colDataType = new ColDataType();
-				colDataType.setDataType("VARCHAR");
-				List<String> argumentsStringList = new ArrayList<>();
-				argumentsStringList.add("55");
-				colDataType.setArgumentsStringList(argumentsStringList);
+				colDataType.setDataType("TEXT");
+				//colDataType.setDataType("VARCHAR");
+				//List<String> argumentsStringList = new ArrayList<>();
+				//argumentsStringList.add("55");
+				//colDataType.setArgumentsStringList(argumentsStringList);
 				newColumnDefinition.setColDataType(colDataType);
 			}
 			newColumnDefinitions.add(newColumnDefinition);
@@ -314,19 +318,14 @@ public class StatementTainter extends StatementVisitorAdapter {
 					if(dataType.getColDataType() != null) {
 						String dataTypeString = dataType.getColDataType().getDataType().toUpperCase();
 						switch(dataTypeString) {
-							case "VARCHAR":
+							//case "VARCHAR":
 							case "TEXT":
-							case "NVARCHAR":
+							//case "NVARCHAR":
 								taintAlterExpression.addColDataType(dataType);
 							    break;
 							default:
 								ColDataType colDataType = new ColDataType();
-								colDataType.setDataType("VARCHAR");
-								// I ported this code to JsqlParser 2.0 and I wonder what "55" means.
-								// If you know more, please add a comment or introduce a constant. - Nico Grashoff
-								List<String> argumentsStringList = new ArrayList<>();
-								argumentsStringList.add("55");
-								colDataType.setArgumentsStringList(argumentsStringList);
+								colDataType.setDataType("TEXT");
 							    taintAlterExpression.addColDataType(new AlterExpression.ColumnDataType(taintColumnName, true, colDataType, null));
 								break;
 						}
