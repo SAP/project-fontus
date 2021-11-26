@@ -510,6 +510,27 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     }
 
     @Override
+    public void setTObject(int parameterIndex, Object x, int targetSqlType, int scaleOrLength) throws SQLException {
+        this.setVariables[this.newIndex[parameterIndex-1]-1]=true;
+        this.delegate.setObject(this.newIndex[parameterIndex-1], x, targetSqlType, scaleOrLength);
+        if(x instanceof IASString && (
+                targetSqlType == Types.VARCHAR ||
+                        targetSqlType == Types.NVARCHAR ||
+                        targetSqlType == Types.LONGNVARCHAR ||
+                        targetSqlType == Types.LONGVARCHAR)) {
+            IASString value = (IASString) x;
+            if(value.isTainted()) {
+                this.setVariables[this.newIndex[parameterIndex - 1]] = true;
+                //System.out.printf("Setting String at idx %d: %s/%s%n", parameterIndex, x.getString(), "foo");
+                //System.out.println(Arrays.toString(this.setVariables));
+                //System.out.println(Arrays.toString(this.newIndex));
+                String json = Utils.serializeTaints(value);
+                this.delegate.setString(this.newIndex[parameterIndex-1]+1, json);
+            }
+        }
+    }
+
+    @Override
     public void setTObject(int parameterIndex, Object x) throws SQLException {
         this.setVariables[this.newIndex[parameterIndex-1]-1]=true;
         this.delegate.setObject(this.newIndex[parameterIndex-1], x);
