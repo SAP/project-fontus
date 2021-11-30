@@ -19,4 +19,10 @@ public class Vendor {
         return this.name;
     }
 
+    @Override
+    public String toString() {
+        return "Vendor{" +
+                "name='" + name + '\'' +
+                '}';
+    }
 }

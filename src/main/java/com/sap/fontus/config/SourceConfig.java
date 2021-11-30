@@ -54,4 +54,10 @@ public class SourceConfig {
     @XmlElement(name = "source")
     private final List<Source> sources;
 
+    @Override
+    public String toString() {
+        return "SourceConfig{" +
+                "sources=" + sources +
+                '}';
+    }
 }

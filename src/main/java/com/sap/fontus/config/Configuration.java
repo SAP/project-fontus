@@ -449,4 +449,33 @@ public class Configuration {
     public void setShowWelcomeMessage(boolean showWelcomeMessage) {
         this.showWelcomeMessage = showWelcomeMessage;
     }
+
+    @Override
+    public String toString() {
+        return "Configuration{" +
+                "taintMethod=" + taintMethod +
+                ", showWelcomeMessage=" + showWelcomeMessage +
+                ", jdkInheritanceBlacklist=" + jdkInheritanceBlacklist +
+                ", useCaching=" + useCaching +
+                ", layerThreshold=" + layerThreshold +
+                ", collectStats=" + collectStats +
+                ", abort=" + abort +
+                ", taintlossHandler=" + taintlossHandler +
+                ", isOfflineInstrumentation=" + isOfflineInstrumentation +
+                ", verbose=" + verbose +
+                ", taintPersistence=" + taintPersistence +
+                ", loggingEnabled=" + loggingEnabled +
+                ", recursiveTainting=" + recursiveTainting +
+                ", sourceConfig=" + sourceConfig +
+                ", sinkConfig=" + sinkConfig +
+                ", vendors=" + vendors +
+                ", purposes=" + purposes +
+                ", converters=" + converters +
+                ", returnGeneric=" + returnGeneric +
+                ", takeGeneric=" + takeGeneric +
+                ", blacklistedMainClasses=" + blacklistedMainClasses +
+                ", excludedPackages=" + excludedPackages +
+                ", resourcesToInstrument=" + resourcesToInstrument +
+                '}';
+    }
 }

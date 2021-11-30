@@ -54,4 +54,10 @@ public class SinkConfig {
     @XmlElement(name = "sink")
     private final List<Sink> sinks;
 
+    @Override
+    public String toString() {
+        return "SinkConfig{" +
+                "sinks=" + sinks +
+                '}';
+    }
 }

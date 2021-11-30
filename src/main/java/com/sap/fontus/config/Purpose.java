@@ -38,5 +38,4 @@ public class Purpose {
         return this.legal;
     }
 
-
 }
