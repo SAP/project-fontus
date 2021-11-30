@@ -4,7 +4,7 @@ import com.sap.fontus.utils.NamedObject;
 
 public interface Vendor extends NamedObject {
 
-    public int getVendorId();
+    public int getId();
 
     public String getName();
 
