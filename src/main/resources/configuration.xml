@@ -1,81 +1,10 @@
 <configuration>
     <sourceConfig>
       <sources>
-          <source>
-              <name>next</name>
-              <function>
-                  <opcode>182</opcode>
-                  <owner>java/util/Scanner</owner>
-                  <name>next</name>
-                  <descriptor>()Ljava/lang/String;</descriptor>
-                  <interface>false</interface>
-              </function>
-          </source>
-          <source>
-              <name>nextLine</name>
-              <function>
-                  <opcode>182</opcode>
-                  <owner>java/util/Scanner</owner>
-                  <name>nextLine</name>
-                  <descriptor>()Ljava/lang/String;</descriptor>
-                  <interface>false</interface>
-              </function>
-          </source>
       </sources>
     </sourceConfig>
     <sinkConfig>
         <sinks>
-            <sink>
-                <name>PrintWriter.println</name>
-                <categories>
-                    <category>XSS</category>
-                </categories>
-                <function>
-                    <opcode>182</opcode>
-                    <owner>java/io/PrintWriter</owner>
-                    <name>println</name>
-                    <descriptor>(Ljava/lang/String;)V</descriptor>
-                    <interface>false</interface>
-                </function>
-                <parameters>
-                    <parameter>
-                        <index>0</index>
-                    </parameter>
-                </parameters>
-            </sink>
-            <sink>
-                <name>PrintStream.println</name>
-                <categories>
-                    <category>XSS</category>
-                </categories>
-                <function>
-                    <opcode>182</opcode>
-                    <owner>java/io/PrintStream</owner>
-                    <name>println</name>
-                    <descriptor>(Ljava/lang/String;)V</descriptor>
-                    <interface>false</interface>
-                </function>
-                <parameters>
-                    <parameter>
-                        <index>0</index>
-                    </parameter>
-                </parameters>
-            </sink>
-            <sink>
-                <name>tquerySetString</name>
-                <function>
-                    <opcode>184</opcode>
-                    <owner>com/sap/fontus/taintaware/unified/IASPreparedStatementUtils</owner>
-                    <name>setString</name>
-                    <descriptor>(Ljava/sql/PreparedStatement;ILcom/sap/fontus/taintaware/unified/IASString;)V</descriptor>
-                    <interface>false</interface>
-                </function>
-                <parameters>
-                    <parameter>
-                        <index>2</index>
-                    </parameter>
-                </parameters>
-            </sink>
         </sinks>
     </sinkConfig>
     <converters>
