@@ -4,6 +4,7 @@ import com.sap.fontus.Constants;
 
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.ConfigurationLoader;
+import com.sap.fontus.config.DataProtection;
 import com.sap.fontus.config.TaintMethod;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ class SourceSinkConfigTests {
     private static final String config_path = Constants.CONFIGURATION_XML_FILENAME;
     private static final String config_json = "configuration.json";
     private static final String config_with_handler_path = "configuration_with_handler.xml";
+    private static final String config_with_data_protection_path = "configuration_with_data_protection.xml";
     private static final String config_black = "blacklist.json";
 
     @SuppressWarnings("SameParameterValue")
@@ -96,6 +98,31 @@ class SourceSinkConfigTests {
 
         assertEquals("com/sap/fontus/taintaware/unified/TaintHandler", config.getSourceConfig().getSources().get(0).getTaintHandler().getOwner());
 
+    }
+
+    @Test
+    void testLoadConfigWithDataProtection() {
+        Configuration config = this.getConfiguration(config_with_data_protection_path);
+        assertNotNull(config, "Config shall not be null");
+
+        assertEquals(2, config.getSourceConfig().getSources().size(), "Shall parse the correct number of Sources");
+        assertEquals(1, config.getSinkConfig().getSinks().size(), "Shall parse the correct number of Sinks");
+        assertEquals(2, config.getConverters().size(), "Shall parse the correct number of converters");
+        assertEquals(1, config.getReturnGeneric().size(), "Shall parse the correct number of returnGeneric entries");
+        assertEquals(1, config.getTakeGeneric().size(), "Shall parse the correct number of takeGeneric entries");
+
+        assertEquals(2, config.getVendors().size());
+        assertEquals("sap", config.getVendors().get(1).getName());
+        assertEquals(4, config.getPurposes().size());
+        assertEquals("logging", config.getPurposes().get(0).getName());
+
+        DataProtection dp = config.getSinkConfig().getSinks().get(0).getDataProtection();
+        assertEquals(1, dp.getAborts().size());
+        assertEquals("throw", dp.getAborts().get(0));
+        assertEquals(1, dp.getPurposes().size());
+        assertEquals("processing", dp.getPurposes().get(0));
+        assertEquals(1, dp.getVendors().size());
+        assertEquals("acme", dp.getVendors().get(0));
     }
 
     @Test
