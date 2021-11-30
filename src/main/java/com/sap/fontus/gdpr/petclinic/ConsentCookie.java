@@ -4,10 +4,9 @@ package com.sap.fontus.gdpr.petclinic;
 import com.owlike.genson.Genson;
 import com.owlike.genson.GensonBuilder;
 import com.owlike.genson.reflect.VisibilityFilter;
+import com.sap.fontus.gdpr.metadata.AllowedPurpose;
 
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
+import java.util.*;
 
 public class ConsentCookie {
     public List<ConsentCookie.Purpose> getPurposes() {
@@ -38,6 +37,10 @@ public class ConsentCookie {
         ConsentCookie cc = genson.deserialize(value, ConsentCookie.class);
         return cc;
     }
+
+    private static final String cookieName = "GDPRCONSENT";
+
+    public static boolean isConsentCookie(String name) { return name.equals(cookieName); }
 
     static class Purpose {
         private String id;

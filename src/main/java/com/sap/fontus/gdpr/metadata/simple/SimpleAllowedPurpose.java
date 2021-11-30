@@ -26,6 +26,12 @@ public class SimpleAllowedPurpose implements AllowedPurpose {
         this.vendors = vendors;
     }
 
+    public SimpleAllowedPurpose(Purpose purpose, Set<Vendor> vendors) {
+        this.expiryDate = new SimpleExpiryDate();
+        this.purpose = purpose;
+        this.vendors = vendors;
+    }
+
     @Override
     public ExpiryDate getExpiryDate() {
         return expiryDate;

@@ -1,10 +1,12 @@
 package com.sap.fontus.gdpr.petclinic;
 
+import com.iabtcf.decoder.TCString;
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.Source;
 import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.simple.*;
+import com.sap.fontus.gdpr.servlet.ReflectedCookie;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
@@ -15,6 +17,8 @@ import org.objectweb.asm.Opcodes;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.CookieHandler;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -49,20 +53,19 @@ public class PetClinicTaintHandler extends IASTaintHandler {
             true);
 
     private static Collection<AllowedPurpose> getPurposesFromRequest(ReflectedHttpServletRequest servlet) {
-        // For the moment just get the first entry
-        Purpose purpose = PurposeRegistry.getInstance().getOrRegisterObject("storage");
-        Set<Vendor> vendors = new HashSet<>();
-        vendors.add(VendorRegistry.getInstance().getOrRegisterObject("acme"));
-        AllowedPurpose allowedPurpose = new SimpleAllowedPurpose(new SimpleExpiryDate(), purpose, vendors);
-
-        Collection<AllowedPurpose> allowedPurposes = new HashSet<>();
-        allowedPurposes.add(allowedPurpose);
-        return allowedPurposes;
+        ReflectedCookie[] cookies = servlet.getCookies();
+        for (ReflectedCookie cookie : cookies) {
+            if (ConsentCookie.isConsentCookie(cookie.getName().getString())) {
+                System.out.println("Found Consent Cookie: " + cookie.getName().getString() + " = " + cookie.getValue().getString());
+                ConsentCookie consentCookie = ConsentCookie.parse(cookie.getValue().getString());
+                return ConsentCookieMetadata.getAllowedPurposesFromConsentCookie(consentCookie);
+            }
+        }
+        // Return empty consent if no cookie is found
+        return new ArrayList<>();
     }
 
     private static GdprMetadata getMetadataFromOwnerRequest(ReflectedHttpServletRequest servlet) {
-        // TODO: Check flag of request for consent...
-
         // Create some metadata from the name
         String subjectName = servlet.getParameter("firstName") + " " + servlet.getParameter("lastName");
         DataSubject dataSubject = new SimpleDataSubject(subjectName);
