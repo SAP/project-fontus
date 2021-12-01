@@ -12,7 +12,7 @@ public class Utils {
 
     public static String serializeTaints(IASString str) {
         Genson genson = new GensonBuilder().useClassMetadata(true)
-                .useRuntimeType(true).useFields(true, VisibilityFilter.PRIVATE).create();
+                .useRuntimeType(true).useFields(true, VisibilityFilter.PRIVATE).useMethods(false).create();
         return genson.serialize(str.getTaintInformationInitialized().getTaintRanges(str.length()));
     }
 
