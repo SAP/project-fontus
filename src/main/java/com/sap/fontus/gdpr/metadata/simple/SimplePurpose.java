@@ -1,10 +1,11 @@
 package com.sap.fontus.gdpr.metadata.simple;
 
 import com.sap.fontus.gdpr.metadata.Purpose;
+import com.sap.fontus.gdpr.metadata.PurposeBase;
 
 import java.util.Objects;
 
-public class SimplePurpose implements Purpose {
+public class SimplePurpose extends PurposeBase {
 
     private int id;
     private String name;
@@ -56,26 +57,5 @@ public class SimplePurpose implements Purpose {
 
     public void setLegalDescription(String legal) { this.legal = legal; }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        SimplePurpose that = (SimplePurpose) o;
-        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(description, that.description) && Objects.equals(legal, that.legal);
-    }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, description, legal);
-    }
-
-    @Override
-    public String toString() {
-        return "SimplePurpose{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", legal='" + legal + '\'' +
-                '}';
-    }
 }

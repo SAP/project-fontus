@@ -1,10 +1,11 @@
 package com.sap.fontus.gdpr.metadata.simple;
 
 import com.sap.fontus.gdpr.metadata.Vendor;
+import com.sap.fontus.gdpr.metadata.VendorBase;
 
 import java.util.Objects;
 
-public class SimpleVendor implements Vendor {
+public class SimpleVendor extends VendorBase {
 
     private int id;
 
@@ -38,24 +39,5 @@ public class SimpleVendor implements Vendor {
         this.name = name;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        SimpleVendor that = (SimpleVendor) o;
-        return id == that.id && Objects.equals(name, that.name);
-    }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name);
-    }
-
-    @Override
-    public String toString() {
-        return "SimpleVendor{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                '}';
-    }
 }

@@ -1,9 +1,10 @@
-package com.sap.fontus.gdpr.metadata.simple;
+package com.sap.fontus.gdpr.metadata.registry;
 
 import com.sap.fontus.config.Sink;
 import com.sap.fontus.gdpr.metadata.Purpose;
 import com.sap.fontus.gdpr.metadata.RequiredPurposes;
 import com.sap.fontus.gdpr.metadata.Vendor;
+import com.sap.fontus.gdpr.metadata.simple.SimpleRequiredPurposes;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -11,12 +12,10 @@ import java.util.HashSet;
 public class RequiredPurposeRegistry {
 
     public static RequiredPurposes getPurposeFromSink(Sink sink) {
-        PurposeRegistry pr = PurposeRegistry.getInstance();
-        VendorRegistry vr = VendorRegistry.getInstance();
 
         Collection<Purpose> purposes = new HashSet<>();
         for (String purposeString : sink.getDataProtection().getPurposes()) {
-            Purpose p = pr.get(purposeString);
+            Purpose p = new RegistryLinkedPurpose(purposeString);
             if (p != null) {
                 purposes.add(p);
             }
@@ -24,7 +23,7 @@ public class RequiredPurposeRegistry {
 
         Collection<Vendor> vendors = new HashSet<>();
         for (String vendorString : sink.getDataProtection().getVendors()) {
-            Vendor v = vr.get(vendorString);
+            Vendor v = new RegistryLinkedVendor(vendorString);
             if (v != null) {
                 vendors.add(v);
             }

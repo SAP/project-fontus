@@ -1,7 +1,8 @@
-package com.sap.fontus.gdpr.metadata.simple;
+package com.sap.fontus.gdpr.metadata.registry;
 
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.gdpr.metadata.Vendor;
+import com.sap.fontus.gdpr.metadata.simple.SimpleVendor;
 import com.sap.fontus.utils.GenericRegistry;
 
 public class VendorRegistry extends GenericRegistry<Vendor> {
@@ -26,7 +27,9 @@ public class VendorRegistry extends GenericRegistry<Vendor> {
     public static synchronized VendorRegistry getInstance() {
         if (instance == null) {
             instance = new VendorRegistry();
-            instance.populateFromConfiguration(Configuration.getConfiguration());
+            if (Configuration.isInitialized()) {
+                instance.populateFromConfiguration(Configuration.getConfiguration());
+            }
         }
         return instance;
     }

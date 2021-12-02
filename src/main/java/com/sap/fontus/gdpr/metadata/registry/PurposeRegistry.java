@@ -1,7 +1,8 @@
-package com.sap.fontus.gdpr.metadata.simple;
+package com.sap.fontus.gdpr.metadata.registry;
 
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.gdpr.metadata.Purpose;
+import com.sap.fontus.gdpr.metadata.simple.SimplePurpose;
 import com.sap.fontus.utils.GenericRegistry;
 
 public class PurposeRegistry extends GenericRegistry<Purpose> {
@@ -38,7 +39,9 @@ public class PurposeRegistry extends GenericRegistry<Purpose> {
     public static synchronized PurposeRegistry getInstance() {
         if (instance == null) {
             instance = new PurposeRegistry();
-            instance.populateFromConfiguration(Configuration.getConfiguration());
+            if (Configuration.isInitialized()) {
+                instance.populateFromConfiguration(Configuration.getConfiguration());
+            }
         }
         return instance;
     }

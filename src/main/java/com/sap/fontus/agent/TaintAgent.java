@@ -1,8 +1,6 @@
 package com.sap.fontus.agent;
 
 import com.sap.fontus.config.Configuration;
-import com.sap.fontus.gdpr.metadata.simple.PurposeRegistry;
-import com.sap.fontus.gdpr.metadata.simple.VendorRegistry;
 import com.sap.fontus.utils.VerboseLogger;
 
 import java.lang.instrument.Instrumentation;

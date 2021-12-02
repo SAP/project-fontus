@@ -5,10 +5,10 @@ import com.sap.fontus.config.Sink;
 import com.sap.fontus.config.abort.Abort;
 import com.sap.fontus.config.abort.MultiAbort;
 import com.sap.fontus.gdpr.metadata.*;
+import com.sap.fontus.gdpr.metadata.registry.RequiredPurposeRegistry;
 import com.sap.fontus.gdpr.metadata.simple.*;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
-import com.sap.fontus.taintaware.shared.IASTaintRanges;
 import com.sap.fontus.taintaware.unified.IASString;
 
 import java.util.ArrayList;
