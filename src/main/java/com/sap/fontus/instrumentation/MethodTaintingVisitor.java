@@ -530,14 +530,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             transformer.addReturnTransformation(t);
         }
 
-        // Add Sink transformations
-        Sink sink = this.config.getSinkConfig().getSinkForFunction(call);
-        if (sink != null) {
-            logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-            SinkTransformer t = new SinkTransformer(sink, this.instrumentationHelper, this.used);
-            transformer.addParameterTransformation(t);
-        }
-
         // Add Source transformations
         Source source = this.config.getSourceConfig().getSourceForFunction(call);
         if (source != null) {
@@ -545,6 +537,15 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             SourceTransformer t = new SourceTransformer(source, this.used);
             transformer.addReturnTransformation(t);
             transformer.addParameterTransformation(t);
+        }
+
+        // Add Sink transformations
+        Sink sink = this.config.getSinkConfig().getSinkForFunction(call);
+        if (sink != null) {
+            logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+            SinkTransformer t = new SinkTransformer(sink, this.instrumentationHelper, this.used);
+            transformer.addParameterTransformation(t);
+            transformer.addReturnTransformation(t);
         }
 
         // No transformations required

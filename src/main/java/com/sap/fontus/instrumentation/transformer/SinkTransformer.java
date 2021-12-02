@@ -1,5 +1,6 @@
 package com.sap.fontus.instrumentation.transformer;
 
+import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.Sink;
 import com.sap.fontus.Constants;
@@ -11,7 +12,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-public class SinkTransformer extends SourceOrSinkTransformer implements ParameterTransformation {
+public class SinkTransformer extends SourceOrSinkTransformer implements ParameterTransformation, ReturnTransformation {
     private static final Logger logger = LogUtils.getLogger();
 
     private final Sink sink;
@@ -48,5 +49,11 @@ public class SinkTransformer extends SourceOrSinkTransformer implements Paramete
             originalVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TaintHandlerQN, Constants.TaintHandlerCheckTaintName, Constants.TaintHandlerCheckTaintDesc, false);
             originalVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(instrumentedType).getInternalName());
         }
+    }
+
+    @Override
+    public void transform(MethodTaintingVisitor mv, Descriptor desc) {
+        // Also add a transformation for return types
+        transform(-1, desc.getReturnType(), mv);
     }
 }
