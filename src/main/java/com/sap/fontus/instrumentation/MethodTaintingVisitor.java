@@ -283,7 +283,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             final String name,
             final String descriptor,
             final boolean isInterface) {
-        FunctionCall fc = new FunctionCall(opcode, owner, name, descriptor, isInterface);
+        FunctionCall originalFc = new FunctionCall(opcode, owner, name, descriptor, isInterface);
 
         if (this.combinedExcludedLookup.isFontusClass(owner)) {
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
@@ -291,7 +291,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         }
 
         // If a method has a defined proxy, apply it right away
-        fc = this.shouldBeProxied(fc);
+        FunctionCall fc = this.shouldBeProxied(originalFc);
 
         FunctionCall functionCall = this.instrumentationHelper.rewriteOwnerMethod(fc);
         if (functionCall != null) {
@@ -325,7 +325,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         // Call any functions which manipulate function call parameters and return types
         // for example sources, sinks and JDK functions
-        if (!this.isRelevantMethodHandleInvocation(fc) && this.rewriteParametersAndReturnType(fc)) {
+        if (!this.isRelevantMethodHandleInvocation(fc) && this.rewriteParametersAndReturnType(originalFc, fc)) {
             return;
         }
 
@@ -506,7 +506,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         return fc.getOwner().equals("java/lang/invoke/MethodHandles$Lookup") && fc.getName().equals("findConstructor");
     }
 
-    private boolean rewriteParametersAndReturnType(FunctionCall call) {
+    private boolean rewriteParametersAndReturnType(FunctionCall originalCall, FunctionCall call) {
         boolean isExcluded = this.combinedExcludedLookup.isJdkOrAnnotation(call.getOwner()) || this.combinedExcludedLookup.isPackageExcluded(call.getOwner());
 
         if (isExcluded) {
@@ -531,7 +531,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         }
 
         // Add Sink transformations
-        Sink sink = this.config.getSinkConfig().getSinkForFunction(call);
+        Sink sink = this.config.getSinkConfig().getSinkForFunction(originalCall);
         if (sink != null) {
             logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
             SinkTransformer t = new SinkTransformer(sink, this.instrumentationHelper, this.used);
@@ -539,7 +539,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         }
 
         // Add Source transformations
-        Source source = this.config.getSourceConfig().getSourceForFunction(call);
+        Source source = this.config.getSourceConfig().getSourceForFunction(originalCall);
         if (source != null) {
             logger.info("Adding source tainting for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
             SourceTransformer t = new SourceTransformer(source, this.used);
