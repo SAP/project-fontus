@@ -3,11 +3,9 @@ package com.sap.fontus.gdpr.petclinic;
 import com.sap.fontus.gdpr.metadata.AllowedPurpose;
 import com.sap.fontus.gdpr.metadata.Purpose;
 import com.sap.fontus.gdpr.metadata.Vendor;
-import com.sap.fontus.gdpr.metadata.registry.PurposeRegistry;
 import com.sap.fontus.gdpr.metadata.registry.RegistryLinkedPurpose;
 import com.sap.fontus.gdpr.metadata.registry.RegistryLinkedVendor;
 import com.sap.fontus.gdpr.metadata.simple.SimpleAllowedPurpose;
-import com.sap.fontus.gdpr.metadata.registry.VendorRegistry;
 
 import java.util.ArrayList;
 import java.util.Collection;

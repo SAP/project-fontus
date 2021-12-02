@@ -5,7 +5,7 @@ import com.sap.fontus.gdpr.metadata.Purpose;
 import com.sap.fontus.gdpr.metadata.simple.SimplePurpose;
 import com.sap.fontus.utils.GenericRegistry;
 
-public class PurposeRegistry extends GenericRegistry<Purpose> {
+class PurposeRegistry extends GenericRegistry<Purpose> {
 
     private static PurposeRegistry instance;
     private static boolean isPopulated;

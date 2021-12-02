@@ -5,7 +5,7 @@ import com.sap.fontus.gdpr.metadata.Vendor;
 import com.sap.fontus.gdpr.metadata.simple.SimpleVendor;
 import com.sap.fontus.utils.GenericRegistry;
 
-public class VendorRegistry extends GenericRegistry<Vendor> {
+class VendorRegistry extends GenericRegistry<Vendor> {
 
     private static VendorRegistry instance;
     private static boolean isPopulated = false;
