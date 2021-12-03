@@ -450,6 +450,12 @@ public class Configuration {
         this.showWelcomeMessage = showWelcomeMessage;
     }
 
+    public String summary() {
+        return "Configuration: " +
+            getSourceConfig().getSources().size() + " sources and " +
+            getSinkConfig().getSinks().size() + " sinks.";
+    }
+
     @Override
     public String toString() {
         return "Configuration{" +

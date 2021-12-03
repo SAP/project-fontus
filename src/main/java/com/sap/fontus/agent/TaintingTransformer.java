@@ -24,6 +24,9 @@ class TaintingTransformer implements ClassFileTransformer {
 
     private final Map<String, byte[]> classCache = new HashMap<>();
 
+    private int nClasses;
+    private int nInstrumented;
+
     TaintingTransformer(Configuration config) {
         this.instrumenter = new Instrumenter();
         this.config = config;
@@ -32,6 +35,7 @@ class TaintingTransformer implements ClassFileTransformer {
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
+        this.nClasses += 1;
         if (loader == null) {
             return classfileBuffer;
         }
@@ -67,6 +71,10 @@ class TaintingTransformer implements ClassFileTransformer {
             byte[] outArray = instrumentClassByteArray(classfileBuffer, loader);
             this.classCache.put(className, outArray);
             VerboseLogger.saveIfVerbose(className, outArray);
+            this.nInstrumented += 1;
+            if (config.isShowWelcomeMessage() && ((nInstrumented % 100) == 0)) {
+                System.out.println("FONTUS: Processed " + nClasses + " classes, Instrumented " + nInstrumented + " classes");
+            }
             return outArray;
         } catch (Exception e) {
             Configuration.getConfiguration().getExcludedPackages().add(className);
