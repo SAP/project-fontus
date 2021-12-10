@@ -13,13 +13,12 @@ import com.sap.fontus.utils.Logger;
 import com.sap.fontus.utils.Utils;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.*;
+import org.objectweb.asm.Type;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
+import java.lang.reflect.*;
 import java.lang.reflect.Method;
-import java.lang.reflect.TypeVariable;
 import java.util.*;
 
 
@@ -586,7 +585,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
                 value = IASString.class.getName();
             } else if (value.equals("[Ljava.lang.String;")) {
                 logger.info("Replaced original class name in string with instrumented one in {}.{}{}", this.owner, this.name, this.methodDescriptor);
-                value = IASString.class.getName();
+                value = Array.newInstance(IASString.class, 0).getClass().getName();
             }
         }
 
