@@ -66,7 +66,7 @@ Here you can inspect the bytecode Fontus did generate. This helps with debugging
 
 In the folder you started the run script, there is a `tmp/agent` folder containing all `*.class` files. The JDK ships with the `javap` tool to inspect class files, so I suggest to start here.
 
-I have aliased `javapp` to `javap -l -v -p -s` as that's the most helpful combination of flags to inspect what Fontus actually did. If you have other tips on using `javap` or know other/nicer/better tools please add them here!
+I have aliased `javapp` to `javap -l -v -p -s` as that's (in my opinion, YMMV!) the most helpful combination of flags to inspect what Fontus actually did. If you have other tips on using `javap` or know other/nicer/better tools please add them here!
 
 6. Stil stuck, let's try a debugger:
 
