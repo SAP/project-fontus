@@ -255,6 +255,7 @@ public class ClassTraverser {
 
     public static class MethodChecker extends ClassVisitor {
         private final Method method;
+        private boolean implementsInterface = false;
         private boolean superImplements = false;
 
         public MethodChecker(Method method) {
@@ -263,8 +264,23 @@ public class ClassTraverser {
         }
 
         @Override
+        public void visit(
+                int version,
+                final int access,
+                final String name,
+                final String signature,
+                final String superName,
+                final String[] interfaces) {
+            // Check whether the superclass actually implements the method owners interface
+            this.implementsInterface = Arrays.asList(interfaces).contains(this.method.getOwner());
+        }
+
+        @Override
         public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
-            if (name.equals(this.method.getName()) && this.method.getDescriptor().equals(descriptor) && (access & Opcodes.ACC_ABSTRACT) == 0) {
+            // Only flag this method if the superclass implements the interface we want
+            // There are some cases where the method is implemented but *not* as part of an interface!
+            // (I'm looking at you org.apache.xerces.dom.CharacterDataImpl!)
+            if (implementsInterface && name.equals(this.method.getName()) && this.method.getDescriptor().equals(descriptor) && (access & Opcodes.ACC_ABSTRACT) == 0) {
                 superImplements = true;
             }
             return null;
