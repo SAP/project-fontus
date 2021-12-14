@@ -44,6 +44,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private final List<Method> overriddenJdkMethods;
     private String[] interfaces;
     private boolean isInterface;
+    private boolean isFinal;
     private final CombinedExcludedLookup combinedExcludedLookup;
     private final SignatureInstrumenter signatureInstrumenter;
     private final List<org.objectweb.asm.commons.Method> instrumentedMethods = new ArrayList<>();
@@ -94,6 +95,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.interfaces = interfaces;
 
         this.isInterface = ((access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE);
+        this.isFinal =((access & Opcodes.ACC_FINAL) == Opcodes.ACC_FINAL);
 
         // Is this class/interface an annotation or annotation proxy class? If yes, don't instrument it
         // Cf Java Language Specification 12 - 9.6.1 Annotation Types
@@ -162,6 +164,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
         String instrumentedSignature = this.signatureInstrumenter.instrumentSignature(signature);
         MethodVisitor mv;
+        Method method = new Method(access, owner, name, descriptor, signature, exceptions, this.isInterface);
         String desc = descriptor;
         String newName = name;
 
@@ -184,12 +187,12 @@ class ClassTaintingVisitor extends ClassVisitor {
             mv = super.visitMethod(access, Constants.MainWrapper, this.newMainDescriptor, signature, exceptions);
             newName = Constants.MainWrapper;
             desc = this.newMainDescriptor;
-        } else if (!this.isAnnotation && overridesJdkSuperMethod(access, name, descriptor) && shouldBeInstrumented(descriptor)) {
+        } else if (!this.isAnnotation && overridesJdkSuperMethod(method) && shouldBeInstrumented(descriptor)) {
             logger.info("Creating proxy method for JDK inheritance for method: {}{}", name, descriptor);
             int newAccess = access & ~Opcodes.ACC_ABSTRACT;
             MethodVisitor v = super.visitMethod(newAccess, name, descriptor, signature, exceptions);
 
-            this.overriddenJdkMethods.add(overriddenJdkSuperMethod(access, name, descriptor));
+            this.overriddenJdkMethods.add(overriddenJdkSuperMethod(method));
 
             this.generateProxyToInstrumented(v, newName, Descriptor.parseDescriptor(descriptor), null, Optional.empty());
 
@@ -205,7 +208,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             int newAccess = access & ~Opcodes.ACC_ABSTRACT;
             MethodVisitor v = super.visitMethod(newAccess, name, descriptor, signature, exceptions);
 
-            this.overriddenJdkMethods.add(overriddenJdkSuperMethod(access, name, descriptor));
+            this.overriddenJdkMethods.add(overriddenJdkSuperMethod(method));
 
             this.generateProxyToInstrumented(v, newName, Descriptor.parseDescriptor(descriptor), null, Optional.empty());
             return null;
@@ -725,24 +728,21 @@ class ClassTaintingVisitor extends ClassVisitor {
         return Arrays.asList(this.interfaces).contains("java/lang/reflect/InvocationHandler");
     }
 
-    private boolean overridesJdkSuperMethod(int access, String name, String descriptor) {
-        return overriddenJdkSuperMethod(access, name, descriptor) != null;
+    private boolean overridesJdkSuperMethod(Method m) {
+        return overriddenJdkSuperMethod(m) != null;
     }
 
-    private Method overriddenJdkSuperMethod(int access, String name, String descriptor) {
+    private Method overriddenJdkSuperMethod(Method m) {
         // TODO static methods
-        boolean instrAccPublic = (access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC;
-        boolean instrAccProtected = (access & Opcodes.ACC_PROTECTED) == Opcodes.ACC_PROTECTED;
-        boolean instrAccStatic = (access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC;
+        boolean instrAccPublic = (m.getAccess() & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC;
+        boolean instrAccProtected = (m.getAccess() & Opcodes.ACC_PROTECTED) == Opcodes.ACC_PROTECTED;
+        boolean instrAccStatic = (m.getAccess() & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC;
         if (!(instrAccPublic || instrAccProtected) || instrAccStatic) {
             return null;
         }
-        if (!this.isAnnotation) {
-            Optional<Method> methodOptional = this.jdkMethods
-                    .stream()
-                    .filter(method -> method.getName().equals(name) && method.getDescriptor().equals(descriptor))
-                    .findAny();
-            return methodOptional.orElse(null);
+
+        if ((!this.isAnnotation) && (!this.isFinal)) {
+            return m;
         }
         return null;
     }
