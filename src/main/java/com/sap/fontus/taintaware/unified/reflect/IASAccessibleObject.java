@@ -30,6 +30,12 @@ public abstract class IASAccessibleObject<T extends AccessibleObject> implements
         return this.original.getDeclaredAnnotations();
     }
 
+    public static void setAccessible(IASAccessibleObject[] array, boolean flag) {
+        for (IASAccessibleObject object : array) {
+            object.setAccessible(flag);
+        }
+    }
+
     public void setAccessible(boolean flag) {
         this.original.setAccessible(flag);
     }
