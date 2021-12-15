@@ -500,14 +500,17 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
     }
 
+    private boolean containsOverriddenJdkMethod(Method method) {
+        return this.overriddenJdkMethods.stream().anyMatch(m -> m.equalsNameAndDescriptor(method));
+    }
+
     private void overrideMissingJdkMethods() {
         List<Method> methods = this.jdkMethods
                 .stream()
-                .filter(method -> !overriddenJdkMethods.contains(method))
+                .filter(method -> !containsOverriddenJdkMethod(method))
                 .filter(method -> shouldBeInstrumented(method.getDescriptor()))
                 .filter(method -> !Modifier.isStatic(method.getAccess()))
                 .collect(Collectors.toList());
-
         methods.forEach(this::createInstrumentedJdkProxy);
     }
 
