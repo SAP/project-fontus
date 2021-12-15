@@ -14,6 +14,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class LambdaCall implements Serializable {
@@ -54,11 +55,11 @@ public class LambdaCall implements Serializable {
         ClassResolver classResolver = new ClassResolver(loader);
         ClassTraverser clsTrvs = new ClassTraverser(new CombinedExcludedLookup(null));
         clsTrvs.readMethods(this.functionalInterface, classResolver);
-        List<Method> allMethods = clsTrvs.getMethods();
+        Set<Method> allMethods = clsTrvs.getMethods();
 
         ClassTraverser objectTrvs = new ClassTraverser(new CombinedExcludedLookup(null));
         objectTrvs.readMethods(Type.getType(Object.class), classResolver);
-        List<Method> objMethods = objectTrvs.getMethods();
+        Set<Method> objMethods = objectTrvs.getMethods();
 
         List<Method> methods = allMethods
                 .stream()

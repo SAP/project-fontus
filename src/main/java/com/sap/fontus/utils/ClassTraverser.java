@@ -18,7 +18,7 @@ public class ClassTraverser {
     private static final Logger logger = LogUtils.getLogger();
 
     private final CombinedExcludedLookup combinedExcludedLookup;
-    private final List<Method> methodList = new ArrayList<>();
+    private final Set<Method> methodList = new HashSet<>();
 
     public ClassTraverser(CombinedExcludedLookup combinedExcludedLookup) {
         this.combinedExcludedLookup = combinedExcludedLookup;
@@ -249,8 +249,8 @@ public class ClassTraverser {
         }
     }
 
-    public List<Method> getMethods() {
-        return Collections.unmodifiableList(this.methodList);
+    public Set<Method> getMethods() {
+        return Collections.unmodifiableSet(this.methodList);
     }
 
     public static class MethodChecker extends ClassVisitor {

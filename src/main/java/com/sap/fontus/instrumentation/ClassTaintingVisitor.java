@@ -40,8 +40,8 @@ class ClassTaintingVisitor extends ClassVisitor {
      */
     private String owner;
     private String superName;
-    private List<Method> jdkMethods;
-    private final List<Method> overriddenJdkMethods;
+    private Set<Method> jdkMethods;
+    private final Set<Method> overriddenJdkMethods;
     private String[] interfaces;
     private boolean isInterface;
     private boolean isFinal;
@@ -62,7 +62,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         super(Opcodes.ASM9, cv);
         this.visitor = cv;
         this.staticFinalFields = new ArrayList<>();
-        this.overriddenJdkMethods = new ArrayList<>();
+        this.overriddenJdkMethods = new HashSet<>();
         this.resolver = resolver;
         this.loader = loader;
         this.config = config;
@@ -128,7 +128,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             }
             classTraverser.addNotContainedJdkInterfaceMethods(this.superName, this.interfaces, this.resolver, this.loader);
         }
-        this.jdkMethods = Collections.unmodifiableList(classTraverser.getMethods());
+        this.jdkMethods = Collections.unmodifiableSet(classTraverser.getMethods());
     }
 
     /**
