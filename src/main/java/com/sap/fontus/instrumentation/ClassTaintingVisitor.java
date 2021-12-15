@@ -175,7 +175,6 @@ class ClassTaintingVisitor extends ClassVisitor {
             this.hasClInit = true;
             return rmv;
         }
-
         // Create a new main method, wrapping the regular one and translating all Strings to IASStrings
         // TODO: acceptable for main is a parameter of String[] or String...! Those have different access bits set (i.e., the ACC_VARARGS bits are set too) -> Handle this nicer..
         if (((access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC) && (access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC && "main".equals(name) && descriptor.equals(Constants.MAIN_METHOD_DESC)
@@ -188,7 +187,6 @@ class ClassTaintingVisitor extends ClassVisitor {
             newName = Constants.MainWrapper;
             desc = this.newMainDescriptor;
         } else if (!this.isAnnotation && overridesJdkSuperMethod(method) && shouldBeInstrumented(descriptor)) {
-            logger.info("Creating proxy method for JDK inheritance for method: {}{}", name, descriptor);
             int newAccess = access & ~Opcodes.ACC_ABSTRACT;
             MethodVisitor v = super.visitMethod(newAccess, name, descriptor, signature, exceptions);
 
@@ -476,10 +474,10 @@ class ClassTaintingVisitor extends ClassVisitor {
     private void declareMissingJdkMethods() {
         List<Method> methods = this.jdkMethods
                 .stream()
-                .filter(method -> !overriddenJdkMethods.contains(method))
+                .filter(method -> !containsOverriddenJdkMethod(method))
                 .filter(method -> shouldBeInstrumented(method.getDescriptor()))
                 .filter(method -> !Modifier.isStatic(method.getAccess()))
-                .filter(method -> !MethodUtils.isToString(method.getName(), method.getDescriptor()))
+     //           .filter(method -> !MethodUtils.isToString(method.getName(), method.getDescriptor()))
                 .collect(Collectors.toList());
         methods.forEach(this::createJdkDeclaring);
     }
@@ -505,6 +503,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private void overrideMissingJdkMethods() {
+        Object comparator;
         List<Method> methods = this.jdkMethods
                 .stream()
                 .filter(method -> !containsOverriddenJdkMethod(method))
@@ -769,8 +768,12 @@ class ClassTaintingVisitor extends ClassVisitor {
             return null;
         }
 
-        if ((!this.isAnnotation) && (!this.isFinal)) {
-            return m;
+        if (!this.isAnnotation) {
+            Optional<Method> methodOptional = this.jdkMethods
+                    .stream()
+                    .filter(method -> method.equalsNameAndDescriptor(m))
+                    .findAny();
+            return methodOptional.orElse(null);
         }
         return null;
     }
