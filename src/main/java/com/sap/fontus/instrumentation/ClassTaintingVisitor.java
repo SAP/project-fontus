@@ -477,7 +477,7 @@ class ClassTaintingVisitor extends ClassVisitor {
                 .filter(method -> !containsOverriddenJdkMethod(method))
                 .filter(method -> shouldBeInstrumented(method.getDescriptor()))
                 .filter(method -> !Modifier.isStatic(method.getAccess()))
-     //           .filter(method -> !MethodUtils.isToString(method.getName(), method.getDescriptor()))
+                .filter(method -> !MethodUtils.isToString(method.getName(), method.getDescriptor()))
                 .collect(Collectors.toList());
         methods.forEach(this::createJdkDeclaring);
     }
