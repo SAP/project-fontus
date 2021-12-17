@@ -274,8 +274,11 @@
     {
       "name": "InternTest",
       "source": "InternTest.java"
+    },
+    {
+      "name": "UTF8 String Constant",
+      "source": "StringConstantUtf8.java"
     }
-
   ],
   "excluded_tests": [
     {
