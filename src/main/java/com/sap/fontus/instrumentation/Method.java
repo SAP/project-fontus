@@ -7,6 +7,7 @@ import org.objectweb.asm.Type;
 
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 
 public class Method {
@@ -72,5 +73,32 @@ public class Method {
     public static Method from(java.lang.reflect.Method method) {
         String signature = MethodUtils.getSignature(method).orElse(null);
         return new Method(method.getModifiers(), Utils.dotToSlash(method.getDeclaringClass().getName()), method.getName(), org.objectweb.asm.commons.Method.getMethod(method).getDescriptor(), signature, Arrays.stream(method.getExceptionTypes()).map(Class::getName).map(Utils::dotToSlash).toArray(String[]::new), method.getDeclaringClass().isInterface());
+    }
+
+    @Override
+    public String toString() {
+        return owner + '.' + name + descriptor;
+    }
+
+    public boolean equalsNameAndDescriptor(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Method method = (Method) o;
+        return Objects.equals(name, method.name) && Objects.equals(descriptor, method.descriptor);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Method method = (Method) o;
+        return access == method.access && ownerIsInterface == method.ownerIsInterface && Objects.equals(owner, method.owner) && Objects.equals(name, method.name) && Objects.equals(descriptor, method.descriptor) && Objects.equals(signature, method.signature) && Arrays.equals(exceptions, method.exceptions);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(access, owner, name, descriptor, signature, ownerIsInterface);
+        result = 31 * result + Arrays.hashCode(exceptions);
+        return result;
     }
 }

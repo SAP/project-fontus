@@ -40,10 +40,11 @@ class ClassTaintingVisitor extends ClassVisitor {
      */
     private String owner;
     private String superName;
-    private List<Method> jdkMethods;
-    private final List<Method> overriddenJdkMethods;
+    private Set<Method> jdkMethods;
+    private final Set<Method> overriddenJdkMethods;
     private String[] interfaces;
     private boolean isInterface;
+    private boolean isFinal;
     private final CombinedExcludedLookup combinedExcludedLookup;
     private final SignatureInstrumenter signatureInstrumenter;
     private final List<org.objectweb.asm.commons.Method> instrumentedMethods = new ArrayList<>();
@@ -61,7 +62,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         super(Opcodes.ASM9, cv);
         this.visitor = cv;
         this.staticFinalFields = new ArrayList<>();
-        this.overriddenJdkMethods = new ArrayList<>();
+        this.overriddenJdkMethods = new HashSet<>();
         this.resolver = resolver;
         this.loader = loader;
         this.config = config;
@@ -94,6 +95,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.interfaces = interfaces;
 
         this.isInterface = ((access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE);
+        this.isFinal =((access & Opcodes.ACC_FINAL) == Opcodes.ACC_FINAL);
 
         // Is this class/interface an annotation or annotation proxy class? If yes, don't instrument it
         // Cf Java Language Specification 12 - 9.6.1 Annotation Types
@@ -126,7 +128,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             }
             classTraverser.addNotContainedJdkInterfaceMethods(this.superName, this.interfaces, this.resolver, this.loader);
         }
-        this.jdkMethods = Collections.unmodifiableList(classTraverser.getMethods());
+        this.jdkMethods = Collections.unmodifiableSet(classTraverser.getMethods());
     }
 
     /**
@@ -162,6 +164,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
         String instrumentedSignature = this.signatureInstrumenter.instrumentSignature(signature);
         MethodVisitor mv;
+        Method method = new Method(access, owner, name, descriptor, signature, exceptions, this.isInterface);
         String desc = descriptor;
         String newName = name;
 
@@ -172,7 +175,6 @@ class ClassTaintingVisitor extends ClassVisitor {
             this.hasClInit = true;
             return rmv;
         }
-
         // Create a new main method, wrapping the regular one and translating all Strings to IASStrings
         // TODO: acceptable for main is a parameter of String[] or String...! Those have different access bits set (i.e., the ACC_VARARGS bits are set too) -> Handle this nicer..
         if (((access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC) && (access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC && "main".equals(name) && descriptor.equals(Constants.MAIN_METHOD_DESC)
@@ -184,12 +186,11 @@ class ClassTaintingVisitor extends ClassVisitor {
             mv = super.visitMethod(access, Constants.MainWrapper, this.newMainDescriptor, signature, exceptions);
             newName = Constants.MainWrapper;
             desc = this.newMainDescriptor;
-        } else if (!this.isAnnotation && overridesJdkSuperMethod(access, name, descriptor) && shouldBeInstrumented(descriptor)) {
-            logger.info("Creating proxy method for JDK inheritance for method: {}{}", name, descriptor);
+        } else if (!this.isAnnotation && overridesJdkSuperMethod(method) && shouldBeInstrumented(descriptor)) {
             int newAccess = access & ~Opcodes.ACC_ABSTRACT;
             MethodVisitor v = super.visitMethod(newAccess, name, descriptor, signature, exceptions);
 
-            this.overriddenJdkMethods.add(overriddenJdkSuperMethod(access, name, descriptor));
+            this.overriddenJdkMethods.add(overriddenJdkSuperMethod(method));
 
             this.generateProxyToInstrumented(v, newName, Descriptor.parseDescriptor(descriptor), null, Optional.empty());
 
@@ -205,7 +206,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             int newAccess = access & ~Opcodes.ACC_ABSTRACT;
             MethodVisitor v = super.visitMethod(newAccess, name, descriptor, signature, exceptions);
 
-            this.overriddenJdkMethods.add(overriddenJdkSuperMethod(access, name, descriptor));
+            this.overriddenJdkMethods.add(overriddenJdkSuperMethod(method));
 
             this.generateProxyToInstrumented(v, newName, Descriptor.parseDescriptor(descriptor), null, Optional.empty());
             return null;
@@ -473,7 +474,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private void declareMissingJdkMethods() {
         List<Method> methods = this.jdkMethods
                 .stream()
-                .filter(method -> !overriddenJdkMethods.contains(method))
+                .filter(method -> !containsOverriddenJdkMethod(method))
                 .filter(method -> shouldBeInstrumented(method.getDescriptor()))
                 .filter(method -> !Modifier.isStatic(method.getAccess()))
                 .filter(method -> !MethodUtils.isToString(method.getName(), method.getDescriptor()))
@@ -497,14 +498,18 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
     }
 
+    private boolean containsOverriddenJdkMethod(Method method) {
+        return this.overriddenJdkMethods.stream().anyMatch(m -> m.equalsNameAndDescriptor(method));
+    }
+
     private void overrideMissingJdkMethods() {
+        Object comparator;
         List<Method> methods = this.jdkMethods
                 .stream()
-                .filter(method -> !overriddenJdkMethods.contains(method))
+                .filter(method -> !containsOverriddenJdkMethod(method))
                 .filter(method -> shouldBeInstrumented(method.getDescriptor()))
                 .filter(method -> !Modifier.isStatic(method.getAccess()))
                 .collect(Collectors.toList());
-
         methods.forEach(this::createInstrumentedJdkProxy);
     }
 
@@ -533,15 +538,23 @@ class ClassTaintingVisitor extends ClassVisitor {
 //            signature = this.instrumentDescriptorStringlike(signature);
 //        }
         // Generating proxy with instrumented descriptor
-        MethodVisitor mv = super.visitMethod(m.getAccess(), m.getName(), instrumentedDescriptor.toDescriptor(), signature, exceptions);
-        if (!Modifier.isAbstract(m.getAccess())) {
+        int modifiers = (m.getAccess() & ~Modifier.ABSTRACT);
+        MethodVisitor mv = super.visitMethod(modifiers, m.getName(), instrumentedDescriptor.toDescriptor(), signature, exceptions);
+        if (this.extendsJdkSuperClass) {
+            // If this class extends a JDK class (ie we could not add an instrumented method to the superclass),
+            // then create a proxy with instrumented arguments to the non-instrumented super class.
             this.generateInstrumentedProxyToSuper(mv, m, originalDescriptor, instrumentedDescriptor);
+        } else {
+            // If the super class is not a JDK class, then an instrumented method will exist in the superclass,
+            // which we can call as an instrumented method here
+            this.generateInstrumentedProxyToInstrumentedSuper(mv, m, instrumentedDescriptor);
         }
 
         // Overriding method with original descriptor
-        int modifiers = (m.getAccess() & ~Modifier.ABSTRACT);
+
         if (!Modifier.isFinal(m.getAccess())) {
             MethodVisitor mv2 = super.visitMethod(modifiers, m.getName(), originalDescriptor.toDescriptor(), signature, exceptions);
+            // Create an uninstrumented proxy to the instrumented method in this class
             this.generateProxyToInstrumented(mv2, m.getName(), originalDescriptor, null, Optional.empty());
         }
     }
@@ -567,6 +580,23 @@ class ClassTaintingVisitor extends ClassVisitor {
 
         mv.visitMethodInsn(Opcodes.INVOKESTATIC, dynamicCall.getOriginal().getOwner(), dynamicCall.getOriginal().getName(), dynamicCall.getOriginal().getDesc(), false);
         mv.visitInsn(Opcodes.ARETURN);
+        mv.visitMaxs(-1, -1);
+        mv.visitEnd();
+    }
+
+    private void generateInstrumentedProxyToInstrumentedSuper(MethodVisitor mv, Method m, Descriptor instrumentedDescriptor) {
+        mv.visitCode();
+        mv.visitVarInsn(Opcodes.ALOAD, 0);
+        // Load Parameters, but do not convert them in this case.Tr
+        for (int i = 0; i < instrumentedDescriptor.parameterCount(); ) {
+            String param = instrumentedDescriptor.getParameters().get(i);
+            // Creating new Object if necessary and duplicating it for initialization
+            mv.visitVarInsn(loadCodeByType(param), i + 1);
+            i += Type.getType(param).getSize();
+        }
+        // Calling the actual method
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superName, m.getName(), instrumentedDescriptor.toDescriptor(), false);
+        mv.visitInsn(returnCodeByReturnType(instrumentedDescriptor.getReturnType()));
         mv.visitMaxs(-1, -1);
         mv.visitEnd();
     }
@@ -725,22 +755,23 @@ class ClassTaintingVisitor extends ClassVisitor {
         return Arrays.asList(this.interfaces).contains("java/lang/reflect/InvocationHandler");
     }
 
-    private boolean overridesJdkSuperMethod(int access, String name, String descriptor) {
-        return overriddenJdkSuperMethod(access, name, descriptor) != null;
+    private boolean overridesJdkSuperMethod(Method m) {
+        return overriddenJdkSuperMethod(m) != null;
     }
 
-    private Method overriddenJdkSuperMethod(int access, String name, String descriptor) {
+    private Method overriddenJdkSuperMethod(Method m) {
         // TODO static methods
-        boolean instrAccPublic = (access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC;
-        boolean instrAccProtected = (access & Opcodes.ACC_PROTECTED) == Opcodes.ACC_PROTECTED;
-        boolean instrAccStatic = (access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC;
+        boolean instrAccPublic = (m.getAccess() & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC;
+        boolean instrAccProtected = (m.getAccess() & Opcodes.ACC_PROTECTED) == Opcodes.ACC_PROTECTED;
+        boolean instrAccStatic = (m.getAccess() & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC;
         if (!(instrAccPublic || instrAccProtected) || instrAccStatic) {
             return null;
         }
+
         if (!this.isAnnotation) {
             Optional<Method> methodOptional = this.jdkMethods
                     .stream()
-                    .filter(method -> method.getName().equals(name) && method.getDescriptor().equals(descriptor))
+                    .filter(method -> method.equalsNameAndDescriptor(m))
                     .findAny();
             return methodOptional.orElse(null);
         }
