@@ -174,9 +174,10 @@ public class ConversionUtils {
 
     private static Class<?> convertClass(Class<?> cls, Map<Class<?>, Class<?>> converters) {
         Class<?> baseClass = cls;
-        if (cls.isArray()) {
-            baseClass = cls.getComponentType();
+        while (baseClass.isArray()) {
+            baseClass = baseClass.getComponentType();
         }
+
         Class<?> converted = converters.get(baseClass);
 
         if (converted == null) {
@@ -184,11 +185,9 @@ public class ConversionUtils {
         }
 
         if (cls.isArray()) {
-            try {
-                return Class.forName(cls.getName().replace(baseClass.getName(), converted.getName()));
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Could not convert array type " + cls.getName() + " to instrumented type", e);
-            }
+            org.objectweb.asm.Type clsType = org.objectweb.asm.Type.getObjectType(cls.getName());
+            int[] dimensions = new int[clsType.getDimensions()];
+            return Array.newInstance(converted, dimensions).getClass();
         }
         return converted;
     }

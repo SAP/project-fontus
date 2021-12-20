@@ -12,7 +12,7 @@ import com.sap.fontus.utils.ConversionUtils;
 import com.sap.fontus.utils.ReflectionUtils;
 import com.sap.fontus.utils.Utils;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
-
+import org.objectweb.asm.Type;
 import java.io.InputStream;
 import java.lang.reflect.*;
 import java.util.*;
@@ -231,24 +231,15 @@ public class IASClassProxy {
     }
 
     public static IASString getSimpleName(Class<?> clazz) {
-        org.objectweb.asm.Type originalType =
-                org.objectweb.asm.Type.getObjectType(
-                        instrumentationHelper.uninstrumentQN(org.objectweb.asm.Type.getType(clazz).getInternalName()));
-        return new IASString(Utils.getSimpleClassName(originalType.getClassName()));
+        return new IASString(ConversionUtils.convertClassToOrig(clazz).getSimpleName());
     }
 
     public static IASString getCanonicalName(Class<?> clazz) {
-        org.objectweb.asm.Type originalType =
-                org.objectweb.asm.Type.getObjectType(
-                        instrumentationHelper.uninstrumentQN(org.objectweb.asm.Type.getType(clazz).getInternalName()));
-        return new IASString(originalType.getClassName());
+        return new IASString(ConversionUtils.convertClassToOrig(clazz).getCanonicalName());
     }
 
     public static IASString getName(Class<?> clazz) {
-        org.objectweb.asm.Type originalType =
-                org.objectweb.asm.Type.getObjectType(
-                        instrumentationHelper.uninstrumentQN(org.objectweb.asm.Type.getType(clazz).getInternalName()));
-        return new IASString(Utils.slashToDot(originalType.getInternalName()));
+        return new IASString(ConversionUtils.convertClassToOrig(clazz).getName());
     }
 
     @SuppressWarnings("Since15")

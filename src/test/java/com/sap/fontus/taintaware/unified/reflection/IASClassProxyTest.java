@@ -79,7 +79,8 @@ public class IASClassProxyTest {
                 Arguments.of(Array.newInstance(IASStringBuilder.class, dimensions).getClass(), Array.newInstance(StringBuilder.class, dimensions).getClass()),
                 Arguments.of(Array.newInstance(IASStringBuffer.class, dimensions).getClass(), Array.newInstance(StringBuffer.class, dimensions).getClass()),
                 Arguments.of(String.class, String.class),
-                Arguments.of(Integer.class, Integer.class)
+                Arguments.of(Integer.class, Integer.class),
+                Arguments.of(int.class, int.class)
         );
     }
 
