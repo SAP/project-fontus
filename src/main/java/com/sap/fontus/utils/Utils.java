@@ -109,6 +109,9 @@ public final class Utils {
         return s.replace('.', '/');
     }
 
+    public static String getSimpleClassName(String s) {
+        return s.substring(s.lastIndexOf(".") + 1).trim();
+    }
 
     public static void insertGenericConversionToOrig(MethodVisitor mv, String expectedTypeInternalName) {
         mv.visitMethodInsn(Opcodes.INVOKESTATIC,
