@@ -11,6 +11,7 @@ import com.sap.fontus.utils.Utils;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.*;
 
+import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -22,6 +23,7 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     protected static final Logger logger = LogUtils.getLogger();
     protected final CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup();
     protected final Pattern qnMatcher;
+    protected final Pattern qnInstrumentedMatcher;
     protected final Type origType;
     protected final Type instrumentedType;
     protected final Pattern descPattern;
@@ -33,6 +35,7 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
         this.origType = origType;
         this.instrumentedType = instrumentedType;
         this.qnMatcher = Pattern.compile(this.origType.getInternalName(), Pattern.LITERAL);
+        this.qnInstrumentedMatcher = Pattern.compile(this.instrumentedType.getInternalName(), Pattern.LITERAL);
         this.descPattern = Pattern.compile(this.origType.getDescriptor());
         this.instrumentationHelper = instrumentationHelper;
         this.taintedToOrig = taintedToOrig;
@@ -59,10 +62,29 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
         return this.qnMatcher.matcher(qn).replaceAll(Matcher.quoteReplacement(this.instrumentedType.getInternalName()));
     }
 
-//    @Override
-//    public String instrumentDescForIASCall(String desc) {
-//        return this.descPattern.matcher(desc).replaceAll(this.instrumentedType.getDescriptor());
-//    }
+    @Override
+    public String uninstrumentQN(String qn) {
+        return this.qnInstrumentedMatcher.matcher(qn).replaceAll(Matcher.quoteReplacement(this.origType.getInternalName()));
+    }
+
+    @Override
+    public Class uninstrumentClass(Class clazz) {
+        Type originalType =
+                Type.getObjectType(
+                        this.uninstrumentQN(Type.getType(clazz).getInternalName()));
+        try {
+            if (originalType.getSort() == Type.ARRAY) {
+                Type elementType = originalType.getElementType();
+                int[] dimensions = new int[originalType.getDimensions()];
+                clazz = Array.newInstance(Class.forName(elementType.getClassName()), dimensions).getClass();
+            } else {
+                clazz = Class.forName(originalType.getClassName());
+            }
+        } catch (ClassNotFoundException e) {
+            // NOP
+        }
+        return clazz;
+    }
 
     @Override
     public Optional<String> translateClassName(String className) {

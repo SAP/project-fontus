@@ -22,11 +22,19 @@ public interface InstrumentationStrategy {
     String uninstrument(String typeDescriptor);
 
     /**
+     * Returns the uninstrumented class of the tainted type
+     * @param clazz
+     */
+    Class uninstrumentClass(Class clazz);
+
+    /**
      * Returns concrete type of the tainted type
      */
     Descriptor uninstrumentForJdkCall(Descriptor descriptor);
 
     String instrumentQN(String qn);
+
+    String uninstrumentQN(String qn);
 
     /**
      * Replaces taintable type occurences in the parameters with the interface and in the return with the concrete type

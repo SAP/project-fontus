@@ -51,6 +51,29 @@ public final class InstrumentationHelper implements InstrumentationStrategy {
         return newQN;
     }
 
+    @Override
+    public String uninstrumentQN(String qn) {
+        String newQN = qn;
+        for (InstrumentationStrategy is : this.strategies) {
+            newQN = is.uninstrumentQN(newQN);
+            if (!qn.equals(newQN)) {
+                break;
+            }
+        }
+        return newQN;
+    }
+
+    @Override
+    public Class uninstrumentClass(Class clazz) {
+        for (InstrumentationStrategy is : this.strategies) {
+            Class newClass = is.uninstrumentClass(clazz);
+            if (!clazz.equals(newClass)) {
+                clazz = newClass;
+                break;
+            }
+        }
+        return clazz;
+    }
 
     /**
      * This instruments the descriptors for normal application classes (uses the actual taintaware classes (e.g. IASString))

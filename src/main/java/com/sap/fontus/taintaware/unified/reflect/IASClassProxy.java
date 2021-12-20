@@ -230,6 +230,18 @@ public class IASClassProxy {
         }
     }
 
+    public static IASString getSimpleName(Class<?> clazz) {
+        return new IASString(instrumentationHelper.uninstrumentClass(clazz).getSimpleName());
+    }
+
+    public static IASString getCanonicalName(Class<?> clazz) {
+        return new IASString(instrumentationHelper.uninstrumentClass(clazz).getCanonicalName());
+    }
+
+    public static IASString getName(Class<?> clazz) {
+        return new IASString(instrumentationHelper.uninstrumentClass(clazz).getName());
+    }
+
     @SuppressWarnings("Since15")
     public static Class<?> forName(IASString str) throws ClassNotFoundException {
         String s = str.getString();

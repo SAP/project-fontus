@@ -146,6 +146,15 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/System", "getenv", "()Ljava/util/Map;", false),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASStringUtils.class), "getenv", "()Ljava/util/Map;", false));
 
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getName", "(Ljava/lang/String;)", false),
+                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getName", Type.getMethodDescriptor(Type.getType(IASString.class), Type.getType(Class.class)), false));
+
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getSimpleName", "(Ljava/lang/String;)", false),
+                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getSimpleName", Type.getMethodDescriptor(Type.getType(IASString.class), Type.getType(Class.class)), false));
+
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getCanonicalName", "(Ljava/lang/String;)", false),
+                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getCanonicalName", Type.getMethodDescriptor(Type.getType(IASString.class), Type.getType(Class.class)), false));
+
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getTypeParameters", Type.getMethodDescriptor(Type.getType(TypeVariable[].class)), false),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getTypeParameters", Type.getMethodDescriptor(Type.getType(TypeVariable[].class), Type.getType(Class.class)), false));
 
@@ -577,17 +586,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
      */
     @Override
     public void visitLdcInsn(Object value) {
-
-        // Some cool people use "java.lang.String".equals(cls.getName()) instead cls == String.class
-        if (value instanceof String) {
-            if (value.equals("java.lang.String")) {
-                logger.info("Replaced original class name in string with instrumented one in {}.{}{}", this.owner, this.name, this.methodDescriptor);
-                value = IASString.class.getName();
-            } else if (value.equals("[Ljava.lang.String;")) {
-                logger.info("Replaced original class name in string with instrumented one in {}.{}{}", this.owner, this.name, this.methodDescriptor);
-                value = Array.newInstance(IASString.class, 0).getClass().getName();
-            }
-        }
 
         if (this.instrumentationHelper.handleLdc(this.mv, value)) {
             return;
