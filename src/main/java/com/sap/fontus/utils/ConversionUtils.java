@@ -174,7 +174,9 @@ public class ConversionUtils {
 
     private static Class<?> convertClass(Class<?> cls, Map<Class<?>, Class<?>> converters) {
         Class<?> baseClass = cls;
+        int dimension = 0;
         while (baseClass.isArray()) {
+            dimension += 1;
             baseClass = baseClass.getComponentType();
         }
 
@@ -185,9 +187,7 @@ public class ConversionUtils {
         }
 
         if (cls.isArray()) {
-            org.objectweb.asm.Type clsType = org.objectweb.asm.Type.getObjectType(cls.getName());
-            int[] dimensions = new int[clsType.getDimensions()];
-            return Array.newInstance(converted, dimensions).getClass();
+            return Array.newInstance(converted, new int[dimension]).getClass();
         }
         return converted;
     }
