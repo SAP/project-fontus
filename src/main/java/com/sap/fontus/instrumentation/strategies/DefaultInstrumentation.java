@@ -58,9 +58,6 @@ public class DefaultInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
-    public Class uninstrumentClass(Class clazz) { return clazz; }
-
-    @Override
     public Optional<String> translateClassName(String className) {
         return Optional.of(className);
     }

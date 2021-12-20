@@ -230,16 +230,65 @@ public class IASClassProxy {
         }
     }
 
+    public static Class uninstrumentClass(Class clazz, ClassLoader classLoader) {
+        org.objectweb.asm.Type originalType =
+                org.objectweb.asm.Type.getObjectType(
+                        instrumentationHelper.uninstrumentQN(org.objectweb.asm.Type.getType(clazz).getInternalName()));
+
+        try {
+            if (originalType.getSort() == org.objectweb.asm.Type.ARRAY) {
+                org.objectweb.asm.Type elementType = originalType.getElementType();
+                int[] dimensions = new int[originalType.getDimensions()];
+                clazz = Array.newInstance(Class.forName(elementType.getClassName(), true, classLoader), dimensions).getClass();
+            } else {
+                clazz = Class.forName(originalType.getClassName(), true, classLoader);
+            }
+        } catch (ClassNotFoundException e) {
+            // NOP
+        }
+        return clazz;
+    }
+
+    @SuppressWarnings("Since15")
     public static IASString getSimpleName(Class<?> clazz) {
-        return new IASString(instrumentationHelper.uninstrumentClass(clazz).getSimpleName());
+        // Get caller class classloader
+        Class<?> callerClass;
+        if (Constants.JAVA_VERSION >= 9) {
+            callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
+                    .getCallerClass();
+        } else {
+            callerClass = ReflectionUtils.getCallerClass();
+        }
+        ClassLoader cl = callerClass.getClassLoader();
+        return new IASString(uninstrumentClass(clazz, cl).getSimpleName());
     }
 
+    @SuppressWarnings("Since15")
     public static IASString getCanonicalName(Class<?> clazz) {
-        return new IASString(instrumentationHelper.uninstrumentClass(clazz).getCanonicalName());
+        // Get caller class classloader
+        Class<?> callerClass;
+        if (Constants.JAVA_VERSION >= 9) {
+            callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
+                    .getCallerClass();
+        } else {
+            callerClass = ReflectionUtils.getCallerClass();
+        }
+        ClassLoader cl = callerClass.getClassLoader();
+        return new IASString(uninstrumentClass(clazz, cl).getCanonicalName());
     }
 
+    @SuppressWarnings("Since15")
     public static IASString getName(Class<?> clazz) {
-        return new IASString(instrumentationHelper.uninstrumentClass(clazz).getName());
+        // Get caller class classloader
+        Class<?> callerClass;
+        if (Constants.JAVA_VERSION >= 9) {
+            callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
+                    .getCallerClass();
+        } else {
+            callerClass = ReflectionUtils.getCallerClass();
+        }
+        ClassLoader cl = callerClass.getClassLoader();
+        return new IASString(uninstrumentClass(clazz, cl).getName());
     }
 
     @SuppressWarnings("Since15")

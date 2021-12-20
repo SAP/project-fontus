@@ -7,6 +7,7 @@ import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.instrumentation.InstrumentationHelper;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
+import com.sap.fontus.utils.ReflectionUtils;
 import com.sap.fontus.utils.Utils;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.*;
@@ -65,25 +66,6 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     @Override
     public String uninstrumentQN(String qn) {
         return this.qnInstrumentedMatcher.matcher(qn).replaceAll(Matcher.quoteReplacement(this.origType.getInternalName()));
-    }
-
-    @Override
-    public Class uninstrumentClass(Class clazz) {
-        Type originalType =
-                Type.getObjectType(
-                        this.uninstrumentQN(Type.getType(clazz).getInternalName()));
-        try {
-            if (originalType.getSort() == Type.ARRAY) {
-                Type elementType = originalType.getElementType();
-                int[] dimensions = new int[originalType.getDimensions()];
-                clazz = Array.newInstance(Class.forName(elementType.getClassName()), dimensions).getClass();
-            } else {
-                clazz = Class.forName(originalType.getClassName());
-            }
-        } catch (ClassNotFoundException e) {
-            // NOP
-        }
-        return clazz;
     }
 
     @Override
