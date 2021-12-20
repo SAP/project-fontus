@@ -146,14 +146,14 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/lang/System", "getenv", "()Ljava/util/Map;", false),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASStringUtils.class), "getenv", "()Ljava/util/Map;", false));
 
-        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getName", "(Ljava/lang/String;)", false),
-                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getName", Type.getMethodDescriptor(Type.getType(IASString.class), Type.getType(Class.class)), false));
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getName", "()Ljava/lang/String;", false),
+                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getName", Type.getMethodDescriptor(Type.getType(IASString.class), Type.getType(Class.class)), false));
 
-        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getSimpleName", "(Ljava/lang/String;)", false),
-                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getSimpleName", Type.getMethodDescriptor(Type.getType(IASString.class), Type.getType(Class.class)), false));
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getSimpleName", "()Ljava/lang/String;", false),
+                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getSimpleName", Type.getMethodDescriptor(Type.getType(IASString.class), Type.getType(Class.class)), false));
 
-        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getCanonicalName", "(Ljava/lang/String;)", false),
-                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getCanonicalName", Type.getMethodDescriptor(Type.getType(IASString.class), Type.getType(Class.class)), false));
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getCanonicalName", "()Ljava/lang/String;", false),
+                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getCanonicalName", Type.getMethodDescriptor(Type.getType(IASString.class), Type.getType(Class.class)), false));
 
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getTypeParameters", Type.getMethodDescriptor(Type.getType(TypeVariable[].class)), false),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getTypeParameters", Type.getMethodDescriptor(Type.getType(TypeVariable[].class), Type.getType(Class.class)), false));
