@@ -19,6 +19,7 @@ public final class Utils {
 
 
     private static final CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup();
+    private static final Logger logger = LogUtils.getLogger();
 
     private Utils() {
     }
@@ -31,6 +32,13 @@ public final class Utils {
         List<String> stackTraceStrings = convertStackTrace(stackTrace);
         for (String ste: stackTraceStrings) {
             System.err.println("\tat " + ste);
+        }
+    }
+
+    public static void logStackTrace(List<StackTraceElement> stackTrace) {
+        List<String> stackTraceStrings = convertStackTrace(stackTrace);
+        for (String ste: stackTraceStrings) {
+            logger.error("\tat " + ste);
         }
     }
 

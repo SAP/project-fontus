@@ -1,6 +1,7 @@
 package com.sap.fontus.agent;
 
 import com.sap.fontus.asm.ClassResolver;
+import com.sap.fontus.utils.Utils;
 import com.sap.fontus.utils.VerboseLogger;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.instrumentation.Instrumenter;
@@ -13,6 +14,7 @@ import org.objectweb.asm.ClassWriter;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -68,7 +70,7 @@ class TaintingTransformer implements ClassFileTransformer {
 
         logger.info("Tainting class: {}", className);
         try {
-            byte[] outArray = instrumentClassByteArray(classfileBuffer, loader);
+            byte[] outArray = instrumentClassByteArray(classfileBuffer, loader, className);
             this.classCache.put(className, outArray);
             VerboseLogger.saveIfVerbose(className, outArray);
             this.nInstrumented += 1;
@@ -79,6 +81,7 @@ class TaintingTransformer implements ClassFileTransformer {
         } catch (Exception e) {
             Configuration.getConfiguration().getExcludedPackages().add(className);
             logger.error("Instrumentation failed for {}. Reason: {}. Class added to excluded classes!", className, e.getMessage());
+            Utils.logStackTrace(Arrays.asList(e.getStackTrace()));
         }
         return null;
     }
@@ -87,14 +90,19 @@ class TaintingTransformer implements ClassFileTransformer {
         return this.classCache.get(qn);
     }
 
-    private byte[] instrumentClassByteArray(byte[] classfileBuffer, ClassLoader loader) {
+    private byte[] instrumentClassByteArray(byte[] classfileBuffer, ClassLoader loader, String className) {
         byte[] outArray;
         try {
             outArray = this.instrumenter.instrumentClass(classfileBuffer, new ClassResolver(loader), this.config, loader, false);
         } catch (IllegalArgumentException ex) {
             if ("JSR/RET are not supported with computeFrames option".equals(ex.getMessage())) {
+                logger.error("JSR/RET not supported in {}!", className);
+                Utils.logStackTrace(Arrays.asList(ex.getStackTrace()));
                 outArray = this.instrumenter.instrumentClass(classfileBuffer, new ClassResolver(loader), this.config, loader, true);
+                logger.error("Finished retrying {}", className);
             } else {
+                logger.error("Instrumentation failed for {}", className);
+                Utils.logStackTrace(Arrays.asList(ex.getStackTrace()));
                 throw ex;
             }
         }
