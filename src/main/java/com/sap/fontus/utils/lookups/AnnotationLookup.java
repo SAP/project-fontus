@@ -1,13 +1,11 @@
 package com.sap.fontus.utils.lookups;
 
-import com.sap.fontus.Constants;
 import com.sap.fontus.asm.ClassReaderWithLoaderSupport;
 import com.sap.fontus.asm.ClassResolver;
 import com.sap.fontus.asm.NopVisitor;
 import com.sap.fontus.utils.ClassUtils;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
-import com.sap.fontus.utils.Utils;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 
@@ -15,7 +13,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-
 
 public final class AnnotationLookup {
 
@@ -39,7 +36,25 @@ public final class AnnotationLookup {
         } else if (this.noAnnotations.contains(name)) {
             return false;
         } else {
-            return this.testAnnotation(name, superName, interfaces, resolver);
+            return this.testAndCacheAnnotation(name, superName, interfaces, resolver);
+        }
+    }
+
+    // Deal with caching stuff here
+    private boolean testAndCacheAnnotation(String name, String superName, String[] interfaces, ClassResolver resolver) {
+        if (this.annotations.contains(name)) {
+            return true;
+        } else if (this.noAnnotations.contains(name)) {
+            return false;
+        } else {
+            boolean isAnnotation = this.testAnnotation(name, superName, interfaces, resolver);
+            // Store in cache
+            if (isAnnotation) {
+                this.annotations.add(name);
+            } else {
+                this.noAnnotations.add(name);
+            }
+            return isAnnotation;
         }
     }
 
@@ -57,11 +72,11 @@ public final class AnnotationLookup {
                 interfaces = cr.getInterfaces();
             }
 
-            if (!isAnnotation) {
-                if ((cr.getAccess() & Opcodes.ACC_ANNOTATION) > 0) {
-                    isAnnotation = true;
-                }
+            // First check the annotation flag
+            if ((cr.getAccess() & Opcodes.ACC_ANNOTATION) > 0) {
+                isAnnotation = true;
             }
+
         } catch (IOException exception) {
             logger.warn("Could not read class {} for checking if it's an annotation", className);
         }
@@ -69,6 +84,7 @@ public final class AnnotationLookup {
             interfaces = new String[0];
         }
 
+        // Try again using the class via reflection
         if (!isAnnotation) {
             Class<?> cls = ClassUtils.findLoadedClass(className);
             if (cls != null) {
@@ -78,32 +94,25 @@ public final class AnnotationLookup {
             }
         }
 
+        // Check the interfaces
         if (!isAnnotation) {
-            String ifs = String.join(", ", interfaces);
-            logger.info("Testing {} (super: {}, interfaces: {} for being an annotation", className, superName, ifs);
-            if (Utils.contains(interfaces, Constants.AnnotationQN)) {
-                isAnnotation = true;
-            }
-        }
-
-        if (!isAnnotation) {
-            if (Constants.ProxyQN.equals(superName)) {
-                if (interfaces.length == 1) {
-                    String interf = interfaces[0];
-                    if (this.testAnnotation(interf, null, null, resolver)) {
-                        isAnnotation = true;
-                    }
+            for (String interf : interfaces) {
+                if (this.testAndCacheAnnotation(interf, null, null, resolver)) {
+                    isAnnotation = true;
+                    break;
                 }
             }
         }
 
-        if (isAnnotation) {
-            this.annotations.add(className);
-        } else {
-            this.noAnnotations.add(className);
+        if ((!isAnnotation) && (superName != null)) {
+            if (this.testAndCacheAnnotation(superName, null, null, resolver)) {
+                isAnnotation = true;
+            }
         }
+
         return isAnnotation;
     }
+
 
     public void addAnnotation(String name) {
         this.annotations.add(name);
