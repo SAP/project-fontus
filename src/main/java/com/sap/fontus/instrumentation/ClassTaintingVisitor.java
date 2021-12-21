@@ -113,8 +113,15 @@ class ClassTaintingVisitor extends ClassVisitor {
 
         String instrumentedSignature = this.signatureInstrumenter.instrumentSignature(signature);
 
-        if (version < Opcodes.V1_8 && !this.isAnnotation) {
-            version = Opcodes.V1_8;
+        // In order to correctly proxy the "toString" method, we add a default implementation
+        // to interfaces which calls the instrumented toString. This is only allowed for classes
+        // compiled with Java V8, so we need to increase the format version in some cases.
+        //
+        // Beware though, that reducing the version means that some UTF8 strings are interpreted
+        // differently, which might lead to java.lang.ClassFormatError exceptions
+        //
+        if ((version < Opcodes.V1_8) && !this.isAnnotation && this.isInterface) {
+             version = Opcodes.V1_8;
         }
 
         super.visit(version, access, name, instrumentedSignature, this.superName, interfaces);
