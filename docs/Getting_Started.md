@@ -89,3 +89,9 @@ Example: IntelliJ allows for conditional break points and to evaluate expression
 7. I'm still stuck!
 
 Open a [Git Issue](https://git.ias.cs.tu-bs.de/GDPR_Tainting/Fontus/issues). The more detailed the input, the more likely we can help you. Important is a workable way to reproduce the bug on one of our machines!
+
+## Debugging Tips
+
+```java
+setter.equals(item.getClass().getMethod("getName").invoke(item))
+```
