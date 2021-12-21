@@ -23,6 +23,7 @@ JAR_FOLDERS=(
     forward_main
     str_array_clone
     annotation_test
+    deserialization
 )
 
 main() {

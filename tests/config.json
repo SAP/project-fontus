@@ -1,6 +1,13 @@
 {
   "jar_tests": [
     {
+      "name": "Deserialization",
+      "jar_file": "deserialize.jar",
+      "entry_point": "Main",
+      "copy_file": "deserialized.dat",
+      "arguments": ["./deserialized.dat"]
+    },
+    {
       "name": "Tic Tac Toe",
       "jar_file": "tictactoe.jar",
       "entry_point": "Main",

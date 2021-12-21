@@ -215,6 +215,9 @@ class JarTestCase:
         self._jar_path = path.join(JARS_BASE_PATH, self._jar_file)
         self._arguments = test_dict.get('arguments', [])
         self._safe = test_dict.get('safe')
+        self._copy_file = test_dict.get('copy_file')
+        #if self._copy_file is not None:
+        #    self._copy_file = path.join(JARS_BASE_PATH, self._copy_file)
         self._input_file = test_dict.get('input_file', None)
         if self._input_file is not None:
             self._input_file = path.join(INPUTS_BASE_PATH, self._input_file)
@@ -242,6 +245,10 @@ class JarTestCase:
         return self._safe
 
     @property
+    def copy_file(self):
+        return self._copy_file
+
+    @property
     def input_file(self):
         return self._input_file
 
@@ -259,6 +266,7 @@ class JarTestCase:
                 'entry_point={self._entry_point!r}, '
                 'arguments={self._arguments!r}, '
                 'input_file={self._input_file!r}, '
+                'copy_file={self._copy_file!r}, '
                 'javac_version={self._javac_version!r})').format(self=self)
 
 
@@ -463,6 +471,9 @@ class TestRunner:
 
     async def _run_jar_test(self, base_dir, test):
         print('Running Jar Test: "{}"'.format(test.name))
+        if test.copy_file is not None:
+            copy_file(JARS_BASE_PATH, base_dir, test.copy_file)
+
         copy_jar(base_dir, test.jar_file)
         # check whether test should be run in safe mode or safe mode is activated
         regular_result, agent_result = await(asyncio.gather(
