@@ -43,7 +43,7 @@ FONTUS_PATH="$HOME/.m2/repository/com/sap/fontus/fontus/0.0.1-SNAPSHOT/fontus-0.
 CONFIG_PATH="$(pwd)/configuration.xml"
 
 ./mvnw clean package  -DskipTests
-java -jar --add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED \
+java -jar --add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/jdk.internal.vm.annotation=ALL-UNNAMED \
   -javaagent:"${FONTUS_PATH}=config=${CONFIG_PATH},abort=stderr_logging" "${APPNAME}"
 ```
 
