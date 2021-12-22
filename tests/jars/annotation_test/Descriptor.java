@@ -9,9 +9,9 @@ import java.lang.annotation.ElementType;
 @interface Descriptor {
 
     String   value();
-
     String   name();
     int      age();
     String[] newNames();
+    Class clazz() default String.class;
 
 }
