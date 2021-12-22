@@ -17,10 +17,10 @@ public class SignatureInstrumenter {
     }
 
     public String instrumentSignature(String signature) {
-        logger.info("Instrumenting signature {}", signature);
         if (signature == null) {
             return null;
         }
+        logger.info("Instrumenting signature {}", signature);
         SignatureWriter sw = new SignatureWriter();
         SignatureVisitor sv = new SignatureTaintingVisitor(this.api, this.instrumentationHelper, sw);
         SignatureReader sr = new SignatureReader(signature);
