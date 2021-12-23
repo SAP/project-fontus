@@ -29,11 +29,19 @@ public class IASProperties extends Hashtable<Object, Object> {
     }
 
     public IASProperties(Properties properties) {
-        this.properties = properties;
+        if(properties != null) {
+            this.properties = properties;
+        } else {
+            this.properties = new Properties();
+        }
     }
 
     public IASProperties(IASProperties defaults) {
-        this.properties = new Properties(defaults.properties);
+        if(defaults != null) {
+            this.properties = new Properties(defaults.properties);
+        } else {
+            this.properties = new Properties();
+        }
     }
 
     public synchronized Object setProperty(IASString key, IASString value) {
