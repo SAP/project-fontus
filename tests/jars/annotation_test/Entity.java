@@ -2,7 +2,8 @@
     value="123",
     name="Jakob",
     age=37,
-    newNames={"Jenkov", "Peterson"}
+    newNames={"Jenkov", "Peterson"},
+    clazz=String.class
 )
 public class Entity {
 
@@ -10,7 +11,6 @@ public class Entity {
     public Entity(String name) {
         this.name = name;
     }
-
     public String getName() {
         return this.name;
     }
