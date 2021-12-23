@@ -16,4 +16,9 @@ public class IASReflectionProxy {
         }
         return result;
     }
+
+    public static Package getPackageOfClass(Class<?> clazz) {
+        Class<?> clz = ConversionUtils.convertClassToOrig(clazz);
+        return clz.getPackage();
+    }
 }

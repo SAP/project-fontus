@@ -208,14 +208,11 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;", false),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getResourceAsStream", "(Ljava/lang/Class;Lcom/sap/fontus/taintaware/unified/IASString;)Ljava/io/InputStream;", false));
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getPackage", "()Ljava/lang/Package;", false),
+                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASReflectionProxy.class), "getPackageOfClass", "(Ljava/lang/Class;)Ljava/lang/Package;", false));
 
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/ClassLoader", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;", false),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassLoaderProxy.class), "getResourceAsStream", "(Ljava/lang/ClassLoader;Lcom/sap/fontus/taintaware/unified/IASString;)Ljava/io/InputStream;", false));
-
-        this.methodProxies.put(new FunctionCall(Opcodes.INVOKESPECIAL, "java/io/ObjectInputStream", "<init>", "(Ljava/io/InputStream;)V", false),
-                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASObjectInputStream.class), "fromStream", "(Ljava/io/InputStream;)Ljava/io/ObjectInputStream;", false));
-
-
     }
 
     private void fillInterfaceProxies() {
