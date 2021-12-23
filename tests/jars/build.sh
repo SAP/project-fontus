@@ -24,6 +24,7 @@ JAR_FOLDERS=(
     str_array_clone
     annotation_test
     deserialization
+    logback
 )
 
 main() {

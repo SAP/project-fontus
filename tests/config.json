@@ -8,6 +8,11 @@
       "arguments": ["./deserialized.dat"]
     },
     {
+      "name": "logback",
+      "jar_file": "logback.jar",
+      "entry_point": "Example"
+    },
+    {
       "name": "Tic Tac Toe",
       "jar_file": "tictactoe.jar",
       "entry_point": "Main",
