@@ -1,13 +1,13 @@
 import java.lang.reflect.*;
 
-class ReflectionUtils {
-    static <T> T makeInstance(Class<T> type) throws Exception {
+public class ReflectionUtils {
+    public static <T> T makeInstance(Class<T> type) throws Exception {
         Constructor<T> c = newConstructorForSerialization(type, getJavaLangObjectConstructor());
         c.setAccessible(true);
         T t = c.newInstance((Object[]) null);
         return t;
     }
-   static Constructor<Object> getJavaLangObjectConstructor() {
+   public static Constructor<Object> getJavaLangObjectConstructor() {
       try {
          return Object.class.getConstructor((Class[]) null);
       }
@@ -15,7 +15,7 @@ class ReflectionUtils {
          throw new RuntimeException(e);
       }
    }
-   static <T> Constructor<T> newConstructorForSerialization(Class<T> type,
+    public static <T> Constructor<T> newConstructorForSerialization(Class<T> type,
       Constructor<?> constructor) {
       Class<?> reflectionFactoryClass = getReflectionFactoryClass();
       Object reflectionFactory = createReflectionFactory(reflectionFactoryClass);
@@ -32,7 +32,7 @@ class ReflectionUtils {
       }
    }
 
-    static Class<?> getReflectionFactoryClass() {
+    public static Class<?> getReflectionFactoryClass() {
       try {
          return Class.forName("sun.reflect.ReflectionFactory");
       }
@@ -41,7 +41,7 @@ class ReflectionUtils {
       }
    }
 
-    static Object createReflectionFactory(Class<?> reflectionFactoryClass) {
+    public static Object createReflectionFactory(Class<?> reflectionFactoryClass) {
       try {
          Method method = reflectionFactoryClass.getDeclaredMethod(
             "getReflectionFactory");
@@ -52,7 +52,7 @@ class ReflectionUtils {
       }
    }
 
-   static Method getNewConstructorForSerializationMethod(Class<?> reflectionFactoryClass) {
+    public static Method getNewConstructorForSerializationMethod(Class<?> reflectionFactoryClass) {
       try {
          return reflectionFactoryClass.getDeclaredMethod(
             "newConstructorForSerialization", Class.class, Constructor.class);
