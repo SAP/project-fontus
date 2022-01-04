@@ -5,12 +5,14 @@ import com.sap.fontus.TriConsumer;
 import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.instrumentation.strategies.*;
+import com.sap.fontus.taintaware.unified.IASObjectInputStream;
 import com.sap.fontus.taintaware.unified.reflect.*;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
+import java.io.ObjectInputStream;
 import java.lang.reflect.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -36,6 +38,7 @@ public final class InstrumentationHelper implements InstrumentationStrategy {
         this.strategies.add(new AbstractInstrumentation(Type.getType(Method.class), Type.getType(IASMethod.class), this, Constants.TMethodToMethodName));
         this.strategies.add(new AbstractInstrumentation(Type.getType(Field.class), Type.getType(IASField.class), this, Constants.TFieldToField));
         this.strategies.add(new AbstractInstrumentation(Type.getType(Member.class), Type.getType(IASMember.class), this, Constants.TMemberToMember));
+        this.strategies.add(new ObjectInputStreamStrategy(this));
         this.strategies.add(new DefaultInstrumentation());
     }
 

@@ -12,6 +12,7 @@ public class ObjectInputStreamStrategy extends AbstractInstrumentation  {
         super(Type.getType(ObjectInputStream.class), Type.getType(IASObjectInputStream.class), instrumentationHelper, Constants.TProxyToProxyName);
     }
 
+    @Override
     public String instrumentSuperClass(String superClass) {
         if (superClass.equals(this.origType.getInternalName())) {
             return this.instrumentedType.getInternalName();
