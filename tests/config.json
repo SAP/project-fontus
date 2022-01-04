@@ -13,6 +13,11 @@
       "entry_point": "Example"
     },
     {
+      "name": "objenesis",
+      "jar_file": "objenesis.jar",
+      "entry_point": "Example"
+    },
+    {
       "name": "Tic Tac Toe",
       "jar_file": "tictactoe.jar",
       "entry_point": "Main",
