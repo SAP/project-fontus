@@ -66,6 +66,13 @@ public class StringTest {
     }
 
     @Test
+    public void testReplaceIssue() {
+        IASString source = new IASString("java.lang.Object.equals(java.lang.Object)");
+        IASString target = source.trim().replaceAll(new IASString("\\s*([\\.,\\(\\)\\[\\]])\\s*"), new IASString( "$1"));
+        assertEquals(source, target);
+    }
+
+    @Test
     public void replaceRegression2() {
         IASString source = new IASString("Hello, Hello, Hello", true);
         IASString target = new IASString("Hello");
