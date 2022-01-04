@@ -26,6 +26,7 @@ JAR_FOLDERS=(
     deserialization
     logback
     objenesis
+    reflected_constructor
 )
 
 main() {

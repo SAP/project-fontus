@@ -18,6 +18,11 @@
       "entry_point": "Example"
     },
     {
+      "name": "reflected_constructor",
+      "jar_file": "reflected_constructor.jar",
+      "entry_point": "Main"
+    },
+    {
       "name": "Tic Tac Toe",
       "jar_file": "tictactoe.jar",
       "entry_point": "Main",
