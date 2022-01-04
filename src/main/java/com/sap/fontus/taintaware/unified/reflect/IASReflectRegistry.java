@@ -25,8 +25,11 @@ public class IASReflectRegistry {
     }
 
     public synchronized <T> IASConstructor<T> map(Constructor<T> constructor) {
+        return new IASConstructor<>(constructor);
+        /* TODO: Figure out whether this was "just" an optimization or is required for something
         this.constructors.computeIfAbsent(constructor, IASConstructor<T>::new);
         return this.constructors.get(constructor);
+        */
     }
 
     public IASExecutable<?> mapExecutable(Executable executable) {
