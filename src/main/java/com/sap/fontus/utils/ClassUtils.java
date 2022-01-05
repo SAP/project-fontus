@@ -20,7 +20,7 @@ public class ClassUtils {
             try {
                 loaded = Class.forName(Type.getObjectType(internalName).getClassName());
             } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+                Utils.logException(e);
             }
         }
         return loaded;
@@ -32,7 +32,7 @@ public class ClassUtils {
             try {
                 loaded = Class.forName(Type.getObjectType(internalName).getClassName(), false, loader);
             } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+                Utils.logException(e);
             }
         }
         return loaded;

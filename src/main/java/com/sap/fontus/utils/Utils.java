@@ -35,6 +35,11 @@ public final class Utils {
         }
     }
 
+    public static void logException(Exception ex) {
+        logger.error("Exception {}: {}", ex.getClass().getName(), ex.getMessage());
+        logStackTrace(Arrays.asList(ex.getStackTrace()));
+    }
+
     public static void logStackTrace(List<StackTraceElement> stackTrace) {
         List<String> stackTraceStrings = convertStackTrace(stackTrace);
         for (String ste: stackTraceStrings) {
