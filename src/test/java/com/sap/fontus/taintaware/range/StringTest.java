@@ -66,10 +66,13 @@ public class StringTest {
     }
 
     @Test
-    public void testReplaceIssue() {
+    public void replacementWithBackreference() {
         IASString source = new IASString("java.lang.Object.equals(java.lang.Object)");
-        IASString target = source.trim().replaceAll(new IASString("\\s*([\\.,\\(\\)\\[\\]])\\s*"), new IASString( "$1"));
-        assertEquals(source, target);
+        IASString regex = new IASString("\\s*([\\.,\\(\\)\\[\\]])\\s*");
+        IASString replacement = new IASString( "$1");
+        IASString result = source.trim().replaceAll(regex, replacement);
+        String resultOriginal = source.getString().trim().replaceAll(regex.getString(), replacement.getString());
+        assertEquals(resultOriginal, result.getString());
     }
 
     @Test
