@@ -182,10 +182,11 @@ public class IASProxyProxyBuilder {
             mv.visitLdcInsn(method.getParameterCount());
             mv.visitTypeInsn(Opcodes.ANEWARRAY, Utils.getInternalName(Object.class));
 
+            int registerIndex = 1;
             for (int i = 0; i < args.length; i++) {
                 mv.visitInsn(Opcodes.DUP);
                 mv.visitLdcInsn(i);
-                loadAndWrapParameter(mv, method.getParameterTypes()[i], i + 1);
+                registerIndex += this.loadAndWrapParameter(mv, method.getParameterTypes()[i], registerIndex);
                 mv.visitInsn(Opcodes.AASTORE);
             }
         } else {
@@ -230,7 +231,7 @@ public class IASProxyProxyBuilder {
         }
     }
 
-    private void loadAndWrapParameter(MethodVisitor mv, Class<?> arg, int registerIndex) {
+    private int loadAndWrapParameter(MethodVisitor mv, Class<?> arg, int registerIndex) {
         if (arg.isPrimitive()) {
             int opcode = Type.getType(arg).getOpcode(Opcodes.ILOAD);
             Class<?> wrapper = primitiveToWrapper(arg);
@@ -239,6 +240,7 @@ public class IASProxyProxyBuilder {
         } else {
             mv.visitVarInsn(Opcodes.ALOAD, registerIndex);
         }
+        return Type.getType(arg).getSize();
     }
 
     private Class<?> primitiveToWrapper(Class<?> cls) {
