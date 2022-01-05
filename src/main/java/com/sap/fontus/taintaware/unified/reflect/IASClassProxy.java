@@ -35,11 +35,15 @@ public class IASClassProxy {
     }
 
     public static IASMethod getEnclosingMethod(Class cls) throws SecurityException {
-        return IASReflectRegistry.getInstance().map(cls.getEnclosingMethod());
+        Method m = cls.getEnclosingMethod();
+        if(m == null) { return null; }
+        return IASReflectRegistry.getInstance().map(m);
     }
 
     public static IASConstructor<?> getEnclosingConstructor(Class cls) throws SecurityException {
-        return IASReflectRegistry.getInstance().map(cls.getEnclosingConstructor());
+        Constructor<?> c = cls.getEnclosingConstructor();
+        if(c == null) { return null; }
+        return IASReflectRegistry.getInstance().map(c);
     }
 
     public static IASField[] getFields(Class cls) throws SecurityException {
