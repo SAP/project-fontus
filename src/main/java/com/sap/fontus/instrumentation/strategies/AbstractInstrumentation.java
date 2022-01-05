@@ -7,12 +7,10 @@ import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.instrumentation.InstrumentationHelper;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
-import com.sap.fontus.utils.ReflectionUtils;
 import com.sap.fontus.utils.Utils;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.*;
 
-import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -89,10 +87,11 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     @Override
     public FunctionCall rewriteOwnerMethod(FunctionCall functionCall) {
         boolean isInstrumentable = Type.getObjectType(functionCall.getOwner()).equals(this.origType);
-        boolean isArrayInstrumentable = Type.getObjectType(functionCall.getOwner()).equals(this.getOrigArrayType());
+        //boolean isArrayInstrumentable = Type.getObjectType(functionCall.getOwner()).equals(this.getOrigArrayType());
+        boolean isArrayInstrumentable = Type.getObjectType(functionCall.getOwner()).getSort() == Type.ARRAY && Type.getObjectType(functionCall.getOwner()).getElementType().equals(this.origType);
         if (isInstrumentable || isArrayInstrumentable) {
             Descriptor newDescriptor = this.instrumentationHelper.instrument(functionCall.getParsedDescriptor());
-            String newOwner = isArrayInstrumentable ? this.getInstrumentedArrayType().getInternalName() : this.instrumentedType.getInternalName();
+            String newOwner = isArrayInstrumentable ? this.getInstrumentedArrayType(Type.getObjectType(functionCall.getOwner()).getDimensions()).getInternalName() : this.instrumentedType.getInternalName();
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up
             String newName = this.methodsToRename.getOrDefault(functionCall.getName(), functionCall.getName());
 
@@ -113,7 +112,7 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
 
     private void arrayOrigToTainted(MethodVisitor mv) {
         mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
-        mv.visitTypeInsn(Opcodes.CHECKCAST, this.getInstrumentedArrayType().getInternalName());
+        mv.visitTypeInsn(Opcodes.CHECKCAST, this.getInstrumentedArrayType(1).getInternalName());
     }
 
     protected void origToTainted(MethodVisitor mv) {
@@ -206,14 +205,14 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     }
 
     protected Type getOrigArrayType() {
-        return this.getArrayType(this.origType);
+        return AbstractInstrumentation.getArrayType(this.origType, this.origType.getDimensions());
     }
 
-    private Type getArrayType(Type type) {
-        return Type.getType("[" + type);
+    private static Type getArrayType(Type type, int dimensions) {
+        return Type.getType("[".repeat(dimensions) + type);
     }
 
-    protected Type getInstrumentedArrayType() {
-        return this.getArrayType(this.instrumentedType);
+    protected Type getInstrumentedArrayType(int dimensions) {
+        return AbstractInstrumentation.getArrayType(this.instrumentedType, dimensions);
     }
 }

@@ -28,7 +28,7 @@ public class StringInstrumentation extends AbstractInstrumentation {
     public boolean handleLdcArray(MethodVisitor mv, Type type) {
         Type stringArray = Type.getType(String[].class);
         if (stringArray.equals(type)) {
-            Type taintStringArray = this.getInstrumentedArrayType();
+            Type taintStringArray = this.getInstrumentedArrayType(1);
             mv.visitLdcInsn(taintStringArray);
             return true;
         }
