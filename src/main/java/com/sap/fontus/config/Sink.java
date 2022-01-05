@@ -3,7 +3,6 @@ package com.sap.fontus.config;
 import com.sap.fontus.asm.FunctionCall;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-import sun.security.x509.AttributeNameEnumeration;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
