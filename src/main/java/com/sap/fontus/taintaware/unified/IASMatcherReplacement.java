@@ -99,6 +99,9 @@ public final class IASMatcherReplacement {
                         if (Character.isDigit(c)) {
                             indexedParsing = true;
                             groupIndex = Character.getNumericValue(c);
+                            if(i+1 == repl.length()) { // Handle replacement at end of string
+                                groups.put(groupIndex, emptyBuilder.length());
+                            }
                         } else if (c == '{') {
                             namedParsing = true;
                         } else {
