@@ -5,8 +5,7 @@ import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.*;
 import com.sap.fontus.utils.stats.Statistics;
 
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.stream.IntStream;
@@ -14,7 +13,7 @@ import java.util.stream.Stream;
 
 
 @SuppressWarnings("ALL")
-public final class IASString implements IASTaintAware, Comparable<IASString>, CharSequence, Serializable {
+public final class IASString implements IASTaintAware, Comparable<IASString>, CharSequence, Externalizable {
     private final static String SPLIT_LINE_REGEX = "(\\r|\\n|\\r\\n)";
     private static final long serialVersionUID = 1337L;
     private String string;
@@ -720,6 +719,18 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     public static final Comparator<IASString> CASE_INSENSITIVE_ORDER
             = new CaseInsensitiveComparator();
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeUTF(this.string);
+        out.writeObject(this.taintInformation);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        this.string = in.readUTF();
+        this.taintInformation = (IASTaintInformationable) in.readObject();
+    }
 
     private static class CaseInsensitiveComparator
             implements Comparator<IASString>, java.io.Serializable {

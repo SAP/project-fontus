@@ -1,6 +1,8 @@
 package com.sap.fontus.taintaware.shared;
 
-public interface IASTaintMetadata {
+import java.io.Serializable;
+
+public interface IASTaintMetadata extends Serializable {
 
     public IASTaintSource getSource();
 

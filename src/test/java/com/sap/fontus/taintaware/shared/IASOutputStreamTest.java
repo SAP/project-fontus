@@ -22,7 +22,7 @@ public class IASOutputStreamTest {
     }
 
     @Test
-    void testTaintedStringRoundtrip() throws Exception {
+    void testTaintableStringRoundtrip() throws Exception {
         Widget w = Widget.makeWidget();
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(os);
@@ -34,7 +34,20 @@ public class IASOutputStreamTest {
         Widget w2 = (Widget) iis.readObject();
         assertEquals(w, w2);
     }
-
+    @Test
+    void testTaintedStringRoundtrip() throws Exception {
+        Widget w = Widget.makeWidget();
+        w.setValue(IASString.tainted(w.getValue()));
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(os);
+        oos.writeObject(w);
+        oos.close();
+        byte[] bytes = os.toByteArray();
+        ByteArrayInputStream is = new ByteArrayInputStream(bytes);
+        IASObjectInputStream iis = new IASObjectInputStream(is);
+        Widget w2 = (Widget) iis.readObject();
+        assertEquals(w, w2);
+    }
     static class Widget implements Serializable {
         private static final long serialVersionUID = 888L;
 

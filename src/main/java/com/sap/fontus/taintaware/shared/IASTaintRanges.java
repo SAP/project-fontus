@@ -1,8 +1,9 @@
 package com.sap.fontus.taintaware.shared;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class IASTaintRanges implements Iterable<IASTaintRange> {
+public class IASTaintRanges implements Iterable<IASTaintRange>, Serializable {
     private int length;
     protected List<IASTaintRange> ranges;
 

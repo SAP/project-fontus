@@ -2,15 +2,16 @@ package com.sap.fontus.taintaware.shared;
 
 import com.sap.fontus.utils.NamedObject;
 
+import java.io.*;
 import java.util.*;
 
 /**
  * Created by d059349 on 15.07.17.
  */
-public class IASTaintSource implements NamedObject {
+public class IASTaintSource implements NamedObject, Externalizable {
 
-    private final String name;
-    private final int id;
+    private String name;
+    private int id;
 
     public IASTaintSource() {
         this.name = "DEFAULT";
@@ -59,5 +60,17 @@ public class IASTaintSource implements NamedObject {
 
     public int getId() {
         return this.id;
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeUTF(this.name);
+        out.writeInt(this.id);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        this.name = in.readUTF();
+        this.id = in.readInt();
     }
 }
