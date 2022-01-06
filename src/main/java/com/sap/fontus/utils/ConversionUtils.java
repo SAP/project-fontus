@@ -390,7 +390,8 @@ public class ConversionUtils {
 
         @Override
         public boolean canConvert(Object o) {
-            return o instanceof List;
+            // TODO: evil hack to prevent infinite recursion for hibernate collection classes
+            return o instanceof List && !o.getClass().getPackage().getName().equals("org.hibernate.collection.internal");
         }
 
         @Override
