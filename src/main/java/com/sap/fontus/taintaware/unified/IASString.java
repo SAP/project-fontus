@@ -5,6 +5,7 @@ import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.*;
 import com.sap.fontus.utils.stats.Statistics;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.*;
@@ -13,9 +14,9 @@ import java.util.stream.Stream;
 
 
 @SuppressWarnings("ALL")
-public final class IASString implements IASTaintAware, Comparable<IASString>, CharSequence {
+public final class IASString implements IASTaintAware, Comparable<IASString>, CharSequence, Serializable {
     private final static String SPLIT_LINE_REGEX = "(\\r|\\n|\\r\\n)";
-
+    private static final long serialVersionUID = 1337L;
     private String string;
     private IASTaintInformationable taintInformation;
 
