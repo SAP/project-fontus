@@ -33,7 +33,7 @@ main() {
   for jar_folder in "${JAR_FOLDERS[@]}"; do
     echo "Building jar in '${jar_folder}'!"
     cd "${jar_folder}" || _die "Folder named '${jar_folder}' does not exist in '$(pwd)'! Quitting!"
-    bash build.sh
+    MAVEN_OPTS="-Dorg.slf4j.simpleLogger.defaultLogLevel=warn" bash build.sh
     _cd_out || _die "Can't cd back out of '${jar_folder}' in '$(pwd)'! Quitting!"
   done
 }
