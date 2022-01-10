@@ -465,6 +465,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private void generateBootstrapMethods() {
         List<DynamicCall> filtered = new ArrayList<>();
 
+        // TODO: Refactor this piece of code to get rid of the continue <label>
         outer:
         for (DynamicCall dynamicCall : this.bootstrapMethods) {
             for (DynamicCall existing : filtered) {
