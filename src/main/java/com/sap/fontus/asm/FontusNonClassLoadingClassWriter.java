@@ -1,5 +1,6 @@
 package com.sap.fontus.asm;
 
+import com.sap.fontus.instrumentation.InstrumentationHelper;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.mutabilitydetector.asm.NonClassloadingClassWriter;
 import org.mutabilitydetector.asm.typehierarchy.TypeHierarchyReader;
@@ -31,8 +32,8 @@ public class FontusNonClassLoadingClassWriter extends NonClassloadingClassWriter
         String result = super.getCommonSuperClass(type1, type2);
 
         // TODO: Consider how to make this nicer to use/more generic
-        if(!this.combinedExcludedLookup.isPackageExcludedOrJdk(type1) && !this.combinedExcludedLookup.isPackageExcludedOrJdk(type2) && "java/io/ObjectInputStream".equals(result)) {
-            result = "com/sap/fontus/taintaware/unified/IASObjectInputStream";
+        if(!this.combinedExcludedLookup.isPackageExcludedOrJdk(type1) && !this.combinedExcludedLookup.isPackageExcludedOrJdk(type2)) {
+            result = new InstrumentationHelper().instrumentSuperClass(result);
         }
         //System.out.printf("Common super of: %s <-> %s: %s%n", type1, type2, result);
         return result;
