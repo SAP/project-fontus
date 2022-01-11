@@ -1,10 +1,12 @@
 package com.sap.fontus.instrumentation;
 
 import com.sap.fontus.asm.ClassResolver;
+import com.sap.fontus.asm.FontusNonClassLoadingClassWriter;
 import com.sap.fontus.asm.TypeHierarchyReaderWithLoaderSupport;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
+import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.mutabilitydetector.asm.NonClassloadingClassWriter;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -24,8 +26,9 @@ public class Instrumenter {
     }
 
     private static byte[] instrumentInternal(ClassReader cr, ClassResolver resolver, Configuration config, ClassLoader loader, boolean containsJSRRET) {
-        NonClassloadingClassWriter writer = new NonClassloadingClassWriter(cr, ClassWriter.COMPUTE_FRAMES, new TypeHierarchyReaderWithLoaderSupport(resolver));
-        ClassTaintingVisitor smr = new ClassTaintingVisitor(writer, resolver, config, loader, containsJSRRET);
+        CombinedExcludedLookup excludedLookup = new CombinedExcludedLookup(loader);
+        FontusNonClassLoadingClassWriter writer = new FontusNonClassLoadingClassWriter(cr, ClassWriter.COMPUTE_FRAMES, new TypeHierarchyReaderWithLoaderSupport(resolver), excludedLookup);
+        ClassTaintingVisitor smr = new ClassTaintingVisitor(writer, resolver, config, loader, containsJSRRET, excludedLookup);
         cr.accept(smr, ClassReader.SKIP_FRAMES);
         String clazzName = cr.getClassName();
         String superName = cr.getSuperName();

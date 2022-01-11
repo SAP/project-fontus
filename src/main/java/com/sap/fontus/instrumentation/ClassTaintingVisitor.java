@@ -58,7 +58,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private final List<LambdaCall> jdkLambdaMethodProxies = new ArrayList<>();
     private final InstrumentationHelper instrumentationHelper;
 
-    public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config, ClassLoader loader, boolean containsJSRRET) {
+    public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config, ClassLoader loader, boolean containsJSRRET, CombinedExcludedLookup excludedLookup) {
         super(Opcodes.ASM9, cv);
         this.visitor = cv;
         this.staticFinalFields = new ArrayList<>();
@@ -71,7 +71,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.newMainDescriptor = "(" + Type.getDescriptor(IASString[].class) + ")V";
         this.fillBlacklist();
         this.signatureInstrumenter = new SignatureInstrumenter(this.api, this.instrumentationHelper);
-        this.combinedExcludedLookup = new CombinedExcludedLookup(loader);
+        this.combinedExcludedLookup = excludedLookup;
     }
 
     private void fillBlacklist() {
