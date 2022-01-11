@@ -52,6 +52,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
     private final CombinedExcludedLookup combinedExcludedLookup;
     private final List<DynamicCall> bootstrapMethods;
+    private final SignatureInstrumenter signatureInstrumenter;
 
     /**
      * If a method which is part of an interface should be proxied, place it here
@@ -74,6 +75,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.name = name;
         this.methodDescriptor = methodDescriptor;
         this.instrumentationHelper = instrumentationHelper;
+        this.signatureInstrumenter = new SignatureInstrumenter(this.api, this.instrumentationHelper);
         this.implementsInvocationHandler = implementsInvocationHandler;
         this.methodProxies = new HashMap<>();
         this.methodInterfaceProxies = new HashMap<>();
@@ -88,6 +90,10 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
     @Override
     public void visitLocalVariable(String name, String descriptor, String signature, Label start, Label end, int index) {
+        // TODO: Why do we ignore this?
+        //String desc = this.instrumentationHelper.instrumentQN(descriptor);
+        //String sig = this.signatureInstrumenter.instrumentSignature(signature);
+        //System.out.printf("Local var: %s: %s [%s] -> %s [%s]%n", name, descriptor, signature, desc, sig);
         super.visitLocalVariable(name, descriptor, signature, start, end, index);
     }
 
