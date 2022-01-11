@@ -13,6 +13,11 @@
       "entry_point": "Example"
     },
     {
+      "name": "log4j",
+      "jar_file": "log4j.jar",
+      "entry_point": "Example"
+    },
+    {
       "name": "objenesis",
       "jar_file": "objenesis.jar",
       "entry_point": "Example"

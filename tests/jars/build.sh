@@ -25,6 +25,7 @@ JAR_FOLDERS=(
     annotation_test
     deserialization
     logback
+    log4j
     objenesis
     reflected_constructor
 )
