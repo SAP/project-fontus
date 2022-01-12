@@ -1,10 +1,9 @@
 #!/bin/bash
 
 main() {
-  javac ./*.java
-  jar cfe reflected_constructor.jar Main ./*.class
-  rm ./*.class
-  cp reflected_constructor.jar ..
+  mvn package
+  cp "$(pwd)/target/reflected-constructor-0.1-SNAPSHOT-jar-with-dependencies.jar" ../reflected_constructor.jar
+  mvn clean
 }
 
 main
