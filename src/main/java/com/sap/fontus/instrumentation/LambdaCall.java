@@ -179,7 +179,7 @@ public class LambdaCall implements Serializable {
 
     public String getProxyMethodName() {
         CombinedExcludedLookup lookup = new CombinedExcludedLookup();
-        String name = "$fontus$" + hashCode() + "$";
+        String name = "$fontus$" + Math.abs(this.hashCode()) + "$";
         if ("<init>".equals(this.implementation.getName())) {
             if (lookup.isPackageExcludedOrJdk(this.implementation.getOwner())) {
                 name += this.implementation.getOwner().replace('/', '_') + "_$init$";
