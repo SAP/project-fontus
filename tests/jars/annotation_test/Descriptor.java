@@ -6,12 +6,12 @@ import java.lang.annotation.ElementType;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@interface Descriptor {
+public @interface Descriptor {
 
     String   value();
     String   name();
     int      age();
     String[] newNames();
     Class clazz() default String.class;
-
+    Class defaultClazz() default String.class;
 }

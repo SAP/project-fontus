@@ -141,6 +141,9 @@ public class IASMethod extends IASExecutable<Method> {
             } else if (this.original.getReturnType().isArray() && this.original.getReturnType().getComponentType().isAssignableFrom(String.class)) {
                 String[] result = (String[]) this.original.invoke(instance, parameters);
                 return IASStringUtils.convertStringArray(result);
+            }  else if (this.original.getReturnType().equals(Class.class)) {
+                Class result = (Class) this.original.invoke(instance, parameters);
+                return ConversionUtils.convertClassToConcrete(result);
             }
         } else if (lookup.isPackageExcludedOrJdk(Utils.getInternalName(this.original.getDeclaringClass())) || isWrapperForUninstrumentedMethod()) {
             Object[] converted = convertParametersToOriginal(parameters);
