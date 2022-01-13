@@ -602,6 +602,9 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public static IASString valueOf(Object obj) {
+        if(obj == null) {
+            return null;
+        }
         if (obj instanceof IASString) {
             return (IASString) obj;
         } else if (obj instanceof IASStringBuffer) {
