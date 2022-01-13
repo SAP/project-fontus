@@ -24,7 +24,7 @@ public class ConversionUtils {
     private static final List<Converter> instrumenter = Arrays.asList(
             new NullConverter(),
             new AlreadyTaintedConverter(),
-            new ClassConverter(ConversionUtils::convertClassToConcrete),
+            new ClassConverter((cls) -> cls),
             new TypeConverter(ConversionUtils::convertTypeToInstrumented),
             new DefaultConverter<>(String.class, IASString::valueOf),
             new DefaultConverter<>(StringBuilder.class, IASStringBuilder::fromStringBuilder),
