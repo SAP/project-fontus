@@ -219,8 +219,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/ClassLoader", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;", false),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassLoaderProxy.class), "getResourceAsStream", "(Ljava/lang/ClassLoader;Lcom/sap/fontus/taintaware/unified/IASString;)Ljava/io/InputStream;", false));
-        this.methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/ClassLoader", "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;", false),
-                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassLoaderProxy.class), "loadClass", "(Ljava/lang/ClassLoader;Lcom/sap/fontus/taintaware/unified/IASString;)Ljava/lang/Class;", false));
     }
 
     private void fillInterfaceProxies() {
