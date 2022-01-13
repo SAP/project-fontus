@@ -73,6 +73,10 @@ public class IASField extends IASAccessibleObject<Field> implements IASMember {
     }
 
     public Object get(Object obj) throws IllegalArgumentException, IllegalAccessException {
+        boolean canAccess = this.original.canAccess(obj);
+        if(!canAccess) {
+            this.original.setAccessible(true);
+        }
         return ConversionUtils.convertToInstrumented(this.original.get(obj));
     }
 
