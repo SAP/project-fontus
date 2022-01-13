@@ -5,10 +5,7 @@ import com.sap.fontus.utils.ConversionUtils;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Field;
-import java.lang.reflect.Member;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 
 public class IASField extends IASAccessibleObject<Field> implements IASMember {
     private static final CombinedExcludedLookup lookup = new CombinedExcludedLookup();
@@ -73,7 +70,8 @@ public class IASField extends IASAccessibleObject<Field> implements IASMember {
     }
 
     public Object get(Object obj) throws IllegalArgumentException, IllegalAccessException {
-        boolean canAccess = this.original.canAccess(obj);
+        // If trying to assess accessibility of a static field we have to pass null
+        boolean canAccess = this.original.canAccess(Modifier.isStatic(this.original.getModifiers()) ? null : obj);
         if(!canAccess) {
             this.original.setAccessible(true);
         }
