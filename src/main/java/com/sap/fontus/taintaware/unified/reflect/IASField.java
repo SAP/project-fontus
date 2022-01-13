@@ -68,8 +68,8 @@ public class IASField extends IASAccessibleObject<Field> implements IASMember {
         return this.original.toString();
     }
 
-    public String toGenericString() {
-        return this.original.toGenericString();
+    public IASString toGenericString() {
+        return  IASString.fromString(this.original.toGenericString());
     }
 
     public Object get(Object obj) throws IllegalArgumentException, IllegalAccessException {
