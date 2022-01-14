@@ -37,7 +37,18 @@ public class FontusNonClassLoadingClassWriter extends NonClassloadingClassWriter
     }
     @Override
     protected String getCommonSuperClass(String type1, String type2) {
-
+        //
+        // In some cases, the types are uninstrumented, so if they inherit from an instrumented type (e.g. IASProperties)
+        // the superclass found by the TypeHierarcyReader in getCommonSuperClass may be the uninstrumented version (e.g. Properties)
+        // This means that if getCommonSuperClass is called with IASProperties and a class extending IASProperties, the common
+        // Super class will not be IASProperties, but the parent of IASProperties (which is Hashtable). This messes up the stack
+        // types.
+        //
+        // To get around this, we first *uninstrument* the input types (only if neither are JDK classes) and then find the
+        // common supertype. Finally re-instrument the result to give e.g. IASProperties at the output.
+        //
+        // The bigger question is why the TypeHierarcyReader doesn't return the instrumented superclass...
+        //
         String type1Uninstrumented = helper.uninstrumentQN(type1);
         String type2Uninstrumented = helper.uninstrumentQN(type2);
 
