@@ -208,12 +208,12 @@ public class LambdaCall implements Serializable {
         if (this == o) return true;
         if (!(o instanceof LambdaCall)) return false;
         LambdaCall call = (LambdaCall) o;
-        return Objects.equals(functionalInterface, call.functionalInterface) && Objects.equals(implementation, call.implementation);
+        return Objects.equals(this.functionalInterface, call.functionalInterface) && Objects.equals(this.implementation, call.implementation) && Objects.equals(this.invokeDescriptor, call.invokeDescriptor);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(functionalInterface, implementation);
+        return Objects.hash(this.functionalInterface, this.implementation, this.invokeDescriptor);
     }
 
     public boolean isConstructorCall() {
