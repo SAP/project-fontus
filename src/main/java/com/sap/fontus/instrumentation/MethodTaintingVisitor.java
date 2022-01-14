@@ -544,6 +544,8 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             JdkMethodTransformer t = new JdkMethodTransformer(call, this.instrumentationHelper, this.config);
             transformer.addParameterTransformation(t);
             transformer.addReturnTransformation(t);
+        } else {
+            transformer.addParameterTransformation(new RegularParameterTransformer(call, this.instrumentationHelper, this.config));
         }
 
         // Add Source transformations
