@@ -153,59 +153,53 @@ public class ClassTraverser {
     }
 
 
-    private void discoverAllJdkInterfaces(List<String> interfacesToLookThrough, Set<String> result, TypeHierarchyReaderWithLoaderSupport typeHierarchyReader) {
+    private void discoverAllJdkInterfaces(Collection<String> interfacesToLookThrough, Set<String> result, TypeHierarchyReaderWithLoaderSupport typeHierarchyReader) {
         for (String interfaceName : interfacesToLookThrough) {
-            if (this.combinedExcludedLookup.isPackageExcludedOrJdk(interfaceName)) {
+            if (this.combinedExcludedLookup.isPackageExcludedOrJdk(interfaceName) || this.combinedExcludedLookup.isAnnotation(interfaceName)) {
                 result.add(interfaceName);
-            } else if (this.combinedExcludedLookup.isAnnotation(interfaceName)) {
-                result.add(interfaceName);
-                List<String> superInterfaces = typeHierarchyReader.hierarchyOf(Type.getObjectType(interfaceName)).getInterfaces().stream().map(Type::getInternalName).collect(Collectors.toList());
-                discoverAllJdkInterfaces(superInterfaces, result, typeHierarchyReader);
-            } else {
-                List<String> superInterfaces = typeHierarchyReader.hierarchyOf(Type.getObjectType(interfaceName)).getInterfaces().stream().map(Type::getInternalName).collect(Collectors.toList());
-                discoverAllJdkInterfaces(superInterfaces, result, typeHierarchyReader);
             }
+            // Always recurse through super interfaces (even for JDK classes)
+            // It can happen that a JDK abstract superclass implements a JDK interface
+            List<String> superInterfaces = typeHierarchyReader.hierarchyOf(Type.getObjectType(interfaceName)).getInterfaces().stream().map(Type::getInternalName).collect(Collectors.toList());
+            discoverAllJdkInterfaces(superInterfaces, result, typeHierarchyReader);
         }
     }
 
     /**
-     * This methods add all methods if the passed interface list to the method list, if the method isn't already contained or the interface is already implemented by the super type
+     * This method adds all methods if the passed interface list to the method list, if the method isn't already contained or the interface is already implemented by the super type
      * For determination if contained see {@link ClassTraverser#addMethodIfNotContained(Method)}
      *
      * @param superName                 Super class of the interface implementing one
      * @param directInheritedInterfaces Array with interface names as QN
      */
-    public void addNotContainedJdkInterfaceMethods(String superName, String[] directInheritedInterfaces, ClassResolver resolver, ClassLoader loader) {
+    public void addNotContainedJdkInterfaceMethods(String className, String superName, String[] directInheritedInterfaces, ClassResolver resolver, ClassLoader loader) {
         if (directInheritedInterfaces == null || directInheritedInterfaces.length == 0) {
             return;
         }
         TypeHierarchyReaderWithLoaderSupport typeHierarchyReader = new TypeHierarchyReaderWithLoaderSupport(resolver);
 
+        // Find all JDK interfaces directly implemented by the class
         Set<String> jdkOnly = new HashSet<>();
-        discoverAllJdkInterfaces(Arrays.asList(directInheritedInterfaces), jdkOnly, typeHierarchyReader);
+        Set<String> directInheritedSet = new HashSet<String>(Arrays.asList(directInheritedInterfaces));
+        discoverAllJdkInterfaces(directInheritedSet, jdkOnly, typeHierarchyReader);
 
+        // Find all interfaces implemented by the super class
         Set<Type> superInterfaces = new HashSet<>();
         for (Type cls = Type.getObjectType(superName); cls != null; cls = typeHierarchyReader.getSuperClass(cls)) {
             TypeHierarchy hierarchy = typeHierarchyReader.hierarchyOf(cls);
             superInterfaces.addAll(hierarchy.getInterfaces());
         }
-
+        // JDK Interfaces implemented by the super class
         Set<String> jdkSuperInterfaces = new HashSet<>();
         discoverAllJdkInterfaces(superInterfaces.stream().map(Type::getInternalName).collect(Collectors.toList()), jdkSuperInterfaces, typeHierarchyReader);
 
-        List<String> interfaces = new ArrayList<>();
-        for (String directImplI : jdkOnly) {
-            boolean isContainedInSuper = false;
-            for (String superI : jdkSuperInterfaces) {
-                if (superI.equals(directImplI)) {
-                    isContainedInSuper = true;
-                    break;
-                }
-            }
-            if (!isContainedInSuper) {
-                interfaces.add(directImplI);
-            }
-        }
+        // Combine directly implemented and super class interfaces
+        // Do not try to filter as we might have an abstract superclass which implements an interface but does not explicitly implement each method
+        Set<String> interfaces = new HashSet<>(jdkOnly);
+        interfaces.addAll(jdkSuperInterfaces);
+
+        //System.out.printf("Class: %s, Super: %s, Direct interfaces %s SuperInterfaces: %s JdkSuperInterfaces: %s Interfaces: %s%n",
+        //                  className, superName, directInheritedSet, superInterfaces, jdkSuperInterfaces, interfaces);
 
         for (String interfaceName : interfaces) {
             if (this.combinedExcludedLookup.isPackageExcludedOrJdk(interfaceName) || this.combinedExcludedLookup.isAnnotation(interfaceName)) {

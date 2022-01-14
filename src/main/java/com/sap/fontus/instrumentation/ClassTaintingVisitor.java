@@ -133,7 +133,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             if (this.extendsJdkSuperClass) {
                 classTraverser.readAllJdkMethods(this.superName, this.resolver);
             }
-            classTraverser.addNotContainedJdkInterfaceMethods(this.superName, this.interfaces, this.resolver, this.loader);
+            classTraverser.addNotContainedJdkInterfaceMethods(this.owner, this.superName, this.interfaces, this.resolver, this.loader);
         }
         this.jdkMethods = Collections.unmodifiableSet(classTraverser.getMethods());
     }
