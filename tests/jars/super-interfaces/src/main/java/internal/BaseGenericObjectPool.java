@@ -26,6 +26,7 @@ public class BaseGenericObjectPool<T> {
 
     public void close() {
         this.items.clear();
+        System.out.println("CLOSED");
     }
 
 
