@@ -28,6 +28,7 @@ JAR_FOLDERS=(
     log4j
     objenesis
     reflected_constructor
+    super-interfaces
 )
 
 main() {

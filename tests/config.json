@@ -18,6 +18,11 @@
       "entry_point": "Example"
     },
     {
+      "name": "Super Interfaces",
+      "jar_file": "super-interfaces.jar",
+      "entry_point": "Main"
+    },
+    {
       "name": "objenesis",
       "jar_file": "objenesis.jar",
       "entry_point": "Example"
