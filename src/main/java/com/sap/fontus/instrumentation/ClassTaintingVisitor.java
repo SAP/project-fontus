@@ -275,7 +275,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         if (lambdaCall.isPresent()) {
             opcode = lambdaCall.get().getImplementation().getOpcode();
         } else {
-            if ("<init>".equals(instrumentedName)) {
+            if (Constants.Init.equals(instrumentedName)) {
                 opcode = Opcodes.INVOKESPECIAL;
             } else {
                 opcode = Opcodes.INVOKEVIRTUAL;
