@@ -34,8 +34,10 @@ public final class IASStringUtils {
         }
     }
 
-    // Check if an Object is a String and convert to IASString
-    // TODO: make these conversions use the conversion Utils
+    /**
+     * Check if an Object is a String and convert to IASString
+     * TODO: make these conversions use the conversion Utils
+     */
     public static Object convertObject(Object obj) {
         if (obj == null) {
             return null;
@@ -46,8 +48,10 @@ public final class IASStringUtils {
         }
     }
 
-    // Check if an Object is an IASString and convert to String
-    // TODO: make these conversions use the conversion Utils
+    /**
+     * Check if an Object is an IASString and convert to String
+     * TODO: make these conversions use the conversion Utils
+     */
     public static Object convertTObject(Object obj) {
         if (obj == null) {
             return null;
