@@ -518,7 +518,7 @@ class ClassTaintingVisitor extends ClassVisitor {
                 .stream()
                 .filter(method -> !containsOverriddenJdkMethod(method))
                 .filter(method -> shouldBeInstrumented(method.getDescriptor()))
-                .filter(method -> !Modifier.isStatic(method.getAccess()))
+                //.filter(method -> !Modifier.isStatic(method.getAccess()))
                 .collect(Collectors.toList());
         methods.forEach(this::createInstrumentedJdkProxy);
     }
@@ -553,7 +553,13 @@ class ClassTaintingVisitor extends ClassVisitor {
         if (this.extendsJdkSuperClass) {
             // If this class extends a JDK class (ie we could not add an instrumented method to the superclass),
             // then create a proxy with instrumented arguments to the non-instrumented super class.
-            this.generateInstrumentedProxyToSuper(mv, m, originalDescriptor, instrumentedDescriptor);
+            if(Modifier.isStatic(m.getAccess())) {
+                logger.info("Creating static proxy for inherited, but not overridden JDK method " + m);
+                this.generateInstrumentedStaticProxyToSuper(mv, m, originalDescriptor, instrumentedDescriptor);
+            } else {
+                this.generateInstrumentedProxyToSuper(mv, m, originalDescriptor, instrumentedDescriptor);
+            }
+
         } else {
             // If the super class is not a JDK class, then an instrumented method will exist in the superclass,
             // which we can call as an instrumented method here
@@ -565,8 +571,55 @@ class ClassTaintingVisitor extends ClassVisitor {
         if (!Modifier.isFinal(m.getAccess())) {
             MethodVisitor mv2 = super.visitMethod(modifiers, m.getName(), originalDescriptor.toDescriptor(), signature, exceptions);
             // Create an uninstrumented proxy to the instrumented method in this class
-            this.generateProxyToInstrumented(mv2, m.getName(), originalDescriptor, null, Optional.empty());
+            if(Modifier.isStatic(m.getAccess())) {
+                logger.info("Creating static proxy for inherited, but not overridden JDK method " + m);
+                this.generateProxyToStaticInstrumented(mv2, m.getName(), originalDescriptor);
+            } else {
+                this.generateProxyToInstrumented(mv2, m.getName(), originalDescriptor, null, Optional.empty());
+            }
         }
+    }
+
+    private void generateProxyToStaticInstrumented(MethodVisitor mv, String instrumentedName, Descriptor originalDescriptor) {
+        Descriptor instrumentedDescriptor = this.instrumentationHelper.instrument(originalDescriptor);
+
+        mv.visitCode();
+
+        // TODO Handle lists
+        int register = 0;
+        int diff = originalDescriptor.parameterCount() - instrumentedDescriptor.parameterCount();
+        for (int i = 0; i < instrumentedDescriptor.parameterCount(); i++) {
+            String param = originalDescriptor.getParameters().get(i + diff);
+            mv.visitVarInsn(this.loadCodeByType(param), register);
+            if (this.isDescriptorNameToInstrument(param) && !param.equals(instrumentedDescriptor.getParameters().get(i))) {
+                Type instrumentedType = Type.getType(this.instrumentationHelper.instrumentQN(param));
+
+                if (Type.getType(param).equals(Type.getType(String.class))) {
+                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASString.class), Constants.FROM_STRING, Constants.FROM_STRING_DESCRIPTOR, false);
+                } else {
+                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
+                    mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedType.getInternalName());
+                }
+            }
+            register += Type.getType(param).getSize();
+        }
+
+
+
+
+
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.owner, instrumentedName, instrumentedDescriptor.toDescriptor(), false);
+        if (this.isDescriptorNameToInstrument(originalDescriptor.getReturnType())) {
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
+            mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(originalDescriptor.getReturnType()).getInternalName());
+        }
+
+
+        int returnCode = this.returnCodeByReturnType(originalDescriptor.getReturnType());
+
+        mv.visitInsn(returnCode);
+        mv.visitMaxs(originalDescriptor.parameterCount() + 1, originalDescriptor.parameterCount() + 1);
+        mv.visitEnd();
     }
 
     private void createBootstrapMethod(DynamicCall dynamicCall) {
@@ -611,7 +664,76 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitEnd();
     }
 
-    private void generateInstrumentedProxyToSuper(MethodVisitor mv, Method m, Descriptor origDescriptor, Descriptor instrumentedDescriptor) {
+    private void generateInstrumentedStaticProxyToSuper(MethodVisitor mv, Method m, Descriptor origDescriptor, Descriptor instrumentedDescriptor) {
+        // TODO Handle lists
+        mv.visitCode();
+        for (int i = 0; i < origDescriptor.parameterCount(); ) {
+            String param = origDescriptor.getParameters().get(i);
+            // Creating new Object if necessary and duplicating it for initialization
+            if (isDescriptorNameToInstrument(param)) {
+                mv.visitVarInsn(loadCodeByType(param), i);
+                Type instrumentedParam = Type.getType(this.instrumentationHelper.instrumentQN(param));
+                Type origParam = Type.getType(param);
+                int arrayDimensions = calculateDescArrayDimensions(param);
+                mv.visitInsn(Opcodes.DUP);
+                Label label = new Label();
+                mv.visitJumpInsn(Opcodes.IFNULL, label);
+                if (arrayDimensions == 0) {
+                    mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedParam.getInternalName());
+                    this.instrumentationHelper.insertJdkMethodParameterConversion(mv, origParam);
+//                    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, instrumentedParam.getInternalName(), this.getToOriginalMethod(param), new Descriptor(new String[]{}, param).toDescriptor(), false);
+                } else {
+                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
+                    mv.visitTypeInsn(Opcodes.CHECKCAST, origParam.getInternalName());
+                }
+                mv.visitLabel(label);
+                mv.visitTypeInsn(Opcodes.CHECKCAST, origParam.getInternalName());
+            } else {
+                mv.visitVarInsn(loadCodeByType(param), i);
+            }
+            i += Type.getType(param).getSize();
+        }
+
+        // Calling the actual method
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.superName, m.getName(), origDescriptor.toDescriptor(), false);
+
+        // Converting the return type back
+        if (isDescriptorNameToInstrument(origDescriptor.getReturnType())) {
+            Type returnType = Type.getType(this.instrumentationHelper.instrumentQN(origDescriptor.getReturnType()));
+
+            int arrayDimensions = calculateDescArrayDimensions(returnType.getInternalName());
+            if (arrayDimensions == 0) {
+                int resultLocalAddress = origDescriptor.parameterCount();
+                Label label1 = new Label();
+                Label label2 = new Label();
+                mv.visitInsn(Opcodes.DUP);
+                mv.visitJumpInsn(Opcodes.IFNULL, label1);
+
+                mv.visitVarInsn(Opcodes.ASTORE, resultLocalAddress); // this, params, free storage => 0 indexed
+                mv.visitTypeInsn(Opcodes.NEW, returnType.getInternalName());
+                mv.visitInsn(Opcodes.DUP);
+                mv.visitVarInsn(Opcodes.ALOAD, resultLocalAddress);
+                mv.visitMethodInsn(Opcodes.INVOKESPECIAL, returnType.getInternalName(), Constants.Init, new Descriptor(new String[]{origDescriptor.getReturnType()}, "V").toDescriptor(), false);
+
+                mv.visitJumpInsn(Opcodes.GOTO, label2);
+                mv.visitLabel(label1);
+
+                mv.visitInsn(Opcodes.POP);
+                mv.visitInsn(Opcodes.ACONST_NULL);
+
+                mv.visitLabel(label2);
+            } else {
+                mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
+                mv.visitTypeInsn(Opcodes.CHECKCAST, returnType.getInternalName());
+            }
+        }
+
+        mv.visitInsn(this.returnCodeByReturnType(instrumentedDescriptor.getReturnType()));
+        mv.visitMaxs(-1, -1);
+        mv.visitEnd();
+    }
+
+        private void generateInstrumentedProxyToSuper(MethodVisitor mv, Method m, Descriptor origDescriptor, Descriptor instrumentedDescriptor) {
         // TODO Handle lists
         mv.visitCode();
         // Converting parameters

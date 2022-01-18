@@ -89,6 +89,10 @@ public class MethodUtils {
 //        }
     }
 
+    public static boolean isPublicOrProtected(com.sap.fontus.instrumentation.Method m) {
+        return Modifier.isPublic(m.getAccess()) || Modifier.isProtected(m.getAccess());
+    }
+
     public static boolean isPublicOrProtectedNotStatic(com.sap.fontus.instrumentation.Method m) {
         return (Modifier.isPublic(m.getAccess()) || Modifier.isProtected(m.getAccess())) && !Modifier.isStatic(m.getAccess());
     }

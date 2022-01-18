@@ -120,10 +120,10 @@ public class ClassTraverser {
      * If a method is already contained is determined by the method name and descriptor (declaring class is NOT considered)
      */
     private void addMethodIfNotContained(Method methodToAdd) {
-        if (MethodUtils.isPublicOrProtectedNotStatic(methodToAdd)) {
+        if (MethodUtils.isPublicOrProtected(methodToAdd)) {
             boolean alreadyContained = methodList.stream().anyMatch(methodInMethods -> {
                 boolean nameEquals = methodToAdd.getName().equals(methodInMethods.getName());
-                boolean correctVisibility = MethodUtils.isPublicOrProtectedNotStatic(methodInMethods);
+                boolean correctVisibility = MethodUtils.isPublicOrProtected(methodInMethods);
                 boolean signatureEquals = Arrays.equals(methodToAdd.getParameterTypes(), methodInMethods.getParameterTypes());
                 return nameEquals && correctVisibility && signatureEquals;
             });
