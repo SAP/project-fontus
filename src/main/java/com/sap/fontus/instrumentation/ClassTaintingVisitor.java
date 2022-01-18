@@ -174,6 +174,8 @@ class ClassTaintingVisitor extends ClassVisitor {
         Method method = new Method(access, owner, name, descriptor, signature, exceptions, this.isInterface);
         String desc = descriptor;
         String newName = name;
+        // Purge all final methods
+        int instrumentedAccess = access & ~Modifier.FINAL;
 
         if (this.recording == null && isClInit(access, name, desc) && !this.inEnd) {
             logger.info("Recording static initializer");
@@ -210,7 +212,7 @@ class ClassTaintingVisitor extends ClassVisitor {
                 // If a not instrumented method has been instrumented and afterwards the same method with a instrumented descriptor occurs, it has to be ignored
                 return null;
             }
-            int newAccess = access & ~Opcodes.ACC_ABSTRACT;
+            int newAccess = instrumentedAccess & ~Opcodes.ACC_ABSTRACT;
             MethodVisitor v = super.visitMethod(newAccess, name, descriptor, signature, exceptions);
 
             this.overriddenJdkMethods.add(overriddenJdkSuperMethod(method));
@@ -223,12 +225,12 @@ class ClassTaintingVisitor extends ClassVisitor {
                 logger.info("Rewriting method signature {}{} to {}{}", name, descriptor, name, desc);
             }
             this.instrumentedMethods.add(new org.objectweb.asm.commons.Method(name, desc));
-            mv = super.visitMethod(access, name, desc, instrumentedSignature, exceptions);
+            mv = super.visitMethod(instrumentedAccess, name, desc, instrumentedSignature, exceptions);
         }
 
-        MethodTaintingVisitor mtv = new MethodTaintingVisitor(access, this.owner, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler, this.instrumentationHelper, this.combinedExcludedLookup, this.bootstrapMethods, this.jdkLambdaMethodProxies, this.superName, this.loader, this.isInterface);
+        MethodTaintingVisitor mtv = new MethodTaintingVisitor(instrumentedAccess, this.owner, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler, this.instrumentationHelper, this.combinedExcludedLookup, this.bootstrapMethods, this.jdkLambdaMethodProxies, this.superName, this.loader, this.isInterface);
         if (this.containsJSRRET) {
-            return new JSRInlinerAdapter(mtv, access, newName, desc, instrumentedSignature, exceptions);
+            return new JSRInlinerAdapter(mtv, instrumentedAccess, newName, desc, instrumentedSignature, exceptions);
         }
         return mtv;
     }
