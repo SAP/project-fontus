@@ -1,6 +1,9 @@
 package com.sap.fontus.asm;
 
 import com.sap.fontus.instrumentation.InstrumentationHelper;
+import com.sap.fontus.utils.LogUtils;
+import com.sap.fontus.utils.Logger;
+import com.sap.fontus.utils.Utils;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.mutabilitydetector.asm.NonClassloadingClassWriter;
 import org.mutabilitydetector.asm.typehierarchy.TypeHierarchyReader;
@@ -8,7 +11,11 @@ import org.objectweb.asm.ClassReader;
 
 import org.objectweb.asm.Type;
 
+import java.io.IOException;
+
 public class FontusNonClassLoadingClassWriter extends NonClassloadingClassWriter {
+    private static final Logger logger = LogUtils.getLogger();
+
     private final CombinedExcludedLookup combinedExcludedLookup;
     private final InstrumentationHelper helper;
 
@@ -51,19 +58,24 @@ public class FontusNonClassLoadingClassWriter extends NonClassloadingClassWriter
         //
         String type1Uninstrumented = helper.uninstrumentQN(type1);
         String type2Uninstrumented = helper.uninstrumentQN(type2);
+        try {
+            String resultInitial = super.getCommonSuperClass(type1Uninstrumented, type2Uninstrumented);
+            String result = resultInitial;
 
-        String resultInitial = super.getCommonSuperClass(type1Uninstrumented, type2Uninstrumented);
-        String result = resultInitial;
-
-        if(!this.combinedExcludedLookup.isPackageExcludedOrJdk(type1) && !this.combinedExcludedLookup.isPackageExcludedOrJdk(type2)) {
-            result = helper.instrumentQN(result);
-        } else {
-            result = super.getCommonSuperClass(type1, type2);
+            if (!this.combinedExcludedLookup.isPackageExcludedOrJdk(type1) && !this.combinedExcludedLookup.isPackageExcludedOrJdk(type2)) {
+                result = helper.instrumentQN(result);
+            } else {
+                result = super.getCommonSuperClass(type1, type2);
+            }
+            // System.out.printf("Common super of: %s (uninstrumented: %s super: %s) <-> %s (uninstrumented: %s super: %s): %s (initially %s)%n",
+            //                   type1, type1Uninstrumented, typeHierarchyReader.getSuperClass(Type.getObjectType(type1)),
+            //                   type2, type2Uninstrumented, typeHierarchyReader.getSuperClass(Type.getObjectType(type2)),
+            //                   result, resultInitial);
+            return result;
+        } catch(Exception e) {
+            logger.warn("Can't determine common superclass of %s and %s as one of them can't be loaded. Returning Object..", type1, type2);
+            Utils.logException(e);
+            return "java/lang/Object";
         }
-        // System.out.printf("Common super of: %s (uninstrumented: %s super: %s) <-> %s (uninstrumented: %s super: %s): %s (initially %s)%n",
-        //                   type1, type1Uninstrumented, typeHierarchyReader.getSuperClass(Type.getObjectType(type1)),
-        //                   type2, type2Uninstrumented, typeHierarchyReader.getSuperClass(Type.getObjectType(type2)),
-        //                   result, resultInitial);
-        return result;
     }
 }

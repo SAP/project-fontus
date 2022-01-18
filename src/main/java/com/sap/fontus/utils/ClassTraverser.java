@@ -160,8 +160,14 @@ public class ClassTraverser {
             }
             // Always recurse through super interfaces (even for JDK classes)
             // It can happen that a JDK abstract superclass implements a JDK interface
-            List<String> superInterfaces = typeHierarchyReader.hierarchyOf(Type.getObjectType(interfaceName)).getInterfaces().stream().map(Type::getInternalName).collect(Collectors.toList());
-            discoverAllJdkInterfaces(superInterfaces, result, typeHierarchyReader);
+            try {
+                List<String> superInterfaces = typeHierarchyReader.hierarchyOf(Type.getObjectType(interfaceName)).getInterfaces().stream().map(Type::getInternalName).collect(Collectors.toList());
+                discoverAllJdkInterfaces(superInterfaces, result, typeHierarchyReader);
+            } catch(Exception e) {
+                // Class might be an optional dependency, continuing
+                logger.debug("Skipped recursing further into {} due to Exception", interfaceName);
+                Utils.logException(e);
+            }
         }
     }
 
@@ -185,9 +191,21 @@ public class ClassTraverser {
 
         // Find all interfaces implemented by the super class
         Set<Type> superInterfaces = new HashSet<>();
+        try {
         for (Type cls = Type.getObjectType(superName); cls != null; cls = typeHierarchyReader.getSuperClass(cls)) {
-            TypeHierarchy hierarchy = typeHierarchyReader.hierarchyOf(cls);
-            superInterfaces.addAll(hierarchy.getInterfaces());
+            try {
+                TypeHierarchy hierarchy = typeHierarchyReader.hierarchyOf(cls);
+                superInterfaces.addAll(hierarchy.getInterfaces());
+            } catch(Exception e) {
+                // Class might be an optional dependency, continuing
+                logger.debug("Skipped recursing further into {} due to Exception", cls.getClassName());
+                Utils.logException(e);
+            }
+        }
+        } catch(Exception e) {
+            // Class might be an optional dependency, continuing
+            logger.debug("Skipped superclass extraction for into {} due to Exception", className);
+            Utils.logException(e);
         }
         // JDK Interfaces implemented by the super class
         Set<String> jdkSuperInterfaces = new HashSet<>();
