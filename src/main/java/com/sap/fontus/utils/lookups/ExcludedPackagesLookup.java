@@ -4,8 +4,11 @@ import com.sap.fontus.config.Configuration;
 
 public class ExcludedPackagesLookup {
     public static boolean isExcluded(String internalName) {
+        boolean isInnerClass = internalName.contains("$");
         for (String excludedPackage : Configuration.getConfiguration().getExcludedPackages()) {
-            if (internalName.startsWith(excludedPackage)) {
+            if (isInnerClass && internalName.startsWith(excludedPackage)) {
+                return true;
+            } else if(!isInnerClass && internalName.equals(excludedPackage)) {
                 return true;
             }
         }
