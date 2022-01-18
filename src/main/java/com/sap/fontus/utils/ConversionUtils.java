@@ -8,6 +8,7 @@ import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import sun.reflect.generics.reflectiveObjects.GenericArrayTypeImpl;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
+import java.io.ObjectInputStream;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -97,6 +98,7 @@ public class ConversionUtils {
         toOrigClass.put(IASMember.class, Member.class);
         toOrigClass.put(IASMethod.class, Method.class);
         toOrigClass.put(IASParameter.class, Parameter.class);
+        toOrigClass.put(IASObjectInputStream.class, ObjectInputStream.class);
 
         toConcreteClass.put(String.class, IASString.class);
         toConcreteClass.put(StringBuilder.class, IASStringBuilder.class);
