@@ -18,6 +18,11 @@
       "entry_point": "Example"
     },
     {
+      "name": "ical4j",
+      "jar_file": "ical4j.jar",
+      "entry_point": "Main"
+    },
+    {
       "name": "Super Interfaces",
       "jar_file": "super-interfaces.jar",
       "entry_point": "Main"
@@ -83,6 +88,10 @@
     {
       "name": "Concat Tests",
       "source": "ConcatTests.java"
+    },
+    {
+      "name": "Inheriting static methods",
+      "source": "MyTimeZone.java"
     },
     {
       "name": "Argument Tests",

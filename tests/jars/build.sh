@@ -29,6 +29,7 @@ JAR_FOLDERS=(
     objenesis
     reflected_constructor
     super-interfaces
+    ical4j
 )
 
 main() {
