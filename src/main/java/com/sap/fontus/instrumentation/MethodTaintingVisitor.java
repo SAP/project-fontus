@@ -537,6 +537,8 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         if (converter != null) {
             transformer.addReturnTransformation(new AlwaysApplyReturnGenericTransformer(converter));
         }
+        // Always apply transformation for the parameters as well (even JDK classes)
+        transformer.addParameterTransformation(new RegularParameterTransformer(call, this.instrumentationHelper, this.config));
 
         // Add JDK transformations
         if (isExcluded) {
@@ -544,8 +546,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             JdkMethodTransformer t = new JdkMethodTransformer(call, this.instrumentationHelper, this.config);
             transformer.addParameterTransformation(t);
             transformer.addReturnTransformation(t);
-        } else {
-            transformer.addParameterTransformation(new RegularParameterTransformer(call, this.instrumentationHelper, this.config));
         }
 
         // Add Source transformations

@@ -11,6 +11,20 @@
         <converter>
             <opcode>184</opcode>
             <owner>com/sap/fontus/taintaware/unified/IASStringUtils</owner>
+            <name>convertObject</name>
+            <descriptor>(Ljava/lang/Object;)Ljava/lang/Object;</descriptor>
+            <interface>false</interface>
+        </converter>
+        <converter>
+            <opcode>184</opcode>
+            <owner>com/sap/fontus/taintaware/unified/IASStringUtils</owner>
+            <name>convertTObject</name>
+            <descriptor>(Ljava/lang/Object;)Ljava/lang/Object;</descriptor>
+            <interface>false</interface>
+        </converter>
+        <converter>
+            <opcode>184</opcode>
+            <owner>com/sap/fontus/taintaware/unified/IASStringUtils</owner>
             <name>convertStringList</name>
             <descriptor>(Ljava/util/List;)Ljava/util/List;</descriptor>
             <interface>false</interface>
@@ -109,6 +123,21 @@
                 <conversion>
                     <converter>convertTStringToTStringHashTable</converter>
                     <index>1</index>
+                </conversion>
+            </conversions>
+        </takeGeneric>
+        <takeGeneric>
+            <function>
+                <opcode>184</opcode>
+                <owner>jdk/nashorn/api/scripting</owner>
+                <name>ScriptObjectMirror</name>
+                <descriptor>(Ljava/lang/Object;)Ljava/lang/Object;</descriptor>
+                <interface>false</interface>
+            </function>
+            <conversions>
+                <conversion>
+                    <converter>convertTObject</converter>
+                    <index>0</index>
                 </conversion>
             </conversions>
         </takeGeneric>

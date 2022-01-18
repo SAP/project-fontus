@@ -34,6 +34,30 @@ public final class IASStringUtils {
         }
     }
 
+    // Check if an Object is a String and convert to IASString
+    // TODO: make these conversions use the conversion Utils
+    public static Object convertObject(Object obj) {
+        if (obj == null) {
+            return null;
+        } else if (obj instanceof String) {
+            return IASString.fromString((String)obj);
+        } else {
+            return obj;
+        }
+    }
+
+    // Check if an Object is an IASString and convert to String
+    // TODO: make these conversions use the conversion Utils
+    public static Object convertTObject(Object obj) {
+        if (obj == null) {
+            return null;
+        } else if (obj instanceof IASString) {
+            return ((IASString) obj).getString();
+        } else {
+            return obj;
+        }
+    }
+
     public static List<IASString> convertStringList(List<String> lst) {
         List<IASString> alst = new ArrayList<>(lst.size());
         for(String s : lst) {
