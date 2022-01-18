@@ -23,22 +23,27 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     protected final CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup();
     protected final Pattern qnMatcher;
     protected final Pattern qnInstrumentedMatcher;
+    protected final Pattern qnMatcherWithDotsInsteadOfSlashes;
     protected final Type origType;
     protected final Type instrumentedType;
     protected final Pattern descPattern;
     protected final InstrumentationHelper instrumentationHelper;
     protected final HashMap<String, String> methodsToRename = new HashMap<>(1);
     protected final String taintedToOrig;
+    protected final String instrumentedTypeNameWithDots;
 
     public AbstractInstrumentation(Type origType, Type instrumentedType, InstrumentationHelper instrumentationHelper, String taintedToOrig) {
         this.origType = origType;
         this.instrumentedType = instrumentedType;
         this.qnMatcher = Pattern.compile(this.origType.getInternalName(), Pattern.LITERAL);
         this.qnInstrumentedMatcher = Pattern.compile(this.instrumentedType.getInternalName(), Pattern.LITERAL);
+        // This one is to match against the public class name with dots, e.g. "java.lang.String"
+        this.qnMatcherWithDotsInsteadOfSlashes = Pattern.compile(Utils.slashToDot(this.origType.getInternalName()), Pattern.LITERAL);
         this.descPattern = Pattern.compile(this.origType.getDescriptor());
         this.instrumentationHelper = instrumentationHelper;
         this.taintedToOrig = taintedToOrig;
         this.methodsToRename.put(Constants.ToString, Constants.TO_TSTRING);
+        this.instrumentedTypeNameWithDots = Utils.slashToDot(this.instrumentedType.getInternalName());
     }
 
     @Override
@@ -68,8 +73,12 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
 
     @Override
     public Optional<String> translateClassName(String className) {
-        if (className.equals(Utils.slashToDot(this.origType.getInternalName()))) {
-            return Optional.of(Utils.slashToDot(this.instrumentedType.getInternalName()));
+        String classNameWithSlashes = Utils.dotToSlash(className);
+        boolean isInstrumentable = Type.getObjectType(classNameWithSlashes).equals(this.origType);
+        boolean isArrayInstrumentable = Type.getObjectType(classNameWithSlashes).getSort() == Type.ARRAY && Type.getObjectType(classNameWithSlashes).getElementType().equals(this.origType);
+        if (isInstrumentable || isArrayInstrumentable) {
+            Matcher m = this.qnMatcherWithDotsInsteadOfSlashes.matcher(className);
+            return Optional.of(m.replaceAll(Matcher.quoteReplacement(this.instrumentedTypeNameWithDots)));
         }
         return Optional.empty();
     }
