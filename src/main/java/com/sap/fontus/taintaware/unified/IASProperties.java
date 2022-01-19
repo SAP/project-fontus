@@ -61,15 +61,15 @@ public class IASProperties extends Hashtable<Object, Object> {
     }
 
     public void save(OutputStream out, IASString comments) {
-        this.properties.save(out, comments.getString());
+        this.properties.save(out, comments == null ? null : comments.getString());
     }
 
     public void store(Writer writer, IASString comments) throws IOException {
-        this.properties.store(writer, comments.getString());
+        this.properties.store(writer, comments == null ? null :  comments.getString());
     }
 
     public void store(OutputStream out, IASString comments) throws IOException {
-        this.properties.store(out, comments.getString());
+        this.properties.store(out, comments == null ? null : comments.getString());
     }
 
     public synchronized void loadFromXML(InputStream in) throws IOException, InvalidPropertiesFormatException {
@@ -77,16 +77,16 @@ public class IASProperties extends Hashtable<Object, Object> {
     }
 
     public void storeToXML(OutputStream os, IASString comment) throws IOException {
-        this.properties.storeToXML(os, comment.getString());
+        this.properties.storeToXML(os,  comment == null ? null :  comment.getString());
     }
 
     public void storeToXML(OutputStream os, IASString comment, IASString encoding) throws IOException {
-        this.properties.storeToXML(os, comment.getString(), encoding.getString());
+        this.properties.storeToXML(os, comment == null ? null : comment.getString(), encoding.getString());
     }
 
     @SuppressWarnings("Since15")
     public void storeToXML(OutputStream os, IASString comment, Charset charset) throws IOException {
-        this.properties.storeToXML(os, comment.getString(), charset);
+        this.properties.storeToXML(os, comment == null ? null : comment.getString(), charset);
     }
 
     public IASString getProperty(IASString key) {
