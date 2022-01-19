@@ -286,6 +286,9 @@ public class IASClassProxy {
     }
 
     public static boolean isAssignableFrom(Class thisClass, Class toClass) {
+        if(thisClass.isAssignableFrom(toClass)) {
+            return true;
+        }
         Class thisConverted = ConversionUtils.convertClassToOrig(thisClass);
         Class toConverted = ConversionUtils.convertClassToOrig(toClass);
         return thisConverted.isAssignableFrom(toConverted);
