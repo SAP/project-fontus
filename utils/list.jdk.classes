@@ -1,0 +1,19 @@
+#!/bin/bash
+_die() {
+    [[ $1 ]] || {
+        printf >&2 -- 'Usage:\n\t_die <message> [return code]\n'
+        [[ $- == *i* ]] && return 1 || exit 1
+    }
+
+    printf >&2 -- '%s\n' "$1"
+    exit "${2:-1}"
+}
+
+JDK="${1:-/usr/lib/jvm/java-8-openjdk/src.zip}"
+if ! [[ -f "${JDK}" ]]; then
+  _die "No src.zip found at '$JDK', exiting.."
+fi
+
+unzip -l ${JDK} | grep "\.java$" | grep -v "\(module\|package\)-info\.java$" | awk '{ if ($4 ~ /\./) { print substr($4, index($4, "/")+1) } else { print $4 }}' | cut -f 1 -d '.'
+
+#unzip -l "${JDK}" | grep "\.java$" | grep -v "package-info\.java$" | awk '{print $4}' | cut -f 1 -d '.'
