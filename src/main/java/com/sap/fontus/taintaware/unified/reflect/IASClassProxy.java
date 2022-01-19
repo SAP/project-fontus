@@ -284,5 +284,11 @@ public class IASClassProxy {
 
         return Class.forName(clazz, initialize, loader);
     }
+
+    public static boolean isAssignableFrom(Class thisClass, Class toClass) {
+        Class thisConverted = ConversionUtils.convertClassToOrig(thisClass);
+        Class toConverted = ConversionUtils.convertClassToOrig(toClass);
+        return thisConverted.isAssignableFrom(toConverted);
+    }
 }
 
