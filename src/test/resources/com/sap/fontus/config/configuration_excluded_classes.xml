@@ -1,0 +1,5 @@
+<configuration>
+    <excludedClasses>
+        <excludedClass>org/apache/tomcat/jni/Foobar</excludedClass>
+    </excludedClasses>
+</configuration>

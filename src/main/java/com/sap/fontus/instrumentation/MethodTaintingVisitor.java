@@ -523,7 +523,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
     private boolean rewriteParametersAndReturnType(FunctionCall call) {
-        boolean isExcluded = this.combinedExcludedLookup.isJdkOrAnnotation(call.getOwner()) || this.combinedExcludedLookup.isPackageExcluded(call.getOwner());
+        boolean isExcluded = this.combinedExcludedLookup.isJdkOrAnnotation(call.getOwner()) || this.combinedExcludedLookup.isExcluded(call.getOwner());
 
         if (isExcluded) {
             String desc = this.instrumentationHelper.uninstrumentForJdkCall(call.getDescriptor());

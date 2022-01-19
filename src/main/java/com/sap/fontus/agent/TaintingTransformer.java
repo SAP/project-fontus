@@ -53,7 +53,7 @@ class TaintingTransformer implements ClassFileTransformer {
             return classfileBuffer;
         }
 
-        if (combinedExcludedLookup.isPackageExcluded(className)) {
+        if (combinedExcludedLookup.isExcluded(className)) {
             logger.info("Skipping excluded class: {}", className);
             return classfileBuffer;
         }
@@ -79,7 +79,7 @@ class TaintingTransformer implements ClassFileTransformer {
             }
             return outArray;
         } catch (Exception e) {
-            Configuration.getConfiguration().getExcludedPackages().add(className);
+            Configuration.getConfiguration().addExcludedClass(className);
             logger.error("Instrumentation failed for {}. Reason: {}. Class added to excluded classes!", className, e.getMessage());
             Utils.logStackTrace(Arrays.asList(e.getStackTrace()));
         }

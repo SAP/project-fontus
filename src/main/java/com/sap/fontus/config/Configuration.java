@@ -89,6 +89,10 @@ public class Configuration {
     @XmlElement(name = "excludedPackages")
     private final List<String> excludedPackages;
 
+    @JacksonXmlElementWrapper(localName = "excludedClasses")
+    @XmlElement(name = "excludedClasses")
+    private final List<String> excludedClasses;
+
     @JacksonXmlElementWrapper(localName = "resourcesToInstrument")
     @XmlElement(name = "resourcesToInstrument")
     private final List<String> resourcesToInstrument;
@@ -104,11 +108,12 @@ public class Configuration {
         this.takeGeneric = new ArrayList<>();
         this.blacklistedMainClasses = new ArrayList<>();
         this.excludedPackages = new ArrayList<>();
+        this.excludedClasses = new ArrayList<>();
         this.resourcesToInstrument = new ArrayList<>();
     }
 
     public Configuration(boolean verbose, SourceConfig sourceConfig, SinkConfig sinkConfig, List<Purpose> purposes, List<Vendor> vendors,
-                         List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> blacklistedMainClasses, List<String> excludedPackages, List<String> resourcesToInstrument) {
+                         List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> blacklistedMainClasses, List<String> excludedPackages, List<String> excludedClasses, List<String> resourcesToInstrument) {
         this.verbose = verbose;
         this.sourceConfig = sourceConfig;
         this.sinkConfig = sinkConfig;
@@ -119,6 +124,7 @@ public class Configuration {
         this.takeGeneric = takeGeneric;
         this.blacklistedMainClasses = blacklistedMainClasses;
         this.excludedPackages = excludedPackages;
+        this.excludedClasses = excludedClasses;
         this.resourcesToInstrument = resourcesToInstrument;
     }
 
@@ -134,6 +140,7 @@ public class Configuration {
             this.takeGeneric.addAll(other.takeGeneric);
             this.blacklistedMainClasses.addAll(other.blacklistedMainClasses);
             this.excludedPackages.addAll(other.excludedPackages);
+            this.excludedClasses.addAll(other.excludedClasses);
             this.resourcesToInstrument.addAll(other.resourcesToInstrument);
         }
     }
@@ -347,6 +354,9 @@ public class Configuration {
     public List<String> getExcludedPackages() {
         return excludedPackages;
     }
+    public List<String> getExcludedClasses() {
+        return excludedClasses;
+    }
 
     public List<String> getResourcesToInstrument() {
         return this.resourcesToInstrument;
@@ -450,6 +460,35 @@ public class Configuration {
         this.showWelcomeMessage = showWelcomeMessage;
     }
 
+    public void addExcludedClass(String clazzName) {
+        if(!isClass(clazzName)) {
+            System.out.printf("WARN: Trying to add %s as an excluded class. Classes should have the first letter capitalized and should not end with slashes!%n", clazzName);
+            return;
+        }
+        this.excludedClasses.add(clazzName);
+    }
+
+    public void addExcludedPackage(String pkgName) {
+        if(!isPackage(pkgName)) {
+            System.out.printf("WARN: Trying to add %s as an excluded package. Packages should end with slashes!%n", pkgName);
+            return;
+        }
+        this.excludedClasses.add(pkgName);
+    }
+
+    private static boolean isClass(String name) {
+        if(isPackage(name)) {
+            return false;
+        }
+        String[] parts = name.split("/");
+        String clazzName = parts[parts.length-1];
+        return name.substring(0, 1).equals(name.substring(0, 1).toUpperCase(Locale.ROOT));
+    }
+
+    private static boolean isPackage(String name) {
+        return name.endsWith("/");
+    }
+
     public String summary() {
         return "Configuration: " +
             getSourceConfig().getSources().size() + " sources and " +
@@ -481,6 +520,7 @@ public class Configuration {
                 ", takeGeneric=" + takeGeneric +
                 ", blacklistedMainClasses=" + blacklistedMainClasses +
                 ", excludedPackages=" + excludedPackages +
+                ", excludedClasses=" + this.excludedClasses +
                 ", resourcesToInstrument=" + resourcesToInstrument +
                 '}';
     }

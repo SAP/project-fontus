@@ -3,12 +3,23 @@ package com.sap.fontus.utils.lookups;
 import com.sap.fontus.config.Configuration;
 
 public class ExcludedPackagesLookup {
-    public static boolean isExcluded(String internalName) {
-        boolean isInnerClass = internalName.contains("$");
+    public static boolean isExcludedPackage(String internalName) {
         for (String excludedPackage : Configuration.getConfiguration().getExcludedPackages()) {
-            if (isInnerClass && internalName.startsWith(excludedPackage)) {
+            if(internalName.startsWith(excludedPackage)) {
                 return true;
-            } else if(!isInnerClass && internalName.equals(excludedPackage)) {
+            }
+        }
+        return false;
+    }
+
+    public static boolean isExcludedClass(String internalName) {
+        String clazzName = internalName;
+        if(clazzName.contains("$")) {
+            // TODO: is this sound? Trying to detect inner classes
+            clazzName = clazzName.split("\\$")[0];
+        }
+        for (String excludedClass : Configuration.getConfiguration().getExcludedClasses()) {
+            if(clazzName.equals(excludedClass)) {
                 return true;
             }
         }

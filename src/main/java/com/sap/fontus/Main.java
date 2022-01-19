@@ -121,7 +121,7 @@ public final class Main implements Callable<Void> {
                 if (jei.getName().endsWith(Constants.CLASS_FILE_SUFFIX) &&
                         !combinedExcludedLookup.isJdkClass(jei.getName()) &&
                         !combinedExcludedLookup.isFontusClass(jei.getName()) &&
-                        !combinedExcludedLookup.isPackageExcluded(jei.getName())
+                        !combinedExcludedLookup.isExcluded(jei.getName())
                 ) {
                     this.instrumentClassStream(jeis, jos);
                 } else {

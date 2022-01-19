@@ -33,11 +33,19 @@ public class CombinedExcludedLookup {
     }
 
     public boolean isPackageExcludedOrJdk(String internalName) {
-        return this.isJdkClass(internalName) || this.isPackageExcluded(internalName);
+        return this.isJdkClass(internalName) || this.isExcluded(internalName);
     }
 
-    public boolean isPackageExcluded(String internalName) {
-        return ExcludedPackagesLookup.isExcluded(internalName);
+    public boolean isExcluded(String internalName) {
+        return this.isPackageExcluded(internalName) || this.isClassExcluded(internalName);
+    }
+
+    private boolean isPackageExcluded(String internalName) {
+        return ExcludedPackagesLookup.isExcludedPackage(internalName);
+    }
+
+    private boolean isClassExcluded(String internalName) {
+        return ExcludedPackagesLookup.isExcludedClass(internalName);
     }
 
     public boolean isAnnotation(String internalName) {
