@@ -3,7 +3,7 @@
 .vscode
 build
 out
-
+.DS_Store
 # Vim YCM files
 bin
 .settings
