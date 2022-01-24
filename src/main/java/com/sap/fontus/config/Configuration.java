@@ -482,7 +482,7 @@ public class Configuration {
         }
         String[] parts = name.split("/");
         String clazzName = parts[parts.length-1];
-        return name.substring(0, 1).equals(name.substring(0, 1).toUpperCase(Locale.ROOT));
+        return clazzName.substring(0, 1).equals(clazzName.substring(0, 1).toUpperCase(Locale.ROOT));
     }
 
     private static boolean isPackage(String name) {
