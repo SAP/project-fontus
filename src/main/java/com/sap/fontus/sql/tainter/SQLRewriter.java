@@ -15,17 +15,19 @@ public class SQLRewriter {
 	private List<Taint> taints;
 	private String sqlString;
 	private static List<String> keyWords;
+	private static List<String> passThrough;
 
 	public static void main(String[] args) {
 		SQLRewriter rewriter = new SQLRewriter();
 
 		//array of commands that should be taken into account when creating the new sql file
-		String [] relevantSqlCommands = {"ALTER","CREATE","DELETE","INSERT",
-				"UPDATE","WITH","DROP","LOCK","UNLOCK", "SELECT"};
+		String[] relevantSqlCommands = {"ALTER", "CREATE", "DELETE", "INSERT",
+				"UPDATE", "WITH", "DROP", "LOCK", "UNLOCK", "SELECT"};
 		keyWords = Arrays.asList(relevantSqlCommands);
-
+		String[] passThroughCommands = {"LOCK", "UNLOCK"};
+		passThrough = Arrays.asList(passThroughCommands);
 		try {
-			rewriter.getInput(args[0]);
+			rewriter.readFile(args[0]);
 		} catch (Exception e) {
 			System.out.println("Yeah well that didnt work.");
 			e.printStackTrace();
@@ -39,83 +41,65 @@ public class SQLRewriter {
 		sqlString = "";
 	}
 
-	private void getInput() {
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		try {
-			sqlString = br.readLine();
-			sqlString = unescape(sqlString);
-			String taintedValue, taintCodes;
-			while ((taintedValue = br.readLine()) != null) {
-				taintedValue = unescape(taintedValue);
-				if ((taintCodes = br.readLine()) != null)
-					taints.add(new Taint(taintedValue, taintCodes));
-				else
-					taints.add(new Taint(taintedValue, ""));
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
+	private String taintStatement(String statement) {
+		if (passThrough.stream().anyMatch(statement.substring(0, statement.indexOf(' '))::equalsIgnoreCase)) {
+			return statement;
 		}
+		Statements stmts = null;
+		try {
+			stmts = CCJSqlParserUtil.parseStatements(statement);
+		} catch (JSQLParserException e) {
+			System.out.printf("Error parsing '%s': %s%n", statement, e);
+		}
+		StatementTainter tainter = new StatementTainter(this.taints);
+		System.out.println("Tainting: " + statement);
+		stmts.accept(tainter);
+		String taintedStatement = stmts.toString();
+		System.out.println("Tainted: " + taintedStatement);
+		//Map<Integer, Integer> map = tainter.getIndices();
+		//map.forEach((k,v) -> System.out.println("key: "+k+" value:"+v));
+		return taintedStatement;
 	}
 
-	private void getInput(String file) throws IOException {
+	private void readFile(String file) throws IOException {
 		BufferedReader br = null;
-		PrintStream pr = new PrintStream("tainted_" + file);
 		try {
 			br = new BufferedReader(new FileReader(file));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
+			return;
 		}
+		List<String> statements = new ArrayList<>();
 		try {
-			String line = null;
-			while((line = br.readLine()) != null ){
-				if(!(line.isEmpty() ||line.charAt(0)=='-' || line.charAt(0) == '/')) {
-					StringBuilder build = new StringBuilder();
-					//if (keyWords.contains(line.substring(0, line.indexOf(' ')))) {
-					if (keyWords.stream().anyMatch(line.substring(0, line.indexOf(' '))::equalsIgnoreCase)) {
-						build.append(line);
+			String line;
+			StringBuilder command = new StringBuilder();
+			boolean inCommand = true;
+			while ((line = br.readLine()) != null) {
+				if (line.isEmpty() || line.startsWith("-") || line.startsWith("/")) {
+					continue;
+				}
+				if (inCommand) {
+					command.append(line);
+				} else if (keyWords.stream().anyMatch(line.substring(0, line.indexOf(' '))::equalsIgnoreCase)) {
+					command.append(line);
+					inCommand = true;
+				}
+				if (line.endsWith(";")) {
+					inCommand = false;
+					if (command.length() > 0) {
+						statements.add(command.toString());
+						command = new StringBuilder();
 					}
-					while (!line.endsWith(";")) {
-						line = br.readLine();
-						//you may need to change this if the collate type varies
-						line = line.replace("COLLATE=utf8mb4_0900_ai_ci","");
-						build.append(line);
-					}
-					Statements stmts;
-					try {
-						stmts = CCJSqlParserUtil.parseStatements(build.toString());
-						StatementTainter tainter = new StatementTainter(taints);
-						System.out.println("Tainting: " + build.toString());
-						stmts.accept(tainter);
-						System.out.println("Tainted: " + stmts.toString());
-						Map<Integer, Integer> map = tainter.getIndices();
-						map.forEach((k,v) -> System.out.println("key: "+k+" value:"+v));
-						pr.println(stmts.toString());
-					} catch (JSQLParserException e) {
-						System.err.println(e.getMessage() + "\n" + e.getStackTrace() + "\n\n" + build.toString());
-						//pr.println(build.toString());
-					}
-				}else if(!line.isEmpty()&&line.charAt(0)!='-'){
-					pr.println(line);
 				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		PrintStream pr = new PrintStream("tainted_" + file);
+		for (String statement : statements) {
+			String tainted = this.taintStatement(statement);
+			pr.println(tainted);
+		}
 	}
 
-	private static String unescape(String str) {
-		return str.replace("\\\\", "\\").replace("\\n", "\n").replace("\\r", "\r");
-	}
-	
-	private String rewrite(){
-		Statements stmts;
-		try {
-			stmts = CCJSqlParserUtil.parseStatements(sqlString);
-			StatementTainter tainter = new StatementTainter(taints);
-			stmts.accept(tainter);
-		} catch (JSQLParserException e) {
-			throw new RuntimeException(e);
-		}
-		return stmts.toString();
-	}
 }
