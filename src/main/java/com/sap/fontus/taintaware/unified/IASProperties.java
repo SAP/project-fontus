@@ -12,13 +12,15 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class IASProperties extends Hashtable<Object, Object> {
+public class IASProperties extends Hashtable<Object, Object> implements Externalizable {
+    private static final long serialVersionUID = 1338L;
+
     /**
      * This is the single source of truth
      */
-    private final Properties properties;
+    private Properties properties;
 
-    private final Map<Object, IASString> shadow = new ConcurrentHashMap<>();
+    private Map<Object, IASString> shadow = new ConcurrentHashMap<>();
 
     public IASProperties() {
         this.properties = new Properties();
@@ -369,5 +371,17 @@ public class IASProperties extends Hashtable<Object, Object> {
 
     public Properties getProperties() {
         return properties;
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeObject(this.properties);
+        out.writeObject(this.shadow);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        this.properties = (Properties) in.readObject();
+        this.shadow = (Map<Object, IASString>) in.readObject();
     }
 }
