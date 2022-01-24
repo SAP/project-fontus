@@ -30,6 +30,7 @@ JAR_FOLDERS=(
     reflected_constructor
     super-interfaces
     ical4j
+    provider_tests
 )
 
 main() {

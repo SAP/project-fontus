@@ -8,6 +8,10 @@
       "arguments": ["./deserialized.dat"]
     },
     {
+      "name": "Inheriting from Provider",
+      "jar_file": "provider_tests.jar"
+    },
+    {
       "name": "logback",
       "jar_file": "logback.jar",
       "entry_point": "Example"
