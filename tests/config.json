@@ -76,6 +76,10 @@
   ],
   "single_file_tests": [
     {
+      "name": "Properties Serialization Roundtrip",
+      "source": "PropertiesSerializationRoundtrip.java"
+    },
+    {
       "name": "Cal",
       "source": "Cal.java",
       "arguments": ["nov", "2019"]
