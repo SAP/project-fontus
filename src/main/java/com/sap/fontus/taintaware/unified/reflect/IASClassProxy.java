@@ -239,7 +239,8 @@ public class IASClassProxy {
     }
 
     public static IASString getCanonicalName(Class<?> clazz) {
-        return new IASString(ConversionUtils.convertClassToOrig(clazz).getCanonicalName());
+        String canonicalName = ConversionUtils.convertClassToOrig(clazz).getCanonicalName();
+        return canonicalName != null ? new IASString(canonicalName) : null;
     }
 
     public static IASString getName(Class<?> clazz) {
