@@ -42,7 +42,8 @@ public class ConversionUtils {
             new DefaultConverter<>(Constructor.class, IASReflectRegistry.getInstance()::map),
             new DefaultConverter<>(Parameter.class, IASParameter::new),
             new ArrayConverter(ConversionUtils::convertToInstrumented, ConversionUtils::convertClassToConcrete),
-            new ListConverter(ConversionUtils::convertToInstrumented)
+            new ListConverter(ConversionUtils::convertToInstrumented),
+            new SetConverter(ConversionUtils::convertToInstrumented)
     );
 
     private static final List<Converter> uninstrumenter = Arrays.asList(
@@ -65,6 +66,7 @@ public class ConversionUtils {
             new DefaultConverter<>(IASParameter.class, IASParameter::getParameter),
             new ArrayConverter(ConversionUtils::convertToUninstrumented, ConversionUtils::convertClassToOrig),
             new ListConverter(ConversionUtils::convertToUninstrumented),
+            new SetConverter(ConversionUtils::convertToUninstrumented),
             new AlreadyUntaintedConverter()
     );
 
@@ -381,6 +383,47 @@ public class ConversionUtils {
         public Object convert(Object o) {
             return this.converter.apply((T) o);
         }
+    }
+
+    private static class SetConverter implements Converter {
+        private final Function<Object, Object> atomicConverter;
+
+        private SetConverter(Function<Object, Object> atomicConverter) {
+            this.atomicConverter = atomicConverter;
+        }
+
+        @Override
+        public boolean canConvert(Object o) {
+            // TODO: evil hack to prevent infinite recursion for hibernate collection classes
+            return o instanceof Set && !o.getClass().getPackage().getName().equals("org.hibernate.collection.internal");
+        }
+
+        @Override
+        public Object convert(Object o) {
+            if (o instanceof Set) {
+                Set<Object> set = (Set<Object>) o;
+                Set<Object> result = new HashSet<>();
+                boolean changed = false;
+                for (Object entry : set) {
+                    Object converted = this.atomicConverter.apply(entry);
+                    result.add(converted);
+                    if (!entry.equals(converted)) {
+                        changed = true;
+                    }
+
+                }
+                if (!changed) {
+                    return set;
+                }
+
+                if (set.getClass().getName().startsWith("java.util.Collections$Unmodifiable")) {
+                    result = Collections.unmodifiableSet(result);
+                }
+                return result;
+            }
+            return null;
+        }
+
     }
 
     private static class ListConverter implements Converter {
