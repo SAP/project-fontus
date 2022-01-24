@@ -2,6 +2,7 @@ package com.sap.fontus.sanitizer;
 
 import com.sap.fontus.taintaware.shared.IASTaintRange;
 import com.sap.fontus.taintaware.shared.IASTaintRanges;
+import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 import org.owasp.encoder.Encode;
 
@@ -39,6 +40,9 @@ public class Sanitization {
                 case "CMDi":
                     sanitizedString = sanitizeCommands(taintedString, taintRanges);
                     break;
+                case "LOG":
+                    sanitizedString = censorTaintedParts(taintedString, taintRanges);
+                    break;
                 case "LDAP":
                 case "XPATHi":
                 case "TRUSTBOUND":
@@ -48,6 +52,20 @@ public class Sanitization {
             }
         }
         return sanitizedString;
+    }
+
+    private static String censorTaintedParts(String taintedString, IASTaintRanges taintRanges) {
+        StringBuilder sb = new StringBuilder(taintedString);
+        if (!taintRanges.isEmpty()) {
+            if (taintedString != null) {
+                for (IASTaintRange range : taintRanges) {
+                    for (int i = range.getStart(); i < range.getEnd(); i++) {
+                        sb.setCharAt(i, '*');
+                    }
+                }
+            }
+        }
+        return sb.toString();
     }
 
     private static String sanitizeCommands(String taintedString, IASTaintRanges taintRanges) {
