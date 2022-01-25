@@ -407,7 +407,7 @@ public class ConversionUtils {
                 for (Object entry : set) {
                     Object converted = this.atomicConverter.apply(entry);
                     result.add(converted);
-                    if (!entry.equals(converted)) {
+                    if (!Objects.equals(entry, converted)) {
                         changed = true;
                     }
 
