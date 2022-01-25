@@ -26,6 +26,9 @@ public class IASCharArrayTaint {
 
     public IASTaintInformationable setTaint(IASTaintInformationable taint, int srcBegin, int srcEnd, char dst[], int dstBegin) {
         // Get the subtaint from the original string
+        if ((taint == null)  || (dst == null)) {
+            return null;
+        }
         IASTaintInformationable slice = taint.slice(srcBegin, srcEnd);
         // Shift the taint
         slice.shiftRight(dstBegin);
