@@ -145,6 +145,10 @@ public class IASTaintRanges implements Iterable<IASTaintRange>, Serializable {
         return copy;
     }
 
+    public synchronized void shiftRight(int count) {
+        IASTaintRangeUtils.shiftRight(this.ranges, count);
+    }
+
     /**
      * Inserts the given ranges at the passed position.
      * This shifts the inserted ranges by the index and also moves the ranges after the index by the length of the insertion.

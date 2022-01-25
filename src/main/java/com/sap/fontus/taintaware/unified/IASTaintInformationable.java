@@ -16,6 +16,8 @@ public interface IASTaintInformationable extends Serializable {
 
     IASTaintInformationable replaceTaint(int start, int end, IASTaintInformationable taintInformation);
 
+    IASTaintInformationable shiftRight(int offset);
+
     IASTaintInformationable insertWithShift(int offset, IASTaintInformationable taintInformation);
 
     IASTaintInformationable copy();

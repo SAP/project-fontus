@@ -1,11 +1,9 @@
 package com.sap.fontus.taintaware.range;
 
-import com.sap.fontus.taintaware.shared.IASTaintMetadata;
-import com.sap.fontus.taintaware.shared.IASTaintRange;
-import com.sap.fontus.taintaware.shared.IASTaintRanges;
-import com.sap.fontus.taintaware.shared.IASTaintSource;
+import com.sap.fontus.taintaware.shared.*;
 import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 
+import java.lang.annotation.Documented;
 import java.util.List;
 
 public class IASTaintInformation implements IASTaintInformationable {
@@ -44,6 +42,12 @@ public class IASTaintInformation implements IASTaintInformationable {
     public IASTaintInformationable replaceTaint(int start, int end, IASTaintInformationable taintInformation) {
         this.ranges.delete(start, end, true);
         this.ranges.insertTaint(start, ((IASTaintInformation) taintInformation).getTaintRanges());
+        return this;
+    }
+
+    @Override
+    public IASTaintInformationable shiftRight(int offset) {
+        this.ranges.shiftRight(offset);
         return this;
     }
 

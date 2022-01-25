@@ -35,6 +35,11 @@ public class IASTaintInformation implements IASTaintInformationable {
     }
 
     @Override
+    public IASTaintInformationable shiftRight(int offset) {
+        return this;
+    }
+
+    @Override
     public IASTaintInformationable insertWithShift(int offset, IASTaintInformationable taintInformation) {
         return this;
     }
