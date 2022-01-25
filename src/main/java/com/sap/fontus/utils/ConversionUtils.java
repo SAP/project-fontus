@@ -401,25 +401,43 @@ public class ConversionUtils {
         @Override
         public Object convert(Object o) {
             if (o instanceof Set) {
-                Set<Object> set = (Set<Object>) o;
-                Set<Object> result = new HashSet<>();
-                boolean changed = false;
-                for (Object entry : set) {
-                    Object converted = this.atomicConverter.apply(entry);
-                    result.add(converted);
-                    if (!Objects.equals(entry, converted)) {
-                        changed = true;
+                try {
+                    Set<Object> set = (Set<Object>) o;
+                    if (set.isEmpty()) {
+                        return o;
+                    }
+                    if(set.getClass().getName().equals("java.util.LinkedHashMap$LinkedEntrySet")) {
+                        // TODO: evil hack to avoid infinite recursion in hibernate..
+                        return o;
+                    }
+                    //System.out.printf("Converting Set: %s%n", set.getClass().getName());
+                    Set<Object> result = new HashSet<>();
+                    boolean changed = false;
+                    for (Object entry : set) {
+                        if (entry == null) {
+                            result.add(null);
+                            continue;
+                        }
+                        Object converted = this.atomicConverter.apply(entry);
+                        result.add(converted);
+                        if (!Objects.equals(entry, converted)) {
+                            changed = true;
+                        }
+
+                    }
+                    if (!changed) {
+                        return o;
                     }
 
+                    if (set.getClass().getName().startsWith("java.util.Collections$Unmodifiable")) {
+                        result = Collections.unmodifiableSet(result);
+                    } else if (set.getClass().getName().startsWith("java.util.Collections$SingletonSet")) {
+                        // TODO: Do something
+                    }
+                    return result;
+                } catch (StackOverflowError soe) {
+                    return o;
                 }
-                if (!changed) {
-                    return set;
-                }
-
-                if (set.getClass().getName().startsWith("java.util.Collections$Unmodifiable")) {
-                    result = Collections.unmodifiableSet(result);
-                }
-                return result;
             }
             return null;
         }
