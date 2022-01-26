@@ -1,4 +1,4 @@
-package com.sap.fontus.taintaware.range.testHelper;
+package com.sap.fontus.taintaware.testHelper;
 
 /**
  * Created by d059349 on 16.07.17.

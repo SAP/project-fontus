@@ -5,8 +5,8 @@ import java.util.WeakHashMap;
 
 public class IASCharArrayTaint {
 
+    // Use a WeakHashMap here so that the entries are removed once the char array goes out of scope
     private Map<char[], IASTaintInformationable> globalCharArrayTaintMap = new WeakHashMap<>();
-
 
     private IASCharArrayTaint() {}
 
