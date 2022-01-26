@@ -14,7 +14,7 @@
 <Configuration xmlns="http://logging.apache.org/log4j/2.0/config">
 	<Appenders>
 		<Console name="CONSOLE" target="SYSTEM_OUT">
-			<PatternLayout pattern="%p - %C{1}.%M(%L) |%d{yyyy-MM-dd HH:mm}| %m%n" />
+			<PatternLayout pattern="%p - %C{1}.%M(%L) |%d{yyyy-MM-dd}| %m%n" />
 		</Console>
 		<RollingFile name="DEBUGGING_FILE_APPENDER" fileName="openmrs.log" filePattern="openmrs.%i.log.gz" append="false">
 			<PatternLayout pattern="%d{ABSOLUTE} %-5p [%c{1}] %m%n" />
