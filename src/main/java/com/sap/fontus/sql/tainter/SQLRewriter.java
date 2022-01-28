@@ -71,11 +71,13 @@ public class SQLRewriter {
 		}
 		List<String> statements = new ArrayList<>();
 		try {
+			PrintStream pr = new PrintStream("tainted_" + file);
 			String line;
 			StringBuilder command = new StringBuilder();
 			boolean inCommand = true;
 			while ((line = br.readLine()) != null) {
 				if (line.isEmpty() || line.startsWith("-") || line.startsWith("/")) {
+					pr.println(line);
 					continue;
 				}
 				if (inCommand) {
@@ -87,7 +89,7 @@ public class SQLRewriter {
 				if (line.endsWith(";")) {
 					inCommand = false;
 					if (command.length() > 0) {
-						statements.add(command.toString());
+						pr.println(this.taintStatement(command.toString()));
 						command = new StringBuilder();
 					}
 				}
@@ -95,11 +97,7 @@ public class SQLRewriter {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		PrintStream pr = new PrintStream("tainted_" + file);
-		for (String statement : statements) {
-			String tainted = this.taintStatement(statement);
-			pr.println(tainted);
-		}
+
 	}
 
 }
