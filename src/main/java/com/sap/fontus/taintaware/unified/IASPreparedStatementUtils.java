@@ -46,4 +46,8 @@ public class IASPreparedStatementUtils {
             ps.setObject(parameterIndex, x, targetSqlType, scaleOrLength);
         }
     }
+
+    public static boolean useStatementFacade(Object o) {
+        return false;
+    }
 }
