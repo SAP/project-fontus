@@ -1,12 +1,9 @@
 package com.sap.fontus.agent;
 
 import com.sap.fontus.asm.ClassResolver;
-import com.sap.fontus.utils.Utils;
-import com.sap.fontus.utils.VerboseLogger;
+import com.sap.fontus.utils.*;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.instrumentation.Instrumenter;
-import com.sap.fontus.utils.LogUtils;
-import com.sap.fontus.utils.Logger;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.mutabilitydetector.asm.NonClassloadingClassWriter;
 import org.objectweb.asm.ClassReader;
@@ -68,9 +65,17 @@ class TaintingTransformer implements ClassFileTransformer {
             return classfileBuffer;
         }
 
-        logger.info("Tainting class: {}", className);
         try {
-            byte[] outArray = instrumentClassByteArray(classfileBuffer, loader, className);
+            int hash = Arrays.hashCode(classfileBuffer);
+            byte[] outArray = null;
+            if(CacheHandler.get().isCached(hash)) {
+                logger.info("Fetching class {} from cache", className);
+                outArray = CacheHandler.get().fetchFromCache(hash);
+            } else {
+                logger.info("Tainting class: {}", className);
+                outArray = instrumentClassByteArray(classfileBuffer, loader, className);
+                CacheHandler.get().put(hash, outArray);
+            }
             this.classCache.put(className, outArray);
             VerboseLogger.saveIfVerbose(className, outArray);
             this.nInstrumented += 1;
