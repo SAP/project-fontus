@@ -1,4 +1,4 @@
-package com.sap.fontus.taintaware.range.testHelper;
+package com.sap.fontus.taintaware.testHelper;
 
 @SuppressWarnings("ALL")
 // David: As I didn't write this Code and don't want to mess with it I suppressed the warnings.

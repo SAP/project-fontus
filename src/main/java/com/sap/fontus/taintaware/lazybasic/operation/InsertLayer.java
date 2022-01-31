@@ -20,6 +20,11 @@ public class InsertLayer implements IASLayer {
         this.incomingTaintInformation = incomingTaintInformation;
     }
 
+    public InsertLayer(int offset) {
+        this.offset = offset;
+        this.incomingTaintInformation = null;
+    }
+
     private IASTaintRanges getIncomingTaint() {
         if(this.incomingTaintInformation == null) {
             return new IASTaintRanges(0);
@@ -39,7 +44,7 @@ public class InsertLayer implements IASLayer {
     @Override
     public String toString() {
         return "InsertLayer: " + offset + " length: " +
-            incomingTaintInformation.getLength();
+                getIncomingTaint().getLength();
     }
 
 }

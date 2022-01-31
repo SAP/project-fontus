@@ -1,4 +1,4 @@
-package com.sap.fontus.taintaware.range.testHelper;
+package com.sap.fontus.taintaware.testHelper;
 
 import com.sap.fontus.taintaware.shared.IASBasicMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintMetadata;

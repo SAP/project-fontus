@@ -116,6 +116,14 @@ public class IASTaintInformation implements IASTaintInformationable {
     }
 
     @Override
+    public IASTaintInformationable shiftRight(int offset) {
+        int newSize = this.taints.length + offset;
+        IASTaintMetadata newArray[] = new IASTaintMetadata[newSize];
+        System.arraycopy(this.taints, 0, newArray, offset, this.taints.length);
+        return this;
+    }
+
+    @Override
     public IASTaintInformationable insertWithShift(int offset, IASTaintInformationable taintInformation) {
         return this.replaceTaint(offset, offset, taintInformation);
     }

@@ -34,7 +34,6 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         }
     }
 
-
     public IASString(String s) {
         if (s == null) {
             throw new IllegalArgumentException("String cannot be null");
@@ -159,10 +158,12 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     public IASString(char value[]) {
         this(new String(value));
+        this.setTaint(IASCharArrayTaint.getInstance().getTaint(value));
     }
 
     public IASString(char value[], int offset, int count) {
         this(new String(value, offset, count));
+        this.setTaint(IASCharArrayTaint.getInstance().getTaint(value, offset, count));
     }
 
     public IASString(int[] codePoints, int offset, int count) {
@@ -259,6 +260,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {
         this.string.getChars(srcBegin, srcEnd, dst, dstBegin);
+        IASCharArrayTaint.getInstance().setTaint(this.getTaintInformation(), srcBegin, srcEnd, dst, dstBegin);
     }
 
     public void getBytes(int srcBegin, int srcEnd, byte dst[], int dstBegin) {

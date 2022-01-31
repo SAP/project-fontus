@@ -42,6 +42,9 @@ public enum IASTaintInformation implements IASTaintInformationable {
     }
 
     @Override
+    public IASTaintInformationable shiftRight(int offset) { return this; }
+
+    @Override
     public IASTaintInformationable deleteWithShift(int start, int end) {
         return this;
     }

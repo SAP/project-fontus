@@ -150,6 +150,13 @@ public class IASTaintInformation implements IASTaintInformationable {
     }
 
     @Override
+    public IASTaintInformationable shiftRight(int offset) {
+        IASTaintInformation copied = this.copy();
+        copied.appendLayer(new InsertLayer(offset));
+        return copied;
+    }
+
+    @Override
     public IASTaintInformationable insertWithShift(int offset, IASTaintInformationable taintInformation) {
         IASTaintInformation copied = this.copy();
         copied.appendLayer(new InsertLayer(offset, (IASTaintInformation) taintInformation));

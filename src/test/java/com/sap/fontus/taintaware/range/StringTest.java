@@ -1,9 +1,9 @@
 package com.sap.fontus.taintaware.range;
 
-import com.sap.fontus.taintaware.range.testHelper.HelperUtils;
-import com.sap.fontus.taintaware.range.testHelper.RangeChainer;
-import com.sap.fontus.taintaware.range.testHelper.THelper;
-import com.sap.fontus.taintaware.range.testHelper.TaintMatcher;
+import com.sap.fontus.taintaware.testHelper.HelperUtils;
+import com.sap.fontus.taintaware.testHelper.RangeChainer;
+import com.sap.fontus.taintaware.testHelper.THelper;
+import com.sap.fontus.taintaware.testHelper.TaintMatcher;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.taintaware.shared.IASBasicMetadata;
@@ -22,8 +22,8 @@ import org.junit.jupiter.migrationsupport.EnableJUnit4MigrationSupport;
 
 import java.util.Locale;
 
-import static com.sap.fontus.taintaware.range.testHelper.RangeChainer.range;
-import static com.sap.fontus.taintaware.range.testHelper.TaintMatcher.taintEquals;
+import static com.sap.fontus.taintaware.testHelper.RangeChainer.range;
+import static com.sap.fontus.taintaware.testHelper.TaintMatcher.taintEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;

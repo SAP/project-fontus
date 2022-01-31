@@ -405,6 +405,7 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
 
     public void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin) {
         this.stringBuilder.getChars(srcBegin, srcEnd, dst, dstBegin);
+        IASCharArrayTaint.getInstance().setTaint(this.getTaintInformation(), srcBegin, srcEnd, dst, dstBegin);
     }
 
     public StringBuilder getStringBuilder() {
