@@ -1,12 +1,15 @@
 package com.sap.fontus.taintaware.unified;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-public class IASCharArrayTaint {
+// Make this package private
+class IASCharArrayTaint {
 
     // Use a WeakHashMap here so that the entries are removed once the char array goes out of scope
-    private Map<char[], IASTaintInformationable> globalCharArrayTaintMap = new WeakHashMap<>();
+    // Make sure it is synchronized to prevent the keys going out of scope
+    private Map<char[], IASTaintInformationable> globalCharArrayTaintMap = Collections.synchronizedMap(new WeakHashMap<>());
 
     private IASCharArrayTaint() {}
 
@@ -16,11 +19,11 @@ public class IASCharArrayTaint {
         return instance;
     }
 
-    private void saveCharTaint(char[] chars, IASTaintInformationable taint) {
+    public void setTaint(char[] chars, IASTaintInformationable taint) {
         globalCharArrayTaintMap.put(chars, taint);
     }
 
-    private IASTaintInformationable getCharTaint(char[] chars) {
+    public IASTaintInformationable getTaint(char[] chars) {
         return globalCharArrayTaintMap.get(chars);
     }
 
@@ -33,20 +36,16 @@ public class IASCharArrayTaint {
         // Shift the taint
         slice.shiftRight(dstBegin);
         // Save in the cache
-        saveCharTaint(dst, slice);
+        setTaint(dst, slice);
         return slice;
     }
 
     public IASTaintInformationable getTaint(char value[], int offset, int count) {
-        IASTaintInformationable taint = getCharTaint(value);
+        IASTaintInformationable taint = getTaint(value);
         if (taint != null) {
             taint = taint.slice(offset, offset + count);
         }
         return taint;
-    }
-
-    public IASTaintInformationable getTaint(char value[]) {
-        return getCharTaint(value);
     }
 
 }
