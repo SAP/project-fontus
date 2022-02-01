@@ -13,10 +13,10 @@ import static com.sap.fontus.Constants.TAINT_PREFIX;
 
 public class SelectItemTainter extends SelectItemVisitorAdapter {
 
-	private final List<Taint> taints;
-	private final List<SelectItem> selectItemReference;
-	private final List<Expression> expressionReference;
-	private List<AssignmentValue> assignmentValues;
+	protected final List<Taint> taints;
+	protected final List<SelectItem> selectItemReference;
+	protected final List<Expression> expressionReference;
+	protected List<AssignmentValue> assignmentValues;
 
 	SelectItemTainter(List<Taint> taints, List<SelectItem> selectItemReference) {
 		this.taints = taints;

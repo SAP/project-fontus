@@ -1,17 +1,25 @@
 package com.sap.fontus.sql.tainter;
 
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.parser.JSqlParser;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.select.*;
+import org.graalvm.compiler.core.common.type.ArithmeticOpTable;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.sap.fontus.Constants.TAINT_PREFIX;
+
 public class SelectTainter extends SelectVisitorAdapter {
 
-	private final List<Taint> taints;
-	private final List<Expression> expressionReference;
-	private final List<SelectItem> selectItemReference;
-	private List<AssignmentValue> assignmentValues;
+	protected final List<Taint> taints;
+	protected final List<Expression> expressionReference;
+	protected final List<SelectItem> selectItemReference;
+	protected List<AssignmentValue> assignmentValues;
 
 	SelectTainter(List<Taint> taints) {
 		this.taints = taints;
@@ -39,12 +47,53 @@ public class SelectTainter extends SelectVisitorAdapter {
 			selectItemTainter.setAssignmentValues(this.assignmentValues);
 			for (SelectItem selectItem : plainSelect.getSelectItems()) {
 				newSelectItems.add(selectItem);
-				selectItem.accept(selectItemTainter);
-				if (!this.selectItemReference.isEmpty()) {
-					// get new created expression by reference in list and clear
-					// list
-					newSelectItems.add(this.selectItemReference.get(0));
-					this.selectItemReference.clear();
+
+				// Check if nested query exists
+				if (selectItem.toString().toLowerCase().contains("(select")) {
+					// Safe and transform current alias
+					Alias alias = ((SelectExpressionItem) selectItem).getAlias();
+					Alias newAlias = new Alias("`" + TAINT_PREFIX + alias.getName().replace("\"", "").replace("`", "") + "`");
+
+					List<Expression> plannedExpressions = new ArrayList<>();
+					List<Table> tables = new ArrayList<>();
+					NestedSelectItemTainter nestedSelectItemTainter = new NestedSelectItemTainter(this.taints, this.selectItemReference, plannedExpressions, tables);
+					selectItem.accept(nestedSelectItemTainter);
+
+					// Expressions --> columns or values for functions like SUM, AVG, COUNT
+					String expression = "";
+					for (Expression e : plannedExpressions) {
+						expression += e.toString() + ",";
+					}
+					expression = expression.substring(0, expression.length() - 1);
+
+					// Table of nested query
+					String strTable = "";
+					if (tables.size() > 1) {
+						System.err.println("Something went wrong, more than one table in nested query!");
+					} else {
+						strTable = tables.get(0).getName();
+					}
+
+					// Yeah let's do SQL injection :D
+					String nestedQuery = "SELECT " + expression + " FROM " + strTable;
+					try {
+						SubSelect sub = new SubSelect();
+						sub.setSelectBody(((Select) CCJSqlParserUtil.parse(nestedQuery)).getSelectBody());
+						sub.setAlias(newAlias);
+						SelectExpressionItem ie = new SelectExpressionItem();
+						ie.setExpression(sub);
+						newSelectItems.add(ie);
+					} catch (Exception ex) {
+						System.err.println(ex);
+					}
+				} else {
+					selectItem.accept(selectItemTainter);
+					if (!this.selectItemReference.isEmpty()) {
+						// get new created expression by reference in list and clear
+						// list
+						newSelectItems.add(this.selectItemReference.get(0));
+						this.selectItemReference.clear();
+					}
 				}
 			}
 			plainSelect.setSelectItems(newSelectItems);
@@ -58,7 +107,7 @@ public class SelectTainter extends SelectVisitorAdapter {
 		}
 	}
 
-	private List<Expression> taintGroupBy(List<Expression> groupByColumnReferences) {
+	protected List<Expression> taintGroupBy(List<Expression> groupByColumnReferences) {
 		if (groupByColumnReferences != null) {
 			List<Expression> newGroupByColumnReferences;
 			newGroupByColumnReferences = new ArrayList<>();

@@ -16,9 +16,9 @@ import static com.sap.fontus.Constants.TAINT_PREFIX;
 
 public class ExpressionTainter extends ExpressionVisitorAdapter {
 
-	private final List<Taint> taints;
-	private final List<Expression> expressionReference;
-	private List<AssignmentValue> assignmentValues;
+	protected final List<Taint> taints;
+	protected final List<Expression> expressionReference;
+	protected List<AssignmentValue> assignmentValues;
 
 	ExpressionTainter(List<Taint> taints, List<Expression> expressionReference) {
 		this.taints = taints;
