@@ -56,8 +56,10 @@ public class SelectTainter extends SelectVisitorAdapter {
 
 					List<Expression> plannedExpressions = new ArrayList<>();
 					List<Table> tables = new ArrayList<>();
-					NestedSelectItemTainter nestedSelectItemTainter = new NestedSelectItemTainter(this.taints, this.selectItemReference, plannedExpressions, tables);
+					List<Expression> where = new ArrayList<>();
+					NestedSelectItemTainter nestedSelectItemTainter = new NestedSelectItemTainter(this.taints, this.selectItemReference, plannedExpressions, tables, where);
 					selectItem.accept(nestedSelectItemTainter);
+
 
 					// Expressions --> columns or values for functions like SUM, AVG, COUNT
 					String expression = "";
@@ -74,8 +76,15 @@ public class SelectTainter extends SelectVisitorAdapter {
 						strTable = tables.get(0).getName();
 					}
 
+					String nestedQuery = "";
+					if (where.size() > 0) {
+						nestedQuery = "SELECT " + expression + " FROM " + strTable + " WHERE " + where.get(0).toString();
+					} else {
+						nestedQuery = "SELECT " + expression + " FROM " + strTable;
+					}
+
 					// Yeah let's do SQL injection :D
-					String nestedQuery = "SELECT " + expression + " FROM " + strTable;
+
 					try {
 						SubSelect sub = new SubSelect();
 						sub.setSelectBody(((Select) CCJSqlParserUtil.parse(nestedQuery)).getSelectBody());

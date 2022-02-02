@@ -12,28 +12,34 @@ public class NestedSelectTainter extends SelectTainter {
 
     List<Expression> plannedExpressions;
     List<Table> tables;
+    List<Expression> where;
 
-    public NestedSelectTainter(List<Taint> taints, List<Expression> plannedExpressions, List<Table> tables) {
+    public NestedSelectTainter(List<Taint> taints, List<Expression> plannedExpressions, List<Table> tables, List<Expression> where) {
         super(taints);
         this.tables = tables;
         this.plannedExpressions = plannedExpressions;
+        this.where = where;
     }
 
     @Override
     public void visit(PlainSelect plainSelect) {
         if (plainSelect.getSelectItems() != null) {
 
+            if (plainSelect.getWhere() != null) {
+                where.add(plainSelect.getWhere());
+            }
+
             if (plainSelect.getFromItem() instanceof Table) {
                 tables.add((Table) plainSelect.getFromItem());
             }
 
             List<SelectItem> newSelectItems = new ArrayList<>();
-            NestedSelectItemTainter selectItemTainter = new NestedSelectItemTainter(super.taints, super.selectItemReference, this.plannedExpressions, this.tables);
+            NestedSelectItemTainter selectItemTainter = new NestedSelectItemTainter(super.taints, super.selectItemReference, this.plannedExpressions, this.tables, this.where);
             selectItemTainter.setAssignmentValues(this.assignmentValues);
             for (SelectItem selectItem : plainSelect.getSelectItems()) {
                 newSelectItems.add(selectItem);
                 if (selectItem.toString().toLowerCase().contains("(select")) {
-                    NestedSelectItemTainter nestedSelectItemTainter = new NestedSelectItemTainter(this.taints, this.selectItemReference, this.plannedExpressions, this.tables);
+                    NestedSelectItemTainter nestedSelectItemTainter = new NestedSelectItemTainter(this.taints, this.selectItemReference, this.plannedExpressions, this.tables, this.where);
                     selectItem.accept(nestedSelectItemTainter);
 
                     if (selectItem instanceof SelectExpressionItem) {

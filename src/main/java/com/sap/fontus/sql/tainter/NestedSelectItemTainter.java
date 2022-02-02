@@ -15,16 +15,18 @@ public class NestedSelectItemTainter extends SelectItemTainter {
 
     List<Expression> plannedExpressions;
     List<Table> tables;
+    List<Expression> where;
 
-    NestedSelectItemTainter(List<Taint> taints, List<SelectItem> selectItemReference, List<Expression> plannedExpressions, List<Table> tables) {
+    NestedSelectItemTainter(List<Taint> taints, List<SelectItem> selectItemReference, List<Expression> plannedExpressions, List<Table> tables, List<Expression> where) {
         super(taints, selectItemReference);
         this.plannedExpressions = plannedExpressions;
         this.tables = tables;
+        this.where = where;
     }
 
     @Override
     public void visit(SelectExpressionItem selectExpressionItem) {
-        NestedExpressionTainter selectNestedExpressionTainter = new NestedExpressionTainter(super.taints, super.expressionReference, this.plannedExpressions, this.tables);
+        NestedExpressionTainter selectNestedExpressionTainter = new NestedExpressionTainter(super.taints, super.expressionReference, this.plannedExpressions, this.tables, this.where);
         selectNestedExpressionTainter.setAssignmentValues(super.assignmentValues);
         selectExpressionItem.getExpression().accept(selectNestedExpressionTainter);
         if (!this.expressionReference.isEmpty()) {
