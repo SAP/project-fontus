@@ -68,13 +68,15 @@ class TaintingTransformer implements ClassFileTransformer {
         try {
             int hash = Arrays.hashCode(classfileBuffer);
             byte[] outArray = null;
-            if(CacheHandler.get().isCached(hash)) {
+            if(this.config.usePersistentCache() && CacheHandler.get().isCached(hash)) {
                 logger.info("Fetching class {} from cache", className);
-                outArray = CacheHandler.get().fetchFromCache(hash);
+                outArray = CacheHandler.get().fetchFromCache(hash, className);
             } else {
                 logger.info("Tainting class: {}", className);
-                outArray = instrumentClassByteArray(classfileBuffer, loader, className);
-                CacheHandler.get().put(hash, outArray);
+                outArray = this.instrumentClassByteArray(classfileBuffer, loader, className);
+                if(this.config.usePersistentCache()) {
+                    CacheHandler.get().put(hash, outArray, className);
+                }
             }
             this.classCache.put(className, outArray);
             VerboseLogger.saveIfVerbose(className, outArray);
@@ -84,6 +86,7 @@ class TaintingTransformer implements ClassFileTransformer {
             }
             return outArray;
         } catch (Exception e) {
+            System.err.printf("Exception: %s - %s%n", e.getClass().getName(), e.getMessage());
             Configuration.getConfiguration().addExcludedClass(className);
             logger.error("Instrumentation failed for {}. Reason: {}. Class added to excluded classes!", className, e.getMessage());
             Utils.logStackTrace(Arrays.asList(e.getStackTrace()));
