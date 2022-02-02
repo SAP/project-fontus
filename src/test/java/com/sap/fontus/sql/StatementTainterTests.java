@@ -21,8 +21,19 @@ public class StatementTainterTests {
         System.out.println("Tainting: " + query);
         stmts.accept(tainter);
         String taintedStatement = stmts.toString();
-        assertEquals("SELECT 'a' AS foo, '0' AS `__taint__foo`, (SELECT count(id) FROM bla), (SELECT '0' from bla AS bar;", taintedStatement);
+        assertEquals("SELECT 'a' AS foo, '0' AS `__taint__foo`, (SELECT count(id) FROM bla) AS bar, (SELECT '0' FROM bla) AS `__taint__bar`;", taintedStatement.trim());
+    }
 
+    @Test
+    void testNestedQueryWithWhere() throws JSQLParserException {
+        String query = "select 'a' as foo, (select b from bla where id < 5) as bar";
+        Statements stmts = CCJSqlParserUtil.parseStatements(query);
+
+        StatementTainter tainter = new StatementTainter(new ArrayList<>());
+        System.out.println("Tainting: " + query);
+        stmts.accept(tainter);
+        String taintedStatement = stmts.toString();
+        assertEquals("SELECT 'a' AS foo, '0' AS `__taint__foo`, (SELECT b FROM bla WHERE id < 5) AS bar, (SELECT b FROM bla WHERE id < 5) AS `__taint__bar`;", taintedStatement.trim());
     }
 
     @Test
