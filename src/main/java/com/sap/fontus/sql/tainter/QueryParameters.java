@@ -13,10 +13,10 @@ public class QueryParameters {
         this.types = new ArrayList<>();
         this.indices = new HashMap<>();
     }
-    public void addParameter(ParameterType type) {
+    void addParameter(ParameterType type) {
         System.out.printf("Adding JDBC param of type: %s%n", type);
         this.types.add(type);
-        Thread.dumpStack();
+        //Thread.dumpStack();
     }
 
     private void computeIndices() {

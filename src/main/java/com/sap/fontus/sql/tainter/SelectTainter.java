@@ -104,9 +104,10 @@ public class SelectTainter extends SelectVisitorAdapter {
 			}
 			plainSelect.setSelectItems(newSelectItems);
 		}
-
-		plainSelect.getWhere().accept(new WhereExpressionTainter(this.parameters));
-
+		Expression where = plainSelect.getWhere();
+		if(where != null) {
+			where.accept(new WhereExpressionTainter(this.parameters));
+		}
 		GroupByElement groupBy = plainSelect.getGroupBy();
 		if(groupBy != null) {
 			List<Expression> groupByExpressions = groupBy.getGroupByExpressions();
