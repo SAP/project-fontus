@@ -3,11 +3,8 @@ package com.sap.fontus.sql.tainter;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.parser.JSqlParser;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.select.*;
-import org.graalvm.compiler.core.common.type.ArithmeticOpTable;
 
 import java.util.ArrayList;
 import java.util.List;
