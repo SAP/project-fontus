@@ -17,8 +17,8 @@ public class NestedSelectItemTainter extends SelectItemTainter {
     List<Table> tables;
     List<Expression> where;
 
-    NestedSelectItemTainter(List<SelectItem> selectItemReference, List<Expression> plannedExpressions, List<Table> tables, List<Expression> where) {
-        super(selectItemReference);
+    NestedSelectItemTainter(QueryParameters parameters, List<SelectItem> selectItemReference, List<Expression> plannedExpressions, List<Table> tables, List<Expression> where) {
+        super(parameters, selectItemReference);
         this.plannedExpressions = plannedExpressions;
         this.tables = tables;
         this.where = where;
@@ -26,8 +26,8 @@ public class NestedSelectItemTainter extends SelectItemTainter {
 
     @Override
     public void visit(SelectExpressionItem selectExpressionItem) {
-        NestedExpressionTainter selectNestedExpressionTainter = new NestedExpressionTainter(super.expressionReference, this.plannedExpressions, this.tables, this.where);
-        selectNestedExpressionTainter.setAssignmentValues(super.assignmentValues);
+        NestedExpressionTainter selectNestedExpressionTainter = new NestedExpressionTainter(this.parameters, this.expressionReference, this.plannedExpressions, this.tables, this.where);
+        selectNestedExpressionTainter.setAssignmentValues(this.assignmentValues);
         selectExpressionItem.getExpression().accept(selectNestedExpressionTainter);
         if (!this.expressionReference.isEmpty()) {
             // get new created expression by reference and clear list

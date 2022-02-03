@@ -18,8 +18,8 @@ public class NestedExpressionTainter extends ExpressionTainter {
     List<Table> tables;
     List<Expression> where;
 
-    public NestedExpressionTainter(List<Expression> expressionReference, List<Expression> plannedExpressions, List<Table> tables, List<Expression> where) {
-        super(expressionReference);
+    public NestedExpressionTainter(QueryParameters parameters, List<Expression> expressionReference, List<Expression> plannedExpressions, List<Table> tables, List<Expression> where) {
+        super(parameters, expressionReference);
         this.plannedExpressions = plannedExpressions;
         this.tables = tables;
         this.where = where;
@@ -44,13 +44,13 @@ public class NestedExpressionTainter extends ExpressionTainter {
 
     @Override
     public void visit(SubSelect subSelect) {
-        NestedSelectTainter selectTainter = new NestedSelectTainter(this.plannedExpressions, this.tables, this.where);
-        selectTainter.setAssignmentValues(super.assignmentValues);
+        NestedSelectTainter selectTainter = new NestedSelectTainter(this.parameters, this.plannedExpressions, this.tables, this.where);
+        selectTainter.setAssignmentValues(this.assignmentValues);
         subSelect.getSelectBody().accept(selectTainter);
         if (subSelect.getWithItemsList() != null) {
             for (WithItem withItem : subSelect.getWithItemsList()) {
-                NestedSelectTainter innerSelectTainter = new NestedSelectTainter(this.plannedExpressions, this.tables, this.where);
-                innerSelectTainter.setAssignmentValues(super.assignmentValues);
+                NestedSelectTainter innerSelectTainter = new NestedSelectTainter(this.parameters, this.plannedExpressions, this.tables, this.where);
+                innerSelectTainter.setAssignmentValues(this.assignmentValues);
                 withItem.accept(innerSelectTainter);
             }
         }

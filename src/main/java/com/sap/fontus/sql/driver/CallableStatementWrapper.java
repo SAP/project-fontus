@@ -21,8 +21,9 @@ public class CallableStatementWrapper extends PreparedStatementWrapper implement
     }
 
     protected CallableStatementWrapper(CallableStatement delegate) {
-        super(delegate);
+        super(delegate, null);
         this.delegate = delegate;
+        throw new IllegalStateException("This should not happen!");
     }
 
     @Override

@@ -16,10 +16,12 @@ import static com.sap.fontus.Constants.TAINT_PREFIX;
 
 public class ExpressionTainter extends ExpressionVisitorAdapter {
 
+	protected final QueryParameters parameters;
 	protected final List<Expression> expressionReference;
 	protected List<AssignmentValue> assignmentValues;
 
-	ExpressionTainter(List<Expression> expressionReference) {
+	ExpressionTainter(QueryParameters parameters, List<Expression> expressionReference) {
+		this.parameters = parameters;
 		this.expressionReference = expressionReference;
 	}
 
@@ -73,6 +75,7 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 
 	@Override
 	public void visit(JdbcParameter jdbcParameter) {
+		this.parameters.addParameter(ParameterType.ASSIGNMENT);
 		this.addAssignmentValue(new AssignmentValue("?"));
 		JdbcParameter newJdbcParamter = new JdbcParameter();
 		newJdbcParamter.setIndex(jdbcParameter.getIndex());
@@ -100,12 +103,12 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 
 	@Override
 	public void visit(SubSelect subSelect) {
-		SelectTainter selectTainter = new SelectTainter();
+		SelectTainter selectTainter = new SelectTainter(this.parameters);
 		selectTainter.setAssignmentValues(this.assignmentValues);
 		subSelect.getSelectBody().accept(selectTainter);
 		if (subSelect.getWithItemsList() != null) {
 			for (WithItem withItem : subSelect.getWithItemsList()) {
-				SelectTainter innerSelectTainter = new SelectTainter();
+				SelectTainter innerSelectTainter = new SelectTainter(this.parameters);
 				innerSelectTainter.setAssignmentValues(this.assignmentValues);
 				withItem.accept(innerSelectTainter);
 			}

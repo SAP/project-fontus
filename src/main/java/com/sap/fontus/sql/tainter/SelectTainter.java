@@ -12,18 +12,20 @@ import java.util.List;
 import static com.sap.fontus.Constants.TAINT_PREFIX;
 
 public class SelectTainter extends SelectVisitorAdapter {
-
+	protected final QueryParameters parameters;
 	protected final List<Expression> expressionReference;
 	protected final List<SelectItem> selectItemReference;
 	protected List<AssignmentValue> assignmentValues;
 
-	SelectTainter() {
+	SelectTainter(QueryParameters parameters) {
 		// List used as Container to return the reference to one newly created
 		// Expression by SelectExpressionTainter -> comparable to return object
 		this.expressionReference = new ArrayList<>();
 		// List used as Container to return the reference to one newly created
 		// SelectItem by SelectItemTainter -> comparable to return object
 		this.selectItemReference = new ArrayList<>();
+
+		this.parameters = parameters;
 	}
 
 	public List<AssignmentValue> getAssignmentValues() {
@@ -38,7 +40,7 @@ public class SelectTainter extends SelectVisitorAdapter {
 	public void visit(PlainSelect plainSelect) {
 		if (plainSelect.getSelectItems() != null) {
 			List<SelectItem> newSelectItems = new ArrayList<>();
-			SelectItemTainter selectItemTainter = new SelectItemTainter(this.selectItemReference);
+			SelectItemTainter selectItemTainter = new SelectItemTainter(this.parameters, this.selectItemReference);
 			selectItemTainter.setAssignmentValues(this.assignmentValues);
 			for (SelectItem selectItem : plainSelect.getSelectItems()) {
 				newSelectItems.add(selectItem);
@@ -52,7 +54,7 @@ public class SelectTainter extends SelectVisitorAdapter {
 					List<Expression> plannedExpressions = new ArrayList<>();
 					List<Table> tables = new ArrayList<>();
 					List<Expression> where = new ArrayList<>();
-					NestedSelectItemTainter nestedSelectItemTainter = new NestedSelectItemTainter(this.selectItemReference, plannedExpressions, tables, where);
+					NestedSelectItemTainter nestedSelectItemTainter = new NestedSelectItemTainter(this.parameters, this.selectItemReference, plannedExpressions, tables, where);
 					selectItem.accept(nestedSelectItemTainter);
 
 
@@ -103,6 +105,8 @@ public class SelectTainter extends SelectVisitorAdapter {
 			plainSelect.setSelectItems(newSelectItems);
 		}
 
+		plainSelect.getWhere().accept(new WhereExpressionTainter(this.parameters));
+
 		GroupByElement groupBy = plainSelect.getGroupBy();
 		if(groupBy != null) {
 			List<Expression> groupByExpressions = groupBy.getGroupByExpressions();
@@ -115,7 +119,7 @@ public class SelectTainter extends SelectVisitorAdapter {
 		if (groupByColumnReferences != null) {
 			List<Expression> newGroupByColumnReferences;
 			newGroupByColumnReferences = new ArrayList<>();
-			ExpressionTainter selectExpressionTainter = new ExpressionTainter(this.expressionReference);
+			ExpressionTainter selectExpressionTainter = new ExpressionTainter(this.parameters, this.expressionReference);
 			selectExpressionTainter.setAssignmentValues(this.assignmentValues);
 			for (Expression expression : groupByColumnReferences) {
 				newGroupByColumnReferences.add(expression);
@@ -143,12 +147,12 @@ public class SelectTainter extends SelectVisitorAdapter {
 
 	@Override
 	public void visit(WithItem withItem) {
-		SelectTainter selectTainter = new SelectTainter();
+		SelectTainter selectTainter = new SelectTainter(this.parameters);
 		selectTainter.setAssignmentValues(this.assignmentValues);
 		withItem.getSubSelect().getSelectBody().accept(selectTainter);
 		if (withItem.getWithItemList() != null) {
 			List<SelectItem> newWithItemList = new ArrayList<>();
-			SelectItemTainter selectItemTainter = new SelectItemTainter(this.selectItemReference);
+			SelectItemTainter selectItemTainter = new SelectItemTainter(this.parameters, this.selectItemReference);
 			selectItemTainter.setAssignmentValues(this.assignmentValues);
 			for (SelectItem selectItem : withItem.getWithItemList()) {
 				newWithItemList.add(selectItem);

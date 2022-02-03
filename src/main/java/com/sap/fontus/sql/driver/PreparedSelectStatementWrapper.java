@@ -1,5 +1,7 @@
 package com.sap.fontus.sql.driver;
 
+import com.sap.fontus.sql.tainter.QueryParameters;
+
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -10,21 +12,24 @@ import java.util.Calendar;
 public class PreparedSelectStatementWrapper extends StatementWrapper implements PreparedStatement {
 
     private final PreparedStatement delegate;
-
-    public static PreparedStatement wrap(PreparedStatement delegate,String originalQuery,String taintedQuery) {
+    private final QueryParameters parameters;
+    public static PreparedStatement wrap(PreparedStatement delegate, String originalQuery, String taintedQuery, QueryParameters parameters) {
         if (delegate == null) {
             return null;
         }
-        return new PreparedSelectStatementWrapper(delegate,originalQuery,taintedQuery);
+
+        return new PreparedSelectStatementWrapper(delegate,originalQuery,taintedQuery, parameters);
     }
-    protected PreparedSelectStatementWrapper(PreparedStatement delegate){
+    protected PreparedSelectStatementWrapper(PreparedStatement delegate, QueryParameters parameters){
         super(delegate);
         this.delegate=delegate;
+        this.parameters = parameters;
     }
 
-    protected PreparedSelectStatementWrapper(PreparedStatement delegate, String originalQuery, String taintedQuery) {
+    protected PreparedSelectStatementWrapper(PreparedStatement delegate, String originalQuery, String taintedQuery, QueryParameters parameters) {
         super(delegate);
         this.delegate = delegate;
+        this.parameters = parameters;
     }
 
     @Override
@@ -32,7 +37,11 @@ public class PreparedSelectStatementWrapper extends StatementWrapper implements 
         return ResultSetWrapper.wrap(this.delegate.executeQuery());
     }
 
-    @Override
+    public QueryParameters getParameters() {
+        return this.parameters;
+    }
+
+        @Override
     public int executeUpdate() throws SQLException {
         return this.delegate.executeUpdate();
     }
