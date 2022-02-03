@@ -8,11 +8,9 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class SQLRewriter {
 
-	private List<Taint> taints;
 	private String sqlString;
 	private static List<String> keyWords;
 	private static List<String> passThrough;
@@ -41,7 +39,6 @@ public class SQLRewriter {
 	}
 
 	private SQLRewriter() {
-		taints = new ArrayList<>();
 		sqlString = "";
 	}
 
@@ -55,7 +52,7 @@ public class SQLRewriter {
 		} catch (JSQLParserException e) {
 			System.out.printf("Error parsing '%s': %s%n", statement, e);
 		}
-		StatementTainter tainter = new StatementTainter(this.taints);
+		StatementTainter tainter = new StatementTainter();
 		System.out.println("Tainting: " + statement);
 		stmts.accept(tainter);
 		String taintedStatement = stmts.toString();

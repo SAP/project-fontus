@@ -13,13 +13,11 @@ import static com.sap.fontus.Constants.TAINT_PREFIX;
 
 public class SelectItemTainter extends SelectItemVisitorAdapter {
 
-	protected final List<Taint> taints;
 	protected final List<SelectItem> selectItemReference;
 	protected final List<Expression> expressionReference;
 	protected List<AssignmentValue> assignmentValues;
 
-	SelectItemTainter(List<Taint> taints, List<SelectItem> selectItemReference) {
-		this.taints = taints;
+	SelectItemTainter(List<SelectItem> selectItemReference) {
 		// List used as Container to return the reference to one newly created
 		// Expression by SelectExpressionTainter -> comparable to return object
 		this.expressionReference = new ArrayList<>();
@@ -36,7 +34,7 @@ public class SelectItemTainter extends SelectItemVisitorAdapter {
 
 	@Override
 	public void visit(SelectExpressionItem selectExpressionItem) {
-		ExpressionTainter selectExpressionTainter = new ExpressionTainter(this.taints, this.expressionReference);
+		ExpressionTainter selectExpressionTainter = new ExpressionTainter(this.expressionReference);
 		selectExpressionTainter.setAssignmentValues(this.assignmentValues);
 		selectExpressionItem.getExpression().accept(selectExpressionTainter);
 		if (!this.expressionReference.isEmpty()) {

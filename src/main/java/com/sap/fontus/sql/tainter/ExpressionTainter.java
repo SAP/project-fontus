@@ -16,12 +16,10 @@ import static com.sap.fontus.Constants.TAINT_PREFIX;
 
 public class ExpressionTainter extends ExpressionVisitorAdapter {
 
-	protected final List<Taint> taints;
 	protected final List<Expression> expressionReference;
 	protected List<AssignmentValue> assignmentValues;
 
-	ExpressionTainter(List<Taint> taints, List<Expression> expressionReference) {
-		this.taints = taints;
+	ExpressionTainter(List<Expression> expressionReference) {
 		this.expressionReference = expressionReference;
 	}
 
@@ -94,29 +92,20 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 	@Override
 	public void visit(StringValue stringValue) {
 		this.addAssignmentValue(new AssignmentValue(stringValue.getValue()));
-		// '' around new String Values needed, otherwise first and last char
-		// replaced
-		String taintBits = "0";
-		for (Taint taint : this.taints) {
-			if (taint.getName().compareTo(stringValue.getValue()) == 0) {
-				taintBits = taint.getTaintBits();
-				break;
-			}
-		}
 		// 'return' expression via global list
-		StringValue newStringValue = new StringValue("'" + taintBits + "'");
+		StringValue newStringValue = new StringValue("'0'");
 		this.expressionReference.add(newStringValue);
 		this.addAssignmentValue(new AssignmentValue(newStringValue.getValue()));
 	}
 
 	@Override
 	public void visit(SubSelect subSelect) {
-		SelectTainter selectTainter = new SelectTainter(this.taints);
+		SelectTainter selectTainter = new SelectTainter();
 		selectTainter.setAssignmentValues(this.assignmentValues);
 		subSelect.getSelectBody().accept(selectTainter);
 		if (subSelect.getWithItemsList() != null) {
 			for (WithItem withItem : subSelect.getWithItemsList()) {
-				SelectTainter innerSelectTainter = new SelectTainter(this.taints);
+				SelectTainter innerSelectTainter = new SelectTainter();
 				innerSelectTainter.setAssignmentValues(this.assignmentValues);
 				withItem.accept(innerSelectTainter);
 			}
@@ -145,16 +134,7 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 	@Override
 	public void visit(DoubleValue doubleValue) {
 		this.addAssignmentValue(new AssignmentValue(doubleValue.getValue()));
-		// '' around new String Values needed, otherwise first and last char
-		// replaced
-		String taintBits = "0";
-		for (Taint taint : this.taints) {
-			if (taint.getName().compareTo(Double.toString(doubleValue.getValue())) == 0) {
-				taintBits = taint.getTaintBits();
-				break;
-			}
-		}
-		StringValue newStringValue = new StringValue("'" + taintBits + "'");
+		StringValue newStringValue = new StringValue("'0'");
 		this.expressionReference.add(newStringValue);
 		this.addAssignmentValue(new AssignmentValue(newStringValue.getValue()));
 	}
@@ -162,80 +142,37 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 	@Override
 	public void visit(LongValue longValue) {
 		this.addAssignmentValue(new AssignmentValue(longValue.getValue()));
-		// '' around new String Values needed, otherwise first and last char
-		// replaced
-		String taintBits = "0";
-		for (Taint taint : this.taints) {
-			if (taint.getName().compareTo(longValue.getStringValue()) == 0) {
-				taintBits = taint.getTaintBits();
-				break;
-			}
-		}
-		StringValue newStringValue = new StringValue("'" + taintBits + "'");
+		StringValue newStringValue = new StringValue("'0'");
 		this.expressionReference.add(newStringValue);
 		this.addAssignmentValue(new AssignmentValue(newStringValue.getValue()));
 	}
 
 	@Override
 	public void visit(HexValue hexValue) {
-		// '' around new String Values needed,otherwise first and last char
-		// replaced
-		String taintBits = "0";
-		for (Taint taint : this.taints) {
-			if (taint.getName().compareTo(hexValue.getValue()) == 0) {
-				taintBits = taint.getTaintBits();
-				break;
-			}
-		}
-		StringValue newStringValue = new StringValue("'" + taintBits + "'");
+
+		StringValue newStringValue = new StringValue("'0'");
 		this.expressionReference.add(newStringValue);
 		this.addAssignmentValue(new AssignmentValue(newStringValue.getValue()));
 	}
 
 	@Override
 	public void visit(DateValue dateValue) {
-		// '' around new String Values needed,otherwise first and last char
-		// replaced
-		String taintBits = "0";
-		for (Taint taint : this.taints) {
-			if (taint.getName().compareTo(dateValue.getValue().toString()) == 0) {
-				taintBits = taint.getTaintBits();
-				break;
-			}
-		}
-		StringValue newStringValue = new StringValue("'" + taintBits + "'");
+		StringValue newStringValue = new StringValue("'0'");
 		this.expressionReference.add(newStringValue);
 		this.addAssignmentValue(new AssignmentValue(newStringValue.getValue()));
 	}
 
 	@Override
 	public void visit(TimeValue timeValue) {
-		// '' around new String Values needed,otherwise first and last char
-		// replaced
-		String taintBits = "0";
-		for (Taint taint : this.taints) {
-			if (taint.getName().compareTo(timeValue.getValue().toString()) == 0) {
-				taintBits = taint.getTaintBits();
-				break;
-			}
-		}
-		StringValue newStringValue = new StringValue("'" + taintBits + "'");
+
+		StringValue newStringValue = new StringValue("'0'");
 		this.expressionReference.add(newStringValue);
 		this.addAssignmentValue(new AssignmentValue(newStringValue.getValue()));
 	}
 
 	@Override
 	public void visit(TimestampValue timestampValue) {
-		// '' around new String Values needed, otherwise first and last
-		// char replaced
-		String taintBits = "0";
-		for (Taint taint : this.taints) {
-			if (taint.getName().compareTo(timestampValue.getValue().toString()) == 0) {
-				taintBits = taint.getTaintBits();
-				break;
-			}
-		}
-		StringValue newStringValue = new StringValue("'" + taintBits + "'");
+		StringValue newStringValue = new StringValue("'0'");
 		this.expressionReference.add(newStringValue);
 		this.addAssignmentValue(new AssignmentValue(newStringValue.getValue()));
 	}

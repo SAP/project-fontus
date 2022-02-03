@@ -12,11 +12,10 @@ import static com.sap.fontus.Constants.TAINT_PREFIX;
 
 public class FromItemTainter extends FromItemVisitorAdapter {
 
-	private final List<Taint> taints;
 	private List<AssignmentValue> assignmentValues;
 
-	FromItemTainter(List<Taint> taints) {
-		this.taints = taints;
+	FromItemTainter() {
+		super();
 	}
 
 	public List<AssignmentValue> getAssignmentValues() {
@@ -29,10 +28,10 @@ public class FromItemTainter extends FromItemVisitorAdapter {
 
 	@Override
 	public void visit(SubSelect subSelect) {
-		subSelect.getSelectBody().accept(new SelectTainter(this.taints));
+		subSelect.getSelectBody().accept(new SelectTainter());
 		if (subSelect.getWithItemsList() != null)
 			for (WithItem withItem : subSelect.getWithItemsList()) {
-				withItem.accept(new SelectTainter(this.taints));
+				withItem.accept(new SelectTainter());
 			}
 	}
 
@@ -49,6 +48,6 @@ public class FromItemTainter extends FromItemVisitorAdapter {
 		}
 
 		if (valuesList.getMultiExpressionList() != null)
-			valuesList.getMultiExpressionList().accept(new ItemsListTainter(this.taints));
+			valuesList.getMultiExpressionList().accept(new ItemsListTainter());
 	}
 }

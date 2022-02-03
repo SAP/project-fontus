@@ -14,8 +14,8 @@ public class NestedSelectTainter extends SelectTainter {
     List<Table> tables;
     List<Expression> where;
 
-    public NestedSelectTainter(List<Taint> taints, List<Expression> plannedExpressions, List<Table> tables, List<Expression> where) {
-        super(taints);
+    public NestedSelectTainter(List<Expression> plannedExpressions, List<Table> tables, List<Expression> where) {
+        super();
         this.tables = tables;
         this.plannedExpressions = plannedExpressions;
         this.where = where;
@@ -34,12 +34,12 @@ public class NestedSelectTainter extends SelectTainter {
             }
 
             List<SelectItem> newSelectItems = new ArrayList<>();
-            NestedSelectItemTainter selectItemTainter = new NestedSelectItemTainter(super.taints, super.selectItemReference, this.plannedExpressions, this.tables, this.where);
+            NestedSelectItemTainter selectItemTainter = new NestedSelectItemTainter(super.selectItemReference, this.plannedExpressions, this.tables, this.where);
             selectItemTainter.setAssignmentValues(this.assignmentValues);
             for (SelectItem selectItem : plainSelect.getSelectItems()) {
                 newSelectItems.add(selectItem);
                 if (selectItem.toString().toLowerCase().contains("(select")) {
-                    NestedSelectItemTainter nestedSelectItemTainter = new NestedSelectItemTainter(this.taints, this.selectItemReference, this.plannedExpressions, this.tables, this.where);
+                    NestedSelectItemTainter nestedSelectItemTainter = new NestedSelectItemTainter(this.selectItemReference, this.plannedExpressions, this.tables, this.where);
                     selectItem.accept(nestedSelectItemTainter);
 
                     if (selectItem instanceof SelectExpressionItem) {

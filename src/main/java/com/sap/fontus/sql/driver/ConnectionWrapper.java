@@ -1,14 +1,11 @@
 package com.sap.fontus.sql.driver;
 
 import com.sap.fontus.sql.tainter.StatementTainter;
-import com.sap.fontus.sql.tainter.Taint;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statements;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
@@ -377,8 +374,7 @@ public class ConnectionWrapper extends AbstractWrapper implements Connection{
     }
 
     public String parseSql(String sql){
-        List<Taint> taints = new ArrayList<>();
-        StatementTainter tainter = new StatementTainter(taints);
+        StatementTainter tainter = new StatementTainter();
         //TODO: cleaner implementation of stmts
         Statements stmts=null;
         try {

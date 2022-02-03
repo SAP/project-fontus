@@ -29,13 +29,11 @@ import static com.sap.fontus.Constants.TAINT_PREFIX;
 
 public class StatementTainter extends StatementVisitorAdapter {
 
-	private final List<Taint> taints;
 	private final AssignmentInfos assignmentInfos;
 	private List<AssignmentValue> columnValues = new ArrayList<>();
 	private final List<Integer> parameterIndices;
 
-	public StatementTainter(List<Taint> taints) {
-		this.taints = taints;
+	public StatementTainter() {
 		this.assignmentInfos = new AssignmentInfos();
 		this.parameterIndices = new ArrayList<>();
 	}
@@ -53,12 +51,12 @@ public class StatementTainter extends StatementVisitorAdapter {
 
 	@Override
 	public void visit(Select select) {
-		SelectTainter selectTainter = new SelectTainter(this.taints);
+		SelectTainter selectTainter = new SelectTainter();
 		selectTainter.setAssignmentValues(this.columnValues);
 		select.getSelectBody().accept(selectTainter);
 		if (select.getWithItemsList() != null)
 			for (WithItem withItem : select.getWithItemsList()) {
-				SelectTainter innerSelectTainter = new SelectTainter(this.taints);
+				SelectTainter innerSelectTainter = new SelectTainter();
 				innerSelectTainter.setAssignmentValues(this.columnValues);
 				withItem.accept(innerSelectTainter);
 			}
@@ -76,7 +74,7 @@ public class StatementTainter extends StatementVisitorAdapter {
 		}
 		this.addTemporaryAssingVariables(columnNames);
 		if (insert.getItemsList() != null) {
-			ItemsListTainter itemListTainter = new ItemsListTainter(this.taints);
+			ItemsListTainter itemListTainter = new ItemsListTainter();
 			itemListTainter.setAssignmentValues(this.columnValues);
 			// Loop after setColumns will also include new taint columns if needed
 			insert.getItemsList().accept(itemListTainter);
@@ -156,7 +154,7 @@ public class StatementTainter extends StatementVisitorAdapter {
 		}*/
 
 		if (update.getFromItem() != null)
-			update.getFromItem().accept(new FromItemTainter(this.taints));
+			update.getFromItem().accept(new FromItemTainter());
 
 	}
 
@@ -169,7 +167,7 @@ public class StatementTainter extends StatementVisitorAdapter {
 			replace.setExpressions(this.taintExpressions(replace.getExpressions()));
 		}
 		if (replace.getItemsList() != null) {
-			ItemsListTainter itemsListTainter = new ItemsListTainter(this.taints);
+			ItemsListTainter itemsListTainter = new ItemsListTainter();
 			replace.getItemsList().accept(itemsListTainter);
 		}
 	}
@@ -185,20 +183,20 @@ public class StatementTainter extends StatementVisitorAdapter {
 			merge.getMergeUpdate().setValues(this.taintExpressions(merge.getMergeUpdate().getValues()));
 		}
 		if (merge.getUsingSelect() != null) {
-			merge.getUsingSelect().accept(new ItemsListTainter(this.taints));
+			merge.getUsingSelect().accept(new ItemsListTainter());
 		}
 	}
 
 	@Override
 	public void visit(Execute execute) {
 		if (execute.getExprList() != null)
-			execute.getExprList().accept(new ItemsListTainter(this.taints));
+			execute.getExprList().accept(new ItemsListTainter());
 	}
 
 	private List<Expression> taintExpressions(List<Expression> expressions) {
 		List<Expression> newExpressions = new ArrayList<>();
 		List<Expression> expressionReference = new ArrayList<>(1);
-		ExpressionTainter expressionTainter = new ExpressionTainter(this.taints, expressionReference);
+		ExpressionTainter expressionTainter = new ExpressionTainter(expressionReference);
 		expressionTainter.setAssignmentValues(this.columnValues);
 		for (Expression expression : expressions) {
 			newExpressions.add(expression);
@@ -214,7 +212,7 @@ public class StatementTainter extends StatementVisitorAdapter {
 	private List<SelectExpressionItem> taintReturningExpression(List<SelectExpressionItem> returningExpressionList) {
 		List<SelectExpressionItem> newReturningExpressionList = new ArrayList<>();
 		List<SelectItem> selectItemReference = new ArrayList<>(1);
-		SelectItemTainter selectItemTainter = new SelectItemTainter(this.taints, selectItemReference);
+		SelectItemTainter selectItemTainter = new SelectItemTainter(selectItemReference);
 		for (SelectExpressionItem selectExpressionItem : returningExpressionList) {
 			newReturningExpressionList.add(selectExpressionItem);
 			selectExpressionItem.accept(selectItemTainter);
@@ -229,7 +227,7 @@ public class StatementTainter extends StatementVisitorAdapter {
 	private List<Column> taintColumns(List<Column> columns) {
 		List<Column> newColumns = new ArrayList<>();
 		List<Expression> expressionReference = new ArrayList<>(1);
-		ExpressionTainter expressionTainter = new ExpressionTainter(this.taints, expressionReference);
+		ExpressionTainter expressionTainter = new ExpressionTainter(expressionReference);
 		for (Column column : columns) {
 			newColumns.add(column);
 			column.accept(expressionTainter);
@@ -277,7 +275,7 @@ public class StatementTainter extends StatementVisitorAdapter {
 		if (createView.getColumnNames() != null)
 			createView.setColumnNames(this.taintColumnNames(createView.getColumnNames()));
 		if(createView.getSelect() != null) {
-			createView.getSelect().getSelectBody().accept(new SelectTainter(this.taints));
+			createView.getSelect().getSelectBody().accept(new SelectTainter());
 		}
 	}
 
@@ -295,7 +293,7 @@ public class StatementTainter extends StatementVisitorAdapter {
 		if (alterView.getColumnNames() != null)
 			alterView.setColumnNames(this.taintColumnNames(alterView.getColumnNames()));
 		if (alterView.getSelectBody() != null)
-			alterView.getSelectBody().accept(new SelectTainter(this.taints));
+			alterView.getSelectBody().accept(new SelectTainter());
 	}
 
 	@Override
