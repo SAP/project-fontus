@@ -103,7 +103,7 @@ public class StatementTainter extends StatementVisitorAdapter {
 				for(int i = 0; i < columns.size(); i++) {
 					UpdateSet us = new UpdateSet();
 					ArrayList<Column> cols = new ArrayList<>();
-					cols.add(tcols.get(i));
+					cols.addAll(tcols);
 					us.setColumns(cols);
 					ArrayList<Expression> exprs = new ArrayList<>();
 					exprs.add(texprs.get(i));
