@@ -12,31 +12,20 @@ import java.util.List;
 
 public class ItemsListTainter extends ItemsListVisitorAdapter {
 	private final QueryParameters parameters;
-	private List<AssignmentValue> assignmentValues;
 
 	ItemsListTainter(QueryParameters parameters) {
 		super();
 		this.parameters = parameters;
-		//this.assignmentValues = new ArrayList<>();
 	}
 
-	public List<AssignmentValue> getAssignmentValues() {
-		return this.assignmentValues;
-	}
-
-	public void setAssignmentValues(List<AssignmentValue> assignmentValues) {
-		this.assignmentValues = assignmentValues;
-	}
 
 	@Override
 	public void visit(SubSelect subSelect) {
 		SelectTainter selectTainter =  new SelectTainter(this.parameters);
-		selectTainter.setAssignmentValues(this.assignmentValues);
 		subSelect.getSelectBody().accept(selectTainter);
 		if (subSelect.getWithItemsList() != null)
 			for (WithItem withItem : subSelect.getWithItemsList()) {
 				SelectTainter innerSelectTainter = new SelectTainter(this.parameters);
-				innerSelectTainter.setAssignmentValues(this.assignmentValues);
 				withItem.accept(innerSelectTainter);
 			}
 	}
@@ -45,7 +34,6 @@ public class ItemsListTainter extends ItemsListVisitorAdapter {
 	public void visit(ExpressionList expressionList) {
 		List<Expression> newExpressionList = new ArrayList<>();
 		ExpressionTainter insertExpressionTainter = new ExpressionTainter(this.parameters, newExpressionList);
-		insertExpressionTainter.setAssignmentValues(this.assignmentValues);
 		for (Expression expression : expressionList.getExpressions()) {
 			newExpressionList.add(expression);
 			expression.accept(insertExpressionTainter);

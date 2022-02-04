@@ -10,19 +10,10 @@ import java.util.List;
 
 public class FromItemTainter extends FromItemVisitorAdapter {
 	private final QueryParameters parameters;
-	private List<AssignmentValue> assignmentValues;
 
 	FromItemTainter(QueryParameters parameters) {
 		super();
 		this.parameters = parameters;
-	}
-
-	public List<AssignmentValue> getAssignmentValues() {
-		return this.assignmentValues;
-	}
-
-	public void setAssignmentValues(List<AssignmentValue> assignmentValues) {
-		this.assignmentValues = assignmentValues;
 	}
 
 	@Override

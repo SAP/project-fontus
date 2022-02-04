@@ -13,7 +13,6 @@ public class SelectTainter extends SelectVisitorAdapter {
 	protected final QueryParameters parameters;
 	protected final List<Expression> expressionReference;
 	protected final List<SelectItem> selectItemReference;
-	protected List<AssignmentValue> assignmentValues;
 
 	SelectTainter(QueryParameters parameters) {
 		// List used as Container to return the reference to one newly created
@@ -26,20 +25,12 @@ public class SelectTainter extends SelectVisitorAdapter {
 		this.parameters = parameters;
 	}
 
-	public List<AssignmentValue> getAssignmentValues() {
-		return this.assignmentValues;
-	}
-
-	public void setAssignmentValues(List<AssignmentValue> assignmentValues) {
-		this.assignmentValues = assignmentValues;
-	}
 
 	@Override
 	public void visit(PlainSelect plainSelect) {
 		if (plainSelect.getSelectItems() != null) {
 			List<SelectItem> newSelectItems = new ArrayList<>();
 			SelectItemTainter selectItemTainter = new SelectItemTainter(this.parameters, this.selectItemReference);
-			selectItemTainter.setAssignmentValues(this.assignmentValues);
 			for (SelectItem selectItem : plainSelect.getSelectItems()) {
 				newSelectItems.add(selectItem);
 
@@ -125,7 +116,6 @@ public class SelectTainter extends SelectVisitorAdapter {
 			List<Expression> newGroupByColumnReferences;
 			newGroupByColumnReferences = new ArrayList<>();
 			ExpressionTainter selectExpressionTainter = new ExpressionTainter(this.parameters, this.expressionReference);
-			selectExpressionTainter.setAssignmentValues(this.assignmentValues);
 			for (Expression expression : groupByColumnReferences) {
 				newGroupByColumnReferences.add(expression);
 				expression.accept(selectExpressionTainter);
@@ -153,12 +143,10 @@ public class SelectTainter extends SelectVisitorAdapter {
 	@Override
 	public void visit(WithItem withItem) {
 		SelectTainter selectTainter = new SelectTainter(this.parameters);
-		selectTainter.setAssignmentValues(this.assignmentValues);
 		withItem.getSubSelect().getSelectBody().accept(selectTainter);
 		if (withItem.getWithItemList() != null) {
 			List<SelectItem> newWithItemList = new ArrayList<>();
 			SelectItemTainter selectItemTainter = new SelectItemTainter(this.parameters, this.selectItemReference);
-			selectItemTainter.setAssignmentValues(this.assignmentValues);
 			for (SelectItem selectItem : withItem.getWithItemList()) {
 				newWithItemList.add(selectItem);
 				selectItem.accept(selectItemTainter);

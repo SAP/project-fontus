@@ -41,12 +41,10 @@ public class NestedExpressionTainter extends ExpressionTainter {
     @Override
     public void visit(SubSelect subSelect) {
         NestedSelectTainter selectTainter = new NestedSelectTainter(this.parameters, this.plannedExpressions, this.tables, this.where);
-        selectTainter.setAssignmentValues(this.assignmentValues);
         subSelect.getSelectBody().accept(selectTainter);
         if (subSelect.getWithItemsList() != null) {
             for (WithItem withItem : subSelect.getWithItemsList()) {
                 NestedSelectTainter innerSelectTainter = new NestedSelectTainter(this.parameters, this.plannedExpressions, this.tables, this.where);
-                innerSelectTainter.setAssignmentValues(this.assignmentValues);
                 withItem.accept(innerSelectTainter);
             }
         }

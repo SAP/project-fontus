@@ -13,7 +13,6 @@ public class SelectItemTainter extends SelectItemVisitorAdapter {
 	protected final QueryParameters parameters;
 	protected final List<SelectItem> selectItemReference;
 	protected final List<Expression> expressionReference;
-	protected List<AssignmentValue> assignmentValues;
 
 	SelectItemTainter(QueryParameters parameters, List<SelectItem> selectItemReference) {
 		// List used as Container to return the reference to one newly created
@@ -23,18 +22,9 @@ public class SelectItemTainter extends SelectItemVisitorAdapter {
 		this.parameters = parameters;
 	}
 
-	public List<AssignmentValue> getAssignmentValues() {
-		return this.assignmentValues;
-	}
-
-	public void setAssignmentValues(List<AssignmentValue> assignmentValues) {
-		this.assignmentValues = assignmentValues;
-	}
-
 	@Override
 	public void visit(SelectExpressionItem selectExpressionItem) {
 		ExpressionTainter selectExpressionTainter = new ExpressionTainter(this.parameters, this.expressionReference);
-		selectExpressionTainter.setAssignmentValues(this.assignmentValues);
 		selectExpressionItem.getExpression().accept(selectExpressionTainter);
 		if (!this.expressionReference.isEmpty()) {
 			// get new created expression by reference and clear list
@@ -42,7 +32,6 @@ public class SelectItemTainter extends SelectItemVisitorAdapter {
 			this.expressionReference.clear();
 			// copy and add taint prefix for alias
 			if (selectExpressionItem.getAlias() != null) {
-				//assignmentValues.add(new AssignmentValue(selectExpressionItem.getAlias().getName()));
 				item.setAlias(new Alias(Utils.taintColumnName(selectExpressionItem.getAlias().getName())));
 			}
 			//'return' selectItem via global list

@@ -24,7 +24,6 @@ public class NestedSelectItemTainter extends SelectItemTainter {
     @Override
     public void visit(SelectExpressionItem selectExpressionItem) {
         NestedExpressionTainter selectNestedExpressionTainter = new NestedExpressionTainter(this.parameters, this.expressionReference, this.plannedExpressions, this.tables, this.where);
-        selectNestedExpressionTainter.setAssignmentValues(this.assignmentValues);
         selectExpressionItem.getExpression().accept(selectNestedExpressionTainter);
         if (!this.expressionReference.isEmpty()) {
             // get new created expression by reference and clear list
@@ -32,7 +31,6 @@ public class NestedSelectItemTainter extends SelectItemTainter {
             this.expressionReference.clear();
             // copy and add taint prefix for alias
             if (selectExpressionItem.getAlias() != null) {
-                //assignmentValues.add(new AssignmentValue(selectExpressionItem.getAlias().getName()));
                 //TODO has eventually to be changed
                 // TODO(DK): why is that?
                 item.setAlias(new Alias(Utils.taintColumnName(selectExpressionItem.getAlias().getName())));

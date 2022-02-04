@@ -30,13 +30,9 @@ import static com.sap.fontus.Constants.TAINT_PREFIX;
 public class StatementTainter extends StatementVisitorAdapter {
 
 	private final QueryParameters parameters;
-	private final AssignmentInfos assignmentInfos;
-	private List<AssignmentValue> columnValues = new ArrayList<>();
-	private final List<Integer> parameterIndices;
 
 	public StatementTainter() {
-		this.assignmentInfos = new AssignmentInfos();
-		this.parameterIndices = new ArrayList<>();
+		super();
 		this.parameters = new QueryParameters();
 	}
 
@@ -44,9 +40,6 @@ public class StatementTainter extends StatementVisitorAdapter {
 		return this.parameters;
 	}
 
-	public Map<String, String> getAssignmentInfos() {
-		return this.assignmentInfos.getAssignmentInfosAsString();
-	}
 
 	@Override
 	public void visit(Statements stmts) {
@@ -58,19 +51,16 @@ public class StatementTainter extends StatementVisitorAdapter {
 	@Override
 	public void visit(Select select) {
 		SelectTainter selectTainter = new SelectTainter(this.parameters);
-		selectTainter.setAssignmentValues(this.columnValues);
 		select.getSelectBody().accept(selectTainter);
 		if (select.getWithItemsList() != null)
 			for (WithItem withItem : select.getWithItemsList()) {
 				SelectTainter innerSelectTainter = new SelectTainter(this.parameters);
-				innerSelectTainter.setAssignmentValues(this.columnValues);
 				withItem.accept(innerSelectTainter);
 			}
 	}
 
 	@Override
 	public void visit(Insert insert) {
-		this.columnValues = new ArrayList<>();
 		List<String> columnNames = new ArrayList<>();
 		if (insert.getColumns() != null) {
 			insert.setColumns(this.taintColumns(insert.getColumns()));
@@ -78,10 +68,8 @@ public class StatementTainter extends StatementVisitorAdapter {
 				columnNames.add(c.getColumnName());
 			}
 		}
-		this.addTemporaryAssingVariables(columnNames);
 		if (insert.getItemsList() != null) {
 			ItemsListTainter itemListTainter = new ItemsListTainter(this.parameters);
-			itemListTainter.setAssignmentValues(this.columnValues);
 			// Loop after setColumns will also include new taint columns if needed
 			insert.getItemsList().accept(itemListTainter);
 		}
@@ -89,14 +77,12 @@ public class StatementTainter extends StatementVisitorAdapter {
 			insert.getSelect().accept(this);
 		if (insert.getReturningExpressionList() != null)
 			insert.setReturningExpressionList(this.taintReturningExpression(insert.getReturningExpressionList()));
-		this.addTemporaryAssignValues(this.columnValues);
 		//System.out.println("Insert");
 		//assignmentInfos.getAssignmentInfosAsString().forEach((k,v) -> System.out.println("key: "+k+" value:"+v));
 	}
 
 	@Override
 	public void visit(Update update) {
-		this.columnValues = new ArrayList<>();
 		List<String> columnNames = new ArrayList<>();
 		// Parser breaks if !update.isUseColumnBrackets() and unrecognized
 		// update.isUseSelect()
@@ -148,8 +134,6 @@ public class StatementTainter extends StatementVisitorAdapter {
 		updateSets.addAll(fixedSets);
 
 
-		this.addTemporaryAssingVariables(columnNames);
-		this.addTemporaryAssignValues(this.columnValues);
 		//System.out.println("Update");
 		//assignmentInfos.getAssignmentInfosAsString().forEach((k,v) -> System.out.println("key: "+k+" value:"+v));
 
@@ -213,7 +197,6 @@ public class StatementTainter extends StatementVisitorAdapter {
 		List<Expression> newExpressions = new ArrayList<>();
 		List<Expression> expressionReference = new ArrayList<>(1);
 		ExpressionTainter expressionTainter = new ExpressionTainter(this.parameters, expressionReference);
-		expressionTainter.setAssignmentValues(this.columnValues);
 		for (Expression expression : expressions) {
 			newExpressions.add(expression);
 			expression.accept(expressionTainter);
@@ -349,23 +332,4 @@ public class StatementTainter extends StatementVisitorAdapter {
 		}
 	}
 
-	public LinkedHashMap<Integer, Integer> getIndices() {
-		if (this.assignmentInfos != null) {
-			return this.assignmentInfos.getIndices();
-		} else {
-			return null;
-		}
-	}
-
-	private void addTemporaryAssingVariables(List<String> columnNames) {
-		if (this.assignmentInfos != null) {
-			this.assignmentInfos.setTemporaryAssignVariables(columnNames);
-		}
-	}
-
-	private void addTemporaryAssignValues(List<AssignmentValue> assignmentValues) {
-		if (this.assignmentInfos != null) {
-			this.assignmentInfos.setTemporaryAssignValues(assignmentValues);
-		}
-	}
 }

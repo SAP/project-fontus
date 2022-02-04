@@ -35,7 +35,6 @@ public class NestedSelectTainter extends SelectTainter {
 
             List<SelectItem> newSelectItems = new ArrayList<>();
             NestedSelectItemTainter selectItemTainter = new NestedSelectItemTainter(this.parameters, this.selectItemReference, this.plannedExpressions, this.tables, this.where);
-            selectItemTainter.setAssignmentValues(this.assignmentValues);
             for (SelectItem selectItem : plainSelect.getSelectItems()) {
                 newSelectItems.add(selectItem);
                 if (selectItem.toString().toLowerCase().contains("(select")) {
