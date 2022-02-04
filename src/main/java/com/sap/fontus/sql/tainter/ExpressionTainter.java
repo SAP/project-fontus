@@ -45,14 +45,14 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 		} else if (column.getTable() == null || column.getTable().getName() == null) {
 			this.addAssignmentValue(new AssignmentValue(column.getColumnName()));
 			// 'return' expression via global list
-			Column newColumn = new Column("`" + TAINT_PREFIX + column.getColumnName().replace("\"", "").replace("`", "") + "`");
+			Column newColumn = Utils.getTaintColumn(column);
 			this.addAssignmentValue(new AssignmentValue(newColumn.getColumnName()));
 			this.expressionReference
 					.add(newColumn);
 		} else {
 			this.addAssignmentValue(new AssignmentValue(column.getColumnName()));
-			this.expressionReference.add(new Column(column.getTable() + "." + "`" + TAINT_PREFIX
-					+ column.getColumnName().replace("\"", "").replace("`", "") + "`"));
+			this.expressionReference.add(Utils.getTaintColumn(column.getTable(), column)); //new Column(column.getTable() + "." + "`" + TAINT_PREFIX
+					//+ column.getColumnName().replace("\"", "").replace("`", "") + "`"));
 		}
 	}
 

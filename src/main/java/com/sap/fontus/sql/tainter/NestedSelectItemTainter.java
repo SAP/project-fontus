@@ -2,14 +2,11 @@ package com.sap.fontus.sql.tainter;
 
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
 import java.util.List;
-
-import static com.sap.fontus.Constants.TAINT_PREFIX;
 
 public class NestedSelectItemTainter extends SelectItemTainter {
 
@@ -37,7 +34,8 @@ public class NestedSelectItemTainter extends SelectItemTainter {
             if (selectExpressionItem.getAlias() != null) {
                 //assignmentValues.add(new AssignmentValue(selectExpressionItem.getAlias().getName()));
                 //TODO has eventually to be changed
-                item.setAlias(new Alias("`" + TAINT_PREFIX + selectExpressionItem.getAlias().getName().replace("\"", "").replace("`", "") + "`"));
+                // TODO(DK): why is that?
+                item.setAlias(new Alias(Utils.taintColumnName(selectExpressionItem.getAlias().getName())));
             }
             //'return' selectItem via global list
             this.selectItemReference.add(item);

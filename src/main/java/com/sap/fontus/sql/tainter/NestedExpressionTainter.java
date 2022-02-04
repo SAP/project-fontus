@@ -10,8 +10,6 @@ import net.sf.jsqlparser.statement.select.WithItem;
 
 import java.util.List;
 
-import static com.sap.fontus.Constants.TAINT_PREFIX;
-
 public class NestedExpressionTainter extends ExpressionTainter {
 
     List<Expression> plannedExpressions;
@@ -34,11 +32,9 @@ public class NestedExpressionTainter extends ExpressionTainter {
             this.plannedExpressions.add(new StringValue("'0'"));
         } else if (column.getTable() == null || column.getTable().getName() == null) {
             // 'return' expression via global list
-            Column newColumn = new Column("`" + TAINT_PREFIX + column.getColumnName().replace("\"", "").replace("`", "") + "`");
-            this.plannedExpressions.add(newColumn);
+            this.plannedExpressions.add(Utils.getTaintColumn(column));
         } else {
-            this.plannedExpressions.add(new Column(column.getTable() + "." + "`" + TAINT_PREFIX
-                    + column.getColumnName().replace("\"", "").replace("`", "") + "`"));
+            this.plannedExpressions.add(Utils.getTaintColumn(column.getTable(), column));
         }
     }
 

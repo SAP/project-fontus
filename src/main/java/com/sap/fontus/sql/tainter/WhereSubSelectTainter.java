@@ -5,7 +5,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 
 public class WhereSubSelectTainter extends SelectVisitorAdapter {
-    private QueryParameters parameters;
+    private final QueryParameters parameters;
 
     WhereSubSelectTainter(QueryParameters parameters) {
         super();

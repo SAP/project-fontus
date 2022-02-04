@@ -6,8 +6,8 @@ import java.util.List;
 
 public class QueryParameters {
 
-    private List<ParameterType> types;
-    private HashMap<Integer, TaintAssignment> indices;
+    private final List<ParameterType> types;
+    private final HashMap<Integer, TaintAssignment> indices;
     private boolean indicesCalculated = false;
     QueryParameters() {
         this.types = new ArrayList<>();

@@ -8,8 +8,6 @@ import net.sf.jsqlparser.statement.select.WithItem;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.sap.fontus.Constants.TAINT_PREFIX;
-
 public class FromItemTainter extends FromItemVisitorAdapter {
 	private final QueryParameters parameters;
 	private List<AssignmentValue> assignmentValues;
@@ -43,7 +41,7 @@ public class FromItemTainter extends FromItemVisitorAdapter {
 			newColumnsList = new ArrayList<>();
 			for (String column : valuesList.getColumnNames()) {
 				newColumnsList.add(column);
-				newColumnsList.add("`" + TAINT_PREFIX + column.replace("\"", "").replace("`", "") + "`");
+				newColumnsList.add(Utils.taintColumnName(column));
 			}
 			valuesList.setColumnNames(newColumnsList);
 		}

@@ -13,7 +13,7 @@ public class WhereExpressionTainter extends ExpressionVisitorAdapter {
     }
 
     private final QueryParameters parameters;
-    private WhereExpressionKind kind;
+    private final WhereExpressionKind kind;
     WhereExpressionTainter(QueryParameters parameters) {
         super();
         this.parameters = parameters;

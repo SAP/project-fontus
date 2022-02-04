@@ -9,8 +9,6 @@ import net.sf.jsqlparser.statement.select.SelectItemVisitorAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.sap.fontus.Constants.TAINT_PREFIX;
-
 public class SelectItemTainter extends SelectItemVisitorAdapter {
 	protected final QueryParameters parameters;
 	protected final List<SelectItem> selectItemReference;
@@ -45,7 +43,7 @@ public class SelectItemTainter extends SelectItemVisitorAdapter {
 			// copy and add taint prefix for alias
 			if (selectExpressionItem.getAlias() != null) {
 				//assignmentValues.add(new AssignmentValue(selectExpressionItem.getAlias().getName()));
-				item.setAlias(new Alias("`" + TAINT_PREFIX + selectExpressionItem.getAlias().getName().replace("\"", "").replace("`", "") + "`"));
+				item.setAlias(new Alias(Utils.taintColumnName(selectExpressionItem.getAlias().getName())));
 			}
 			//'return' selectItem via global list
 			this.selectItemReference.add(item);

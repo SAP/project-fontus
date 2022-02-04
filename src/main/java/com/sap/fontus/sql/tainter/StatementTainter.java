@@ -268,7 +268,7 @@ public class StatementTainter extends StatementVisitorAdapter {
 		for (ColumnDefinition columnDefinition : columnDefinitions) {
 			newColumnDefinitions.add(columnDefinition);
 			ColumnDefinition newColumnDefinition = new ColumnDefinition();
-			newColumnDefinition.setColumnName("`" + TAINT_PREFIX + columnDefinition.getColumnName().replace("\"", "").replace("`", "") + "`");
+			newColumnDefinition.setColumnName(Utils.taintColumnName(columnDefinition.getColumnName()));
 			String dataType = columnDefinition.getColDataType().getDataType().toUpperCase();
 			if (dataType.contains("TEXT"))
 				newColumnDefinition.setColDataType(columnDefinition.getColDataType());
@@ -299,7 +299,7 @@ public class StatementTainter extends StatementVisitorAdapter {
 		List<String> newColumnNames = new ArrayList<>();
 		for (String columnName : columnNames) {
 			newColumnNames.add(columnName);
-			newColumnNames.add("`" + TAINT_PREFIX + columnName.replace("\"", "").replace("`", "") + "`");
+			newColumnNames.add(Utils.taintColumnName(columnName));
 		}
 		return newColumnNames;
 	}

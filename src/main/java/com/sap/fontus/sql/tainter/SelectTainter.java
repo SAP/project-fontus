@@ -9,8 +9,6 @@ import net.sf.jsqlparser.statement.select.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.sap.fontus.Constants.TAINT_PREFIX;
-
 public class SelectTainter extends SelectVisitorAdapter {
 	protected final QueryParameters parameters;
 	protected final List<Expression> expressionReference;
@@ -49,7 +47,7 @@ public class SelectTainter extends SelectVisitorAdapter {
 				if (selectItem.toString().toLowerCase().contains("(select")) {
 					// Safe and transform current alias
 					Alias alias = ((SelectExpressionItem) selectItem).getAlias();
-					Alias newAlias = new Alias("`" + TAINT_PREFIX + alias.getName().replace("\"", "").replace("`", "") + "`");
+					Alias newAlias = new Alias(Utils.taintColumnName(alias.getName()));
 
 					List<Expression> plannedExpressions = new ArrayList<>();
 					List<Table> tables = new ArrayList<>();
@@ -59,11 +57,12 @@ public class SelectTainter extends SelectVisitorAdapter {
 
 
 					// Expressions --> columns or values for functions like SUM, AVG, COUNT
-					String expression = "";
+					StringBuilder expression = new StringBuilder(10);
 					for (Expression e : plannedExpressions) {
-						expression += e.toString() + ",";
+						expression.append(e.toString()).append(",");
 					}
-					expression = expression.substring(0, expression.length() - 1);
+					String expr = expression.substring(0, expression.length()-1);
+
 
 					// Table of nested query
 					String strTable = "";
@@ -74,10 +73,10 @@ public class SelectTainter extends SelectVisitorAdapter {
 					}
 
 					String nestedQuery = "";
-					if (where.size() > 0) {
-						nestedQuery = "SELECT " + expression + " FROM " + strTable + " WHERE " + where.get(0).toString();
+					if (where.isEmpty()) {
+						nestedQuery = "SELECT " + expr + " FROM " + strTable;
 					} else {
-						nestedQuery = "SELECT " + expression + " FROM " + strTable;
+						nestedQuery = "SELECT " + expr + " FROM " + strTable + " WHERE " + where.get(0).toString();
 					}
 
 					// Yeah let's do SQL injection :D

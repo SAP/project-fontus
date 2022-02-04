@@ -26,11 +26,11 @@ public class NestedSelectTainter extends SelectTainter {
         if (plainSelect.getSelectItems() != null) {
 
             if (plainSelect.getWhere() != null) {
-                where.add(plainSelect.getWhere());
+                this.where.add(plainSelect.getWhere());
             }
 
             if (plainSelect.getFromItem() instanceof Table) {
-                tables.add((Table) plainSelect.getFromItem());
+                this.tables.add((Table) plainSelect.getFromItem());
             }
 
             List<SelectItem> newSelectItems = new ArrayList<>();
