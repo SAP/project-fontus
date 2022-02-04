@@ -1,25 +1,45 @@
 package com.sap.fontus.sql.tainter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class QueryParameters {
 
     private final List<ParameterType> types;
     private final HashMap<Integer, TaintAssignment> indices;
     private boolean indicesCalculated = false;
+
+    private Deque<StatementType> stateStack;
+
     QueryParameters() {
         this.types = new ArrayList<>();
         this.indices = new HashMap<>();
+        this.stateStack = new ArrayDeque<>();
     }
+
+    public void begin(StatementType type) {
+        System.out.printf("Pushing %s onto stack%n", type);
+        this.stateStack.push(type);
+    }
+
+    public void end(StatementType type) {
+        System.out.printf("Popping %s from stack%n", type);
+        StatementType top = this.stateStack.pop();
+        if(top != type) {
+            throw new IllegalStateException(String.format("Trying to pop '%s' but currently '%s' on top of stack", type, top));
+        }
+
+    }
+
     void addParameter(ParameterType type) {
         System.out.printf("Adding JDBC param of type: %s%n", type);
         this.types.add(type);
-        //Thread.dumpStack();
+        Thread.dumpStack();
     }
 
     private void computeIndices() {
+        if(!this.stateStack.isEmpty()) {
+            throw new IllegalStateException("Trying to compute indices despite state stack not being empty");
+        }
         int currentIdx = 1;
         int oldIdx = 1;
         for(ParameterType type : this.types) {

@@ -45,6 +45,7 @@ public class StatementTainter extends StatementVisitorAdapter {
 
 	@Override
 	public void visit(Select select) {
+		this.parameters.begin(StatementType.SELECT);
 		SelectTainter selectTainter = new SelectTainter(this.parameters);
 		select.getSelectBody().accept(selectTainter);
 		if (select.getWithItemsList() != null) {
@@ -53,10 +54,12 @@ public class StatementTainter extends StatementVisitorAdapter {
 				withItem.accept(innerSelectTainter);
 			}
 		}
+		this.parameters.end(StatementType.SELECT);
 	}
 
 	@Override
 	public void visit(Insert insert) {
+		this.parameters.begin(StatementType.INSERT);
 		if (insert.getColumns() != null) {
 			insert.setColumns(this.taintColumns(insert.getColumns()));
 		}
@@ -73,10 +76,12 @@ public class StatementTainter extends StatementVisitorAdapter {
 		}
 		//System.out.println("Insert");
 		//assignmentInfos.getAssignmentInfosAsString().forEach((k,v) -> System.out.println("key: "+k+" value:"+v));
+		this.parameters.end(StatementType.INSERT);
 	}
 
 	@Override
 	public void visit(Update update) {
+		this.parameters.begin(StatementType.UPDATE);
 		// Parser breaks if !update.isUseColumnBrackets() and unrecognized
 		// update.isUseSelect()
 		// for example: update a set id = (select id from b);
@@ -132,7 +137,7 @@ public class StatementTainter extends StatementVisitorAdapter {
 		if(update.getWhere() != null) {
 			update.getWhere().accept(new WhereExpressionTainter(this.parameters));
 		}
-
+		this.parameters.end(StatementType.UPDATE);
 	}
 
 	@Override

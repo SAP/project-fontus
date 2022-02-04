@@ -83,6 +83,7 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 
 	@Override
 	public void visit(SubSelect subSelect) {
+		this.parameters.begin(StatementType.SUB_SELECT);
 		SelectTainter selectTainter = new SelectTainter(this.parameters);
 		subSelect.getSelectBody().accept(selectTainter);
 		if (subSelect.getWithItemsList() != null) {
@@ -91,6 +92,7 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 				withItem.accept(innerSelectTainter);
 			}
 		}
+		this.parameters.end(StatementType.SUB_SELECT);
 	}
 
 	@Override

@@ -40,6 +40,7 @@ public class NestedExpressionTainter extends ExpressionTainter {
 
     @Override
     public void visit(SubSelect subSelect) {
+        this.parameters.begin(StatementType.SUB_SELECT);
         NestedSelectTainter selectTainter = new NestedSelectTainter(this.parameters, this.plannedExpressions, this.tables, this.where);
         subSelect.getSelectBody().accept(selectTainter);
         if (subSelect.getWithItemsList() != null) {
@@ -48,6 +49,7 @@ public class NestedExpressionTainter extends ExpressionTainter {
                 withItem.accept(innerSelectTainter);
             }
         }
+        this.parameters.end(StatementType.SUB_SELECT);
     }
 
     @Override

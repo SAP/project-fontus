@@ -18,12 +18,14 @@ public class FromItemTainter extends FromItemVisitorAdapter {
 
 	@Override
 	public void visit(SubSelect subSelect) {
+		this.parameters.begin(StatementType.SUB_SELECT);
 		subSelect.getSelectBody().accept(new SelectTainter(this.parameters));
 		if (subSelect.getWithItemsList() != null) {
 			for (WithItem withItem : subSelect.getWithItemsList()) {
 				withItem.accept(new SelectTainter(this.parameters));
 			}
 		}
+		this.parameters.end(StatementType.SUB_SELECT);
 	}
 
 	@Override

@@ -55,6 +55,19 @@ public class PreparedStatementTests {
 
         ResultSet rss = ps.executeQuery();
     }
+
+    @Test
+    void testTupleUpdate() throws Exception {
+        String query = "update contacts set (id) = (select id from contacts);";
+        Connection mc = new MockConnection(this.conn);
+        Connection c = ConnectionWrapper.wrap(mc);
+        PreparedStatement ps = c.prepareStatement(query);
+        MockPreparedStatement mps = ps.unwrap(MockPreparedStatement.class);
+        PreparedStatementWrapper unwrapped = ps.unwrap(PreparedStatementWrapper.class);
+        QueryParameters parameters = unwrapped.getParameters();
+        ResultSet rss = ps.executeQuery();
+
+    }
     @Test
     void testInsertSubselect() throws Exception {
         String query = "INSERT INTO contacts VALUES(?, (select info from meta where contact_id = ?), ?, ?, ?)";

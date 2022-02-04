@@ -4,8 +4,11 @@ SELECT name, `__taint__name`, vorname, `__taint__vorname` FROM customers;
 WITH users AS (SELECT name, vorname FROM users), customers AS (SELECT id FROM customers) SELECT name, vorname, id FROM users, customers;
 WITH users AS (SELECT name, `__taint__name`, vorname, `__taint__vorname` FROM users), customers AS (SELECT id, `__taint__id` FROM customers) SELECT name, `__taint__name`, vorname, `__taint__vorname`, id, `__taint__id` FROM users, customers;
 
-with a (name) as (select name from users) select name from a; Select vorname, (select name from customers) from users;
-WITH a (name, `__taint__name`) AS (SELECT name, `__taint__name` FROM users) SELECT name, `__taint__name` FROM a; SELECT vorname, `__taint__vorname`, (SELECT name, `__taint__name` FROM customers) FROM users;
+with a (name) as (select name from users) select name from a;
+WITH a (name, `__taint__name`) AS (SELECT name, `__taint__name` FROM users) SELECT name, `__taint__name` FROM a;
+
+ Select vorname, (select name from customers) from users;
+SELECT vorname, `__taint__vorname`, (SELECT name FROM customers), (SELECT `__taint__name` FROM customers) FROM users;
 
 select name, NULL from users;
 SELECT name, `__taint__name`, NULL, '0' FROM users;
