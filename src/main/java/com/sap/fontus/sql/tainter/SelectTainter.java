@@ -47,7 +47,10 @@ public class SelectTainter extends SelectVisitorAdapter {
 				if (selectItem.toString().toLowerCase().contains("(select")) {
 					// Safe and transform current alias
 					Alias alias = ((SelectExpressionItem) selectItem).getAlias();
-					Alias newAlias = new Alias(Utils.taintColumnName(alias.getName()));
+					Alias newAlias = null;
+					if(alias != null) {
+						newAlias = new Alias(Utils.taintColumnName(alias.getName()));
+					}
 
 					List<Expression> plannedExpressions = new ArrayList<>();
 					List<Table> tables = new ArrayList<>();
@@ -84,7 +87,9 @@ public class SelectTainter extends SelectVisitorAdapter {
 					try {
 						SubSelect sub = new SubSelect();
 						sub.setSelectBody(((Select) CCJSqlParserUtil.parse(nestedQuery)).getSelectBody());
-						sub.setAlias(newAlias);
+						if(alias != null) {
+							sub.setAlias(newAlias);
+						}
 						SelectExpressionItem ie = new SelectExpressionItem();
 						ie.setExpression(sub);
 						newSelectItems.add(ie);
