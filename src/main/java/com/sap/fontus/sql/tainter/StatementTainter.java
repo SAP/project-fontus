@@ -60,22 +60,25 @@ public class StatementTainter extends StatementVisitorAdapter {
 	@Override
 	public void visit(Insert insert) {
 		this.parameters.begin(StatementType.INSERT);
+		this.parameters.begin(StatementType.INSERT_COLUMNS);
 		if (insert.getColumns() != null) {
 			insert.setColumns(this.taintColumns(insert.getColumns()));
 		}
+		this.parameters.end(StatementType.INSERT_COLUMNS);
+		this.parameters.begin(StatementType.INSERT_ITEMS);
 		if (insert.getItemsList() != null) {
 			ItemsListTainter itemListTainter = new ItemsListTainter(this.parameters);
 			// Loop after setColumns will also include new taint columns if needed
 			insert.getItemsList().accept(itemListTainter);
 		}
+		this.parameters.end(StatementType.INSERT_ITEMS);
 		if (insert.getSelect() != null) {
 			insert.getSelect().accept(this);
 		}
 		if (insert.getReturningExpressionList() != null) {
 			insert.setReturningExpressionList(this.taintReturningExpression(insert.getReturningExpressionList()));
 		}
-		//System.out.println("Insert");
-		//assignmentInfos.getAssignmentInfosAsString().forEach((k,v) -> System.out.println("key: "+k+" value:"+v));
+
 		this.parameters.end(StatementType.INSERT);
 	}
 
@@ -90,14 +93,12 @@ public class StatementTainter extends StatementVisitorAdapter {
 		List<Column> taintedCols = new ArrayList<>();
 		List<Expression> taintedExprs = new ArrayList<>();
 		List<UpdateSet> fixedSets = new ArrayList<>();
-		//System.out.println(update);
 		for(UpdateSet updateSet : updateSets) {
 
 			List<Column> columns = updateSet.getColumns();
 			ArrayList<Column> tcols = (ArrayList<Column>) this.taintColumns(columns);
 			List<Expression> expressions = updateSet.getExpressions();
 			ArrayList<Expression> texprs = (ArrayList<Expression>) this.taintExpressions(expressions);
-			// This seems to be relevant for subselects, not 100% sure why/how
 			if (texprs.get(0) instanceof SubSelect) {
 				for(int i = 0; i < columns.size(); i++) {
 					UpdateSet us = new UpdateSet();
@@ -115,7 +116,6 @@ public class StatementTainter extends StatementVisitorAdapter {
 					Column c = tcols.get(i);
 					Expression e = texprs.get(i);
 					UpdateSet us = new UpdateSet(c, e);
-					//System.out.println(c + " = " + e);
 
 					if (i == 0 && e instanceof SubSelect) {
 						us.setColumns(tcols);
@@ -267,9 +267,7 @@ public class StatementTainter extends StatementVisitorAdapter {
 					if(dataType.getColDataType() != null) {
 						String dataTypeString = dataType.getColDataType().getDataType().toUpperCase();
 						switch(dataTypeString) {
-							//case "VARCHAR":
 							case "TEXT":
-							//case "NVARCHAR":
 								taintAlterExpression.addColDataType(dataType);
 							    break;
 							default:

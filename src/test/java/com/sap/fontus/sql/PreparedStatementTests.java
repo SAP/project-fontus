@@ -80,7 +80,9 @@ public class PreparedStatementTests {
 
         TaintAssignment[] assignments = new TaintAssignment[5];
         for(int i = 0; i < 5; i++) {
-            if(i == 1) continue;
+            if(i == 1) {
+                continue;
+            }
             assignments[i] = new TaintAssignment(i+1, (i*2)+1, (i*2)+2, ParameterType.ASSIGNMENT);
         }
         assignments[1] = new TaintAssignment(2, 3, 4, ParameterType.ASSIGNMENT_SUBSELECT);
