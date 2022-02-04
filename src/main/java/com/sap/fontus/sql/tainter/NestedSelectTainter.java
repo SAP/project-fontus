@@ -62,7 +62,10 @@ public class NestedSelectTainter extends SelectTainter {
             }
             plainSelect.setSelectItems(newSelectItems);
         }
-        plainSelect.getWhere().accept(new WhereExpressionTainter(this.parameters, WhereExpressionKind.QUERY_SUBSELECT_WHERE));
+        Expression w = plainSelect.getWhere();
+        if(w != null) {
+            w.accept(new WhereExpressionTainter(this.parameters, WhereExpressionKind.QUERY_SUBSELECT_WHERE));
+        }
 
         GroupByElement groupBy = plainSelect.getGroupBy();
         if(groupBy != null) {
