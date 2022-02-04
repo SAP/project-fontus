@@ -23,27 +23,28 @@ public class ItemsListTainter extends ItemsListVisitorAdapter {
 	public void visit(SubSelect subSelect) {
 		SelectTainter selectTainter =  new SelectTainter(this.parameters);
 		subSelect.getSelectBody().accept(selectTainter);
-		if (subSelect.getWithItemsList() != null)
+		if (subSelect.getWithItemsList() != null) {
 			for (WithItem withItem : subSelect.getWithItemsList()) {
 				SelectTainter innerSelectTainter = new SelectTainter(this.parameters);
 				withItem.accept(innerSelectTainter);
 			}
+		}
 	}
 
 	@Override
 	public void visit(ExpressionList expressionList) {
 		List<Expression> newExpressionList = new ArrayList<>();
-		ExpressionTainter insertExpressionTainter = new ExpressionTainter(this.parameters, newExpressionList);
+		ExpressionTainter tainter = new ExpressionTainter(this.parameters, newExpressionList);
 		for (Expression expression : expressionList.getExpressions()) {
 			newExpressionList.add(expression);
-			expression.accept(insertExpressionTainter);
+			expression.accept(tainter);
 		}
 		expressionList.setExpressions(newExpressionList);
 	}
 
 	@Override
 	public void visit(MultiExpressionList multiExpressionList) {
-		for (ExpressionList expressionList : multiExpressionList.getExprList()) {
+		for (ExpressionList expressionList : multiExpressionList.getExpressionLists()) {
 			expressionList.accept(this);
 		}
 	}

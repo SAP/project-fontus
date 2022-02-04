@@ -20,8 +20,12 @@ public class TaintAssignment {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
         TaintAssignment that = (TaintAssignment) o;
         return this.oldIndex == that.oldIndex && this.newIndex == that.newIndex && this.taintIndex == that.taintIndex && this.hasTaint == that.hasTaint && this.parameterType == that.parameterType;
     }

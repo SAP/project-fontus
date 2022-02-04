@@ -5,13 +5,6 @@ import net.sf.jsqlparser.expression.JdbcParameter;
 
 public class WhereExpressionTainter extends ExpressionVisitorAdapter {
 
-    enum WhereExpressionKind {
-        REGULAR,
-        QUERY_SUBSELECT_WHERE,
-        IN_SUBSELECT_WHERE,
-        IN_ASSIGNMENT_SUBSELECT
-    }
-
     private final QueryParameters parameters;
     private final WhereExpressionKind kind;
     WhereExpressionTainter(QueryParameters parameters) {

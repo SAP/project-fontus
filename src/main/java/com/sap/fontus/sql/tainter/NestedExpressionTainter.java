@@ -12,9 +12,9 @@ import java.util.List;
 
 public class NestedExpressionTainter extends ExpressionTainter {
 
-    List<Expression> plannedExpressions;
-    List<Table> tables;
-    List<Expression> where;
+    private final List<Expression> plannedExpressions;
+    private final List<Table> tables;
+    private final List<Expression> where;
 
     public NestedExpressionTainter(QueryParameters parameters, List<Expression> expressionReference, List<Expression> plannedExpressions, List<Table> tables, List<Expression> where) {
         super(parameters, expressionReference);

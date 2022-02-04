@@ -20,6 +20,7 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 	protected final List<Expression> expressionReference;
 
 	ExpressionTainter(QueryParameters parameters, List<Expression> expressionReference) {
+		super();
 		this.parameters = parameters;
 		this.expressionReference = expressionReference;
 	}
@@ -38,8 +39,7 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 			this.expressionReference
 					.add(newColumn);
 		} else {
-			this.expressionReference.add(Utils.getTaintColumn(column.getTable(), column)); //new Column(column.getTable() + "." + "`" + TAINT_PREFIX
-					//+ column.getColumnName().replace("\"", "").replace("`", "") + "`"));
+			this.expressionReference.add(Utils.getTaintColumn(column.getTable(), column));
 		}
 	}
 
@@ -63,23 +63,22 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 	@Override
 	public void visit(JdbcParameter jdbcParameter) {
 		this.parameters.addParameter(ParameterType.ASSIGNMENT);
-		JdbcParameter newJdbcParamter = new JdbcParameter();
-		newJdbcParamter.setIndex(jdbcParameter.getIndex());
-		this.expressionReference.add(newJdbcParamter);
+		JdbcParameter taintedParameter = new JdbcParameter();
+		taintedParameter.setIndex(jdbcParameter.getIndex());
+		this.expressionReference.add(taintedParameter);
 	}
 
 	@Override
 	public void visit(JdbcNamedParameter jdbcNamedParameter) {
-		JdbcNamedParameter newJdbcNamedParamter = new JdbcNamedParameter();
-		newJdbcNamedParamter.setName(TAINT_PREFIX + jdbcNamedParameter.getName());
-		this.expressionReference.add(newJdbcNamedParamter);
+		JdbcNamedParameter taintedParameter = new JdbcNamedParameter();
+		taintedParameter.setName(TAINT_PREFIX + jdbcNamedParameter.getName());
+		this.expressionReference.add(taintedParameter);
 	}
 
 	@Override
 	public void visit(StringValue stringValue) {
 		// 'return' expression via global list
-		StringValue newStringValue = new StringValue("'0'");
-		this.expressionReference.add(newStringValue);
+		this.expressionReference.add(new StringValue("'0'"));
 	}
 
 	@Override
@@ -113,40 +112,32 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 
 	@Override
 	public void visit(DoubleValue doubleValue) {
-		StringValue newStringValue = new StringValue("'0'");
-		this.expressionReference.add(newStringValue);
+		this.expressionReference.add(new StringValue("'0'"));
 	}
 
 	@Override
 	public void visit(LongValue longValue) {
-		StringValue newStringValue = new StringValue("'0'");
-		this.expressionReference.add(newStringValue);
+		this.expressionReference.add(new StringValue("'0'"));
 	}
 
 	@Override
 	public void visit(HexValue hexValue) {
-
-		StringValue newStringValue = new StringValue("'0'");
-		this.expressionReference.add(newStringValue);
+		this.expressionReference.add(new StringValue("'0'"));
 	}
 
 	@Override
 	public void visit(DateValue dateValue) {
-		StringValue newStringValue = new StringValue("'0'");
-		this.expressionReference.add(newStringValue);
+		this.expressionReference.add(new StringValue("'0'"));
 	}
 
 	@Override
 	public void visit(TimeValue timeValue) {
-
-		StringValue newStringValue = new StringValue("'0'");
-		this.expressionReference.add(newStringValue);
+		this.expressionReference.add(new StringValue("'0'"));
 	}
 
 	@Override
 	public void visit(TimestampValue timestampValue) {
-		StringValue newStringValue = new StringValue("'0'");
-		this.expressionReference.add(newStringValue);
+		this.expressionReference.add(new StringValue("'0'"));
 	}
 
 	@Override

@@ -19,10 +19,11 @@ public class FromItemTainter extends FromItemVisitorAdapter {
 	@Override
 	public void visit(SubSelect subSelect) {
 		subSelect.getSelectBody().accept(new SelectTainter(this.parameters));
-		if (subSelect.getWithItemsList() != null)
+		if (subSelect.getWithItemsList() != null) {
 			for (WithItem withItem : subSelect.getWithItemsList()) {
 				withItem.accept(new SelectTainter(this.parameters));
 			}
+		}
 	}
 
 	@Override
@@ -37,7 +38,8 @@ public class FromItemTainter extends FromItemVisitorAdapter {
 			valuesList.setColumnNames(newColumnsList);
 		}
 
-		if (valuesList.getMultiExpressionList() != null)
+		if (valuesList.getMultiExpressionList() != null) {
 			valuesList.getMultiExpressionList().accept(new ItemsListTainter(this.parameters));
+		}
 	}
 }

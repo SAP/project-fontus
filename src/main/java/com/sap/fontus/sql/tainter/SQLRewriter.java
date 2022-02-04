@@ -25,10 +25,10 @@ public class SQLRewriter {
 		passThrough = Arrays.asList(passThroughCommands);
 		try {
 			//rewriter.readFile(args[0]);
-			rewriter.taintStatement("SELECT *, (SELECT name1 FROM table1 WHERE age = 5 AND id > 2) AS ag FROM table2;");
-			rewriter.taintStatement("SELECT number1 AS age, (SELECT COUNT(id1) FROM table1) AS cid FROM table2;");
-			rewriter.taintStatement("SELECT * FROM table1 WHERE (id1, id2) IN (SELECT number1, number2 FROM table2);");
-			rewriter.taintStatement("SELECT number1 AS age, (SELECT AVG(id1) FROM table1) AS cid FROM table2;");
+			SQLRewriter.taintStatement("SELECT *, (SELECT name1 FROM table1 WHERE age = 5 AND id > 2) AS ag FROM table2;");
+			SQLRewriter.taintStatement("SELECT number1 AS age, (SELECT COUNT(id1) FROM table1) AS cid FROM table2;");
+			SQLRewriter.taintStatement("SELECT * FROM table1 WHERE (id1, id2) IN (SELECT number1, number2 FROM table2);");
+			SQLRewriter.taintStatement("SELECT number1 AS age, (SELECT AVG(id1) FROM table1) AS cid FROM table2;");
 		} catch (Exception e) {
 			System.out.println("Yeah well that didnt work.");
 			e.printStackTrace();
@@ -39,7 +39,7 @@ public class SQLRewriter {
 
 	private SQLRewriter() {}
 
-	private String taintStatement(String statement) {
+	private static String taintStatement(String statement) {
 		if (passThrough.stream().anyMatch(statement.substring(0, statement.indexOf(' '))::equalsIgnoreCase)) {
 			return statement;
 		}
@@ -57,7 +57,7 @@ public class SQLRewriter {
 		return null;
 	}
 
-	private void readFile(String file) throws IOException {
+	private void readFile(String file) {
 		List<String> statements = new ArrayList<>();
 		try (BufferedReader br = new BufferedReader(new FileReader(file)); PrintStream pr = new PrintStream("tainted_" + file)){
 			String line;
@@ -77,7 +77,7 @@ public class SQLRewriter {
 				if (line.endsWith(";")) {
 					inCommand = false;
 					if (command.length() > 0) {
-						pr.println(this.taintStatement(command.toString()));
+						pr.println(SQLRewriter.taintStatement(command.toString()));
 						command = new StringBuilder(10);
 					}
 				}

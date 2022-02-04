@@ -8,7 +8,6 @@ import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterExpression;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
-import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
@@ -21,11 +20,7 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-
-import static com.sap.fontus.Constants.TAINT_PREFIX;
 
 public class StatementTainter extends StatementVisitorAdapter {
 
@@ -52,38 +47,36 @@ public class StatementTainter extends StatementVisitorAdapter {
 	public void visit(Select select) {
 		SelectTainter selectTainter = new SelectTainter(this.parameters);
 		select.getSelectBody().accept(selectTainter);
-		if (select.getWithItemsList() != null)
+		if (select.getWithItemsList() != null) {
 			for (WithItem withItem : select.getWithItemsList()) {
 				SelectTainter innerSelectTainter = new SelectTainter(this.parameters);
 				withItem.accept(innerSelectTainter);
 			}
+		}
 	}
 
 	@Override
 	public void visit(Insert insert) {
-		List<String> columnNames = new ArrayList<>();
 		if (insert.getColumns() != null) {
 			insert.setColumns(this.taintColumns(insert.getColumns()));
-			for (Column c : insert.getColumns()) {
-				columnNames.add(c.getColumnName());
-			}
 		}
 		if (insert.getItemsList() != null) {
 			ItemsListTainter itemListTainter = new ItemsListTainter(this.parameters);
 			// Loop after setColumns will also include new taint columns if needed
 			insert.getItemsList().accept(itemListTainter);
 		}
-		if (insert.getSelect() != null)
+		if (insert.getSelect() != null) {
 			insert.getSelect().accept(this);
-		if (insert.getReturningExpressionList() != null)
+		}
+		if (insert.getReturningExpressionList() != null) {
 			insert.setReturningExpressionList(this.taintReturningExpression(insert.getReturningExpressionList()));
+		}
 		//System.out.println("Insert");
 		//assignmentInfos.getAssignmentInfosAsString().forEach((k,v) -> System.out.println("key: "+k+" value:"+v));
 	}
 
 	@Override
 	public void visit(Update update) {
-		List<String> columnNames = new ArrayList<>();
 		// Parser breaks if !update.isUseColumnBrackets() and unrecognized
 		// update.isUseSelect()
 		// for example: update a set id = (select id from b);
@@ -95,9 +88,9 @@ public class StatementTainter extends StatementVisitorAdapter {
 		//System.out.println(update);
 		for(UpdateSet updateSet : updateSets) {
 
-			ArrayList<Column> columns = updateSet.getColumns();
+			List<Column> columns = updateSet.getColumns();
 			ArrayList<Column> tcols = (ArrayList<Column>) this.taintColumns(columns);
-			ArrayList<Expression> expressions = updateSet.getExpressions();
+			List<Expression> expressions = updateSet.getExpressions();
 			ArrayList<Expression> texprs = (ArrayList<Expression>) this.taintExpressions(expressions);
 			// This seems to be relevant for subselects, not 100% sure why/how
 			if (texprs.get(0) instanceof SubSelect) {
@@ -115,7 +108,6 @@ public class StatementTainter extends StatementVisitorAdapter {
 			} else {
 				for (int i = 0; i < tcols.size(); i++) {
 					Column c = tcols.get(i);
-					columnNames.add(c.getColumnName());
 					Expression e = texprs.get(i);
 					UpdateSet us = new UpdateSet(c, e);
 					//System.out.println(c + " = " + e);
@@ -133,24 +125,9 @@ public class StatementTainter extends StatementVisitorAdapter {
 		updateSets.clear();
 		updateSets.addAll(fixedSets);
 
-
-		//System.out.println("Update");
-		//assignmentInfos.getAssignmentInfosAsString().forEach((k,v) -> System.out.println("key: "+k+" value:"+v));
-
-		/*if (update.getColumns() != null)
-			update.setColumns(taintColumns(update.getColumns()));
-		*/
-		/*if (!update.isUseSelect()) {
-			// check needed to avoid a duplicated select as expression
-			if (update.getExpressions() != null)
-				update.setExpressions(taintExpressions(update.getExpressions()));
-		} else {
-			if (update.getSelect() != null)
-				update.getSelect().accept(this);
-		}*/
-
-		if (update.getFromItem() != null)
+		if (update.getFromItem() != null) {
 			update.getFromItem().accept(new FromItemTainter(this.parameters));
+		}
 
 		if(update.getWhere() != null) {
 			update.getWhere().accept(new WhereExpressionTainter(this.parameters));
@@ -189,8 +166,9 @@ public class StatementTainter extends StatementVisitorAdapter {
 
 	@Override
 	public void visit(Execute execute) {
-		if (execute.getExprList() != null)
+		if (execute.getExprList() != null) {
 			execute.getExprList().accept(new ItemsListTainter(this.parameters));
+		}
 	}
 
 	private List<Expression> taintExpressions(List<Expression> expressions) {
@@ -240,59 +218,32 @@ public class StatementTainter extends StatementVisitorAdapter {
 
 	@Override
 	public void visit(CreateTable createTable) {
-		if (createTable.getColumnDefinitions() != null)
-			createTable.setColumnDefinitions(this.taintColumnDefinitions(createTable.getColumnDefinitions()));
-		if (createTable.getSelect() != null)
-			createTable.getSelect().accept(this);			
-	}
-
-	private List<ColumnDefinition> taintColumnDefinitions(List<ColumnDefinition> columnDefinitions) {
-		List<ColumnDefinition> newColumnDefinitions = new ArrayList<>();
-		for (ColumnDefinition columnDefinition : columnDefinitions) {
-			newColumnDefinitions.add(columnDefinition);
-			ColumnDefinition newColumnDefinition = new ColumnDefinition();
-			newColumnDefinition.setColumnName(Utils.taintColumnName(columnDefinition.getColumnName()));
-			String dataType = columnDefinition.getColDataType().getDataType().toUpperCase();
-			if (dataType.contains("TEXT"))
-				newColumnDefinition.setColDataType(columnDefinition.getColDataType());
-			else {
-				ColDataType colDataType = new ColDataType();
-				colDataType.setDataType("TEXT");
-				//colDataType.setDataType("VARCHAR");
-				//List<String> argumentsStringList = new ArrayList<>();
-				//argumentsStringList.add("55");
-				//colDataType.setArgumentsStringList(argumentsStringList);
-				newColumnDefinition.setColDataType(colDataType);
-			}
-			newColumnDefinitions.add(newColumnDefinition);
+		if (createTable.getColumnDefinitions() != null) {
+			createTable.setColumnDefinitions(Utils.taintColumnDefinitions(createTable.getColumnDefinitions()));
 		}
-		return newColumnDefinitions;
+		if (createTable.getSelect() != null) {
+			createTable.getSelect().accept(this);
+		}
 	}
 
 	@Override
 	public void visit(CreateView createView) {
-		if (createView.getColumnNames() != null)
-			createView.setColumnNames(this.taintColumnNames(createView.getColumnNames()));
+		if (createView.getColumnNames() != null) {
+			createView.setColumnNames(Utils.taintColumnNames(createView.getColumnNames()));
+		}
 		if(createView.getSelect() != null) {
 			createView.getSelect().getSelectBody().accept(new SelectTainter(this.parameters));
 		}
 	}
 
-	private List<String> taintColumnNames(List<String> columnNames) {
-		List<String> newColumnNames = new ArrayList<>();
-		for (String columnName : columnNames) {
-			newColumnNames.add(columnName);
-			newColumnNames.add(Utils.taintColumnName(columnName));
-		}
-		return newColumnNames;
-	}
-
 	@Override
 	public void visit(AlterView alterView) {
-		if (alterView.getColumnNames() != null)
-			alterView.setColumnNames(this.taintColumnNames(alterView.getColumnNames()));
-		if (alterView.getSelectBody() != null)
+		if (alterView.getColumnNames() != null) {
+			alterView.setColumnNames(Utils.taintColumnNames(alterView.getColumnNames()));
+		}
+		if (alterView.getSelectBody() != null) {
 			alterView.getSelectBody().accept(new SelectTainter(this.parameters));
+		}
 	}
 
 	@Override
@@ -302,11 +253,7 @@ public class StatementTainter extends StatementVisitorAdapter {
 		    	AlterExpression taintAlterExpression = new AlterExpression();
 		    	alter.addAlterExpression(taintAlterExpression);
 
-		    	String taintColumnName =
-						"`" + TAINT_PREFIX +
-								alterExpression.getColumnName()
-								.replace("\"", "")
-								.replace("`", "") + "`";
+		    	String taintColumnName = Utils.taintColumnName(alterExpression.getColumnName());
 		    	taintAlterExpression.setColumnName(taintColumnName);
 		    	taintAlterExpression.setOperation(alterExpression.getOperation());
 

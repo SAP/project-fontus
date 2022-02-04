@@ -16,7 +16,7 @@ public class WhereSubSelectTainter extends SelectVisitorAdapter {
     public void visit(PlainSelect plainSelect) {
         Expression where = plainSelect.getWhere();
         if(where != null) {
-            where.accept(new WhereExpressionTainter(this.parameters, WhereExpressionTainter.WhereExpressionKind.IN_SUBSELECT_WHERE));
+            where.accept(new WhereExpressionTainter(this.parameters, WhereExpressionKind.IN_SUBSELECT_WHERE));
         }
     }
 

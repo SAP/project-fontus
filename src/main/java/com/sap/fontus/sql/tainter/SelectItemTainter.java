@@ -15,6 +15,7 @@ public class SelectItemTainter extends SelectItemVisitorAdapter {
 	protected final List<Expression> expressionReference;
 
 	SelectItemTainter(QueryParameters parameters, List<SelectItem> selectItemReference) {
+		super();
 		// List used as Container to return the reference to one newly created
 		// Expression by SelectExpressionTainter -> comparable to return object
 		this.expressionReference = new ArrayList<>();
@@ -24,8 +25,8 @@ public class SelectItemTainter extends SelectItemVisitorAdapter {
 
 	@Override
 	public void visit(SelectExpressionItem selectExpressionItem) {
-		ExpressionTainter selectExpressionTainter = new ExpressionTainter(this.parameters, this.expressionReference);
-		selectExpressionItem.getExpression().accept(selectExpressionTainter);
+		ExpressionTainter tainter = new ExpressionTainter(this.parameters, this.expressionReference);
+		selectExpressionItem.getExpression().accept(tainter);
 		if (!this.expressionReference.isEmpty()) {
 			// get new created expression by reference and clear list
 			SelectExpressionItem item = new SelectExpressionItem(this.expressionReference.get(0));

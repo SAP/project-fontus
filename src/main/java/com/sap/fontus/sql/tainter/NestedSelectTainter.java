@@ -2,6 +2,7 @@ package com.sap.fontus.sql.tainter;
 
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
 
@@ -10,9 +11,9 @@ import java.util.List;
 
 public class NestedSelectTainter extends SelectTainter {
 
-    List<Expression> plannedExpressions;
-    List<Table> tables;
-    List<Expression> where;
+    private final List<Expression> plannedExpressions;
+    private final List<Table> tables;
+    private final List<Expression> where;
 
     public NestedSelectTainter(QueryParameters parameters, List<Expression> plannedExpressions, List<Table> tables, List<Expression> where) {
         super(parameters);
@@ -38,8 +39,8 @@ public class NestedSelectTainter extends SelectTainter {
             for (SelectItem selectItem : plainSelect.getSelectItems()) {
                 newSelectItems.add(selectItem);
                 if (selectItem.toString().toLowerCase().contains("(select")) {
-                    NestedSelectItemTainter nestedSelectItemTainter = new NestedSelectItemTainter(this.parameters, this.selectItemReference, this.plannedExpressions, this.tables, this.where);
-                    selectItem.accept(nestedSelectItemTainter);
+                    NestedSelectItemTainter nsit = new NestedSelectItemTainter(this.parameters, this.selectItemReference, this.plannedExpressions, this.tables, this.where);
+                    selectItem.accept(nsit);
 
                     if (selectItem instanceof SelectExpressionItem) {
                         SelectExpressionItem sei = new SelectExpressionItem(((SelectExpressionItem) selectItem).getExpression());
@@ -61,13 +62,13 @@ public class NestedSelectTainter extends SelectTainter {
             }
             plainSelect.setSelectItems(newSelectItems);
         }
-        plainSelect.getWhere().accept(new WhereExpressionTainter(this.parameters, WhereExpressionTainter.WhereExpressionKind.QUERY_SUBSELECT_WHERE));
+        plainSelect.getWhere().accept(new WhereExpressionTainter(this.parameters, WhereExpressionKind.QUERY_SUBSELECT_WHERE));
 
         GroupByElement groupBy = plainSelect.getGroupBy();
         if(groupBy != null) {
-            List<Expression> groupByExpressions = groupBy.getGroupByExpressions();
-            List<Expression> taintedGroupByExpressions = super.taintGroupBy(groupByExpressions);
-            groupBy.setGroupByExpressions(taintedGroupByExpressions);
+            List<Expression> groupByExpressions = groupBy.getGroupByExpressionList().getExpressions();
+            List<Expression> taintedGroupByExprs = super.taintGroupBy(groupByExpressions);
+            groupBy.setGroupByExpressionList(new ExpressionList(taintedGroupByExprs).withUsingBrackets(groupBy.isUsingBrackets()));
         }
     }
 }

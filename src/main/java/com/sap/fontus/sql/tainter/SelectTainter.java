@@ -2,6 +2,7 @@ package com.sap.fontus.sql.tainter;
 
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
@@ -15,6 +16,7 @@ public class SelectTainter extends SelectVisitorAdapter {
 	protected final List<SelectItem> selectItemReference;
 
 	SelectTainter(QueryParameters parameters) {
+		super();
 		// List used as Container to return the reference to one newly created
 		// Expression by SelectExpressionTainter -> comparable to return object
 		this.expressionReference = new ArrayList<>();
@@ -46,8 +48,8 @@ public class SelectTainter extends SelectVisitorAdapter {
 					List<Expression> plannedExpressions = new ArrayList<>();
 					List<Table> tables = new ArrayList<>();
 					List<Expression> where = new ArrayList<>();
-					NestedSelectItemTainter nestedSelectItemTainter = new NestedSelectItemTainter(this.parameters, this.selectItemReference, plannedExpressions, tables, where);
-					selectItem.accept(nestedSelectItemTainter);
+					NestedSelectItemTainter tainter = new NestedSelectItemTainter(this.parameters, this.selectItemReference, plannedExpressions, tables, where);
+					selectItem.accept(tainter);
 
 
 					// Expressions --> columns or values for functions like SUM, AVG, COUNT
@@ -105,28 +107,28 @@ public class SelectTainter extends SelectVisitorAdapter {
 		}
 		GroupByElement groupBy = plainSelect.getGroupBy();
 		if(groupBy != null) {
-			List<Expression> groupByExpressions = groupBy.getGroupByExpressions();
-			List<Expression> taintedGroupByExpressions = this.taintGroupBy(groupByExpressions);
-			groupBy.setGroupByExpressions(taintedGroupByExpressions);
+			List<Expression> expressions = groupBy.getGroupByExpressionList().getExpressions();
+			List<Expression> taintedExpressions = this.taintGroupBy(expressions);
+			groupBy.setGroupByExpressionList(new ExpressionList(taintedExpressions).withUsingBrackets(groupBy.isUsingBrackets()));
 		}
 	}
 
 	protected List<Expression> taintGroupBy(List<Expression> groupByColumnReferences) {
 		if (groupByColumnReferences != null) {
-			List<Expression> newGroupByColumnReferences;
-			newGroupByColumnReferences = new ArrayList<>();
-			ExpressionTainter selectExpressionTainter = new ExpressionTainter(this.parameters, this.expressionReference);
+			List<Expression> newColReference;
+			newColReference = new ArrayList<>();
+			ExpressionTainter set = new ExpressionTainter(this.parameters, this.expressionReference);
 			for (Expression expression : groupByColumnReferences) {
-				newGroupByColumnReferences.add(expression);
-				expression.accept(selectExpressionTainter);
+				newColReference.add(expression);
+				expression.accept(set);
 				if (!this.expressionReference.isEmpty()) {
 					// get new created expression by reference in list and clear
 					// list
-					newGroupByColumnReferences.add(this.expressionReference.get(0));
+					newColReference.add(this.expressionReference.get(0));
 					this.expressionReference.clear();
 				}
 			}
-			return newGroupByColumnReferences;
+			return newColReference;
 		}
 		return null;
 	}
@@ -134,10 +136,11 @@ public class SelectTainter extends SelectVisitorAdapter {
 	@Override
 	public void visit(SetOperationList setOperationsList) {
 		// offset, fetch, limit, order by not relevant
-		if (setOperationsList.getSelects() != null)
+		if (setOperationsList.getSelects() != null) {
 			for (SelectBody selectBody : setOperationsList.getSelects()) {
 				selectBody.accept(this);
 			}
+		}
 	}
 
 	@Override
