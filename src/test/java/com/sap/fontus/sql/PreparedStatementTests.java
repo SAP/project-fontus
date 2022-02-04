@@ -55,6 +55,34 @@ public class PreparedStatementTests {
 
         ResultSet rss = ps.executeQuery();
     }
+    @Test
+    void testInsertSubselect() throws Exception {
+        String query = "INSERT INTO contacts VALUES(?, (select info from meta where contact_id = ?), ?, ?, ?)";
+        Connection mc = new MockConnection(this.conn);
+        Connection c = ConnectionWrapper.wrap(mc);
+        PreparedStatement ps = c.prepareStatement(query);
+        MockPreparedStatement mps = ps.unwrap(MockPreparedStatement.class);
+        PreparedStatementWrapper unwrapped = ps.unwrap(PreparedStatementWrapper.class);
+        QueryParameters parameters = unwrapped.getParameters();
+
+        TaintAssignment[] assignments = new TaintAssignment[5];
+        for(int i = 0; i < 5; i++) {
+            if(i == 1) continue;
+            assignments[i] = new TaintAssignment(i+1, (i*2)+1, (i*2)+2, ParameterType.ASSIGNMENT);
+        }
+        assignments[1] = new TaintAssignment(2, 3, 4, ParameterType.ASSIGNMENT_SUBSELECT);
+        ps.setInt(1, 5);
+        ps.setInt(1, 2);
+        ps.setString(3, "User");
+        ps.setString(4, "test@user.com");
+        ps.setString(5, "1234");
+        for(int i = 1; i <= parameters.getParameterCount(); i++) {
+            TaintAssignment expected = assignments[i-1];
+            TaintAssignment actual = parameters.computeAssignment(i);
+            assertEquals(expected, actual);
+        }
+        ResultSet rss = ps.executeQuery();
+    }
 
     @Test
     void testInsert() throws Exception {
