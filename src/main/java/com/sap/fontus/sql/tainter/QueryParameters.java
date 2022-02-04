@@ -17,12 +17,12 @@ public class QueryParameters {
     }
 
     public void begin(StatementType type) {
-        System.out.printf("Pushing %s onto stack%n", type);
+        //System.out.printf("Pushing %s onto stack%n", type);
         this.stateStack.push(type);
     }
 
     public void end(StatementType type) {
-        System.out.printf("Popping %s from stack%n", type);
+        //System.out.printf("Popping %s from stack%n", type);
         StatementType top = this.stateStack.pop();
         if(top != type) {
             throw new IllegalStateException(String.format("Trying to pop '%s' but currently '%s' on top of stack", type, top));
@@ -31,9 +31,9 @@ public class QueryParameters {
     }
 
     void addParameter(ParameterType type) {
-        System.out.printf("Adding JDBC param of type: %s%n", type);
+        //System.out.printf("Adding JDBC param of type: %s%n", type);
         this.types.add(type);
-        Thread.dumpStack();
+        //Thread.dumpStack();
     }
 
     private void computeIndices() {

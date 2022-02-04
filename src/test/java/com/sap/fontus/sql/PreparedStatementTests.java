@@ -57,18 +57,6 @@ public class PreparedStatementTests {
     }
 
     @Test
-    void testTupleUpdate() throws Exception {
-        String query = "update contacts set (id) = (select id from contacts);";
-        Connection mc = new MockConnection(this.conn);
-        Connection c = ConnectionWrapper.wrap(mc);
-        PreparedStatement ps = c.prepareStatement(query);
-        MockPreparedStatement mps = ps.unwrap(MockPreparedStatement.class);
-        PreparedStatementWrapper unwrapped = ps.unwrap(PreparedStatementWrapper.class);
-        QueryParameters parameters = unwrapped.getParameters();
-        ResultSet rss = ps.executeQuery();
-
-    }
-    @Test
     void testInsertSubselect() throws Exception {
         String query = "INSERT INTO contacts VALUES(?, (select info from meta where contact_id = ?), ?, ?, ?)";
         Connection mc = new MockConnection(this.conn);
@@ -157,7 +145,6 @@ public class PreparedStatementTests {
                 new TaintAssignment(1, 1, 2, ParameterType.ASSIGNMENT),
                 new TaintAssignment(2, 3, 4, ParameterType.ASSIGNMENT),
                 new TaintAssignment(3, 5, ParameterType.SUBSELECT_WHERE),
-
         };
         for(int i = 1; i <= parameters.getParameterCount(); i++) {
             TaintAssignment expected = assignments[i-1];
@@ -187,6 +174,11 @@ public class PreparedStatementTests {
                 new TaintAssignment(4, 6, ParameterType.WHERE),
 
         };
+        for(int i = 1; i <= parameters.getParameterCount(); i++) {
+            TaintAssignment expected = assignments[i-1];
+            TaintAssignment actual = parameters.computeAssignment(i);
+            assertEquals(expected, actual);
+        }
         ResultSet rss = ps.executeQuery();
     }
 
@@ -196,7 +188,17 @@ public class PreparedStatementTests {
         Connection mc = new MockConnection(this.conn);
         Connection c = ConnectionWrapper.wrap(mc);
         PreparedStatement ps = c.prepareStatement(query);
-        MockPreparedStatement mps = ps.unwrap(MockPreparedStatement.class);
+        PreparedStatementWrapper unwrapped = ps.unwrap(PreparedStatementWrapper.class);
+        QueryParameters parameters = unwrapped.getParameters();
+        TaintAssignment[] assignments = {
+                new TaintAssignment(1, 1, ParameterType.WHERE),
+                new TaintAssignment(2, 2, ParameterType.WHERE),
+        };
+        for(int i = 1; i <= parameters.getParameterCount(); i++) {
+            TaintAssignment expected = assignments[i-1];
+            TaintAssignment actual = parameters.computeAssignment(i);
+            assertEquals(expected, actual);
+        }
         ps.setInt(1, 2);
         ps.setInt(2, 2);
         ResultSet rss = ps.executeQuery();
