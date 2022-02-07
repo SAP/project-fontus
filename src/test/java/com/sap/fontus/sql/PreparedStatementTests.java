@@ -183,6 +183,29 @@ public class PreparedStatementTests {
     }
 
     @Test
+    void deleteTest() throws Exception {
+        String query = "delete from contacts where id=?;";
+        Connection mc = new MockConnection(this.conn);
+        Connection c = ConnectionWrapper.wrap(mc);
+        PreparedStatement ps = c.prepareStatement(query);
+        MockPreparedStatement mps = ps.unwrap(MockPreparedStatement.class);
+
+
+        PreparedStatementWrapper unwrapped = ps.unwrap(PreparedStatementWrapper.class);
+        QueryParameters parameters = unwrapped.getParameters();
+        ps.setLong(1, 1L);
+        TaintAssignment[] assignments = {
+                new TaintAssignment(1, 1, ParameterType.WHERE),
+        };
+        for(int i = 1; i <= parameters.getParameterCount(); i++) {
+            TaintAssignment expected = assignments[i-1];
+            TaintAssignment actual = parameters.computeAssignment(i);
+            assertEquals(expected, actual);
+        }
+        ResultSet rss = ps.executeQuery();
+    }
+
+    @Test
     void testNestedQueryInUpdateWhere() throws Exception {
         String query = "update contacts set first_name = 'Elda', last_name = (select info from meta where contact_id = ?) where id = ?;";
         Connection mc = new MockConnection(this.conn);

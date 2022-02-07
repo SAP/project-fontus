@@ -11,6 +11,7 @@ import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
+import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
@@ -151,6 +152,14 @@ public class StatementTainter extends StatementVisitorAdapter {
 		if (replace.getItemsList() != null) {
 			ItemsListTainter itemsListTainter = new ItemsListTainter(this.parameters);
 			replace.getItemsList().accept(itemsListTainter);
+		}
+	}
+
+	@Override
+	public void visit(Delete delete) {
+		Expression where = delete.getWhere();
+		if(where != null) {
+			where.accept(new WhereExpressionTainter(this.parameters));
 		}
 	}
 
