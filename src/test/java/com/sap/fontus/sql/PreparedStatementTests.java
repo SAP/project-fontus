@@ -1,15 +1,10 @@
 package com.sap.fontus.sql;
 
 import com.sap.fontus.sql.driver.ConnectionWrapper;
-import com.sap.fontus.sql.driver.PreparedSelectStatementWrapper;
 import com.sap.fontus.sql.driver.PreparedStatementWrapper;
 import com.sap.fontus.sql.tainter.ParameterType;
 import com.sap.fontus.sql.tainter.QueryParameters;
-import com.sap.fontus.sql.tainter.StatementTainter;
 import com.sap.fontus.sql.tainter.TaintAssignment;
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statements;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,7 +41,7 @@ public class PreparedStatementTests {
         MockPreparedStatement mps = ps.unwrap(MockPreparedStatement.class);
         ps.setInt(1, 2);
         ps.setInt(2, 2);
-        PreparedSelectStatementWrapper unwrapped = ps.unwrap(PreparedSelectStatementWrapper.class);
+        PreparedStatementWrapper unwrapped = ps.unwrap(PreparedStatementWrapper.class);
         QueryParameters parameters = unwrapped.getParameters();
         TaintAssignment first = parameters.computeAssignment(1);
         assertEquals(new TaintAssignment(1, 1, 2, ParameterType.QUERY_SUBSELECT), first);

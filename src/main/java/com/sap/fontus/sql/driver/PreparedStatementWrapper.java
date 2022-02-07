@@ -10,30 +10,19 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
 import java.util.Calendar;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class PreparedStatementWrapper extends StatementWrapper implements IASPreparedStatement {
 
     private final PreparedStatement delegate;
     private final QueryParameters parameters;
-
-    //change this line if you want to use another pattern
     private String originalQuery="";
     private String taintedQuery="";
-    private final String findingPattern ="([_\\.a-zA-Z0-9]*)\\s*([<>=]\\s*\\?)";
-    private final String findAllPattern = "(([_\\.a-zA-Z0-9]*)|(__[_\\.a-zA-Z0-9]*__))\\s*([<>=]\\s*\\?)";
-    private String [] originalIndex;
-    private int [] newIndex;
-    private boolean [] setVariables;
 
     public static PreparedStatement wrap(PreparedStatement delegate,String originalQuery,String taintedQuery, QueryParameters parameters) {
-        long countOriginal = originalQuery.chars().filter(q -> q == '?').count();
-        long countTainted = taintedQuery.chars().filter(q -> q == '?').count();
         if (delegate == null) {
             return null;
         }
-        return new PreparedStatementWrapper(delegate,countOriginal,countTainted,originalQuery,taintedQuery, parameters);
+        return new PreparedStatementWrapper(delegate,originalQuery,taintedQuery, parameters);
     }
     protected PreparedStatementWrapper(PreparedStatement delegate, QueryParameters parameters){
         super(delegate);
@@ -41,7 +30,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         this.parameters = parameters;
     }
 
-    protected PreparedStatementWrapper(PreparedStatement delegate,long countOriginal, long countTainted,String originalQuery,String taintedQuery, QueryParameters parameters) {
+    protected PreparedStatementWrapper(PreparedStatement delegate, String originalQuery,String taintedQuery, QueryParameters parameters) {
         super(delegate);
         this.parameters = parameters;
         this.taintedQuery=taintedQuery;
