@@ -113,10 +113,14 @@ public class SelectTainter extends SelectVisitorAdapter {
 			groupBy.setGroupByExpressionList(new ExpressionList(taintedExpressions).withUsingBrackets(groupBy.isUsingBrackets()));
 		}
 		List<Join> joins = plainSelect.getJoins();
-		for(Join join : joins) {
-			Collection<Expression> expressions = join.getOnExpressions();
-			for(Expression expression : expressions) {
-				expression.accept(new WhereExpressionTainter(this.parameters));
+		if(joins != null) {
+			for (Join join : joins) {
+				Collection<Expression> expressions = join.getOnExpressions();
+				if(expressions != null) {
+					for (Expression expression : expressions) {
+						expression.accept(new WhereExpressionTainter(this.parameters));
+					}
+				}
 			}
 		}
 		Limit limit = plainSelect.getLimit();
