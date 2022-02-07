@@ -8,6 +8,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class SelectTainter extends SelectVisitorAdapter {
@@ -110,6 +111,13 @@ public class SelectTainter extends SelectVisitorAdapter {
 			List<Expression> expressions = groupBy.getGroupByExpressionList().getExpressions();
 			List<Expression> taintedExpressions = this.taintGroupBy(expressions);
 			groupBy.setGroupByExpressionList(new ExpressionList(taintedExpressions).withUsingBrackets(groupBy.isUsingBrackets()));
+		}
+		List<Join> joins = plainSelect.getJoins();
+		for(Join join : joins) {
+			Collection<Expression> expressions = join.getOnExpressions();
+			for(Expression expression : expressions) {
+				expression.accept(new WhereExpressionTainter(this.parameters));
+			}
 		}
 		Limit limit = plainSelect.getLimit();
 		if(limit != null) {

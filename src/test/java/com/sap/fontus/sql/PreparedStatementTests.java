@@ -177,6 +177,22 @@ public class PreparedStatementTests {
         ResultSet rss = ps.executeQuery();
     }
 
+    // select members2_.fk_identity_id as col_0_0_ from o_gp_business businessgr0_ inner join o_bs_group groupimpl1_ on businessgr0_.fk_group_id=groupimpl1_.id inner join o_bs_group_member members2_ on groupimpl1_.id=members2_.fk_group_id inner join o_bs_group_member members3_ on groupimpl1_.id=members3_.fk_group_id and (members3_.fk_identity_id=?) where businessgr0_.ownersintern=1 and members2_.g_role='coach' or businessgr0_.participantsintern=1 and members2_.g_role='participant'
+    @Test
+    void testParamInJoin() throws SQLException {
+        String query = "select id, first_name, last_name from contacts inner join meta on meta.contact_id and meta.info = ?;";
+        Connection mc = new MockConnection(this.conn);
+        Connection c = ConnectionWrapper.wrap(mc);
+        PreparedStatement ps = c.prepareStatement(query);
+        MockPreparedStatement mps = ps.unwrap(MockPreparedStatement.class);
+        PreparedStatementWrapper unwrapped = ps.unwrap(PreparedStatementWrapper.class);
+        QueryParameters parameters = unwrapped.getParameters();
+        TaintAssignment first = parameters.computeAssignment(1);
+        assertEquals(new TaintAssignment(1, 1, ParameterType.WHERE), first);
+        ps.setString(1, "bar");
+
+        ResultSet rss = ps.executeQuery();
+    }
     @Test
     void deleteTest() throws Exception {
         String query = "delete from contacts where id=?;";
