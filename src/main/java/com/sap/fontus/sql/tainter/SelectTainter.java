@@ -63,17 +63,25 @@ public class SelectTainter extends SelectVisitorAdapter {
 
 					// Table of nested query
 					String strTable = "";
+					String strAlias = "";
 					if (tables.size() > 1) {
 						System.err.println("Something went wrong, more than one table in nested query!");
 					} else {
-						strTable = tables.get(0).getName();
+						Table table = tables.get(0);
+						strTable = table.getName();
+						Alias a = table.getAlias();
+						if(a != null) {
+							strAlias = a.getName();
+						}
+
 					}
 
 					String nestedQuery = "";
+					String aliasClause = strAlias.isEmpty() ? "" : " as " + strAlias;
 					if (where.isEmpty()) {
-						nestedQuery = "SELECT " + expr + " FROM " + strTable;
+						nestedQuery = "SELECT " + expr + " FROM " + strTable + aliasClause;
 					} else {
-						nestedQuery = "SELECT " + expr + " FROM " + strTable + " WHERE " + where.get(0).toString();
+						nestedQuery = "SELECT " + expr + " FROM " + strTable + aliasClause + " WHERE " + where.get(0).toString();
 					}
 
 					// Yeah let's do SQL injection :D
