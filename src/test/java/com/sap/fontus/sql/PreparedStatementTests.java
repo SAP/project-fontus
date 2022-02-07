@@ -200,6 +200,26 @@ public class PreparedStatementTests {
         ResultSet rss = ps.executeQuery();
     }
 
+    // select categoryim0_.CATEGORY_ID as CATEGORY1_26_, categoryim0_.ACTIVE_END_DATE as ACTIVE_E2_26_, categoryim0_.ACTIVE_START_DATE as ACTIVE_S3_26_, categoryim0_.ARCHIVED as ARCHIVED4_26_, categoryim0_.DEFAULT_PARENT_CATEGORY_ID as DEFAULT21_26_, categoryim0_.DESCRIPTION as DESCRIPT5_26_, categoryim0_.DISPLAY_TEMPLATE as DISPLAY_6_26_, categoryim0_.EXTERNAL_ID as EXTERNAL7_26_, categoryim0_.FULFILLMENT_TYPE as FULFILLM8_26_, categoryim0_.INVENTORY_TYPE as INVENTOR9_26_, categoryim0_.LONG_DESCRIPTION as LONG_DE10_26_, categoryim0_.META_DESC as META_DE11_26_, categoryim0_.META_TITLE as META_TI12_26_, categoryim0_.NAME as NAME13_26_, categoryim0_.OVERRIDE_GENERATED_URL as OVERRID14_26_, categoryim0_.PRODUCT_DESC_PATTERN_OVERRIDE as PRODUCT15_26_, categoryim0_.PRODUCT_TITLE_PATTERN_OVERRIDE as PRODUCT16_26_, categoryim0_.ROOT_DISPLAY_ORDER as ROOT_DI17_26_, categoryim0_.TAX_CODE as TAX_COD18_26_, categoryim0_.URL as URL19_26_, categoryim0_.URL_KEY as URL_KEY20_26_ from BLC_CATEGORY categoryim0_ where categoryim0_.ARCHIVED=? or categoryim0_.ARCHIVED is null order by categoryim0_.CATEGORY_ID asc limit ?
+
+    @Test
+    void testParameterizedLimit() throws SQLException {
+        String query = "select id, first_name, last_name from contacts where id < ? order by id asc limit ? ;";
+        Connection mc = new MockConnection(this.conn);
+        Connection c = ConnectionWrapper.wrap(mc);
+        PreparedStatement ps = c.prepareStatement(query);
+        MockPreparedStatement mps = ps.unwrap(MockPreparedStatement.class);
+        PreparedStatementWrapper unwrapped = ps.unwrap(PreparedStatementWrapper.class);
+        QueryParameters parameters = unwrapped.getParameters();
+        TaintAssignment first = parameters.computeAssignment(1);
+        assertEquals(new TaintAssignment(1, 1, ParameterType.WHERE), first);
+        TaintAssignment second = parameters.computeAssignment(2);
+        assertEquals(new TaintAssignment(2, 2, ParameterType.WHERE), second);
+        ps.setInt(1, 5);
+        ps.setInt(2, 2);
+
+        ResultSet rss = ps.executeQuery();
+    }
     @Test
     void testNestedQueryInUpdateWhere() throws Exception {
         String query = "update contacts set first_name = 'Elda', last_name = (select info from meta where contact_id = ?) where id = ?;";

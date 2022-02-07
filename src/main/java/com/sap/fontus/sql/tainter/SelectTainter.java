@@ -111,6 +111,11 @@ public class SelectTainter extends SelectVisitorAdapter {
 			List<Expression> taintedExpressions = this.taintGroupBy(expressions);
 			groupBy.setGroupByExpressionList(new ExpressionList(taintedExpressions).withUsingBrackets(groupBy.isUsingBrackets()));
 		}
+		Limit limit = plainSelect.getLimit();
+		if(limit != null) {
+			Expression rowCount = limit.getRowCount();
+			rowCount.accept(new WhereExpressionTainter(this.parameters));
+		}
 	}
 
 	protected List<Expression> taintGroupBy(List<Expression> groupByColumnReferences) {
