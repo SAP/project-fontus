@@ -24,11 +24,7 @@ public class SQLRewriter {
 		String[] passThroughCommands = {"LOCK", "UNLOCK"};
 		passThrough = Arrays.asList(passThroughCommands);
 		try {
-			//rewriter.readFile(args[0]);
-			SQLRewriter.taintStatement("SELECT *, (SELECT name1 FROM table1 WHERE age = 5 AND id > 2) AS ag FROM table2;");
-			SQLRewriter.taintStatement("SELECT number1 AS age, (SELECT COUNT(id1) FROM table1) AS cid FROM table2;");
-			SQLRewriter.taintStatement("SELECT * FROM table1 WHERE (id1, id2) IN (SELECT number1, number2 FROM table2);");
-			SQLRewriter.taintStatement("SELECT number1 AS age, (SELECT AVG(id1) FROM table1) AS cid FROM table2;");
+			rewriter.readFile(args[0]);
 		} catch (Exception e) {
 			System.out.println("Yeah well that didnt work.");
 			e.printStackTrace();

@@ -8,7 +8,7 @@ import com.sap.fontus.taintaware.unified.IASTaintHandler;
 
 public class OpenOlatTaintHandler extends IASTaintHandler {
     /**
-     * Extracts the TCF consent string from a cookie and attaches it as the taint metadata
+     * Sets Taint Information in OpenOLAT according to request information.
      * @param taintAware The Taint Aware String-like object
      * @param parent The object on which this method is being called
      * @param parameters The parameters used to make the method call
