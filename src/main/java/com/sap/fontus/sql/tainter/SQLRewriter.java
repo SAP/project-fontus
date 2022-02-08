@@ -8,12 +8,9 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class SQLRewriter {
 
-	private List<Taint> taints;
-	private String sqlString;
 	private static List<String> keyWords;
 	private static List<String> passThrough;
 
@@ -36,44 +33,31 @@ public class SQLRewriter {
 
 	}
 
-	private SQLRewriter() {
-		taints = new ArrayList<>();
-		sqlString = "";
-	}
+	private SQLRewriter() {}
 
-	private String taintStatement(String statement) {
+	private static String taintStatement(String statement) {
 		if (passThrough.stream().anyMatch(statement.substring(0, statement.indexOf(' '))::equalsIgnoreCase)) {
 			return statement;
 		}
-		Statements stmts = null;
 		try {
-			stmts = CCJSqlParserUtil.parseStatements(statement);
+			Statements stmts = CCJSqlParserUtil.parseStatements(statement);
+			StatementTainter tainter = new StatementTainter();
+			System.out.println("Tainting: " + statement);
+			stmts.accept(tainter);
+			String taintedStatement = stmts.toString();
+			System.out.println("Tainted: " + taintedStatement);
+			return taintedStatement;
 		} catch (JSQLParserException e) {
 			System.out.printf("Error parsing '%s': %s%n", statement, e);
 		}
-		StatementTainter tainter = new StatementTainter(this.taints);
-		System.out.println("Tainting: " + statement);
-		stmts.accept(tainter);
-		String taintedStatement = stmts.toString();
-		System.out.println("Tainted: " + taintedStatement);
-		//Map<Integer, Integer> map = tainter.getIndices();
-		//map.forEach((k,v) -> System.out.println("key: "+k+" value:"+v));
-		return taintedStatement;
+		return null;
 	}
 
-	private void readFile(String file) throws IOException {
-		BufferedReader br = null;
-		try {
-			br = new BufferedReader(new FileReader(file));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return;
-		}
+	private void readFile(String file) {
 		List<String> statements = new ArrayList<>();
-		try {
-			PrintStream pr = new PrintStream("tainted_" + file);
+		try (BufferedReader br = new BufferedReader(new FileReader(file)); PrintStream pr = new PrintStream("tainted_" + file)){
 			String line;
-			StringBuilder command = new StringBuilder();
+			StringBuilder command = new StringBuilder(10);
 			boolean inCommand = true;
 			while ((line = br.readLine()) != null) {
 				if (line.isEmpty() || line.startsWith("-") || line.startsWith("/")) {
@@ -89,8 +73,8 @@ public class SQLRewriter {
 				if (line.endsWith(";")) {
 					inCommand = false;
 					if (command.length() > 0) {
-						pr.println(this.taintStatement(command.toString()));
-						command = new StringBuilder();
+						pr.println(SQLRewriter.taintStatement(command.toString()));
+						command = new StringBuilder(10);
 					}
 				}
 			}
