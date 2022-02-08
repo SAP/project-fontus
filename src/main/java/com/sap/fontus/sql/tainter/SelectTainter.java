@@ -38,7 +38,7 @@ public class SelectTainter extends SelectVisitorAdapter {
 				newSelectItems.add(selectItem);
 
 				// Check if nested query exists
-				if (selectItem.toString().toLowerCase().contains("(select")) {
+				if (selectItem.toString().toLowerCase().startsWith("(select")) {
 					// Safe and transform current alias
 					Alias alias = ((SelectExpressionItem) selectItem).getAlias();
 					Alias newAlias = null;
