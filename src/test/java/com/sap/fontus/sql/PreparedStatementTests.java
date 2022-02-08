@@ -149,6 +149,23 @@ public class PreparedStatementTests {
         ResultSet rss = ps.executeQuery();
     }
 
+    // SELECT person0_.person_id AS person_i1_74_0_, person0_.uuid AS uuid2_74_0_, person0_.gender AS gender3_74_0_, person0_.birthdate AS birthdat4_74_0_, person0_.birthdate_estimated AS birthdat5_74_0_, person0_.birthtime AS birthtim6_74_0_, person0_.dead AS dead7_74_0_, person0_.death_date AS death_da8_74_0_, person0_.deathdate_estimated AS deathdat9_74_0_, person0_.cause_of_death AS cause_o10_74_0_, person0_.creator AS creator11_74_0_, person0_.date_created AS date_cr12_74_0_, person0_.changed_by AS changed13_74_0_, person0_.date_changed AS date_ch14_74_0_, person0_.voided AS voided15_74_0_, person0_.voided_by AS voided_16_74_0_, person0_.date_voided AS date_vo17_74_0_, person0_.void_reason AS void_re18_74_0_, person0_.cause_of_death_non_coded AS cause_o19_74_0_, person0_1_.patient_id AS patient_1_68_0_, person0_1_.creator AS creator10_68_0_, person0_1_.date_created AS date_cre2_68_0_, person0_1_.changed_by AS changed_3_68_0_, person0_1_.date_changed AS date_cha4_68_0_, person0_1_.voided AS voided5_68_0_, person0_1_.voided_by AS voided_b6_68_0_, person0_1_.date_voided AS date_voi7_68_0_, person0_1_.void_reason AS void_rea8_68_0_, person0_1_.allergy_status AS allergy_9_68_0_, CASE WHEN EXISTS (SELECT * FROM patient p WHERE p.patient_id = person0_.person_id) THEN 1 ELSE 0 END AS formula1_0_, CASE WHEN person0_1_.patient_id IS NOT NULL THEN 1 WHEN person0_.person_id IS NOT NULL THEN 0 END AS clazz_0_ FROM person person0_ LEFT OUTER JOIN patient person0_1_ ON person0_.person_id = person0_1_.patient_id WHERE person0_.person_id = ?
+    @Test
+    void testSelectInCase() throws Exception {
+        String query = "SELECT first_name, last_name, CASE WHEN EXISTS (SELECT info FROM meta m WHERE m.contact_id = id) THEN 1 ELSE 0 END AS has_info FROM contacts WHERE id = ?\n;";
+        Connection mc = new MockConnection(this.conn);
+        Connection c = ConnectionWrapper.wrap(mc);
+        PreparedStatement ps = c.prepareStatement(query);
+        MockPreparedStatement mps = ps.unwrap(MockPreparedStatement.class);
+        PreparedStatementWrapper unwrapped = ps.unwrap(PreparedStatementWrapper.class);
+        QueryParameters parameters = unwrapped.getParameters();
+        TaintAssignment first = parameters.computeAssignment(1);
+        assertEquals(new TaintAssignment(1, 1, ParameterType.WHERE), first);
+        ps.setInt(1, 1);
+
+        ResultSet rss = ps.executeQuery();
+    }
+
     @Test
     void testSubselecstInWhereWithTrailingCondition() throws Exception {
         String query = "update contacts set first_name = ?, last_name = ? where id = (select contact_id from meta where info = ?) and first_name = ?;";
