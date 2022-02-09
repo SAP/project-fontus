@@ -226,8 +226,8 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         // 215: invokeinterface #77,  1           // InterfaceMethod org/apache/tomcat/jdbc/pool/PoolConfiguration.getUseStatementFacade:()Z
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKEINTERFACE, "org/apache/tomcat/jdbc/pool/PoolConfiguration", "getUseStatementFacade", "()Z", true),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASPreparedStatementUtils.class), "useStatementFacade", "(Ljava/lang/Object;)Z", false ));
-        this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/util/Comparator", "comparing", "(Ljava/util/function/Function;Ljava/util/Comparator;)Ljava/util/Comparator;", true),
-                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASStringUtils.class), "comparing", "(Ljava/util/function/Function;Ljava/util/Comparator;)Ljava/util/Comparator;", false));
+        // this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/util/Comparator", "comparing", "(Ljava/util/function/Function;Ljava/util/Comparator;)Ljava/util/Comparator;", true),
+        //        new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASStringUtils.class), "comparing", "(Ljava/util/function/Function;Ljava/util/Comparator;)Ljava/util/Comparator;", false));
     }
 
     private void fillInterfaceProxies() {
