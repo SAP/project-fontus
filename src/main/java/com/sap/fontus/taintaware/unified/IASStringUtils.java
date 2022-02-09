@@ -1,6 +1,10 @@
 package com.sap.fontus.taintaware.unified;
 
+import com.sap.fontus.utils.ConversionUtils;
+
+import java.io.Serializable;
 import java.util.*;
+import java.util.function.Function;
 
 public final class IASStringUtils {
     private static final IASString CONCAT_PLACEHOLDER = new IASString("\u0001");
@@ -133,6 +137,22 @@ public final class IASStringUtils {
         Map<String, String> origEnv = System.getenv();
         Map<IASString, IASString> convertedEnv = convertStringMapToTStringMap(origEnv);
         return Collections.unmodifiableMap(convertedEnv);
+    }
+
+    public static <T, U> Comparator<T> comparing(
+            Function<? super T, ? extends U> keyExtractor,
+            Comparator<? super U> keyComparator)
+    {
+        Objects.requireNonNull(keyExtractor);
+        Objects.requireNonNull(keyComparator);
+        return (Comparator<T> & Serializable)
+                (c1, c2) -> {
+            Comparator<Object> comp = (Comparator<Object>) keyComparator;
+            Object o1 = keyExtractor.apply(c1);
+            o1 = ConversionUtils.convertToUninstrumented(o1);
+            Object o2 = keyExtractor.apply(c2);
+            o2 = ConversionUtils.convertToUninstrumented(o2);
+            return comp.compare(o1,o2); };
     }
 
     private IASStringUtils() {
