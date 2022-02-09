@@ -49,7 +49,8 @@ public class SelectTainter extends SelectVisitorAdapter {
 					List<Expression> plannedExpressions = new ArrayList<>();
 					List<Table> tables = new ArrayList<>();
 					List<Expression> where = new ArrayList<>();
-					NestedSelectItemTainter tainter = new NestedSelectItemTainter(this.parameters, this.selectItemReference, plannedExpressions, tables, where);
+					List<Join> joins = new ArrayList<>();
+					NestedSelectItemTainter tainter = new NestedSelectItemTainter(this.parameters, this.selectItemReference, plannedExpressions, tables, where, joins);
 					selectItem.accept(tainter);
 
 
@@ -64,6 +65,7 @@ public class SelectTainter extends SelectVisitorAdapter {
 					// Table of nested query
 					String strTable = "";
 					String strAlias = "";
+
 					if (tables.size() > 1) {
 						System.err.println("Something went wrong, more than one table in nested query!");
 					} else {
@@ -76,12 +78,18 @@ public class SelectTainter extends SelectVisitorAdapter {
 
 					}
 
+					StringBuilder strJoin = new StringBuilder(0);
+					for(Join j : joins) {
+						strJoin.append(" ");
+						strJoin.append(j);
+						strJoin.append(" ");
+					}
 					String nestedQuery = "";
 					String aliasClause = strAlias.isEmpty() ? "" : " as " + strAlias;
 					if (where.isEmpty()) {
-						nestedQuery = "SELECT " + expr + " FROM " + strTable + aliasClause;
+						nestedQuery = "SELECT " + expr + " FROM " + strTable + aliasClause + strJoin;
 					} else {
-						nestedQuery = "SELECT " + expr + " FROM " + strTable + aliasClause + " WHERE " + where.get(0).toString();
+						nestedQuery = "SELECT " + expr + " FROM " + strTable + aliasClause + strJoin + " WHERE " + where.get(0).toString();
 					}
 
 					// Yeah let's do SQL injection :D

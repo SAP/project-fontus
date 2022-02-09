@@ -14,12 +14,14 @@ public class NestedSelectTainter extends SelectTainter {
     private final List<Expression> plannedExpressions;
     private final List<Table> tables;
     private final List<Expression> where;
+    private final List<Join> joins;
 
-    public NestedSelectTainter(QueryParameters parameters, List<Expression> plannedExpressions, List<Table> tables, List<Expression> where) {
+    public NestedSelectTainter(QueryParameters parameters, List<Expression> plannedExpressions, List<Table> tables, List<Expression> where, List<Join> joins) {
         super(parameters);
         this.tables = tables;
         this.plannedExpressions = plannedExpressions;
         this.where = where;
+        this.joins = joins;
     }
 
     @Override
@@ -34,12 +36,14 @@ public class NestedSelectTainter extends SelectTainter {
                 this.tables.add((Table) plainSelect.getFromItem());
             }
 
+            this.joins.addAll(plainSelect.getJoins());
+
             List<SelectItem> newSelectItems = new ArrayList<>();
-            NestedSelectItemTainter selectItemTainter = new NestedSelectItemTainter(this.parameters, this.selectItemReference, this.plannedExpressions, this.tables, this.where);
+            NestedSelectItemTainter selectItemTainter = new NestedSelectItemTainter(this.parameters, this.selectItemReference, this.plannedExpressions, this.tables, this.where, this.joins);
             for (SelectItem selectItem : plainSelect.getSelectItems()) {
                 newSelectItems.add(selectItem);
                 if (selectItem.toString().toLowerCase().contains("(select")) {
-                    NestedSelectItemTainter nsit = new NestedSelectItemTainter(this.parameters, this.selectItemReference, this.plannedExpressions, this.tables, this.where);
+                    NestedSelectItemTainter nsit = new NestedSelectItemTainter(this.parameters, this.selectItemReference, this.plannedExpressions, this.tables, this.where, this.joins);
                     selectItem.accept(nsit);
 
                     if (selectItem instanceof SelectExpressionItem) {

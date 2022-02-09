@@ -5,6 +5,7 @@ import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 
@@ -15,12 +16,14 @@ public class NestedExpressionTainter extends ExpressionTainter {
     private final List<Expression> plannedExpressions;
     private final List<Table> tables;
     private final List<Expression> where;
+    private final List<Join> joins;
 
-    public NestedExpressionTainter(QueryParameters parameters, List<Expression> expressionReference, List<Expression> plannedExpressions, List<Table> tables, List<Expression> where) {
+    public NestedExpressionTainter(QueryParameters parameters, List<Expression> expressionReference, List<Expression> plannedExpressions, List<Table> tables, List<Expression> where, List<Join> joins) {
         super(parameters, expressionReference);
         this.plannedExpressions = plannedExpressions;
         this.tables = tables;
         this.where = where;
+        this.joins = joins;
     }
 
     @Override
@@ -41,11 +44,11 @@ public class NestedExpressionTainter extends ExpressionTainter {
     @Override
     public void visit(SubSelect subSelect) {
         this.parameters.begin(StatementType.SUB_SELECT);
-        NestedSelectTainter selectTainter = new NestedSelectTainter(this.parameters, this.plannedExpressions, this.tables, this.where);
+        NestedSelectTainter selectTainter = new NestedSelectTainter(this.parameters, this.plannedExpressions, this.tables, this.where, this.joins);
         subSelect.getSelectBody().accept(selectTainter);
         if (subSelect.getWithItemsList() != null) {
             for (WithItem withItem : subSelect.getWithItemsList()) {
-                NestedSelectTainter innerSelectTainter = new NestedSelectTainter(this.parameters, this.plannedExpressions, this.tables, this.where);
+                NestedSelectTainter innerSelectTainter = new NestedSelectTainter(this.parameters, this.plannedExpressions, this.tables, this.where, this.joins);
                 withItem.accept(innerSelectTainter);
             }
         }
