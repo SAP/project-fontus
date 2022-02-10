@@ -16,6 +16,10 @@ public class SimpleDataSubject implements DataSubject {
         this.id = id;
     }
 
+    public SimpleDataSubject(DataSubject subject) {
+        this.id = subject.getIdentifier();
+    }
+
     @Override
     public String getIdentifier() {
         return null;
