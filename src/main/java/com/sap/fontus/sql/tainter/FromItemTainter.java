@@ -8,32 +8,24 @@ import net.sf.jsqlparser.statement.select.WithItem;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.sap.fontus.Constants.TAINT_PREFIX;
-
 public class FromItemTainter extends FromItemVisitorAdapter {
+	private final QueryParameters parameters;
 
-	private final List<Taint> taints;
-	private List<AssignmentValue> assignmentValues;
-
-	FromItemTainter(List<Taint> taints) {
-		this.taints = taints;
-	}
-
-	public List<AssignmentValue> getAssignmentValues() {
-		return this.assignmentValues;
-	}
-
-	public void setAssignmentValues(List<AssignmentValue> assignmentValues) {
-		this.assignmentValues = assignmentValues;
+	FromItemTainter(QueryParameters parameters) {
+		super();
+		this.parameters = parameters;
 	}
 
 	@Override
 	public void visit(SubSelect subSelect) {
-		subSelect.getSelectBody().accept(new SelectTainter(this.taints));
-		if (subSelect.getWithItemsList() != null)
+		this.parameters.begin(StatementType.SUB_SELECT);
+		subSelect.getSelectBody().accept(new SelectTainter(this.parameters));
+		if (subSelect.getWithItemsList() != null) {
 			for (WithItem withItem : subSelect.getWithItemsList()) {
-				withItem.accept(new SelectTainter(this.taints));
+				withItem.accept(new SelectTainter(this.parameters));
 			}
+		}
+		this.parameters.end(StatementType.SUB_SELECT);
 	}
 
 	@Override
@@ -43,12 +35,13 @@ public class FromItemTainter extends FromItemVisitorAdapter {
 			newColumnsList = new ArrayList<>();
 			for (String column : valuesList.getColumnNames()) {
 				newColumnsList.add(column);
-				newColumnsList.add("`" + TAINT_PREFIX + column.replace("\"", "").replace("`", "") + "`");
+				newColumnsList.add(Utils.taintColumnName(column));
 			}
 			valuesList.setColumnNames(newColumnsList);
 		}
 
-		if (valuesList.getMultiExpressionList() != null)
-			valuesList.getMultiExpressionList().accept(new ItemsListTainter(this.taints));
+		if (valuesList.getMultiExpressionList() != null) {
+			valuesList.getMultiExpressionList().accept(new ItemsListTainter(this.parameters));
+		}
 	}
 }

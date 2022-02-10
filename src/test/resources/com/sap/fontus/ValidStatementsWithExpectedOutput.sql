@@ -4,9 +4,11 @@ SELECT name, `__taint__name`, vorname, `__taint__vorname` FROM customers;
 WITH users AS (SELECT name, vorname FROM users), customers AS (SELECT id FROM customers) SELECT name, vorname, id FROM users, customers;
 WITH users AS (SELECT name, `__taint__name`, vorname, `__taint__vorname` FROM users), customers AS (SELECT id, `__taint__id` FROM customers) SELECT name, `__taint__name`, vorname, `__taint__vorname`, id, `__taint__id` FROM users, customers;
 
-with a (name) as (select name from users) select name from a; Select vorname, (select name from customers) from users;
+with a (name) as (select name from users) select name from a;
 WITH a (name, `__taint__name`) AS (SELECT name, `__taint__name` FROM users) SELECT name, `__taint__name` FROM a;
-SELECT vorname, `__taint__vorname`, (SELECT name, `__taint__name` FROM customers) FROM users;
+
+ Select vorname, (select name from customers) from users;
+SELECT vorname, `__taint__vorname`, (SELECT name FROM customers), (SELECT `__taint__name` FROM customers) FROM users;
 
 select name, NULL from users;
 SELECT name, `__taint__name`, NULL, '0' FROM users;
@@ -22,16 +24,16 @@ select name as familienname, vorname as name from customers;
 SELECT name AS familienname, `__taint__name` AS `__taint__familienname`, vorname AS name, `__taint__vorname` AS `__taint__name` FROM customers;
 
 select name, 'vorname', 'Max' from customers;
-SELECT name, `__taint__name`, 'vorname', '0', 'Max', '777' FROM customers;
+SELECT name, `__taint__name`, 'vorname', '0', 'Max', '0' FROM customers;
 
 select name, 'Max' || 'Moritz' AS vollname from customers;
-SELECT name, `__taint__name`, 'Max' || 'Moritz' AS vollname, '777' || '0' AS `__taint__vollname` FROM customers;
+SELECT name, `__taint__name`, 'Max' || 'Moritz' AS vollname, '0' || '0' AS `__taint__vollname` FROM customers;
 
 select name || NULL from customers;
 SELECT name || NULL, `__taint__name` || '0' FROM customers;
 
 select ('Mr. ' || name) || ('Max' || vorname) from customers;
-SELECT ('Mr. ' || name) || ('Max' || vorname), ('0' || `__taint__name`) || ('777' || `__taint__vorname`) FROM customers;
+SELECT ('Mr. ' || name) || ('Max' || vorname), ('0' || `__taint__name`) || ('0' || `__taint__vorname`) FROM customers;
 
 select name, 7, 6.3 from customers;
 SELECT name, `__taint__name`, 7, '0', 6.3, '0' FROM customers;
@@ -40,23 +42,23 @@ select name from users where id in ( Select id from customers);
 SELECT name, `__taint__name` FROM users WHERE id IN (SELECT id FROM customers);
 
 INSERT INTO costumers VALUES('Max','Mustermann');
-INSERT INTO costumers VALUES ('Max', '777', 'Mustermann', '6666666666');
+INSERT INTO costumers VALUES ('Max', '0', 'Mustermann', '0');
 
 INSERT INTO customers (name, vorname) VALUES ('Max', 'Mustermann'); insert into users VALUES ('peter') returning id;
-INSERT INTO customers (name, `__taint__name`, vorname, `__taint__vorname`) VALUES ('Max', '777', 'Mustermann', '6666666666');
+INSERT INTO customers (name, `__taint__name`, vorname, `__taint__vorname`) VALUES ('Max', '0', 'Mustermann', '0');
 INSERT INTO users VALUES ('peter', '0') RETURNING id, `__taint__id`;
 
 insert into users VALUES ('peter') returning id, name, 'Max' || vorname;
-INSERT INTO users VALUES ('peter', '0') RETURNING id, `__taint__id`, name, `__taint__name`, 'Max' || vorname, '777' || `__taint__vorname`;
+INSERT INTO users VALUES ('peter', '0') RETURNING id, `__taint__id`, name, `__taint__name`, 'Max' || vorname, '0' || `__taint__vorname`;
 
 insert into users (name, vorname) (select name, 'Max' from customers);
-INSERT INTO users (name, `__taint__name`, vorname, `__taint__vorname`) (SELECT name, `__taint__name`, 'Max', '777' FROM customers);
+INSERT INTO users (name, `__taint__name`, vorname, `__taint__vorname`) (SELECT name, `__taint__name`, 'Max', '0' FROM customers);
 
 update users set name = 'Max', age = 10 where id = 1;
-UPDATE users SET name = 'Max', `__taint__name` = '777', age = 10, `__taint__age` = '0' WHERE id = 1;
+UPDATE users SET name = 'Max', `__taint__name` = '0', age = 10, `__taint__age` = '0' WHERE id = 1;
 
 update users set name = 'Max' where id = 1;
-UPDATE users SET name = 'Max', `__taint__name` = '777' WHERE id = 1;
+UPDATE users SET name = 'Max', `__taint__name` = '0' WHERE id = 1;
 
 update users set id = customers.id from customers inner join users on customers.id = users.id;
 UPDATE users SET id = customers.id, `__taint__id` = customers.`__taint__id` FROM customers INNER JOIN users ON customers.id = users.id;
@@ -74,7 +76,7 @@ CREATE TABLE `atoms` (  `id` int(11) NOT NULL AUTO_INCREMENT,  `parent` int(11) 
 CREATE TABLE `atoms` (`id` int (11) NOT NULL AUTO_INCREMENT, `__taint__id` TEXT, `parent` int (11) NOT NULL DEFAULT '0', `__taint__parent` TEXT, `sortorder` int (11) DEFAULT '0', `__taint__sortorder` TEXT, `name` varchar (64) NOT NULL DEFAULT '', `__taint__name` TEXT, `note` varchar (4096) DEFAULT NULL, `__taint__note` TEXT, `extention` varchar (4) DEFAULT '', `__taint__extention` TEXT, `created` datetime DEFAULT '0000-00-00 00:00:00', `__taint__created` TEXT, `updated` datetime DEFAULT '0000-00-00 00:00:00', `__taint__updated` TEXT, PRIMARY KEY (`id`)) AUTO_INCREMENT = 200 DEFAULT CHARSET = utf8;
 
 INSERT INTO `atoms` VALUES (1,0,10,'Images','','','2012-01-01 00:00:00','2013-11-02 18:28:10'),(2,0,20,'Files','','','2012-07-09 14:18:36','2012-07-09 14:18:36'),(3,0,20,'Forms','','','2012-07-09 14:18:36','2012-07-09 14:18:36'),(4,0,10,'Layout','','','2010-01-01 00:00:00','2010-01-01 00:00:00'),(11,4,10,'Logo','ourlogo','png','2010-01-01 00:00:00','2013-11-02 18:15:35'),(12,4,10,'Header','','---','2010-01-01 00:00:00','2010-01-01 00:00:00'),(13,4,10,'Footer','','---','2010-01-01 00:00:00','2010-01-01 00:00:00'),(21,1,10,'General','','','2012-08-15 18:55:51','2014-09-03 10:24:30'),(32,3,5,'Contact Formulier','{\"name\":\"Contact Formulier\",\"labels\":{\"en\":\"Send\",\"it\":\"Send\"},\"alert\":\"nobody@mysite.com\"}','','2013-09-07 22:03:12','2014-09-03 10:26:15'),(33,32,10,'name','{\"name\":\"name\",\"labels\":{\"en\":\"Name\",\"it\":\"Name\"},\"generator\":1,\"options\":{\"required\":true},\"reader\":1}','---','2013-09-07 22:32:45','2014-09-03 10:27:20'),(35,32,30,'question','{\"name\":\"question\",\"labels\":{\"en\":\"Question\",\"it\":\"Question\"},\"generator\":2,\"options\":{\"required\":true,\"cols\":\"60\",\"rows\":\"6\"},\"reader\":1}','---','2013-09-08 11:24:14','2014-09-03 10:27:10'),(36,32,20,'e-mail address','{\"name\":\"e-mail address\",\"labels\":{\"en\":\"Email Address\",\"it\":\"Email Address\"},\"generator\":1,\"options\":{\"required\":true,\"email\":true},\"reader\":2}','---','2013-09-08 15:59:32','2014-09-03 10:26:57'),(37,2,20,'A File','My PDF - 23 mei 2013','pdf','2013-09-08 16:04:49','2014-09-03 10:28:39'),(40,1,5,'Photos','','xxx','2013-09-09 15:41:08','2014-09-03 10:24:24'),(41,40,5,'Photo1','Screen Shot 2013-09-09 at 15.40.35','jpg','2013-09-09 15:41:18','2014-09-03 10:24:39'),(42,40,5,'Photo2','Screen Shot 2013-09-09 at 15.42.56','JPG','2013-09-09 15:43:48','2014-09-03 10:24:48'),(43,21,10,'Image1','image','jpg','2013-09-09 16:01:56','2014-09-03 10:25:04'),(44,2,10,'Official Documents','','xxx','2013-09-09 16:03:05','2014-09-03 10:25:29'),(45,44,5,'Founded','Founded on april 1rst 1984','pdf','2013-09-09 16:03:16','2014-09-03 10:29:45'),(49,21,20,'Image2','ourimage','jpg','2013-09-30 20:23:34','2014-09-03 10:25:08'),(50,21,30,'Image3','diversity','jpg','2013-09-30 20:26:34','2014-09-03 10:25:12');
-INSERT INTO `atoms` VALUES (1, '0', 0, '0', 10, '0', 'Images', '0', '', '0', '', '0', '2012-01-01 00:00:00', '0', '2013-11-02 18:28:10', '0'), (2, '0', 0, '0', 20, '0', 'Files', '0', '', '0', '', '0', '2012-07-09 14:18:36', '0', '2012-07-09 14:18:36', '0'), (3, '0', 0, '0', 20, '0', 'Forms', '0', '', '0', '', '0', '2012-07-09 14:18:36', '0', '2012-07-09 14:18:36', '0'), (4, '0', 0, '0', 10, '0', 'Layout', '0', '', '0', '', '0', '2010-01-01 00:00:00', '0', '2010-01-01 00:00:00', '0'), (11, '0', 4, '0', 10, '0', 'Logo', '0', 'ourlogo', '0', 'png', '0', '2010-01-01 00:00:00', '0', '2013-11-02 18:15:35', '0'), (12, '0', 4, '0', 10, '0', 'Header', '0', '', '0', '---', '0', '2010-01-01 00:00:00', '0', '2010-01-01 00:00:00', '0'), (13, '0', 4, '0', 10, '0', 'Footer', '0', '', '0', '---', '0', '2010-01-01 00:00:00', '0', '2010-01-01 00:00:00', '0'), (21, '0', 1, '0', 10, '0', 'General', '0', '', '0', '', '0', '2012-08-15 18:55:51', '0', '2014-09-03 10:24:30', '0'), (32, '0', 3, '0', 5, '0', 'Contact Formulier', '0', '{\"name\":\"Contact Formulier\",\"labels\":{\"en\":\"Send\",\"it\":\"Send\"},\"alert\":\"nobody@mysite.com\"}', '0', '', '0', '2013-09-07 22:03:12', '0', '2014-09-03 10:26:15', '0'), (33, '0', 32, '0', 10, '0', 'name', '22222', '{\"name\":\"name\",\"labels\":{\"en\":\"Name\",\"it\":\"Name\"},\"generator\":1,\"options\":{\"required\":true},\"reader\":1}', '0', '---', '0', '2013-09-07 22:32:45', '0', '2014-09-03 10:27:20', '0'), (35, '0', 32, '0', 30, '0', 'question', '0', '{\"name\":\"question\",\"labels\":{\"en\":\"Question\",\"it\":\"Question\"},\"generator\":2,\"options\":{\"required\":true,\"cols\":\"60\",\"rows\":\"6\"},\"reader\":1}', '0', '---', '0', '2013-09-08 11:24:14', '0', '2014-09-03 10:27:10', '0'), (36, '0', 32, '0', 20, '0', 'e-mail address', '0', '{\"name\":\"e-mail address\",\"labels\":{\"en\":\"Email Address\",\"it\":\"Email Address\"},\"generator\":1,\"options\":{\"required\":true,\"email\":true},\"reader\":2}', '0', '---', '0', '2013-09-08 15:59:32', '0', '2014-09-03 10:26:57', '0'), (37, '0', 2, '0', 20, '0', 'A File', '0', 'My PDF - 23 mei 2013', '0', 'pdf', '0', '2013-09-08 16:04:49', '0', '2014-09-03 10:28:39', '0'), (40, '0', 1, '0', 5, '0', 'Photos', '0', '', '0', 'xxx', '0', '2013-09-09 15:41:08', '0', '2014-09-03 10:24:24', '0'), (41, '0', 40, '0', 5, '0', 'Photo1', '0', 'Screen Shot 2013-09-09 at 15.40.35', '0', 'jpg', '0', '2013-09-09 15:41:18', '0', '2014-09-03 10:24:39', '0'), (42, '0', 40, '0', 5, '0', 'Photo2', '0', 'Screen Shot 2013-09-09 at 15.42.56', '0', 'JPG', '0', '2013-09-09 15:43:48', '0', '2014-09-03 10:24:48', '0'), (43, '0', 21, '0', 10, '0', 'Image1', '0', 'image', '0', 'jpg', '0', '2013-09-09 16:01:56', '0', '2014-09-03 10:25:04', '0'), (44, '0', 2, '0', 10, '0', 'Official Documents', '0', '', '0', 'xxx', '0', '2013-09-09 16:03:05', '0', '2014-09-03 10:25:29', '0'), (45, '0', 44, '0', 5, '0', 'Founded', '0', 'Founded on april 1rst 1984', '0', 'pdf', '0', '2013-09-09 16:03:16', '0', '2014-09-03 10:29:45', '0'), (49, '0', 21, '0', 20, '0', 'Image2', '0', 'ourimage', '0', 'jpg', '0', '2013-09-30 20:23:34', '0', '2014-09-03 10:25:08', '0'), (50, '0', 21, '0', 30, '0', 'Image3', '0', 'diversity', '0', 'jpg', '0', '2013-09-30 20:26:34', '0', '2014-09-03 10:25:12', '0');
+INSERT INTO `atoms` VALUES (1, '0', 0, '0', 10, '0', 'Images', '0', '', '0', '', '0', '2012-01-01 00:00:00', '0', '2013-11-02 18:28:10', '0'), (2, '0', 0, '0', 20, '0', 'Files', '0', '', '0', '', '0', '2012-07-09 14:18:36', '0', '2012-07-09 14:18:36', '0'), (3, '0', 0, '0', 20, '0', 'Forms', '0', '', '0', '', '0', '2012-07-09 14:18:36', '0', '2012-07-09 14:18:36', '0'), (4, '0', 0, '0', 10, '0', 'Layout', '0', '', '0', '', '0', '2010-01-01 00:00:00', '0', '2010-01-01 00:00:00', '0'), (11, '0', 4, '0', 10, '0', 'Logo', '0', 'ourlogo', '0', 'png', '0', '2010-01-01 00:00:00', '0', '2013-11-02 18:15:35', '0'), (12, '0', 4, '0', 10, '0', 'Header', '0', '', '0', '---', '0', '2010-01-01 00:00:00', '0', '2010-01-01 00:00:00', '0'), (13, '0', 4, '0', 10, '0', 'Footer', '0', '', '0', '---', '0', '2010-01-01 00:00:00', '0', '2010-01-01 00:00:00', '0'), (21, '0', 1, '0', 10, '0', 'General', '0', '', '0', '', '0', '2012-08-15 18:55:51', '0', '2014-09-03 10:24:30', '0'), (32, '0', 3, '0', 5, '0', 'Contact Formulier', '0', '{\"name\":\"Contact Formulier\",\"labels\":{\"en\":\"Send\",\"it\":\"Send\"},\"alert\":\"nobody@mysite.com\"}', '0', '', '0', '2013-09-07 22:03:12', '0', '2014-09-03 10:26:15', '0'), (33, '0', 32, '0', 10, '0', 'name', '0', '{\"name\":\"name\",\"labels\":{\"en\":\"Name\",\"it\":\"Name\"},\"generator\":1,\"options\":{\"required\":true},\"reader\":1}', '0', '---', '0', '2013-09-07 22:32:45', '0', '2014-09-03 10:27:20', '0'), (35, '0', 32, '0', 30, '0', 'question', '0', '{\"name\":\"question\",\"labels\":{\"en\":\"Question\",\"it\":\"Question\"},\"generator\":2,\"options\":{\"required\":true,\"cols\":\"60\",\"rows\":\"6\"},\"reader\":1}', '0', '---', '0', '2013-09-08 11:24:14', '0', '2014-09-03 10:27:10', '0'), (36, '0', 32, '0', 20, '0', 'e-mail address', '0', '{\"name\":\"e-mail address\",\"labels\":{\"en\":\"Email Address\",\"it\":\"Email Address\"},\"generator\":1,\"options\":{\"required\":true,\"email\":true},\"reader\":2}', '0', '---', '0', '2013-09-08 15:59:32', '0', '2014-09-03 10:26:57', '0'), (37, '0', 2, '0', 20, '0', 'A File', '0', 'My PDF - 23 mei 2013', '0', 'pdf', '0', '2013-09-08 16:04:49', '0', '2014-09-03 10:28:39', '0'), (40, '0', 1, '0', 5, '0', 'Photos', '0', '', '0', 'xxx', '0', '2013-09-09 15:41:08', '0', '2014-09-03 10:24:24', '0'), (41, '0', 40, '0', 5, '0', 'Photo1', '0', 'Screen Shot 2013-09-09 at 15.40.35', '0', 'jpg', '0', '2013-09-09 15:41:18', '0', '2014-09-03 10:24:39', '0'), (42, '0', 40, '0', 5, '0', 'Photo2', '0', 'Screen Shot 2013-09-09 at 15.42.56', '0', 'JPG', '0', '2013-09-09 15:43:48', '0', '2014-09-03 10:24:48', '0'), (43, '0', 21, '0', 10, '0', 'Image1', '0', 'image', '0', 'jpg', '0', '2013-09-09 16:01:56', '0', '2014-09-03 10:25:04', '0'), (44, '0', 2, '0', 10, '0', 'Official Documents', '0', '', '0', 'xxx', '0', '2013-09-09 16:03:05', '0', '2014-09-03 10:25:29', '0'), (45, '0', 44, '0', 5, '0', 'Founded', '0', 'Founded on april 1rst 1984', '0', 'pdf', '0', '2013-09-09 16:03:16', '0', '2014-09-03 10:29:45', '0'), (49, '0', 21, '0', 20, '0', 'Image2', '0', 'ourimage', '0', 'jpg', '0', '2013-09-30 20:23:34', '0', '2014-09-03 10:25:08', '0'), (50, '0', 21, '0', 30, '0', 'Image3', '0', 'diversity', '0', 'jpg', '0', '2013-09-30 20:26:34', '0', '2014-09-03 10:25:12', '0');
 
 DROP TABLE IF EXISTS `content`;
 DROP TABLE IF EXISTS `content`;
@@ -1208,7 +1210,7 @@ CREATE TABLE `model` (  `name` varchar(45) NOT NULL,  `description` varchar(255)
 CREATE TABLE `model` (`name` varchar (45) NOT NULL, `__taint__name` TEXT, `description` varchar (255) DEFAULT NULL, `__taint__description` TEXT, PRIMARY KEY (`name`)) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
 INSERT INTO `model` VALUES ('KNN','KNN'),('PCA','PCA'),('SVM','SVM');
-INSERT INTO `model` VALUES ('KNN', '0', 'KNN', '0'), ('PCA', '22222', 'PCA', '22222'), ('SVM', '0', 'SVM', '0');
+INSERT INTO `model` VALUES ('KNN', '0', 'KNN', '0'), ('PCA', '0', 'PCA', '0'), ('SVM', '0', 'SVM', '0');
 
 DROP TABLE IF EXISTS `pca_fp_meta_data`;
 DROP TABLE IF EXISTS `pca_fp_meta_data`;
@@ -1217,7 +1219,7 @@ CREATE TABLE `pca_fp_meta_data` (  `location_id` int(11) NOT NULL,  `fingerprint
 CREATE TABLE `pca_fp_meta_data` (`location_id` int (11) NOT NULL, `__taint__location_id` TEXT, `fingerprint_id` int (11) NOT NULL, `__taint__fingerprint_id` TEXT, `model_name` varchar (45) NOT NULL, `__taint__model_name` TEXT, `PC1` double DEFAULT NULL, `__taint__PC1` TEXT, `PC2` double DEFAULT NULL, `__taint__PC2` TEXT, `PC3` double DEFAULT NULL, `__taint__PC3` TEXT, `PC4` double DEFAULT NULL, `__taint__PC4` TEXT, `PC5` double DEFAULT NULL, `__taint__PC5` TEXT, `PC6` double DEFAULT NULL, `__taint__PC6` TEXT, `PC7` double DEFAULT NULL, `__taint__PC7` TEXT, `PC8` double DEFAULT NULL, `__taint__PC8` TEXT, `PC9` double DEFAULT NULL, `__taint__PC9` TEXT, `PC10` double DEFAULT NULL, `__taint__PC10` TEXT, PRIMARY KEY (`location_id`, `fingerprint_id`, `model_name`), KEY `pca_loc_id_idx` (`location_id`), KEY `pca_fp_id_idx` (`fingerprint_id`), KEY `pca_model_name_idx` (`model_name`), CONSTRAINT `pca_loc_id` FOREIGN KEY (`location_id`) REFERENCES `location`(`id`) ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT `pca_fp_id` FOREIGN KEY (`fingerprint_id`) REFERENCES `fingerprint`(`id`) ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT `pca_model_name` FOREIGN KEY (`model_name`) REFERENCES `model`(`name`) ON DELETE CASCADE ON UPDATE CASCADE) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
 INSERT INTO `pca_fp_meta_data` VALUES (21,1,'PCA',10.6051,99.3101,65.0834,63.5856,68.1754,74.8001,14.667,82.9764,99.8838,49.287);
-INSERT INTO `pca_fp_meta_data` VALUES (21, '0', 1, '0', 'PCA', '22222', 10.6051, '0', 99.3101, '0', 65.0834, '0', 63.5856, '0', 68.1754, '0', 74.8001, '0', 14.667, '0', 82.9764, '0', 99.8838, '0', 49.287, '0');
+INSERT INTO `pca_fp_meta_data` VALUES (21, '0', 1, '0', 'PCA', '0', 10.6051, '0', 99.3101, '0', 65.0834, '0', 63.5856, '0', 68.1754, '0', 74.8001, '0', 14.667, '0', 82.9764, '0', 99.8838, '0', 49.287, '0');
 
 DROP TABLE IF EXISTS `place`;
 DROP TABLE IF EXISTS `place`;
@@ -1235,7 +1237,7 @@ CREATE TABLE `pos` (  `location_id` int(11) NOT NULL,  `fingerprint_id` int(11) 
 CREATE TABLE `pos` (`location_id` int (11) NOT NULL, `__taint__location_id` TEXT, `fingerprint_id` int (11) NOT NULL, `__taint__fingerprint_id` TEXT, `model_name` varchar (5) NOT NULL, `__taint__model_name` TEXT, PRIMARY KEY (`location_id`, `fingerprint_id`, `model_name`), KEY `pos_model_name_idx` (`model_name`), KEY `pos_loc_id_idx` (`location_id`), KEY `pos_fp_id_idx` (`fingerprint_id`), CONSTRAINT `pos_fp_id` FOREIGN KEY (`fingerprint_id`) REFERENCES `fingerprint`(`id`) ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT `pos_loc_id` FOREIGN KEY (`location_id`) REFERENCES `location`(`id`) ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT `pos_model_name` FOREIGN KEY (`model_name`) REFERENCES `model`(`name`) ON DELETE CASCADE ON UPDATE CASCADE) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
 INSERT INTO `pos` VALUES (21,1,'PCA');
-INSERT INTO `pos` VALUES (21, '0', 1, '0', 'PCA', '22222');
+INSERT INTO `pos` VALUES (21, '0', 1, '0', 'PCA', '0');
 
 DROP TABLE IF EXISTS `rss`;
 DROP TABLE IF EXISTS `rss`;

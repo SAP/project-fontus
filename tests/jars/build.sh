@@ -31,6 +31,7 @@ JAR_FOLDERS=(
     super-interfaces
     ical4j
     provider_tests
+    comparators
 )
 
 main() {

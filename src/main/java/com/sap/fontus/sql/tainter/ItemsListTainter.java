@@ -11,51 +11,42 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ItemsListTainter extends ItemsListVisitorAdapter {
+	private final QueryParameters parameters;
 
-	private final List<Taint> taints;
-	private List<AssignmentValue> assignmentValues;
-
-	ItemsListTainter(List<Taint> taints) {
-		this.taints = taints;
-		//this.assignmentValues = new ArrayList<>();
+	ItemsListTainter(QueryParameters parameters) {
+		super();
+		this.parameters = parameters;
 	}
 
-	public List<AssignmentValue> getAssignmentValues() {
-		return this.assignmentValues;
-	}
-
-	public void setAssignmentValues(List<AssignmentValue> assignmentValues) {
-		this.assignmentValues = assignmentValues;
-	}
 
 	@Override
 	public void visit(SubSelect subSelect) {
-		SelectTainter selectTainter =  new SelectTainter(this.taints);
-		selectTainter.setAssignmentValues(this.assignmentValues);
+		this.parameters.begin(StatementType.SUB_SELECT);
+		SelectTainter selectTainter =  new SelectTainter(this.parameters);
 		subSelect.getSelectBody().accept(selectTainter);
-		if (subSelect.getWithItemsList() != null)
+		if (subSelect.getWithItemsList() != null) {
 			for (WithItem withItem : subSelect.getWithItemsList()) {
-				SelectTainter innerSelectTainter = new SelectTainter(this.taints);
-				innerSelectTainter.setAssignmentValues(this.assignmentValues);
+				SelectTainter innerSelectTainter = new SelectTainter(this.parameters);
 				withItem.accept(innerSelectTainter);
 			}
+		}
+		this.parameters.end(StatementType.SUB_SELECT);
 	}
 
 	@Override
 	public void visit(ExpressionList expressionList) {
 		List<Expression> newExpressionList = new ArrayList<>();
-		ExpressionTainter insertExpressionTainter = new ExpressionTainter(this.taints, newExpressionList);
-		insertExpressionTainter.setAssignmentValues(this.assignmentValues);
+		ExpressionTainter tainter = new ExpressionTainter(this.parameters, newExpressionList);
 		for (Expression expression : expressionList.getExpressions()) {
 			newExpressionList.add(expression);
-			expression.accept(insertExpressionTainter);
+			expression.accept(tainter);
 		}
 		expressionList.setExpressions(newExpressionList);
 	}
 
 	@Override
 	public void visit(MultiExpressionList multiExpressionList) {
-		for (ExpressionList expressionList : multiExpressionList.getExprList()) {
+		for (ExpressionList expressionList : multiExpressionList.getExpressionLists()) {
 			expressionList.accept(this);
 		}
 	}
