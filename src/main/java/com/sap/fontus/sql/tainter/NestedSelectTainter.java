@@ -36,7 +36,10 @@ public class NestedSelectTainter extends SelectTainter {
                 this.tables.add((Table) plainSelect.getFromItem());
             }
 
-            this.joins.addAll(plainSelect.getJoins());
+            List<Join> js = plainSelect.getJoins();
+            if(js != null) {
+                this.joins.addAll(js);
+            }
 
             List<SelectItem> newSelectItems = new ArrayList<>();
             NestedSelectItemTainter selectItemTainter = new NestedSelectItemTainter(this.parameters, this.selectItemReference, this.plannedExpressions, this.tables, this.where, this.joins);
