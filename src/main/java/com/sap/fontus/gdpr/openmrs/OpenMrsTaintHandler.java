@@ -69,6 +69,9 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
 
     private static GdprMetadata getTaintMetadataFromExistingUuid(String uuid) {
         GdprMetadata md = null;
+	if (uuid == null) {
+	    return null;
+	}
         try {
             // OpenMRS has a global context for retrieving objects from the DB:
             Class<?> clazz = Class.forName("org.openmrs.api.context.Context");
@@ -103,7 +106,11 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
     }
 
     private static DataSubject getDataSubjectFromUuid(String uuid) {
-        return new SimpleDataSubject(getTaintMetadataFromExistingUuid(uuid).getSubject());
+	GdprMetadata md = getTaintMetadataFromExistingUuid(uuid);
+	if (md != null) {
+	    return new SimpleDataSubject(getTaintMetadataFromExistingUuid(uuid).getSubject());
+	}
+	return null;
     }
 
     private static DataSubject getDataSubjectFromRequestParameter(ReflectedHttpServletRequest request) {
@@ -130,8 +137,11 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
 
     private static GdprMetadata getPatientMetadata(ReflectedHttpServletRequest request) {
         DataSubject dataSubject = getDataSubjectFromRequestParameter(request);
-        return new SimpleGdprMetadata(getPurposesFromRequest(request), ProtectionLevel.Normal, dataSubject,
-                new SimpleDataId(), true, true, Identifiability.Explicit);
+	if (dataSubject != null) {
+	    return new SimpleGdprMetadata(getPurposesFromRequest(request), ProtectionLevel.Normal, dataSubject,
+					  new SimpleDataId(), true, true, Identifiability.Explicit);
+	}
+	return null;
     }
 
     /**
@@ -158,7 +168,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
 
             ReflectedHttpServletRequest request = new ReflectedHttpServletRequest(parent);
 
-            if (request.getParameter(appIdParameterName).equals(registerPatientApp)) {
+            if (registerPatientApp.equals(request.getParameter(appIdParameterName))) {
                 metadata = createNewPatientMetadata(request);
             } else {
                 metadata = getPatientMetadata(request);

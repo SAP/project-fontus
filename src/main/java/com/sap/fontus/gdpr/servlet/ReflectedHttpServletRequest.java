@@ -182,6 +182,9 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
     
 
     public String getParameter(String name) {
+	if (name == null) {
+	    return null;
+	}
         return getParameter(new IASString(name)).getString();
     }
     
