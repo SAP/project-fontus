@@ -4,7 +4,10 @@ plugins {
     id 'maven-publish'
     id 'idea'
 }
+
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+// Configure Auto Relocation
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 
 apply plugin: 'idea'
 
@@ -86,6 +89,11 @@ task utilJar(type: ShadowJar) {
     utilJar.baseName = "util"
 }
 
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+    target = tasks.shadowJar
+    prefix = "com.sap.fontus.shadow" // Default value is "shadow"
+}
+
 shadowJar {
     mergeServiceFiles()
     doFirst {
@@ -104,24 +112,8 @@ shadowJar {
     // This makes sure that the generated jar has no "-all" suffix
     classifier = ''
 
-    relocate 'com.ctc', 'com.sap.fontus.com.ctc'
-    relocate 'com.fasterxml', 'com.sap.fontus.com.fasterxml'
-    relocate 'org.codehaus.stax2', 'com.sap.fontus.org.codehaus.stax2'
-    relocate 'org.json', 'com.sap.fontus.org.json'
-    relocate 'org.mutabilitydetector', 'com.sap.fontus.org.mutabilitydetector'
-    relocate 'org.objectweb', 'com.sap.fontus.org.objectweb'
-    relocate 'javax.activation', 'com.sap.fontus.javax.activation'
-    relocate 'javax.xml.bind', 'com.sap.fontus.javax.xml.bind'
-    relocate 'picocli', 'com.sap.fontus.picocli'
-    relocate 'com.alibaba', 'com.sap.fontus.com.alibaba'
-    relocate 'org.owasp.encoder', 'com.sap.fontus.org.owasp.encoder'
-    relocate 'org.owasp.encoder-jsp', 'com.sap.fontus.org.owasp.encoder-jsp'
-    relocate 'com.iabtcf', 'com.sap.fontus.com.iabtcf'
-    relocate 'net.sf.jsqlparser', 'com.sap.fontus.net.sf.jsqlparser'
-    relocate 'com.mysql', 'com.sap.fontus.com.mysql'
-    relocate 'com.owlike.genson', 'com.sap.fontus.com.owlike.genson'
-
     dependsOn utilJar
+    dependsOn relocateShadowJar
 //    dependsOn converterJar
 //    dependsOn generatorJar
 //    dependsOn aotJar
