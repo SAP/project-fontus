@@ -339,12 +339,15 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
 	    Enumeration a = this.getAttributeNames();
 	    sb.append("Attributes:");
 	    sb.append(System.getProperty("line.separator"));
-	    while (a.hasMoreElements()) {
-		IASString s = (IASString) a.nextElement();
-		sb.append(s.getString() + " = " + this.getAttribute(s));
-		sb.append(System.getProperty("line.separator"));
+	    if (a == null) {
+		sb.append("NULL");
+	    } else {
+		while (a.hasMoreElements()) {
+		    IASString s = (IASString) a.nextElement();
+		    sb.append(s.getString() + " = " + this.getAttribute(s));
+		    sb.append(System.getProperty("line.separator"));
+		}
 	    }
-
 	    ReflectedCookie[] cookies = this.getCookies();
 	    sb.append("Cookies: " + cookies);
 	    sb.append(System.getProperty("line.separator"));

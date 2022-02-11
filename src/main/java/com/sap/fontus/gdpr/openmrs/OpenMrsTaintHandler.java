@@ -130,7 +130,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         if ((o != null) && (o instanceof DataSubject)) {
             dataSubject = (DataSubject) o;
         } else {
-            dataSubject = new SimpleDataSubject();
+            dataSubject = new SimpleDataSubject(UUID.randomUUID().toString());
             request.setAttribute(dataSubjectAttributeName, dataSubject);
         }
 	System.out.println("FONTUS: got data subject uuid: " + dataSubject);
