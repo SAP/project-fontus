@@ -120,9 +120,9 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
 //    }
 //
 //
-//    public HttpSession getSession() {
-//        return (HttpSession) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod());
-//    }
+    public ReflectedSession getSession() {
+        return new ReflectedSession(this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod()));
+    }
 
     
     public boolean isRequestedSessionIdValid() {
