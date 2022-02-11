@@ -53,6 +53,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     private final CombinedExcludedLookup combinedExcludedLookup;
     private final List<DynamicCall> bootstrapMethods;
     private final SignatureInstrumenter signatureInstrumenter;
+    private final com.sap.fontus.instrumentation.Method caller;
 
     /**
      * If a method which is part of an interface should be proxied, place it here
@@ -61,7 +62,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     private final Map<FunctionCall, FunctionCall> methodInterfaceProxies;
     private final ClassLoader loader;
 
-    public MethodTaintingVisitor(int acc, String owner, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver, Configuration config, boolean implementsInvocationHandler, InstrumentationHelper instrumentationHelper, CombinedExcludedLookup combinedExcludedLookup, List<DynamicCall> bootstrapMethods, List<LambdaCall> jdkLambdaMethodProxies, String ownerSuperClass, ClassLoader loader, boolean isOwnerInterface) {
+    public MethodTaintingVisitor(int acc, String owner, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver, Configuration config, boolean implementsInvocationHandler, InstrumentationHelper instrumentationHelper, CombinedExcludedLookup combinedExcludedLookup, List<DynamicCall> bootstrapMethods, List<LambdaCall> jdkLambdaMethodProxies, String ownerSuperClass, ClassLoader loader, boolean isOwnerInterface, com.sap.fontus.instrumentation.Method caller) {
         super(Opcodes.ASM9, methodVisitor);
         this.resolver = resolver;
         this.owner = owner;
@@ -86,6 +87,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.fillProxies();
         this.fillInterfaceProxies();
         this.config = config;
+        this.caller = caller;
     }
 
     @Override
@@ -563,10 +565,22 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         // Add Source transformations
         Source source = this.config.getSourceConfig().getSourceForFunction(call);
         if (source != null) {
-            logger.info("Adding source tainting for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-            SourceTransformer t = new SourceTransformer(source, this.used);
-            transformer.addReturnTransformation(t);
-            transformer.addParameterTransformation(t);
+            boolean applySource = source.getAllowedCallers().isEmpty();
+            if(!applySource) {
+                FunctionCall caller = this.caller.toFunctionCall();
+                for(FunctionCall fc : source.getAllowedCallers()) {
+                    if (caller.equals(fc)) {
+                        applySource = true;
+                        break;
+                    }
+                }
+            }
+            if(applySource) {
+                logger.info("Adding source tainting for [{}] {}.{}{} for caller {}.{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor(), this.caller.getOwner(), this.caller.getName());
+                SourceTransformer t = new SourceTransformer(source, this.used);
+                transformer.addReturnTransformation(t);
+                transformer.addParameterTransformation(t);
+            }
         }
 
         // Add Sink transformations

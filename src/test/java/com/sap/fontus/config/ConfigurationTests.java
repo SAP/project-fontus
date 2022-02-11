@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -72,6 +73,18 @@ class ConfigurationTests {
         config.addExcludedPackage("a/b/c/D");
         assertEquals(config.getExcludedPackages().size(), 4);
         assertEquals("WARN: Trying to add a/b/c/D as an excluded package. Packages should end with slashes!\n", outContent.toString());
+    }
+
+    @Test
+    void testSourceWithAllowedCallers() {
+        Configuration config = this.getConfiguration("configuration_source_allowed_callers.xml");
+        List<Source> sources = config.getSourceConfig().getSources();
+        assertEquals(sources.size(), 2);
+        Source first = config.getSourceConfig().getSourceWithName("next");
+        assertEquals(2, first.getAllowedCallers().size());
+        assertEquals(2, first.getPassLocals().size());
+        Source second = config.getSourceConfig().getSourceWithName("nextLine");
+        assertEquals(0, second.getAllowedCallers().size());
     }
 
     @Test

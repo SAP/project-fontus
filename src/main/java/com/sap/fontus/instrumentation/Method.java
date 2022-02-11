@@ -1,8 +1,10 @@
 package com.sap.fontus.instrumentation;
 
 import com.sap.fontus.asm.Descriptor;
+import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.utils.MethodUtils;
 import com.sap.fontus.utils.Utils;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import java.lang.reflect.Modifier;
@@ -73,6 +75,21 @@ public class Method {
     public static Method from(java.lang.reflect.Method method) {
         String signature = MethodUtils.getSignature(method).orElse(null);
         return new Method(method.getModifiers(), Utils.dotToSlash(method.getDeclaringClass().getName()), method.getName(), org.objectweb.asm.commons.Method.getMethod(method).getDescriptor(), signature, Arrays.stream(method.getExceptionTypes()).map(Class::getName).map(Utils::dotToSlash).toArray(String[]::new), method.getDeclaringClass().isInterface());
+    }
+
+    public FunctionCall toFunctionCall() {
+        int opcode;
+        if (Modifier.isStatic(this.getAccess())) {
+            opcode = Opcodes.INVOKESTATIC;
+        } else if (this.ownerIsInterface) {
+            opcode = Opcodes.INVOKEINTERFACE;
+        } else if (Modifier.isPrivate(this.getAccess())) {
+            opcode = Opcodes.INVOKESPECIAL;
+        } else {
+            opcode = Opcodes.INVOKEVIRTUAL;
+        }
+
+        return new FunctionCall(opcode, this.owner, this.name, this.descriptor, this.ownerIsInterface);
     }
 
     @Override

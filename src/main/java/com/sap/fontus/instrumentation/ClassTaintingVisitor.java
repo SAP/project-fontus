@@ -228,7 +228,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             mv = super.visitMethod(instrumentedAccess, name, desc, instrumentedSignature, exceptions);
         }
 
-        MethodTaintingVisitor mtv = new MethodTaintingVisitor(instrumentedAccess, this.owner, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler, this.instrumentationHelper, this.combinedExcludedLookup, this.bootstrapMethods, this.jdkLambdaMethodProxies, this.superName, this.loader, this.isInterface);
+        MethodTaintingVisitor mtv = new MethodTaintingVisitor(instrumentedAccess, this.owner, newName, desc, mv, this.resolver, this.config, this.implementsInvocationHandler, this.instrumentationHelper, this.combinedExcludedLookup, this.bootstrapMethods, this.jdkLambdaMethodProxies, this.superName, this.loader, this.isInterface, method);
         if (this.containsJSRRET) {
             return new JSRInlinerAdapter(mtv, instrumentedAccess, newName, desc, instrumentedSignature, exceptions);
         }

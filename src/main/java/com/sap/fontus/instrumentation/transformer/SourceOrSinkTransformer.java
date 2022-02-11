@@ -9,6 +9,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.objectweb.asm.Opcodes.INVOKESTATIC;
@@ -42,9 +43,12 @@ public abstract class SourceOrSinkTransformer {
     }
 
     protected void pushParameterArrayOntoStack(MethodTaintingVisitor visitor, Descriptor desc) {
+        this.pushParameterArrayOntoStack(visitor, desc, new ArrayList<>(0));
+    }
+    protected void pushParameterArrayOntoStack(MethodTaintingVisitor visitor, Descriptor desc, List<Integer> passLocals) {
         // Array length
         // Stack: number
-        MethodTaintingUtils.pushNumberOnTheStack(visitor, desc.parameterCount());
+        MethodTaintingUtils.pushNumberOnTheStack(visitor, desc.parameterCount()+passLocals.size());
         // Create single dimension array of objects
         // Stack: number --> array reference
         visitor.visitTypeInsn(Opcodes.ANEWARRAY, Constants.ObjectQN);
@@ -53,7 +57,8 @@ public abstract class SourceOrSinkTransformer {
         List<String> paramList = desc.getParameters();
         int n = this.usedLocalVars + desc.getParameterTotalSize();
         // Loop over parameters
-        for (int i = 0; i < paramList.size(); i++) {
+        int i = 0;
+        for (; i < paramList.size(); i++) {
             String p = paramList.get(i);
             Type t = Type.getType(p);
             // Offset of parameter in local variables
@@ -75,6 +80,21 @@ public abstract class SourceOrSinkTransformer {
             // Add value to the array
             // Stack: array, array, index, (boxed) variable --> array
             visitor.visitInsn(Opcodes.AASTORE);
+        }
+        // Allows to put additional local variables into the array
+        // stack: array
+        for(Integer j : passLocals) {
+            // Duplicate array
+            // Stack: array --> array, array
+            visitor.visitInsn(Opcodes.DUP);
+            // Stack: array, array --> array, array, index
+            MethodTaintingUtils.pushNumberOnTheStack(visitor, i);
+            // stack: array, array, index -> array, array, index, object
+            visitor.visitVarInsn(Opcodes.ALOAD, j);
+            // Add value to the array
+            // Stack: array, array, index, object --> array
+            visitor.visitInsn(Opcodes.AASTORE);
+            i++;
         }
     }
 

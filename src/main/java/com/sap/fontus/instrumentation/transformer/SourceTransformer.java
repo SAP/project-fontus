@@ -42,7 +42,7 @@ public class SourceTransformer extends SourceOrSinkTransformer implements Return
 
         // And create an array containing input parameters
         // Stack: return obj, method obj --> return obj, method obj, parameter array
-        this.pushParameterArrayOntoStack(visitor, fc.getParsedDescriptor());
+        this.pushParameterArrayOntoStack(visitor, fc.getParsedDescriptor(), this.source.getPassLocals());
 
         // Now the source id
         // Stack: return obj, method obj, parameter array --> return obj, method obj, parameter array, int
