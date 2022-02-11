@@ -185,7 +185,11 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
 	if (name == null) {
 	    return null;
 	}
-        return getParameter(new IASString(name)).getString();
+	IASString result = getParameter(new IASString(name));
+	if (result == null) {
+	    return null;
+	}
+        return result.getString();
     }
     
     public IASString getParameter(IASString name) {
@@ -302,48 +306,55 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
+	sb.append("ReflectedHttpServletRequest:  ");
+	if (this.o == null) {
+	    sb.append("Object is null!");
+	} else {
+	    sb.append("URL: " + this.getRequestURL());
+	    sb.append(System.getProperty("line.separator"));
 
-        sb.append("URL: " + this.getRequestURL());
-        sb.append(System.getProperty("line.separator"));
+	    sb.append("PathInfo: " + this.getPathInfo());
+	    sb.append(System.getProperty("line.separator"));
 
-        sb.append("PathInfo: " + this.getPathInfo());
-        sb.append(System.getProperty("line.separator"));
+	    sb.append("URI: " + this.getRequestURI());
+	    sb.append(System.getProperty("line.separator"));
 
-        sb.append("URI: " + this.getRequestURI());
-        sb.append(System.getProperty("line.separator"));
+	    Enumeration e = this.getParameterNames();
+	    sb.append("Query Parameters:");
+	    sb.append(System.getProperty("line.separator"));
+	    if (e == null) {
+		sb.append("NULL");
+	    } else {
+		while (e.hasMoreElements()) {
+		    IASString s = (IASString) e.nextElement();
+		    sb.append(s.getString() + " = ");
+		    for (IASString value : this.getParameterValues(s)) {
+			sb.append(value.getString() + ", ");
+		    }
+		    sb.append(System.getProperty("line.separator"));
+		}
+	    }
+	    sb.append(System.getProperty("line.separator"));
 
-        Enumeration e = this.getParameterNames();
-        sb.append("Query Parameters:");
-        sb.append(System.getProperty("line.separator"));
-        while (e.hasMoreElements()) {
-            IASString s = (IASString) e.nextElement();
-            sb.append(s.getString() + " = ");
-            for (IASString value : this.getParameterValues(s)) {
-                sb.append(value.getString() + ", ");
-            }
-            sb.append(System.getProperty("line.separator"));
-        }
-        sb.append(System.getProperty("line.separator"));
+	    Enumeration a = this.getAttributeNames();
+	    sb.append("Attributes:");
+	    sb.append(System.getProperty("line.separator"));
+	    while (a.hasMoreElements()) {
+		IASString s = (IASString) a.nextElement();
+		sb.append(s.getString() + " = " + this.getAttribute(s));
+		sb.append(System.getProperty("line.separator"));
+	    }
 
-        Enumeration a = this.getAttributeNames();
-        sb.append("Attributes:");
-        sb.append(System.getProperty("line.separator"));
-        while (a.hasMoreElements()) {
-            IASString s = (IASString) a.nextElement();
-            sb.append(s.getString() + " = " + this.getAttribute(s));
-            sb.append(System.getProperty("line.separator"));
-        }
-
-        ReflectedCookie[] cookies = this.getCookies();
-        sb.append("Cookies: " + cookies);
-        sb.append(System.getProperty("line.separator"));
-        if (cookies != null) {
-            for (ReflectedCookie cookie : cookies) {
-                sb.append(cookie.toString());
-                sb.append(System.getProperty("line.separator"));
-            }
-        }
-
+	    ReflectedCookie[] cookies = this.getCookies();
+	    sb.append("Cookies: " + cookies);
+	    sb.append(System.getProperty("line.separator"));
+	    if (cookies != null) {
+		for (ReflectedCookie cookie : cookies) {
+		    sb.append(cookie.toString());
+		    sb.append(System.getProperty("line.separator"));
+		}
+	    }
+	}
         return sb.toString();
     }
 }

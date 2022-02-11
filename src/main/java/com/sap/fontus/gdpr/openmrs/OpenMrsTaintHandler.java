@@ -47,6 +47,13 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             "(Ljava/lang/String;)[Ljava/lang/String;",
             true);
 
+    private static final FunctionCall getHttpParameterValuesFunctionCall = new FunctionCall(
+            Opcodes.INVOKEINTERFACE,
+            "javax/servlet/http/HttpServletRequest",
+            "getParameterValues",
+            "(Ljava/lang/String;)[Ljava/lang/String;",
+            true);
+    
     private static final FunctionCall getParameterMapFunctionCall = new FunctionCall(
             Opcodes.INVOKEINTERFACE,
             "javax/servlet/ServletRequest",
@@ -126,6 +133,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             dataSubject = new SimpleDataSubject();
             request.setAttribute(dataSubjectAttributeName, dataSubject);
         }
+	System.out.println("FONTUS: got data subject uuid: " + dataSubject);
         return dataSubject;
     }
 
@@ -156,21 +164,28 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         // General debug info
         IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
         IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
-        Source source = Configuration.getConfiguration().getSourceConfig().getSourceWithName(taintSource.getName());
+        Source source = null;
+	if (taintSource != null) {
+	    source = Configuration.getConfiguration().getSourceConfig().getSourceWithName(taintSource.getName());
+	    System.out.println("Source from Configuration: " + source);
+	}
 
         // Check for ServletRequest getParameter function
-        if ((source != null) &&
+        if ((parent != null) && (source != null) &&
                 (source.getFunction().equals(getParameterFunctionCall) ||
                  source.getFunction().equals(getParameterValuesFunctionCall) ||
+		 source.getFunction().equals(getHttpParameterValuesFunctionCall) ||
                  source.getFunction().equals(getParameterMapFunctionCall))) {
 
             GdprMetadata metadata = null;
 
             ReflectedHttpServletRequest request = new ReflectedHttpServletRequest(parent);
-
+	    System.out.println("Request: " + request);
             if (registerPatientApp.equals(request.getParameter(appIdParameterName))) {
+		System.out.println("Creating new patient...");
                 metadata = createNewPatientMetadata(request);
             } else {
+		System.out.println("Not creating patient...");
                 metadata = getPatientMetadata(request);
             }
 
@@ -178,7 +193,9 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             if (metadata != null) {
                 System.out.println("Adding Taint metadata to string '" + taintAware.toString() + "': " + metadata);
                 taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
-            }
+            } else {
+		System.out.println("Null metadata, not tainting!");
+	    }
         }
         return taintAware;
     }
