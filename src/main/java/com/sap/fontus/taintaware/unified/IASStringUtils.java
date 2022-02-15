@@ -163,7 +163,33 @@ public final class IASStringUtils {
                     (c1, c2) ->  keyComparator.compare(keyExtractor.apply(c1), keyExtractor.apply(c2));
             }
     }
+    public static IASString cleanUTF8ForXml(IASString string) {
+        if(string == null) return null;
 
+        int length = string.length();
+        if(length == 0) return string;
+        IASTaintInformationable tis = string.getTaintInformation();
+        StringBuilder sb = new StringBuilder(length);
+        for(int i=0; i<length; i++) {
+            int ch = string.codePointAt(i);
+            if(ch < 32) {
+                switch(ch) {
+                    case '\n': //0x000A
+                    case '\t': //0x0009
+                    case '\r': sb.appendCodePoint(ch); break;//0x000D
+                    default: // dump them
+                }
+            } else if(ch >= 0x0020 && ch <= 0xD7FF) {
+                sb.appendCodePoint(ch);
+            } else if(ch >= 0xE000 && ch <= 0xFFFD) {
+                sb.appendCodePoint(ch);
+            } else if(ch >= 0x10000 && ch <= 0x10FFFF) {
+                sb.appendCodePoint(ch);
+            }
+        }
+        // TODO: if this works shift length accordingly
+        return new IASString(sb.toString(), tis);
+    }
 
     private IASStringUtils() {
 

@@ -230,6 +230,8 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASPreparedStatementUtils.class), "useStatementFacade", "(Ljava/lang/Object;)Z", false ));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/util/Comparator", "comparing", "(Ljava/util/function/Function;Ljava/util/Comparator;)Ljava/util/Comparator;", true),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASStringUtils.class), "comparing", "(Ljava/util/function/Function;Ljava/util/Comparator;)Ljava/util/Comparator;", false));
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "org/olat/core/util/StringHelper", "cleanUTF8ForXml", "(Ljava/lang/String;)Ljava/lang/String;", false),
+                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASStringUtils.class), "cleanUTF8ForXml", "(Lcom/sap/fontus/taintaware/unified/IASString;)Lcom/sap/fontus/taintaware/unified/IASString;", false));
     }
 
     private void fillInterfaceProxies() {
