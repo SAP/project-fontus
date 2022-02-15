@@ -69,6 +69,7 @@ public class AgentConfig {
         Configuration c = ConfigurationLoader.defaultConfiguration();
         boolean verbose = false;
         boolean taintPersistence = false;
+        boolean persistentCache = false;
         boolean welcome = false;
         Boolean loggingEnabled = null;
         TaintMethod taintMethod = TaintMethod.defaultTaintMethod();
@@ -84,6 +85,9 @@ public class AgentConfig {
             }
             if ("persistence".equals(part)) {
                 taintPersistence = true;
+            }
+            if ("persistent_cache".equals(part)) {
+                persistentCache = true;
             }
             if ("logging_enabled".equals(part)) {
                 loggingEnabled = true;
@@ -130,6 +134,7 @@ public class AgentConfig {
             c = ConfigurationLoader.defaultConfiguration();
         }
         c.setVerbose(verbose || c.isVerbose());
+        c.setPersistentCache(persistentCache || c.usePersistentCache());
         c.setTaintPersistence(taintPersistence || c.hasTaintPersistence());
         c.setTaintMethod(taintMethod);
         c.setShowWelcomeMessage(welcome);

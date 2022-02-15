@@ -1,12 +1,9 @@
 package com.sap.fontus.agent;
 
 import com.sap.fontus.asm.ClassResolver;
-import com.sap.fontus.utils.Utils;
-import com.sap.fontus.utils.VerboseLogger;
+import com.sap.fontus.utils.*;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.instrumentation.Instrumenter;
-import com.sap.fontus.utils.LogUtils;
-import com.sap.fontus.utils.Logger;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.mutabilitydetector.asm.NonClassloadingClassWriter;
 import org.objectweb.asm.ClassReader;
@@ -68,9 +65,19 @@ class TaintingTransformer implements ClassFileTransformer {
             return classfileBuffer;
         }
 
-        logger.info("Tainting class: {}", className);
         try {
-            byte[] outArray = instrumentClassByteArray(classfileBuffer, loader, className);
+            int hash = Arrays.hashCode(classfileBuffer);
+            byte[] outArray = null;
+            if(this.config.usePersistentCache() && CacheHandler.get().isCached(hash)) {
+                logger.info("Fetching class {} from cache", className);
+                outArray = CacheHandler.get().fetchFromCache(hash, className);
+            } else {
+                logger.info("Tainting class: {}", className);
+                outArray = this.instrumentClassByteArray(classfileBuffer, loader, className);
+                if(this.config.usePersistentCache()) {
+                    CacheHandler.get().put(hash, outArray, className);
+                }
+            }
             this.classCache.put(className, outArray);
             VerboseLogger.saveIfVerbose(className, outArray);
             this.nInstrumented += 1;
@@ -79,6 +86,7 @@ class TaintingTransformer implements ClassFileTransformer {
             }
             return outArray;
         } catch (Exception e) {
+            System.err.printf("Exception: %s - %s%n", e.getClass().getName(), e.getMessage());
             Configuration.getConfiguration().addExcludedClass(className);
             logger.error("Instrumentation failed for {}. Reason: {}. Class added to excluded classes!", className, e.getMessage());
             Utils.logStackTrace(Arrays.asList(e.getStackTrace()));

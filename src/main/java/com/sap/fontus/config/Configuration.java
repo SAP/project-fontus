@@ -47,6 +47,9 @@ public class Configuration {
     private boolean verbose = false;
 
     @XmlElement
+    private boolean persistentCache = false;
+
+    @XmlElement
     private boolean taintPersistence = false;
 
     @XmlElement
@@ -131,6 +134,7 @@ public class Configuration {
     public void append(Configuration other) {
         if (other != null) {
             this.verbose |= other.verbose;
+            this.persistentCache |= other.persistentCache;
             this.sourceConfig.append(other.sourceConfig);
             this.sinkConfig.append(other.sinkConfig);
             this.vendors.addAll(other.vendors);
@@ -204,6 +208,14 @@ public class Configuration {
 
     public void setUseCaching(boolean useCaching) {
         this.useCaching = useCaching;
+    }
+
+    public boolean usePersistentCache() {
+        return this.persistentCache;
+    }
+
+    public void setPersistentCache(boolean persistentCache) {
+        this.persistentCache = persistentCache;
     }
 
     public int getLayerThreshold() {
