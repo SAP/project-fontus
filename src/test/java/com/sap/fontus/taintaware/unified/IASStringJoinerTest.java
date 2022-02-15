@@ -11,6 +11,8 @@ import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.StringJoiner;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class IASStringJoinerTest {
@@ -116,4 +118,52 @@ public class IASStringJoinerTest {
                 RangeChainer.range(0, 7, md1)));
     }
 
+    @Test
+    public void testStringEmptyNotDefined() {
+        IASStringJoiner joiner = new IASStringJoiner(",");
+        IASString taintedString = joiner.toIASString();
+
+        assertEquals("", taintedString.getString());
+        assertFalse(taintedString.isTainted());
+    }
+
+    @Test
+    public void testFromStringJoiner() {
+        StringJoiner joiner = new StringJoiner(",");
+        joiner.add(new IASString("hello"));
+        joiner.add(new IASString("world"));
+        joiner.add(new IASString("goodbye"));
+
+        IASStringJoiner taintedJoiner = IASStringJoiner.fromStringJoiner(joiner);
+
+        IASString taintedString = taintedJoiner.toIASString();
+        assertEquals("hello,world,goodbye", taintedString.getString());
+        assertFalse(taintedString.isTainted());
+    }
+
+    @Test
+    public void testStringJoinerMergeTainted() {
+        IASStringJoiner joiner = new IASStringJoiner(",");
+        joiner.add(new IASString("hello"));
+        IASString world = new IASString("world");
+        world.setTaint(md1);
+        joiner.add(world);
+        joiner.add(new IASString("goodbye"));
+
+        IASStringJoiner joiner2 = new IASStringJoiner(";");
+        joiner2.add(new IASString("hola"));
+        IASString adios = new IASString("adios");
+        adios.setTaint(md2);
+        joiner2.add(adios);
+
+        joiner.merge(joiner2);
+
+        IASString taintedString = joiner.toIASString();
+
+        assertEquals("hello,world,goodbye,hola;adios", taintedString.getString());
+        assertTrue(taintedString.isTainted());
+        MatcherAssert.assertThat(taintedString, TaintMatcher.taintEquals(
+                RangeChainer.range(6, 11, md1)
+                        .add(25, 30, md2)));
+    }
 }

@@ -5,6 +5,7 @@ import com.sap.fontus.taintaware.unified.reflect.*;
 import com.sap.fontus.taintaware.unified.reflect.type.IASTypeVariableImpl;
 import com.sap.fontus.taintaware.unified.reflect.type.IASWildcardTypeImpl;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
+import org.graalvm.compiler.lir.LIRInstruction;
 import sun.reflect.generics.reflectiveObjects.GenericArrayTypeImpl;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
@@ -33,6 +34,7 @@ public class ConversionUtils {
             new DefaultConverter<>(Formatter.class, IASFormatter::fromFormatter),
             new DefaultConverter<>(Matcher.class, IASMatcher::fromMatcher),
             new DefaultConverter<>(Pattern.class, IASPattern::fromPattern),
+            new DefaultConverter<>(StringJoiner.class, IASStringJoiner::fromStringJoiner),
             new DefaultConverter<>(Properties.class, IASProperties::fromProperties),
             new DefaultConverter<>(Method.class, IASReflectRegistry.getInstance()::map),
             new DefaultConverter<>(AccessibleObject.class, IASReflectRegistry.getInstance()::mapAccessibleObject),
@@ -56,6 +58,7 @@ public class ConversionUtils {
             new DefaultConverter<>(IASFormatter.class, IASFormatter::getFormatter),
             new DefaultConverter<>(IASMatcher.class, IASMatcher::getMatcher),
             new DefaultConverter<>(IASPattern.class, IASPattern::getPattern),
+            new DefaultConverter<>(IASStringJoiner.class, IASStringJoiner::getStringJoiner),
             new DefaultConverter<>(IASProperties.class, IASProperties::getProperties),
             new DefaultConverter<>(IASMethod.class, IASMethod::getMethod),
             new DefaultConverter<>(IASField.class, IASField::getField),

@@ -43,6 +43,7 @@ public final class Constants {
     public static final String TConstructorToConstructor = "getConstructor";
     public static final String TFieldToField = "getField";
     public static final String TMemberToMember = "getMember";
+    public static final String TJoinerToJoiner = "getStringJoiner";
 
     static {
         try {

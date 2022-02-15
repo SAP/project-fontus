@@ -33,6 +33,11 @@ public class IASStringJoiner {
 
     }
 
+    public IASStringJoiner(StringJoiner joiner) {
+        this.joiner = joiner;
+        // Leave the taint information as null, as none of the components can be tainted
+    }
+
     public IASStringJoiner setEmptyValue(CharSequence emptyValue) {
         joiner.setEmptyValue(emptyValue);
         emptyValueTaint = getOrCreateTaintInformation(emptyValue);
@@ -49,6 +54,9 @@ public class IASStringJoiner {
     }
 
     private IASTaintInformationable getTaintInformation() {
+        if (taintList == null) {
+            return null;
+        }
         // Check for empty value
         if (this.taintList.isEmpty() && this.emptyValueTaint != null) {
             return this.emptyValueTaint.copy();
@@ -83,13 +91,17 @@ public class IASStringJoiner {
 
     public IASStringJoiner add(CharSequence newElement) {
         joiner.add(newElement);
-        taintList.add(getOrCreateTaintInformation(newElement));
+        if (taintList != null) {
+            taintList.add(getOrCreateTaintInformation(newElement));
+        }
         return this;
     }
 
     public IASStringJoiner merge(IASStringJoiner other) {
-        joiner.merge(other.getJoiner());
-        taintList.add(other.getTaintInformation());
+        joiner.merge(other.getStringJoiner());
+        if (taintList != null) {
+            taintList.add(other.getTaintInformation());
+        }
         return this;
     }
 
@@ -105,12 +117,16 @@ public class IASStringJoiner {
         return taintInfo;
     }
 
-    private StringJoiner getJoiner() {
+    public StringJoiner getStringJoiner() {
         return this.joiner;
+    }
+
+    public static IASStringJoiner fromStringJoiner(StringJoiner joiner) {
+        return new IASStringJoiner(joiner);
     }
 
     public int length() {
         return joiner.length();
     }
-    
+
 }

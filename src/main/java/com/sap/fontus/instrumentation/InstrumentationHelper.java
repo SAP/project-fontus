@@ -6,6 +6,7 @@ import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.instrumentation.strategies.*;
 import com.sap.fontus.taintaware.unified.IASObjectInputStream;
+import com.sap.fontus.taintaware.unified.IASStringJoiner;
 import com.sap.fontus.taintaware.unified.reflect.*;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
@@ -18,9 +19,10 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.StringJoiner;
 
 public final class InstrumentationHelper implements InstrumentationStrategy {
-    private final Collection<InstrumentationStrategy> strategies = new ArrayList<>(10);
+    private final Collection<InstrumentationStrategy> strategies = new ArrayList<>(20);
 
     public InstrumentationHelper() {
         this.strategies.add(new FormatterInstrumentation(this));
@@ -29,6 +31,7 @@ public final class InstrumentationHelper implements InstrumentationStrategy {
         this.strategies.add(new StringInstrumentation(this));
         this.strategies.add(new StringBuilderInstrumentation(this));
         this.strategies.add(new StringBufferInstrumentation(this));
+        this.strategies.add(new AbstractInstrumentation(Type.getType(StringJoiner.class), Type.getType(IASStringJoiner.class), this, Constants.TJoinerToJoiner));
         this.strategies.add(new PropertiesStrategy(this));
         this.strategies.add(new ProxyInstrumentation(this));
         this.strategies.add(new AbstractInstrumentation(Type.getType(AccessibleObject.class), Type.getType(IASAccessibleObject.class), this, Constants.TAccessibleObjectToAccesibleObject));
