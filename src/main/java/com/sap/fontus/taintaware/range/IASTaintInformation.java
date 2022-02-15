@@ -80,6 +80,11 @@ public class IASTaintInformation implements IASTaintInformationable {
     }
 
     @Override
+    public int getLength() {
+        return this.ranges.getLength();
+    }
+
+    @Override
     public IASTaintInformationable resize(int length) {
         this.ranges.resize(length);
         return this;

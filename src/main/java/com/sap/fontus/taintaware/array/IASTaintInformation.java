@@ -197,6 +197,7 @@ public class IASTaintInformation implements IASTaintInformationable {
         }
     }
 
+    @Override
     public int getLength() {
         return this.taints.length;
     }

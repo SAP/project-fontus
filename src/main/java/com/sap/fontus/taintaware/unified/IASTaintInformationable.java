@@ -42,6 +42,8 @@ public interface IASTaintInformationable extends Serializable {
 
     IASTaintInformationable setTaint(int start, int end, IASTaintMetadata taint);
 
+    int getLength();
+
     IASTaintInformationable resize(int length);
 
     IASTaintInformationable slice(int start, int end);

@@ -10,9 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class IASTaintInformation implements IASTaintInformationable {
-    public static final IASTaintInformation INSTANCE = new IASTaintInformation();
 
-    private IASTaintInformation() {}
+    int length;
+
+    public IASTaintInformation(int length) { this.length = length; }
 
     @Override
     public boolean isTainted() {
@@ -66,7 +67,13 @@ public class IASTaintInformation implements IASTaintInformationable {
 
     @Override
     public IASTaintInformationable resize(int length) {
+        this.length = length;
         return this;
+    }
+
+    @Override
+    public int getLength() {
+        return length;
     }
 
     @Override

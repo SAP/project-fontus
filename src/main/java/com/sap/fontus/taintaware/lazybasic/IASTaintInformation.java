@@ -206,7 +206,9 @@ public class IASTaintInformation implements IASTaintInformationable {
         return this.getTaintRanges().isTaintedAt(index);
     }
 
+    @Override
     public int getLength() {
         return this.getTaintRanges().getLength();
     }
+
 }

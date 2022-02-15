@@ -19,7 +19,7 @@ public class TaintInformationFactory {
 //            case LAZYCOMPLEX:
 //                return new com.sap.fontus.taintaware.lazycomplex.IASTaintInformation();
             case UNTAINTED:
-                return com.sap.fontus.taintaware.untainted.IASTaintInformation.INSTANCE;
+                return  new com.sap.fontus.taintaware.untainted.IASTaintInformation(size);
             default:
                 throw new IllegalStateException("No taint method set. This should never happen!");
         }
@@ -42,7 +42,7 @@ public class TaintInformationFactory {
 //            case LAZYCOMPLEX:
 //                return new com.sap.fontus.taintaware.lazycomplex.IASTaintInformation(ranges);
             case UNTAINTED:
-                return com.sap.fontus.taintaware.untainted.IASTaintInformation.INSTANCE;
+                return new com.sap.fontus.taintaware.untainted.IASTaintInformation(size);
             default:
                 throw new IllegalStateException("No taint method set. This should never happen!");
         }

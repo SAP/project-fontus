@@ -11,9 +11,11 @@ public enum IASTaintInformation implements IASTaintInformationable {
     UNTAINTED(false), TAINTED(true);
 
     private final boolean taint;
+    private int length;
 
     IASTaintInformation(boolean taint) {
         this.taint = taint;
+        this.length = length;
     }
 
     @Override
@@ -78,7 +80,13 @@ public enum IASTaintInformation implements IASTaintInformationable {
     }
 
     @Override
+    public int getLength() {
+        return this.length;
+    }
+
+    @Override
     public IASTaintInformationable resize(int length) {
+        this.length = length;
         return this;
     }
 

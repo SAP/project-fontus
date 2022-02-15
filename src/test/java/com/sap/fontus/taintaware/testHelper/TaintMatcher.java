@@ -30,7 +30,7 @@ public class TaintMatcher {
                     return;
                 }
 
-                mismatchDescription.appendText("was ").appendValue(((IASTaintInformation) ((IASTaintAware) s).getTaintInformation()).getTaintRanges());
+                mismatchDescription.appendText("was ").appendValue(((IASTaintInformation) ((IASTaintAware) s).getTaintInformation()).getTaintRanges().getTaintRanges());
             }
 
             @Override
