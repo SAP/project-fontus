@@ -15,6 +15,7 @@ public class NestedSelectItemTainter extends SelectItemTainter {
     private final List<Table> tables;
     private final List<Expression> where;
     private final List<Join> joins;
+    private boolean hasAggregation = false;
 
     NestedSelectItemTainter(QueryParameters parameters, List<SelectItem> selectItemReference, List<Expression> plannedExpressions, List<Table> tables, List<Expression> where, List<Join> joins) {
         super(parameters, selectItemReference);
@@ -41,5 +42,10 @@ public class NestedSelectItemTainter extends SelectItemTainter {
             //'return' selectItem via global list
             this.selectItemReference.add(item);
         }
+        this.hasAggregation |= tainter.hasAggregation();
+    }
+
+    public boolean hasAggregation() {
+        return this.hasAggregation;
     }
 }

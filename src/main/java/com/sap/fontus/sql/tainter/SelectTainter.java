@@ -91,6 +91,9 @@ public class SelectTainter extends SelectVisitorAdapter {
 					} else {
 						nestedQuery = "SELECT " + expr + " FROM " + strTable + aliasClause + strJoin + " WHERE " + where.get(0).toString();
 					}
+					if(tainter.hasAggregation()) {
+						nestedQuery += " LIMIT 1";
+					}
 
 					// Yeah let's do SQL injection :D
 

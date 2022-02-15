@@ -150,6 +150,22 @@ public class PreparedStatementTests {
     }
 
     @Test
+    void testSubselectWithAggregration() throws Exception {
+        String query = "SELECT first_name, (select count(*) from contacts) as cnt  from contacts where id < ?\n;";
+        Connection mc = new MockConnection(this.conn);
+        Connection c = ConnectionWrapper.wrap(mc);
+        PreparedStatement ps = c.prepareStatement(query);
+        MockPreparedStatement mps = ps.unwrap(MockPreparedStatement.class);
+        PreparedStatementWrapper unwrapped = ps.unwrap(PreparedStatementWrapper.class);
+        QueryParameters parameters = unwrapped.getParameters();
+        TaintAssignment first = parameters.computeAssignment(1);
+        assertEquals(new TaintAssignment(1, 1, ParameterType.WHERE), first);
+        ps.setInt(1, 5);
+
+        ResultSet rss = ps.executeQuery();
+    }
+
+    @Test
     void testSubselectWithJoin() throws Exception {
         String query = "SELECT first_name, (select count(*) from meta join contacts c where meta.contact_id = c.id) FROM contacts WHERE id = ?\n;";
         Connection mc = new MockConnection(this.conn);

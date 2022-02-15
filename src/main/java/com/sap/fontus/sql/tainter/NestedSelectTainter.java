@@ -15,6 +15,7 @@ public class NestedSelectTainter extends SelectTainter {
     private final List<Table> tables;
     private final List<Expression> where;
     private final List<Join> joins;
+    private boolean hasAggregation = false;
 
     public NestedSelectTainter(QueryParameters parameters, List<Expression> plannedExpressions, List<Table> tables, List<Expression> where, List<Join> joins) {
         super(parameters);
@@ -22,6 +23,9 @@ public class NestedSelectTainter extends SelectTainter {
         this.plannedExpressions = plannedExpressions;
         this.where = where;
         this.joins = joins;
+    }
+    public boolean hasAggregation() {
+        return this.hasAggregation;
     }
 
     @Override
@@ -48,7 +52,7 @@ public class NestedSelectTainter extends SelectTainter {
                 if (selectItem.toString().toLowerCase().contains("(select")) {
                     NestedSelectItemTainter nsit = new NestedSelectItemTainter(this.parameters, this.selectItemReference, this.plannedExpressions, this.tables, this.where, this.joins);
                     selectItem.accept(nsit);
-
+                    this.hasAggregation |= nsit.hasAggregation();
                     if (selectItem instanceof SelectExpressionItem) {
                         SelectExpressionItem sei = new SelectExpressionItem(((SelectExpressionItem) selectItem).getExpression());
                         Alias al = sei.getAlias();
@@ -59,6 +63,7 @@ public class NestedSelectTainter extends SelectTainter {
                     }
                 } else {
                     selectItem.accept(selectItemTainter);
+                    this.hasAggregation |= selectItemTainter.hasAggregation();
                     if (!this.selectItemReference.isEmpty()) {
                         // get new created expression by reference in list and clear
                         // list

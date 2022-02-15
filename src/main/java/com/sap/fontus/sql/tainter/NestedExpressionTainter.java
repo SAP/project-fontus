@@ -17,6 +17,7 @@ public class NestedExpressionTainter extends ExpressionTainter {
     private final List<Table> tables;
     private final List<Expression> where;
     private final List<Join> joins;
+    private boolean hasAggregation = false;
 
     public NestedExpressionTainter(QueryParameters parameters, List<Expression> expressionReference, List<Expression> plannedExpressions, List<Table> tables, List<Expression> where, List<Join> joins) {
         super(parameters, expressionReference);
@@ -46,10 +47,12 @@ public class NestedExpressionTainter extends ExpressionTainter {
         this.parameters.begin(StatementType.SUB_SELECT);
         NestedSelectTainter selectTainter = new NestedSelectTainter(this.parameters, this.plannedExpressions, this.tables, this.where, this.joins);
         subSelect.getSelectBody().accept(selectTainter);
+        this.hasAggregation |= selectTainter.hasAggregation();
         if (subSelect.getWithItemsList() != null) {
             for (WithItem withItem : subSelect.getWithItemsList()) {
                 NestedSelectTainter innerSelectTainter = new NestedSelectTainter(this.parameters, this.plannedExpressions, this.tables, this.where, this.joins);
                 withItem.accept(innerSelectTainter);
+                this.hasAggregation |= innerSelectTainter.hasAggregation();
             }
         }
         this.parameters.end(StatementType.SUB_SELECT);
@@ -57,7 +60,12 @@ public class NestedExpressionTainter extends ExpressionTainter {
 
     @Override
     public void visit(Function arg0) {
+        this.hasAggregation = true;
         // add '0' for correct column count
         this.plannedExpressions.add(new StringValue("'0'"));
+    }
+
+    public boolean hasAggregation() {
+        return this.hasAggregation;
     }
 }
