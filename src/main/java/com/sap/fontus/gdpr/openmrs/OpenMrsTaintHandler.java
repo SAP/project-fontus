@@ -53,7 +53,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             "getParameterValues",
             "(Ljava/lang/String;)[Ljava/lang/String;",
             true);
-    
+
     private static final FunctionCall getParameterMapFunctionCall = new FunctionCall(
             Opcodes.INVOKEINTERFACE,
             "javax/servlet/ServletRequest",
@@ -74,24 +74,37 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         return new ArrayList<>();
     }
 
-    private static GdprMetadata getTaintMetadataFromExistingUuid(String uuid) {
+    private static GdprMetadata getTaintMetadataFromExistingUuid(ReflectedHttpServletRequest request, String uuid) {
         GdprMetadata md = null;
-	if (uuid == null) {
-	    return null;
-	}
+        if (uuid == null) {
+            return null;
+        }
         try {
-            // OpenMRS has a global context for retrieving objects from the DB:
-            Class<?> clazz = Class.forName("org.openmrs.api.context.Context");
-            // Through this context we can access the person service
-            Method getPersonService = clazz.getMethod("getPersonService");
-            Object personService = getPersonService.invoke(null);
-            // Now extract the person object from the DB
-            Method getPersonByUuid = personService.getClass().getMethod("getPersonByUuid", IASString.class);
-            Object person = getPersonByUuid.invoke(personService, new IASString(uuid));
+            // Spring stores the application context in the HttpRequest attributes
+            // Should be a org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext
+            Object obj = request.getAttribute(new IASString("org.springframework.web.servlet.DispatcherServlet.CONTEXT"));
+
+            // According to applicationContext-service.xml from OpenMRS (https://github.com/openmrs/openmrs-core/blob/master/api/src/main/resources/applicationContext-service.xml)
+            //
+            // 	<bean id="serviceContext" class="org.openmrs.api.context.ServiceContext" factory-method="getInstance"
+            //		  destroy-method="destroyInstance">
+            //		<property name="patientService" ref="patientService"/>
+            //		<property name="personService" ref="personService"/>
+            //      ...
+            //	</bean>
+
+            // Through this context we can access each of the Spring Beans
+            Method m = obj.getClass().getMethod("getBean", IASString.class);
+            // OpenMRS has a bean called patientService, with class PatientService
+            Object bean = m.invoke(obj, new IASString("patientService"));
+
+            // This interface will be proxied by Fontus, but the method names are the same
+            Method m2 = bean.getClass().getMethod("getPatientByUuid", IASString.class);
+            Object patient = m2.invoke(bean, new IASString(uuid));
 
             // Get some data which should have some metadata attached when it was created
-            Method getUuid = person.getClass().getMethod("getGender");
-            IASString extracted = (IASString) getUuid.invoke(person);
+            Method getUuid = patient.getClass().getMethod("getGender");
+            IASString extracted = (IASString) getUuid.invoke(patient);
 
             // With any luck, this UUID will contain the original taint information
             IASTaintRanges ranges = extracted.getTaintInformation().getTaintRanges(extracted.length());
@@ -104,7 +117,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
                 }
             }
 
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | ClassNotFoundException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             System.err.println("Exception trying to extract taint metadata: " + e.getMessage());
             e.printStackTrace();
         }
@@ -112,16 +125,16 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         return md;
     }
 
-    private static DataSubject getDataSubjectFromUuid(String uuid) {
-	GdprMetadata md = getTaintMetadataFromExistingUuid(uuid);
-	if (md != null) {
-	    return new SimpleDataSubject(getTaintMetadataFromExistingUuid(uuid).getSubject());
-	}
-	return null;
+    private static DataSubject getDataSubjectFromUuid(ReflectedHttpServletRequest request, String uuid) {
+        GdprMetadata md = getTaintMetadataFromExistingUuid(request, uuid);
+        if (md != null) {
+            return new SimpleDataSubject(getTaintMetadataFromExistingUuid(request, uuid).getSubject());
+        }
+        return null;
     }
 
     private static DataSubject getDataSubjectFromRequestParameter(ReflectedHttpServletRequest request) {
-        return getDataSubjectFromUuid(request.getParameter(patientId));
+        return getDataSubjectFromUuid(request, request.getParameter(patientId));
     }
 
     private static DataSubject getOrCreateDataSubjectUuid(ReflectedHttpServletRequest request) {
@@ -133,7 +146,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             dataSubject = new SimpleDataSubject(UUID.randomUUID().toString());
             request.setAttribute(dataSubjectAttributeName, dataSubject);
         }
-	System.out.println("FONTUS: got data subject uuid: " + dataSubject);
+        System.out.println("FONTUS: got data subject uuid: " + dataSubject);
         return dataSubject;
     }
 
@@ -145,11 +158,11 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
 
     private static GdprMetadata getPatientMetadata(ReflectedHttpServletRequest request) {
         DataSubject dataSubject = getDataSubjectFromRequestParameter(request);
-	if (dataSubject != null) {
-	    return new SimpleGdprMetadata(getPurposesFromRequest(request), ProtectionLevel.Normal, dataSubject,
-					  new SimpleDataId(), true, true, Identifiability.Explicit);
-	}
-	return null;
+        if (dataSubject != null) {
+            return new SimpleGdprMetadata(getPurposesFromRequest(request), ProtectionLevel.Normal, dataSubject,
+                    new SimpleDataId(), true, true, Identifiability.Explicit);
+        }
+        return null;
     }
 
     /**
@@ -165,27 +178,27 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
         IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
         Source source = null;
-	if (taintSource != null) {
-	    source = Configuration.getConfiguration().getSourceConfig().getSourceWithName(taintSource.getName());
-	    System.out.println("Source from Configuration: " + source);
-	}
+        if (taintSource != null) {
+            source = Configuration.getConfiguration().getSourceConfig().getSourceWithName(taintSource.getName());
+            System.out.println("Source from Configuration: " + source);
+        }
 
         // Check for ServletRequest getParameter function
         if ((parent != null) && (source != null) &&
                 (source.getFunction().equals(getParameterFunctionCall) ||
-                 source.getFunction().equals(getParameterValuesFunctionCall) ||
-		 source.getFunction().equals(getHttpParameterValuesFunctionCall) ||
-                 source.getFunction().equals(getParameterMapFunctionCall))) {
+                        source.getFunction().equals(getParameterValuesFunctionCall) ||
+                        source.getFunction().equals(getHttpParameterValuesFunctionCall) ||
+                        source.getFunction().equals(getParameterMapFunctionCall))) {
 
             GdprMetadata metadata = null;
 
             ReflectedHttpServletRequest request = new ReflectedHttpServletRequest(parent);
-	    System.out.println("Request: " + request);
+            System.out.println("Request: " + request);
             if (registerPatientApp.equals(request.getParameter(appIdParameterName))) {
-		System.out.println("Creating new patient...");
+                System.out.println("Creating new patient...");
                 metadata = createNewPatientMetadata(request);
             } else {
-		System.out.println("Not creating patient...");
+                System.out.println("Not creating patient...");
                 metadata = getPatientMetadata(request);
             }
 
@@ -194,28 +207,28 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
                 System.out.println("Adding Taint metadata to string '" + taintAware.toString() + "': " + metadata);
                 taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
             } else {
-		System.out.println("Null metadata, not tainting!");
-	    }
+                System.out.println("Null metadata, not tainting!");
+            }
         }
         return taintAware;
     }
-        /**
-         * The taint method can be used as a taintHandler for a given taint source
-         * @param object The object to be tainted
-         * @param sourceId The ID of the taint source function
-         * @return The tainted object
-         *
-         * This snippet of XML can be added to the source:
-         *
-         * <tainthandler>
-         *     <opcode>184</opcode>
-         *     <owner>com/sap/fontus/gdpr/openolat/OpenOlatTaintHandler</owner>
-         *     <name>taint</name>
-         *     <descriptor>(Ljava/lang/Object;Ljava/lang/Object;[Ljava/lang/Object;I)Ljava/lang/Object;</descriptor>
-         *     <interface>false</interface>
-         * </tainthandler>
-         *
-         */
+    /**
+     * The taint method can be used as a taintHandler for a given taint source
+     * @param object The object to be tainted
+     * @param sourceId The ID of the taint source function
+     * @return The tainted object
+     *
+     * This snippet of XML can be added to the source:
+     *
+     * <tainthandler>
+     *     <opcode>184</opcode>
+     *     <owner>com/sap/fontus/gdpr/openolat/OpenOlatTaintHandler</owner>
+     *     <name>taint</name>
+     *     <descriptor>(Ljava/lang/Object;Ljava/lang/Object;[Ljava/lang/Object;I)Ljava/lang/Object;</descriptor>
+     *     <interface>false</interface>
+     * </tainthandler>
+     *
+     */
     public static Object taint(Object object, Object parent, Object[] parameters, int sourceId) {
         if (object instanceof IASTaintAware) {
             return setTaint((IASTaintAware) object, parent, parameters, sourceId);
