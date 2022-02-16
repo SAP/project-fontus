@@ -2,7 +2,15 @@ package com.sap.fontus.sql.tainter;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.SignedExpression;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
+import net.sf.jsqlparser.expression.operators.arithmetic.Division;
+import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
+import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
+import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.Join;
@@ -65,6 +73,95 @@ public class NestedExpressionTainter extends ExpressionTainter {
         this.plannedExpressions.add(new StringValue("'0'"));
     }
 
+    @Override
+    public void visit(SignedExpression arg0) {
+        // add '0' for correct column count
+        this.plannedExpressions.add(new StringValue("'0'"));
+    }
+
+    @Override
+    public void visit(Addition arg0) {
+        // add '0' for correct column count
+        this.plannedExpressions.add(new StringValue("'0'"));
+    }
+
+    @Override
+    public void visit(Division arg0) {
+        // add '0' for correct column count
+        this.plannedExpressions.add(new StringValue("'0'"));
+    }
+
+    @Override
+    public void visit(Multiplication arg0) {
+        // add '0' for correct column count
+        this.plannedExpressions.add(new StringValue("'0'"));
+    }
+
+    @Override
+    public void visit(Subtraction arg0) {
+        // add '0' for correct column count
+        this.plannedExpressions.add(new StringValue("'0'"));
+    }
+
+    @Override
+    public void visit(AndExpression arg0) {
+        // add '0' for correct column count
+        this.plannedExpressions.add(new StringValue("'0'"));
+    }
+
+    @Override
+    public void visit(OrExpression arg0) {
+        // add '0' for correct column count
+        this.expressionReference.add(new StringValue("'0'"));
+    }
+
+    @Override
+    public void visit(Between arg0) {
+        // add '0' for correct column count
+        this.plannedExpressions.add(new StringValue("'0'"));
+    }
+
+    @Override
+    public void visit(EqualsTo arg0) {
+        // add '0' for correct column count
+        this.plannedExpressions.add(new StringValue("'0'"));
+    }
+
+    @Override
+    public void visit(GreaterThan arg0) {
+        // add '0' for correct column count
+        this.plannedExpressions.add(new StringValue("'0'"));
+    }
+
+    @Override
+    public void visit(GreaterThanEquals arg0) {
+        // add '0' for correct column count
+        this.plannedExpressions.add(new StringValue("'0'"));
+    }
+
+    @Override
+    public void visit(LikeExpression arg0) {
+        // add '0' for correct column count
+        this.plannedExpressions.add(new StringValue("'0'"));
+    }
+
+    @Override
+    public void visit(MinorThan arg0) {
+        // add '0' for correct column count
+        this.plannedExpressions.add(new StringValue("'0'"));
+    }
+
+    @Override
+    public void visit(MinorThanEquals arg0) {
+        // add '0' for correct column count
+        this.plannedExpressions.add(new StringValue("'0'"));
+    }
+
+    @Override
+    public void visit(NotEqualsTo arg0) {
+        // add '0' for correct column count
+        this.plannedExpressions.add(new StringValue("'0'"));
+    }
     public boolean hasAggregation() {
         return this.hasAggregation;
     }

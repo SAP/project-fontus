@@ -151,6 +151,24 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 	@Override
 	public void visit(Function arg0) {
 		// add '0' for correct column count
+		ExpressionList parameters = arg0.getParameters();
+		if(parameters != null && parameters.getExpressions() != null) {
+			List<Expression> expressions = parameters.getExpressions();
+			QueryParameters params = this.parameters;
+			List<Expression> expressionRefs = this.expressionReference;
+
+			for(Expression expr: expressions) {
+				expr.accept(new ExpressionVisitorAdapter() {
+					@Override
+					public void visit(JdbcParameter jdbcParameter) {
+						params.addParameter(ParameterType.ASSIGNMENT);
+						JdbcParameter taintedParameter = new JdbcParameter();
+						taintedParameter.setIndex(jdbcParameter.getIndex());
+						expressionRefs.add(taintedParameter);
+					}
+				});
+			}
+		}
 		this.expressionReference.add(new StringValue("'0'"));
 	}
 

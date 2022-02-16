@@ -62,4 +62,9 @@ public class TaintAssignment {
     public ParameterType getParameterType() {
         return this.parameterType;
     }
+
+    @Override
+    public String toString() {
+        return String.format("TaintAssignment{oldIndex=%d, newIndex=%d, taintIndex=%d, hasTaint=%s, parameterType=%s}", this.oldIndex, this.newIndex, this.taintIndex, this.hasTaint, this.parameterType);
+    }
 }

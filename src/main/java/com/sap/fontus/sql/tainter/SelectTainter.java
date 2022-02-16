@@ -59,6 +59,9 @@ public class SelectTainter extends SelectVisitorAdapter {
 					for (Expression e : plannedExpressions) {
 						expression.append(e.toString()).append(",");
 					}
+					if(expression.length() == 0) {
+						throw new IllegalStateException("Expression of length 0");
+					}
 					String expr = expression.substring(0, expression.length()-1);
 
 
