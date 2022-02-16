@@ -1039,16 +1039,6 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
     }
 
     @Override
-    public <T> T unwrap(Class<T> iface) throws SQLException {
-        return this.delegate.unwrap(iface);
-    }
-
-    @Override
-    public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        return this.delegate.isWrapperFor(iface);
-    }
-
-    @Override
     public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
         int idx = (columnIndex * 2);
         return this.delegate.getObject(idx, type);
