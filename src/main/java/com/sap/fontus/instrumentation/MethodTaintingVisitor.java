@@ -360,13 +360,13 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         boolean passThrough = this.config.shouldPassThroughTaint(fc);
         if(passThrough) {
             // stack: object, TString -> Object, TString, TString
-            this.visitInsn(Opcodes.DUP);
+            super.visitInsn(Opcodes.DUP);
             // stack: Object, TString, TString -> Object, TString, IASTaintInformationable
-            this.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(IASString.class), "getTaintInformation", String.format("()L%s;", Type.getInternalName(IASTaintInformationable.class)), false);
+            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(IASString.class), "getTaintInformation", String.format("()L%s;", Type.getInternalName(IASTaintInformationable.class)), false);
             // stack: Object, TString, IASTaintInformationable -> IASTaintInformationable, Object, TString, IASTaintInformationable
-            this.visitInsn(Opcodes.DUP_X2);
+            super.visitInsn(Opcodes.DUP_X2);
             // stack: IASTaintInformationable, Object, TString, IASTaintInformationable -> IASTaintInformationable, Object, TString
-            this.visitInsn(Opcodes.POP);
+            super.visitInsn(Opcodes.POP);
         }
         String desc = this.instrumentationHelper.instrumentForNormalCall(fc.getDescriptor());
         // TODO: hack that we can't reset desc for fc here
@@ -378,13 +378,13 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         super.visitMethodInsn(fc.getOpcode(), fc.getOwner(), fc.getName(), desc, fc.isInterface());
         if(passThrough) {
             // Stack: IASTaintInformationable, TString -> TString, IASTaintInformationable, TString
-            this.visitInsn(Opcodes.DUP_X1);
+            super.visitInsn(Opcodes.DUP_X1);
             // Stack: TString, IASTaintInformationable, TString -> TString, TString, IASTaintInformationable, TString
-            this.visitInsn(Opcodes.DUP_X1);
+            super.visitInsn(Opcodes.DUP_X1);
             // Stack: TString, TString, IASTaintInformationable, TString -> TString, TString, IASTaintInformationable
-            this.visitInsn(Opcodes.POP);
+            super.visitInsn(Opcodes.POP);
             // Stack: TString, TString, IASTaintInformationable -> TString
-            this.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(IASString.class), "setTaint", String.format("(L%s;)V", Type.getInternalName(IASTaintInformationable.class)), false);
+            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(IASString.class), "setTaint", String.format("(L%s;)V", Type.getInternalName(IASTaintInformationable.class)), false);
         }
     }
 
