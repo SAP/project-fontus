@@ -32,6 +32,7 @@ JAR_FOLDERS=(
     ical4j
     provider_tests
     comparators
+    nu-validator
 )
 
 main() {
