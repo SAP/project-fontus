@@ -1,0 +1,20 @@
+<configuration>
+    <verbose>true</verbose>
+    <passThroughTaints>
+        <passThroughTaint>
+            <opcode>184</opcode>
+            <owner>com/sap/fontus/taintaware/IASStringUtils</owner>
+           <name>convertStringList</name>
+           <descriptor>(Ljava/util/List;)Ljava/util/List;</descriptor>
+            <interface>false</interface>
+        </passThroughTaint>
+        <passThroughTaint>
+            <opcode>184</opcode>
+            <owner>com/sap/fontus/taintaware/IASStringUtils</owner>
+            <name>convertTStringList</name>
+            <descriptor>(Ljava/util/List;)Ljava/util/List;</descriptor>
+            <interface>false</interface>
+        </passThroughTaint>
+    </passThroughTaints>
+
+</configuration>

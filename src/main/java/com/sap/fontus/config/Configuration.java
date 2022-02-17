@@ -100,6 +100,10 @@ public class Configuration {
     @XmlElement(name = "resourcesToInstrument")
     private final List<String> resourcesToInstrument;
 
+    @JacksonXmlElementWrapper(localName = "passThroughTaints")
+    @XmlElement(name = "passThroughTaint")
+    private final List<FunctionCall> passThroughTaints;
+    
     public Configuration() {
         this.verbose = false;
         this.sourceConfig = new SourceConfig();
@@ -113,10 +117,22 @@ public class Configuration {
         this.excludedPackages = new ArrayList<>();
         this.excludedClasses = new ArrayList<>();
         this.resourcesToInstrument = new ArrayList<>();
+        this.passThroughTaints = new ArrayList<>();
     }
 
-    public Configuration(boolean verbose, SourceConfig sourceConfig, SinkConfig sinkConfig, List<Purpose> purposes, List<Vendor> vendors,
-                         List<FunctionCall> converters, List<ReturnsGeneric> returnGeneric, List<TakesGeneric> takeGeneric, List<String> blacklistedMainClasses, List<String> excludedPackages, List<String> excludedClasses, List<String> resourcesToInstrument) {
+    public Configuration(boolean verbose,
+                         SourceConfig sourceConfig,
+                         SinkConfig sinkConfig,
+                         List<Purpose> purposes,
+                         List<Vendor> vendors,
+                         List<FunctionCall> converters,
+                         List<ReturnsGeneric> returnGeneric,
+                         List<TakesGeneric> takeGeneric,
+                         List<String> blacklistedMainClasses,
+                         List<String> excludedPackages,
+                         List<String> excludedClasses,
+                         List<String> resourcesToInstrument,
+                         List<FunctionCall> passThroughTaints) {
         this.verbose = verbose;
         this.sourceConfig = sourceConfig;
         this.sinkConfig = sinkConfig;
@@ -129,6 +145,7 @@ public class Configuration {
         this.excludedPackages = excludedPackages;
         this.excludedClasses = excludedClasses;
         this.resourcesToInstrument = resourcesToInstrument;
+        this.passThroughTaints = passThroughTaints;
     }
 
     public void append(Configuration other) {
@@ -146,6 +163,7 @@ public class Configuration {
             this.excludedPackages.addAll(other.excludedPackages);
             this.excludedClasses.addAll(other.excludedClasses);
             this.resourcesToInstrument.addAll(other.resourcesToInstrument);
+            this.passThroughTaints.addAll(other.passThroughTaints);
         }
     }
 
@@ -254,7 +272,20 @@ public class Configuration {
         return this.blacklistedMainClasses;
     }
 
-    private FunctionCall getConverter(String name) {
+    public List<FunctionCall> getPassThroughTaints() {
+        return this.passThroughTaints;
+    }
+
+    public boolean shouldPassThroughTaint(FunctionCall c) {
+        for (FunctionCall fc : this.passThroughTaints) {
+            if (fc.equals(c)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+        private FunctionCall getConverter(String name) {
         for (FunctionCall fc : this.converters) {
             if (fc.getName().equals(name)) {
                 return fc;
@@ -262,6 +293,7 @@ public class Configuration {
         }
         return null;
     }
+
 
     public boolean needsParameterConversion(FunctionCall c) {
         for (TakesGeneric tg : this.takeGeneric) {
@@ -534,6 +566,7 @@ public class Configuration {
                 ", excludedPackages=" + excludedPackages +
                 ", excludedClasses=" + this.excludedClasses +
                 ", resourcesToInstrument=" + resourcesToInstrument +
+                ", passThroughTaints=" + this.passThroughTaints +
                 '}';
     }
 }
