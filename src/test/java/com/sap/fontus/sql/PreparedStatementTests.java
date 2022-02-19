@@ -214,6 +214,22 @@ public class PreparedStatementTests {
     }
 
     @Test
+    void testparameterInLimit() throws Exception {
+        String sql = "select * from contacts where id < ? limit ?, ?\n";
+        StatementTainter tainter = new StatementTainter();
+        Statements stmts=  CCJSqlParserUtil.parseStatements(sql);;
+        stmts.accept(tainter);
+        System.out.println((stmts.toString().trim()));
+        QueryParameters parameters = tainter.getParameters();
+        TaintAssignment first = parameters.computeAssignment(1);
+        assertEquals(new TaintAssignment(1, 1,  ParameterType.WHERE), first);
+        TaintAssignment second = parameters.computeAssignment(2);
+        assertEquals(new TaintAssignment(2, 2, ParameterType.WHERE), second);
+        TaintAssignment third = parameters.computeAssignment(3);
+        assertEquals(new TaintAssignment(3, 3, ParameterType.WHERE), third);
+
+    }
+    @Test
     void testUpdateWithConcat() throws Exception {
         String sql = "update o_property set textvalue=concat(textvalue, ?), lastmodified=? where identity=? and resourcetypename=? and resourcetypeid=? and category=? and name=?\n";
         StatementTainter tainter = new StatementTainter();

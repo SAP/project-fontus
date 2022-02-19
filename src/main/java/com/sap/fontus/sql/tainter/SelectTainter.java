@@ -149,6 +149,8 @@ public class SelectTainter extends SelectVisitorAdapter {
 		if(limit != null) {
 			Expression rowCount = limit.getRowCount();
 			rowCount.accept(new WhereExpressionTainter(this.parameters));
+			Expression offset = limit.getOffset();
+			offset.accept(new WhereExpressionTainter(this.parameters));
 		}
 	}
 
