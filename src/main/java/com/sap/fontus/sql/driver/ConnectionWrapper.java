@@ -361,7 +361,7 @@ public class ConnectionWrapper extends AbstractWrapper implements Connection {
         } catch (JSQLParserException jsqlParserException) {
             jsqlParserException.printStackTrace();
         }
-        System.out.println((stmts.toString().trim()));
+        //System.out.println((stmts.toString().trim()));
         return new Pair(stmts.toString().trim(), tainter.getParameters());
     }
 

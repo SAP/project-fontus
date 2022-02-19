@@ -263,7 +263,7 @@ public class StatementWrapper extends AbstractWrapper implements Statement {
         } catch (JSQLParserException jsqlParserException) {
             jsqlParserException.printStackTrace();
         }
-        System.out.println((stmts.toString().trim()));
+        //System.out.println((stmts.toString().trim()));
         return stmts.toString().trim();
     }
 }
