@@ -26,12 +26,9 @@ public class OpenOlatTaintHandler extends IASTaintHandler {
      * @param sourceId The ID of the source function (internal)
      * @return A possibly tainted version of the input object
      */
-    private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
-        // General debug info
+    private static IASTaintAware setFormTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
         IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
-        IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
-        Source source = Configuration.getConfiguration().getSourceConfig().getSourceWithName(taintSource.getName());
-        if(parameters.length == 4) {
+        assert (parameters.length == 4);
             try {
                 Object ureq = parameters[2];
                 Object sr = Utils.invokeGetter(ureq, "getHttpReq");
@@ -52,9 +49,14 @@ public class OpenOlatTaintHandler extends IASTaintHandler {
             } catch(Exception ex) {
                 ex.printStackTrace();
             }
-        } else {
-            taintAware.setTaint(new IASBasicMetadata(taintSource));
-        }
+            return taintAware;
+    }
+    private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
+        // General debug info
+        IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
+        IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
+        Source source = Configuration.getConfiguration().getSourceConfig().getSourceWithName(taintSource.getName());
+        taintAware.setTaint(new IASBasicMetadata(taintSource));
         return taintAware;
     }
         /**
@@ -79,6 +81,19 @@ public class OpenOlatTaintHandler extends IASTaintHandler {
             return setTaint((IASTaintAware) object, parent, parameters, sourceId);
         }
         return IASTaintHandler.traverseObject(object, taintAware -> setTaint(taintAware, parent, parameters, sourceId));
+    }
+
+    public static Object formTaint(Object object, Object parent, Object[] parameters, int sourceId) {
+        if (object instanceof IASTaintAware) {
+            return setFormTaint((IASTaintAware) object, parent, parameters, sourceId);
+        }
+        return IASTaintHandler.traverseObject(object, taintAware -> setFormTaint(taintAware, parent, parameters, sourceId));
+    }
+
+    public static Object contactTracingTaint(Object object, Object parent, Object[] parameters, int sourceId) {
+        IASTaintAware taintAware = (IASTaintAware) object;
+        // Adjust Taint Metadata to add expiry data
+        return object;
     }
 
     private static Long getSessionUserId(ReflectedSession session) {
