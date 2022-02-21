@@ -232,6 +232,10 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASStringUtils.class), "comparing", "(Ljava/util/function/Function;Ljava/util/Comparator;)Ljava/util/Comparator;", false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "org/olat/core/util/StringHelper", "cleanUTF8ForXml", "(Ljava/lang/String;)Ljava/lang/String;", false),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASStringUtils.class), "cleanUTF8ForXml", "(Lcom/sap/fontus/taintaware/unified/IASString;)Lcom/sap/fontus/taintaware/unified/IASString;", false));
+	// Add this just to prevent re-casting the security provider as an IASProperties
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/security/Security", "getProvider", "(Ljava/lang/String;)Ljava/security/Provider;", false),
+                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASSecurity.class), "getProvider", "(Lcom/sap/fontus/taintaware/unified/IASString;)Ljava/security/Provider;", false));
+
     }
 
     private void fillInterfaceProxies() {
