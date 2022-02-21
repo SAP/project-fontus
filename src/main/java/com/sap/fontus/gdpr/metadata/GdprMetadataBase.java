@@ -10,8 +10,8 @@ public abstract class GdprMetadataBase implements GdprMetadata {
                 ", dataSubject=" + getSubject() +
                 ", dataId=" + getId() +
                 ", portability=" + isQualifiedForPortability() +
-                ", consent=" + isConsentGiven() +
-                ", identifiability=" + isIdentifiabible() +
+                ", consent=" + isProcessingUnrestricted() +
+                ", identifiability=" + isIdentifiable() +
                 '}';
     }
 }

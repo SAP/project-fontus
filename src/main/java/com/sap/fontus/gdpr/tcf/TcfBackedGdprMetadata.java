@@ -67,12 +67,12 @@ public class TcfBackedGdprMetadata extends GdprMetadataBase {
     }
 
     @Override
-    public boolean isConsentGiven() {
+    public boolean isProcessingUnrestricted() {
         return true;
     }
 
     @Override
-    public Identifiability isIdentifiabible() {
+    public Identifiability isIdentifiable() {
         return Identifiability.Undefined;
     }
 

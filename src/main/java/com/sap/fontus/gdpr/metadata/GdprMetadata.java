@@ -18,24 +18,31 @@ public interface GdprMetadata {
 
     // The data subject needs to be identified
     // Metadatum 3
+    // Enables Subject Access Request as per GDPR Article 15
     public DataSubject getSubject();
 
     // Unique ID to uniquely identify this piece of data
     // Metadatum 4
+    // Allows e.g. logging of which data has been sent to whom
     public DataId getId();
 
     // Is the data portable?
     // Metadatum 5
+    // Maps to GDPR Article 20
+    // Data requested to be shared by the data subject with a third party
+    // All data which is directly input by the user (not those which have been processed)
     public boolean isQualifiedForPortability();
 
-    // Was consent explicitly given to use this data
+    // Is processing restricted?
     // Metadatum 6
-    // TCF - getConsentScreen()
-    public boolean isConsentGiven();
+    // Is unrestricted processing allowed on this data?
+    // Processing might be restricted e.g. due to inaccurate data, which needs to be corrected.
+    // Maps to GDPR Article 18
+    public boolean isProcessingUnrestricted();
 
     // Can the data be used to directly identify a person?
     // Explicit / not explicit
     // Metadatum 7
-    public Identifiability isIdentifiabible();
+    public Identifiability isIdentifiable();
 
 }
