@@ -41,7 +41,7 @@ public class StatisticsGatherer extends AbstractInformationGatherer {
     }
 
     public void printStatistics() {
-        for(TableStatistics statistics : this.tableStatistics) {
+        for (TableStatistics statistics : this.tableStatistics) {
             statistics.printTableStatistics();
         }
     }

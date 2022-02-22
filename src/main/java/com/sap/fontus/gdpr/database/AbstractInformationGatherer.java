@@ -6,6 +6,7 @@ public class AbstractInformationGatherer implements InformationGatherer {
     protected String table = "";
     protected String catalog = "";
     protected int row = 0;
+
     @Override
     public void beginTable(String catalog, String table) {
         this.row = 0;

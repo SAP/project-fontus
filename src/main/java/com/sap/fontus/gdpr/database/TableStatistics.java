@@ -7,21 +7,23 @@ public class TableStatistics {
 
     private final String catalog;
     private final String name;
-    private final Collection<RowStats> rowStats = new ArrayList<>();
-    private RowStats currentRow = null;
+    private final Collection<RowStatistics> rowStats = new ArrayList<>();
+    private RowStatistics currentRow = null;
+
     public TableStatistics(String catalog, String name) {
         this.catalog = catalog;
         this.name = name;
     }
 
-    public void nextRow() {
-        if(this.currentRow != null) {
+    void nextRow() {
+        if (this.currentRow != null) {
             this.rowStats.add(this.currentRow);
         }
-        this.currentRow = new RowStats();
+        this.currentRow = new RowStatistics();
     }
+
     public void endTable() {
-        if(this.currentRow != null) {
+        if (this.currentRow != null) {
             this.rowStats.add(this.currentRow);
         }
         this.currentRow = null;
@@ -41,23 +43,23 @@ public class TableStatistics {
         int oneThird = 0;
         int half = 0;
         int twoThirds = 0;
-        for(RowStats row : this.rowStats) {
-            if(row.tainted > 0) {
+        for (RowStatistics row : this.rowStats) {
+            if (row.getTainted() > 0) {
                 hasTainted++;
                 double perc = row.taintedPercentage();
-                if(perc > 66.6) {
+                if (perc > 66.6) {
                     twoThirds++;
                 }
-                if(perc > 50.0) {
+                if (perc > 50.0) {
                     half++;
                 }
-                if(perc > 33.3) {
+                if (perc > 33.3) {
                     oneThird++;
                 }
             }
         }
 
-        if(hasTainted == 0) {
+        if (hasTainted == 0) {
             System.out.printf("%s.%s has no rows with tainted values!%n", this.catalog, this.name);
         } else {
             System.out.printf("%s.%s has %d rows with tainted values!%n", this.catalog, this.name, hasTainted);
@@ -67,28 +69,4 @@ public class TableStatistics {
         }
     }
 
-    private class RowStats {
-        private int untainted = 0;
-        private int tainted = 0;
-
-        public void incrementTainted() {
-            this.tainted++;
-        }
-
-        public void incrementUntainted() {
-            this.untainted++;
-        }
-
-        public int getTainted() {
-            return this.tainted;
-        }
-
-        public int getUntainted() {
-            return this.untainted;
-        }
-
-        public double taintedPercentage() {
-            return (double) this.tainted /((double) this.untainted / 100.0);
-        }
-    }
 }

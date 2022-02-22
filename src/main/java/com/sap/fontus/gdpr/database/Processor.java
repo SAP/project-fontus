@@ -6,8 +6,6 @@ import com.sap.fontus.sql.driver.Utils;
 import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 
 import java.sql.*;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 
 public class Processor {
     private final String userName;
@@ -16,12 +14,13 @@ public class Processor {
     private final String connectionString;
 
     private final InformationGatherer gatherer;
-    public Processor(InformationGatherer gatherer) {
+
+    public Processor(String host, String userName, String password, String catalog, InformationGatherer gatherer) {
         Configuration.setTestConfig(TaintMethod.RANGE);
-        this.userName = "openolat";
-        this.password = "olat";
-        this.catalog = "olat";
-        this.connectionString = String.format("jdbc:mysql://127.0.0.1:3306/%s?useUnicode=true&characterEncoding=UTF-8", this.catalog);
+        this.userName = userName;
+        this.password = password;
+        this.catalog = catalog;
+        this.connectionString = String.format("jdbc:mysql://%s/%s?useUnicode=true&characterEncoding=UTF-8", host, this.catalog);
 
         this.gatherer = gatherer;
     }
@@ -39,8 +38,7 @@ public class Processor {
             }*/
 
 
-
-            while(tables.next()) {
+            while (tables.next()) {
 
                 String cat = tables.getString(1);
                 String schema = tables.getString(2);
@@ -56,29 +54,29 @@ public class Processor {
     }
 
     private void processTable(Connection conn, String catalog, String table) throws SQLException {
-        try(PreparedStatement ps = conn.prepareStatement(String.format("SELECT * from %s.%s", catalog, table)); ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = conn.prepareStatement(String.format("SELECT * from %s.%s", catalog, table)); ResultSet rs = ps.executeQuery()) {
             ResultSetMetaData metaData = ps.getMetaData();
-          int columnCount = metaData.getColumnCount();
-          assert columnCount%2 == 0;
-          int row = 0;
-          while(rs.next()) {
-              row++;
-              this.gatherer.nextRow();
-              for(int i = 2; i <= columnCount; i+=2) {
-                  String columnName = metaData.getColumnName(i);
-                  if(!columnName.startsWith("__taint__")) {
-                      throw new IllegalStateException(String.format("In %s.%s the column %s at index %d is not a taint column!%n", catalog, table, columnName, i));
-                  }
-                  String originalColumnName = metaData.getColumnName(i-1);
-                  String taintValue = rs.getString(i);
-                  if(taintValue == null || taintValue.equals("0")) {
-                    this.gatherer.untaintedColumn(i-1, columnName, rs.getObject(i-1));
-                  } else {
-                      IASTaintInformationable tis = Utils.parseTaint(taintValue);
-                      this.gatherer.taintedColumn(i-1, columnName, rs.getString(i-1), tis);
-                  }
-              }
-          }
+            int columnCount = metaData.getColumnCount();
+            assert columnCount % 2 == 0;
+            int row = 0;
+            while (rs.next()) {
+                row++;
+                this.gatherer.nextRow();
+                for (int i = 2; i <= columnCount; i += 2) {
+                    String columnName = metaData.getColumnName(i);
+                    if (!columnName.startsWith("__taint__")) {
+                        throw new IllegalStateException(String.format("In %s.%s the column %s at index %d is not a taint column!%n", catalog, table, columnName, i));
+                    }
+                    String originalColumnName = metaData.getColumnName(i - 1);
+                    String taintValue = rs.getString(i);
+                    if (taintValue == null || taintValue.equals("0")) {
+                        this.gatherer.untaintedColumn(i - 1, columnName, rs.getObject(i - 1));
+                    } else {
+                        IASTaintInformationable tis = Utils.parseTaint(taintValue);
+                        this.gatherer.taintedColumn(i - 1, columnName, rs.getString(i - 1), tis);
+                    }
+                }
+            }
         }
     }
 }

@@ -17,8 +17,8 @@ public class SubjectAccessRequestGatherer extends AbstractInformationGatherer {
     @Override
     public void taintedColumn(int index, String name, String value, IASTaintInformationable taintInformation) {
         Collection<DataSubject> dataSubjects = Utils.getDataSubjects(taintInformation);
-        for(DataSubject dataSubject : dataSubjects) {
-            if(dataSubject.getIdentifier().equals(this.identifier)) {
+        for (DataSubject dataSubject : dataSubjects) {
+            if (dataSubject.getIdentifier().equals(this.identifier)) {
                 System.out.printf("In %s.%s, row %d, column %s (%d) has an attached, non empty taint belonging to user: %s!%n", this.catalog, this.table, this.row, name, index, this.identifier);
             }
         }
