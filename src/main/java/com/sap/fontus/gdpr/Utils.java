@@ -20,6 +20,7 @@ import java.time.temporal.TemporalAmount;
 import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 
 public final class Utils {
     private Utils() {}
@@ -37,6 +38,8 @@ public final class Utils {
     public static Object invokeGetter(Object obj, String name) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         return invokeGetter(obj, name, 0);
     }
+
+    // TODO(david): the following Code is awfully repetitive, can we somehow refactor it into a fold operation?
 
     public static boolean isDataExpired(IASTaintInformationable taintInformation, Instant now) {
         if(taintInformation == null) {
@@ -60,6 +63,24 @@ public final class Utils {
         }
         return expired;
     }
+    public static Collection<DataSubject> getDataSubjects(IASTaintInformationable taintInformation) {
+        Collection<DataSubject> dataSubjects = new HashSet<>();
+        if(taintInformation == null) {
+            return dataSubjects;
+        }
+        IASTaintRanges ranges = taintInformation.getTaintRanges(-1);
+        Collection<IASTaintRange> taintRanges = ranges.getTaintRanges();
+        for(IASTaintRange range: taintRanges) {
+            IASTaintMetadata meta = range.getMetadata();
+            if(meta instanceof GdprTaintMetadata) {
+                GdprTaintMetadata gdprTaintMetadata = (GdprTaintMetadata) meta;
+                GdprMetadata gdprMetadata = gdprTaintMetadata.getMetadata();
+                dataSubjects.add(gdprMetadata.getSubject());
+            }
+        }
+        return dataSubjects;
+    }
+
     public static boolean updateExpiryDatesAndProtectionLevel(IASTaintAware taintAware, long daysFromNow, ProtectionLevel protectionLevel) {
         if(!taintAware.isTainted()) {
             return false;

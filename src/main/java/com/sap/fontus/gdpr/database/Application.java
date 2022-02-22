@@ -30,16 +30,19 @@ public class Application  implements Callable<Void> {
 
     @Override
     public Void call() throws Exception {
-        Processor processor = new Processor();
+
         switch(this.mode) {
             case EXPIRY:
-                processor.run();
+                Processor expiredProcessor = new Processor(new ExpiredTaintColumnGatherer());
+                expiredProcessor.run();
                 break;
             case STATISTICS:
-                processor.run();
+                Processor statisticsProcessor = null;
+                statisticsProcessor.run();
                 break;
             case SUBJECT_ACCESS_REQUEST:
-                processor.run();
+                Processor accessRequestProcessor = new Processor(new SubjectAccessRequestGatherer("360448"));
+                accessRequestProcessor.run();
                 break;
             default:
                 System.out.printf("Mode %s is invalid!%n", this.mode);

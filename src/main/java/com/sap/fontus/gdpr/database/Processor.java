@@ -14,14 +14,16 @@ public class Processor {
     private final String password;
     private final String catalog;
     private final String connectionString;
-    private final Instant now;
-    public Processor() {
+
+    private final InformationGatherer gatherer;
+    public Processor(InformationGatherer gatherer) {
         Configuration.setTestConfig(TaintMethod.RANGE);
         this.userName = "openolat";
         this.password = "olat";
         this.catalog = "olat";
         this.connectionString = String.format("jdbc:mysql://127.0.0.1:3306/%s?useUnicode=true&characterEncoding=UTF-8", this.catalog);
-        this.now = Instant.now().plus(21, ChronoUnit.DAYS);
+
+        this.gatherer = gatherer;
     }
 
     public void run() throws SQLException {
@@ -45,7 +47,8 @@ public class Processor {
                 String name = tables.getString(3);
                 String type = tables.getString(4);
                 System.out.printf("%s.%s.%s - %s%n", cat, schema, name, type);
-                processTable(conn, cat, name);
+                this.gatherer.beginTable(cat, name);
+                this.processTable(conn, cat, name);
             }
             System.out.println("done");
         }
@@ -59,6 +62,7 @@ public class Processor {
           int row = 0;
           while(rs.next()) {
               row++;
+              this.gatherer.nextRow();
               for(int i = 2; i <= columnCount; i+=2) {
                   String columnName = metaData.getColumnName(i);
                   if(!columnName.startsWith("__taint__")) {
@@ -67,14 +71,10 @@ public class Processor {
                   String originalColumnName = metaData.getColumnName(i-1);
                   String taintValue = rs.getString(i);
                   if(taintValue == null || taintValue.equals("0")) {
-
+                    this.gatherer.untaintedColumn(i-1, columnName, rs.getObject(i-1));
                   } else {
                       IASTaintInformationable tis = Utils.parseTaint(taintValue);
-                      if(com.sap.fontus.gdpr.Utils.isDataExpired(tis, this.now)) {
-                          System.out.printf("In %s.%s, row %d, column %s (%d) has an attached, non empty and EXPIRED taint value!%n", catalog, table, row, originalColumnName, i);
-                      } else {
-                          System.out.printf("In %s.%s, row %d, column %s (%d) has an attached, non empty taint value that's not expired!%n", catalog, table, row, originalColumnName, i);
-                      }
+                      this.gatherer.taintedColumn(i-1, columnName, rs.getString(i-1), tis);
                   }
               }
           }
