@@ -6,32 +6,12 @@ import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 
 import java.util.Collection;
 
-public class SubjectAccessRequestGatherer implements InformationGatherer {
+public class SubjectAccessRequestGatherer extends AbstractInformationGatherer {
     private final String identifier;
-    private String table = "";
-    private String catalog = "";
-    private int row = 0;
 
-    public SubjectAccessRequestGatherer(String identifier) {
+    SubjectAccessRequestGatherer(String identifier) {
+        super();
         this.identifier = identifier;
-    }
-
-    @Override
-    public void beginTable(String catalog, String table) {
-        this.catalog = catalog;
-        this.table = table;
-    }
-
-    @Override
-    public void endTable() {
-        this.catalog = "";
-        this.table = "";
-        this.row = 0;
-    }
-
-    @Override
-    public void nextRow() {
-        this.row++;
     }
 
     @Override
@@ -44,8 +24,4 @@ public class SubjectAccessRequestGatherer implements InformationGatherer {
         }
     }
 
-    @Override
-    public void untaintedColumn(int index, String name, Object value) {
-
-    }
 }

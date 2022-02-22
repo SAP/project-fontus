@@ -6,31 +6,12 @@ import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-public class ExpiredTaintColumnGatherer implements InformationGatherer {
-    private String table = "";
-    private String catalog = "";
-    private int row = 0;
+class ExpiredTaintColumnGatherer extends AbstractInformationGatherer {
     private final Instant now;
 
-    public ExpiredTaintColumnGatherer() {
+    ExpiredTaintColumnGatherer() {
+        super();
         this.now = Instant.now().plus(21, ChronoUnit.DAYS);
-    }
-    @Override
-    public void beginTable(String catalog, String table) {
-        this.catalog = catalog;
-        this.table = table;
-    }
-
-    @Override
-    public void endTable() {
-        this.catalog = "";
-        this.table = "";
-        this.row = 0;
-    }
-
-    @Override
-    public void nextRow() {
-        this.row++;
     }
 
     @Override
@@ -40,10 +21,5 @@ public class ExpiredTaintColumnGatherer implements InformationGatherer {
         } else {
             System.out.printf("In %s.%s, row %d, column %s (%d) has an attached, non empty taint value that's not expired!%n", this.catalog, this.table, this.row, name, index);
         }
-    }
-
-    @Override
-    public void untaintedColumn(int index, String name, Object value) {
-
     }
 }
