@@ -31,18 +31,36 @@ public class StatisticsGatherer extends AbstractInformationGatherer {
     }
 
     @Override
-    public void taintedColumn(int index, String name, String value, IASTaintInformationable taintInformation) {
+    public void taintedColumn(int index, String name,String type, String value, IASTaintInformationable taintInformation) {
+        if(this.isTextType(type)) {
+            this.currentTable.incrementStringColumn();
+        }
         this.currentTable.incrementTainted();
     }
 
     @Override
-    public void untaintedColumn(int index, String name, Object value) {
+    public void untaintedColumn(int index, String name, String type, Object value) {
+        if(this.isTextType(type)) {
+            this.currentTable.incrementStringColumn();
+        }
         this.currentTable.incrementUntainted();
     }
 
     public void printStatistics() {
         for (TableStatistics statistics : this.tableStatistics) {
             statistics.printTableStatistics();
+        }
+    }
+
+    public boolean isTextType(String type) {
+        switch (type) {
+            case "VARCHAR":
+            case "MEDIUMTEXT":
+            case "TEXT":
+            case "LONGTEXT":
+                return true;
+            default:
+                return false;
         }
     }
 }

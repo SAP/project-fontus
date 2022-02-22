@@ -37,16 +37,28 @@ public class TableStatistics {
         this.currentRow.incrementUntainted();
     }
 
+    public void incrementStringColumn() {
+        this.currentRow.incrementStringColumns();
+    }
+
     public void printTableStatistics() {
         int total = this.rowStats.size();
         int hasTainted = 0;
         int oneThird = 0;
         int half = 0;
         int twoThirds = 0;
+        int all = 0;
+        int oneThirdString = 0;
+        int halfString = 0;
+        int twoThirdsString = 0;
+        int allString = 0;
         for (RowStatistics row : this.rowStats) {
             if (row.getTainted() > 0) {
                 hasTainted++;
                 double perc = row.taintedPercentage();
+                if (perc > 99.) {
+                    all++;
+                }
                 if (perc > 66.6) {
                     twoThirds++;
                 }
@@ -56,6 +68,19 @@ public class TableStatistics {
                 if (perc > 33.3) {
                     oneThird++;
                 }
+                double stringPerc = row.taintedPercentageStringColumns();
+                if (stringPerc > 99.) {
+                    allString++;
+                }
+                if (stringPerc > 66.6) {
+                    twoThirdsString++;
+                }
+                if (stringPerc > 50.0) {
+                    halfString++;
+                }
+                if (stringPerc > 33.3) {
+                    oneThirdString++;
+                }
             }
         }
 
@@ -63,9 +88,19 @@ public class TableStatistics {
             System.out.printf("%s.%s has no rows with tainted values!%n", this.catalog, this.name);
         } else {
             System.out.printf("%s.%s has %d rows with tainted values!%n", this.catalog, this.name, hasTainted);
-            System.out.printf("\tRows with > 33.3%% of tainted values: %d%n", oneThird);
-            System.out.printf("\tRows with > 50%% of tainted values: %d%n", half);
-            System.out.printf("\tRows with > 66.6%% of tainted values: %d%n", twoThirds);
+            if(oneThirdString > 0) {
+                System.out.printf("\tRows with > 33.3%% of tainted String values: %d (Total: %d)%n", oneThirdString, oneThird);
+            }
+            if(halfString > 0) {
+                System.out.printf("\tRows with > 50%% of tainted String values: %d (Total: %d)%n", halfString, half);
+            }
+            if(twoThirdsString > 0) {
+                System.out.printf("\tRows with > 66.6%% of tainted String values: %d (Total: %d)%n", twoThirdsString, twoThirds);
+            }
+            if(allString > 0) {
+                System.out.printf("\tRows with > 99.0%% of tainted String values: %d (Total: %d)%n", allString, all);
+            }
+
         }
     }
 

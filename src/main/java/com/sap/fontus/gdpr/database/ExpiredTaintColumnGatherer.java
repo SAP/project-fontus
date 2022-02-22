@@ -15,7 +15,7 @@ class ExpiredTaintColumnGatherer extends AbstractInformationGatherer {
     }
 
     @Override
-    public void taintedColumn(int index, String name, String value, IASTaintInformationable taintInformation) {
+    public void taintedColumn(int index, String name, String type, String value, IASTaintInformationable taintInformation) {
         if (Utils.isDataExpired(taintInformation, this.now)) {
             System.out.printf("In %s.%s, row %d, column %s (%d) has an attached, non empty and EXPIRED taint value!%n", this.catalog, this.table, this.row, name, index);
         } else {

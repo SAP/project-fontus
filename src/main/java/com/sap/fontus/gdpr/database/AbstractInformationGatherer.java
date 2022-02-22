@@ -27,12 +27,12 @@ public class AbstractInformationGatherer implements InformationGatherer {
     }
 
     @Override
-    public void taintedColumn(int index, String name, String value, IASTaintInformationable taintInformation) {
+    public void taintedColumn(int index, String name, String type, String value, IASTaintInformationable taintInformation) {
         // NOP
     }
 
     @Override
-    public void untaintedColumn(int index, String name, Object value) {
+    public void untaintedColumn(int index, String name, String type, Object value) {
         // NOP
     }
 }

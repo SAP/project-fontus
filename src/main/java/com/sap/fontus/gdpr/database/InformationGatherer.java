@@ -9,8 +9,8 @@ public interface InformationGatherer {
 
     void nextRow();
 
-    void taintedColumn(int index, String name, String value, IASTaintInformationable taintInformation);
+    void taintedColumn(int index, String name, String type, String value, IASTaintInformationable taintInformation);
 
-    void untaintedColumn(int index, String name, Object value);
+    void untaintedColumn(int index, String name, String type, Object value);
 
 }

@@ -15,7 +15,7 @@ public class SubjectAccessRequestGatherer extends AbstractInformationGatherer {
     }
 
     @Override
-    public void taintedColumn(int index, String name, String value, IASTaintInformationable taintInformation) {
+    public void taintedColumn(int index, String name, String type, String value, IASTaintInformationable taintInformation) {
         Collection<DataSubject> dataSubjects = Utils.getDataSubjects(taintInformation);
         for (DataSubject dataSubject : dataSubjects) {
             if (dataSubject.getIdentifier().equals(this.identifier)) {
