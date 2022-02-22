@@ -40,7 +40,7 @@ public class GdprMetadataTests {
         IASString taintAware = new IASString("foobar");
         taintAware.setTaint(new GdprTaintMetadata(1, metadata));
         Assertions.assertTrue(taintAware.isTainted());
-        boolean adjusted = Utils.updateExpiryDates(taintAware, 14L);
+        boolean adjusted = Utils.updateExpiryDatesAndProtectionLevel(taintAware, 14L, ProtectionLevel.Normal);
         Assertions.assertTrue(adjusted);
 
     }
