@@ -49,6 +49,7 @@ public class Processor {
                 System.out.printf("%s.%s.%s - %s%n", cat, schema, name, type);
                 this.gatherer.beginTable(cat, name);
                 this.processTable(conn, cat, name);
+                this.gatherer.endTable();
             }
             System.out.println("done");
         }

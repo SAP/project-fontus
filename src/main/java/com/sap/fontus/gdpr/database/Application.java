@@ -37,8 +37,10 @@ public class Application  implements Callable<Void> {
                 expiredProcessor.run();
                 break;
             case STATISTICS:
-                Processor statisticsProcessor = null;
+                StatisticsGatherer gatherer = new StatisticsGatherer();
+                Processor statisticsProcessor = new Processor(gatherer);
                 statisticsProcessor.run();
+                gatherer.printStatistics();
                 break;
             case SUBJECT_ACCESS_REQUEST:
                 Processor accessRequestProcessor = new Processor(new SubjectAccessRequestGatherer("360448"));
