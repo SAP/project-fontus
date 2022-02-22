@@ -100,7 +100,9 @@ public abstract class SourceOrSinkTransformer {
 
     protected void addParentObjectToStack(MethodVisitor mv, FunctionCall func) {
         int size = func.getParsedDescriptor().getParameterTotalSize();
-        if (func.isInstanceMethod()) {
+        // If the method is static there is no object to put on the stack
+        // Similarly, constructor methods are called before the object is initialized
+        if (func.isInstanceMethod() && !func.isConstructor()) {
             mv.visitVarInsn(Type.getObjectType(func.getOwner()).getOpcode(Opcodes.ILOAD), size + this.usedLocalVars);
         } else {
             mv.visitInsn(Opcodes.ACONST_NULL);
