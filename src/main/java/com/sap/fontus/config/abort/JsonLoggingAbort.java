@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.taintaware.IASTaintAware;
-import com.sap.fontus.taintaware.shared.IASTaintRange;
-import com.sap.fontus.taintaware.shared.IASTaintRanges;
 import com.sap.fontus.taintaware.unified.IASString;
 
 import java.io.IOException;
@@ -21,7 +19,9 @@ public class JsonLoggingAbort extends Abort {
     @Override
     public IASTaintAware abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
         IASString taintedString = taintAware.toIASString();
-        AbortObject abort = new AbortObject(sinkFunction, sinkName, taintedString.getString(), taintedString.getTaintInformationInitialized().getTaintRanges(taintedString.length()), convertStackTrace(stackTrace));
+        AbortObject abort = new AbortObject(sinkFunction, sinkName, taintedString.getString(),
+                taintedString.getTaintInformationInitialized().getTaintRanges(taintedString.length()),
+                convertStackTrace(stackTrace));
         previousAborts.add(abort);
         saveAborts();
         return taintAware;

@@ -1,5 +1,6 @@
 package com.sap.fontus.config.abort;
 
+import com.sap.fontus.config.Configuration;
 import com.sap.fontus.taintaware.shared.IASTaintRanges;
 
 import java.util.List;
@@ -12,6 +13,7 @@ public class AbortObject {
     private final String payload;
     private final IASTaintRanges ranges;
     private final List<String> stackTrace;
+    private final List<String> categories;
 
     public AbortObject(String sinkFunction, String sinkName, String payload, IASTaintRanges ranges, List<String> stackTrace) {
         this.sinkFunction = sinkFunction;
@@ -19,6 +21,7 @@ public class AbortObject {
         this.payload = payload;
         this.ranges = ranges;
         this.stackTrace = stackTrace;
+        this.categories = Configuration.getConfiguration().getSinkConfig().getSinkForFqn(sinkFunction).getCategories();
     }
 
     public String getSinkFunction() {
@@ -39,5 +42,9 @@ public class AbortObject {
 
     public List<String> getStackTrace() {
         return stackTrace;
+    }
+
+    public List<String> getCategories() {
+        return categories;
     }
 }
