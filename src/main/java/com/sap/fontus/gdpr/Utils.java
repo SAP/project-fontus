@@ -37,6 +37,29 @@ public final class Utils {
     public static Object invokeGetter(Object obj, String name) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         return invokeGetter(obj, name, 0);
     }
+
+    public static boolean isDataExpired(IASTaintInformationable taintInformation, Instant now) {
+        if(taintInformation == null) {
+            return false;
+        }
+        IASTaintRanges ranges = taintInformation.getTaintRanges(-1);
+        Collection<IASTaintRange> taintRanges = ranges.getTaintRanges();
+        boolean expired = false;
+        for(IASTaintRange range: taintRanges) {
+            IASTaintMetadata meta = range.getMetadata();
+            if(meta instanceof GdprTaintMetadata) {
+                GdprTaintMetadata gdprTaintMetadata = (GdprTaintMetadata) meta;
+                GdprMetadata gdprMetadata = gdprTaintMetadata.getMetadata();
+                for(AllowedPurpose purpose : gdprMetadata.getAllowedPurposes()) {
+                    ExpiryDate expiryDate = purpose.getExpiryDate();
+                    if(expiryDate.hasExpiry() && expiryDate.getDate().isBefore(now)) {
+                        expired = true;
+                    }
+                }
+            }
+        }
+        return expired;
+    }
     public static boolean updateExpiryDatesAndProtectionLevel(IASTaintAware taintAware, long daysFromNow, ProtectionLevel protectionLevel) {
         if(!taintAware.isTainted()) {
             return false;
