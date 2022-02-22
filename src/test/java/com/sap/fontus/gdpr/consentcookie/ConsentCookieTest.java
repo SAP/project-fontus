@@ -1,4 +1,5 @@
 package com.sap.fontus.gdpr.consentcookie;
+
 import com.sap.fontus.gdpr.petclinic.ConsentCookie;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
