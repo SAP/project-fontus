@@ -29,17 +29,6 @@ public class JdkMethodTransformer implements ParameterTransformation, ReturnTran
             return;
         }
 
-        FunctionCall converter = this.configuration.getConverterForParameter(this.call, index);
-        if (converter != null) {
-            visitor.visitMethodInsn(converter);
-            return;
-        }
-
-//        Type type = Type.getType(typeString);
-//        int returnSort = type.getSort();
-//        if (returnSort == Type.ARRAY || returnSort == Type.OBJECT) {
-//            Utils.insertGenericConversionToOrig(visitor.getParent(), type.getInternalName());
-//        }
     }
 
     @Override
