@@ -22,7 +22,7 @@ public class SimpleDataSubject implements DataSubject {
 
     @Override
     public String getIdentifier() {
-        return null;
+        return this.id;
     }
 
     @Override

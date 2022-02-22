@@ -20,6 +20,8 @@ import java.time.temporal.TemporalAmount;
 import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.function.BiFunction;
 
 public final class Utils {
     private Utils() {}
@@ -37,31 +39,65 @@ public final class Utils {
     public static Object invokeGetter(Object obj, String name) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         return invokeGetter(obj, name, 0);
     }
-    public static boolean updateExpiryDatesAndProtectionLevel(IASTaintAware taintAware, long daysFromNow, ProtectionLevel protectionLevel) {
-        if(!taintAware.isTainted()) {
-            return false;
-        }
-        ExpiryDate expiryDate = new SimpleExpiryDate(Instant.now().plus(daysFromNow, ChronoUnit.DAYS));
-        IASTaintInformationable taintInformation = taintAware.getTaintInformation();
+
+    // Works like a fold in OCaml/Haskell or accumulate in Python
+    // Applies the function to each GdprMetadata in the taintInformation and accumulates information
+    public static <A> A processGdprMetaData(IASTaintInformationable taintInformation, A initial,  BiFunction<A, GdprMetadata, A> function) {
+        A accumulator = initial;
         if(taintInformation == null) {
-            return false;
+            return accumulator;
         }
         IASTaintRanges ranges = taintInformation.getTaintRanges(-1);
         Collection<IASTaintRange> taintRanges = ranges.getTaintRanges();
-        boolean adjusted = false;
+
         for(IASTaintRange range: taintRanges) {
             IASTaintMetadata meta = range.getMetadata();
             if(meta instanceof GdprTaintMetadata) {
                 GdprTaintMetadata gdprTaintMetadata = (GdprTaintMetadata) meta;
                 GdprMetadata gdprMetadata = gdprTaintMetadata.getMetadata();
-                gdprMetadata.setProtectionLevel(protectionLevel);
-                for(AllowedPurpose purpose : gdprMetadata.getAllowedPurposes()) {
-                    purpose.setExpiryDate(expiryDate);
-                    adjusted = true;
-                }
+                accumulator = function.apply(accumulator, gdprMetadata);
             }
         }
-        return adjusted;
+        return accumulator;
+    }
+
+    public static Collection<DataSubject> getDataSubjects(IASTaintInformationable taintInformation) {
+        Collection<DataSubject> dataSubjects = new HashSet<>();
+        return processGdprMetaData(taintInformation, dataSubjects, (acc, gdprData) -> {
+            acc.add(gdprData.getSubject());
+            return acc;
+        });
+    }
+
+    public static boolean isDataExpired(IASTaintInformationable taintInformation, Instant now) {
+        return processGdprMetaData(taintInformation, false, (acc, gdprData) -> {
+            for(AllowedPurpose purpose : gdprData.getAllowedPurposes()) {
+                ExpiryDate expiryDate = purpose.getExpiryDate();
+                if(expiryDate.hasExpiry() && expiryDate.getDate().isBefore(now)) {
+                    return true;
+                }
+            }
+            return acc;
+        });
+    }
+
+    public static boolean updateExpiryDatesAndProtectionLevel(IASTaintAware taintAware, long daysFromNow, ProtectionLevel protectionLevel) {
+        if(!taintAware.isTainted()) {
+            return false;
+        }
+        IASTaintInformationable taintInformation = taintAware.getTaintInformation();
+        if(taintInformation == null) {
+            return false;
+        }
+        ExpiryDate expiryDate = new SimpleExpiryDate(Instant.now().plus(daysFromNow, ChronoUnit.DAYS));
+        return processGdprMetaData(taintInformation, false, (acc, gdprData) -> {
+            gdprData.setProtectionLevel(protectionLevel);
+            for(AllowedPurpose purpose : gdprData.getAllowedPurposes()) {
+                purpose.setExpiryDate(expiryDate);
+                return true;
+            }
+            return acc;
+        });
     }
 
 
