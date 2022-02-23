@@ -1,12 +1,11 @@
 package com.sap.fontus.config;
 
-import com.sap.fontus.asm.FunctionCall;
-
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+
+import com.sap.fontus.asm.FunctionCall;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,20 +30,26 @@ public class Sink {
     @XmlElement(name = "dataProtection")
     private final DataProtection dataProtection;
 
+    @JacksonXmlElementWrapper(localName = "positions")
+    @XmlElement(name = "position")
+    private final List<Position> positions;
+
     public Sink() {
         this.name = "";
         this.function = new FunctionCall();
         this.parameters = new ArrayList<>();
         this.categories = new ArrayList<>();
         this.dataProtection = new DataProtection();
+        this.positions = new ArrayList<>();
     }
 
-    public Sink(String name, FunctionCall functionCall, List<SinkParameter> parameters, List<String> categories, DataProtection dataProtection) {
+    public Sink(String name, FunctionCall functionCall, List<SinkParameter> parameters, List<String> categories, DataProtection dataProtection, List<Position> positions) {
         this.name = name;
         this.function = functionCall;
         this.parameters = parameters;
         this.categories = categories;
         this.dataProtection = dataProtection;
+        this.positions = positions;
     }
 
     public List<SinkParameter> getParameters() {
@@ -73,6 +78,10 @@ public class Sink {
         return this.name;
     }
 
+    public List<Position> getPositions() {
+        return positions;
+    }
+
     @Override
     public String toString() {
         return "Sink{" +
@@ -81,6 +90,7 @@ public class Sink {
                 ", parameters=" + parameters +
                 ", categories=" + categories +
                 ", dataProtection=" + dataProtection +
+                ", positions=" + positions +
                 '}';
     }
 }

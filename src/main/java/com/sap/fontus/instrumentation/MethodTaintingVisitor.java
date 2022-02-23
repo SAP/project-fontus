@@ -3,6 +3,7 @@ package com.sap.fontus.instrumentation;
 import com.sap.fontus.Constants;
 import com.sap.fontus.asm.*;
 import com.sap.fontus.config.Configuration;
+import com.sap.fontus.config.Position;
 import com.sap.fontus.config.Sink;
 import com.sap.fontus.config.Source;
 import com.sap.fontus.instrumentation.transformer.*;
@@ -31,6 +32,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     private final String name;
     private final String methodDescriptor;
     private final ClassResolver resolver;
+
+    private int line;
+
     /**
      * Some methods are not handled in a generic fashion, one can defined specialized proxies here
      */
@@ -610,7 +614,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         }
 
         // Add Sink transformations
-        Sink sink = this.config.getSinkConfig().getSinkForFunction(call);
+        Sink sink = this.config.getSinkConfig().getSinkForFunction(call, new Position(owner, name, line));
         if (sink != null) {
             logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
             SinkTransformer t = new SinkTransformer(sink, this.instrumentationHelper, this.used);
@@ -916,6 +920,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     @Override
     public void visitLineNumber(int line, Label start) {
         super.visitLineNumber(line, start);
+        this.line = line;
     }
 
     @Override
