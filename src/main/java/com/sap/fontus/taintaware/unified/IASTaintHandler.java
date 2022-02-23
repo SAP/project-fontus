@@ -14,10 +14,7 @@ import com.sap.fontus.utils.stats.Statistics;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -112,8 +109,8 @@ public class IASTaintHandler {
 
         boolean isArray = object.getClass().isArray();
         boolean isPrimitive = isArray ? object.getClass().getComponentType().isPrimitive() : object.getClass().isPrimitive();
-//        boolean isIterable = Iterable.class.isAssignableFrom(object.getClass());
-//        boolean isEnumerate = Enumeration.class.isAssignableFrom(object.getClass());
+        boolean isIterable = Iterable.class.isAssignableFrom(object.getClass());
+        boolean isEnumerate = Enumeration.class.isAssignableFrom(object.getClass());
         boolean isList = List.class.isAssignableFrom(object.getClass());
         boolean isMap = Map.class.isAssignableFrom(object.getClass());
         Class<?> cls = object.getClass();
@@ -134,26 +131,22 @@ public class IASTaintHandler {
             for (int i = 0; i < list.size(); i++) {
                 list.set(i, traverser.apply(list.get(i)));
             }
-        }
-//        else if (isIterable) {
-//            Iterable<Object> iterable = (Iterable<Object>) object;
-//            for (Object o : iterable) {
-//                traverser.apply(o);
-//            }
-//        }
-
-        else if (isMap) {
+        } else if (isIterable) {
+            Iterable<Object> iterable = (Iterable<Object>) object;
+            for (Object o : iterable) {
+                traverser.apply(o);
+            }
+        } else if (isMap) {
             Map<Object, Object> map = (Map) object;
             object = map.entrySet().stream().collect(Collectors.toMap(e -> traverser.apply(e.getKey()), e -> traverser.apply(e.getValue())));
+        } else if (isEnumerate) {
+            Enumeration<Object> enumeration = (Enumeration<Object>) object;
+            List<Object> list = Collections.list(enumeration);
+            for (Object o : list) {
+                traverser.apply(o);
+            }
+            object = Collections.enumeration(list);
         }
-//        else if (isEnumerate) {
-//            Enumeration<Object> enumeration = (Enumeration<Object>) object;
-//            List<Object> list = Collections.list(enumeration);
-//            for (Object o : list) {
-//                traverser.apply(o);
-//            }
-//            object = Collections.enumeration(list);
-//        }
         else if (combinedExcludedLookup.isJdkClass(cls) || combinedExcludedLookup.isAnnotation(cls) || combinedExcludedLookup.isPackageExcluded(cls)) {
             return object;
         } else if (Configuration.getConfiguration().isRecursiveTainting()) {
