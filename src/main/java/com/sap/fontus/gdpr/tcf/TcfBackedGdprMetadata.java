@@ -77,6 +77,11 @@ public class TcfBackedGdprMetadata extends GdprMetadataBase {
     }
 
     @Override
+    public void setProtectionLevel(ProtectionLevel protectionLevel) {
+        // NOP
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

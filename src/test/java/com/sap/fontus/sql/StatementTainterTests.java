@@ -19,7 +19,7 @@ public class StatementTainterTests {
         System.out.println("Tainting: " + query);
         stmts.accept(tainter);
         String taintedStatement = stmts.toString();
-        assertEquals("SELECT 'a' AS foo, '0' AS `__taint__foo`, (SELECT count(id) FROM bla) AS bar, (SELECT '0' FROM bla) AS `__taint__bar`;", taintedStatement.trim());
+        assertEquals("SELECT 'a' AS foo, '0' AS `__taint__foo`, (SELECT count(id) FROM bla) AS bar, (SELECT '0' FROM bla LIMIT 1) AS `__taint__bar`;", taintedStatement.trim());
     }
 
     @Test

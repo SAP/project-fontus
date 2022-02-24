@@ -45,4 +45,5 @@ public interface GdprMetadata {
     // Metadatum 7
     public Identifiability isIdentifiable();
 
+    public void setProtectionLevel(ProtectionLevel protectionLevel);
 }
