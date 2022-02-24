@@ -94,7 +94,7 @@ public final class Utils {
             gdprData.setProtectionLevel(protectionLevel);
             for(AllowedPurpose purpose : gdprData.getAllowedPurposes()) {
                 purpose.setExpiryDate(expiryDate);
-                return true;
+                acc = true;
             }
             return acc;
         });
