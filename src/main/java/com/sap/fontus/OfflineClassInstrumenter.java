@@ -5,7 +5,9 @@ import com.sap.fontus.instrumentation.Instrumenter;
 import com.sap.fontus.utils.InstrumentationFactory;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
+import com.sap.fontus.utils.VerboseLogger;
 import com.sap.fontus.utils.offline.OfflineClassResolver;
+import org.objectweb.asm.ClassReader;
 
 import java.io.*;
 
@@ -28,9 +30,16 @@ public class OfflineClassInstrumenter {
 
 
     public void instrumentClassStream(InputStream i, OutputStream o) throws IOException {
+        byte[] outArray = this.instrumentClassStream(i);
+        o.write(outArray);
+    }
+
+
+    public byte[] instrumentClassStream(InputStream i) throws IOException {
         byte[] outArray;
         try {
             outArray = this.instrumenter.instrumentClass(i, InstrumentationFactory.createClassResolver(ClassLoader.getSystemClassLoader()), this.configuration, false);
+            VerboseLogger.saveIfVerbose(new ClassReader(outArray).getClassName(), outArray);
         } catch (IllegalArgumentException ex) {
             if (ex.getMessage().equals("JSR/RET are not supported with computeFrames option")) {
                 outArray = this.instrumenter.instrumentClass(i, InstrumentationFactory.createClassResolver(ClassLoader.getSystemClassLoader()), this.configuration, true);
@@ -38,6 +47,7 @@ public class OfflineClassInstrumenter {
                 throw ex;
             }
         }
-        o.write(outArray);
+
+        return outArray;
     }
 }

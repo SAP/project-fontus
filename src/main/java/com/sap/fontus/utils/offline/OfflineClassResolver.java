@@ -20,8 +20,8 @@ public class OfflineClassResolver implements IClassResolver {
     private ClassResolver classResolver;
     private Map<String, byte[]> classes;
 
-    public OfflineClassResolver() {
-        this.classResolver = new ClassResolver(ClassLoader.getSystemClassLoader());
+    public OfflineClassResolver(ClassResolver resolver) {
+        this.classResolver = resolver;
     }
 
     private synchronized void initialize() {
