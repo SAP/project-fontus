@@ -34,7 +34,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private MethodVisitRecording recording;
     private final ClassVisitor visitor;
     private final Configuration config;
-    private final ClassResolver resolver;
+    private final IClassResolver resolver;
     /**
      * The name of the class currently processed.
      */
@@ -58,7 +58,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private final List<LambdaCall> jdkLambdaMethodProxies = new ArrayList<>();
     private final InstrumentationHelper instrumentationHelper;
 
-    public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config, ClassLoader loader, boolean containsJSRRET, CombinedExcludedLookup excludedLookup) {
+    public ClassTaintingVisitor(ClassVisitor cv, IClassResolver resolver, Configuration config, ClassLoader loader, boolean containsJSRRET, CombinedExcludedLookup excludedLookup) {
         super(Opcodes.ASM9, cv);
         this.visitor = cv;
         this.staticFinalFields = new ArrayList<>();
@@ -815,24 +815,24 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitCode();
 
         // Setup configuration if offline instrumentation
-        if (config.isOfflineInstrumentation()) {
-            org.objectweb.asm.commons.Method parseOffline;
-            try {
-                parseOffline = org.objectweb.asm.commons.Method.getMethod(Configuration.class.getMethod("parseOffline", TaintMethod.class));
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
-            String parseOfflineOwner = Utils.dotToSlash(Configuration.class.getName());
-            String parseOfflineName = parseOffline.getName();
-            String parseOfflineDescriptor = parseOffline.getDescriptor();
-            String taintMethodOwner = Utils.dotToSlash(TaintMethod.class.getName());
-            String taintMethodName = Configuration.getConfiguration().getTaintMethod().name();
-            String taintMethodDescriptor = Descriptor.classNameToDescriptorName(taintMethodOwner);
-
-
-            mv.visitFieldInsn(Opcodes.GETSTATIC, taintMethodOwner, taintMethodName, taintMethodDescriptor);
-            mv.visitMethodInsn(Opcodes.INVOKESTATIC, parseOfflineOwner, parseOfflineName, parseOfflineDescriptor, false);
-        }
+//        if (config.isOfflineInstrumentation()) {
+//            org.objectweb.asm.commons.Method parseOffline;
+//            try {
+//                parseOffline = org.objectweb.asm.commons.Method.getMethod(Configuration.class.getMethod("parseOffline", TaintMethod.class));
+//            } catch (NoSuchMethodException e) {
+//                throw new RuntimeException(e);
+//            }
+//            String parseOfflineOwner = Utils.dotToSlash(Configuration.class.getName());
+//            String parseOfflineName = parseOffline.getName();
+//            String parseOfflineDescriptor = parseOffline.getDescriptor();
+//            String taintMethodOwner = Utils.dotToSlash(TaintMethod.class.getName());
+//            String taintMethodName = Configuration.getConfiguration().getTaintMethod().name();
+//            String taintMethodDescriptor = Descriptor.classNameToDescriptorName(taintMethodOwner);
+//
+//
+//            mv.visitFieldInsn(Opcodes.GETSTATIC, taintMethodOwner, taintMethodName, taintMethodDescriptor);
+//            mv.visitMethodInsn(Opcodes.INVOKESTATIC, parseOfflineOwner, parseOfflineName, parseOfflineDescriptor, false);
+//        }
 
         Label label0 = new Label();
         mv.visitLabel(label0);

@@ -9,9 +9,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public final class JdkClassesLookup {
     private static final Logger logger = LogUtils.getLogger();
+    private static final Pattern MODULE_INFO_PATTERN = Pattern.compile("^(.*/)?module-info(\\.class)?$");
+    private static final Pattern PACKAGE_INFO_PATTERN = Pattern.compile("^(.*/)?package-info(\\.class)?$");
 
     private JdkClassesLookup(Collection<String> classes) {
         this.jdkClasses = new HashSet<>(classes.size());
@@ -71,6 +74,18 @@ public final class JdkClassesLookup {
         // Obviously IASString isn't part of it
         if (internalName.endsWith("MXBean") && ClassUtils.isInterface(internalName, loader)) {
             return true;
+        }
+
+        if (internalName.contains("module-info")) {
+            if (MODULE_INFO_PATTERN.matcher(internalName).matches()) {
+                return true;
+            }
+        }
+
+        if (internalName.contains("package-info")) {
+            if (PACKAGE_INFO_PATTERN.matcher(internalName).matches()) {
+                return true;
+            }
         }
 
         //TODO: is the split on $ the optimal way to only get the prefix? This is supposed to catch inner classes too

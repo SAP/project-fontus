@@ -43,8 +43,13 @@ class TaintingTransformer implements ClassFileTransformer {
             className = new ClassReader(classfileBuffer).getClassName();
         }
 
-
         CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(loader);
+
+        if (config.isHybridMode() && combinedExcludedLookup.isClassAlreadyInstrumentedForHybrid(className)) {
+            logger.info("Skipping already instrumented class in hybrid mode: {}", className);
+            return classfileBuffer;
+        }
+
         if (combinedExcludedLookup.isJdkClass(className)) {
             logger.info("Skipping JDK class: {}", className);
             return classfileBuffer;
@@ -101,12 +106,12 @@ class TaintingTransformer implements ClassFileTransformer {
     private byte[] instrumentClassByteArray(byte[] classfileBuffer, ClassLoader loader, String className) {
         byte[] outArray;
         try {
-            outArray = this.instrumenter.instrumentClass(classfileBuffer, new ClassResolver(loader), this.config, loader, false);
+            outArray = this.instrumenter.instrumentClass(classfileBuffer, InstrumentationFactory.createClassResolver(loader), this.config, loader, false);
         } catch (IllegalArgumentException ex) {
             if ("JSR/RET are not supported with computeFrames option".equals(ex.getMessage())) {
                 logger.error("JSR/RET not supported in {}!", className);
                 Utils.logStackTrace(Arrays.asList(ex.getStackTrace()));
-                outArray = this.instrumenter.instrumentClass(classfileBuffer, new ClassResolver(loader), this.config, loader, true);
+                outArray = this.instrumenter.instrumentClass(classfileBuffer, InstrumentationFactory.createClassResolver(loader), this.config, loader, true);
                 logger.error("Finished retrying {}", className);
             } else {
                 logger.error("Instrumentation failed for {}", className);

@@ -41,7 +41,13 @@ public class Configuration {
     @JsonIgnore
     private TaintlossHandler taintlossHandler = null;
 
+    @JsonIgnore
+    private Collection<String> instumentedClasses = null;
+
     private boolean isOfflineInstrumentation = true;
+
+    @XmlElement
+    private boolean isHybridMode = false;
 
     @XmlElement
     private boolean verbose = false;
@@ -180,6 +186,14 @@ public class Configuration {
 
     public void setOfflineInstrumentation(boolean offlineInstrumentation) {
         isOfflineInstrumentation = offlineInstrumentation;
+    }
+
+    public Collection<String> getInstumentedClasses() {
+        return instumentedClasses;
+    }
+
+    public void setInstumentedClasses(Collection<String> instumentedClasses) {
+        this.instumentedClasses = new HashSet<>(instumentedClasses);
     }
 
     public static boolean defaultUseCaching() {
@@ -470,6 +484,14 @@ public class Configuration {
 
     public void setShowWelcomeMessage(boolean showWelcomeMessage) {
         this.showWelcomeMessage = showWelcomeMessage;
+    }
+
+    public boolean isHybridMode() {
+        return isHybridMode;
+    }
+
+    public void setHybridMode(boolean hybridMode) {
+        isHybridMode = hybridMode;
     }
 
     public void addExcludedClass(String clazzName) {

@@ -7,7 +7,7 @@ import com.sap.fontus.utils.Utils;
 
 import java.io.InputStream;
 
-public class ClassResolver {
+public class ClassResolver implements IClassResolver {
     private final ClassLoader loader;
     private static final Logger logger = LogUtils.getLogger();
 
@@ -15,6 +15,7 @@ public class ClassResolver {
         this.loader = loader;
     }
 
+    @Override
     public InputStream resolve(String className) {
         if (className.startsWith("[L") && className.endsWith(";")) {
             className = className.substring(2, className.length() - 1);

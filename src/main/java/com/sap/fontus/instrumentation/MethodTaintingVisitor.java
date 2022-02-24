@@ -30,7 +30,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
     private final String name;
     private final String methodDescriptor;
-    private final ClassResolver resolver;
+    private final IClassResolver resolver;
     /**
      * Some methods are not handled in a generic fashion, one can defined specialized proxies here
      */
@@ -62,7 +62,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     private final Map<FunctionCall, FunctionCall> methodInterfaceProxies;
     private final ClassLoader loader;
 
-    public MethodTaintingVisitor(int acc, String owner, String name, String methodDescriptor, MethodVisitor methodVisitor, ClassResolver resolver, Configuration config, boolean implementsInvocationHandler, InstrumentationHelper instrumentationHelper, CombinedExcludedLookup combinedExcludedLookup, List<DynamicCall> bootstrapMethods, List<LambdaCall> jdkLambdaMethodProxies, String ownerSuperClass, ClassLoader loader, boolean isOwnerInterface, com.sap.fontus.instrumentation.Method caller) {
+    public MethodTaintingVisitor(int acc, String owner, String name, String methodDescriptor, MethodVisitor methodVisitor, IClassResolver resolver, Configuration config, boolean implementsInvocationHandler, InstrumentationHelper instrumentationHelper, CombinedExcludedLookup combinedExcludedLookup, List<DynamicCall> bootstrapMethods, List<LambdaCall> jdkLambdaMethodProxies, String ownerSuperClass, ClassLoader loader, boolean isOwnerInterface, com.sap.fontus.instrumentation.Method caller) {
         super(Opcodes.ASM9, methodVisitor);
         this.resolver = resolver;
         this.owner = owner;

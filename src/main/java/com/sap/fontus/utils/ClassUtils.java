@@ -39,20 +39,11 @@ public class ClassUtils {
     }
 
     public static InputStream getClassInputStream(String internalName, ClassLoader loader) {
-        String resourceName = internalName + ".class";
-        InputStream resource = ClassLoader.getSystemResourceAsStream(resourceName);
-        if (resource == null) {
-            resource = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
-            if (resource == null) {
-                if (loader != null) {
-                    resource = loader.getResourceAsStream(resourceName);
-                }
-            }
-        }
+        InputStream resource = InstrumentationFactory.createClassResolver(loader).resolve(internalName);
         if (resource != null) {
             return resource;
         }
-        throw new RuntimeException("Resource for " + internalName + "couldn't be found");
+        throw new RuntimeException("Resource for " + internalName + " couldn't be found");
     }
 
     public static boolean isInterface(String internalName) {

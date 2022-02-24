@@ -2,6 +2,7 @@ package com.sap.fontus.utils.lookups;
 
 import com.sap.fontus.asm.ClassReaderWithLoaderSupport;
 import com.sap.fontus.asm.ClassResolver;
+import com.sap.fontus.asm.IClassResolver;
 import com.sap.fontus.asm.NopVisitor;
 import com.sap.fontus.utils.ClassUtils;
 import com.sap.fontus.utils.LogUtils;
@@ -27,7 +28,7 @@ public final class AnnotationLookup {
         return AnnotationLookup.LazyHolder.INSTANCE;
     }
 
-    public boolean isAnnotation(String name, String superName, String[] interfaces, ClassResolver resolver) {
+    public boolean isAnnotation(String name, String superName, String[] interfaces, IClassResolver resolver) {
         if (name.startsWith("[")) {
             return false;
         } // Arrays ain't annotations
@@ -41,7 +42,7 @@ public final class AnnotationLookup {
     }
 
     // Deal with caching stuff here
-    private boolean testAndCacheAnnotation(String name, String superName, String[] interfaces, ClassResolver resolver) {
+    private boolean testAndCacheAnnotation(String name, String superName, String[] interfaces, IClassResolver resolver) {
         if (this.annotations.contains(name)) {
             return true;
         } else if (this.noAnnotations.contains(name)) {
@@ -58,7 +59,7 @@ public final class AnnotationLookup {
         }
     }
 
-    private boolean testAnnotation(String className, String superName, String[] interfaces, ClassResolver resolver) {
+    private boolean testAnnotation(String className, String superName, String[] interfaces, IClassResolver resolver) {
         Objects.requireNonNull(resolver);
         Objects.requireNonNull(className);
         boolean isAnnotation = false;
@@ -118,7 +119,7 @@ public final class AnnotationLookup {
         this.annotations.add(name);
     }
 
-    public boolean isAnnotation(String name, ClassResolver resolver) {
+    public boolean isAnnotation(String name, IClassResolver resolver) {
         return this.isAnnotation(name, null, null, resolver);
     }
 

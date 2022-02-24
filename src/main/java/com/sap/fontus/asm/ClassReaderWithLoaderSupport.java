@@ -52,7 +52,7 @@ public class ClassReaderWithLoaderSupport extends org.objectweb.asm.ClassReader 
         throw new UnsupportedOperationException("Can't call constructor without providing a classloader");
     }
 
-    public ClassReaderWithLoaderSupport(ClassResolver resolver, String className) throws IOException {
+    public ClassReaderWithLoaderSupport(IClassResolver resolver, String className) throws IOException {
         this(readStream(resolver.resolve(className), className));
     }
 

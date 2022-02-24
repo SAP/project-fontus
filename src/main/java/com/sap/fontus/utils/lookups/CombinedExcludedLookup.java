@@ -2,16 +2,18 @@ package com.sap.fontus.utils.lookups;
 
 import com.sap.fontus.Constants;
 import com.sap.fontus.TaintStringHelper;
-import com.sap.fontus.asm.ClassResolver;
+import com.sap.fontus.asm.IClassResolver;
+import com.sap.fontus.config.Configuration;
+import com.sap.fontus.utils.InstrumentationFactory;
 import com.sap.fontus.utils.Utils;
 import org.objectweb.asm.Type;
 
 public class CombinedExcludedLookup {
-    private final ClassResolver resolver;
+    private final IClassResolver resolver;
     private final ClassLoader classLoader;
 
     public CombinedExcludedLookup(ClassLoader classLoader) {
-        this.resolver = new ClassResolver(classLoader);
+        this.resolver = InstrumentationFactory.createClassResolver(classLoader);
         this.classLoader = classLoader;
     }
 
@@ -57,6 +59,10 @@ public class CombinedExcludedLookup {
 
     public boolean isProxyClass(String internalName, byte[] classBuffer) {
         return ProxyLookup.isProxyClass(internalName, classBuffer);
+    }
+
+    public boolean isClassAlreadyInstrumentedForHybrid(String internalName) {
+        return Configuration.getConfiguration().getInstumentedClasses().contains(internalName);
     }
 
     public boolean isFontusClass(String internalName) {

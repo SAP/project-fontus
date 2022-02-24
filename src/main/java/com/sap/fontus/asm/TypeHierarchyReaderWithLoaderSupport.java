@@ -8,9 +8,9 @@ import java.io.IOException;
 
 public class TypeHierarchyReaderWithLoaderSupport extends TypeHierarchyReader {
 
-    private final ClassResolver resolver;
+    private final IClassResolver resolver;
 
-    public TypeHierarchyReaderWithLoaderSupport(ClassResolver resolver) {
+    public TypeHierarchyReaderWithLoaderSupport(IClassResolver resolver) {
         this.resolver = resolver;
     }
 

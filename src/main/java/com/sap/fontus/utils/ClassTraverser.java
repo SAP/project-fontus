@@ -1,9 +1,6 @@
 package com.sap.fontus.utils;
 
-import com.sap.fontus.asm.ClassReaderWithLoaderSupport;
-import com.sap.fontus.asm.ClassResolver;
-import com.sap.fontus.asm.NopVisitor;
-import com.sap.fontus.asm.TypeHierarchyReaderWithLoaderSupport;
+import com.sap.fontus.asm.*;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import com.sap.fontus.instrumentation.Method;
 import org.mutabilitydetector.asm.typehierarchy.TypeHierarchy;
@@ -36,7 +33,7 @@ public class ClassTraverser {
         return fields;
     }
 
-    public void readMethods(Type cls, ClassResolver resolver) {
+    public void readMethods(Type cls, IClassResolver resolver) {
         if (combinedExcludedLookup.isJdkClass(cls.getInternalName())) {
             Class<?> clazz = ClassUtils.findLoadedClass(cls.getInternalName());
 
@@ -81,7 +78,7 @@ public class ClassTraverser {
      *
      * @param classToDiscover Class to discover
      */
-    public void readAllJdkMethods(String classToDiscover, ClassResolver resolver) {
+    public void readAllJdkMethods(String classToDiscover, IClassResolver resolver) {
         TypeHierarchyReaderWithLoaderSupport typeHierarchyReader = new TypeHierarchyReaderWithLoaderSupport(resolver);
         for (Type cls = Type.getObjectType(classToDiscover); cls != null; cls = typeHierarchyReader.getSuperClass(cls)) {
             if (this.combinedExcludedLookup.isPackageExcludedOrJdk(cls.getInternalName())) {
@@ -178,7 +175,7 @@ public class ClassTraverser {
      * @param superName                 Super class of the interface implementing one
      * @param directInheritedInterfaces Array with interface names as QN
      */
-    public void addNotContainedJdkInterfaceMethods(String className, String superName, String[] directInheritedInterfaces, ClassResolver resolver, ClassLoader loader) {
+    public void addNotContainedJdkInterfaceMethods(String className, String superName, String[] directInheritedInterfaces, IClassResolver resolver, ClassLoader loader) {
         if (directInheritedInterfaces == null || directInheritedInterfaces.length == 0) {
             return;
         }

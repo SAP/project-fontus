@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public final class Utils {
-
-
     private static final CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup();
     private static final Logger logger = LogUtils.getLogger();
 
@@ -155,5 +153,10 @@ public final class Utils {
             }
         }
         return false;
+    }
+
+    public static String replaceClassFileSuffix(String classPath) {
+        int index = classPath.lastIndexOf(Constants.CLASS_FILE_SUFFIX);
+        return classPath.substring(0, index);
     }
 }

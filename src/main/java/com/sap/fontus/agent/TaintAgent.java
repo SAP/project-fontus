@@ -14,6 +14,7 @@ public class TaintAgent {
 
     public static void premain(String args, Instrumentation inst) {
         instrumentation = inst;
+        InstrumentationConfiguration.init(null, null);
         Configuration.parseAgent(args);
 
         if (Configuration.getConfiguration().isShowWelcomeMessage()) {
@@ -40,7 +41,7 @@ public class TaintAgent {
         // Bypass for offline and tests
         if (instrumentation == null) {
             try {
-                return Class.forName(className);
+                return Class.forName(className, false, null);
             } catch (ClassNotFoundException e) {
                 return null;
             }

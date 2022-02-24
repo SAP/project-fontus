@@ -4,7 +4,9 @@ import com.sap.fontus.Constants;
 import com.sap.fontus.asm.ClassResolver;
 import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.asm.FunctionCall;
+import com.sap.fontus.asm.IClassResolver;
 import com.sap.fontus.utils.ClassTraverser;
+import com.sap.fontus.utils.InstrumentationFactory;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
@@ -52,7 +54,7 @@ public class LambdaCall implements Serializable {
 
     public Descriptor getProxyDescriptor(ClassLoader loader, InstrumentationHelper instrumentationHelper) {
         CombinedExcludedLookup lookup = new CombinedExcludedLookup(loader);
-        ClassResolver classResolver = new ClassResolver(loader);
+        IClassResolver classResolver = InstrumentationFactory.createClassResolver(loader);
         ClassTraverser clsTrvs = new ClassTraverser(new CombinedExcludedLookup(null));
         clsTrvs.readMethods(this.functionalInterface, classResolver);
         Set<Method> allMethods = clsTrvs.getMethods();
