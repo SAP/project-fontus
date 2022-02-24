@@ -19,9 +19,11 @@ import com.sap.fontus.taintaware.unified.IASTaintHandler;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
+import java.util.*;
 
 public class OpenOlatTaintHandler extends IASTaintHandler {
+
+    private static final Map<String, Collection<AllowedPurpose>> allowedPurposes = new HashMap<>();
 
     /**
      * Sets Taint Information in OpenOLAT according to request information.
@@ -42,9 +44,12 @@ public class OpenOlatTaintHandler extends IASTaintHandler {
             //System.out.printf("Servlet Request: %s%n", request.toString());
             ReflectedSession rs = request.getSession();
             long userId = getSessionUserId(rs);
-            DataSubject ds = new SimpleDataSubject(String.valueOf(userId));
+            String id = String.valueOf(userId);
+            DataSubject ds = new SimpleDataSubject(id);
+            Collection<AllowedPurpose> allowed = Utils.getPurposesFromRequest(request);
+            allowedPurposes.put(id, allowed);
             GdprMetadata metadata = new SimpleGdprMetadata(
-                    Utils.getPurposesFromRequest(request),
+                    allowed,
                     ProtectionLevel.Normal,
                     ds,
                     new SimpleDataId(),
@@ -78,8 +83,10 @@ public class OpenOlatTaintHandler extends IASTaintHandler {
             return new IASBasicMetadata(taintSource);
         }
         DataSubject ds = new SimpleDataSubject(String.valueOf(userId));
+        Collection<AllowedPurpose> allowed = Utils.getPurposesFromRequest(request);
+        allowedPurposes.put(String.valueOf(userId), allowed);
         GdprMetadata metadata = new SimpleGdprMetadata(
-                Utils.getPurposesFromRequest(request),
+                allowed,
                 ProtectionLevel.Normal,
                 ds,
                 new SimpleDataId(),
@@ -126,9 +133,12 @@ public class OpenOlatTaintHandler extends IASTaintHandler {
             System.err.printf("The string '%s' should be tainted but it isn't!!!!%n", taintAware);
             Object identity = Utils.invokeGetter(parent, "getIdentity", 2);
             long userId = (long) Utils.invokeGetter(identity, "getKey");
-            DataSubject ds = new SimpleDataSubject(String.valueOf(userId));
+            String id = String.valueOf(userId);
+            DataSubject ds = new SimpleDataSubject(id);
+            Collection<AllowedPurpose> allowed = allowedPurposes.getOrDefault(id, new ArrayList<>());
+
             GdprMetadata metadata = new SimpleGdprMetadata(
-                    new ArrayList<>(),
+                    allowed,
                     ProtectionLevel.Normal,
                     ds,
                     new SimpleDataId(),
