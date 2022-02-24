@@ -4,8 +4,9 @@ package com.sap.fontus.gdpr.petclinic;
 import com.owlike.genson.Genson;
 import com.owlike.genson.GensonBuilder;
 import com.owlike.genson.reflect.VisibilityFilter;
-import com.sap.fontus.gdpr.metadata.AllowedPurpose;
 
+
+import java.time.Instant;
 import java.util.*;
 
 public class ConsentCookie {
@@ -13,29 +14,38 @@ public class ConsentCookie {
         return this.purposes;
     }
 
+    public Instant getCreated() {
+        return Instant.ofEpochSecond(this.created);
+    }
+
     public void setPurposes(List<ConsentCookie.Purpose> purposes) {
         this.purposes = purposes;
     }
+    public void setCreated(long created) {
+        this.created = created;
+    }
 
     private List<ConsentCookie.Purpose> purposes;
+    private long created;
 
     public ConsentCookie() {
         this.purposes = new ArrayList<>(1);
+        this.created = Instant.now().getEpochSecond();
     }
 
     @Override
     public String toString() {
         return "ConsentCookie{" +
-                "purposes=" + purposes +
+                "purposes=" + purposes + ", " +
+                "created=" + this.created +
                 '}';
     }
 
     public static ConsentCookie parse(String encoded) {
         byte[] bs = Base64.getDecoder().decode(encoded);
         String value = new String(bs);
-        Genson genson = new GensonBuilder().useClassMetadata(true).useRuntimeType(true).useFields(true, VisibilityFilter.PRIVATE).create();
-        ConsentCookie cc = genson.deserialize(value, ConsentCookie.class);
-        return cc;
+        Genson genson = new GensonBuilder().useFields(true, VisibilityFilter.PRIVATE).create();
+        return genson.deserialize(value, ConsentCookie.class);
     }
 
     private static final String cookieName = "GDPRCONSENT";
@@ -69,8 +79,8 @@ public class ConsentCookie {
         @Override
         public String toString() {
             return "Purpose{" +
-                    "id='" + id + '\'' +
-                    ", vendors=" + vendors +
+                    "id='" + this.id + '\'' +
+                    ", vendors=" + this.vendors +
                     '}';
         }
     }
