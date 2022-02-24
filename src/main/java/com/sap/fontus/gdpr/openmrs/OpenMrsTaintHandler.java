@@ -117,7 +117,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
                 }
             }
 
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+        } catch (Exception e) {
             System.err.println("Exception trying to extract taint metadata: " + e.getMessage());
             e.printStackTrace();
         }
