@@ -18,6 +18,14 @@ public interface ParameterTransformation {
      */
     void transformParameter(int index, String type, MethodTaintingVisitor visitor);
 
+    /**
+     * Does the given parameter actually need transforming? In some cases the transformation
+     * may not apply, if no operation applies at all, we can reduce the number of bytecode
+     * operations required
+     * @param index The index of the parameter for this method
+     * @param type The type of parameter
+     * @return Does the transformation apply
+     */
     boolean requireParameterTransformation(int index, String type);
 
 }
