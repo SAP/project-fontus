@@ -191,6 +191,8 @@ public final class IASMatcher {
 
                 taintInformation = taintInformation.replaceTaint(start, end, replacement.getTaintInformationInitialized().copy());
             }
+        } else {
+            taintInformation.resize(replacedStr.length());
         }
 
         return new IASString(replacedStr, taintInformation);
