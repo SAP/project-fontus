@@ -58,4 +58,9 @@ public class JdkMethodTransformer implements ParameterTransformation, ReturnTran
         return true;
     }
 
+    @Override
+    public boolean requireParameterVariableLocals() {
+        return false;
+    }
+
 }

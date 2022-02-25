@@ -69,6 +69,15 @@ public class MethodParameterTransformer {
         return false;
     }
 
+    public boolean needsParametersAsLocalVariables() {
+        for (ReturnTransformation r : returnTransformations) {
+            if (r.requireParameterVariableLocals()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean needsReturnTransformation() {
         for (ReturnTransformation r : returnTransformations) {
             if (r.requiresReturnTransformation(descriptor)) {
@@ -97,7 +106,7 @@ public class MethodParameterTransformer {
      */
     public void modifyStackParameters(int nUsedLocalVariables) {
 
-        if (!this.needsParameterTransformation()) {
+        if (!this.needsParameterTransformation() && !this.needsParametersAsLocalVariables()) {
             return;
         }
 

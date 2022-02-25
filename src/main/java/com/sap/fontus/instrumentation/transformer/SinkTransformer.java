@@ -71,4 +71,9 @@ public class SinkTransformer extends SourceOrSinkTransformer implements Paramete
         }
         return (this.sink.findParameter(-1) != null);
     }
+
+    @Override
+    public boolean requireParameterVariableLocals() {
+        return false;
+    }
 }

@@ -20,4 +20,9 @@ public class AlwaysApplyReturnGenericTransformer implements ReturnTransformation
     public boolean requiresReturnTransformation(Descriptor desc) {
         return true;
     }
+
+    @Override
+    public boolean requireParameterVariableLocals() {
+        return false;
+    }
 }

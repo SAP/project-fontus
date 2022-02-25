@@ -15,7 +15,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.Opcodes;
 import com.sap.fontus.utils.LogUtils;
 
-public class SourceTransformer extends SourceOrSinkTransformer implements ReturnTransformation, ParameterTransformation {
+public class SourceTransformer extends SourceOrSinkTransformer implements ReturnTransformation {
     private static final Logger logger = LogUtils.getLogger();
 
     private final Source source;
@@ -74,14 +74,8 @@ public class SourceTransformer extends SourceOrSinkTransformer implements Return
     }
 
     @Override
-    public void transformParameter(int index, String type, MethodTaintingVisitor visitor) {
-        // Deliberately leave this as a NOP in order to make sure method parameters are saved to local variables
-    }
-
-    @Override
-    public boolean requireParameterTransformation(int index, String type) {
-        // Return true here even though no transform is performed, so that
-        // the local variables are available for the taint handler
+    public boolean requireParameterVariableLocals() {
+        // Here we need the method inputs to be added as local parameters
         return true;
     }
 
