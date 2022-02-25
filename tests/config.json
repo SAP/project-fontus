@@ -339,6 +339,10 @@
     {
       "name": "UTF8 String Constant",
       "source": "StringConstantUtf8.java"
+    },
+    {
+      "name": "Large method test",
+      "source": "LargeMethod.java"
     }
   ],
   "excluded_tests": [
