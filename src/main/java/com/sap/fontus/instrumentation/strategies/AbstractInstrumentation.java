@@ -209,6 +209,11 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
+    public boolean needsJdkMethodParameterConversion(Type parameter) {
+        return (this.origType.equals(parameter)) || (this.getOrigArrayType().equals(parameter));
+    }
+
+    @Override
     public String instrumentSuperClass(String superClass) {
         return superClass;
     }

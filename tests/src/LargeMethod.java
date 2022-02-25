@@ -1456,16 +1456,13 @@ public class LargeMethod {
         largeHashMap.put("zopf", 0x1D56B);
         largeHashMap.put("zscr", 0x1D4CF);
         largeHashMap.put("zwj", 0x0200D);
-        largeHashMap.put("zwnj", 0x0200C);        
+        largeHashMap.put("zwnj", 0x0200C);
 
         largeUnmodifiableHashMap = Collections.unmodifiableMap(largeHashMap);
     }
 
     public static void main(String[] args) {
-
-        for (Map.Entry<String, Integer> entry : largeUnmodifiableHashMap.entrySet()) {
-            System.out.println(entry.getKey() + "/" + entry.getValue());
-        }
+        System.out.println(largeUnmodifiableHashMap.size());
     }
 
 }

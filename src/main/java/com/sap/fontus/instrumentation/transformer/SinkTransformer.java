@@ -1,7 +1,6 @@
 package com.sap.fontus.instrumentation.transformer;
 
 import com.sap.fontus.asm.Descriptor;
-import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.Sink;
 import com.sap.fontus.Constants;
 import com.sap.fontus.instrumentation.MethodTaintingVisitor;
@@ -25,7 +24,7 @@ public class SinkTransformer extends SourceOrSinkTransformer implements Paramete
     }
 
     @Override
-    public void transform(int index, String type, MethodTaintingVisitor mv) {
+    public void transformParameter(int index, String type, MethodTaintingVisitor mv) {
 
         if (this.sink == null) {
             return;
@@ -52,8 +51,24 @@ public class SinkTransformer extends SourceOrSinkTransformer implements Paramete
     }
 
     @Override
-    public void transform(MethodTaintingVisitor mv, Descriptor desc) {
+    public boolean requireParameterTransformation(int index, String type) {
+        if (this.sink == null) {
+            return false;
+        }
+        return (this.sink.findParameter(index) != null);
+    }
+
+    @Override
+    public void transformReturnValue(MethodTaintingVisitor mv, Descriptor desc) {
         // Also add a transformation for return types
-        transform(-1, desc.getReturnType(), mv);
+        transformParameter(-1, desc.getReturnType(), mv);
+    }
+
+    @Override
+    public boolean requiresReturnTransformation(Descriptor desc) {
+        if (this.sink == null) {
+            return false;
+        }
+        return (this.sink.findParameter(-1) != null);
     }
 }

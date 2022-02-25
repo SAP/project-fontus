@@ -12,7 +12,12 @@ public class AlwaysApplyReturnGenericTransformer implements ReturnTransformation
     }
 
     @Override
-    public void transform(MethodTaintingVisitor visitor, Descriptor desc) {
+    public void transformReturnValue(MethodTaintingVisitor visitor, Descriptor desc) {
         visitor.visitMethodInsn(converter);
+    }
+
+    @Override
+    public boolean requiresReturnTransformation(Descriptor desc) {
+        return true;
     }
 }

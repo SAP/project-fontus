@@ -27,7 +27,7 @@ public class SourceTransformer extends SourceOrSinkTransformer implements Return
     }
 
     @Override
-    public void transform(MethodTaintingVisitor visitor, Descriptor desc) {
+    public void transformReturnValue(MethodTaintingVisitor visitor, Descriptor desc) {
         FunctionCall fc = this.source.getFunction();
         logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", fc.getOwner(), fc.getName(), fc.getDescriptor(), Type.getInternalName(IASString.class));
 
@@ -69,7 +69,20 @@ public class SourceTransformer extends SourceOrSinkTransformer implements Return
     }
 
     @Override
-    public void transform(int index, String type, MethodTaintingVisitor visitor) {
+    public boolean requiresReturnTransformation(Descriptor desc) {
+        return true;
+    }
+
+    @Override
+    public void transformParameter(int index, String type, MethodTaintingVisitor visitor) {
         // Deliberately leave this as a NOP in order to make sure method parameters are saved to local variables
     }
+
+    @Override
+    public boolean requireParameterTransformation(int index, String type) {
+        // Return true here even though no transform is performed, so that
+        // the local variables are available for the taint handler
+        return true;
+    }
+
 }

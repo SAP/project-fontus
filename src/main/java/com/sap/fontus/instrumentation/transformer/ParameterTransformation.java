@@ -16,5 +16,8 @@ public interface ParameterTransformation {
      * @param type The type descriptor of the parameter
      * @param visitor The method visitor
      */
-    void transform(int index, String type, MethodTaintingVisitor visitor);
+    void transformParameter(int index, String type, MethodTaintingVisitor visitor);
+
+    boolean requireParameterTransformation(int index, String type);
+
 }

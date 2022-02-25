@@ -4,5 +4,9 @@ import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.instrumentation.MethodTaintingVisitor;
 
 public interface ReturnTransformation {
-    void transform(MethodTaintingVisitor visitor, Descriptor desc);
+
+    void transformReturnValue(MethodTaintingVisitor visitor, Descriptor desc);
+
+    boolean requiresReturnTransformation(Descriptor desc);
+
 }

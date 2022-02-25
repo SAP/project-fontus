@@ -22,17 +22,17 @@ public class JdkMethodTransformer implements ParameterTransformation, ReturnTran
     }
 
     @Override
-    public void transform(int index, String typeString, MethodTaintingVisitor visitor) {
-        Type type = Type.getType(typeString);
-
-        if (this.instrumentationHelper.insertJdkMethodParameterConversion(visitor.getParentVisitor(), type)) {
-            return;
-        }
-
+    public void transformParameter(int index, String typeString, MethodTaintingVisitor visitor) {
+        this.instrumentationHelper.insertJdkMethodParameterConversion(visitor.getParentVisitor(), Type.getType(typeString));
     }
 
     @Override
-    public void transform(MethodTaintingVisitor visitor, Descriptor desc) {
+    public boolean requireParameterTransformation(int index, String type) {
+        return this.instrumentationHelper.needsJdkMethodParameterConversion(Type.getType(type));
+    }
+
+    @Override
+    public void transformReturnValue(MethodTaintingVisitor visitor, Descriptor desc) {
         this.instrumentationHelper.instrumentStackTop(visitor.getParentVisitor(), Type.getType(desc.getReturnType()));
 
         FunctionCall converter = this.configuration.getConverterForReturnValue(this.call);
@@ -51,6 +51,11 @@ public class JdkMethodTransformer implements ParameterTransformation, ReturnTran
             visitor.visitMethodInsn(convert);
             visitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(desc.getReturnType()).getInternalName());
         }
+    }
+
+    @Override
+    public boolean requiresReturnTransformation(Descriptor desc) {
+        return true;
     }
 
 }
