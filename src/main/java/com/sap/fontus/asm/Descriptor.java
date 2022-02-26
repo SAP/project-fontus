@@ -88,7 +88,9 @@ public class Descriptor {
 
     public String toDescriptor() {
         String params = String.join("", this.parameters);
-        return String.format("(%s)%s", params, this.returnType);
+        // Terrible performance of String.format therefore manual building of string
+        // return String.format("(%s)%s", params, this.returnType);
+        return "(" + params + ")" + this.returnType;
     }
 
     public Type toAsmMethodType() {
