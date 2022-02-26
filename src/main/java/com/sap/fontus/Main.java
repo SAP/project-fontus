@@ -7,6 +7,8 @@ import com.sap.fontus.config.Configuration;
 import com.sap.fontus.utils.IOUtils;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
+import com.sap.fontus.utils.offline.OfflineClassInstrumenter;
+import com.sap.fontus.utils.offline.OfflineJarInstrumenter;
 import picocli.CommandLine;
 
 import java.io.*;

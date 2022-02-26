@@ -1,4 +1,4 @@
-package com.sap.fontus;
+package com.sap.fontus.utils.offline;
 
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.instrumentation.Instrumenter;

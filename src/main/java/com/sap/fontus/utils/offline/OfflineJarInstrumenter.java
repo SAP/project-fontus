@@ -1,5 +1,6 @@
-package com.sap.fontus;
+package com.sap.fontus.utils.offline;
 
+import com.sap.fontus.Constants;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.utils.IOUtils;
 import com.sap.fontus.utils.LogUtils;
