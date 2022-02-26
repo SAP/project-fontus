@@ -14,7 +14,7 @@ import java.io.*;
 public class OfflineClassInstrumenter {
     private static final Logger logger = LogUtils.getLogger();
     private final Instrumenter instrumenter = new Instrumenter();
-    private Configuration configuration;
+    private final Configuration configuration;
 
     public OfflineClassInstrumenter(Configuration configuration) {
         this.configuration = configuration;

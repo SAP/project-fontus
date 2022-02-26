@@ -62,6 +62,13 @@ public final class Main implements Callable<Void> {
     )
     private TaintMethod taintMethod;
 
+    @CommandLine.Option(
+            names = {"-l", "--logging"},
+            paramLabel = "Logging",
+            description = "Turns on logging"
+    )
+    private boolean logging;
+
     private Configuration configuration;
 
     private OfflineJarInstrumenter offlineJarInstrumenter;
@@ -104,6 +111,7 @@ public final class Main implements Callable<Void> {
     private void loadConfiguration() {
         this.configuration = ConfigurationLoader.loadAndMergeConfiguration(this.configFile, this.taintMethod);
         Configuration.setConfiguration(configuration);
+        Configuration.getConfiguration().setLoggingEnabled(this.logging);
     }
 
     @Override

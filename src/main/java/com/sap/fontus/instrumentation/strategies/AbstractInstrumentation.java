@@ -1,5 +1,7 @@
 package com.sap.fontus.instrumentation.strategies;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.sap.fontus.Constants;
 import com.sap.fontus.TriConsumer;
 import com.sap.fontus.asm.Descriptor;
@@ -35,11 +37,11 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     public AbstractInstrumentation(Type origType, Type instrumentedType, InstrumentationHelper instrumentationHelper, String taintedToOrig) {
         this.origType = origType;
         this.instrumentedType = instrumentedType;
-        this.qnMatcher = Pattern.compile(this.origType.getInternalName(), Pattern.LITERAL);
-        this.qnInstrumentedMatcher = Pattern.compile(this.instrumentedType.getInternalName(), Pattern.LITERAL);
+        this.qnMatcher = literalPatternCache.get(this.origType.getInternalName());
+        this.qnInstrumentedMatcher = literalPatternCache.get(this.instrumentedType.getInternalName());
         // This one is to match against the public class name with dots, e.g. "java.lang.String"
-        this.qnMatcherWithDotsInsteadOfSlashes = Pattern.compile(Utils.slashToDot(this.origType.getInternalName()), Pattern.LITERAL);
-        this.descPattern = Pattern.compile(this.origType.getDescriptor());
+        this.qnMatcherWithDotsInsteadOfSlashes = literalPatternCache.get(Utils.slashToDot(this.origType.getInternalName()));
+        this.descPattern = patternCache.get(this.origType.getDescriptor());
         this.instrumentationHelper = instrumentationHelper;
         this.taintedToOrig = taintedToOrig;
         this.methodsToRename.put(Constants.ToString, Constants.TO_TSTRING);
@@ -175,7 +177,7 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
         if (this.origType.equals(Type.getObjectType(owner))) {
             newOwner = this.instrumentedType.getInternalName();
         }
-        Matcher matcher = Pattern.compile(this.origType.getDescriptor()).matcher(descriptor);
+        Matcher matcher = patternCache.get(this.origType.getDescriptor()).matcher(descriptor);
         if (matcher.find()) {
             if (this.combinedExcludedLookup.isPackageExcludedOrJdk(newOwner)) {
                 mv.visitFieldInsn(opcode, newOwner, name, descriptor);
@@ -224,4 +226,7 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     protected Type getInstrumentedArrayType(int dimensions) {
         return AbstractInstrumentation.getArrayType(this.instrumentedType, dimensions);
     }
+
+    private static final LoadingCache<String, Pattern> patternCache = Caffeine.newBuilder().build(Pattern::compile);
+    private static final LoadingCache<String, Pattern> literalPatternCache = Caffeine.newBuilder().build((str) -> Pattern.compile(str, Pattern.LITERAL));
 }

@@ -4,9 +4,7 @@ import com.sap.fontus.config.Configuration;
 import com.sap.fontus.utils.IOUtils;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
-import com.sap.fontus.utils.Utils;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.objectweb.asm.ClassReader;
 
 import java.io.*;
@@ -18,7 +16,6 @@ import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 import java.util.zip.CRC32;
-import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 
 public class OfflineJarInstrumenter {
@@ -26,11 +23,9 @@ public class OfflineJarInstrumenter {
     private static final Logger logger = LogUtils.getLogger();
 
     private final List<String> classes = new ArrayList<>();
-    private final Configuration configuration;
     private final OfflineClassInstrumenter offlineClassInstrumenter;
 
     public OfflineJarInstrumenter(Configuration configuration) {
-        this.configuration = configuration;
         this.offlineClassInstrumenter = new OfflineClassInstrumenter(configuration);
     }
 
@@ -63,6 +58,9 @@ public class OfflineJarInstrumenter {
                         this.classes.add(getName(entryBytes));
                     } catch (Exception e) {
                         logger.error("Class %s could not be instrumented: %s", jei.getName(), e);
+                        JarEntry jeo = createJarEntry(jei.getName(), entryBytes);
+                        jos.putNextEntry(jeo);
+                        jos.write(entryBytes);
                     }
                 } else if (jei.getName().endsWith(Constants.JAR_FILE_SUFFIX)) {
                     ByteArrayOutputStream innerJarBos = new ByteArrayOutputStream();
@@ -75,18 +73,11 @@ public class OfflineJarInstrumenter {
                     innerJos.close();
                     byte[] innerJarBytes = innerJarBos.toByteArray();
                     JarEntry jeo = createJarEntry(jei.getName(), innerJarBytes);
-//                    if (root) {
-//                        jeo.setCompressedSize(innerJarBytes.length);
-//                    }
-//                    jeo.setComment("UNPACK:" + DigestUtils.sha1Hex(innerJarBytes));
                     jos.putNextEntry(jeo);
 
                     copySingleEntry(new ByteArrayInputStream(innerJarBytes), jos);
 
                     innerJos.close();
-//                    JarEntry jeo = createJarEntry(jei.getName(), entryBytes);
-//                    jos.putNextEntry(jeo);
-//                    jos.write(entryBytes);
                 } else {
                     JarEntry jeo = createJarEntry(jei.getName(), entryBytes);
                     jos.putNextEntry(jeo);
@@ -148,12 +139,12 @@ public class OfflineJarInstrumenter {
                 jos.closeEntry();
             }
 
-//            jos.setLevel(Deflater.NO_COMPRESSION);
             jos.setMethod(ZipEntry.STORED);
 
             this.instrumentJarFile(jis, jos, true);
         }
 
+        jos.flush();
         jos.close();
 
         logger.info("Writing transformed jar file to: {}", output.getAbsolutePath());

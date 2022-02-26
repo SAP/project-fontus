@@ -26,8 +26,21 @@ public class Descriptor {
     }
 
     public Descriptor(Type returnType, Type... arguments) {
-        this.parameters = Arrays.stream(arguments).map(Type::getDescriptor).collect(Collectors.toList());
+        // Stopped using streams because it took 7% of total performance
+        // this.parameters = Arrays.stream(arguments).map(Type::getDescriptor).collect(Collectors.toList());
+        this.parameters = convertTypeArrayToStringList(arguments);
         this.returnType = returnType.getDescriptor();
+    }
+
+    private List<String> convertTypeArrayToStringList(Type[] arguments) {
+        if (arguments == null) {
+            return new ArrayList<>(0);
+        }
+        List<String> argumentStrings = new ArrayList<>(arguments.length);
+        for (Type t : arguments) {
+            argumentStrings.add(t.getDescriptor());
+        }
+        return argumentStrings;
     }
 
     public static String replaceSuffix(String s, String from, String to) {
@@ -40,7 +53,12 @@ public class Descriptor {
     }
 
     public Descriptor replaceType(String from, String to) {
-        List<String> replaced = this.parameters.stream().map(str -> replaceSuffix(str, from, to)).collect(Collectors.toList());
+        // Stopped using streams because it took 7% of total performance
+        // List<String> replaced = this.parameters.stream().map(str -> replaceSuffix(str, from, to)).collect(Collectors.toList());
+        List<String> replaced = new ArrayList<>(this.parameters.size());
+        for (String param : this.parameters) {
+            replaced.add(replaceSuffix(param, from, to));
+        }
         String ret = replaceSuffix(this.returnType, from, to);
         return new Descriptor(replaced, ret);
     }

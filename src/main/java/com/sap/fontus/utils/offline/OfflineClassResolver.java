@@ -17,7 +17,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
 public class OfflineClassResolver implements IClassResolver {
-    private ClassResolver classResolver;
+    private final ClassResolver classResolver;
     private Map<String, byte[]> classes;
 
     public OfflineClassResolver(ClassResolver resolver) {
@@ -54,18 +54,13 @@ public class OfflineClassResolver implements IClassResolver {
         }
         className = Utils.dotToSlash(className);
 
-        InputStream inputStream = this.classResolver.resolve(className);
-        if (inputStream != null) {
-            return inputStream;
-        }
-
         byte[] bytes = this.classes.get(className);
 
-        if (bytes == null) {
-            return null;
+        if (bytes != null) {
+            return new ByteArrayInputStream(bytes);
         }
 
-        return new ByteArrayInputStream(bytes);
+        return this.classResolver.resolve(className);
     }
 
     private void findClassInJarFile(File jar, Map<String, byte[]> classes) {
