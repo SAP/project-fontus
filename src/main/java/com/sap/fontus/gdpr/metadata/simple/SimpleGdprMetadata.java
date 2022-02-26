@@ -13,7 +13,7 @@ public class SimpleGdprMetadata extends GdprMetadataBase {
     private DataSubject dataSubject;
     private DataId dataId;
     private boolean portability;
-    private boolean consent;
+    private boolean processingUnrestricted;
     private Identifiability identifiability;
 
     public SimpleGdprMetadata() {
@@ -22,7 +22,7 @@ public class SimpleGdprMetadata extends GdprMetadataBase {
         this.dataSubject = null;
         this.dataId = null;
         this.portability = false;
-        this.consent = false;
+        this.processingUnrestricted = false;
         this.identifiability = Identifiability.Undefined;
     }
 
@@ -32,7 +32,7 @@ public class SimpleGdprMetadata extends GdprMetadataBase {
         this.dataSubject = dataSubject;
         this.dataId = dataId;
         this.portability = portability;
-        this.consent = consent;
+        this.processingUnrestricted = consent;
         this.identifiability = identifiability;
     }
 
@@ -62,13 +62,18 @@ public class SimpleGdprMetadata extends GdprMetadataBase {
     }
 
     @Override
-    public boolean isConsentGiven() {
-        return consent;
+    public boolean isProcessingUnrestricted() {
+        return processingUnrestricted;
     }
 
     @Override
-    public Identifiability isIdentifiabible() {
+    public Identifiability isIdentifiable() {
         return identifiability;
+    }
+
+    @Override
+    public void setProtectionLevel(ProtectionLevel protectionLevel) {
+        this.protectionLevel = protectionLevel;
     }
 
     @Override
@@ -76,12 +81,12 @@ public class SimpleGdprMetadata extends GdprMetadataBase {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SimpleGdprMetadata that = (SimpleGdprMetadata) o;
-        return portability == that.portability && consent == that.consent && Objects.equals(allowedPurposes, that.allowedPurposes) && protectionLevel == that.protectionLevel && Objects.equals(dataSubject, that.dataSubject) && Objects.equals(dataId, that.dataId) && identifiability == that.identifiability;
+        return portability == that.portability && processingUnrestricted == that.processingUnrestricted && Objects.equals(allowedPurposes, that.allowedPurposes) && protectionLevel == that.protectionLevel && Objects.equals(dataSubject, that.dataSubject) && Objects.equals(dataId, that.dataId) && identifiability == that.identifiability;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(allowedPurposes, protectionLevel, dataSubject, dataId, portability, consent, identifiability);
+        return Objects.hash(allowedPurposes, protectionLevel, dataSubject, dataId, portability, processingUnrestricted, identifiability);
     }
 
 }

@@ -38,6 +38,11 @@ public class SimpleAllowedPurpose implements AllowedPurpose {
     }
 
     @Override
+    public void setExpiryDate(ExpiryDate expiryDate) {
+        this.expiryDate = expiryDate;
+    }
+
+    @Override
     public Purpose getAllowedPurpose() {
         return purpose;
     }

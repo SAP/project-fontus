@@ -232,6 +232,10 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASStringUtils.class), "comparing", "(Ljava/util/function/Function;Ljava/util/Comparator;)Ljava/util/Comparator;", false));
         this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "org/olat/core/util/StringHelper", "cleanUTF8ForXml", "(Ljava/lang/String;)Ljava/lang/String;", false),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASStringUtils.class), "cleanUTF8ForXml", "(Lcom/sap/fontus/taintaware/unified/IASString;)Lcom/sap/fontus/taintaware/unified/IASString;", false));
+	// Add this just to prevent re-casting the security provider as an IASProperties
+        this.methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/security/Security", "getProvider", "(Ljava/lang/String;)Ljava/security/Provider;", false),
+                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASSecurity.class), "getProvider", "(Lcom/sap/fontus/taintaware/unified/IASString;)Ljava/security/Provider;", false));
+
     }
 
     private void fillInterfaceProxies() {
@@ -357,7 +361,17 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         if (!this.isRelevantMethodHandleInvocation(fc) && this.rewriteParametersAndReturnType(fc)) {
             return;
         }
-
+        boolean passThrough = this.config.shouldPassThroughTaint(fc);
+        if(passThrough) {
+            // stack: object, TString -> Object, TString, TString
+            super.visitInsn(Opcodes.DUP);
+            // stack: Object, TString, TString -> Object, TString, IASTaintInformationable
+            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(IASString.class), "getTaintInformation", String.format("()L%s;", Type.getInternalName(IASTaintInformationable.class)), false);
+            // stack: Object, TString, IASTaintInformationable -> IASTaintInformationable, Object, TString, IASTaintInformationable
+            super.visitInsn(Opcodes.DUP_X2);
+            // stack: IASTaintInformationable, Object, TString, IASTaintInformationable -> IASTaintInformationable, Object, TString
+            super.visitInsn(Opcodes.POP);
+        }
         String desc = this.instrumentationHelper.instrumentForNormalCall(fc.getDescriptor());
         // TODO: hack that we can't reset desc for fc here
         if (desc.equals(fc.getDescriptor())) {
@@ -366,6 +380,16 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             logger.info("Rewriting invoke containing String-like type [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(fc.getOpcode()), fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.getOwner(), fc.getName(), desc);
         }
         super.visitMethodInsn(fc.getOpcode(), fc.getOwner(), fc.getName(), desc, fc.isInterface());
+        if(passThrough) {
+            // Stack: IASTaintInformationable, TString -> TString, IASTaintInformationable, TString
+            super.visitInsn(Opcodes.DUP_X1);
+            // Stack: TString, IASTaintInformationable, TString -> TString, TString, IASTaintInformationable, TString
+            super.visitInsn(Opcodes.DUP_X1);
+            // Stack: TString, TString, IASTaintInformationable, TString -> TString, TString, IASTaintInformationable
+            super.visitInsn(Opcodes.POP);
+            // Stack: TString, TString, IASTaintInformationable -> TString
+            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(IASString.class), "setTaint", String.format("(L%s;)V", Type.getInternalName(IASTaintInformationable.class)), false);
+        }
     }
 
     private void storeArgumentsToLocals(FunctionCall call) {

@@ -1,9 +1,7 @@
 package com.sap.fontus.sql.tainter;
 
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.statement.select.Join;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
+import net.sf.jsqlparser.statement.select.*;
 
 import java.util.Collection;
 import java.util.List;
@@ -32,6 +30,16 @@ public class WhereSubSelectTainter extends SelectVisitorAdapter {
         Expression where = plainSelect.getWhere();
         if(where != null) {
             where.accept(new WhereExpressionTainter(this.parameters, WhereExpressionKind.IN_SUBSELECT_WHERE));
+        }
+    }
+
+    @Override
+    public void visit(SetOperationList setOpList) {
+        List<SelectBody> bodies = setOpList.getSelects();
+        if(bodies != null) {
+            for(SelectBody body : bodies) {
+                body.accept(this);
+            }
         }
     }
 

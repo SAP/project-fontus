@@ -12,6 +12,10 @@
       "jar_file": "provider_tests.jar"
     },
     {
+      "name": "Very large <clinit>",
+      "jar_file": "nu-validator.jar"
+    },
+    {
       "name": "logback",
       "jar_file": "logback.jar",
       "entry_point": "Example"

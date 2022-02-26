@@ -5,7 +5,6 @@ import com.sap.fontus.taintaware.unified.reflect.*;
 import com.sap.fontus.taintaware.unified.reflect.type.IASTypeVariableImpl;
 import com.sap.fontus.taintaware.unified.reflect.type.IASWildcardTypeImpl;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
-import org.graalvm.compiler.lir.LIRInstruction;
 import sun.reflect.generics.reflectiveObjects.GenericArrayTypeImpl;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 

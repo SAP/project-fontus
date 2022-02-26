@@ -1039,16 +1039,6 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
     }
 
     @Override
-    public <T> T unwrap(Class<T> iface) throws SQLException {
-        return this.delegate.unwrap(iface);
-    }
-
-    @Override
-    public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        return this.delegate.isWrapperFor(iface);
-    }
-
-    @Override
     public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
         int idx = (columnIndex * 2);
         return this.delegate.getObject(idx, type);
@@ -1077,7 +1067,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
         IASString rv = IASString.fromString(value);
         if (taint != null && !"0".equals(taint)) {
-            System.out.printf("Restoring taint for '%s': %s%n", value, taint);
+            //System.out.printf("Restoring taint for '%s': %s%n", value, taint);
             Utils.restoreTaint(rv, taint);
         }
         return rv;

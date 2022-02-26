@@ -59,6 +59,9 @@ public class SelectTainter extends SelectVisitorAdapter {
 					for (Expression e : plannedExpressions) {
 						expression.append(e.toString()).append(",");
 					}
+					if(expression.length() == 0) {
+						throw new IllegalStateException("Expression of length 0");
+					}
 					String expr = expression.substring(0, expression.length()-1);
 
 
@@ -145,7 +148,13 @@ public class SelectTainter extends SelectVisitorAdapter {
 		Limit limit = plainSelect.getLimit();
 		if(limit != null) {
 			Expression rowCount = limit.getRowCount();
-			rowCount.accept(new WhereExpressionTainter(this.parameters));
+			if(rowCount != null) {
+				rowCount.accept(new WhereExpressionTainter(this.parameters));
+			}
+			Expression offset = limit.getOffset();
+			if(offset != null) {
+				offset.accept(new WhereExpressionTainter(this.parameters));
+			}
 		}
 	}
 

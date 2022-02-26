@@ -4,7 +4,12 @@ import com.sap.fontus.sql.driver.ConnectionWrapper;
 import com.sap.fontus.sql.driver.PreparedStatementWrapper;
 import com.sap.fontus.sql.tainter.ParameterType;
 import com.sap.fontus.sql.tainter.QueryParameters;
+import com.sap.fontus.sql.tainter.StatementTainter;
 import com.sap.fontus.sql.tainter.TaintAssignment;
+import com.sap.fontus.utils.Pair;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Statements;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -181,6 +186,60 @@ public class PreparedStatementTests {
         ResultSet rss = ps.executeQuery();
     }
 
+    @Test
+    void testParameterInJoinClause2() throws Exception {
+        String sql = "select  fin_statement.course_repo_key,  count(fin_statement.id),  sum(case when fin_statement.passed=1 then 1 else 0 end) as num_of_passed,  sum(case when fin_statement.passed=0 then 1 else 0 end) as num_of_failed,  avg(fin_statement.score) from o_as_eff_statement fin_statement where fin_statement.id in (select sg_statement.id  from o_repositoryentry sg_re inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id) inner join o_bs_group_member sg_coach on (sg_coach.fk_group_id=togroup.fk_group_id and sg_coach.g_role in ('owner','coach'))  inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=sg_coach.fk_group_id and sg_participant.g_role='participant') inner join o_as_eff_statement sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource)  where sg_coach.fk_identity_id=? and sg_re.status  in ('coachpublished','published','closed') union select sg_statement.id  from o_repositoryentry sg_re  inner join o_re_to_group owngroup on (owngroup.fk_entry_id = sg_re.repositoryentry_id and owngroup.r_defgroup=1)  inner join o_bs_group_member sg_coach on (sg_coach.fk_group_id=owngroup.fk_group_id and sg_coach.g_role ='owner' ) inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id) inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant')  inner join o_as_eff_statement sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource)  where sg_coach.fk_identity_id=? and sg_re.status  in ('coachpublished','published','closed')) group by fin_statement.course_repo_key \n";
+        StatementTainter tainter = new StatementTainter();
+        Statements stmts=  CCJSqlParserUtil.parseStatements(sql);;
+        stmts.accept(tainter);
+        System.out.println((stmts.toString().trim()));
+        QueryParameters parameters = tainter.getParameters();
+        TaintAssignment first = parameters.computeAssignment(1);
+        assertEquals(new TaintAssignment(1, 1, ParameterType.SUBSELECT_WHERE), first);
+        TaintAssignment second = parameters.computeAssignment(2);
+        assertEquals(new TaintAssignment(2, 2, ParameterType.SUBSELECT_WHERE), second);
+    }
+    @Test
+    void testStringIndexOutOfBounds() throws Exception {
+    String sql = "select a.a, (select count(*)>0 from b cross join c where b.id=c.id and c.id=?) as xxx  from a where a.id=?\n";
+        StatementTainter tainter = new StatementTainter();
+        Statements stmts=  CCJSqlParserUtil.parseStatements(sql);;
+        stmts.accept(tainter);
+        System.out.println((stmts.toString().trim()));
+        QueryParameters parameters = tainter.getParameters();
+        TaintAssignment first = parameters.computeAssignment(1);
+        assertEquals(new TaintAssignment(1, 1, 2, ParameterType.QUERY_SUBSELECT), first);
+        TaintAssignment second = parameters.computeAssignment(2);
+        assertEquals(new TaintAssignment(2, 3, ParameterType.WHERE), second);
+    }
+
+    @Test
+    void testparameterInLimit() throws Exception {
+        String sql = "select * from contacts where id < ? limit ?, ?\n";
+        StatementTainter tainter = new StatementTainter();
+        Statements stmts=  CCJSqlParserUtil.parseStatements(sql);;
+        stmts.accept(tainter);
+        System.out.println((stmts.toString().trim()));
+        QueryParameters parameters = tainter.getParameters();
+        TaintAssignment first = parameters.computeAssignment(1);
+        assertEquals(new TaintAssignment(1, 1,  ParameterType.WHERE), first);
+        TaintAssignment second = parameters.computeAssignment(2);
+        assertEquals(new TaintAssignment(2, 2, ParameterType.WHERE), second);
+        TaintAssignment third = parameters.computeAssignment(3);
+        assertEquals(new TaintAssignment(3, 3, ParameterType.WHERE), third);
+
+    }
+    @Test
+    void testUpdateWithConcat() throws Exception {
+        String sql = "update o_property set textvalue=concat(textvalue, ?), lastmodified=? where identity=? and resourcetypename=? and resourcetypeid=? and category=? and name=?\n";
+        StatementTainter tainter = new StatementTainter();
+        Statements stmts=  CCJSqlParserUtil.parseStatements(sql);;
+        stmts.accept(tainter);
+        System.out.println((stmts.toString().trim()));
+        QueryParameters parameters = tainter.getParameters();
+        TaintAssignment first = parameters.computeAssignment(1);
+
+    }
     @Test
     void testSubselectWithJoin() throws Exception {
         String query = "SELECT first_name, (select count(*) from meta join contacts c where meta.contact_id = c.id) FROM contacts WHERE id = ?\n;";

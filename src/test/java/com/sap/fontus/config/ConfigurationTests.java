@@ -37,6 +37,13 @@ class ConfigurationTests {
         System.setOut(originalOut);
         System.setErr(originalErr);
     }
+
+    @Test
+    void testPassThroughTaints() {
+        Configuration config = this.getConfiguration("configuration_passThroughTaints.xml");
+        assertEquals(config.getPassThroughTaints().size(), 2);
+    }
+
     @Test
     void testExcludedPackages() {
         Configuration config = this.getConfiguration("configuration_excluded_packages.xml");
