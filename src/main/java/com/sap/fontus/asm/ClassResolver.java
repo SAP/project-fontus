@@ -11,23 +11,16 @@ import com.sap.fontus.utils.Utils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ClassResolver implements IClassResolver {
     private static final Logger logger = LogUtils.getLogger();
-    private final List<ClassLoader> loaders = new ArrayList<>();
+    private final ClassLoader classLoader;
 
     private final LoadingCache<String, byte[]> classCache;
 
-    public ClassResolver() {
+    public ClassResolver(ClassLoader classLoader) {
+        this.classLoader = classLoader;
         this.classCache = Caffeine.newBuilder().build(this::loadClassBytes);
-    }
-
-    public void addClassLoader(ClassLoader classLoader) {
-        if (!this.loaders.contains(classLoader)) {
-            this.loaders.add(classLoader);
-        }
     }
 
     @Override
@@ -47,8 +40,9 @@ public class ClassResolver implements IClassResolver {
     private byte[] loadClassBytes(String className) throws IOException {
         String fixed = Utils.dotToSlash(className) + Constants.CLASS_FILE_SUFFIX;
         logger.info("Trying to resolve {} from {}", fixed, className);
-        for (ClassLoader loader : this.loaders) {
-            InputStream is = loader.getResourceAsStream(fixed);
+
+        if (this.classLoader != null) {
+            InputStream is = this.classLoader.getResourceAsStream(fixed);
             if (is != null) {
                 return IOUtils.readStream(is);
             }

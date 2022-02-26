@@ -1,13 +1,10 @@
 package com.sap.fontus.agent;
 
-import com.sap.fontus.asm.ClassResolver;
-import com.sap.fontus.utils.*;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.instrumentation.Instrumenter;
+import com.sap.fontus.utils.*;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
-import org.mutabilitydetector.asm.NonClassloadingClassWriter;
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
