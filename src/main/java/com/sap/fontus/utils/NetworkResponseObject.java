@@ -1,6 +1,5 @@
 package com.sap.fontus.utils;
 
-import com.sap.fontus.agent.TaintAgent;
 import com.sap.fontus.taintaware.unified.IASString;
 
 import java.io.PrintWriter;
@@ -13,7 +12,7 @@ public class NetworkResponseObject {
         Object respObject = null;
 
         try {
-            Class cls = TaintAgent.findLoadedClass("org.springframework.web.context.request.RequestContextHolder");   
+            Class cls = InstrumentationFactory.createClassFinder().findClass("org.springframework.web.context.request.RequestContextHolder");
             Method reqAttributeMethod = cls.getMethod("getRequestAttributes");
             Object reqAttributeObject = reqAttributeMethod.invoke(null);
             Method respObjectMethod = reqAttributeObject.getClass().getMethod("getResponse");

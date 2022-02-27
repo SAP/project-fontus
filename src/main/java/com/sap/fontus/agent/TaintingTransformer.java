@@ -17,6 +17,7 @@ class TaintingTransformer implements ClassFileTransformer {
 
     private final Configuration config;
     private final Instrumenter instrumenter;
+    private final ClassFinder classFinder;
 
     private final Map<String, byte[]> classCache = new HashMap<>();
 
@@ -26,12 +27,15 @@ class TaintingTransformer implements ClassFileTransformer {
     TaintingTransformer(Configuration config) {
         this.instrumenter = new Instrumenter();
         this.config = config;
+        this.classFinder = InstrumentationFactory.createClassFinder();
     }
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
         this.nClasses += 1;
+        this.classFinder.addClass(className, loader);
+
         if (loader == null) {
             return classfileBuffer;
         }

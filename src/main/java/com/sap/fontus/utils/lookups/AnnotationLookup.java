@@ -63,6 +63,20 @@ public final class AnnotationLookup {
 
         // Try again using the class via reflection
         if (!isAnnotation) {
+            Class<?> cls = null;
+            try {
+                cls = Class.forName(className, false, null);
+            } catch (ClassNotFoundException ignored) {
+            }
+            if (cls != null) {
+                if (cls.isAnnotation()) {
+                    isAnnotation = true;
+                }
+            }
+        }
+
+        // Try again using the class via reflection
+        if (!isAnnotation) {
             Class<?> cls = ClassUtils.findLoadedClass(className);
             if (cls != null) {
                 if (cls.isAnnotation()) {

@@ -1,6 +1,5 @@
 package com.sap.fontus.utils;
 
-import com.sap.fontus.agent.TaintAgent;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.Type;
@@ -13,9 +12,10 @@ import java.lang.reflect.Array;
 
 public class ClassUtils {
     public static CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(null);
+    private static final ClassFinder classFinder = InstrumentationFactory.createClassFinder();
 
     public static Class<?> findLoadedClass(String internalName) {
-        Class<?> loaded = TaintAgent.findLoadedClass(Utils.slashToDot(internalName));
+        Class<?> loaded = classFinder.findClass(Utils.slashToDot(internalName));
         if (loaded == null && combinedExcludedLookup.isJdkClass(internalName)) {
             try {
                 loaded = Class.forName(Type.getObjectType(internalName).getClassName());
@@ -27,7 +27,7 @@ public class ClassUtils {
     }
 
     public static Class<?> findLoadedClass(String internalName, ClassLoader loader) {
-        Class<?> loaded = TaintAgent.findLoadedClass(Utils.slashToDot(internalName));
+        Class<?> loaded = classFinder.findClass(Utils.slashToDot(internalName));
         if (loaded == null && new CombinedExcludedLookup(loader).isJdkClass(internalName)) {
             try {
                 loaded = Class.forName(Type.getObjectType(internalName).getClassName(), false, loader);
