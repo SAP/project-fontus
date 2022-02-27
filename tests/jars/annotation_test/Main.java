@@ -26,9 +26,9 @@ class Main {
         System.out.println(Arrays.toString(d.newNames()));
         System.out.println("String class name: " + d.name().getClass().getName());
         System.out.println("Clazz attribute:   " + d.clazz().getName());
-        System.out.println("Are they equal: " + d.clazz().equals(d.name().getClass()));
+        System.out.println("Are they equal: " + d.clazz().getName().equals(d.name().getClass().getName()));
         System.out.println("Default Clazz attribute:   " + d.defaultClazz().getName());
-        System.out.println("Are they equal: " + d.clazz().equals(d.name().getClass()));
+        System.out.println("Are they equal: " + d.clazz().getName().equals(d.name().getClass().getName()));
         System.out.println("Clazz attribute via reflection:   " + reflectedClass.getName());
     }
     private static void printAnnotations(Object object) {
