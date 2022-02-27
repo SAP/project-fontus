@@ -1,5 +1,6 @@
 package com.sap.fontus.taintaware.unified;
 
+import com.sap.fontus.agent.InstrumentationConfiguration;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
@@ -21,6 +22,7 @@ public class IASTaintHandlerTest {
     static void before() {
         IASTaintSourceRegistry.getInstance().getOrRegisterObject("mySource");
         Configuration.setTestConfig(TaintMethod.RANGE);
+        InstrumentationConfiguration.init(null, null);
         Configuration.getConfiguration().setRecursiveTainting(true);
     }
 

@@ -71,6 +71,20 @@ public final class Main implements Callable<Void> {
     )
     private boolean logging;
 
+    @CommandLine.Option(
+            names = {"-h", "--hybrid"},
+            paramLabel = "Hybrid Tainting",
+            description = "Flag for activating hybrid tainting"
+    )
+    private boolean isHybrid;
+
+    @CommandLine.Option(
+            names = {"-p", "--parallel"},
+            paramLabel = "Parallel instrumentation",
+            description = "Parallel instrumentation of classes (can speedup instrumentation)"
+    )
+    private boolean isParallel;
+
     private Configuration configuration;
 
     private OfflineJarInstrumenter offlineJarInstrumenter;
@@ -112,8 +126,10 @@ public final class Main implements Callable<Void> {
 
     private void loadConfiguration() {
         this.configuration = ConfigurationLoader.loadAndMergeConfiguration(this.configFile, this.taintMethod);
+        this.configuration.setHybridMode(this.isHybrid);
+        this.configuration.setLoggingEnabled(this.logging);
+        this.configuration.setParallel(this.isParallel);
         Configuration.setConfiguration(configuration);
-        Configuration.getConfiguration().setLoggingEnabled(this.logging);
     }
 
     @Override

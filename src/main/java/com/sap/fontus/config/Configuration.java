@@ -44,7 +44,14 @@ public class Configuration {
     @JsonIgnore
     private Collection<String> instumentedClasses = null;
 
+    @JsonIgnore
     private boolean isOfflineInstrumentation = true;
+
+    /**
+     * If offline instrumentation is used, it can be parallelized
+     */
+    @JsonIgnore
+    private boolean isParallel = false;
 
     @XmlElement
     private boolean isHybridMode = false;
@@ -524,6 +531,14 @@ public class Configuration {
 
     public void setHybridMode(boolean hybridMode) {
         isHybridMode = hybridMode;
+    }
+
+    public boolean isParallel() {
+        return isParallel;
+    }
+
+    public void setParallel(boolean parallel) {
+        isParallel = parallel;
     }
 
     public void addExcludedClass(String clazzName) {

@@ -101,6 +101,9 @@ public class OfflineClassResolver implements IClassResolver {
     }
 
     private void walkInput(File input, Map<String, byte[]> classes) {
+        if (input == null) {
+            return;
+        }
         if (input.exists()) {
             if (input.isDirectory()) {
                 File[] inputs = input.listFiles();

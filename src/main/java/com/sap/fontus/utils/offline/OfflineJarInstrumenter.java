@@ -2,7 +2,6 @@ package com.sap.fontus.utils.offline;
 
 import com.sap.fontus.Constants;
 import com.sap.fontus.config.Configuration;
-import com.sap.fontus.utils.IOUtils;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
 import com.sap.fontus.utils.Pair;
@@ -11,19 +10,17 @@ import org.objectweb.asm.ClassReader;
 
 import java.io.*;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
-import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 
 public class OfflineJarInstrumenter {
-    private static final int OneKB = 1024;
     private static final Logger logger = LogUtils.getLogger();
 
     private final List<String> classes = new ArrayList<>();
@@ -95,105 +92,27 @@ public class OfflineJarInstrumenter {
         }
     }
 
-    private void writeJarEntry(JarOutputStream jos, Pair<JarEntry, byte[]> output, Object writeLock) {
-        JarEntry jeo = output.x;
-        byte[] bytes = output.y;
-
-        synchronized (writeLock) {
-            try {
-                jos.putNextEntry(jeo);
-                if (bytes != null) {
-                    copySingleEntry(new ByteArrayInputStream(bytes), jos);
-                }
-                jos.closeEntry();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    private Pair<JarEntry, byte[]> readJarEntry(JarInputStream jis, Object readLock) {
-        synchronized (readLock) {
-            try {
-                JarEntry jei = jis.getNextJarEntry();
-                if (jei == null) {
-                    return null;
-                }
-                byte[] entryBytes = IOUtils.readStream(jis);
-
-                return new Pair<>(jei, entryBytes);
-            } catch (IOException e) {
-                return null;
-            }
-        }
-    }
-
     private void instrumentJarFile(JarInputStream jis, JarOutputStream jos) throws IOException {
-        Object readLock = new Object();
-        Object writeLock = new Object();
-        Stream
-                .generate(() -> this.readJarEntry(jis, readLock))
-                .parallel()
-                .takeWhile(Objects::nonNull)
-                .map(this::processJarEntry)
-                .forEach((output) -> this.writeJarEntry(jos, output, writeLock));
+        if (Configuration.getConfiguration().isParallel()) {
+//            ParallelInstrumenter parallelInstrumenter = new ParallelInstrumenter(jis, jos, this::processJarEntry);
+//            parallelInstrumenter.execute();
 
-//        for (JarEntry jei = jis.getNextJarEntry(); jei != null; jei = jis.getNextJarEntry()) {
-//            logger.info("Reading jar entry: {}", jei.getName());
-//
-//            if (!jei.isDirectory()) {
-//                byte[] entryBytes = IOUtils.readStream(jis);
-//                InputStream jeis = new ByteArrayInputStream(entryBytes);
-//
-//                CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(Thread.currentThread().getContextClassLoader());
-//
-//                if (jei.getName().endsWith(Constants.CLASS_FILE_SUFFIX) &&
-//                        !combinedExcludedLookup.isJdkClass(jei.getName()) &&
-//                        !combinedExcludedLookup.isFontusClass(jei.getName()) &&
-//                        !combinedExcludedLookup.isExcluded(jei.getName())
-//                ) {
-//                    try {
-//                        byte[] bytes = this.offlineClassInstrumenter.instrumentClassStream(jeis);
-//
-//                        JarEntry jeo = createJarEntry(jei.getName(), bytes);
-//                        jos.putNextEntry(jeo);
-//                        jos.write(bytes);
-//
-//                        this.classes.add(getName(entryBytes));
-//                    } catch (Exception e) {
-//                        logger.error("Class %s could not be instrumented: %s", jei.getName(), e);
-//                        JarEntry jeo = createJarEntry(jei.getName(), entryBytes);
-//                        jos.putNextEntry(jeo);
-//                        jos.write(entryBytes);
-//                    }
-//                } else if (jei.getName().endsWith(Constants.JAR_FILE_SUFFIX)) {
-//                    ByteArrayOutputStream innerJarBos = new ByteArrayOutputStream();
-//                    JarOutputStream innerJos = new JarOutputStream(innerJarBos);
-//                    JarInputStream innerJis = new JarInputStream(jeis);
-//
-//                    this.instrumentJarFile(innerJis, innerJos);
-//
-//                    innerJos.flush();
-//                    innerJos.close();
-//                    byte[] innerJarBytes = innerJarBos.toByteArray();
-//                    JarEntry jeo = createJarEntry(jei.getName(), innerJarBytes);
-//                    jos.putNextEntry(jeo);
-//
-//                    copySingleEntry(new ByteArrayInputStream(innerJarBytes), jos);
-//
-//                    innerJos.close();
-//                } else {
-//                    JarEntry jeo = createJarEntry(jei.getName(), entryBytes);
-//                    jos.putNextEntry(jeo);
-//                    copySingleEntry(jeis, jos);
-//                }
-//                jeis.close();
-//            } else {
-//                JarEntry jeo = createJarEntry(jei.getName(), null);
-//                jos.putNextEntry(jeo);
-//            }
-//            jos.closeEntry();
-//        }
+            StreamSupport
+                    .stream(Spliterators.spliteratorUnknownSize(new JarInputStreamIterator(jis), Spliterator.IMMUTABLE), true)
+                    .map(this::processJarEntry)
+                    .forEach(new JarOutputStreamWriter(jos));
+        } else {
+            JarInputStreamIterator jisi = new JarInputStreamIterator(jis);
+            JarOutputStreamWriter josw = new JarOutputStreamWriter(jos);
+
+            while (jisi.hasNext()) {
+                Pair<JarEntry, byte[]> input = jisi.next();
+
+                Pair<JarEntry, byte[]> output = this.processJarEntry(input);
+
+                josw.accept(output);
+            }
+        }
     }
 
     private String getName(byte[] classBytes) {
@@ -239,7 +158,7 @@ public class OfflineJarInstrumenter {
             if (manifestIn != null) {
                 InputStream manifestInputStream = in.getInputStream(manifestIn);
                 jos.putNextEntry(new JarEntry("META-INF/MANIFEST.MF"));
-                copySingleEntry(manifestInputStream, jos);
+                JarOutputStreamWriter.copySingleEntry(manifestInputStream, jos);
                 jos.closeEntry();
             }
 
@@ -252,14 +171,5 @@ public class OfflineJarInstrumenter {
         jos.close();
 
         logger.info("Writing transformed jar file to: {}", output.getAbsolutePath());
-    }
-
-    private static void copySingleEntry(InputStream i, OutputStream o) throws IOException {
-        int len = 0;
-        byte[] buffer = new byte[OneKB];
-
-        while ((len = i.read(buffer, 0, buffer.length)) != -1) {
-            o.write(buffer, 0, len);
-        }
     }
 }
