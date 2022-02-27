@@ -815,24 +815,24 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitCode();
 
         // Setup configuration if offline instrumentation
-//        if (config.isOfflineInstrumentation()) {
-//            org.objectweb.asm.commons.Method parseOffline;
-//            try {
-//                parseOffline = org.objectweb.asm.commons.Method.getMethod(Configuration.class.getMethod("parseOffline", TaintMethod.class));
-//            } catch (NoSuchMethodException e) {
-//                throw new RuntimeException(e);
-//            }
-//            String parseOfflineOwner = Utils.dotToSlash(Configuration.class.getName());
-//            String parseOfflineName = parseOffline.getName();
-//            String parseOfflineDescriptor = parseOffline.getDescriptor();
-//            String taintMethodOwner = Utils.dotToSlash(TaintMethod.class.getName());
-//            String taintMethodName = Configuration.getConfiguration().getTaintMethod().name();
-//            String taintMethodDescriptor = Descriptor.classNameToDescriptorName(taintMethodOwner);
-//
-//
-//            mv.visitFieldInsn(Opcodes.GETSTATIC, taintMethodOwner, taintMethodName, taintMethodDescriptor);
-//            mv.visitMethodInsn(Opcodes.INVOKESTATIC, parseOfflineOwner, parseOfflineName, parseOfflineDescriptor, false);
-//        }
+        if (config.isOfflineInstrumentation() && !config.isHybridMode()) {
+            org.objectweb.asm.commons.Method parseOffline;
+            try {
+                parseOffline = org.objectweb.asm.commons.Method.getMethod(Configuration.class.getMethod("parseOffline", TaintMethod.class));
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+            String parseOfflineOwner = Utils.dotToSlash(Configuration.class.getName());
+            String parseOfflineName = parseOffline.getName();
+            String parseOfflineDescriptor = parseOffline.getDescriptor();
+            String taintMethodOwner = Utils.dotToSlash(TaintMethod.class.getName());
+            String taintMethodName = Configuration.getConfiguration().getTaintMethod().name();
+            String taintMethodDescriptor = Descriptor.classNameToDescriptorName(taintMethodOwner);
+
+
+            mv.visitFieldInsn(Opcodes.GETSTATIC, taintMethodOwner, taintMethodName, taintMethodDescriptor);
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, parseOfflineOwner, parseOfflineName, parseOfflineDescriptor, false);
+        }
 
         Label label0 = new Label();
         mv.visitLabel(label0);
