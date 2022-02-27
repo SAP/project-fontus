@@ -4,9 +4,7 @@ import com.sap.fontus.config.Configuration;
 import com.sap.fontus.utils.IOUtils;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
-import com.sap.fontus.utils.Utils;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.objectweb.asm.ClassReader;
 
 import java.io.*;
@@ -18,7 +16,6 @@ import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 import java.util.zip.CRC32;
-import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 
 public class OfflineJarInstrumenter {
@@ -38,7 +35,7 @@ public class OfflineJarInstrumenter {
         return classes;
     }
 
-    private void instrumentJarFile(JarInputStream jis, JarOutputStream jos, boolean root) throws IOException {
+    private void instrumentJarFile(JarInputStream jis, JarOutputStream jos) throws IOException {
         for (JarEntry jei = jis.getNextJarEntry(); jei != null; jei = jis.getNextJarEntry()) {
             logger.info("Reading jar entry: {}", jei.getName());
 
@@ -69,7 +66,7 @@ public class OfflineJarInstrumenter {
                     JarOutputStream innerJos = new JarOutputStream(innerJarBos);
                     JarInputStream innerJis = new JarInputStream(jeis);
 
-                    this.instrumentJarFile(innerJis, innerJos, false);
+                    this.instrumentJarFile(innerJis, innerJos);
 
                     innerJos.flush();
                     innerJos.close();
@@ -151,7 +148,7 @@ public class OfflineJarInstrumenter {
 //            jos.setLevel(Deflater.NO_COMPRESSION);
             jos.setMethod(ZipEntry.STORED);
 
-            this.instrumentJarFile(jis, jos, true);
+            this.instrumentJarFile(jis, jos);
         }
 
         jos.close();
