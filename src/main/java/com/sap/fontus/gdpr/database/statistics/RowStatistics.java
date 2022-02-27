@@ -1,4 +1,4 @@
-package com.sap.fontus.gdpr.database;
+package com.sap.fontus.gdpr.database.statistics;
 
 class RowStatistics {
     private int untainted = 0;

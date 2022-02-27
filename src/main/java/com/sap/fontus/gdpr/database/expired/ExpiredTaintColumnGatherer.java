@@ -1,15 +1,16 @@
-package com.sap.fontus.gdpr.database;
+package com.sap.fontus.gdpr.database.expired;
 
 import com.sap.fontus.gdpr.Utils;
+import com.sap.fontus.gdpr.database.AbstractInformationGatherer;
 import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-class ExpiredTaintColumnGatherer extends AbstractInformationGatherer {
+public class ExpiredTaintColumnGatherer extends AbstractInformationGatherer {
     private final Instant now;
 
-    ExpiredTaintColumnGatherer() {
+    public ExpiredTaintColumnGatherer() {
         super();
         this.now = Instant.now().plus(21, ChronoUnit.DAYS);
     }

@@ -1,4 +1,4 @@
-package com.sap.fontus.gdpr.database;
+package com.sap.fontus.gdpr.database.statistics;
 
 import java.util.ArrayList;
 import java.util.Collection;

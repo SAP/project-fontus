@@ -28,7 +28,7 @@ public class Processor {
     public void run() throws SQLException {
         try (Connection conn = DriverManager.getConnection(this.connectionString, this.userName, this.password)
         ) {
-            System.out.println("connected");
+            //System.out.println("connected");
             DatabaseMetaData metaData = conn.getMetaData();
             ResultSet tables = metaData.getTables(this.catalog, null, null, new String[]{"TABLE"});
 
@@ -44,12 +44,12 @@ public class Processor {
                 String schema = tables.getString(2);
                 String name = tables.getString(3);
                 String type = tables.getString(4);
-                System.out.printf("%s.%s.%s - %s%n", cat, schema, name, type);
+                //System.out.printf("%s.%s.%s - %s%n", cat, schema, name, type);
                 this.gatherer.beginTable(cat, name);
                 this.processTable(conn, cat, name);
                 this.gatherer.endTable();
             }
-            System.out.println("done");
+            //System.out.println("done");
         }
     }
 

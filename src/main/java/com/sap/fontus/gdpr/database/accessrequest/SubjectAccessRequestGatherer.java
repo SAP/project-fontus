@@ -1,6 +1,7 @@
-package com.sap.fontus.gdpr.database;
+package com.sap.fontus.gdpr.database.accessrequest;
 
 import com.sap.fontus.gdpr.Utils;
+import com.sap.fontus.gdpr.database.AbstractInformationGatherer;
 import com.sap.fontus.gdpr.metadata.DataSubject;
 import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 
@@ -9,7 +10,7 @@ import java.util.Collection;
 public class SubjectAccessRequestGatherer extends AbstractInformationGatherer {
     private final String identifier;
 
-    SubjectAccessRequestGatherer(String identifier) {
+    public SubjectAccessRequestGatherer(String identifier) {
         super();
         this.identifier = identifier;
     }

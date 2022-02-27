@@ -1,6 +1,7 @@
-package com.sap.fontus.gdpr.database;
+package com.sap.fontus.gdpr.database.statistics;
 
 
+import com.sap.fontus.gdpr.database.AbstractInformationGatherer;
 import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 
 import java.util.ArrayList;
