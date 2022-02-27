@@ -21,7 +21,7 @@ import java.util.concurrent.Callable;
 public class Application implements Callable<Void> {
 
     @CommandLine.Option(
-            names = {"-d", "--host"},
+            names = {"--host"},
             required = true,
             paramLabel = "Database host",
             description = "Hostname of Database Server with port",
