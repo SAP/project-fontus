@@ -27,6 +27,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
     private static final String appIdParameterName = "appId";
     private static final String registerPatientApp = "referenceapplication.registrationapp.registerPatient";
     private static final String patientIdParameterName = "patientId";
+    private static final String personIdParameterName = "personId";
 
     private static final FunctionCall getParameterFunctionCall = new FunctionCall(
             Opcodes.INVOKEINTERFACE,
@@ -161,7 +162,12 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
     }
 
     private static DataSubject getDataSubjectFromRequestParameter(ReflectedHttpServletRequest request) {
-        return getDataSubjectFromUuid(request, request.getParameter(patientIdParameterName));
+        String patientId = request.getParameter(patientIdParameterName);
+        if (patientId == null) {
+            // Sometimes the patientId stored in a personId parameter...
+            patientId = request.getParameter(personIdParameterName);
+        }
+        return getDataSubjectFromUuid(request, patientId);
     }
 
     private static DataSubject getOrCreateDataSubjectUuid(ReflectedHttpServletRequest request) {
