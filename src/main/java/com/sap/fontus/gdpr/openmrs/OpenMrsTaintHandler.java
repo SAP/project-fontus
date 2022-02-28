@@ -18,9 +18,7 @@ import com.sap.fontus.taintaware.unified.IASTaintHandler;
 import org.objectweb.asm.Opcodes;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.UUID;
+import java.util.*;
 
 public class OpenMrsTaintHandler extends IASTaintHandler {
 
@@ -33,6 +31,13 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
     private static final FunctionCall getParameterFunctionCall = new FunctionCall(
             Opcodes.INVOKEINTERFACE,
             "javax/servlet/ServletRequest",
+            "getParameter",
+            "(Ljava/lang/String;)Ljava/lang/String;",
+            true);
+
+    private static final FunctionCall getHttpParameterFunctionCall = new FunctionCall(
+            Opcodes.INVOKEINTERFACE,
+            "javax/servlet/http/HttpServletRequest",
             "getParameter",
             "(Ljava/lang/String;)Ljava/lang/String;",
             true);
@@ -57,6 +62,8 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             "getParameterMap",
             "()Ljava/util/Map;",
             true);
+
+    private static final Set<FunctionCall> allowedFunctionCalls = new HashSet<>(Arrays.asList(getParameterFunctionCall, getHttpParameterFunctionCall, getParameterValuesFunctionCall, getHttpParameterValuesFunctionCall, getParameterMapFunctionCall));
 
     private static Collection<AllowedPurpose> getPurposesFromRequest(ReflectedHttpServletRequest servlet) {
         ReflectedCookie[] cookies = servlet.getCookies();
@@ -205,11 +212,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         }
 
         // Check for ServletRequest getParameter function
-        if ((parent != null) && (source != null) &&
-                (source.getFunction().equals(getParameterFunctionCall) ||
-                        source.getFunction().equals(getParameterValuesFunctionCall) ||
-                        source.getFunction().equals(getHttpParameterValuesFunctionCall) ||
-                        source.getFunction().equals(getParameterMapFunctionCall))) {
+        if ((parent != null) && (source != null) && allowedFunctionCalls.contains(source.getFunction())) {
 
             GdprMetadata metadata = null;
 
