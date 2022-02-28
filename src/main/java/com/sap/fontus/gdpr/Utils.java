@@ -10,6 +10,7 @@ import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASTaintMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
 import com.sap.fontus.taintaware.shared.IASTaintRanges;
+import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 
 import java.lang.reflect.InvocationTargetException;
@@ -110,5 +111,28 @@ public final class Utils {
         }
         // Return empty consent if no cookie is found
         return new ArrayList<>();
+    }
+
+    public static IASTaintAware censorContestedParts(IASTaintAware taintAware) {
+        if (taintAware.isTainted()) {
+            IASString s = taintAware.toIASString();
+            if (s != null) {
+                StringBuilder sb = new StringBuilder(s.getString());
+                for (IASTaintRange range : s.getTaintInformation().getTaintRanges(s.length())) {
+                    IASTaintMetadata meta = range.getMetadata();
+                    if(meta instanceof GdprTaintMetadata) {
+                        GdprMetadata gdprMetadata = ((GdprTaintMetadata) meta).getMetadata();
+                        if(!gdprMetadata.isProcessingUnrestricted()) {
+                            for (int i = range.getStart(); i < range.getEnd(); i++) {
+                                sb.setCharAt(i, '*');
+                            }
+                        }
+                    }
+                }
+                taintAware = taintAware.newInstance();
+                taintAware.setContent(sb.toString(), s.getTaintInformationCopied());
+            }
+        }
+        return taintAware;
     }
 }
