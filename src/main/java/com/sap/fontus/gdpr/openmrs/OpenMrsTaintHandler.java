@@ -28,7 +28,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
 
     private static final String appIdParameterName = "appId";
     private static final String registerPatientApp = "referenceapplication.registrationapp.registerPatient";
-    private static final String patientId = "patientId";
+    private static final String patientIdParameterName = "patientId";
 
     private static final FunctionCall getParameterFunctionCall = new FunctionCall(
             Opcodes.INVOKEINTERFACE,
@@ -71,9 +71,22 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         return new ArrayList<>();
     }
 
-    private static GdprMetadata getTaintMetadataFromExistingUuid(ReflectedHttpServletRequest request, String uuid) {
+    public static Integer getInteger(String strNum) {
+        Integer i = null;
+        if (strNum == null) {
+            return i;
+        }
+        try {
+            i = Integer.parseInt(strNum);
+        } catch (NumberFormatException nfe) {
+            return i;
+        }
+        return i;
+    }
+
+    private static GdprMetadata getTaintMetadataFromExistingUuid(ReflectedHttpServletRequest request, String patientId) {
         GdprMetadata md = null;
-        if (uuid == null) {
+        if (patientId == null) {
             return null;
         }
         try {
@@ -95,9 +108,19 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             // OpenMRS has a bean called patientService, with class PatientService
             Object bean = m.invoke(obj, new IASString("patientService"));
 
-            // This interface will be proxied by Fontus, but the method names are the same
-            Method m2 = bean.getClass().getMethod("getPatientByUuid", IASString.class);
-            Object patient = m2.invoke(bean, new IASString(uuid));
+            // Some OpenMRS pages use a UUID to retrieve patientId, some use the database ID (ie an integer)
+            // Try to check here which method to choose
+            Object patient = null;
+            Integer i = getInteger(patientId);
+            if (i != null) {
+                // This interface will be proxied by Fontus, but the method names are the same
+                Method m2 = bean.getClass().getMethod("getPatient", Integer.class);
+                patient = m2.invoke(bean, i);
+            } else {
+                // This interface will be proxied by Fontus, but the method names are the same
+                Method m2 = bean.getClass().getMethod("getPatientByUuid", IASString.class);
+                patient = m2.invoke(bean, new IASString(patientId));
+            }
 
             // Get some data which should have some metadata attached when it was created
             Method getUuid = patient.getClass().getMethod("getGender");
@@ -118,7 +141,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             System.err.println("Exception trying to extract taint metadata: " + e.getMessage());
             e.printStackTrace();
         }
-        System.out.println("FONTUS: for person UUID: " + uuid + " found taint metadata: " + md);
+        System.out.println("FONTUS: for person UUID: " + patientId + " found taint metadata: " + md);
         return md;
     }
 
@@ -131,11 +154,12 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
     }
 
     private static DataSubject getDataSubjectFromRequestParameter(ReflectedHttpServletRequest request) {
-        return getDataSubjectFromUuid(request, request.getParameter(patientId));
+        return getDataSubjectFromUuid(request, request.getParameter(patientIdParameterName));
     }
 
     private static DataSubject getOrCreateDataSubjectUuid(ReflectedHttpServletRequest request) {
         DataSubject dataSubject = null;
+        // First try retrieving from cached attribute value
         Object o = request.getAttribute(dataSubjectAttributeName);
         if ((o != null) && (o instanceof DataSubject)) {
             dataSubject = (DataSubject) o;
