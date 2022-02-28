@@ -74,6 +74,6 @@ public class SinkTransformer extends SourceOrSinkTransformer implements Paramete
 
     @Override
     public boolean requireParameterVariableLocals() {
-        return false;
+        return true;
     }
 }
