@@ -590,22 +590,10 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         // Add Source transformations
         Source source = this.config.getSourceConfig().getSourceForFunction(call);
-        if (source != null) {
-            boolean applySource = source.getAllowedCallers().isEmpty();
-            if(!applySource) {
-                FunctionCall caller = this.caller.toFunctionCall();
-                for(FunctionCall fc : source.getAllowedCallers()) {
-                    if (caller.equals(fc)) {
-                        applySource = true;
-                        break;
-                    }
-                }
-            }
-            if(applySource) {
-                logger.info("Adding source tainting for [{}] {}.{}{} for caller {}.{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor(), this.caller.getOwner(), this.caller.getName());
-                SourceTransformer t = new SourceTransformer(source, this.used);
-                transformer.addReturnTransformation(t);
-            }
+        if ((source != null) && (source.isAllowedCaller(caller.toFunctionCall()))) {
+            logger.info("Adding source tainting for [{}] {}.{}{} for caller {}.{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor(), this.caller.getOwner(), this.caller.getName());
+            SourceTransformer t = new SourceTransformer(source, this.used);
+            transformer.addReturnTransformation(t);
         }
 
         // Add Sink transformations

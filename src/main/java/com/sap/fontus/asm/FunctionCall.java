@@ -140,6 +140,23 @@ public class FunctionCall {
                 '}';
     }
 
+    /**
+     * Match the method class, name and descriptor, but not the opcode and interface flag
+     * Means that the opcode and interface flags don't need to exactly match
+     * @param obj Object to be matched
+     * @return
+     */
+    public boolean fuzzyEquals(final Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null || this.getClass() != obj.getClass())
+            return false;
+        final FunctionCall that = (FunctionCall) obj;
+        return this.owner.equals(that.owner) &&
+               this.name.equals(that.name) &&
+               this.descriptor.equals(that.descriptor);
+    }
+
     @Override
     public boolean equals(final Object obj) {
         if (this == obj)
