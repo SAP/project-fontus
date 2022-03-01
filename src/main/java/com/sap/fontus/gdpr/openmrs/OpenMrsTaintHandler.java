@@ -264,7 +264,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             return taintAware;
         }
         // This should already be tainted correctly
-        IASString jsonList = (IASString) parameters[1];
+        IASString jsonList = (IASString) parameters[0];
         // Simplest is to just propagate taint to the output
         // Might lead to over-tainting, but should be fine in this specific case.
         if (jsonList.isTainted()) {
