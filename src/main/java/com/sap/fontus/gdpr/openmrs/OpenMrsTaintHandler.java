@@ -301,7 +301,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
 
     public static Object diagnosisTaint(Object object, Object parent, Object[] parameters, int sourceId) {
         if (object instanceof IASTaintAware) {
-            return setTaint((IASTaintAware) object, parent, parameters, sourceId);
+            return setDiagnosisTaint((IASTaintAware) object, parent, parameters, sourceId);
         }
         return IASTaintHandler.traverseObject(object, taintAware -> setDiagnosisTaint(taintAware, parent, parameters, sourceId));
     }
