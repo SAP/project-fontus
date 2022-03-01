@@ -242,6 +242,40 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         }
         return taintAware;
     }
+
+    private static IASTaintAware setDiagnosisTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
+        // Instrument JsonNode.get("diagnosis").getTextValue(), ie
+        // Source will be: org/codehaus/jackson/JsonNode/getTextValue()Ljava/lang/String;
+        // parent = JsonNode
+        // Make this a specific source, so that it is only called inside
+        // private List<Diagnosis> parseDiagnoses(String jsonList, Map<Integer, Obs> existingDiagnosisObs) throws IOException {
+        // i.e. org/openmrs/module/coreapps/htmlformentry/EncounterDiagnosesElement.parseDiagnoses(Ljava/lang/String;java/lang/Map)Ljava/lang/List
+        // parameters = nominally zero, but add locals #0 (ie a String)
+
+        // General debug info
+        IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
+
+        // Check parameter length
+        if (parameters.length != 1) {
+            System.out.printf("Parameter length %d != 1%n", parameters.length);
+            return taintAware;
+        }
+        if (!(parameters[1] instanceof IASString)) {
+            System.out.printf("Parameter class %s != %s", parameters[1].getClass().getName(), IASString.class.getName());
+            return taintAware;
+        }
+        // This should already be tainted correctly
+        IASString jsonList = (IASString) parameters[1];
+        // Simplest is to just propagate taint to the output
+        // Might lead to over-tainting, but should be fine in this specific case.
+        if (jsonList.isTainted()) {
+            IASTaintMetadata metadata = jsonList.getTaintInformation().getTaint(0);
+            System.out.println("Adding Taint metadata from string '" + jsonList + "' to string '" + taintAware.toString() + "': " + metadata);
+            taintAware.setTaint(metadata);
+        }
+        return taintAware;
+    }
+
     /**
      * The taint method can be used as a taintHandler for a given taint source
      * @param object The object to be tainted
@@ -265,4 +299,12 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         }
         return IASTaintHandler.traverseObject(object, taintAware -> setTaint(taintAware, parent, parameters, sourceId));
     }
+
+    public static Object diagnosisTaint(Object object, Object parent, Object[] parameters, int sourceId) {
+        if (object instanceof IASTaintAware) {
+            return setTaint((IASTaintAware) object, parent, parameters, sourceId);
+        }
+        return IASTaintHandler.traverseObject(object, taintAware -> setDiagnosisTaint(taintAware, parent, parameters, sourceId));
+    }
+
 }
