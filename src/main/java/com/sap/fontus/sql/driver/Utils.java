@@ -13,6 +13,7 @@ import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 import com.sap.fontus.taintaware.unified.TaintInformationFactory;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public class Utils {
 

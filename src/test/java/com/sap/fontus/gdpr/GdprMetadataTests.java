@@ -44,4 +44,5 @@ public class GdprMetadataTests {
         Assertions.assertTrue(adjusted);
 
     }
+
 }

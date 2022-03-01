@@ -77,14 +77,12 @@ public class OpenOlatTaintHandler extends IASTaintHandler {
         IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
         ReflectedHttpServletRequest request = new ReflectedHttpServletRequest(requestObject);
         ReflectedSession session = request.getSession();
-        long userId = getSessionUserId(session);
+        long sessionId = getSessionUserId(session);
+        String userId = String.valueOf(sessionId);
         // if userId == -1 -> not logged in
-        if (userId == -1L) {
-            return new IASBasicMetadata(taintSource);
-        }
-        DataSubject ds = new SimpleDataSubject(String.valueOf(userId));
+        DataSubject ds = new SimpleDataSubject(userId);
         Collection<AllowedPurpose> allowed = Utils.getPurposesFromRequest(request);
-        allowedPurposes.put(String.valueOf(userId), allowed);
+        allowedPurposes.put(userId, allowed);
         GdprMetadata metadata = new SimpleGdprMetadata(
                 allowed,
                 ProtectionLevel.Normal,
@@ -160,8 +158,7 @@ public class OpenOlatTaintHandler extends IASTaintHandler {
             if (si == null) {
                 return -1L;
             }
-            Long identityKey = (Long) Utils.invokeGetter(si, "getIdentityKey");
-            return identityKey;
+            return (Long) Utils.invokeGetter(si, "getIdentityKey");
         } catch (Exception ex) {
             //ex.printStackTrace();
             return -1L;
