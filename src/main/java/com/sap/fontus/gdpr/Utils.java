@@ -12,6 +12,7 @@ import com.sap.fontus.taintaware.shared.IASTaintRange;
 import com.sap.fontus.taintaware.shared.IASTaintRanges;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintInformationable;
+import com.sap.fontus.utils.Pair;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -113,7 +114,8 @@ public final class Utils {
         return new ArrayList<>();
     }
 
-    public static IASTaintAware censorContestedParts(IASTaintAware taintAware) {
+    public static Pair<IASTaintAware, Boolean> censorContestedParts(IASTaintAware taintAware) {
+        boolean contested = false;
         if (taintAware.isTainted()) {
             IASString s = taintAware.toIASString();
             if (s != null) {
@@ -123,6 +125,7 @@ public final class Utils {
                     if(meta instanceof GdprTaintMetadata) {
                         GdprMetadata gdprMetadata = ((GdprTaintMetadata) meta).getMetadata();
                         if(!gdprMetadata.isProcessingUnrestricted()) {
+                            contested = true;
                             for (int i = range.getStart(); i < range.getEnd(); i++) {
                                 sb.setCharAt(i, '*');
                             }
@@ -133,6 +136,6 @@ public final class Utils {
                 taintAware.setContent(sb.toString(), s.getTaintInformationCopied());
             }
         }
-        return taintAware;
+        return new Pair<>(taintAware, contested);
     }
 }

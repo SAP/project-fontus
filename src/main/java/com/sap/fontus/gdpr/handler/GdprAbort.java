@@ -34,9 +34,11 @@ public class GdprAbort extends Abort {
     @Override
     public IASTaintAware abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
         System.out.println("Checking GDPR taint in sink: " + sinkFunction);
+        CensorIfDisputed censorIfDisputed = new CensorIfDisputed();
+        taintAware = censorIfDisputed.abort(taintAware, instance, sinkFunction, sinkName, stackTrace);
         // Use the categories from the configuration as "purpose" labels
         Sink sink = Configuration.getConfiguration().getSinkConfig().getSinkForFqn(sinkFunction);
-        RequiredPurposes requiredPurposes = getPurposedFromSink(sink);
+        RequiredPurposes requiredPurposes = this.getPurposedFromSink(sink);
 
         // Create a policy
         PurposePolicy policy = new SimplePurposePolicy();
@@ -56,7 +58,7 @@ public class GdprAbort extends Abort {
         }
         // Block / Sanitize / etc...
         if (policyViolation) {
-            Abort a = getAbortFromSink(sink);
+            Abort a = this.getAbortFromSink(sink);
             taintAware = a.abort(taintAware, instance, sinkFunction, sinkName, stackTrace);
         }
         return taintAware;

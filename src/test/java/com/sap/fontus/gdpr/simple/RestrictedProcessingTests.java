@@ -12,16 +12,17 @@ import com.sap.fontus.gdpr.metadata.simple.SimpleDataSubject;
 import com.sap.fontus.gdpr.metadata.simple.SimpleGdprMetadata;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.utils.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 
-public class RestrictedProcessingTests {
+class RestrictedProcessingTests {
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.RANGE);
     }
 
@@ -40,7 +41,8 @@ public class RestrictedProcessingTests {
                 Identifiability.NotExplicit);
         payload.setTaint(new GdprTaintMetadata(1, metadata));
         IASString result = pre.concat(payload).concat(post);
-        IASTaintAware taintAware = Utils.censorContestedParts(result);
-        Assertions.assertEquals("[*****]", taintAware.toIASString().getString());
+        Pair<IASTaintAware,Boolean> data = Utils.censorContestedParts(result);
+        Assertions.assertTrue(data.y);
+        Assertions.assertEquals("[*****]", data.x.toIASString().getString());
     }
 }
