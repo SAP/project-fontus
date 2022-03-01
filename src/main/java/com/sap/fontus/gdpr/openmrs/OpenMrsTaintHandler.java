@@ -259,12 +259,13 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             System.out.printf("Parameter length %d != 1%n", parameters.length);
             return taintAware;
         }
-        if (!(parameters[0] instanceof IASString)) {
-            System.out.printf("Parameter class %s != %s", parameters[1].getClass().getName(), IASString.class.getName());
+        Object listObject = parameters[0];
+        if (!(listObject instanceof IASString)) {
+            System.out.printf("Parameter class %s != %s", listObject.getClass().getName(), IASString.class.getName());
             return taintAware;
         }
         // This should already be tainted correctly
-        IASString jsonList = (IASString) parameters[0];
+        IASString jsonList = (IASString) listObject;
         // Simplest is to just propagate taint to the output
         // Might lead to over-tainting, but should be fine in this specific case.
         if (jsonList.isTainted()) {
