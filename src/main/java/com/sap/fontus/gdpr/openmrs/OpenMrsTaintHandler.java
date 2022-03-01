@@ -248,8 +248,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         // Source will be: org/codehaus/jackson/JsonNode/getTextValue()Ljava/lang/String;
         // parent = JsonNode
         // Make this a specific source, so that it is only called inside
-        // private List<Diagnosis> parseDiagnoses(String jsonList, Map<Integer, Obs> existingDiagnosisObs) throws IOException {
-        // i.e. org/openmrs/module/coreapps/htmlformentry/EncounterDiagnosesElement.parseDiagnoses(Ljava/lang/String;java/lang/Map)Ljava/lang/List
+        // i.e. org/openmrs/module/coreapps/htmlformentry/EncounterDiagnosesElement.applyAction(Lorg/openmrs/module/htmlformentry/FormEntrySession;)V
         // parameters = nominally zero, but add locals #0 (ie a String)
 
         // General debug info
@@ -260,7 +259,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             System.out.printf("Parameter length %d != 1%n", parameters.length);
             return taintAware;
         }
-        if (!(parameters[1] instanceof IASString)) {
+        if (!(parameters[0] instanceof IASString)) {
             System.out.printf("Parameter class %s != %s", parameters[1].getClass().getName(), IASString.class.getName());
             return taintAware;
         }
