@@ -191,4 +191,9 @@ public class IASTaintHandler {
         // Check at least the descriptor is right
         return (function.getDescriptor().equals(Constants.TaintHandlerTaintDesc));
     }
+
+    public static boolean isValidTaintChecker(FunctionCall function) {
+        // Check at least the descriptor is right
+        return (function.getDescriptor().equals(Constants.TaintHandlerCheckTaintDesc));
+    }
 }

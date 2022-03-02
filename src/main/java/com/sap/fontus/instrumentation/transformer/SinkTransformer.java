@@ -1,10 +1,12 @@
 package com.sap.fontus.instrumentation.transformer;
 
 import com.sap.fontus.asm.Descriptor;
+import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.Sink;
 import com.sap.fontus.Constants;
 import com.sap.fontus.instrumentation.MethodTaintingVisitor;
 import com.sap.fontus.instrumentation.InstrumentationHelper;
+import com.sap.fontus.taintaware.unified.IASTaintHandler;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
 import org.objectweb.asm.MethodVisitor;
@@ -45,7 +47,21 @@ public class SinkTransformer extends SourceOrSinkTransformer implements Paramete
 
             originalVisitor.visitLdcInsn(sinkFunction);
             originalVisitor.visitLdcInsn(sinkName);
-            originalVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.TaintHandlerQN, Constants.TaintHandlerCheckTaintName, Constants.TaintHandlerCheckTaintDesc, false);
+
+            // Get the source taint handler from the configuration file
+            FunctionCall taint = this.sink.getTaintHandler();
+
+            // Add default values if not already defined
+            if (taint.isEmpty()) {
+                taint = new FunctionCall(Opcodes.INVOKESTATIC,
+                        Constants.TaintHandlerQN,
+                        Constants.TaintHandlerCheckTaintName,
+                        Constants.TaintHandlerCheckTaintDesc,
+                        false);
+            } else if (!IASTaintHandler.isValidTaintChecker(taint)) {
+                throw new RuntimeException("Invalid Taint Checker in configuration file!");
+            }
+            originalVisitor.visitMethodInsn(taint.getOpcode(), taint.getOwner(), taint.getName(), taint.getDescriptor(), taint.isInterface());
             originalVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(instrumentedType).getInternalName());
         }
     }
