@@ -397,8 +397,9 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             Object user = contextClass.getMethod("getAuthenticatedUser").invoke(null);
             if (user != null) {
                 Object userName = user.getClass().getMethod("getUsername").invoke(user);
-                if (userName instanceof String) {
-                    loggedInUser = (String) userName;
+                // Will be an IASString because it is tainted...
+                if (userName instanceof IASString) {
+                    loggedInUser = ((IASString) userName).getString();
                 }
             }
         } catch (Exception e) {
