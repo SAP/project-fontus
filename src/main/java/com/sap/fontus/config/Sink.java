@@ -1,5 +1,6 @@
 package com.sap.fontus.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sap.fontus.asm.FunctionCall;
 
@@ -94,6 +95,7 @@ public class Sink {
         return this.name;
     }
 
+    @JsonIgnore
     public Abort getAbortFromSink() {
         List<Abort> l = new ArrayList<>();
         for (String abortName : getDataProtection().getAborts()) {
