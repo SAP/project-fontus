@@ -18,8 +18,13 @@ import java.util.UUID;
 public class Utils {
 
     public static String serializeTaints(IASString str) {
-        Genson genson = new GensonBuilder().withConverters(new InstantConverter()).useClassMetadata(true)
-                .useRuntimeType(true).useFields(true, VisibilityFilter.PRIVATE).useMethods(false).create();
+        Genson genson = new GensonBuilder()
+                .withConverters(new InstantConverter())
+                .useClassMetadata(true)
+                .useRuntimeType(true)
+                .useFields(true, VisibilityFilter.PRIVATE)
+                .useMethods(false)
+                .create();
         return genson.serialize(str.getTaintInformationInitialized().getTaintRanges(str.length()));
     }
 
@@ -29,7 +34,12 @@ public class Utils {
     }
 
     public static IASTaintInformationable parseTaint(String json) {
-        Genson genson = new GensonBuilder().withConverters(new InstantConverter()).useClassMetadata(true).useRuntimeType(true).useFields(true, VisibilityFilter.PRIVATE).create();
+        Genson genson = new GensonBuilder()
+                .withConverters(new InstantConverter())
+                .useClassMetadata(true)
+                .useRuntimeType(true)
+                .useFields(true, VisibilityFilter.PRIVATE)
+                .create();
         IASTaintRanges ranges = genson.deserialize(json, IASTaintRanges.class);
         return TaintInformationFactory.createTaintInformation(ranges.getLength(), ranges.getTaintRanges());
     }

@@ -79,7 +79,11 @@ public class OpenOlatTaintHandler extends IASTaintHandler {
         ReflectedSession session = request.getSession();
         long sessionId = getSessionUserId(session);
         String userId = String.valueOf(sessionId);
-        // if userId == -1 -> not logged in
+        if(sessionId == -1L) {
+            // if userId == -1 -> not logged in -> give marker value that is hopefully more "special"
+            userId = "FONTUS_CHANGE_ME";
+        }
+
         DataSubject ds = new SimpleDataSubject(userId);
         Collection<AllowedPurpose> allowed = Utils.getPurposesFromRequest(request);
         allowedPurposes.put(userId, allowed);
