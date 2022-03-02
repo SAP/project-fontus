@@ -354,21 +354,23 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
 
         // Extract taint information
         IASString taintedString = taintAware.toIASString();
-        boolean policyViolation = false;
-        for (IASTaintRange range : taintedString.getTaintInformation().getTaintRanges(taintedString.getString().length())) {
-            // Check policy for each range
-            if (range.getMetadata() instanceof GdprTaintMetadata) {
-                GdprTaintMetadata taintMetadata = (GdprTaintMetadata) range.getMetadata();
-                GdprMetadata metadata = taintMetadata.getMetadata();
-                if (!policy.areRequiredPurposesAllowed(requiredPurposes, metadata.getAllowedPurposes())) {
-                    policyViolation = true;
+        if (taintedString.isTainted() && (taintedString.getTaintInformation() != null)) {
+            boolean policyViolation = false;
+            for (IASTaintRange range : taintedString.getTaintInformation().getTaintRanges(taintedString.getString().length())) {
+                // Check policy for each range
+                if (range.getMetadata() instanceof GdprTaintMetadata) {
+                    GdprTaintMetadata taintMetadata = (GdprTaintMetadata) range.getMetadata();
+                    GdprMetadata metadata = taintMetadata.getMetadata();
+                    if (!policy.areRequiredPurposesAllowed(requiredPurposes, metadata.getAllowedPurposes())) {
+                        policyViolation = true;
+                    }
                 }
             }
-        }
-        // Block / Sanitize / etc...
-        if (policyViolation) {
-            Abort a = sink.getAbortFromSink();
-            taintAware = a.abort(taintAware, instance, sinkFunction, sinkName, Arrays.asList(stackTrace));
+            // Block / Sanitize / etc...
+            if (policyViolation) {
+                Abort a = sink.getAbortFromSink();
+                taintAware = a.abort(taintAware, instance, sinkFunction, sinkName, Arrays.asList(stackTrace));
+            }
         }
         return taintAware;
     }
