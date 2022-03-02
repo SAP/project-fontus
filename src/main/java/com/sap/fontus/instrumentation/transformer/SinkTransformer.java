@@ -15,6 +15,11 @@ import org.objectweb.asm.Type;
 
 public class SinkTransformer extends SourceOrSinkTransformer implements ParameterTransformation, ReturnTransformation {
     private static final Logger logger = LogUtils.getLogger();
+    private static final FunctionCall defaultTaintChecker = new FunctionCall(Opcodes.INVOKESTATIC,
+            Constants.TaintHandlerQN,
+            Constants.TaintHandlerCheckTaintName,
+            Constants.TaintHandlerCheckTaintDesc,
+            false);
 
     private final Sink sink;
     private final InstrumentationHelper instrumentationHelper;
@@ -53,13 +58,9 @@ public class SinkTransformer extends SourceOrSinkTransformer implements Paramete
 
             // Add default values if not already defined
             if (taint.isEmpty()) {
-                taint = new FunctionCall(Opcodes.INVOKESTATIC,
-                        Constants.TaintHandlerQN,
-                        Constants.TaintHandlerCheckTaintName,
-                        Constants.TaintHandlerCheckTaintDesc,
-                        false);
+                taint = defaultTaintChecker;
             } else if (!IASTaintHandler.isValidTaintChecker(taint)) {
-                throw new RuntimeException("Invalid Taint Checker in configuration file!");
+                throw new RuntimeException("Invalid Taint Checker " + taint + " in configuration file (need descriptor: " + Constants.TaintHandlerCheckTaintDesc + ")");
             }
             originalVisitor.visitMethodInsn(taint.getOpcode(), taint.getOwner(), taint.getName(), taint.getDescriptor(), taint.isInterface());
             originalVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(instrumentedType).getInternalName());
