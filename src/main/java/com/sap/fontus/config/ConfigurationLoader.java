@@ -1,7 +1,5 @@
 package com.sap.fontus.config;
 
-import com.ctc.wstx.stax.WstxInputFactory;
-import com.ctc.wstx.stax.WstxOutputFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,7 +22,7 @@ public class ConfigurationLoader {
     private static final Logger logger = LogUtils.getLogger();
 
     public static Configuration readXmlConfiguration(InputStream stream) {
-        ObjectMapper objectMapper = new XmlMapper(new WstxInputFactory(), new WstxOutputFactory());
+        ObjectMapper objectMapper = new XmlMapper();
         objectMapper.registerModule(new JaxbAnnotationModule());
         return readFromStream(objectMapper, stream);
     }
