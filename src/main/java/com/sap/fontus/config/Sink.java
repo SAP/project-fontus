@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sap.fontus.asm.FunctionCall;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.sap.fontus.config.abort.Abort;
+import com.sap.fontus.config.abort.MultiAbort;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -90,6 +92,17 @@ public class Sink {
 
     public String getName() {
         return this.name;
+    }
+
+    public Abort getAbortFromSink() {
+        List<Abort> l = new ArrayList<>();
+        for (String abortName : getDataProtection().getAborts()) {
+            Abort a = Abort.parse(abortName);
+            if (a != null) {
+                l.add(a);
+            }
+        }
+        return new MultiAbort(l);
     }
 
     @Override

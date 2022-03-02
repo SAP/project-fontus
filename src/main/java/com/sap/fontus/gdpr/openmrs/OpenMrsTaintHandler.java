@@ -2,11 +2,16 @@ package com.sap.fontus.gdpr.openmrs;
 
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.Configuration;
+
+import com.sap.fontus.config.Sink;
 import com.sap.fontus.config.Source;
+
+import com.sap.fontus.config.abort.Abort;
 import com.sap.fontus.gdpr.metadata.*;
-import com.sap.fontus.gdpr.metadata.simple.SimpleDataId;
-import com.sap.fontus.gdpr.metadata.simple.SimpleDataSubject;
-import com.sap.fontus.gdpr.metadata.simple.SimpleGdprMetadata;
+import com.sap.fontus.gdpr.metadata.registry.PurposeRegistry;
+import com.sap.fontus.gdpr.metadata.registry.RequiredPurposeRegistry;
+import com.sap.fontus.gdpr.metadata.registry.VendorRegistry;
+import com.sap.fontus.gdpr.metadata.simple.*;
 import com.sap.fontus.gdpr.cookie.ConsentCookie;
 import com.sap.fontus.gdpr.cookie.ConsentCookieMetadata;
 import com.sap.fontus.gdpr.servlet.ReflectedCookie;
@@ -15,6 +20,7 @@ import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.*;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
+import com.sap.fontus.utils.stats.Statistics;
 import org.objectweb.asm.Opcodes;
 
 import java.lang.reflect.Method;
@@ -305,6 +311,73 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             return setDiagnosisTaint((IASTaintAware) object, parent, parameters, sourceId);
         }
         return IASTaintHandler.traverseObject(object, taintAware -> setDiagnosisTaint(taintAware, parent, parameters, sourceId));
+    }
+
+    // Assume the purpose can be inferred by looking at which methods are calling the sink in question
+    public static RequiredPurposes getRequiredPurposesFromStackTrace(StackTraceElement[] stack) {
+        Set<Purpose> purposes = new HashSet<>();
+        Set<Vendor> vendors = new HashSet<>();
+        for (StackTraceElement ste : stack) {
+            String clazzName = ste.getClassName();
+            if (clazzName.startsWith("org.openmrs.module.fhir2")) {
+                purposes.add(PurposeRegistry.getInstance().get("export"));
+                vendors.add(VendorRegistry.getInstance().get("fhir"));
+            }
+        }
+        return new SimpleRequiredPurposes(purposes, vendors);
+    }
+
+    /**
+     * This is called for sink functions
+     * @param taintAware
+     * @param instance
+     * @param sinkFunction
+     * @param sinkName
+     * @return
+     */
+    public static IASTaintAware handleTaint(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName) {
+        boolean isTainted = taintAware.isTainted();
+        System.out.println("isTainted : " + isTainted);
+        System.out.println("taintaware : " + taintAware);
+        System.out.println("sink : " + sinkFunction);
+        System.out.println("stackTrace : " + java.util.Arrays.toString(Thread.currentThread().getStackTrace()));
+
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+
+        // General idea: get the "Purpose" by navigating the stack trace to find who is calling the sink function
+        RequiredPurposes requiredPurposes = getRequiredPurposesFromStackTrace(stackTrace);
+
+        Sink sink = Configuration.getConfiguration().getSinkConfig().getSinkForFqn(sinkFunction);
+
+        // Create a policy
+        PurposePolicy policy = new SimplePurposePolicy();
+
+        // Extract taint information
+        IASString taintedString = taintAware.toIASString();
+        boolean policyViolation = false;
+        for (IASTaintRange range : taintedString.getTaintInformation().getTaintRanges(taintedString.getString().length())) {
+            // Check policy for each range
+            if (range.getMetadata() instanceof GdprTaintMetadata) {
+                GdprTaintMetadata taintMetadata = (GdprTaintMetadata) range.getMetadata();
+                GdprMetadata metadata = taintMetadata.getMetadata();
+                if (!policy.areRequiredPurposesAllowed(requiredPurposes, metadata.getAllowedPurposes())) {
+                    policyViolation = true;
+                }
+            }
+        }
+        // Block / Sanitize / etc...
+        if (policyViolation) {
+            Abort a = sink.getAbortFromSink();
+            taintAware = a.abort(taintAware, instance, sinkFunction, sinkName, Arrays.asList(stackTrace));
+        }
+        return taintAware;
+    }
+
+    public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName) {
+        if (object instanceof IASTaintAware) {
+            return handleTaint((IASTaintAware) object, instance, sinkFunction, sinkName);
+        }
+        return traverseObject(object, taintAware -> handleTaint(taintAware, instance, sinkFunction, sinkName));
     }
 
 }
