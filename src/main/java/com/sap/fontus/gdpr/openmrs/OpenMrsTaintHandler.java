@@ -395,15 +395,13 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         try {
             Class contextClass = Class.forName("org.openmrs.api.context.Context", false, Thread.currentThread().getContextClassLoader());
             Object user = contextClass.getMethod("getAuthenticatedUser").invoke(null);
-            Object userName = user.getClass().getMethod("getUsername").invoke(user);
-            if (userName instanceof String) {
-                loggedInUser = (String) userName;
+            if (user != null) {
+                Object userName = user.getClass().getMethod("getUsername").invoke(user);
+                if (userName instanceof String) {
+                    loggedInUser = (String) userName;
+                }
             }
-        } catch (ClassNotFoundException | NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         System.out.println("FONTUS: logged in user: " + loggedInUser);
