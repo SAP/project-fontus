@@ -1,5 +1,6 @@
 package com.sap.fontus.gdpr.database;
 
+import com.sap.fontus.gdpr.database.defaultValues.DefaultValues;
 import com.sap.fontus.gdpr.database.expired.ExpiredData;
 import com.sap.fontus.gdpr.database.statistics.Statistics;
 import com.sap.fontus.gdpr.database.accessrequest.SubjectAccessRequest;
@@ -15,7 +16,8 @@ import java.util.concurrent.Callable;
         subcommands = {
             SubjectAccessRequest.class,
             ExpiredData.class,
-            Statistics.class
+            Statistics.class,
+            DefaultValues.class
         }
 )
 public class Application implements Callable<Void> {

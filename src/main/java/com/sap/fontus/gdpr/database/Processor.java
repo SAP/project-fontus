@@ -30,7 +30,7 @@ public class Processor {
         ) {
             //System.out.println("connected");
             DatabaseMetaData metaData = conn.getMetaData();
-            ResultSet tables = metaData.getTables(this.catalog, null, null, new String[]{"TABLE"});
+            ResultSet tables = metaData.getTables(this.catalog, null, null, new String[]{"TABLE"/*, "VIEW"*/});
 
             /*ResultSetMetaData rsm = tables.getMetaData();
             for(int i = 0; i < rsm.getColumnCount(); i++) {
@@ -71,10 +71,10 @@ public class Processor {
                     String taintValue = rs.getString(i);
                     String columnType = metaData.getColumnTypeName(i-1);
                     if (taintValue == null || taintValue.equals("0")) {
-                        this.gatherer.untaintedColumn(i - 1, columnName, columnType,  rs.getObject(i - 1));
+                        this.gatherer.untaintedColumn(i - 1, originalColumnName, columnType,  rs.getObject(i - 1));
                     } else {
                         IASTaintInformationable tis = Utils.parseTaint(taintValue);
-                        this.gatherer.taintedColumn(i - 1, columnName, columnType, rs.getString(i - 1), tis);
+                        this.gatherer.taintedColumn(i - 1, originalColumnName, columnType, rs.getString(i - 1), tis);
                     }
                 }
             }
