@@ -13,15 +13,21 @@ import org.objectweb.asm.Opcodes;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class AnnotationLookup {
     private static final Logger logger = LogUtils.getLogger();
     private final Cache<String, Boolean> cache;
+    private final CombinedExcludedLookup combinedExcludedLookup;
+    private final Map<String, Boolean> transformCache;
 
     private AnnotationLookup() {
         this.cache = Caffeine.newBuilder().build();
+        this.transformCache = new ConcurrentHashMap<>();
+        this.combinedExcludedLookup = new CombinedExcludedLookup();
     }
 
     public static AnnotationLookup getInstance() {
@@ -61,26 +67,34 @@ public final class AnnotationLookup {
             interfaces = new String[0];
         }
 
+        // Not necessary
         // Try again using the class via reflection
-        if (!isAnnotation) {
-            Class<?> cls = null;
-            try {
-                cls = Class.forName(className, false, null);
-            } catch (ClassNotFoundException ignored) {
-            }
-            if (cls != null) {
-                if (cls.isAnnotation()) {
-                    isAnnotation = true;
-                }
-            }
-        }
+//        if (!isAnnotation) {
+//            Class<?> cls = null;
+//            try {
+//                cls = Class.forName(className, false, null);
+//            } catch (ClassNotFoundException ignored) {
+//            }
+//            if (cls != null) {
+//                if (cls.isAnnotation()) {
+//                    isAnnotation = true;
+//                }
+//            }
+//        }
 
+        // Not necessary anymore as every Class which was loaded was registered in the AnnotationLookup by the TaintingTransformer
         // Try again using the class via reflection
         if (!isAnnotation) {
-            Class<?> cls = ClassUtils.findLoadedClass(className);
-            if (cls != null) {
-                if (cls.isAnnotation()) {
-                    isAnnotation = true;
+            if (combinedExcludedLookup.isJdkClass(className)) {
+                Class<?> cls = ClassUtils.findLoadedClass(className);
+                if (cls != null) {
+                    if (cls.isAnnotation()) {
+                        isAnnotation = true;
+                    }
+                }
+            } else {
+                if (this.transformCache.containsKey(className)) {
+                    isAnnotation = this.transformCache.get(className);
                 }
             }
         }
@@ -111,6 +125,13 @@ public final class AnnotationLookup {
 
     public boolean isAnnotation(String name, IClassResolver resolver) {
         return this.isAnnotation(name, null, null, resolver);
+    }
+
+    public void checkAnnotationAndCache(String className, byte[] classfileBuffer) {
+        this.transformCache.computeIfAbsent(className, (ignored) -> {
+            int access = new ClassReader(classfileBuffer).getAccess();
+            return (access & Opcodes.ACC_ANNOTATION) > 0;
+        });
     }
 
     private static class LazyHolder {

@@ -3,6 +3,7 @@ package com.sap.fontus.agent;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.instrumentation.Instrumenter;
 import com.sap.fontus.utils.*;
+import com.sap.fontus.utils.lookups.AnnotationLookup;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.ClassReader;
 
@@ -34,14 +35,17 @@ class TaintingTransformer implements ClassFileTransformer {
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
         this.nClasses += 1;
+
+        if (className == null) {
+            className = new ClassReader(classfileBuffer).getClassName();
+        }
+
+        AnnotationLookup.getInstance().checkAnnotationAndCache(className, classfileBuffer);
+
         this.classFinder.addClass(className, loader);
 
         if (loader == null) {
             return classfileBuffer;
-        }
-
-        if (className == null) {
-            className = new ClassReader(classfileBuffer).getClassName();
         }
 
         CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(loader);
