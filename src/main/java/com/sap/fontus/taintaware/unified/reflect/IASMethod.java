@@ -184,9 +184,9 @@ public class IASMethod extends IASExecutable<Method> {
                 if ((i > 0) && (i < parameters.length)) {
                     // Call the taint handler by reflection
                     if (taintCheckerMethod != null) {
-                        parameters[i] = taintCheckerMethod.invoke(null, parameters[i], instance, sink.getFunction().toString(), sink.getName());
+                        parameters[i] = taintCheckerMethod.invoke(null, parameters[i], instance, sink.getFunction().getFqn(), sink.getName());
                     } else {
-                        parameters[i] = IASTaintHandler.checkTaint(parameters[i], instance, sink.getFunction().toString(), sink.getName());
+                        parameters[i] = IASTaintHandler.checkTaint(parameters[i], instance, sink.getFunction().getFqn(), sink.getName());
                     }
                 }
             }
@@ -232,9 +232,9 @@ public class IASMethod extends IASExecutable<Method> {
                 if (i == -1) {
                     // Call the taint handler by reflection
                     if (taintCheckerMethod != null) {
-                        returnObj = taintCheckerMethod.invoke(null, returnObj, instance, sink.getFunction().toString(), sink.getName());
+                        returnObj = taintCheckerMethod.invoke(null, returnObj, instance, sink.getFunction().getFqn(), sink.getName());
                     } else {
-                        returnObj = IASTaintHandler.checkTaint(returnObj, instance, sink.getFunction().toString(), sink.getName());
+                        returnObj = IASTaintHandler.checkTaint(returnObj, instance, sink.getFunction().getFqn(), sink.getName());
                     }
                 }
             }
