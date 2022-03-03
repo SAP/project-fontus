@@ -17,16 +17,16 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.Set;
 
-public class GdprSerializationTests {
+class SerializationTests {
 
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.RANGE);
     }
 
     @Test
-    public void testSerialization() {
+    void testSerialization() {
         GdprMetadata metadata = new SimpleGdprMetadata(
                 Set.of(),
                 ProtectionLevel.Normal,
@@ -85,5 +85,6 @@ public class GdprSerializationTests {
                 "}";
         IASString restored = IASString.fromString("foobar");
         Utils.restoreTaint(restored, json);
+        assertTrue(restored.isTainted());
     }
 }
