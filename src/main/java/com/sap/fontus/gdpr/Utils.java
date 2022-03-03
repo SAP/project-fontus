@@ -81,6 +81,13 @@ public final class Utils {
         });
     }
 
+    public static boolean markContested(IASTaintInformationable taintInformation) {
+        return processGdprMetaData(taintInformation, false, (acc, gdprData) -> {
+            gdprData.restrictProcessing();
+            return true;
+        });
+    }
+
     public static boolean updateExpiryDatesAndProtectionLevel(IASTaintAware taintAware, long daysFromNow, ProtectionLevel protectionLevel) {
         if(!taintAware.isTainted()) {
             return false;

@@ -8,13 +8,14 @@ import java.util.Set;
 
 public class SimpleGdprMetadata extends GdprMetadataBase {
 
-    private Collection<AllowedPurpose> allowedPurposes;
+    // TODO(david): I have marked a bunch of them as final -- are there any more that can change values at runtime?
+    private final Collection<AllowedPurpose> allowedPurposes;
     private ProtectionLevel protectionLevel;
-    private DataSubject dataSubject;
-    private DataId dataId;
-    private boolean portability;
+    private final DataSubject dataSubject;
+    private final DataId dataId;
+    private final boolean portability;
     private boolean processingUnrestricted;
-    private Identifiability identifiability;
+    private final Identifiability identifiability;
 
     public SimpleGdprMetadata() {
         this.allowedPurposes = Set.of();
@@ -38,37 +39,37 @@ public class SimpleGdprMetadata extends GdprMetadataBase {
 
     @Override
     public Collection<AllowedPurpose> getAllowedPurposes() {
-        return allowedPurposes;
+        return this.allowedPurposes;
     }
 
     @Override
     public ProtectionLevel getProtectionLevel() {
-        return protectionLevel;
+        return this.protectionLevel;
     }
 
     @Override
     public DataSubject getSubject() {
-        return dataSubject;
+        return this.dataSubject;
     }
 
     @Override
     public DataId getId() {
-        return dataId;
+        return this.dataId;
     }
 
     @Override
     public boolean isQualifiedForPortability() {
-        return portability;
+        return this.portability;
     }
 
     @Override
     public boolean isProcessingUnrestricted() {
-        return processingUnrestricted;
+        return this.processingUnrestricted;
     }
 
     @Override
     public Identifiability isIdentifiable() {
-        return identifiability;
+        return this.identifiability;
     }
 
     @Override
@@ -77,16 +78,31 @@ public class SimpleGdprMetadata extends GdprMetadataBase {
     }
 
     @Override
+    public void restrictProcessing() {
+        this.processingUnrestricted = false;
+    }
+
+    @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
         SimpleGdprMetadata that = (SimpleGdprMetadata) o;
-        return portability == that.portability && processingUnrestricted == that.processingUnrestricted && Objects.equals(allowedPurposes, that.allowedPurposes) && protectionLevel == that.protectionLevel && Objects.equals(dataSubject, that.dataSubject) && Objects.equals(dataId, that.dataId) && identifiability == that.identifiability;
+        return this.portability == that.portability
+                && this.processingUnrestricted == that.processingUnrestricted
+                && Objects.equals(this.allowedPurposes, that.allowedPurposes)
+                && this.protectionLevel == that.protectionLevel
+                && Objects.equals(this.dataSubject, that.dataSubject)
+                && Objects.equals(this.dataId, that.dataId)
+                && this.identifiability == that.identifiability;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(allowedPurposes, protectionLevel, dataSubject, dataId, portability, processingUnrestricted, identifiability);
+        return Objects.hash(this.allowedPurposes, this.protectionLevel, this.dataSubject, this.dataId, this.portability, this.processingUnrestricted, this.identifiability);
     }
 
 }

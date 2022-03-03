@@ -37,9 +37,10 @@ class RestrictedProcessingTests {
                 new SimpleDataSubject("foo"),
                 new SimpleDataId(),
                 true,
-                false,
+                true,
                 Identifiability.NotExplicit);
         payload.setTaint(new GdprTaintMetadata(1, metadata));
+        Utils.markContested(payload.getTaintInformation());
         IASString result = pre.concat(payload).concat(post);
         Pair<IASTaintAware,Boolean> data = Utils.censorContestedParts(result);
         Assertions.assertTrue(data.y);
