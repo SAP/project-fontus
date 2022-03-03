@@ -7,6 +7,7 @@ import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.Sink;
 import com.sap.fontus.config.SinkParameter;
 import com.sap.fontus.config.Source;
+import com.sap.fontus.instrumentation.InstrumentationHelper;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASStringUtils;
@@ -25,6 +26,7 @@ import java.util.Arrays;
 
 public class IASMethod extends IASExecutable<Method> {
     private static final CombinedExcludedLookup lookup = new CombinedExcludedLookup();
+    private static final InstrumentationHelper helper = new InstrumentationHelper();
     private static final Method forNameMethod;
 
     static {
@@ -160,7 +162,10 @@ public class IASMethod extends IASExecutable<Method> {
 
         // Check for sinks
         FunctionCall fc = FunctionCall.fromMethod(this.original);
-        Sink sink = Configuration.getConfiguration().getSinkConfig().getSinkForFunction(fc);
+        // We need to uninstrument the function call to ensure a match with the configuration
+        FunctionCall uninstrumented = new FunctionCall(fc.getOpcode(), fc.getOwner(), fc.getName(), helper.uninstrumentForJdkCall(fc.getDescriptor()), fc.isInterface());
+
+        Sink sink = Configuration.getConfiguration().getSinkConfig().getSinkForFunction(uninstrumented);
         Method taintCheckerMethod = null;
         if (sink != null) {
             // Check for custom taint checker method
@@ -236,7 +241,7 @@ public class IASMethod extends IASExecutable<Method> {
         }
 
         // Check for sources
-        Source source = Configuration.getConfiguration().getSourceConfig().getSourceForFunction(fc);
+        Source source = Configuration.getConfiguration().getSourceConfig().getSourceForFunction(uninstrumented);
         Method taintHandlerMethod = null;
         if (source != null) {
             // Check for custom taint checker method
