@@ -7,8 +7,8 @@ import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class StatisticsGatherer extends AbstractInformationGatherer {
-    private Collection<TableStatistics> tableStatistics = new ArrayList<>();
+class StatisticsGatherer extends AbstractInformationGatherer {
+    private final Collection<TableStatistics> tableStatistics = new ArrayList<>();
     private TableStatistics currentTable = null;
 
     @Override
@@ -33,7 +33,7 @@ public class StatisticsGatherer extends AbstractInformationGatherer {
 
     @Override
     public void taintedColumn(int index, String name,String type, String value, IASTaintInformationable taintInformation) {
-        if(this.isTextType(type)) {
+        if(isTextType(type)) {
             this.currentTable.incrementStringColumn();
         }
         this.currentTable.incrementTainted();
@@ -41,7 +41,7 @@ public class StatisticsGatherer extends AbstractInformationGatherer {
 
     @Override
     public void untaintedColumn(int index, String name, String type, Object value) {
-        if(this.isTextType(type)) {
+        if(isTextType(type)) {
             this.currentTable.incrementStringColumn();
         }
         this.currentTable.incrementUntainted();
@@ -53,7 +53,7 @@ public class StatisticsGatherer extends AbstractInformationGatherer {
         }
     }
 
-    public boolean isTextType(String type) {
+    public static boolean isTextType(String type) {
         switch (type) {
             case "VARCHAR":
             case "MEDIUMTEXT":

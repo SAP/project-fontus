@@ -8,7 +8,7 @@ import picocli.CommandLine;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-public class ExpiredTaintColumnGatherer extends AbstractInformationGatherer {
+class ExpiredTaintColumnGatherer extends AbstractInformationGatherer {
     private final Instant now;
 
     @CommandLine.Option(
@@ -19,7 +19,7 @@ public class ExpiredTaintColumnGatherer extends AbstractInformationGatherer {
     )
     private int days = 21;
 
-    public ExpiredTaintColumnGatherer() {
+    ExpiredTaintColumnGatherer() {
         super();
         this.now = Instant.now().plus(this.days, ChronoUnit.DAYS);
     }

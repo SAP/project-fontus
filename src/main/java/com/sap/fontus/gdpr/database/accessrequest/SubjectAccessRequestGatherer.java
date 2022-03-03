@@ -7,10 +7,10 @@ import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 
 import java.util.Collection;
 
-public class SubjectAccessRequestGatherer extends AbstractInformationGatherer {
+class SubjectAccessRequestGatherer extends AbstractInformationGatherer {
     private final String identifier;
 
-    public SubjectAccessRequestGatherer(String identifier) {
+    SubjectAccessRequestGatherer(String identifier) {
         super();
         this.identifier = identifier;
     }

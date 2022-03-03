@@ -3,14 +3,14 @@ package com.sap.fontus.gdpr.database.statistics;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class TableStatistics {
+class TableStatistics {
 
     private final String catalog;
     private final String name;
     private final Collection<RowStatistics> rowStats = new ArrayList<>();
     private RowStatistics currentRow = null;
 
-    public TableStatistics(String catalog, String name) {
+    TableStatistics(String catalog, String name) {
         this.catalog = catalog;
         this.name = name;
     }
@@ -22,27 +22,30 @@ public class TableStatistics {
         this.currentRow = new RowStatistics();
     }
 
-    public void endTable() {
+    void endTable() {
         if (this.currentRow != null) {
             this.rowStats.add(this.currentRow);
         }
         this.currentRow = null;
     }
 
-    public void incrementTainted() {
+    void incrementTainted() {
         this.currentRow.incrementTainted();
     }
 
-    public void incrementUntainted() {
+    void incrementUntainted() {
         this.currentRow.incrementUntainted();
     }
 
-    public void incrementStringColumn() {
+    void incrementStringColumn() {
         this.currentRow.incrementStringColumns();
     }
 
-    public void printTableStatistics() {
+    void printTableStatistics() {
         int total = this.rowStats.size();
+        if(total == 0) {
+            return;
+        }
         int hasTainted = 0;
         int oneThird = 0;
         int half = 0;
@@ -56,7 +59,7 @@ public class TableStatistics {
             if (row.getTainted() > 0) {
                 hasTainted++;
                 double perc = row.taintedPercentage();
-                if (perc > 99.) {
+                if (perc > 99.0) {
                     all++;
                 }
                 if (perc > 66.6) {
@@ -69,7 +72,7 @@ public class TableStatistics {
                     oneThird++;
                 }
                 double stringPerc = row.taintedPercentageStringColumns();
-                if (stringPerc > 99.) {
+                if (stringPerc > 99.0) {
                     allString++;
                 }
                 if (stringPerc > 66.6) {
@@ -85,9 +88,9 @@ public class TableStatistics {
         }
 
         if (hasTainted == 0) {
-            System.out.printf("%s.%s has no rows with tainted values!%n", this.catalog, this.name);
+            System.out.printf("%s.%s has no rows (of %d) with tainted values!%n", this.catalog, this.name, total);
         } else {
-            System.out.printf("%s.%s has %d rows with tainted values!%n", this.catalog, this.name, hasTainted);
+            System.out.printf("%s.%s has %d rows (of %d) with tainted values!%n", this.catalog, this.name, hasTainted, total);
             if(oneThirdString > 0) {
                 System.out.printf("\tRows with > 33.3%% of tainted String values: %d (Total: %d)%n", oneThirdString, oneThird);
             }

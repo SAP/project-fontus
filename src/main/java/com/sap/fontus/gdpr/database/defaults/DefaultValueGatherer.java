@@ -1,4 +1,4 @@
-package com.sap.fontus.gdpr.database.defaultValues;
+package com.sap.fontus.gdpr.database.defaults;
 
 import com.sap.fontus.gdpr.Utils;
 import com.sap.fontus.gdpr.database.AbstractInformationGatherer;
@@ -10,10 +10,10 @@ import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 
 import java.util.Collection;
 
-public class DefaultValueGatherer extends AbstractInformationGatherer {
+class DefaultValueGatherer extends AbstractInformationGatherer {
     private final String identifier;
 
-    public DefaultValueGatherer(String identifier) {
+    DefaultValueGatherer(String identifier) {
         super();
         this.identifier = identifier;
     }
