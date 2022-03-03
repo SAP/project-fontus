@@ -43,15 +43,14 @@ public class SinkTransformer extends SourceOrSinkTransformer implements Paramete
         if (this.sink.findParameter(index) != null) {
             String instrumentedType = instrumentationHelper.instrumentQN(type);
             logger.info("Adding taint check for sink {}, parameter {} ({})", this.sink.getName(), index, type);
-            String sinkFunction = String.format("%s.%s%s", this.sink.getFunction().getOwner(), this.sink.getFunction().getName(), this.sink.getFunction().getDescriptor());
-            String sinkName = this.sink.getName();
 
             // Put the owning object instance onto the stack
             MethodVisitor originalVisitor = mv.getParent();
             addParentObjectToStack(originalVisitor, this.sink.getFunction());
 
-            originalVisitor.visitLdcInsn(sinkFunction);
-            originalVisitor.visitLdcInsn(sinkName);
+            // Add string information about the sink
+            originalVisitor.visitLdcInsn(this.sink.getFunction().getFqn());
+            originalVisitor.visitLdcInsn(this.sink.getName());
 
             // Get the source taint handler from the configuration file
             FunctionCall taint = this.sink.getTaintHandler();
