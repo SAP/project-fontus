@@ -154,7 +154,6 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
 
         } catch (Exception e) {
             System.err.println("Exception trying to extract taint metadata: " + e.getMessage());
-            e.printStackTrace();
         }
         System.out.println("FONTUS: for person UUID: " + patientId + " found taint metadata: " + md);
         return md;
@@ -230,7 +229,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             GdprMetadata metadata = null;
 
             ReflectedHttpServletRequest request = new ReflectedHttpServletRequest(parent);
-            System.out.println("Request: " + request);
+            // System.out.println("Request: " + request);
             if (registerPatientApp.equals(request.getParameter(appIdParameterName))) {
                 System.out.println("Creating new patient...");
                 metadata = createNewPatientMetadata(request);
@@ -351,8 +350,11 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         for (StackTraceElement ste : stack) {
             String clazzName = ste.getClassName();
             if (clazzName.startsWith("org.openmrs.module.fhir2")) {
-                purposes.add(PurposeRegistry.getInstance().get("export"));
-                vendors.add(VendorRegistry.getInstance().get("fhir"));
+                Purpose purpose = PurposeRegistry.getInstance().get("export");
+                purposes.add(purpose);
+                Vendor vendor = VendorRegistry.getInstance().get("fhir");
+                vendors.add(vendor);
+                System.out.println("FONTUS: Mapped class " + clazzName + " to purpose: " + purpose + " vendor: " + vendor);
             }
         }
         return new SimpleRequiredPurposes(purposes, vendors);
@@ -368,15 +370,18 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
      */
     public static IASTaintAware handleTaint(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName) {
         boolean isTainted = taintAware.isTainted();
-        System.out.println("isTainted : " + isTainted);
-        System.out.println("taintaware : " + taintAware);
-        System.out.println("sink : " + sinkFunction);
-        System.out.println("stackTrace : " + java.util.Arrays.toString(Thread.currentThread().getStackTrace()));
 
-        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        // System.out.println("isTainted : " + isTainted);
+        // System.out.println("taintaware : " + taintAware);
+        // System.out.println("sink : " + sinkFunction);
+        // System.out.println("stackTrace : " + java.util.Arrays.toString(Thread.currentThread().getStackTrace()));
 
-        // General idea: get the "Purpose" by navigating the stack trace to find who is calling the sink function
-        return applyPolicy(taintAware, instance, sinkFunction, sinkName, getRequiredPurposesFromStackTrace(stackTrace));
+        if (isTainted) {
+            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+            // General idea: get the "Purpose" by navigating the stack trace to find who is calling the sink function
+            return applyPolicy(taintAware, instance, sinkFunction, sinkName, getRequiredPurposesFromStackTrace(stackTrace));
+        }
+        return taintAware;
     }
 
     public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName) {
@@ -415,14 +420,17 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
 
     public static IASTaintAware handleLoggedInUserTaint(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName) {
         boolean isTainted = taintAware.isTainted();
-        System.out.println("isTainted : " + isTainted);
-        System.out.println("taintaware : " + taintAware);
-        System.out.println("sink : " + sinkFunction);
-        System.out.println("stackTrace : " + java.util.Arrays.toString(Thread.currentThread().getStackTrace()));
 
-        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        // System.out.println("isTainted : " + isTainted);
+        // System.out.println("taintaware : " + taintAware);
+        // System.out.println("sink : " + sinkFunction);
+        // System.out.println("stackTrace : " + java.util.Arrays.toString(Thread.currentThread().getStackTrace()));
 
-        return applyPolicy(taintAware, instance, sinkFunction, sinkName, getRequiredPurposesFromLoggedInUser());
+        if (isTainted) {
+            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+            return applyPolicy(taintAware, instance, sinkFunction, sinkName, getRequiredPurposesFromLoggedInUser());
+        }
+        return taintAware;
     }
 
     public static Object checkLoggedInUserTaint(Object object, Object instance, String sinkFunction, String sinkName) {
