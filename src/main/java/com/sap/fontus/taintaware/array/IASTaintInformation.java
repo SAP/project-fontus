@@ -120,6 +120,8 @@ public class IASTaintInformation implements IASTaintInformationable {
         int newSize = this.taints.length + offset;
         IASTaintMetadata newArray[] = new IASTaintMetadata[newSize];
         System.arraycopy(this.taints, 0, newArray, offset, this.taints.length);
+        // TODO(david): This used to return this without changing anything -> I think we want to change the taints?
+        this.taints = newArray;
         return this;
     }
 
