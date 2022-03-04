@@ -12,14 +12,14 @@ import java.util.regex.Pattern;
 
 import static com.sap.fontus.Constants.TAINT_PREFIX;
 
-final class Utils {
+public final class Utils {
 
     private static final Pattern DOUBLE_QUOTES = Pattern.compile("\"", Pattern.LITERAL);
     private static final Pattern BACKTICKS = Pattern.compile("`", Pattern.LITERAL);
 
     private Utils() {}
 
-    static String taintColumnName(CharSequence name) {
+    public static String taintColumnName(CharSequence name) {
         return "`" + TAINT_PREFIX + BACKTICKS.matcher(DOUBLE_QUOTES.matcher(name).replaceAll(Matcher.quoteReplacement(""))).replaceAll(Matcher.quoteReplacement("")) + "`";
     }
 

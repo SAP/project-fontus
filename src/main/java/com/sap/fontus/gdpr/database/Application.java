@@ -1,5 +1,6 @@
 package com.sap.fontus.gdpr.database;
 
+import com.sap.fontus.gdpr.database.contest.ContestWrongData;
 import com.sap.fontus.gdpr.database.defaults.DefaultValues;
 import com.sap.fontus.gdpr.database.expired.ExpiredData;
 import com.sap.fontus.gdpr.database.statistics.Statistics;
@@ -17,12 +18,19 @@ import java.util.concurrent.Callable;
             SubjectAccessRequest.class,
             ExpiredData.class,
             Statistics.class,
-            DefaultValues.class
+            DefaultValues.class,
+            ContestWrongData.class
         }
 )
 public class Application implements Callable<Void> {
 
-    @CommandLine.Option(names = "--host", required = true, paramLabel = "Database host", description = "Hostname of Database Server with port", defaultValue = "127.0.0.1:3306")
+    @CommandLine.Option(
+            names = "--host",
+            required = true,
+            paramLabel = "Database host",
+            description = "Hostname of Database Server with port",
+            defaultValue = "127.0.0.1:3306"
+    )
     private String host;
 
     @CommandLine.Option(
