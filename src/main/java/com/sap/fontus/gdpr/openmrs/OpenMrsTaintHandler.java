@@ -391,7 +391,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             return handleTaint((IASTaintAware) object, instance, sinkFunction, sinkName);
         } else if (object.getClass().getName().equals("org.hl7.fhir.r4.model.HumanName")) {
             try {
-                Method m = object.getClass().getMethod("getNameAsSingleString", IASString.class);
+                Method m = object.getClass().getMethod("getNameAsSingleString");
                 IASString s = (IASString) m.invoke(object);
                 // Actually should iterate over all names and replace them
                 handleTaint(s, instance, sinkFunction, sinkName);
