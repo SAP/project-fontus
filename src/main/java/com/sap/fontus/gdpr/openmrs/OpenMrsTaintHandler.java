@@ -393,7 +393,8 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             try {
                 Method m = object.getClass().getMethod("getNameAsSingleString", IASString.class);
                 IASString s = (IASString) m.invoke(object);
-                object = checkTaint(s, instance, sinkFunction, sinkName);
+                // Actually should iterate over all names and replace them
+                handleTaint(s, instance, sinkFunction, sinkName);
             } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
                 System.err.println("Exception: " + e + " for object: " + object);
             }
