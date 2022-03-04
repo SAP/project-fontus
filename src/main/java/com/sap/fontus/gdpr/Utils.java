@@ -42,7 +42,7 @@ public final class Utils {
 
     // Works like a fold in OCaml/Haskell or accumulate in Python
     // Applies the function to each GdprMetadata in the taintInformation and accumulates information
-    public static <A> A processGdprMetaData(IASTaintInformationable taintInformation, A initial,  BiFunction<A, GdprMetadata, A> function) {
+    private static <A> A processGdprMetaData(IASTaintInformationable taintInformation, A initial, BiFunction<A, GdprMetadata, A> function) {
         A accumulator = initial;
         if(taintInformation == null) {
             return accumulator;

@@ -57,11 +57,11 @@ public class ContestAction implements AutoCloseable {
             case OLAT:
                 switch(type) {
                     case EMAIL:
-                        return new Location("user_id", "o_user", "u_email");
+                        return new Location("fk_identity", "o_user", "u_email");
                     case FIRSTNAME:
-                        return new Location("user_id", "o_user", "u_firstname");
+                        return new Location("fk_identity", "o_user", "u_firstname");
                     case LASTNAME:
-                        return new Location("user_id", "o_user", "u_lastname");
+                        return new Location("fk_identity", "o_user", "u_lastname");
                     default:
                         throw new IllegalArgumentException(String.format("No mapping exists for %s -> %s", app, type));
                 }
