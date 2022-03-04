@@ -1,5 +1,6 @@
 package com.sap.fontus.asm;
 
+import com.sap.fontus.asm.resolver.IClassResolver;
 import org.mutabilitydetector.asm.typehierarchy.TypeHierarchyReader;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;

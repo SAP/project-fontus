@@ -2,20 +2,16 @@ package com.sap.fontus.utils.lookups;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.sap.fontus.asm.ClassReaderWithLoaderSupport;
-import com.sap.fontus.asm.ClassResolver;
-import com.sap.fontus.asm.IClassResolver;
+import com.sap.fontus.asm.resolver.IClassResolver;
 import com.sap.fontus.asm.NopVisitor;
 import com.sap.fontus.utils.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class AnnotationLookup {

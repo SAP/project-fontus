@@ -1,7 +1,8 @@
-package com.sap.fontus.utils;
+package com.sap.fontus.asm.resolver;
 
 import com.sap.fontus.Constants;
-import com.sap.fontus.asm.IClassResolver;
+import com.sap.fontus.utils.IOUtils;
+import com.sap.fontus.utils.Utils;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.ClassReader;
 

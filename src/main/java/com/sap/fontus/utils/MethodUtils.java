@@ -1,19 +1,12 @@
 package com.sap.fontus.utils;
 
 import com.sap.fontus.Constants;
-import com.sap.fontus.asm.ClassResolver;
-import com.sap.fontus.asm.Descriptor;
-import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public class MethodUtils {

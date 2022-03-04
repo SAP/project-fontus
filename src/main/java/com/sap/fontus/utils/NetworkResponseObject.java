@@ -1,6 +1,7 @@
 package com.sap.fontus.utils;
 
 import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.asm.resolver.ClassResolverFactory;
 
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -12,7 +13,7 @@ public class NetworkResponseObject {
         Object respObject = null;
 
         try {
-            Class cls = InstrumentationFactory.createClassFinder().findClass("org.springframework.web.context.request.RequestContextHolder");
+            Class cls = ClassResolverFactory.createClassFinder().findClass("org.springframework.web.context.request.RequestContextHolder");
             Method reqAttributeMethod = cls.getMethod("getRequestAttributes");
             Object reqAttributeObject = reqAttributeMethod.invoke(null);
             Method respObjectMethod = reqAttributeObject.getClass().getMethod("getResponse");

@@ -3,6 +3,7 @@ package com.sap.fontus.utils;
 import com.sap.fontus.asm.*;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import com.sap.fontus.instrumentation.Method;
+import com.sap.fontus.asm.resolver.IClassResolver;
 import org.mutabilitydetector.asm.typehierarchy.TypeHierarchy;
 import org.objectweb.asm.*;
 

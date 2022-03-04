@@ -1,4 +1,4 @@
-package com.sap.fontus.asm;
+package com.sap.fontus.asm.resolver;
 
 import java.io.InputStream;
 

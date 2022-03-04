@@ -1,6 +1,7 @@
 package com.sap.fontus.utils;
 
 import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.asm.resolver.ClassResolverFactory;
 import org.json.Cookie;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -20,7 +21,7 @@ public class NetworkRequestObject implements Serializable {
     private static Object fillRequestObject() {
         Object req = null;
         try {
-            Class cls = InstrumentationFactory.createClassFinder().findClass("org.springframework.web.context.request.RequestContextHolder");
+            Class cls = ClassResolverFactory.createClassFinder().findClass("org.springframework.web.context.request.RequestContextHolder");
             Method reqAttributeMethod = cls.getMethod("getRequestAttributes");
             Object reqAttributeObject = reqAttributeMethod.invoke(null);
             Method reqObjectMethod = reqAttributeObject.getClass().getMethod("getRequest");

@@ -1,8 +1,7 @@
 package com.sap.fontus.manual.groovy.converters;
 
-import com.sap.fontus.utils.ClassFinder;
 import com.sap.fontus.utils.ConversionUtils;
-import com.sap.fontus.utils.InstrumentationFactory;
+import com.sap.fontus.asm.resolver.ClassResolverFactory;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -16,7 +15,7 @@ public class DGMMethodConverter {
 
     static {
         try {
-            Class<?> dgmMethodClass = InstrumentationFactory.createClassFinder().findClass("org.codehaus.groovy.reflection.GeneratedMetaMethod$DgmMethodRecord");
+            Class<?> dgmMethodClass = ClassResolverFactory.createClassFinder().findClass("org.codehaus.groovy.reflection.GeneratedMetaMethod$DgmMethodRecord");
             if (dgmMethodClass == null) {
                 throw new ClassNotFoundException("org.codehaus.groovy.reflection.GeneratedMetaMethod$DgmMethodRecord");
             }

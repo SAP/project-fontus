@@ -1,29 +1,19 @@
-package com.sap.fontus.utils.offline;
+package com.sap.fontus.asm.resolver;
 
-import com.sap.fontus.Constants;
 import com.sap.fontus.agent.InstrumentationConfiguration;
-import com.sap.fontus.asm.ClassResolver;
-import com.sap.fontus.asm.IClassResolver;
-import com.sap.fontus.utils.IOUtils;
-import com.sap.fontus.utils.InstrumentationFactory;
-import com.sap.fontus.utils.JarClassResolver;
 import com.sap.fontus.utils.Utils;
-import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
-import org.objectweb.asm.ClassReader;
 
 import java.io.*;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
 
 public class OfflineClassResolver implements IClassResolver {
-    private final ClassResolver classResolver;
+    private final AgentClassResolver agentClassResolver;
     private Map<String, byte[]> classes;
 
-    public OfflineClassResolver(ClassResolver resolver) {
-        this.classResolver = resolver;
+    public OfflineClassResolver(AgentClassResolver resolver) {
+        this.agentClassResolver = resolver;
     }
 
     private synchronized void initialize() {
@@ -62,7 +52,7 @@ public class OfflineClassResolver implements IClassResolver {
             return new ByteArrayInputStream(bytes);
         }
 
-        return this.classResolver.resolve(className);
+        return this.agentClassResolver.resolve(className);
     }
 
     private void walkInput(File input, Map<String, byte[]> classes) {
@@ -78,7 +68,7 @@ public class OfflineClassResolver implements IClassResolver {
                     }
                 }
             } else {
-                JarClassResolver jarClassResolver = InstrumentationFactory.createJarClassResolver(input);
+                JarClassResolver jarClassResolver = ClassResolverFactory.createJarClassResolver(input);
 
                 jarClassResolver.getClasses().forEach(classes::putIfAbsent);
             }

@@ -1,7 +1,7 @@
 package com.sap.fontus.instrumentation;
 
 import com.sap.fontus.asm.FontusNonClassLoadingClassWriter;
-import com.sap.fontus.asm.IClassResolver;
+import com.sap.fontus.asm.resolver.IClassResolver;
 import com.sap.fontus.asm.TypeHierarchyReaderWithLoaderSupport;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.utils.LogUtils;

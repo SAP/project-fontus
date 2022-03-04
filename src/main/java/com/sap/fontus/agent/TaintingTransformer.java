@@ -1,11 +1,12 @@
 package com.sap.fontus.agent;
 
-import com.sap.fontus.asm.ClassResolver;
+import com.sap.fontus.asm.resolver.AgentClassResolver;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.instrumentation.Instrumenter;
 import com.sap.fontus.utils.*;
 import com.sap.fontus.utils.lookups.AnnotationLookup;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
+import com.sap.fontus.asm.resolver.ClassResolverFactory;
 import org.objectweb.asm.ClassReader;
 
 import java.lang.instrument.ClassFileTransformer;
@@ -29,7 +30,7 @@ class TaintingTransformer implements ClassFileTransformer {
     TaintingTransformer(Configuration config) {
         this.instrumenter = new Instrumenter();
         this.config = config;
-        this.classFinder = InstrumentationFactory.createClassFinder();
+        this.classFinder = ClassResolverFactory.createClassFinder();
     }
 
     @Override
@@ -41,7 +42,7 @@ class TaintingTransformer implements ClassFileTransformer {
             className = new ClassReader(classfileBuffer).getClassName();
         }
 
-        ClassResolver.addClassData(className, classfileBuffer);
+        ClassResolverFactory.addClassData(className, classfileBuffer);
         AnnotationLookup.getInstance().checkAnnotationAndCache(className, classfileBuffer);
 
         this.classFinder.addClass(className, loader);
@@ -80,13 +81,13 @@ class TaintingTransformer implements ClassFileTransformer {
         try {
             int hash = Arrays.hashCode(classfileBuffer);
             byte[] outArray = null;
-            if(this.config.usePersistentCache() && CacheHandler.get().isCached(hash)) {
+            if (this.config.usePersistentCache() && CacheHandler.get().isCached(hash)) {
                 logger.info("Fetching class {} from cache", className);
                 outArray = CacheHandler.get().fetchFromCache(hash, className);
             } else {
                 logger.info("Tainting class: {}", className);
                 outArray = this.instrumentClassByteArray(classfileBuffer, loader, className);
-                if(this.config.usePersistentCache()) {
+                if (this.config.usePersistentCache()) {
                     CacheHandler.get().put(hash, outArray, className);
                 }
             }
@@ -113,12 +114,12 @@ class TaintingTransformer implements ClassFileTransformer {
     private byte[] instrumentClassByteArray(byte[] classfileBuffer, ClassLoader loader, String className) {
         byte[] outArray;
         try {
-            outArray = this.instrumenter.instrumentClass(classfileBuffer, InstrumentationFactory.createClassResolver(loader), this.config, loader, false);
+            outArray = this.instrumenter.instrumentClass(classfileBuffer, ClassResolverFactory.createClassResolver(loader), this.config, loader, false);
         } catch (IllegalArgumentException ex) {
             if ("JSR/RET are not supported with computeFrames option".equals(ex.getMessage())) {
                 logger.error("JSR/RET not supported in {}!", className);
                 Utils.logStackTrace(Arrays.asList(ex.getStackTrace()));
-                outArray = this.instrumenter.instrumentClass(classfileBuffer, InstrumentationFactory.createClassResolver(loader), this.config, loader, true);
+                outArray = this.instrumenter.instrumentClass(classfileBuffer, ClassResolverFactory.createClassResolver(loader), this.config, loader, true);
                 logger.error("Finished retrying {}", className);
             } else {
                 logger.error("Instrumentation failed for {}", className);

@@ -12,6 +12,7 @@ import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
 import com.sap.fontus.utils.Utils;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
+import com.sap.fontus.asm.resolver.IClassResolver;
 import org.objectweb.asm.*;
 import org.objectweb.asm.Type;
 

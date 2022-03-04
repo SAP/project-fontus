@@ -2,6 +2,7 @@ package com.sap.fontus.utils;
 
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
+import com.sap.fontus.asm.resolver.ClassResolverFactory;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
@@ -12,7 +13,7 @@ import java.lang.reflect.Array;
 
 public class ClassUtils {
     public static CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(null);
-    private static final ClassFinder classFinder = InstrumentationFactory.createClassFinder();
+    private static final ClassFinder classFinder = ClassResolverFactory.createClassFinder();
 
     public static Class<?> findLoadedClass(String internalName) {
         Class<?> loaded = classFinder.findClass(Utils.slashToDot(internalName));
@@ -39,7 +40,7 @@ public class ClassUtils {
     }
 
     public static InputStream getClassInputStream(String internalName, ClassLoader loader) {
-        InputStream resource = InstrumentationFactory.createClassResolver(loader).resolve(internalName);
+        InputStream resource = ClassResolverFactory.createClassResolver(loader).resolve(internalName);
         if (resource != null) {
             return resource;
         }
