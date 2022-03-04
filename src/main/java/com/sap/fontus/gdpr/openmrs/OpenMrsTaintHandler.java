@@ -376,6 +376,8 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         // System.out.println("sink : " + sinkFunction);
         // System.out.println("stackTrace : " + java.util.Arrays.toString(Thread.currentThread().getStackTrace()));
 
+
+
         if (isTainted) {
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
             // General idea: get the "Purpose" by navigating the stack trace to find who is calling the sink function
@@ -387,6 +389,15 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
     public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName) {
         if (object instanceof IASTaintAware) {
             return handleTaint((IASTaintAware) object, instance, sinkFunction, sinkName);
+        } else if (object.getClass().getName().equals("org.hl7.fhir.r4.model.HumanName")) {
+            try {
+                Method m = object.getClass().getMethod("getNameAsSingleString", IASString.class);
+                IASString s = (IASString) m.invoke(object);
+                object = checkTaint(s, instance, sinkFunction, sinkName);
+            } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+                System.err.println("Exception: " + e + " for object: " + object);
+            }
+            return object;
         }
         return traverseObject(object, taintAware -> handleTaint(taintAware, instance, sinkFunction, sinkName));
     }
