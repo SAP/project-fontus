@@ -1,5 +1,6 @@
 package com.sap.fontus.agent;
 
+import com.sap.fontus.asm.ClassResolver;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.instrumentation.Instrumenter;
 import com.sap.fontus.utils.*;
@@ -40,6 +41,7 @@ class TaintingTransformer implements ClassFileTransformer {
             className = new ClassReader(classfileBuffer).getClassName();
         }
 
+        ClassResolver.addClassData(className, classfileBuffer);
         AnnotationLookup.getInstance().checkAnnotationAndCache(className, classfileBuffer);
 
         this.classFinder.addClass(className, loader);

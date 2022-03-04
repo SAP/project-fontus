@@ -5,6 +5,8 @@ import com.sap.fontus.agent.InstrumentationConfiguration;
 import com.sap.fontus.asm.ClassResolver;
 import com.sap.fontus.asm.IClassResolver;
 import com.sap.fontus.utils.IOUtils;
+import com.sap.fontus.utils.InstrumentationFactory;
+import com.sap.fontus.utils.JarClassResolver;
 import com.sap.fontus.utils.Utils;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.ClassReader;
@@ -63,43 +65,6 @@ public class OfflineClassResolver implements IClassResolver {
         return this.classResolver.resolve(className);
     }
 
-    private void findClassInJarFile(File jar, Map<String, byte[]> classes) {
-        try (JarInputStream jis = new JarInputStream(new FileInputStream(jar))) {
-
-            this.findClassInJar(jis, classes);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void findClassInJar(JarInputStream jis, Map<String, byte[]> classes) {
-        try {
-            for (JarEntry jei = jis.getNextJarEntry(); jei != null; jei = jis.getNextJarEntry()) {
-                if (!jei.isDirectory()) {
-                    byte[] entryBytes = IOUtils.readStream(jis);
-                    InputStream jeis = new ByteArrayInputStream(entryBytes);
-
-                    CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(Thread.currentThread().getContextClassLoader());
-
-                    if (jei.getName().endsWith(Constants.CLASS_FILE_SUFFIX) &&
-                            !combinedExcludedLookup.isJdkClass(jei.getName()) &&
-                            !combinedExcludedLookup.isFontusClass(jei.getName()) &&
-                            !combinedExcludedLookup.isExcluded(jei.getName())
-                    ) {
-                        String name = new ClassReader(entryBytes).getClassName();
-                        classes.putIfAbsent(name, entryBytes);
-                    } else if (jei.getName().endsWith(Constants.JAR_FILE_SUFFIX)) {
-                        JarInputStream innerJis = new JarInputStream(jeis);
-
-                        this.findClassInJar(innerJis, classes);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     private void walkInput(File input, Map<String, byte[]> classes) {
         if (input == null) {
             return;
@@ -113,7 +78,9 @@ public class OfflineClassResolver implements IClassResolver {
                     }
                 }
             } else {
-                this.findClassInJarFile(input, classes);
+                JarClassResolver jarClassResolver = InstrumentationFactory.createJarClassResolver(input);
+
+                jarClassResolver.getClasses().forEach(classes::putIfAbsent);
             }
         }
     }

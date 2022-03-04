@@ -8,6 +8,11 @@ import com.sap.fontus.asm.IClassResolver;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.utils.offline.OfflineClassResolver;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 public class InstrumentationFactory {
     private static final LoadingCache<ClassLoader, ClassResolver> classResolvers;
     private static final OfflineClassResolver offlineClassResolver;
@@ -36,5 +41,27 @@ public class InstrumentationFactory {
         return classFinder;
     }
 
+    public static JarClassResolver createJarClassResolver(File jarFile) {
+        try (InputStream is = new FileInputStream(jarFile)) {
+            return createJarClassResolver(is);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    public static JarClassResolver createJarClassResolver(InputStream inputStream) {
+        try {
+            JarClassResolver jarClassResolver = new JarClassResolver(inputStream);
+            jarClassResolver.initialize();
+            return jarClassResolver;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
