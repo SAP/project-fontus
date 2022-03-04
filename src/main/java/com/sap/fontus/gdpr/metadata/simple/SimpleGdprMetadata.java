@@ -27,13 +27,13 @@ public class SimpleGdprMetadata extends GdprMetadataBase {
         this.identifiability = Identifiability.Undefined;
     }
 
-    public SimpleGdprMetadata(Collection<AllowedPurpose> allowedPurposes, ProtectionLevel protectionLevel, DataSubject dataSubject, DataId dataId, boolean portability, boolean consent, Identifiability identifiability) {
+    public SimpleGdprMetadata(Collection<AllowedPurpose> allowedPurposes, ProtectionLevel protectionLevel, DataSubject dataSubject, DataId dataId, boolean portability, boolean unrestricted, Identifiability identifiability) {
         this.allowedPurposes = allowedPurposes;
         this.protectionLevel = protectionLevel;
         this.dataSubject = dataSubject;
         this.dataId = dataId;
         this.portability = portability;
-        this.processingUnrestricted = consent;
+        this.processingUnrestricted = unrestricted;
         this.identifiability = identifiability;
     }
 
