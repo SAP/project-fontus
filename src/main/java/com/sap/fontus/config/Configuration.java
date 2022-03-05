@@ -47,6 +47,9 @@ public class Configuration {
     @JsonIgnore
     private boolean isOfflineInstrumentation = true;
 
+    @JsonIgnore
+    private boolean speculativeInstrumentation = true;
+
     /**
      * If offline instrumentation is used, it can be parallelized
      */
@@ -116,7 +119,7 @@ public class Configuration {
     @JacksonXmlElementWrapper(localName = "passThroughTaints")
     @XmlElement(name = "passThroughTaint")
     private final List<FunctionCall> passThroughTaints;
-    
+
     public Configuration() {
         this.verbose = false;
         this.sourceConfig = new SourceConfig();
@@ -605,5 +608,13 @@ public class Configuration {
                 ", resourcesToInstrument=" + resourcesToInstrument +
                 ", passThroughTaints=" + this.passThroughTaints +
                 '}';
+    }
+
+    public boolean isSpeculativeInstrumentation() {
+        return this.speculativeInstrumentation;
+    }
+
+    public void setSpeculativeInstrumentation(boolean speculativeInstrumentation) {
+        this.speculativeInstrumentation = speculativeInstrumentation;
     }
 }

@@ -1,17 +1,20 @@
 package com.sap.fontus.instrumentation;
 
 import com.sap.fontus.asm.FontusNonClassLoadingClassWriter;
+import com.sap.fontus.asm.resolver.ClassResolverFactory;
 import com.sap.fontus.asm.resolver.IClassResolver;
 import com.sap.fontus.asm.TypeHierarchyReaderWithLoaderSupport;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
+import com.sap.fontus.utils.Utils;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 public class Instrumenter {
     private static final Logger logger = LogUtils.getLogger();
@@ -22,6 +25,25 @@ public class Instrumenter {
 
     public byte[] instrumentClass(byte[] classFileBuffer, IClassResolver resolver, Configuration config, ClassLoader loader, boolean containsJSRRET) {
         return instrumentInternal(new ClassReader(classFileBuffer), resolver, config, loader, containsJSRRET);
+    }
+
+    public byte[] instrumentClassByteArray(byte[] classfileBuffer, ClassLoader loader, String className) {
+        byte[] outArray;
+        try {
+            outArray = this.instrumentClass(classfileBuffer, ClassResolverFactory.createClassResolver(loader), Configuration.getConfiguration(), loader, false);
+        } catch (IllegalArgumentException ex) {
+            if ("JSR/RET are not supported with computeFrames option".equals(ex.getMessage())) {
+                logger.error("JSR/RET not supported in {}!", className);
+                Utils.logStackTrace(Arrays.asList(ex.getStackTrace()));
+                outArray = this.instrumentClass(classfileBuffer, ClassResolverFactory.createClassResolver(loader), Configuration.getConfiguration(), loader, true);
+                logger.error("Finished retrying {}", className);
+            } else {
+                logger.error("Instrumentation failed for {}", className);
+                Utils.logStackTrace(Arrays.asList(ex.getStackTrace()));
+                throw ex;
+            }
+        }
+        return outArray;
     }
 
     private static byte[] instrumentInternal(ClassReader cr, IClassResolver resolver, Configuration config, ClassLoader loader, boolean containsJSRRET) {
@@ -35,7 +57,6 @@ public class Instrumenter {
         String ifs = String.join(", ", interfaces);
         logger.info("{} <- {} implements: {}", clazzName, superName, interfaces);
         return writer.toByteArray();
-
     }
 
 }

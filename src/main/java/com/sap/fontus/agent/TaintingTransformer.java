@@ -1,6 +1,7 @@
 package com.sap.fontus.agent;
 
 import com.sap.fontus.asm.resolver.AgentClassResolver;
+import com.sap.fontus.asm.speculative.SpeculativeParallelInstrumenter;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.instrumentation.Instrumenter;
 import com.sap.fontus.utils.*;
@@ -86,7 +87,7 @@ class TaintingTransformer implements ClassFileTransformer {
                 outArray = CacheHandler.get().fetchFromCache(hash, className);
             } else {
                 logger.info("Tainting class: {}", className);
-                outArray = this.instrumentClassByteArray(classfileBuffer, loader, className);
+                outArray = SpeculativeParallelInstrumenter.getInstance().instrument(className, loader, classfileBuffer);
                 if (this.config.usePersistentCache()) {
                     CacheHandler.get().put(hash, outArray, className);
                 }
@@ -109,25 +110,6 @@ class TaintingTransformer implements ClassFileTransformer {
 
     public byte[] findInstrumentedClass(String qn) {
         return this.classCache.get(qn);
-    }
-
-    private byte[] instrumentClassByteArray(byte[] classfileBuffer, ClassLoader loader, String className) {
-        byte[] outArray;
-        try {
-            outArray = this.instrumenter.instrumentClass(classfileBuffer, ClassResolverFactory.createClassResolver(loader), this.config, loader, false);
-        } catch (IllegalArgumentException ex) {
-            if ("JSR/RET are not supported with computeFrames option".equals(ex.getMessage())) {
-                logger.error("JSR/RET not supported in {}!", className);
-                Utils.logStackTrace(Arrays.asList(ex.getStackTrace()));
-                outArray = this.instrumenter.instrumentClass(classfileBuffer, ClassResolverFactory.createClassResolver(loader), this.config, loader, true);
-                logger.error("Finished retrying {}", className);
-            } else {
-                logger.error("Instrumentation failed for {}", className);
-                Utils.logStackTrace(Arrays.asList(ex.getStackTrace()));
-                throw ex;
-            }
-        }
-        return outArray;
     }
 
 }

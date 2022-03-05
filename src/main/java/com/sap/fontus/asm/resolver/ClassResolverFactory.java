@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -77,6 +78,10 @@ public class ClassResolverFactory {
         loadCommonClassCacheFor(classLoader);
 
         return agentClassResolver;
+    }
+
+    public static Map<String, byte[]> getCommonClassesCache() {
+        return Collections.unmodifiableMap(commonClassesCache);
     }
 
     public static void addClassData(String internalName, byte[] data) {

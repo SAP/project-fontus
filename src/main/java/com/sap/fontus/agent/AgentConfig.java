@@ -73,6 +73,7 @@ public class AgentConfig {
         boolean persistentCache = false;
         boolean hybridMode = false;
         boolean welcome = false;
+        boolean speculativeInstrumentation = true;
         Boolean loggingEnabled = null;
         TaintMethod taintMethod = TaintMethod.defaultTaintMethod();
         Boolean useCaching = null;
@@ -100,6 +101,9 @@ public class AgentConfig {
             }
             if ("hybrid_mode".equals(part)) {
                 hybridMode = true;
+            }
+            if ("deactivate_speculative".equals(part)) {
+                speculativeInstrumentation = false;
             }
             if (part.startsWith("taintmethod=")) {
                 String taintMethodArgName = afterEquals(part);
@@ -149,6 +153,7 @@ public class AgentConfig {
         c.setTaintMethod(taintMethod);
         c.setShowWelcomeMessage(welcome);
         c.setHybridMode(hybridMode);
+        c.setSpeculativeInstrumentation(speculativeInstrumentation);
 
         if(hybridMode && instrumentedClassesFile == null) {
             throw new RuntimeException("Hybrid mode is on, but no instrumented_classes_file provided");

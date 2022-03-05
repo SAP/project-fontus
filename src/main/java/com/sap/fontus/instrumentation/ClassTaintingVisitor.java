@@ -2,6 +2,7 @@ package com.sap.fontus.instrumentation;
 
 import com.sap.fontus.Constants;
 import com.sap.fontus.asm.*;
+import com.sap.fontus.asm.speculative.SpeculativeParallelInstrumenter;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.taintaware.unified.IASString;
@@ -95,6 +96,15 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.superName = superName == null ? Type.getInternalName(Object.class) : this.instrumentationHelper.instrumentSuperClass(superName);
         this.interfaces = interfaces;
 
+        if (superName != null) {
+            SpeculativeParallelInstrumenter.getInstance().submitSpeculativeInstrumentation(superName, this.loader);
+        }
+        if (interfaces != null) {
+            for (String intf : interfaces) {
+                SpeculativeParallelInstrumenter.getInstance().submitSpeculativeInstrumentation(intf, this.loader);
+            }
+        }
+
         this.isInterface = ((access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE);
         this.isFinal =((access & Opcodes.ACC_FINAL) == Opcodes.ACC_FINAL);
 
@@ -149,6 +159,10 @@ class ClassTaintingVisitor extends ClassVisitor {
             return super.visitField(access, name, descriptor, signature, value);
         }
 
+        String internalName = Type.getType(descriptor).getInternalName();
+
+        SpeculativeParallelInstrumenter.getInstance().submitSpeculativeInstrumentation(internalName, this.loader);
+
         return this.instrumentationHelper.instrumentFieldInstruction(this.visitor, access, name, descriptor, signature, value, (n, d, v) -> staticFinalFields.add(FieldData.of(n, d, v))).orElse(null);
     }
 
@@ -170,6 +184,15 @@ class ClassTaintingVisitor extends ClassVisitor {
         if (this.isAnnotation) {
             return super.visitMethod(access, name, descriptor, signature, exceptions);
         }
+
+        Type descriptorType = Type.getMethodType(descriptor);
+        for (Type arg : descriptorType.getArgumentTypes()) {
+            SpeculativeParallelInstrumenter.getInstance().submitSpeculativeInstrumentation(arg.getInternalName(), this.loader);
+        }
+        SpeculativeParallelInstrumenter.getInstance().submitSpeculativeInstrumentation(descriptorType.getReturnType().getInternalName(), this.loader);
+
+
+
         String instrumentedSignature = this.signatureInstrumenter.instrumentSignature(signature);
         MethodVisitor mv;
         Method method = new Method(access, owner, name, descriptor, signature, exceptions, this.isInterface);

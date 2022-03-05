@@ -13,7 +13,6 @@ public class ClassFinder {
     private final Map<ClassLoader, Map<String, Class<?>>> cachePerClassLoader;
     private final Instrumentation instrumentation;
     private final CombinedExcludedLookup combinedExcludedLookup;
-    private final Map<String, Class<?>> loadedClassesCache = new HashMap<>();
 
     public ClassFinder(Instrumentation instrumentation) {
         this.loadedClasses = new ConcurrentHashMap<>();
@@ -90,5 +89,9 @@ public class ClassFinder {
 
     public void addClass(String internalName, ClassLoader classLoader) {
         this.loadedClasses.putIfAbsent(internalName, classLoader);
+    }
+
+    public boolean isClassLoaded(String internalName) {
+        return this.loadedClasses.containsKey(internalName);
     }
 }
