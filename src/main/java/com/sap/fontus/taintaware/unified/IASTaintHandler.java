@@ -145,7 +145,9 @@ public class IASTaintHandler {
             }
         } else if (isMap) {
             Map<Object, Object> map = (Map) object;
-            object = map.entrySet().stream().collect(Collectors.toMap(e -> traverser.apply(e.getKey()), e -> traverser.apply(e.getValue())));
+            if (!map.isEmpty()) {
+                object = map.entrySet().stream().collect(Collectors.toMap(e -> traverser.apply(e.getKey()), e -> traverser.apply(e.getValue())));
+            }
         } else if (isEnumerate) {
             Enumeration<Object> enumeration = (Enumeration<Object>) object;
             List<Object> list = Collections.list(enumeration);
