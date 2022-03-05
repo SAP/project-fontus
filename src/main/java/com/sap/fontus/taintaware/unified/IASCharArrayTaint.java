@@ -34,6 +34,7 @@ class IASCharArrayTaint {
         }
         IASTaintInformationable slice = taint.slice(srcBegin, srcEnd);
         // Shift the taint
+        slice.resize(dst.length);
         slice.shiftRight(dstBegin);
         // Save in the cache
         setTaint(dst, slice);
