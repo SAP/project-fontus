@@ -20,6 +20,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.*;
 import java.lang.reflect.Method;
+import java.security.ProtectionDomain;
 import java.util.*;
 
 
@@ -215,17 +216,12 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getDeclaredConstructor", Type.getMethodDescriptor(Type.getType(Constructor.class), Type.getType(Class[].class)), false),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getDeclaredConstructor", Type.getMethodDescriptor(Type.getType(IASConstructor.class), Type.getType(Class.class), Type.getType(Class[].class)), false));
 
-        methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;", false),
-                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getResourceAsStream", "(Ljava/lang/Class;Lcom/sap/fontus/taintaware/unified/IASString;)Ljava/io/InputStream;", false));
-
         methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "isAssignableFrom", "(Ljava/lang/Class;)Z", false),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "isAssignableFrom", "(Ljava/lang/Class;Ljava/lang/Class;)Z", false));
 
         methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getPackage", "()Ljava/lang/Package;", false),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASReflectionProxy.class), "getPackageOfClass", "(Ljava/lang/Class;)Ljava/lang/Package;", false));
 
-        methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/lang/ClassLoader", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;", false),
-                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassLoaderProxy.class), "getResourceAsStream", "(Ljava/lang/ClassLoader;Lcom/sap/fontus/taintaware/unified/IASString;)Ljava/io/InputStream;", false));
         // 215: invokeinterface #77,  1           // InterfaceMethod org/apache/tomcat/jdbc/pool/PoolConfiguration.getUseStatementFacade:()Z
         methodProxies.put(new FunctionCall(Opcodes.INVOKEINTERFACE, "org/apache/tomcat/jdbc/pool/PoolConfiguration", "getUseStatementFacade", "()Z", true),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASPreparedStatementUtils.class), "useStatementFacade", "(Ljava/lang/Object;)Z", false ));
@@ -236,7 +232,12 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 	// Add this just to prevent re-casting the security provider as an IASProperties
         methodProxies.put(new FunctionCall(Opcodes.INVOKESTATIC, "java/security/Security", "getProvider", "(Ljava/lang/String;)Ljava/security/Provider;", false),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASSecurity.class), "getProvider", "(Lcom/sap/fontus/taintaware/unified/IASString;)Ljava/security/Provider;", false));
-
+        // Prevent Code Source detection of Fontus classes
+        methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, Type.getInternalName(ProtectionDomain.class), "getCodeSource", "()Ljava/security/CodeSource;", false),
+                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASProtectionDomain.class), "getCodeSource", "(Ljava/security/ProtectionDomain;)Ljava/security/CodeSource;", false));
+        // Prevent that Fontus classes are detected by classloader
+        methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Class.class), "getClassLoader", "()Ljava/lang/ClassLoader;", false),
+                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getClassLoader", "(Ljava/lang/Class;)Ljava/lang/ClassLoader;", false));
     }
 
     private static void fillInterfaceProxies() {

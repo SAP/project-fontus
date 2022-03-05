@@ -2,11 +2,9 @@ package com.sap.fontus.asm.speculative;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.sap.fontus.asm.resolver.AgentClassResolver;
 import com.sap.fontus.asm.resolver.ClassResolverFactory;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.instrumentation.Instrumenter;
-import com.sap.fontus.utils.ClassFinder;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 
 import java.util.Map;
@@ -18,21 +16,29 @@ public class SpeculativeParallelInstrumenter {
     private final ExecutorService executorService;
     private final Cache<String, byte[]> instumentedCache;
     private final Instrumenter instrumenter;
+    private final Configuration configuration;
     private final CombinedExcludedLookup combinedExcludedLookup;
 
     private SpeculativeParallelInstrumenter() {
         this.executorService = Executors.newFixedThreadPool(10);
         this.instumentedCache = Caffeine.newBuilder().build();
         this.instrumenter = new Instrumenter();
+        this.configuration = Configuration.getConfiguration();
         this.combinedExcludedLookup = new CombinedExcludedLookup();
     }
 
-    public void submitSpeculativeInstrumentation(String internalName, ClassLoader classLoader) {
-        if (Configuration.getConfiguration().isOfflineInstrumentation()) {
-            return;
-        }
+    private boolean isSpeculativeDeactive() {
+        return this.configuration.isOfflineInstrumentation()
+                || !this.configuration.isSpeculativeInstrumentation()
+                || this.configuration.isHybridMode();
+    }
 
-        if (!Configuration.getConfiguration().isSpeculativeInstrumentation()) {
+    private boolean isSpeculativeActive() {
+        return !this.isSpeculativeDeactive();
+    }
+
+    public void submitSpeculativeInstrumentation(String internalName, ClassLoader classLoader) {
+        if (this.isSpeculativeDeactive()) {
             return;
         }
 
@@ -55,7 +61,10 @@ public class SpeculativeParallelInstrumenter {
     }
 
     public byte[] instrument(String internalName, ClassLoader classLoader, byte[] classBytes) {
-        return this.instumentedCache.get(internalName, (name) -> this.instrumenter.instrumentClassByteArray(classBytes, classLoader, name));
+        if (this.isSpeculativeActive()) {
+            return this.instumentedCache.get(internalName, (name) -> this.instrumenter.instrumentClassByteArray(classBytes, classLoader, name));
+        }
+        return this.instrumenter.instrumentClassByteArray(classBytes, classLoader, internalName);
     }
 
     public static SpeculativeParallelInstrumenter getInstance() {
