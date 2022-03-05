@@ -10,8 +10,10 @@ import org.objectweb.asm.Opcodes;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
+import java.util.Optional;
 
 public class ClassUtils {
+    private static final Logger logger = LogUtils.getLogger();
     public static CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(null);
     private static final ClassFinder classFinder = ClassResolverFactory.createClassFinder();
 
@@ -39,12 +41,11 @@ public class ClassUtils {
         return loaded;
     }
 
-    public static InputStream getClassInputStream(String internalName, ClassLoader loader) {
-        InputStream resource = ClassResolverFactory.createClassResolver(loader).resolve(internalName);
-        if (resource != null) {
-            return resource;
-        }
-        throw new RuntimeException("Resource for " + internalName + " couldn't be found");
+    public static byte[] getClassBytes(String internalName, ClassLoader loader) {
+        return ClassResolverFactory
+                .createClassResolver(loader)
+                .resolve(internalName)
+                .orElseThrow(() -> new RuntimeException("Resource for " + internalName + " couldn't be found"));
     }
 
     public static boolean isInterface(String internalName) {
@@ -60,14 +61,15 @@ public class ClassUtils {
     }
 
     public static boolean isInterface(String internalName, ClassLoader loader) {
-        try {
-            return ClassUtils.isInterface(new ClassReader(getClassInputStream(internalName, loader)).getAccess());
-        } catch (IOException e) {
-            if (Configuration.isLoggingEnabled()) {
-                System.err.println("Could not resolve class " + internalName + " for isInterface checking");
-            }
+        Optional<byte[]> bytes = ClassResolverFactory
+                .createClassResolver(loader)
+                .resolve(internalName);
+        if (bytes.isPresent()) {
+            return ClassUtils.isInterface(new ClassReader(bytes.get()).getAccess());
+        } else {
+            logger.error("Could not resolve class " + internalName + " for isInterface checking");
+            return false;
         }
-        return false;
     }
 
     public static Class<?> arrayType(Class<?> cls) {

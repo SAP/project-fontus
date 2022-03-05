@@ -2,83 +2,36 @@ package com.sap.fontus.asm.resolver;
 
 import com.sap.fontus.Constants;
 import com.sap.fontus.utils.IOUtils;
-import com.sap.fontus.utils.Utils;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.ClassReader;
 
-import java.io.*;
-import java.util.Collections;
-import java.util.HashMap;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
-public class JarClassResolver implements IClassResolver {
-    private volatile boolean isInitializing;
-    private final JarInputStream jarInputStream;
-    private Map<String, byte[]> classes;
-
-    JarClassResolver(InputStream inputStream) throws IOException {
-        this.jarInputStream = new JarInputStream(inputStream);
+public class JarClassResolver {
+    public JarClassResolver() {
     }
 
-    synchronized void initialize() {
-        if (this.isInitializing || this.isInitialized()) {
-            return;
+    public Map<String, byte[]> loadClassesFrom(InputStream inputStream) {
+        try(JarInputStream jis = new JarInputStream(inputStream)) {
+            return loadClassesFrom(jis);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("InputStream not readable as JAR");
         }
+    }
 
-        this.isInitializing = true;
-
+    public Map<String, byte[]> loadClassesFrom(JarInputStream jarInputStream) {
         ConcurrentHashMap<String, byte[]> classData = new ConcurrentHashMap<>();
 
-        this.findClassInJar(this.jarInputStream, classData);
+        this.findClassInJar(jarInputStream, classData);
 
-        this.classes = Collections.unmodifiableMap(classData);
-
-        this.isInitializing = false;
+        return classData;
     }
-
-    private boolean isInitialized() {
-        return this.classes != null;
-    }
-
-    @Override
-    public InputStream resolve(String className) {
-        if (!isInitialized()) {
-            throw new IllegalStateException("JarClassResolver not initialized yet");
-        }
-
-        if (className.startsWith("[L") && className.endsWith(";")) {
-            className = className.substring(2, className.length() - 1);
-        }
-        className = Utils.dotToSlash(className);
-
-        byte[] bytes = this.classes.get(className);
-
-        if (bytes != null) {
-            return new ByteArrayInputStream(bytes);
-        }
-
-        return null;
-    }
-
-
-    public Map<String, byte[]> getClasses() {
-        if (!this.isInitialized()) {
-            throw new IllegalStateException("JarClassResolver not initialized yet");
-        }
-        return new HashMap<>(classes);
-    }
-
-//    private void findClassInJarFile(File jar, Map<String, byte[]> classes) {
-//        try (JarInputStream jis = new JarInputStream(new FileInputStream(jar))) {
-//
-//            this.findClassInJar(jis, classes);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
 
     private void findClassInJar(JarInputStream jis, Map<String, byte[]> classes) {
         try {

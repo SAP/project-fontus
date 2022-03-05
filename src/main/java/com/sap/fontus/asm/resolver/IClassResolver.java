@@ -1,7 +1,7 @@
 package com.sap.fontus.asm.resolver;
 
-import java.io.InputStream;
+import java.util.Optional;
 
 public interface IClassResolver {
-    InputStream resolve(String className);
+    Optional<byte[]> resolve(String className);
 }

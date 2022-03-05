@@ -43,7 +43,7 @@ class TaintingTransformer implements ClassFileTransformer {
             className = new ClassReader(classfileBuffer).getClassName();
         }
 
-        ClassResolverFactory.addClassData(className, classfileBuffer);
+        BytecodeRegistry.getInstance().addClassData(className, classfileBuffer);
         AnnotationLookup.getInstance().checkAnnotationAndCache(className, classfileBuffer);
 
         this.classFinder.addClass(className, loader);

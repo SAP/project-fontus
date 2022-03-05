@@ -6,6 +6,7 @@ import com.sap.fontus.utils.Utils;
 import java.io.*;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class OfflineClassResolver implements IClassResolver {
@@ -36,7 +37,7 @@ public class OfflineClassResolver implements IClassResolver {
     }
 
     @Override
-    public InputStream resolve(String className) {
+    public Optional<byte[]> resolve(String className) {
         if (!isInitialized()) {
             this.initialize();
         }
@@ -49,7 +50,7 @@ public class OfflineClassResolver implements IClassResolver {
         byte[] bytes = this.classes.get(className);
 
         if (bytes != null) {
-            return new ByteArrayInputStream(bytes);
+            return Optional.of(bytes);
         }
 
         return this.agentClassResolver.resolve(className);
@@ -68,9 +69,13 @@ public class OfflineClassResolver implements IClassResolver {
                     }
                 }
             } else {
-                JarClassResolver jarClassResolver = ClassResolverFactory.createJarClassResolver(input);
+                JarClassResolver jarClassResolver = new JarClassResolver();
 
-                jarClassResolver.getClasses().forEach(classes::putIfAbsent);
+                try {
+                    jarClassResolver.loadClassesFrom(new FileInputStream(input)).forEach(classes::putIfAbsent);
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }

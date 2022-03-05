@@ -5,9 +5,11 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.sap.fontus.asm.resolver.ClassResolverFactory;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.instrumentation.Instrumenter;
+import com.sap.fontus.utils.BytecodeRegistry;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -50,13 +52,16 @@ public class SpeculativeParallelInstrumenter {
             return;
         }
 
-        Map<String, byte[]> commonClassCache = ClassResolverFactory.getCommonClassesCache();
+        Optional<byte[]> commonClass = BytecodeRegistry.getInstance().getClassData(internalName);
 
-        if (commonClassCache.containsKey(internalName)) {
-            byte[] bytes = commonClassCache.get(internalName);
-            this.executorService.submit(() -> {
-                this.instumentedCache.get(internalName, (name) -> this.instrumenter.instrumentClassByteArray(bytes, classLoader, name));
-            });
+        if (commonClass.isPresent()) {
+            byte[] bytes = commonClass.get();
+
+            if (!this.instumentedCache.asMap().containsKey(internalName)) {
+                this.executorService.submit(() -> {
+                    this.instumentedCache.get(internalName, (name) -> this.instrumenter.instrumentClassByteArray(bytes, classLoader, name));
+                });
+            }
         }
     }
 
