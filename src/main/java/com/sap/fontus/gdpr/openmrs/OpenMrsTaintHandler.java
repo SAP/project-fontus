@@ -9,7 +9,6 @@ import com.sap.fontus.config.Source;
 import com.sap.fontus.config.abort.Abort;
 import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.registry.PurposeRegistry;
-import com.sap.fontus.gdpr.metadata.registry.RequiredPurposeRegistry;
 import com.sap.fontus.gdpr.metadata.registry.VendorRegistry;
 import com.sap.fontus.gdpr.metadata.simple.*;
 import com.sap.fontus.gdpr.cookie.ConsentCookie;
@@ -20,7 +19,6 @@ import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.*;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
-import com.sap.fontus.utils.stats.Statistics;
 import org.objectweb.asm.Opcodes;
 
 import java.lang.reflect.InvocationTargetException;
@@ -159,21 +157,13 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         return md;
     }
 
-    private static DataSubject getDataSubjectFromUuid(ReflectedHttpServletRequest request, String uuid) {
-        GdprMetadata md = getTaintMetadataFromExistingUuid(request, uuid);
-        if (md != null) {
-            return new SimpleDataSubject(getTaintMetadataFromExistingUuid(request, uuid).getSubject());
-        }
-        return null;
-    }
-
-    private static DataSubject getDataSubjectFromRequestParameter(ReflectedHttpServletRequest request) {
+    private static GdprMetadata getMetaDataFromRequest(ReflectedHttpServletRequest request) {
         String patientId = request.getParameter(patientIdParameterName);
         if (patientId == null) {
             // Sometimes the patientId stored in a personId parameter...
             patientId = request.getParameter(personIdParameterName);
         }
-        return getDataSubjectFromUuid(request, patientId);
+        return getTaintMetadataFromExistingUuid(request, patientId);
     }
 
     private static DataSubject getOrCreateDataSubjectUuid(ReflectedHttpServletRequest request) {
@@ -194,15 +184,6 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         DataSubject dataSubject = getOrCreateDataSubjectUuid(request);
         return new SimpleGdprMetadata(getPurposesFromRequest(request), ProtectionLevel.Normal, dataSubject,
                 new SimpleDataId(), true, true, Identifiability.Explicit);
-    }
-
-    private static GdprMetadata getPatientMetadata(ReflectedHttpServletRequest request) {
-        DataSubject dataSubject = getDataSubjectFromRequestParameter(request);
-        if (dataSubject != null) {
-            return new SimpleGdprMetadata(getPurposesFromRequest(request), ProtectionLevel.Normal, dataSubject,
-                    new SimpleDataId(), true, true, Identifiability.Explicit);
-        }
-        return null;
     }
 
     /**
@@ -235,7 +216,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
                 metadata = createNewPatientMetadata(request);
             } else {
                 System.out.println("Not creating patient...");
-                metadata = getPatientMetadata(request);
+                metadata = getMetaDataFromRequest(request);
             }
 
             // Add taint information if match was found
@@ -276,6 +257,13 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         // Might lead to over-tainting, but should be fine in this specific case.
         if (jsonList.isTainted()) {
             IASTaintMetadata metadata = jsonList.getTaintInformation().getTaint(0);
+            // As a diagnosis is sensitive information, set the appropriate bit:
+            if (metadata instanceof GdprTaintMetadata) {
+                GdprTaintMetadata gdprMetadata = (GdprTaintMetadata) metadata;
+                gdprMetadata.getMetadata().setProtectionLevel(ProtectionLevel.Sensitive);
+            } else {
+                System.err.println("Metadata is not of type GdprTaintMetadata! Actual type: " + metadata.getClass());
+            }
             System.out.println("Adding Taint metadata from string '" + jsonList + "' to string '" + taintAware.toString() + "': " + metadata);
             taintAware.setTaint(metadata);
         }
