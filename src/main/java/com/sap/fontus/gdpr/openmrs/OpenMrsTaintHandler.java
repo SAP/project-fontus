@@ -75,7 +75,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         ReflectedCookie[] cookies = servlet.getCookies();
         for (ReflectedCookie cookie : cookies) {
             if (ConsentCookie.isConsentCookie(cookie.getName().getString())) {
-                System.out.println("Found Consent Cookie: " + cookie.getName().getString() + " = " + cookie.getValue().getString());
+                //System.out.println("Found Consent Cookie: " + cookie.getName().getString() + " = " + cookie.getValue().getString());
                 ConsentCookie consentCookie = ConsentCookie.parse(cookie.getValue().getString());
                 return ConsentCookieMetadata.getAllowedPurposesFromConsentCookie(consentCookie);
             }
@@ -153,7 +153,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         } catch (Exception e) {
             System.err.println("Exception trying to extract taint metadata: " + e.getMessage());
         }
-        System.out.println("FONTUS: for person UUID: " + patientId + " found taint metadata: " + md);
+        //System.out.println("FONTUS: for person UUID: " + patientId + " found taint metadata: " + md);
         return md;
     }
 
@@ -176,7 +176,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             dataSubject = new SimpleDataSubject(UUID.randomUUID().toString());
             request.setAttribute(dataSubjectAttributeName, dataSubject);
         }
-        System.out.println("FONTUS: got data subject uuid: " + dataSubject);
+        //System.out.println("FONTUS: got data subject uuid: " + dataSubject);
         return dataSubject;
     }
 
@@ -196,12 +196,12 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
      */
     private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
         // General debug info
-        IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
+        //IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
         IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
         Source source = null;
         if (taintSource != null) {
             source = Configuration.getConfiguration().getSourceConfig().getSourceWithName(taintSource.getName());
-            System.out.println("Source from Configuration: " + source);
+            //System.out.println("Source from Configuration: " + source);
         }
 
         // Check for ServletRequest getParameter function
@@ -212,19 +212,17 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             ReflectedHttpServletRequest request = new ReflectedHttpServletRequest(parent);
             // System.out.println("Request: " + request);
             if (registerPatientApp.equals(request.getParameter(appIdParameterName))) {
-                System.out.println("Creating new patient...");
+                //System.out.println("Creating new patient...");
                 metadata = createNewPatientMetadata(request);
             } else {
-                System.out.println("Not creating patient...");
+                //System.out.println("Not creating patient...");
                 metadata = getMetaDataFromRequest(request);
             }
 
             // Add taint information if match was found
             if (metadata != null) {
-                System.out.println("Adding Taint metadata to string '" + taintAware.toString() + "': " + metadata);
+                //System.out.println("Adding Taint metadata to string '" + taintAware.toString() + "': " + metadata);
                 taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
-            } else {
-                System.out.println("Null metadata, not tainting!");
             }
         }
         return taintAware;
@@ -264,7 +262,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             } else {
                 System.err.println("Metadata is not of type GdprTaintMetadata! Actual type: " + metadata.getClass());
             }
-            System.out.println("Adding Taint metadata from string '" + jsonList + "' to string '" + taintAware.toString() + "': " + metadata);
+            //System.out.println("Adding Taint metadata from string '" + jsonList + "' to string '" + taintAware.toString() + "': " + metadata);
             taintAware.setTaint(metadata);
         }
         return taintAware;
@@ -342,7 +340,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
                 purposes.add(purpose);
                 Vendor vendor = VendorRegistry.getInstance().get("fhir");
                 vendors.add(vendor);
-                System.out.println("FONTUS: Mapped class " + clazzName + " to purpose: " + purpose + " vendor: " + vendor);
+                //System.out.println("FONTUS: Mapped class " + clazzName + " to purpose: " + purpose + " vendor: " + vendor);
             }
         }
         return new SimpleRequiredPurposes(purposes, vendors);
@@ -358,13 +356,10 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
      */
     public static IASTaintAware handleTaint(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName) {
         boolean isTainted = taintAware.isTainted();
-
         // System.out.println("isTainted : " + isTainted);
         // System.out.println("taintaware : " + taintAware);
         // System.out.println("sink : " + sinkFunction);
         // System.out.println("stackTrace : " + java.util.Arrays.toString(Thread.currentThread().getStackTrace()));
-
-
 
         if (isTainted) {
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
@@ -408,9 +403,9 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Exception getting logged in user: " + e);
         }
-        System.out.println("FONTUS: logged in user: " + loggedInUser);
+        //System.out.println("FONTUS: logged in user: " + loggedInUser);
         Set<Purpose> purposes = new HashSet<>();
         Set<Vendor> vendors = new HashSet<>();
         purposes.add(PurposeRegistry.getInstance().get("processing"));
