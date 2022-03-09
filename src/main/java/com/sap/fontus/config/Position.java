@@ -2,7 +2,6 @@ package com.sap.fontus.config;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Objects;
 
 @XmlRootElement(name = "position")
 public class Position {
@@ -70,8 +69,6 @@ public class Position {
             return false;
         }
         Position position = (Position) o;
-        return javaSourcePosition == position.javaSourcePosition &&
-                Objects.equals(className, position.className) &&
-                Objects.equals(methodName, position.methodName);
+        return javaSourcePosition == position.javaSourcePosition && className.equals(position.className) && methodName.equals(position.methodName);
     }
 }
