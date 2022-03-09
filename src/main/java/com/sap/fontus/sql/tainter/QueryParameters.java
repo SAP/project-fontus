@@ -8,12 +8,25 @@ public class QueryParameters {
     private final HashMap<Integer, TaintAssignment> indices;
     private boolean indicesCalculated = false;
 
-    private Deque<StatementType> stateStack;
+    private final Deque<StatementType> stateStack;
 
     QueryParameters() {
         this.types = new ArrayList<>();
         this.indices = new HashMap<>();
         this.stateStack = new ArrayDeque<>();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || this.getClass() != o.getClass()) return false;
+        QueryParameters that = (QueryParameters) o;
+        return this.indicesCalculated == that.indicesCalculated && this.types.equals(that.types) && this.indices.equals(that.indices) && this.stateStack.equals(that.stateStack);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.types, this.indices, this.indicesCalculated, this.stateStack);
     }
 
     public void begin(StatementType type) {

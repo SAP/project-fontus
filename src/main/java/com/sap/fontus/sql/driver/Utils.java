@@ -13,13 +13,15 @@ import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 import com.sap.fontus.taintaware.unified.TaintInformationFactory;
 
 import java.time.Instant;
-import java.util.UUID;
 
-public class Utils {
+public final class Utils {
+
+    private Utils() {
+    }
 
     public static String serializeTaints(IASString str) {
         Genson genson = new GensonBuilder()
-                .withConverters(new InstantConverter())
+                .withConverters(new Utils.InstantConverter())
                 .useClassMetadata(true)
                 .useRuntimeType(true)
                 .useFields(true, VisibilityFilter.PRIVATE)
@@ -35,7 +37,7 @@ public class Utils {
 
     public static IASTaintInformationable parseTaint(String json) {
         Genson genson = new GensonBuilder()
-                .withConverters(new InstantConverter())
+                .withConverters(new Utils.InstantConverter())
                 .useClassMetadata(true)
                 .useRuntimeType(true)
                 .useFields(true, VisibilityFilter.PRIVATE)
