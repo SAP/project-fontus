@@ -17,4 +17,12 @@ public class ReflectedSession extends ReflectedObject {
     public Object getAttribute(IASString name) {
         return this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod(), name);
     }
+
+    public void setAttribute(String name, Object o) {
+        setAttribute(new IASString(name), o);
+    }
+
+    public void setAttribute(IASString name, Object o) {
+        this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod(), name, o);
+    }
 }

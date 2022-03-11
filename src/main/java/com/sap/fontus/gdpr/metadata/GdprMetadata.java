@@ -46,4 +46,7 @@ public interface GdprMetadata {
     public Identifiability isIdentifiable();
 
     public void setProtectionLevel(ProtectionLevel protectionLevel);
+
+    // Switches Metadatum 6 to true
+    public void restrictProcessing();
 }

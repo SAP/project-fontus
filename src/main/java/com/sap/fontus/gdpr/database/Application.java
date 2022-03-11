@@ -1,5 +1,10 @@
 package com.sap.fontus.gdpr.database;
 
+import com.sap.fontus.gdpr.database.contest.ContestWrongData;
+import com.sap.fontus.gdpr.database.defaults.DefaultValues;
+import com.sap.fontus.gdpr.database.expired.ExpiredData;
+import com.sap.fontus.gdpr.database.statistics.Statistics;
+import com.sap.fontus.gdpr.database.accessrequest.SubjectAccessRequest;
 import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
@@ -8,21 +13,19 @@ import java.util.concurrent.Callable;
         description = "Performs GDPR tainting related operations on a database",
         name = "GDPR Tainting Helper",
         mixinStandardHelpOptions = true,
-        version = "0.0.1"
+        version = "0.0.1",
+        subcommands = {
+            SubjectAccessRequest.class,
+            ExpiredData.class,
+            Statistics.class,
+            DefaultValues.class,
+            ContestWrongData.class
+        }
 )
 public class Application implements Callable<Void> {
 
     @CommandLine.Option(
-            names = {"-m", "--mode"},
-            required = true,
-            paramLabel = "Mode of Operation",
-            description = "Mode of operation. Valid values:  ${COMPLETION-CANDIDATES}",
-            defaultValue = "expiry"
-    )
-    private Mode mode;
-
-    @CommandLine.Option(
-            names = {"-d", "--host"},
+            names = "--host",
             required = true,
             paramLabel = "Database host",
             description = "Hostname of Database Server with port",
@@ -38,6 +41,22 @@ public class Application implements Callable<Void> {
             defaultValue = "openolat"
     )
     private String username;
+
+    public String getHost() {
+        return this.host;
+    }
+
+    public String getUsername() {
+        return this.username;
+    }
+
+    public String getPassword() {
+        return this.password;
+    }
+
+    public String getCatalog() {
+        return this.catalog;
+    }
 
     @CommandLine.Option(
             names = {"-p", "--password"},
@@ -65,26 +84,7 @@ public class Application implements Callable<Void> {
     }
 
     @Override
-    public Void call() throws Exception {
-
-        switch (this.mode) {
-            case EXPIRY:
-                Processor expiredProcessor = new Processor(this.host, this.username, this.password, this.catalog, new ExpiredTaintColumnGatherer());
-                expiredProcessor.run();
-                break;
-            case STATISTICS:
-                StatisticsGatherer gatherer = new StatisticsGatherer();
-                Processor statisticsProcessor = new Processor(this.host, this.username, this.password, this.catalog, gatherer);
-                statisticsProcessor.run();
-                gatherer.printStatistics();
-                break;
-            case SUBJECT_ACCESS_REQUEST:
-                Processor accessRequestProcessor = new Processor(this.host, this.username, this.password, this.catalog, new SubjectAccessRequestGatherer("360448"));
-                accessRequestProcessor.run();
-                break;
-            default:
-                System.out.printf("Mode %s is invalid!%n", this.mode);
-        }
+    public Void call() {
         return null;
     }
 }

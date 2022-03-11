@@ -1,8 +1,12 @@
 package com.sap.fontus.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sap.fontus.asm.FunctionCall;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.sap.fontus.config.abort.Abort;
+import com.sap.fontus.config.abort.MultiAbort;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -31,12 +35,26 @@ public class Sink {
     @XmlElement(name = "dataProtection")
     private final DataProtection dataProtection;
 
+    @XmlElement(name = "tainthandler")
+    @JsonProperty("tainthandler")
+    private final FunctionCall taintHandler;
+
     public Sink() {
         this.name = "";
         this.function = new FunctionCall();
         this.parameters = new ArrayList<>();
         this.categories = new ArrayList<>();
         this.dataProtection = new DataProtection();
+        this.taintHandler = FunctionCall.EmptyFunctionCall;
+    }
+
+    public Sink(String name, FunctionCall functionCall, List<SinkParameter> parameters, List<String> categories, DataProtection dataProtection, FunctionCall taintHandler) {
+        this.name = name;
+        this.function = functionCall;
+        this.parameters = parameters;
+        this.categories = categories;
+        this.dataProtection = dataProtection;
+        this.taintHandler = taintHandler;
     }
 
     public Sink(String name, FunctionCall functionCall, List<SinkParameter> parameters, List<String> categories, DataProtection dataProtection) {
@@ -45,6 +63,7 @@ public class Sink {
         this.parameters = parameters;
         this.categories = categories;
         this.dataProtection = dataProtection;
+        this.taintHandler = FunctionCall.EmptyFunctionCall;
     }
 
     public List<SinkParameter> getParameters() {
@@ -61,6 +80,7 @@ public class Sink {
     }
 
     public DataProtection getDataProtection() { return dataProtection; }
+
     public List<String> getCategories() {
         return Collections.unmodifiableList(this.categories);
     }
@@ -69,8 +89,22 @@ public class Sink {
         return this.function;
     }
 
+    public FunctionCall getTaintHandler() { return this.taintHandler; }
+
     public String getName() {
         return this.name;
+    }
+
+    @JsonIgnore
+    public Abort getAbortFromSink() {
+        List<Abort> l = new ArrayList<>();
+        for (String abortName : getDataProtection().getAborts()) {
+            Abort a = Abort.parse(abortName);
+            if (a != null) {
+                l.add(a);
+            }
+        }
+        return new MultiAbort(l);
     }
 
     @Override
@@ -81,6 +115,7 @@ public class Sink {
                 ", parameters=" + parameters +
                 ", categories=" + categories +
                 ", dataProtection=" + dataProtection +
+                ", taintHandler=" + taintHandler +
                 '}';
     }
 }

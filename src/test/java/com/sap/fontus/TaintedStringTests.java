@@ -3,6 +3,7 @@ package com.sap.fontus;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.taintaware.unified.IASStringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +15,17 @@ class TaintedStringTests {
     @BeforeAll
     public static void init() {
         Configuration.setTestConfig(TaintMethod.RANGE);
+    }
+
+    @Test
+    void testOpenOlatIssue() {
+        IASString lhs = new IASString("K", true);
+        IASString rhs = new IASString("D", true);
+        IASString t1 = lhs.concat(new IASString(", "));
+        IASString t2 = t1.concat(rhs);
+        IASString[] args = {t2, new IASString("User profile and visiting card")};
+        IASString result = IASStringUtils.concat("\u0001: \u0001", args);
+        assertTrue(result.isTainted(), "Concatenation of two untainted String should be untainted");
     }
 
     @Test

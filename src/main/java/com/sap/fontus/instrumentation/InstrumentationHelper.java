@@ -203,6 +203,16 @@ public final class InstrumentationHelper implements InstrumentationStrategy {
     }
 
     @Override
+    public boolean needsJdkMethodParameterConversion(Type parameter) {
+        for (InstrumentationStrategy s : this.strategies) {
+            if (s.needsJdkMethodParameterConversion(parameter)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public FunctionCall rewriteOwnerMethod(FunctionCall functionCall) {
         for (InstrumentationStrategy s : this.strategies) {
             FunctionCall rewrittenFC = s.rewriteOwnerMethod(functionCall);

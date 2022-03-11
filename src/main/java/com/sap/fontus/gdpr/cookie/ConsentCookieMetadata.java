@@ -1,4 +1,4 @@
-package com.sap.fontus.gdpr.petclinic;
+package com.sap.fontus.gdpr.cookie;
 
 import com.sap.fontus.gdpr.metadata.AllowedPurpose;
 import com.sap.fontus.gdpr.metadata.Purpose;
@@ -17,10 +17,10 @@ public class ConsentCookieMetadata {
     public static Collection<AllowedPurpose> getAllowedPurposesFromConsentCookie(ConsentCookie cookie) {
         Collection<AllowedPurpose> purposes = new ArrayList<>();
 
-        for (ConsentCookie.Purpose p : cookie.getPurposes()) {
+        for (com.sap.fontus.gdpr.cookie.Purpose p : cookie.getPurposes()) {
             Purpose purpose = new RegistryLinkedPurpose(p.getId());
             Set<Vendor> vendors = new HashSet<>();
-            for (ConsentCookie.Vendor v : p.getVendors()) {
+            for (com.sap.fontus.gdpr.cookie.Vendor v : p.getVendors()) {
                 Vendor vendor = new RegistryLinkedVendor(v.getId());
                 if (v.isChecked()) {
                     vendors.add(vendor);

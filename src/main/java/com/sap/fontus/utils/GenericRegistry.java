@@ -36,6 +36,10 @@ public abstract class GenericRegistry<T extends NamedObject> {
         return this.objects.get(id - 1);
     }
 
+    public int getIdForObject(T obj) {
+        return this.objects.indexOf(obj);
+    }
+
     public synchronized void clear() {
         this.objects.clear();
         this.counter = 0;

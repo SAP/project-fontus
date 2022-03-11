@@ -1,7 +1,5 @@
 package com.sap.fontus.sql.driver;
 
-//import org.slf4j.LoggerFactory;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -10,8 +8,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 public class tubsDriver implements Driver {
-    private static Driver instance = new tubsDriver();
-    //private static org.slf4j.Logger logger = LoggerFactory.getLogger("ias.taintdriver");
+    private static final Driver instance = new tubsDriver();
 
     static {
         try {
@@ -60,11 +57,7 @@ public class tubsDriver implements Driver {
 
         final Connection conn;
 
-        try {
-            conn =  passThru.connect(this.extractRealUrl(url), properties);
-        } catch (SQLException e) {
-            throw e;
-        }
+        conn =  passThru.connect(this.extractRealUrl(url), properties);
 
         return ConnectionWrapper.wrap(conn);
     }
@@ -80,7 +73,6 @@ public class tubsDriver implements Driver {
                     break;
                 }
             } catch (SQLException e) {
-                //logger.error("Error finding passthru", e);
                 System.err.println("Error finding passthru: " + e);
             }
         }

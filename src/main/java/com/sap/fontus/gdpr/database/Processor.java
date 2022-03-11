@@ -28,9 +28,9 @@ public class Processor {
     public void run() throws SQLException {
         try (Connection conn = DriverManager.getConnection(this.connectionString, this.userName, this.password)
         ) {
-            System.out.println("connected");
+            //System.out.println("connected");
             DatabaseMetaData metaData = conn.getMetaData();
-            ResultSet tables = metaData.getTables(this.catalog, null, null, new String[]{"TABLE"});
+            ResultSet tables = metaData.getTables(this.catalog, null, null, new String[]{"TABLE"/*, "VIEW"*/});
 
             /*ResultSetMetaData rsm = tables.getMetaData();
             for(int i = 0; i < rsm.getColumnCount(); i++) {
@@ -44,12 +44,12 @@ public class Processor {
                 String schema = tables.getString(2);
                 String name = tables.getString(3);
                 String type = tables.getString(4);
-                System.out.printf("%s.%s.%s - %s%n", cat, schema, name, type);
+                //System.out.printf("%s.%s.%s - %s%n", cat, schema, name, type);
                 this.gatherer.beginTable(cat, name);
                 this.processTable(conn, cat, name);
                 this.gatherer.endTable();
             }
-            System.out.println("done");
+            //System.out.println("done");
         }
     }
 
@@ -67,14 +67,15 @@ public class Processor {
                     if (!columnName.startsWith("__taint__")) {
                         throw new IllegalStateException(String.format("In %s.%s the column %s at index %d is not a taint column!%n", catalog, table, columnName, i));
                     }
-                    String originalColumnName = metaData.getColumnName(i - 1);
+                    int columnIndex = i - 1;
+                    String originalColumnName = metaData.getColumnName(columnIndex);
                     String taintValue = rs.getString(i);
-                    String columnType = metaData.getColumnTypeName(i-1);
-                    if (taintValue == null || taintValue.equals("0")) {
-                        this.gatherer.untaintedColumn(i - 1, columnName, columnType,  rs.getObject(i - 1));
+                    String columnType = metaData.getColumnTypeName(columnIndex);
+                    if (taintValue == null || "0".equals(taintValue)) {
+                        this.gatherer.untaintedColumn(columnIndex, originalColumnName, columnType,  rs.getObject(columnIndex));
                     } else {
                         IASTaintInformationable tis = Utils.parseTaint(taintValue);
-                        this.gatherer.taintedColumn(i - 1, columnName, columnType, rs.getString(i - 1), tis);
+                        this.gatherer.taintedColumn(columnIndex, originalColumnName, columnType, rs.getString(columnIndex), tis);
                     }
                 }
             }

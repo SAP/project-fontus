@@ -90,6 +90,21 @@ public class Source {
         return this.passLocals;
     }
 
+    public boolean isAllowedCaller(FunctionCall caller) {
+        // If there are no allowed callers, then allow everything
+        boolean applySource = this.getAllowedCallers().isEmpty();
+        if(!applySource) {
+            for (FunctionCall fc : this.getAllowedCallers()) {
+                // So that the function call opcode doesn't need to match
+                if (caller.fuzzyEquals(fc)) {
+                    applySource = true;
+                    break;
+                }
+            }
+        }
+        return applySource;
+    }
+
     @Override
     public String toString() {
         return String.format("Source{name='%s', function=%s, taintHandler=%s, allowedCallers=%s, passLocals=%s}", this.name, this.function, this.taintHandler, this.allowedCallers, this.passLocals);

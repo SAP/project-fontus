@@ -61,6 +61,11 @@ public interface InstrumentationStrategy {
     boolean insertJdkMethodParameterConversion(MethodVisitor mv, Type parameter);
 
     /**
+     * Checks whether a JDK method conversion is necessary
+     */
+    boolean needsJdkMethodParameterConversion(Type parameter);
+
+    /**
      * Rewrites methods belonging to the class the actual strategy corresponds to.
      * <p>
      * For an explanation of the parameters see {@link org.objectweb.asm.MethodVisitor#visitMethodInsn(int, String, String, String, boolean)}.

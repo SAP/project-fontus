@@ -29,7 +29,7 @@ public class TcfBackedGdprMetadata extends GdprMetadataBase {
         // Convert Vendors
         Set<Vendor> vendors = new HashSet<>();
         try {
-            for (int v : tcString.getAllowedVendors()) {
+            for (int v : this.tcString.getAllowedVendors()) {
                 vendors.add(new SimpleVendor(v, "Acme"));
             }
         } catch (Exception e) {
@@ -37,7 +37,7 @@ public class TcfBackedGdprMetadata extends GdprMetadataBase {
         }
 
         // Convert purposes
-        for (int p : tcString.getPurposesConsent()) {
+        for (int p : this.tcString.getPurposesConsent()) {
             purposes.add(new SimpleAllowedPurpose(
                     new SimpleExpiryDate(),
                     VendorList.GetPurposeFromTcfId(p),
@@ -58,7 +58,7 @@ public class TcfBackedGdprMetadata extends GdprMetadataBase {
 
     @Override
     public DataId getId() {
-        return dataId;
+        return this.dataId;
     }
 
     @Override
@@ -82,16 +82,21 @@ public class TcfBackedGdprMetadata extends GdprMetadataBase {
     }
 
     @Override
+    public void restrictProcessing() {
+        // NOP
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || this.getClass() != o.getClass()) return false;
         TcfBackedGdprMetadata that = (TcfBackedGdprMetadata) o;
-        return Objects.equals(tcString, that.tcString) && Objects.equals(dataId, that.dataId);
+        return Objects.equals(this.tcString, that.tcString) && Objects.equals(this.dataId, that.dataId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(tcString, dataId);
+        return Objects.hash(this.tcString, this.dataId);
     }
 
 }

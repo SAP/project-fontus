@@ -96,6 +96,11 @@ public class DefaultInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
+    public boolean needsJdkMethodParameterConversion(Type parameter) {
+        return false;
+    }
+
+    @Override
     public FunctionCall rewriteOwnerMethod(FunctionCall functionCall) {
         Type tOwner = Type.getObjectType(functionCall.getOwner());
         if (MethodUtils.isToString(functionCall.getName(), functionCall.getDescriptor()) && requireValueOf.contains(tOwner) && functionCall.getOpcode() != Opcodes.INVOKESPECIAL) {

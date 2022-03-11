@@ -8,6 +8,14 @@ public class SimpleDataId implements DataId {
 
     private UUID uuid;
 
+    public SimpleDataId(UUID uuid) {
+        this.uuid = uuid;
+    }
+
+    public SimpleDataId(String uuid) {
+        this.uuid = UUID.fromString(uuid);
+    }
+
     public SimpleDataId() {
         uuid = UUID.randomUUID();
     }

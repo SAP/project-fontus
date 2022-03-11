@@ -2,8 +2,16 @@ package com.sap.fontus.taintaware.unified.reflect;
 
 
 import com.sap.fontus.Constants;
+import com.sap.fontus.asm.FunctionCall;
+import com.sap.fontus.config.Configuration;
+import com.sap.fontus.config.Sink;
+import com.sap.fontus.config.SinkParameter;
+import com.sap.fontus.config.Source;
+import com.sap.fontus.instrumentation.InstrumentationHelper;
+import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASStringUtils;
+import com.sap.fontus.taintaware.unified.IASTaintHandler;
 import com.sap.fontus.taintaware.unified.reflect.type.IASTypeVariableImpl;
 import com.sap.fontus.utils.ConversionUtils;
 import com.sap.fontus.utils.ReflectionUtils;
@@ -18,6 +26,7 @@ import java.util.Arrays;
 
 public class IASMethod extends IASExecutable<Method> {
     private static final CombinedExcludedLookup lookup = new CombinedExcludedLookup();
+    private static final InstrumentationHelper helper = new InstrumentationHelper();
     private static final Method forNameMethod;
 
     static {
@@ -134,6 +143,10 @@ public class IASMethod extends IASExecutable<Method> {
     @CallerSensitive
     @ForceInline
     public Object invoke(Object instance, Object... parameters) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException {
+
+        Object returnObj = null;
+
+        // Handle Annotations, will always return
         if (this.original.getDeclaringClass().isAnnotation()) {
             if (this.original.getReturnType().isAssignableFrom(String.class)) {
                 String result = (String) this.original.invoke(instance, parameters);
@@ -145,34 +158,112 @@ public class IASMethod extends IASExecutable<Method> {
                 Class result = (Class) this.original.invoke(instance, parameters);
                 return ConversionUtils.convertClassToConcrete(result);
             }
-        } else if (lookup.isPackageExcludedOrJdk(Utils.getInternalName(this.original.getDeclaringClass())) || isWrapperForUninstrumentedMethod()) {
+        }
+
+        // Check for sinks
+        FunctionCall fc = FunctionCall.fromMethod(this.original);
+        // We need to uninstrument the function call to ensure a match with the configuration
+        FunctionCall uninstrumented = new FunctionCall(fc.getOpcode(), fc.getOwner(), fc.getName(), helper.uninstrumentForJdkCall(fc.getDescriptor()), fc.isInterface());
+
+        Sink sink = Configuration.getConfiguration().getSinkConfig().getSinkForFunction(uninstrumented);
+        Method taintCheckerMethod = null;
+        if (sink != null) {
+            // Check for custom taint checker method
+            FunctionCall taintChecker = sink.getTaintHandler();
+            if (!taintChecker.isEmpty()) {
+                try {
+                    taintCheckerMethod = FunctionCall.toMethod(taintChecker);
+                } catch (Exception e) {
+                    System.err.println("Exception finding sink: " + taintChecker);
+                    e.printStackTrace();
+                }
+            }
+            // Manipulate all necessary parameters by applying taint checker
+            for (SinkParameter parameter : sink.getParameters()) {
+                int i = parameter.getIndex();
+                if ((i > 0) && (i < parameters.length)) {
+                    // Call the taint handler by reflection
+                    if (taintCheckerMethod != null) {
+                        parameters[i] = taintCheckerMethod.invoke(null, parameters[i], instance, sink.getFunction().getFqn(), sink.getName());
+                    } else {
+                        parameters[i] = IASTaintHandler.checkTaint(parameters[i], instance, sink.getFunction().getFqn(), sink.getName());
+                    }
+                }
+            }
+        }
+
+        // Check for JDK classes
+        if (lookup.isPackageExcludedOrJdk(Utils.getInternalName(this.original.getDeclaringClass())) || isWrapperForUninstrumentedMethod()) {
             Object[] converted = convertParametersToOriginal(parameters);
 
             if (this.original.equals(forNameMethod)) {
                 Class caller = ReflectionUtils.getCallerClass();
                 ClassLoader callerLoader = caller.getClassLoader();
-                return Class.forName((String) converted[0], true, callerLoader);
-            }
-
-            Object result = this.original.invoke(instance, converted);
-            return ConversionUtils.convertToInstrumented(result);
-        }
-        if ((!Modifier.isPublic(this.original.getModifiers()) && !Modifier.isProtected(this.original.getModifiers()) && !Modifier.isPrivate(this.original.getModifiers()))
-                || (!Modifier.isPublic(this.original.getDeclaringClass().getModifiers()) && !Modifier.isProtected(this.original.getDeclaringClass().getModifiers()) && !Modifier.isPrivate(this.original.getDeclaringClass().getModifiers()))) {
-            // This method is package private. Iuff the declaring class is in the same package as the calling class we must set it accessible
-            // Otherwise the caller class (which is this class) is not in the same package as the declaring class an an IllegalAccessException is thrown
-            Class callerClass;
-            if (Constants.JAVA_VERSION >= 9) {
-                callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
-                        .getCallerClass();
+                returnObj = Class.forName((String) converted[0], true, callerLoader);
             } else {
-                callerClass = ReflectionUtils.getCallerClass();
+                Object result = this.original.invoke(instance, converted);
+                returnObj = ConversionUtils.convertToInstrumented(result);
             }
-            if (this.original.getDeclaringClass().getPackage().equals(callerClass.getPackage())) {
-                this.original.setAccessible(true);
+        } else {
+            if ((!Modifier.isPublic(this.original.getModifiers()) && !Modifier.isProtected(this.original.getModifiers()) && !Modifier.isPrivate(this.original.getModifiers()))
+                    || (!Modifier.isPublic(this.original.getDeclaringClass().getModifiers()) && !Modifier.isProtected(this.original.getDeclaringClass().getModifiers()) && !Modifier.isPrivate(this.original.getDeclaringClass().getModifiers()))) {
+                // This method is package private. Iuff the declaring class is in the same package as the calling class we must set it accessible
+                // Otherwise the caller class (which is this class) is not in the same package as the declaring class an an IllegalAccessException is thrown
+                Class callerClass;
+                if (Constants.JAVA_VERSION >= 9) {
+                    callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
+                            .getCallerClass();
+                } else {
+                    callerClass = ReflectionUtils.getCallerClass();
+                }
+                if (this.original.getDeclaringClass().getPackage().equals(callerClass.getPackage())) {
+                    this.original.setAccessible(true);
+                }
+            }
+            returnObj = this.original.invoke(instance, parameters);
+        }
+
+        // Check for sinks
+        if (sink != null) {
+            // Manipulate all necessary parameters by applying taint checker
+            for (SinkParameter parameter : sink.getParameters()) {
+                int i = parameter.getIndex();
+                // Indicated return type should be transformed
+                if (i == -1) {
+                    // Call the taint handler by reflection
+                    if (taintCheckerMethod != null) {
+                        returnObj = taintCheckerMethod.invoke(null, returnObj, instance, sink.getFunction().getFqn(), sink.getName());
+                    } else {
+                        returnObj = IASTaintHandler.checkTaint(returnObj, instance, sink.getFunction().getFqn(), sink.getName());
+                    }
+                }
             }
         }
-        return this.original.invoke(instance, parameters);
+
+        // Check for sources
+        Source source = Configuration.getConfiguration().getSourceConfig().getSourceForFunction(uninstrumented);
+        Method taintHandlerMethod = null;
+        if (source != null) {
+            // Check for custom taint checker method
+            FunctionCall taintHandler = source.getTaintHandler();
+            if (!taintHandler.isEmpty()) {
+                try {
+                    taintHandlerMethod = FunctionCall.toMethod(taintHandler);
+                } catch (Exception e) {
+                    System.err.println("Exception finding source: " + taintHandler);
+                    e.printStackTrace();
+                }
+            }
+            if (taintCheckerMethod != null) {
+                returnObj = taintHandlerMethod.invoke(null, returnObj, instance, parameters,
+                        IASTaintSourceRegistry.getInstance().get(source.getName()).getId());
+            } else {
+                returnObj = IASTaintHandler.taint(returnObj, instance, parameters,
+                        IASTaintSourceRegistry.getInstance().get(source.getName()).getId());
+            }
+        }
+
+        return returnObj;
     }
 
     public boolean isBridge() {

@@ -16,11 +16,17 @@ public class RegularParameterTransformer implements ParameterTransformation {
     }
 
     @Override
-    public void transform(int index, String type, MethodTaintingVisitor visitor) {
+    public void transformParameter(int index, String type, MethodTaintingVisitor visitor) {
         FunctionCall converter = this.configuration.getConverterForParameter(this.call, index);
         if (converter != null) {
             visitor.visitMethodInsn(converter);
             return;
         }
+    }
+
+    @Override
+    public boolean requireParameterTransformation(int index, String type) {
+        FunctionCall converter = this.configuration.getConverterForParameter(this.call, index);
+        return (converter != null);
     }
 }

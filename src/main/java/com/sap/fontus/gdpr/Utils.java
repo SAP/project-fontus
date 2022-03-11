@@ -2,22 +2,22 @@ package com.sap.fontus.gdpr;
 
 import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.simple.SimpleExpiryDate;
-import com.sap.fontus.gdpr.petclinic.ConsentCookie;
-import com.sap.fontus.gdpr.petclinic.ConsentCookieMetadata;
+import com.sap.fontus.gdpr.cookie.ConsentCookie;
+import com.sap.fontus.gdpr.cookie.ConsentCookieMetadata;
 import com.sap.fontus.gdpr.servlet.ReflectedCookie;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASTaintMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
 import com.sap.fontus.taintaware.shared.IASTaintRanges;
+import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintInformationable;
+import com.sap.fontus.utils.Pair;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAmount;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -42,7 +42,7 @@ public final class Utils {
 
     // Works like a fold in OCaml/Haskell or accumulate in Python
     // Applies the function to each GdprMetadata in the taintInformation and accumulates information
-    public static <A> A processGdprMetaData(IASTaintInformationable taintInformation, A initial,  BiFunction<A, GdprMetadata, A> function) {
+    private static <A> A processGdprMetaData(IASTaintInformationable taintInformation, A initial, BiFunction<A, GdprMetadata, A> function) {
         A accumulator = initial;
         if(taintInformation == null) {
             return accumulator;
@@ -81,6 +81,13 @@ public final class Utils {
         });
     }
 
+    public static boolean markContested(IASTaintInformationable taintInformation) {
+        return processGdprMetaData(taintInformation, false, (acc, gdprData) -> {
+            gdprData.restrictProcessing();
+            return true;
+        });
+    }
+
     public static boolean updateExpiryDatesAndProtectionLevel(IASTaintAware taintAware, long daysFromNow, ProtectionLevel protectionLevel) {
         if(!taintAware.isTainted()) {
             return false;
@@ -94,7 +101,7 @@ public final class Utils {
             gdprData.setProtectionLevel(protectionLevel);
             for(AllowedPurpose purpose : gdprData.getAllowedPurposes()) {
                 purpose.setExpiryDate(expiryDate);
-                return true;
+                acc = true;
             }
             return acc;
         });
@@ -112,5 +119,30 @@ public final class Utils {
         }
         // Return empty consent if no cookie is found
         return new ArrayList<>();
+    }
+
+    public static Pair<IASTaintAware, Boolean> censorContestedParts(IASTaintAware taintAware) {
+        boolean contested = false;
+        if (taintAware.isTainted()) {
+            IASString s = taintAware.toIASString();
+            if (s != null) {
+                StringBuilder sb = new StringBuilder(s.getString());
+                for (IASTaintRange range : s.getTaintInformation().getTaintRanges(s.length())) {
+                    IASTaintMetadata meta = range.getMetadata();
+                    if(meta instanceof GdprTaintMetadata) {
+                        GdprMetadata gdprMetadata = ((GdprTaintMetadata) meta).getMetadata();
+                        if(!gdprMetadata.isProcessingUnrestricted()) {
+                            contested = true;
+                            for (int i = range.getStart(); i < range.getEnd(); i++) {
+                                sb.setCharAt(i, '*');
+                            }
+                        }
+                    }
+                }
+                taintAware = taintAware.newInstance();
+                taintAware.setContent(sb.toString(), s.getTaintInformationCopied());
+            }
+        }
+        return new Pair<>(taintAware, contested);
     }
 }

@@ -207,6 +207,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         if(assignment.isHasTaint()) {
             this.delegate.setString(assignment.getTaintIndex(), "0");
         }
+        //noinspection deprecation
         this.delegate.setUnicodeStream(assignment.getNewIndex(), x, length);
     }
 

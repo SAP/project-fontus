@@ -12,9 +12,12 @@ import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -71,6 +74,47 @@ public class FunctionCall {
         }
         String descriptor = Type.getType(method).getDescriptor();
         return new FunctionCall(opcode, Utils.dotToSlash(method.getDeclaringClass().getName()), method.getName(), descriptor, method.getDeclaringClass().isInterface());
+    }
+
+    private static Class<?> getClazz(String s) throws ClassNotFoundException {
+        char c = s.charAt(0);
+        switch (c) {
+            case 'V':
+                return Void.TYPE;
+            case 'Z':
+                return Boolean.TYPE;
+            case 'C':
+                return Character.TYPE;
+            case 'B':
+                return Byte.TYPE;
+            case 'S':
+                return Short.TYPE;
+            case 'I':
+                return Integer.TYPE;
+            case 'F':
+                return Float.TYPE;
+            case 'J':
+                return Long.TYPE;
+            case 'D':
+                return Double.TYPE;
+            case '[':
+                return Array.newInstance(getClazz(s.substring(1)), 0).getClass();
+            case 'L':
+                return Class.forName(s.substring(1, s.length() - 1).replaceAll("/", "."));
+            default:
+                return Class.forName(s.replaceAll("/", "."));
+        }
+    }
+
+    public static Method toMethod(FunctionCall functionCall) throws ClassNotFoundException, NoSuchMethodException {
+        Class clazz = Class.forName(Utils.slashToDot(functionCall.getOwner()));
+        List<String> params = functionCall.getParsedDescriptor().getParameters();
+        List<Class> paramClasses = new ArrayList<>(params.size());
+        for (String s : params) {
+            paramClasses.add(getClazz(s));
+        }
+
+        return clazz.getMethod(functionCall.getName(), paramClasses.toArray(new Class[0]));
     }
 
     public static FunctionCall fromHandle(Handle handle) {
@@ -138,6 +182,23 @@ public class FunctionCall {
                 ", descriptor='" + descriptor + '\'' +
                 ", isInterface=" + isInterface +
                 '}';
+    }
+
+    /**
+     * Match the method class, name and descriptor, but not the opcode and interface flag
+     * Means that the opcode and interface flags don't need to exactly match
+     * @param obj Object to be matched
+     * @return
+     */
+    public boolean fuzzyEquals(final Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null || this.getClass() != obj.getClass())
+            return false;
+        final FunctionCall that = (FunctionCall) obj;
+        return this.owner.equals(that.owner) &&
+               this.name.equals(that.name) &&
+               this.descriptor.equals(that.descriptor);
     }
 
     @Override

@@ -53,7 +53,38 @@ public class MethodParameterTransformer {
     }
 
     public boolean needsTransformation() {
-        return !this.paramTransformations.isEmpty() || !this.returnTransformations.isEmpty();
+        return needsParameterTransformation() || needsReturnTransformation();
+    }
+
+    public boolean needsParameterTransformation() {
+        for (ParameterTransformation p : paramTransformations) {
+            List<String> paramList = new ArrayList<>(this.descriptor.getParameters());
+            for (int i = 0; i < paramList.size(); i++) {
+                String pName = paramList.get(i);
+                if (p.requireParameterTransformation(i, pName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean needsParametersAsLocalVariables() {
+        for (ReturnTransformation r : returnTransformations) {
+            if (r.requireParameterVariableLocals()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean needsReturnTransformation() {
+        for (ReturnTransformation r : returnTransformations) {
+            if (r.requiresReturnTransformation(descriptor)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -75,7 +106,7 @@ public class MethodParameterTransformer {
      */
     public void modifyStackParameters(int nUsedLocalVariables) {
 
-        if (this.paramTransformations.isEmpty()) {
+        if (!this.needsParameterTransformation() && !this.needsParametersAsLocalVariables()) {
             return;
         }
 
@@ -127,7 +158,7 @@ public class MethodParameterTransformer {
             // Call the transformation callbacks in reverse order!
             for (int i = this.paramTransformations.size() - 1; i >= 0; i--) {
                 logger.info("Calling transformation: {} on parameter {} for {}", i, index, p);
-                this.paramTransformations.get(i).transform(index, p, this.visitor);
+                this.paramTransformations.get(i).transformParameter(index, p, this.visitor);
             }
 
             // If there is just one parameter, can skip storing and loading stack
@@ -159,8 +190,10 @@ public class MethodParameterTransformer {
     public void modifyReturnType() {
         logger.info("Calling return type transformation");
         // Call the transformation callbacks
-        for (ReturnTransformation t : this.returnTransformations) {
-            t.transform(this.visitor, this.descriptor);
+        if (this.needsReturnTransformation()) {
+            for (ReturnTransformation t : this.returnTransformations) {
+                t.transformReturnValue(this.visitor, this.descriptor);
+            }
         }
     }
 

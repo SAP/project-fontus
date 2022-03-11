@@ -1,9 +1,10 @@
 package com.sap.fontus.gdpr.petclinic;
 
-import com.iabtcf.decoder.TCString;
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.Source;
+import com.sap.fontus.gdpr.cookie.ConsentCookie;
+import com.sap.fontus.gdpr.cookie.ConsentCookieMetadata;
 import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.simple.*;
 import com.sap.fontus.gdpr.servlet.ReflectedCookie;
@@ -17,11 +18,8 @@ import org.objectweb.asm.Opcodes;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.CookieHandler;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
