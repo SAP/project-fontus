@@ -73,8 +73,8 @@ public class AgentConfig {
         boolean persistentCache = false;
         boolean hybridMode = false;
         boolean welcome = false;
-        boolean speculativeInstrumentation = true;
-        boolean parallel = true;
+        boolean speculativeInstrumentation = false;
+        boolean parallel = false;
         Boolean loggingEnabled = null;
         TaintMethod taintMethod = TaintMethod.defaultTaintMethod();
         Boolean useCaching = null;
@@ -103,11 +103,11 @@ public class AgentConfig {
             if ("hybrid_mode".equals(part)) {
                 hybridMode = true;
             }
-            if ("deactivate_speculative".equals(part)) {
-                speculativeInstrumentation = false;
+            if ("speculative".equals(part)) {
+                speculativeInstrumentation = true;
             }
-            if ("deactivate_parallel".equals(part)) {
-                parallel = false;
+            if ("parallel".equals(part)) {
+                parallel = true;
             }
             if (part.startsWith("taintmethod=")) {
                 String taintMethodArgName = afterEquals(part);
