@@ -333,7 +333,8 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         FunctionCall functionCall = this.instrumentationHelper.rewriteOwnerMethod(fc);
         if (functionCall != null) {
             //super.visitMethodInsn(functionCall.getOpcode(), functionCall.getOwner(), functionCall.getName(), functionCall.getDescriptor(), functionCall.isInterface());
-            this.rewriteParametersAndReturnType(functionCall);
+            // Add potential sinks, but do not exclude JDK classes (which may include the class itself)
+            this.rewriteParametersAndReturnType(functionCall, false);
             return;
         }
 
@@ -565,6 +566,10 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
     private boolean rewriteParametersAndReturnType(FunctionCall call) {
+        return rewriteParametersAndReturnType(call, true);
+    }
+
+    private boolean rewriteParametersAndReturnType(FunctionCall call, boolean enableExclusion) {
         boolean isExcluded = this.combinedExcludedLookup.isJdkOrAnnotation(call.getOwner()) || this.combinedExcludedLookup.isExcluded(call.getOwner());
 
         if (isExcluded) {
@@ -586,7 +591,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         }
 
         // Add JDK transformations
-        if (isExcluded) {
+        if (isExcluded && enableExclusion) {
             logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
             JdkMethodTransformer t = new JdkMethodTransformer(call, this.instrumentationHelper, this.config);
             transformer.addParameterTransformation(t);
