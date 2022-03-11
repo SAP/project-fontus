@@ -334,7 +334,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         if (functionCall != null) {
             //super.visitMethodInsn(functionCall.getOpcode(), functionCall.getOwner(), functionCall.getName(), functionCall.getDescriptor(), functionCall.isInterface());
             // Add potential sinks, but do not exclude JDK classes (which may include the class itself)
-            this.rewriteParametersAndReturnType(functionCall, false);
+            this.rewriteParametersAndReturnTypeForInstrumentedCall(functionCall, fc);
             return;
         }
 
@@ -565,13 +565,40 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         return fc.getOwner().equals("java/lang/invoke/MethodHandles$Lookup") && fc.getName().equals("findConstructor");
     }
 
-    private boolean rewriteParametersAndReturnType(FunctionCall call) {
-        return rewriteParametersAndReturnType(call, true);
+    private boolean rewriteParametersAndReturnTypeForInstrumentedCall(FunctionCall call, FunctionCall uninstrumentedCall) {
+
+        MethodParameterTransformer transformer = new MethodParameterTransformer(this, call);
+
+        // Add Sink transformations
+        Sink sink = this.config.getSinkConfig().getSinkForFunction(uninstrumentedCall, new Position(owner, name, line));
+        if (sink != null) {
+            logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(uninstrumentedCall.getOpcode()), uninstrumentedCall.getOwner(), uninstrumentedCall.getName(), uninstrumentedCall.getDescriptor());
+            SinkTransformer t = new SinkTransformer(sink, this.instrumentationHelper, this.used);
+            transformer.addParameterTransformation(t);
+            transformer.addReturnTransformation(t);
+        }
+
+        // No transformations required
+        if (!transformer.needsTransformation()) {
+            return false;
+        }
+
+        // Do the transformations
+        transformer.modifyStackParameters(this.used);
+        this.usedAfterInjection = Math.max(this.used + transformer.getExtraStackSlots(), this.usedAfterInjection);
+
+        this.visitMethodInsn(call);
+
+        // Modify Return parameters
+        transformer.modifyReturnType();
+
+        logger.info("Finished transforming parameters for [{}] {}.{}{}", Utils.opcodeToString(uninstrumentedCall.getOpcode()), uninstrumentedCall.getOwner(), uninstrumentedCall.getName(), uninstrumentedCall.getDescriptor());
+        return true;
     }
 
-    private boolean rewriteParametersAndReturnType(FunctionCall call, boolean enableExclusion) {
+    private boolean rewriteParametersAndReturnType(FunctionCall call) {
 
-        boolean isExcluded = enableExclusion && (this.combinedExcludedLookup.isJdkOrAnnotation(call.getOwner()) || this.combinedExcludedLookup.isExcluded(call.getOwner()));
+        boolean isExcluded = this.combinedExcludedLookup.isJdkOrAnnotation(call.getOwner()) || this.combinedExcludedLookup.isExcluded(call.getOwner());
 
         if (isExcluded) {
             String desc = this.instrumentationHelper.uninstrumentForJdkCall(call.getDescriptor());
@@ -580,25 +607,23 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         MethodParameterTransformer transformer = new MethodParameterTransformer(this, call);
 
-        if (enableExclusion) {
-            // Add always apply transformer
-            FunctionCall converter = this.config.getConverterForReturnValue(call, true);
-            if (converter != null) {
-                transformer.addReturnTransformation(new AlwaysApplyReturnGenericTransformer(converter));
-            }
+        // Add always apply transformer
+        FunctionCall converter = this.config.getConverterForReturnValue(call, true);
+        if (converter != null) {
+            transformer.addReturnTransformation(new AlwaysApplyReturnGenericTransformer(converter));
+        }
 
-            if (config.needsParameterConversion(call)) {
-                // Always apply transformation for the parameters as well (even JDK classes)
-                transformer.addParameterTransformation(new RegularParameterTransformer(call, this.instrumentationHelper, this.config));
-            }
+        if (config.needsParameterConversion(call)) {
+            // Always apply transformation for the parameters as well (even JDK classes)
+            transformer.addParameterTransformation(new RegularParameterTransformer(call, this.instrumentationHelper, this.config));
+        }
 
-            // Add JDK transformations
-            if (isExcluded) {
-                logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-                JdkMethodTransformer t = new JdkMethodTransformer(call, this.instrumentationHelper, this.config);
-                transformer.addParameterTransformation(t);
-                transformer.addReturnTransformation(t);
-            }
+        // Add JDK transformations
+        if (isExcluded) {
+            logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+            JdkMethodTransformer t = new JdkMethodTransformer(call, this.instrumentationHelper, this.config);
+            transformer.addParameterTransformation(t);
+            transformer.addReturnTransformation(t);
         }
 
         // Add Source transformations
