@@ -302,6 +302,5 @@ public class ConnectionWrapper extends AbstractWrapper implements Connection {
     public int getNetworkTimeout() throws SQLException {
         return this.delegate.getNetworkTimeout();
     }
-
 }
 

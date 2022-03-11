@@ -26,6 +26,8 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         }
     }
 
+    //Breakpoint with condition, content.equals oder contains
+
     public IASString(byte bytes[], int offset, int length, IASString charsetName)
             throws UnsupportedEncodingException {
         this.string = new String(bytes, offset, length, charsetName.getString());
