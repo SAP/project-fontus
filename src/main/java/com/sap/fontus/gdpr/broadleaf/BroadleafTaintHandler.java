@@ -13,11 +13,10 @@ import com.sap.fontus.gdpr.servlet.ReflectedCookie;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.gdpr.servlet.ReflectedSession;
 import com.sap.fontus.taintaware.IASTaintAware;
-import com.sap.fontus.taintaware.shared.IASBasicMetadata;
-import com.sap.fontus.taintaware.shared.IASTaintSource;
-import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
+import com.sap.fontus.taintaware.shared.*;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
+import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 import org.objectweb.asm.Opcodes;
 
 import java.lang.reflect.InvocationTargetException;
@@ -34,6 +33,7 @@ import java.util.regex.Pattern;
 public class BroadleafTaintHandler extends IASTaintHandler {
 
     private static final String productPurposeAttributeName = BroadleafTaintHandler.class.getName() + ".PRODUCTPURPOSE";
+    private static final String addressServiceAttributeName = BroadleafTaintHandler.class.getName() + ".ADDRESSSERVICE";
 
     /**
      * Extracts the TCF consent string from a cookie and attaches it as the taint metadata
@@ -56,6 +56,9 @@ public class BroadleafTaintHandler extends IASTaintHandler {
         }
 
         if ((parent != null) && (source != null)) {
+
+            // check if CONTEXT exists, most stuff not working without!
+
             try {
 
                 ReflectedHttpServletRequest request = new ReflectedHttpServletRequest(parent);
@@ -66,6 +69,18 @@ public class BroadleafTaintHandler extends IASTaintHandler {
 
                 ReflectedSession session = request.getSession();
                 Object springSecurityContext = session.getAttribute(new IASString("SPRING_SECURITY_CONTEXT"));
+
+                Object obj100 = request.getAttribute(new IASString("org.springframework.web.servlet.DispatcherServlet.CONTEXT"));
+                if (obj100 != null) {
+                    Method m100 = obj100.getClass().getMethod("getBean", IASString.class);
+
+                    try {
+                        Object bean = m100.invoke(obj100, new IASString("blCustomerAddressService"));
+                        session.setAttribute(addressServiceAttributeName, bean);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
 
                 //Admin part
                 if (path.contains("/admin/")) {
@@ -122,9 +137,11 @@ public class BroadleafTaintHandler extends IASTaintHandler {
                     if (path.contains("/checkout")) {
                         ProductPurpose productPurpose = null;
                         Object o = session.getAttribute(productPurposeAttributeName);
+                        long id = getIdFromSecurityContext(springSecurityContext);
+
                         if ((o != null) && (o instanceof ProductPurpose)) {
+                            getTaintMetadataFromExistingUser(request, id, (ProductPurpose) o);
                             productPurpose = (ProductPurpose) o;
-                            System.out.println(productPurpose);
                             if (metadata != null) {
                                 for (AllowedPurpose p : productPurpose.getPurposes()) {
                                     metadata.getAllowedPurposes().add(p);
@@ -148,7 +165,6 @@ public class BroadleafTaintHandler extends IASTaintHandler {
                         } catch (Exception ex) {
                             ex.printStackTrace();
                         }
-
                         Object obj = request.getAttribute(new IASString("org.springframework.web.servlet.DispatcherServlet.CONTEXT"));
                         Method m = obj.getClass().getMethod("getBean", IASString.class);
 
@@ -191,6 +207,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
         }
         return taintAware;
     }
+
         /**
          * The taint method can be used as a taintHandler for a given taint source
          * @param object The object to be tainted
@@ -220,20 +237,41 @@ public class BroadleafTaintHandler extends IASTaintHandler {
         // instance is the CustomerServiceImpl
         if (object.getClass().getName().equals("org.broadleafcommerce.profile.core.domain.CustomerImpl")) {
             try {
-                Method getAddresses = object.getClass().getMethod("getCustomerAddresses");
-                Object addresses = getAddresses.invoke(object);
-                System.out.println(addresses);
-                if (addresses instanceof List) {
-                    List<Object> castedAddresses = (List) addresses;
-                    for (Object o : castedAddresses) {
-                        System.out.println(o);
+                String[] sinkConf = sinkName.split("-");
+
+                if (sinkConf.length == 3) {
+
+                    Method getLastName = object.getClass().getMethod("getLastName");
+                    IASString lastname = (IASString) getLastName.invoke(object);
+
+                    IASTaintInformationable infos = lastname.getTaintInformation();
+                    IASTaintRanges ranges = lastname.getTaintInformation().getTaintRanges(lastname.length());
+
+                    GdprMetadata md = null;
+
+                    for (IASTaintRange range : ranges) {
+                        IASTaintMetadata metadata = range.getMetadata();
+                        if (metadata instanceof GdprTaintMetadata) {
+                            md = ((GdprTaintMetadata) metadata).getMetadata();
+                            break;
+                        }
+                    }
+
+                    Collection<AllowedPurpose> allowedPurposes = md.getAllowedPurposes();
+                    for (AllowedPurpose purpose : allowedPurposes) {
+                        Set<Vendor> vendors = purpose.getAllowedVendors();
+                        Purpose allowedPurpose = purpose.getAllowedPurpose();
+                        for (Vendor v : vendors) {
+                            if ((v.getName().equalsIgnoreCase(sinkConf[1])) && (allowedPurpose.getName().equalsIgnoreCase(sinkConf[2]))) {
+                                return object;
+                            }
+                        }
                     }
                 }
-                return null;
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                return null;
+            } catch (Exception ex3) {
+                ex3.printStackTrace();
             }
+            return null;
         } else if (object instanceof IASTaintAware) {
             return handleTaint((IASTaintAware)object, instance, sinkFunction, sinkName);
         } else {
@@ -244,18 +282,20 @@ public class BroadleafTaintHandler extends IASTaintHandler {
     }
 
     public static Object checkAddresses(Object object, Object instance, String sinkFunction, String sinkName) {
-        if (object.getClass().getName().equals("org.broadleafcommerce.profile.core.domain.CustomerImpl")) {
+        if (object instanceof List) {
             try {
-                Method getAddresses = object.getClass().getMethod("getCustomerAddresses");
-                Object addresses = getAddresses.invoke(object);
+                Method getActiveAddresses = instance.getClass().getMethod("readActiveCustomerAddressesByCustomerId", Long.class);
+                long id = 300;
+                Object addresses = getActiveAddresses.invoke(instance, id);
                 System.out.println(addresses);
-                if (addresses instanceof List) {
-                    List<Object> castedAddresses = (List) addresses;
-                    for (Object o : castedAddresses) {
-                        System.out.println(o);
-                    }
+
+                List<Object> castedAddresses = (List) object;
+                List<Object> correctAddresses = new ArrayList<>();
+                for (Object o : castedAddresses) {
+                    System.out.println(o);
+                    //if check and than add
                 }
-                return null;
+                return correctAddresses;
             } catch (Exception ex) {
                 ex.printStackTrace();
                 return null;
@@ -320,5 +360,73 @@ public class BroadleafTaintHandler extends IASTaintHandler {
             ex.printStackTrace();
         }
         return -1;
+    }
+
+    private static void getTaintMetadataFromExistingUser(ReflectedHttpServletRequest request, long userId, ProductPurpose productPurpose) {
+        GdprMetadata md = null;
+        if (userId > -1) {
+            try {
+                Object obj = request.getAttribute(new IASString("org.springframework.web.servlet.DispatcherServlet.CONTEXT"));
+                if (obj != null) {
+                    Method m = obj.getClass().getMethod("getBean", IASString.class);
+
+                    Object bean = m.invoke(obj, new IASString("blCustomerService"));
+                    Method m2 = bean.getClass().getMethod("readCustomerById", Long.class);
+
+                    Object user = m2.invoke(bean, userId);
+
+                    Method getEmail = user.getClass().getMethod("getEmailAddress");
+                    Method setEmail = user.getClass().getMethod("setEmailAddress", IASString.class);
+
+                    Method getLastName = user.getClass().getMethod("getLastName");
+                    Method setLastName = user.getClass().getMethod("setLastName", IASString.class);
+
+                    IASString lastname = (IASString) getLastName.invoke(user);
+
+                    IASTaintInformationable infos = lastname.getTaintInformation();
+                    IASTaintRanges ranges = lastname.getTaintInformation().getTaintRanges(lastname.length());
+
+                    GdprTaintMetadata currentData = null;
+                    for (IASTaintRange range : ranges) {
+                        IASTaintMetadata metadata = range.getMetadata();
+                        if (metadata instanceof GdprTaintMetadata) {
+                            md = ((GdprTaintMetadata) metadata).getMetadata();
+                            currentData = (GdprTaintMetadata) metadata;
+                            break;
+                        }
+                    }
+
+                    for (AllowedPurpose p : productPurpose.getPurposes()) {
+                        Collection<AllowedPurpose> allowedPurposes = md.getAllowedPurposes();
+                        boolean contains = false;
+                        for (AllowedPurpose p2 : allowedPurposes) {
+                            if (p2.getAllowedPurpose().getName().equalsIgnoreCase(p.getAllowedPurpose().getName())) {
+                                contains = true;
+                            }
+                        }
+                        if (!contains) {
+                            md.getAllowedPurposes().add(p);
+                        }
+                    }
+                    Class customerInterface =  Class.forName("org.broadleafcommerce.profile.core.domain.Customer", false, Thread.currentThread().getContextClassLoader());
+                    Method saveCustomer = bean.getClass().getMethod("saveCustomer", customerInterface);
+
+
+                    IASString descentLastName = new IASString("descentLastName");
+                    setLastName.invoke(user, descentLastName);
+
+                    saveCustomer.invoke(bean, user);
+
+
+                    IASString newLastName = new IASString(lastname.getString());
+                    newLastName.setTaint(new GdprTaintMetadata(currentData.getSource().getId(), md));
+                    setLastName.invoke(user, newLastName);
+
+                    saveCustomer.invoke(bean, user);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 }
