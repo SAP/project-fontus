@@ -2,6 +2,7 @@ package com.sap.fontus.gdpr.broadleaf;
 
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.Configuration;
+import com.sap.fontus.config.Sink;
 import com.sap.fontus.config.Source;
 import com.sap.fontus.gdpr.cookie.ConsentCookie;
 import com.sap.fontus.gdpr.cookie.ConsentCookieMetadata;
@@ -232,38 +233,115 @@ public class BroadleafTaintHandler extends IASTaintHandler {
         return IASTaintHandler.traverseObject(object, taintAware -> setTaint(taintAware, parent, parameters, sourceId));
     }
 
+    public static Object monitorOutgoingTraffic(Object object, Object instance, String sinkFunction, String sinkName) {
+        Sink sink = Configuration.getConfiguration().getSinkConfig().getSinkForFqn(sinkFunction);
+        List<String> sinkPurposes = sink.getDataProtection().getPurposes();
+        List<String> sinkVendors = sink.getDataProtection().getVendors();
+        if (object.getClass().getName().equals("com.broadleafcommerce.rest.api.wrapper.CustomerWrapper")) {
+            try {
+                Method getId = object.getClass().getMethod("getId");
+                Method getFirstName = object.getClass().getMethod("getFirstName");
+                Method getLastName = object.getClass().getMethod("getLastName");
+                Method getEmailAddress = object.getClass().getMethod("getEmailAddress");
+
+                long id = (long) getId.invoke(object);
+                UUID firstName = getDataId((IASString) getFirstName.invoke(object));
+                UUID lastName = getDataId((IASString) getLastName.invoke(object));
+                UUID mailAddresse = getDataId((IASString) getEmailAddress.invoke(object));
+
+                System.out.println("Data with id " + firstName.toString() + " was sent to " + sinkVendors.get(0));
+                System.out.println("Data with id " + lastName.toString() + " was sent to " + sinkVendors.get(0));
+                System.out.println("Data with id " + mailAddresse.toString() + " was sent to " + sinkVendors.get(0));
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        } else if (object instanceof List) {
+            List<Object> listOfObjects = (List) object;
+            for (Object obj : listOfObjects) {
+                if (obj.getClass().getName().equals("com.broadleafcommerce.rest.api.wrapper.CustomerAddressWrapper")) {
+                    try {
+                        Method getId = obj.getClass().getMethod("getId");
+                        Method getAddressName = obj.getClass().getMethod("getAddressName");
+                        Method getAddressWrapper = obj.getClass().getMethod("getAddress");
+
+                        long id = (long) getId.invoke(obj);
+                        UUID addressName = getDataId((IASString) getAddressName.invoke(obj));
+                        Object addressWrapper = getAddressWrapper.invoke(obj);
+
+                        System.out.println("Data with id " + addressName.toString() + " was sent to " + sinkVendors.get(0));
+
+                        if (addressWrapper.getClass().getName().equals("com.broadleafcommerce.rest.api.wrapper.AddressWrapper")) {
+                            Method getAddressId = addressWrapper.getClass().getMethod("getId");
+                            Method getFirstName = addressWrapper.getClass().getMethod("getFirstName");
+                            Method getLastName = addressWrapper.getClass().getMethod("getLastName");
+                            Method getAddressLine1 = addressWrapper.getClass().getMethod("getAddressLine1");
+                            Method getAddressLine2 = addressWrapper.getClass().getMethod("getAddressLine2");
+                            Method getAddressLine3 = addressWrapper.getClass().getMethod("getAddressLine3");
+                            Method getCity = addressWrapper.getClass().getMethod("getCity");
+                            Method getIsoCountrySubdivision = addressWrapper.getClass().getMethod("getIsoCountrySubdivision");
+                            Method getStateProvinceRegion = addressWrapper.getClass().getMethod("getStateProvinceRegion");
+                            Method getPostalCode = addressWrapper.getClass().getMethod("getPostalCode");
+                            Method getCompanyName = addressWrapper.getClass().getMethod("getCompanyName");
+
+                            long addressId = (long) getAddressId.invoke(addressWrapper);
+                            UUID firstName = getDataId((IASString) getFirstName.invoke(addressWrapper));
+                            UUID lastName = getDataId((IASString) getLastName.invoke(addressWrapper));
+                            UUID addressLine1 = getDataId((IASString) getAddressLine1.invoke(addressWrapper));
+                            UUID addressLine2 = getDataId((IASString) getAddressLine2.invoke(addressWrapper));
+                            UUID addressLine3 = getDataId((IASString) getAddressLine3.invoke(addressWrapper));
+                            UUID city = getDataId((IASString) getCity.invoke(addressWrapper));
+                            UUID postalCode = getDataId((IASString) getPostalCode.invoke(addressWrapper));
+                            UUID companyName = getDataId((IASString) getCompanyName.invoke(addressWrapper));
+                            UUID isoCountrySubdivision = getDataId((IASString) getIsoCountrySubdivision.invoke(addressWrapper));
+                            UUID stateProvinceRegion = getDataId((IASString) getStateProvinceRegion.invoke(addressWrapper));
+
+                            System.out.println("Data with id " + firstName.toString() + " was sent to " + sinkVendors.get(0));
+                            System.out.println("Data with id " + lastName.toString() + " was sent to " + sinkVendors.get(0));
+                            System.out.println("Data with id " + addressLine1.toString() + " was sent to " + sinkVendors.get(0));
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        }
+        return object;
+    }
+
     public static Object checkCustomer(Object object, Object instance, String sinkFunction, String sinkName) {
         // object is the customer
         // instance is the CustomerServiceImpl
         if (object.getClass().getName().equals("org.broadleafcommerce.profile.core.domain.CustomerImpl")) {
             try {
-                String[] sinkConf = sinkName.split("-");
+                Sink sink = Configuration.getConfiguration().getSinkConfig().getSinkForFqn(sinkFunction);
+                List<String> sinkPurposes = sink.getDataProtection().getPurposes();
+                List<String> sinkVendors = sink.getDataProtection().getVendors();
 
-                if (sinkConf.length == 3) {
+                Method getLastName = object.getClass().getMethod("getLastName");
+                IASString lastname = (IASString) getLastName.invoke(object);
+                GdprMetadata md = null;
 
-                    Method getLastName = object.getClass().getMethod("getLastName");
-                    IASString lastname = (IASString) getLastName.invoke(object);
-
-                    IASTaintInformationable infos = lastname.getTaintInformation();
-                    IASTaintRanges ranges = lastname.getTaintInformation().getTaintRanges(lastname.length());
-
-                    GdprMetadata md = null;
-
-                    for (IASTaintRange range : ranges) {
-                        IASTaintMetadata metadata = range.getMetadata();
-                        if (metadata instanceof GdprTaintMetadata) {
-                            md = ((GdprTaintMetadata) metadata).getMetadata();
+                if (lastname.isTainted() && (lastname.getTaintInformation() != null)) {
+                    for (IASTaintRange range : lastname.getTaintInformation().getTaintRanges(lastname.getString().length())) {
+                        if (range.getMetadata() instanceof GdprTaintMetadata) {
+                            md = ((GdprTaintMetadata) range.getMetadata()).getMetadata();
                             break;
                         }
                     }
+                }
 
-                    Collection<AllowedPurpose> allowedPurposes = md.getAllowedPurposes();
-                    for (AllowedPurpose purpose : allowedPurposes) {
-                        Set<Vendor> vendors = purpose.getAllowedVendors();
-                        Purpose allowedPurpose = purpose.getAllowedPurpose();
-                        for (Vendor v : vendors) {
-                            if ((v.getName().equalsIgnoreCase(sinkConf[1])) && (allowedPurpose.getName().equalsIgnoreCase(sinkConf[2]))) {
-                                return object;
+                Collection<AllowedPurpose> allowedPurposes = md.getAllowedPurposes();
+
+                for (AllowedPurpose purpose : allowedPurposes) {
+                    for (String sinkPurpose : sinkPurposes) {
+                        if (purpose.getAllowedPurpose().getName().equalsIgnoreCase(sinkPurpose)) {
+                            Set<Vendor> allowedVendors = purpose.getAllowedVendors();
+                            for (Vendor vendor : allowedVendors) {
+                                for (String sinkVendor : sinkVendors) {
+                                    if (vendor.getName().equalsIgnoreCase(sinkVendor)) {
+                                        return object;
+                                    }
+                                }
                             }
                         }
                     }
@@ -288,10 +366,17 @@ public class BroadleafTaintHandler extends IASTaintHandler {
                 long id = 300;
                 Object addresses = getActiveAddresses.invoke(instance, id);
                 System.out.println(addresses);
-
+                Sink sink = Configuration.getConfiguration().getSinkConfig().getSinkForFqn(sinkFunction);
+                sink.getDataProtection().getPurposes();
+                sink.getDataProtection().getVendors();
                 List<Object> castedAddresses = (List) object;
                 List<Object> correctAddresses = new ArrayList<>();
                 for (Object o : castedAddresses) {
+                    Method getAddress = o.getClass().getMethod("getAddress");
+                    Object address = getAddress.invoke(o);
+                    Method getAddressLine1 = address.getClass().getMethod("getAddressLine1");
+                    IASString addressLine = (IASString) getAddressLine1.invoke(address);
+
                     System.out.println(o);
                     //if check and than add
                 }
@@ -427,6 +512,19 @@ public class BroadleafTaintHandler extends IASTaintHandler {
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
+        }
+    }
+
+    private static UUID getDataId(IASString iasString) {
+        if (iasString.isTainted() && (iasString.getTaintInformation() != null)) {
+            for (IASTaintRange range : iasString.getTaintInformation().getTaintRanges(iasString.getString().length())) {
+                if (range.getMetadata() instanceof GdprTaintMetadata) {
+                    return ((GdprTaintMetadata) range.getMetadata()).getMetadata().getId().getUUID();
+                }
+            }
+            return null;
+        } else {
+            return null;
         }
     }
 }
