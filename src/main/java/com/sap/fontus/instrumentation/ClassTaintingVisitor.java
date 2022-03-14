@@ -2,12 +2,14 @@ package com.sap.fontus.instrumentation;
 
 import com.sap.fontus.Constants;
 import com.sap.fontus.asm.*;
+import com.sap.fontus.asm.speculative.SpeculativeParallelInstrumenter;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.utils.*;
 import com.sap.fontus.utils.lookups.AnnotationLookup;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
+import com.sap.fontus.asm.resolver.IClassResolver;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
 
@@ -34,7 +36,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private MethodVisitRecording recording;
     private final ClassVisitor visitor;
     private final Configuration config;
-    private final ClassResolver resolver;
+    private final IClassResolver resolver;
     /**
      * The name of the class currently processed.
      */
@@ -58,7 +60,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private final List<LambdaCall> jdkLambdaMethodProxies = new ArrayList<>();
     private final InstrumentationHelper instrumentationHelper;
 
-    public ClassTaintingVisitor(ClassVisitor cv, ClassResolver resolver, Configuration config, ClassLoader loader, boolean containsJSRRET, CombinedExcludedLookup excludedLookup) {
+    public ClassTaintingVisitor(ClassVisitor cv, IClassResolver resolver, Configuration config, ClassLoader loader, boolean containsJSRRET, CombinedExcludedLookup excludedLookup) {
         super(Opcodes.ASM9, cv);
         this.visitor = cv;
         this.staticFinalFields = new ArrayList<>();
@@ -93,6 +95,15 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.owner = name;
         this.superName = superName == null ? Type.getInternalName(Object.class) : this.instrumentationHelper.instrumentSuperClass(superName);
         this.interfaces = interfaces;
+
+        if (superName != null) {
+            SpeculativeParallelInstrumenter.getInstance().submitSpeculativeInstrumentation(superName, this.loader);
+        }
+        if (interfaces != null) {
+            for (String intf : interfaces) {
+                SpeculativeParallelInstrumenter.getInstance().submitSpeculativeInstrumentation(intf, this.loader);
+            }
+        }
 
         this.isInterface = ((access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE);
         this.isFinal =((access & Opcodes.ACC_FINAL) == Opcodes.ACC_FINAL);
@@ -148,6 +159,10 @@ class ClassTaintingVisitor extends ClassVisitor {
             return super.visitField(access, name, descriptor, signature, value);
         }
 
+        String internalName = Type.getType(descriptor).getInternalName();
+
+        SpeculativeParallelInstrumenter.getInstance().submitSpeculativeInstrumentation(internalName, this.loader);
+
         return this.instrumentationHelper.instrumentFieldInstruction(this.visitor, access, name, descriptor, signature, value, (n, d, v) -> staticFinalFields.add(FieldData.of(n, d, v))).orElse(null);
     }
 
@@ -169,6 +184,15 @@ class ClassTaintingVisitor extends ClassVisitor {
         if (this.isAnnotation) {
             return super.visitMethod(access, name, descriptor, signature, exceptions);
         }
+
+        Type descriptorType = Type.getMethodType(descriptor);
+        for (Type arg : descriptorType.getArgumentTypes()) {
+            SpeculativeParallelInstrumenter.getInstance().submitSpeculativeInstrumentation(arg.getInternalName(), this.loader);
+        }
+        SpeculativeParallelInstrumenter.getInstance().submitSpeculativeInstrumentation(descriptorType.getReturnType().getInternalName(), this.loader);
+
+
+
         String instrumentedSignature = this.signatureInstrumenter.instrumentSignature(signature);
         MethodVisitor mv;
         Method method = new Method(access, owner, name, descriptor, signature, exceptions, this.isInterface);
@@ -815,7 +839,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitCode();
 
         // Setup configuration if offline instrumentation
-        if (config.isOfflineInstrumentation()) {
+        if (config.isOfflineInstrumentation() && !config.isHybridMode()) {
             org.objectweb.asm.commons.Method parseOffline;
             try {
                 parseOffline = org.objectweb.asm.commons.Method.getMethod(Configuration.class.getMethod("parseOffline", TaintMethod.class));

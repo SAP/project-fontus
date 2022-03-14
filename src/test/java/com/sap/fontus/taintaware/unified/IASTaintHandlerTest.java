@@ -1,5 +1,6 @@
 package com.sap.fontus.taintaware.unified;
 
+import com.sap.fontus.agent.InstrumentationConfiguration;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
@@ -21,6 +22,7 @@ public class IASTaintHandlerTest {
     static void before() {
         IASTaintSourceRegistry.getInstance().getOrRegisterObject("mySource");
         Configuration.setTestConfig(TaintMethod.RANGE);
+        InstrumentationConfiguration.init(null, null);
         Configuration.getConfiguration().setRecursiveTainting(true);
     }
 
@@ -29,7 +31,7 @@ public class IASTaintHandlerTest {
         IASString string = new IASString("test");
         A a = new A(string);
 
-        IASTaintHandler.taint(a, null, null,1);
+        IASTaintHandler.taint(a, null, null, 1);
 
         Assertions.assertTrue(string.isTainted());
     }
@@ -55,7 +57,7 @@ public class IASTaintHandlerTest {
 
         map.put("key", types);
 
-        Object result = IASTaintHandler.taint(map, null, null,1);
+        Object result = IASTaintHandler.taint(map, null, null, 1);
         assertTrue(result instanceof Map);
     }
 
@@ -70,7 +72,7 @@ public class IASTaintHandlerTest {
 
         map.put("key", types);
 
-        Object result = IASTaintHandler.taint(map, null, null,1);
+        Object result = IASTaintHandler.taint(map, null, null, 1);
         assertTrue(result instanceof Map);
         Map<String, List<IASString>> resultMap = (Map<String, List<IASString>>) result;
         assertEquals(map, resultMap);
@@ -86,7 +88,7 @@ public class IASTaintHandlerTest {
         types.add("element2");
         types.add("element3");
 
-        Object result = IASTaintHandler.taint(types, null, null,1);
+        Object result = IASTaintHandler.taint(types, null, null, 1);
         assertTrue(result instanceof List);
     }
 

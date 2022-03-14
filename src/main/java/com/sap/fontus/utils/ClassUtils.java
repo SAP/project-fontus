@@ -1,8 +1,8 @@
 package com.sap.fontus.utils;
 
-import com.sap.fontus.agent.TaintAgent;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
+import com.sap.fontus.asm.resolver.ClassResolverFactory;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
@@ -10,12 +10,15 @@ import org.objectweb.asm.Opcodes;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
+import java.util.Optional;
 
 public class ClassUtils {
+    private static final Logger logger = LogUtils.getLogger();
     public static CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(null);
+    private static final ClassFinder classFinder = ClassResolverFactory.createClassFinder();
 
     public static Class<?> findLoadedClass(String internalName) {
-        Class<?> loaded = TaintAgent.findLoadedClass(Utils.slashToDot(internalName));
+        Class<?> loaded = classFinder.findClass(Utils.slashToDot(internalName));
         if (loaded == null && combinedExcludedLookup.isJdkClass(internalName)) {
             try {
                 loaded = Class.forName(Type.getObjectType(internalName).getClassName());
@@ -27,7 +30,7 @@ public class ClassUtils {
     }
 
     public static Class<?> findLoadedClass(String internalName, ClassLoader loader) {
-        Class<?> loaded = TaintAgent.findLoadedClass(Utils.slashToDot(internalName));
+        Class<?> loaded = classFinder.findClass(Utils.slashToDot(internalName));
         if (loaded == null && new CombinedExcludedLookup(loader).isJdkClass(internalName)) {
             try {
                 loaded = Class.forName(Type.getObjectType(internalName).getClassName(), false, loader);
@@ -38,21 +41,11 @@ public class ClassUtils {
         return loaded;
     }
 
-    public static InputStream getClassInputStream(String internalName, ClassLoader loader) {
-        String resourceName = internalName + ".class";
-        InputStream resource = ClassLoader.getSystemResourceAsStream(resourceName);
-        if (resource == null) {
-            resource = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
-            if (resource == null) {
-                if (loader != null) {
-                    resource = loader.getResourceAsStream(resourceName);
-                }
-            }
-        }
-        if (resource != null) {
-            return resource;
-        }
-        throw new RuntimeException("Resource for " + internalName + "couldn't be found");
+    public static byte[] getClassBytes(String internalName, ClassLoader loader) {
+        return ClassResolverFactory
+                .createClassResolver(loader)
+                .resolve(internalName)
+                .orElseThrow(() -> new RuntimeException("Resource for " + internalName + " couldn't be found"));
     }
 
     public static boolean isInterface(String internalName) {
@@ -68,14 +61,15 @@ public class ClassUtils {
     }
 
     public static boolean isInterface(String internalName, ClassLoader loader) {
-        try {
-            return ClassUtils.isInterface(new ClassReader(getClassInputStream(internalName, loader)).getAccess());
-        } catch (IOException e) {
-            if (Configuration.isLoggingEnabled()) {
-                System.err.println("Could not resolve class " + internalName + " for isInterface checking");
-            }
+        Optional<byte[]> bytes = ClassResolverFactory
+                .createClassResolver(loader)
+                .resolve(internalName);
+        if (bytes.isPresent()) {
+            return ClassUtils.isInterface(new ClassReader(bytes.get()).getAccess());
+        } else {
+            logger.error("Could not resolve class " + internalName + " for isInterface checking");
+            return false;
         }
-        return false;
     }
 
     public static Class<?> arrayType(Class<?> cls) {

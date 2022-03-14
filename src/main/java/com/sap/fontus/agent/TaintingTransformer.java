@@ -1,13 +1,14 @@
 package com.sap.fontus.agent;
 
-import com.sap.fontus.asm.ClassResolver;
-import com.sap.fontus.utils.*;
+import com.sap.fontus.asm.resolver.AgentClassResolver;
+import com.sap.fontus.asm.speculative.SpeculativeParallelInstrumenter;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.instrumentation.Instrumenter;
+import com.sap.fontus.utils.*;
+import com.sap.fontus.utils.lookups.AnnotationLookup;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
-import org.mutabilitydetector.asm.NonClassloadingClassWriter;
+import com.sap.fontus.asm.resolver.ClassResolverFactory;
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
@@ -20,6 +21,7 @@ class TaintingTransformer implements ClassFileTransformer {
 
     private final Configuration config;
     private final Instrumenter instrumenter;
+    private final ClassFinder classFinder;
 
     private final Map<String, byte[]> classCache = new HashMap<>();
 
@@ -29,22 +31,34 @@ class TaintingTransformer implements ClassFileTransformer {
     TaintingTransformer(Configuration config) {
         this.instrumenter = new Instrumenter();
         this.config = config;
+        this.classFinder = ClassResolverFactory.createClassFinder();
     }
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
         this.nClasses += 1;
-        if (loader == null) {
-            return classfileBuffer;
-        }
 
         if (className == null) {
             className = new ClassReader(classfileBuffer).getClassName();
         }
 
+        BytecodeRegistry.getInstance().addClassData(className, classfileBuffer);
+        AnnotationLookup.getInstance().checkAnnotationAndCache(className, classfileBuffer);
+
+        this.classFinder.addClass(className, loader);
+
+        if (loader == null) {
+            return classfileBuffer;
+        }
 
         CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(loader);
+
+        if (config.isHybridMode() && combinedExcludedLookup.isClassAlreadyInstrumentedForHybrid(className)) {
+            logger.info("Skipping already instrumented class in hybrid mode: {}", className);
+            return classfileBuffer;
+        }
+
         if (combinedExcludedLookup.isJdkClass(className)) {
             logger.info("Skipping JDK class: {}", className);
             return classfileBuffer;
@@ -68,13 +82,13 @@ class TaintingTransformer implements ClassFileTransformer {
         try {
             int hash = Arrays.hashCode(classfileBuffer);
             byte[] outArray = null;
-            if(this.config.usePersistentCache() && CacheHandler.get().isCached(hash)) {
+            if (this.config.usePersistentCache() && CacheHandler.get().isCached(hash)) {
                 logger.info("Fetching class {} from cache", className);
                 outArray = CacheHandler.get().fetchFromCache(hash, className);
             } else {
                 logger.info("Tainting class: {}", className);
-                outArray = this.instrumentClassByteArray(classfileBuffer, loader, className);
-                if(this.config.usePersistentCache()) {
+                outArray = SpeculativeParallelInstrumenter.getInstance().instrument(className, loader, classfileBuffer);
+                if (this.config.usePersistentCache()) {
                     CacheHandler.get().put(hash, outArray, className);
                 }
             }
@@ -96,25 +110,6 @@ class TaintingTransformer implements ClassFileTransformer {
 
     public byte[] findInstrumentedClass(String qn) {
         return this.classCache.get(qn);
-    }
-
-    private byte[] instrumentClassByteArray(byte[] classfileBuffer, ClassLoader loader, String className) {
-        byte[] outArray;
-        try {
-            outArray = this.instrumenter.instrumentClass(classfileBuffer, new ClassResolver(loader), this.config, loader, false);
-        } catch (IllegalArgumentException ex) {
-            if ("JSR/RET are not supported with computeFrames option".equals(ex.getMessage())) {
-                logger.error("JSR/RET not supported in {}!", className);
-                Utils.logStackTrace(Arrays.asList(ex.getStackTrace()));
-                outArray = this.instrumenter.instrumentClass(classfileBuffer, new ClassResolver(loader), this.config, loader, true);
-                logger.error("Finished retrying {}", className);
-            } else {
-                logger.error("Instrumentation failed for {}", className);
-                Utils.logStackTrace(Arrays.asList(ex.getStackTrace()));
-                throw ex;
-            }
-        }
-        return outArray;
     }
 
 }

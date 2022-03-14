@@ -294,5 +294,12 @@ public class IASClassProxy {
         Class toConverted = ConversionUtils.convertClassToOrig(toClass);
         return thisConverted.isAssignableFrom(toConverted);
     }
+
+    public static ClassLoader getClassLoader(Class cls) {
+        if (lookup.isFontusClass(cls)) {
+            return null;
+        }
+        return cls.getClassLoader();
+    }
 }
 

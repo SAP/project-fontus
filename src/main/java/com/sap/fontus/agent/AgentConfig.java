@@ -6,6 +6,7 @@ import com.sap.fontus.Constants;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.config.taintloss.TaintlossHandler;
+import com.sap.fontus.utils.IOUtils;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
 
@@ -70,13 +71,17 @@ public class AgentConfig {
         boolean verbose = false;
         boolean taintPersistence = false;
         boolean persistentCache = false;
+        boolean hybridMode = false;
         boolean welcome = false;
+        boolean speculativeInstrumentation = false;
+        boolean parallel = false;
         Boolean loggingEnabled = null;
         TaintMethod taintMethod = TaintMethod.defaultTaintMethod();
         Boolean useCaching = null;
         Integer layerThreshold = null;
         Boolean collectStats = null;
         Abort abort = null;
+        File instrumentedClassesFile = null;
         TaintlossHandler taintlossHandler = null;
 
         for (String part : parts) {
@@ -94,6 +99,15 @@ public class AgentConfig {
             }
             if ("enable_welcome".equals(part)) {
                 welcome = true;
+            }
+            if ("hybrid_mode".equals(part)) {
+                hybridMode = true;
+            }
+            if ("speculative".equals(part)) {
+                speculativeInstrumentation = true;
+            }
+            if ("parallel".equals(part)) {
+                parallel = true;
             }
             if (part.startsWith("taintmethod=")) {
                 String taintMethodArgName = afterEquals(part);
@@ -115,6 +129,10 @@ public class AgentConfig {
                 String filename = afterEquals(part);
                 Configuration cmdlineconfig = ConfigurationLoader.loadConfigurationFrom(new File(filename));
                 c.append(cmdlineconfig);
+            }
+            if (part.startsWith("instrumented_classes_file=")) {
+                String filename = afterEquals(part);
+                instrumentedClassesFile = new File(filename);
             }
             if (part.startsWith("blacklisted_main_classes=")) {
                 String filename = afterEquals(part);
@@ -138,7 +156,21 @@ public class AgentConfig {
         c.setTaintPersistence(taintPersistence || c.hasTaintPersistence());
         c.setTaintMethod(taintMethod);
         c.setShowWelcomeMessage(welcome);
+        c.setHybridMode(hybridMode);
+        c.setSpeculativeInstrumentation(speculativeInstrumentation);
+        c.setParallel(parallel);
 
+        if(hybridMode && instrumentedClassesFile == null) {
+            throw new RuntimeException("Hybrid mode is on, but no instrumented_classes_file provided");
+        }
+        if (instrumentedClassesFile != null) {
+            try {
+                List<String> classes = IOUtils.readAllLines(instrumentedClassesFile);
+                c.setInstumentedClasses(classes);
+            } catch (IOException e) {
+                throw new RuntimeException("Could not read instrumented_classes_file");
+            }
+        }
         if (useCaching != null) {
             c.setUseCaching(useCaching);
         }

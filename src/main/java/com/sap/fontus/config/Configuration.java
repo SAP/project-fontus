@@ -41,7 +41,23 @@ public class Configuration {
     @JsonIgnore
     private TaintlossHandler taintlossHandler = null;
 
+    @JsonIgnore
+    private Collection<String> instumentedClasses = null;
+
+    @JsonIgnore
     private boolean isOfflineInstrumentation = true;
+
+    @JsonIgnore
+    private boolean speculativeInstrumentation = true;
+
+    /**
+     * If offline instrumentation is used, it can be parallelized
+     */
+    @JsonIgnore
+    private boolean isParallel = false;
+
+    @XmlElement
+    private boolean isHybridMode = false;
 
     @XmlElement
     private boolean verbose = false;
@@ -103,7 +119,7 @@ public class Configuration {
     @JacksonXmlElementWrapper(localName = "passThroughTaints")
     @XmlElement(name = "passThroughTaint")
     private final List<FunctionCall> passThroughTaints;
-    
+
     public Configuration() {
         this.verbose = false;
         this.sourceConfig = new SourceConfig();
@@ -198,6 +214,14 @@ public class Configuration {
 
     public void setOfflineInstrumentation(boolean offlineInstrumentation) {
         isOfflineInstrumentation = offlineInstrumentation;
+    }
+
+    public Collection<String> getInstumentedClasses() {
+        return instumentedClasses;
+    }
+
+    public void setInstumentedClasses(Collection<String> instumentedClasses) {
+        this.instumentedClasses = new HashSet<>(instumentedClasses);
     }
 
     public static boolean defaultUseCaching() {
@@ -504,6 +528,22 @@ public class Configuration {
         this.showWelcomeMessage = showWelcomeMessage;
     }
 
+    public boolean isHybridMode() {
+        return isHybridMode;
+    }
+
+    public void setHybridMode(boolean hybridMode) {
+        isHybridMode = hybridMode;
+    }
+
+    public boolean isParallel() {
+        return isParallel;
+    }
+
+    public void setParallel(boolean parallel) {
+        isParallel = parallel;
+    }
+
     public void addExcludedClass(String clazzName) {
         if(!isClass(clazzName)) {
             System.out.printf("WARN: Trying to add %s as an excluded class. Classes should have the first letter capitalized and should not end with slashes!%n", clazzName);
@@ -568,5 +608,13 @@ public class Configuration {
                 ", resourcesToInstrument=" + resourcesToInstrument +
                 ", passThroughTaints=" + this.passThroughTaints +
                 '}';
+    }
+
+    public boolean isSpeculativeInstrumentation() {
+        return this.speculativeInstrumentation;
+    }
+
+    public void setSpeculativeInstrumentation(boolean speculativeInstrumentation) {
+        this.speculativeInstrumentation = speculativeInstrumentation;
     }
 }

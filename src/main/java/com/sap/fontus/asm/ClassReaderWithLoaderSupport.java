@@ -1,5 +1,7 @@
 package com.sap.fontus.asm;
 
+import com.sap.fontus.asm.resolver.IClassResolver;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,8 +34,8 @@ public class ClassReaderWithLoaderSupport extends org.objectweb.asm.ClassReader 
      * Constructs a new {@link org.objectweb.asm.ClassReader} object.
      *
      * @param inputStream an input stream of the JVMS ClassFile structure to be read. This input
-     * stream must contain nothing more than the ClassFile structure itself. It is read from its
-     * current position to its end.
+     *                    stream must contain nothing more than the ClassFile structure itself. It is read from its
+     *                    current position to its end.
      * @throws IOException if a problem occurs during reading.
      */
     public ClassReaderWithLoaderSupport(InputStream inputStream) throws IOException {
@@ -44,7 +46,7 @@ public class ClassReaderWithLoaderSupport extends org.objectweb.asm.ClassReader 
      * Constructs a new {@link org.objectweb.asm.ClassReader} object.
      *
      * @param className the fully qualified name of the class to be read. The ClassFile structure is
-     * retrieved with the current class loader's {@link ClassLoader#getSystemResourceAsStream}.
+     *                  retrieved with the current class loader's {@link ClassLoader#getSystemResourceAsStream}.
      * @throws IOException if an exception occurs during reading.
      */
     public ClassReaderWithLoaderSupport(String className) throws IOException {
@@ -52,25 +54,7 @@ public class ClassReaderWithLoaderSupport extends org.objectweb.asm.ClassReader 
         throw new UnsupportedOperationException("Can't call constructor without providing a classloader");
     }
 
-    public ClassReaderWithLoaderSupport(ClassResolver resolver, String className) throws IOException {
-        this(readStream(resolver.resolve(className), className));
-    }
-
-    private static byte[] readStream(final InputStream inputStream, String className)
-            throws IOException {
-        if (inputStream == null) {
-            throw new IOException(String.format("Class '%s' not found!", className));
-        }
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            byte[] data = new byte[FourKB];
-            int bytesRead;
-            while ((bytesRead = inputStream.read(data, 0, data.length)) != -1) {
-                outputStream.write(data, 0, bytesRead);
-            }
-            outputStream.flush();
-            return outputStream.toByteArray();
-        } finally {
-            inputStream.close();
-        }
+    public ClassReaderWithLoaderSupport(IClassResolver resolver, String className) throws IOException {
+        this(resolver.resolve(className).orElseThrow(() -> new IOException(String.format("Class '%s' not found!", className))));
     }
 }

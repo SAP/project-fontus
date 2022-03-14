@@ -36,13 +36,17 @@ public class Logger {
     }
 
     public void error(String message, Object... insertions) {
-        message = this.format(message, insertions);
-        this.log("ERROR", message);
+        if (Configuration.isLoggingEnabled()) {
+            message = this.format(message, insertions);
+            this.log("ERROR", message);
+        }
     }
 
     public void info(String message, Object... insertions) {
-        message = this.format(message, insertions);
-        this.log("INFO", message);
+        if (Configuration.isLoggingEnabled()) {
+            message = this.format(message, insertions);
+            this.log("INFO", message);
+        }
     }
 
     private String format(String message, Object... insertions) {
@@ -53,12 +57,16 @@ public class Logger {
     }
 
     public void debug(String message, String insertions) {
-        message = this.format(message, insertions);
-        this.log("DEBUG", message);
+        if (Configuration.isLoggingEnabled()) {
+            message = this.format(message, insertions);
+            this.log("DEBUG", message);
+        }
     }
 
     public void warn(String message, Object... insertions) {
-        message = this.format(message, insertions);
-        this.log("WARN", message);
+        if (Configuration.isLoggingEnabled()) {
+            message = this.format(message, insertions);
+            this.log("WARN", message);
+        }
     }
 }

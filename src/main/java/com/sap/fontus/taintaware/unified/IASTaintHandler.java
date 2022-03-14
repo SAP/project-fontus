@@ -57,10 +57,11 @@ public class IASTaintHandler {
 
     /**
      * Hook function called before a sink function is called
-     * @param taintAware The taint aware object (normally a string)
-     * @param instance The specific instance of the object on which the method is called
+     *
+     * @param taintAware   The taint aware object (normally a string)
+     * @param instance     The specific instance of the object on which the method is called
      * @param sinkFunction The name of the function
-     * @param sinkName The name of the sink
+     * @param sinkName     The name of the sink
      * @return
      */
     public static IASTaintAware handleTaint(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName) {
@@ -128,8 +129,14 @@ public class IASTaintHandler {
             }
         } else if (isList) {
             List list = (List) object;
+
+            boolean isUnmodifiable = cls.getName().startsWith("java.util.Collections$Unmodifiable") || cls.getName().startsWith("java.util.Collections$Singleton");
+
             for (int i = 0; i < list.size(); i++) {
-                list.set(i, traverser.apply(list.get(i)));
+                Object traversed = traverser.apply(list.get(i));
+                if (!isUnmodifiable) {
+                    list.set(i, traversed);
+                }
             }
         } else if (isIterable) {
             Iterable<Object> iterable = (Iterable<Object>) object;
@@ -138,7 +145,9 @@ public class IASTaintHandler {
             }
         } else if (isMap) {
             Map<Object, Object> map = (Map) object;
-            object = map.entrySet().stream().collect(Collectors.toMap(e -> traverser.apply(e.getKey()), e -> traverser.apply(e.getValue())));
+            if (!map.isEmpty()) {
+                object = map.entrySet().stream().collect(Collectors.toMap(e -> traverser.apply(e.getKey()), e -> traverser.apply(e.getValue())));
+            }
         } else if (isEnumerate) {
             Enumeration<Object> enumeration = (Enumeration<Object>) object;
             List<Object> list = Collections.list(enumeration);
@@ -146,8 +155,7 @@ public class IASTaintHandler {
                 traverser.apply(o);
             }
             object = Collections.enumeration(list);
-        }
-        else if (combinedExcludedLookup.isJdkClass(cls) || combinedExcludedLookup.isAnnotation(cls) || combinedExcludedLookup.isPackageExcluded(cls)) {
+        } else if (combinedExcludedLookup.isJdkClass(cls) || combinedExcludedLookup.isAnnotation(cls) || combinedExcludedLookup.isPackageExcluded(cls)) {
             return object;
         } else if (Configuration.getConfiguration().isRecursiveTainting()) {
             List<Field> fields = getAllFields(cls);
@@ -175,7 +183,8 @@ public class IASTaintHandler {
 
     /**
      * Hook function called at all taint sources added to bytecode
-     * @param object The object to be tainted (can be a string, or something which needs traversing, like a list)
+     *
+     * @param object   The object to be tainted (can be a string, or something which needs traversing, like a list)
      * @param sourceId The source as an integer
      * @return A tainted version of the input object
      */

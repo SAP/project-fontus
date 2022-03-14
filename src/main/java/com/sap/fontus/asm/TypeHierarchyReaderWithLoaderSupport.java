@@ -1,5 +1,6 @@
 package com.sap.fontus.asm;
 
+import com.sap.fontus.asm.resolver.IClassResolver;
 import org.mutabilitydetector.asm.typehierarchy.TypeHierarchyReader;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
@@ -8,9 +9,9 @@ import java.io.IOException;
 
 public class TypeHierarchyReaderWithLoaderSupport extends TypeHierarchyReader {
 
-    private final ClassResolver resolver;
+    private final IClassResolver resolver;
 
-    public TypeHierarchyReaderWithLoaderSupport(ClassResolver resolver) {
+    public TypeHierarchyReaderWithLoaderSupport(IClassResolver resolver) {
         this.resolver = resolver;
     }
 

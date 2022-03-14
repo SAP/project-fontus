@@ -1,21 +1,18 @@
 package com.sap.fontus;
 
-import com.sap.fontus.asm.ClassResolver;
+import com.sap.fontus.agent.InstrumentationConfiguration;
 import com.sap.fontus.config.ConfigurationLoader;
 import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.config.Configuration;
-import com.sap.fontus.instrumentation.Instrumenter;
+import com.sap.fontus.utils.IOUtils;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
-import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
+import com.sap.fontus.utils.offline.OfflineClassInstrumenter;
+import com.sap.fontus.utils.offline.OfflineJarInstrumenter;
 import picocli.CommandLine;
 
 import java.io.*;
-import java.util.Enumeration;
 import java.util.concurrent.Callable;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.jar.JarOutputStream;
 
 @CommandLine.Command(
         description = "Replaces all String instances with taint-aware Strings.",
@@ -25,8 +22,6 @@ import java.util.jar.JarOutputStream;
 )
 public final class Main implements Callable<Void> {
     private static final Logger logger = LogUtils.getLogger();
-    private static final int OneKB = 1024;
-    private final Instrumenter instrumenter;
 
     @CommandLine.Option(
             names = {"-f", "--file"},
@@ -45,6 +40,14 @@ public final class Main implements Callable<Void> {
     private File outputFile;
 
     @CommandLine.Option(
+            names = {"--instrumented-classes"},
+            required = true,
+            paramLabel = "Instrumented Classes",
+            description = "Output file which contains a list of all instrumented classes"
+    )
+    private File instrumentedClasses;
+
+    @CommandLine.Option(
             names = {"-c", "--config"},
             required = false,
             paramLabel = "Config",
@@ -61,80 +64,33 @@ public final class Main implements Callable<Void> {
     )
     private TaintMethod taintMethod;
 
+    @CommandLine.Option(
+            names = {"-l", "--logging"},
+            paramLabel = "Logging",
+            description = "Turns on logging"
+    )
+    private boolean logging;
+
+    @CommandLine.Option(
+            names = {"-h", "--hybrid"},
+            paramLabel = "Hybrid Tainting",
+            description = "Flag for activating hybrid tainting"
+    )
+    private boolean isHybrid;
+
+    @CommandLine.Option(
+            names = {"-p", "--parallel"},
+            paramLabel = "Parallel instrumentation",
+            description = "Parallel instrumentation of classes (can speedup instrumentation)"
+    )
+    private boolean isParallel;
+
     private Configuration configuration;
 
+    private OfflineJarInstrumenter offlineJarInstrumenter;
+    private OfflineClassInstrumenter offlineClassInstrumenter;
+
     private Main() {
-        this.instrumenter = new Instrumenter();
-    }
-
-
-    private void instrumentClassStream(InputStream i, OutputStream o) throws IOException {
-        byte[] outArray;
-        try {
-            outArray = this.instrumenter.instrumentClass(i, new ClassResolver(ClassLoader.getSystemClassLoader()), this.configuration, false);
-        } catch (IllegalArgumentException ex) {
-            if (ex.getMessage().equals("JSR/RET are not supported with computeFrames option")) {
-                outArray = this.instrumenter.instrumentClass(i, new ClassResolver(ClassLoader.getSystemClassLoader()), this.configuration, true);
-            } else {
-                throw ex;
-            }
-        }
-        o.write(outArray);
-    }
-
-    private static void copySingleEntry(InputStream i, OutputStream o) throws IOException {
-        int len = 0;
-        byte[] buffer = new byte[OneKB];
-
-        while ((len = i.read(buffer, 0, buffer.length)) != -1) {
-            o.write(buffer, 0, len);
-        }
-    }
-
-    private void instrumentClassFile(File input, File output) throws IOException {
-        FileInputStream fi = new FileInputStream(input);
-        FileOutputStream fo = new FileOutputStream(output);
-        logger.info("Reading class file from: {}", input.getAbsolutePath());
-        this.instrumentClassStream(fi, fo);
-        logger.info("Writing transformed class file to: {}", output.getAbsolutePath());
-    }
-
-    private void instrumentJarFile(File input, File output) throws IOException {
-        JarOutputStream jos;
-        try (JarFile ji = new JarFile(input)) {
-            FileOutputStream fos = new FileOutputStream(output);
-            jos = new JarOutputStream(fos);
-
-            logger.info("Reading jar file from: {}", input.getAbsolutePath());
-
-            for (Enumeration<JarEntry> e = ji.entries(); e.hasMoreElements(); ) {
-                JarEntry jei = e.nextElement();
-                JarEntry jeo = new JarEntry(jei.getName());
-                InputStream jeis = ji.getInputStream(jei);
-
-                logger.info("Reading jar entry: {}", jei.getName());
-
-                jos.putNextEntry(jeo);
-
-                CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(Thread.currentThread().getContextClassLoader());
-
-                if (jei.getName().endsWith(Constants.CLASS_FILE_SUFFIX) &&
-                        !combinedExcludedLookup.isJdkClass(jei.getName()) &&
-                        !combinedExcludedLookup.isFontusClass(jei.getName()) &&
-                        !combinedExcludedLookup.isExcluded(jei.getName())
-                ) {
-                    this.instrumentClassStream(jeis, jos);
-                } else {
-                    copySingleEntry(jeis, jos);
-                }
-                jeis.close();
-                jos.closeEntry();
-            }
-        }
-
-        jos.close();
-
-        logger.info("Writing transformed jar file to: {}", output.getAbsolutePath());
     }
 
     private void instrumentDirectory(File input, File output) throws IOException {
@@ -160,9 +116,9 @@ public final class Main implements Callable<Void> {
             // There sometimes are .jar files that are empty, handle those..
             logger.info("File of size 0: {}", input.getName());
         } else if (input.getName().endsWith(Constants.CLASS_FILE_SUFFIX)) {
-            this.instrumentClassFile(input, output);
+            this.offlineClassInstrumenter.instrumentClassFile(input, output);
         } else if (input.getName().endsWith(Constants.JAR_FILE_SUFFIX)) {
-            this.instrumentJarFile(input, output);
+            this.offlineJarInstrumenter.instrumentJarFile(input, output);
         } else {
             logger.error("Input file name must have class or jar extension!");
         }
@@ -170,13 +126,23 @@ public final class Main implements Callable<Void> {
 
     private void loadConfiguration() {
         this.configuration = ConfigurationLoader.loadAndMergeConfiguration(this.configFile, this.taintMethod);
+        this.configuration.setHybridMode(this.isHybrid);
+        this.configuration.setLoggingEnabled(this.logging);
+        this.configuration.setParallel(this.isParallel);
         Configuration.setConfiguration(configuration);
     }
 
     @Override
     public Void call() throws IOException {
         this.loadConfiguration();
+        InstrumentationConfiguration.init(this.inputFile, this.outputFile);
+        this.offlineJarInstrumenter = new OfflineJarInstrumenter(this.configuration);
+        this.offlineClassInstrumenter = new OfflineClassInstrumenter(this.configuration);
+
         this.walkFileTree(this.inputFile, this.outputFile);
+
+        IOUtils.writeToFile(this.offlineJarInstrumenter.getClasses(), this.instrumentedClasses);
+
         return null;
     }
 

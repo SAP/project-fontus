@@ -1,11 +1,10 @@
 package com.sap.fontus.utils;
 
-import com.sap.fontus.asm.ClassReaderWithLoaderSupport;
-import com.sap.fontus.asm.ClassResolver;
-import com.sap.fontus.asm.NopVisitor;
-import com.sap.fontus.asm.TypeHierarchyReaderWithLoaderSupport;
+import com.sap.fontus.asm.*;
+import com.sap.fontus.asm.resolver.ClassResolverFactory;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import com.sap.fontus.instrumentation.Method;
+import com.sap.fontus.asm.resolver.IClassResolver;
 import org.mutabilitydetector.asm.typehierarchy.TypeHierarchy;
 import org.objectweb.asm.*;
 
@@ -36,7 +35,7 @@ public class ClassTraverser {
         return fields;
     }
 
-    public void readMethods(Type cls, ClassResolver resolver) {
+    public void readMethods(Type cls, IClassResolver resolver) {
         if (combinedExcludedLookup.isJdkClass(cls.getInternalName())) {
             Class<?> clazz = ClassUtils.findLoadedClass(cls.getInternalName());
 
@@ -81,7 +80,7 @@ public class ClassTraverser {
      *
      * @param classToDiscover Class to discover
      */
-    public void readAllJdkMethods(String classToDiscover, ClassResolver resolver) {
+    public void readAllJdkMethods(String classToDiscover, IClassResolver resolver) {
         TypeHierarchyReaderWithLoaderSupport typeHierarchyReader = new TypeHierarchyReaderWithLoaderSupport(resolver);
         for (Type cls = Type.getObjectType(classToDiscover); cls != null; cls = typeHierarchyReader.getSuperClass(cls)) {
             if (this.combinedExcludedLookup.isPackageExcludedOrJdk(cls.getInternalName())) {
@@ -135,20 +134,21 @@ public class ClassTraverser {
     }
 
     private boolean isImplementedBySuperClass(String superName, Method m, ClassLoader loader) {
-        try {
-            if (this.combinedExcludedLookup.isPackageExcludedOrJdk(superName)) {
-                return false;
-            }
-            // TODO What if super class is not loadable
-            ClassReader classReader = new ClassReader(ClassUtils.getClassInputStream(superName, loader));
+        if (this.combinedExcludedLookup.isPackageExcludedOrJdk(superName)) {
+            return false;
+        }
+        // TODO What if super class is not loadable
+        Optional<byte[]> bytes = ClassResolverFactory.createClassResolver(loader).resolve(superName);
+        if (bytes.isPresent()) {
+            ClassReader classReader = new ClassReader(bytes.get());
             MethodChecker methodChecker = new MethodChecker(m);
             classReader.accept(methodChecker, 0);
             if (!methodChecker.superImplements) {
                 return isImplementedBySuperClass(classReader.getSuperName(), m, loader);
             }
             return true;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } else {
+            throw new RuntimeException("Could not load super class");
         }
     }
 
@@ -163,7 +163,7 @@ public class ClassTraverser {
             try {
                 List<String> superInterfaces = typeHierarchyReader.hierarchyOf(Type.getObjectType(interfaceName)).getInterfaces().stream().map(Type::getInternalName).collect(Collectors.toList());
                 discoverAllJdkInterfaces(superInterfaces, result, typeHierarchyReader);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 // Class might be an optional dependency, continuing
                 logger.debug("Skipped recursing further into {} due to Exception", interfaceName);
                 Utils.logException(e);
@@ -178,7 +178,7 @@ public class ClassTraverser {
      * @param superName                 Super class of the interface implementing one
      * @param directInheritedInterfaces Array with interface names as QN
      */
-    public void addNotContainedJdkInterfaceMethods(String className, String superName, String[] directInheritedInterfaces, ClassResolver resolver, ClassLoader loader) {
+    public void addNotContainedJdkInterfaceMethods(String className, String superName, String[] directInheritedInterfaces, IClassResolver resolver, ClassLoader loader) {
         if (directInheritedInterfaces == null || directInheritedInterfaces.length == 0) {
             return;
         }
@@ -192,17 +192,17 @@ public class ClassTraverser {
         // Find all interfaces implemented by the super class
         Set<Type> superInterfaces = new HashSet<>();
         try {
-        for (Type cls = Type.getObjectType(superName); cls != null; cls = typeHierarchyReader.getSuperClass(cls)) {
-            try {
-                TypeHierarchy hierarchy = typeHierarchyReader.hierarchyOf(cls);
-                superInterfaces.addAll(hierarchy.getInterfaces());
-            } catch(Exception e) {
-                // Class might be an optional dependency, continuing
-                logger.debug("Skipped recursing further into {} due to Exception", cls.getClassName());
-                Utils.logException(e);
+            for (Type cls = Type.getObjectType(superName); cls != null; cls = typeHierarchyReader.getSuperClass(cls)) {
+                try {
+                    TypeHierarchy hierarchy = typeHierarchyReader.hierarchyOf(cls);
+                    superInterfaces.addAll(hierarchy.getInterfaces());
+                } catch (Exception e) {
+                    // Class might be an optional dependency, continuing
+                    logger.debug("Skipped recursing further into {} due to Exception", cls.getClassName());
+                    Utils.logException(e);
+                }
             }
-        }
-        } catch(Exception e) {
+        } catch (Exception e) {
             // Class might be an optional dependency, continuing
             logger.debug("Skipped superclass extraction for into {} due to Exception", className);
             Utils.logException(e);

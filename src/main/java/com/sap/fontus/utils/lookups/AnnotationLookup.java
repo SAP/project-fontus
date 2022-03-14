@@ -1,64 +1,43 @@
 package com.sap.fontus.utils.lookups;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.sap.fontus.asm.ClassReaderWithLoaderSupport;
-import com.sap.fontus.asm.ClassResolver;
+import com.sap.fontus.asm.resolver.IClassResolver;
 import com.sap.fontus.asm.NopVisitor;
-import com.sap.fontus.utils.ClassUtils;
-import com.sap.fontus.utils.LogUtils;
-import com.sap.fontus.utils.Logger;
+import com.sap.fontus.utils.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class AnnotationLookup {
-
     private static final Logger logger = LogUtils.getLogger();
+    private final Cache<String, Boolean> cache;
+    private final CombinedExcludedLookup combinedExcludedLookup;
+    private final Map<String, Boolean> transformCache;
 
     private AnnotationLookup() {
-        this.annotations = new HashSet<>();
-        this.noAnnotations = new HashSet<>();
+        this.cache = Caffeine.newBuilder().build();
+        this.transformCache = new ConcurrentHashMap<>();
+        this.combinedExcludedLookup = new CombinedExcludedLookup();
     }
 
     public static AnnotationLookup getInstance() {
         return AnnotationLookup.LazyHolder.INSTANCE;
     }
 
-    public boolean isAnnotation(String name, String superName, String[] interfaces, ClassResolver resolver) {
+    public boolean isAnnotation(String name, String superName, String[] interfaces, IClassResolver resolver) {
         if (name.startsWith("[")) {
             return false;
         } // Arrays ain't annotations
-        if (this.annotations.contains(name)) {
-            return true;
-        } else if (this.noAnnotations.contains(name)) {
-            return false;
-        } else {
-            return this.testAndCacheAnnotation(name, superName, interfaces, resolver);
-        }
+        return this.cache.get(name, (ignored) -> this.testAnnotation(name, superName, interfaces, resolver));
     }
 
-    // Deal with caching stuff here
-    private boolean testAndCacheAnnotation(String name, String superName, String[] interfaces, ClassResolver resolver) {
-        if (this.annotations.contains(name)) {
-            return true;
-        } else if (this.noAnnotations.contains(name)) {
-            return false;
-        } else {
-            boolean isAnnotation = this.testAnnotation(name, superName, interfaces, resolver);
-            // Store in cache
-            if (isAnnotation) {
-                this.annotations.add(name);
-            } else {
-                this.noAnnotations.add(name);
-            }
-            return isAnnotation;
-        }
-    }
-
-    private boolean testAnnotation(String className, String superName, String[] interfaces, ClassResolver resolver) {
+    private boolean testAnnotation(String className, String superName, String[] interfaces, IClassResolver resolver) {
         Objects.requireNonNull(resolver);
         Objects.requireNonNull(className);
         boolean isAnnotation = false;
@@ -84,12 +63,34 @@ public final class AnnotationLookup {
             interfaces = new String[0];
         }
 
+        // Not necessary
+        // Try again using the class via reflection
+//        if (!isAnnotation) {
+//            Class<?> cls = null;
+//            try {
+//                cls = Class.forName(className, false, null);
+//            } catch (ClassNotFoundException ignored) {
+//            }
+//            if (cls != null) {
+//                if (cls.isAnnotation()) {
+//                    isAnnotation = true;
+//                }
+//            }
+//        }
+
+        // Not necessary anymore as every Class which was loaded was registered in the AnnotationLookup by the TaintingTransformer
         // Try again using the class via reflection
         if (!isAnnotation) {
-            Class<?> cls = ClassUtils.findLoadedClass(className);
-            if (cls != null) {
-                if (cls.isAnnotation()) {
-                    isAnnotation = true;
+            if (combinedExcludedLookup.isJdkClass(className)) {
+                Class<?> cls = ClassUtils.findLoadedClass(className);
+                if (cls != null) {
+                    if (cls.isAnnotation()) {
+                        isAnnotation = true;
+                    }
+                }
+            } else {
+                if (this.transformCache.containsKey(className)) {
+                    isAnnotation = this.transformCache.get(className);
                 }
             }
         }
@@ -97,7 +98,7 @@ public final class AnnotationLookup {
         // Check the interfaces
         if (!isAnnotation) {
             for (String interf : interfaces) {
-                if (this.testAndCacheAnnotation(interf, null, null, resolver)) {
+                if (this.testAnnotation(interf, null, null, resolver)) {
                     isAnnotation = true;
                     break;
                 }
@@ -105,7 +106,7 @@ public final class AnnotationLookup {
         }
 
         if ((!isAnnotation) && (superName != null)) {
-            if (this.testAndCacheAnnotation(superName, null, null, resolver)) {
+            if (this.testAnnotation(superName, null, null, resolver)) {
                 isAnnotation = true;
             }
         }
@@ -115,17 +116,21 @@ public final class AnnotationLookup {
 
 
     public void addAnnotation(String name) {
-        this.annotations.add(name);
+        this.cache.put(name, true);
     }
 
-    public boolean isAnnotation(String name, ClassResolver resolver) {
+    public boolean isAnnotation(String name, IClassResolver resolver) {
         return this.isAnnotation(name, null, null, resolver);
+    }
+
+    public void checkAnnotationAndCache(String className, byte[] classfileBuffer) {
+        this.transformCache.computeIfAbsent(className, (ignored) -> {
+            int access = new ClassReader(classfileBuffer).getAccess();
+            return (access & Opcodes.ACC_ANNOTATION) > 0;
+        });
     }
 
     private static class LazyHolder {
         private static final AnnotationLookup INSTANCE = new AnnotationLookup();
     }
-
-    private final Set<String> noAnnotations;
-    private final Set<String> annotations;
 }

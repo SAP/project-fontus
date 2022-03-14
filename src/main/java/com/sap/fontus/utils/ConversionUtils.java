@@ -1,5 +1,7 @@
 package com.sap.fontus.utils;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.sap.fontus.taintaware.unified.*;
 import com.sap.fontus.taintaware.unified.reflect.*;
 import com.sap.fontus.taintaware.unified.reflect.type.IASTypeVariableImpl;
@@ -21,9 +23,10 @@ import java.util.regex.Pattern;
 public class ConversionUtils {
     private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
     private static final CombinedExcludedLookup excludedLookup = new CombinedExcludedLookup();
+    private static final Cache<Class<?>, Optional<Converter>> converterCache = Caffeine.newBuilder().build();
+    private static final Cache<Class<?>, Optional<Converter>> unconverterCache = Caffeine.newBuilder().build();
 
     private static final List<Converter> instrumenter = Arrays.asList(
-            new NullConverter(),
             new AlreadyTaintedConverter(),
             new ClassConverter((cls) -> cls),
             new TypeConverter(ConversionUtils::convertTypeToInstrumented),
@@ -48,7 +51,6 @@ public class ConversionUtils {
     );
 
     private static final List<Converter> uninstrumenter = Arrays.asList(
-            new NullConverter(),
             new ClassConverter(ConversionUtils::convertClassToOrig),
             new TypeConverter(ConversionUtils::convertTypeToUninstrumented),
             new DefaultConverter<>(IASString.class, IASString::toString),
@@ -71,15 +73,6 @@ public class ConversionUtils {
             new SetConverter(ConversionUtils::convertToUninstrumented),
             new AlreadyUntaintedConverter()
     );
-
-    public static Object convertToInstrumented(Object object) {
-        for (Converter converter : instrumenter) {
-            if (converter.canConvert(object)) {
-                return converter.convert(object);
-            }
-        }
-        return object;
-    }
 
     private static final Map<Class<?>, MethodHandle> toOrigMethods = new HashMap<>();
     private static final Map<Class<?>, MethodHandle> toConcreteMethods = new HashMap<>();
@@ -157,12 +150,45 @@ public class ConversionUtils {
         }
     }
 
-    public static Object convertToUninstrumented(Object object) {
-        for (Converter converter : uninstrumenter) {
-            if (converter.canConvert(object)) {
-                return converter.convert(object);
-            }
+    public static Object convertToInstrumented(Object object) {
+        if (object == null) {
+            return null;
         }
+
+        Optional<Converter> converter = converterCache.get(object.getClass(), (cls) -> {
+            for (Converter c : instrumenter) {
+                if (c.canConvert(cls)) {
+                    return Optional.of(c);
+                }
+            }
+            return Optional.empty();
+        });
+
+        if (converter.isPresent()) {
+            return converter.get().convert(object);
+        }
+
+        return object;
+    }
+
+    public static Object convertToUninstrumented(Object object) {
+        if (object == null) {
+            return null;
+        }
+
+        Optional<Converter> converter = unconverterCache.get(object.getClass(), (cls) -> {
+            for (Converter c : uninstrumenter) {
+                if (c.canConvert(cls)) {
+                    return Optional.of(c);
+                }
+            }
+            return Optional.empty();
+        });
+
+        if (converter.isPresent()) {
+            return converter.get().convert(object);
+        }
+
         return object;
     }
 
@@ -252,28 +278,16 @@ public class ConversionUtils {
     }
 
     private interface Converter {
-        boolean canConvert(Object o);
+        boolean canConvert(Class o);
 
         Object convert(Object o);
-    }
-
-    private static class NullConverter implements Converter {
-        @Override
-        public boolean canConvert(Object o) {
-            return o == null;
-        }
-
-        @Override
-        public Object convert(Object o) {
-            return null;
-        }
     }
 
     private static class AlreadyUntaintedConverter implements Converter {
 
         @Override
-        public boolean canConvert(Object o) {
-            return o != null && excludedLookup.isPackageExcludedOrJdk(o.getClass());
+        public boolean canConvert(Class cls) {
+            return excludedLookup.isPackageExcludedOrJdk(cls);
         }
 
         @Override
@@ -284,11 +298,8 @@ public class ConversionUtils {
 
     private static class AlreadyTaintedConverter implements Converter {
         @Override
-        public boolean canConvert(Object o) {
-            if (o == null) {
-                return false;
-            }
-            return excludedLookup.isFontusClass(o.getClass());
+        public boolean canConvert(Class cls) {
+            return excludedLookup.isFontusClass(cls);
         }
 
         @Override
@@ -305,8 +316,8 @@ public class ConversionUtils {
         }
 
         @Override
-        public boolean canConvert(Object o) {
-            return o instanceof Type && !excludedLookup.isFontusClass(o.getClass());
+        public boolean canConvert(Class cls) {
+            return Type.class.isAssignableFrom(cls) && !excludedLookup.isFontusClass(cls);
         }
 
         @Override
@@ -324,8 +335,8 @@ public class ConversionUtils {
 
 
         @Override
-        public boolean canConvert(Object o) {
-            return o instanceof Class;
+        public boolean canConvert(Class cls) {
+            return cls == Class.class;
         }
 
         @Override
@@ -344,8 +355,8 @@ public class ConversionUtils {
         }
 
         @Override
-        public boolean canConvert(Object o) {
-            return o != null && o.getClass().isArray();
+        public boolean canConvert(Class cls) {
+            return cls.isArray();
         }
 
         @Override
@@ -374,11 +385,8 @@ public class ConversionUtils {
         }
 
         @Override
-        public boolean canConvert(Object o) {
-            if (o == null) {
-                return false;
-            }
-            return this.convertable.isAssignableFrom(o.getClass());
+        public boolean canConvert(Class cls) {
+            return this.convertable.isAssignableFrom(cls);
         }
 
         @Override
@@ -395,9 +403,9 @@ public class ConversionUtils {
         }
 
         @Override
-        public boolean canConvert(Object o) {
+        public boolean canConvert(Class cls) {
             // TODO: evil hack to prevent infinite recursion for hibernate collection classes
-            return o instanceof Set && !o.getClass().getPackage().getName().equals("org.hibernate.collection.internal");
+            return Set.class.isAssignableFrom(cls) && !cls.getPackage().getName().equals("org.hibernate.collection.internal");
         }
 
         @Override
@@ -408,7 +416,7 @@ public class ConversionUtils {
                     if (set.isEmpty()) {
                         return o;
                     }
-                    if(set.getClass().getName().equals("java.util.LinkedHashMap$LinkedEntrySet")) {
+                    if (set.getClass().getName().equals("java.util.LinkedHashMap$LinkedEntrySet")) {
                         // TODO: evil hack to avoid infinite recursion in hibernate..
                         return o;
                     }
@@ -454,9 +462,9 @@ public class ConversionUtils {
         }
 
         @Override
-        public boolean canConvert(Object o) {
+        public boolean canConvert(Class cls) {
             // TODO: evil hack to prevent infinite recursion for hibernate collection classes
-            return o instanceof List && !o.getClass().getPackage().getName().equals("org.hibernate.collection.internal");
+            return List.class.isAssignableFrom(cls) && !cls.getPackage().getName().equals("org.hibernate.collection.internal");
         }
 
         @Override
