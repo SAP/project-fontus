@@ -16,8 +16,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
-public class Instrumenter {
+public class Instrumenter implements InstrumenterInterface {
     private static final Logger logger = LogUtils.getLogger();
+
+    private Configuration config;
+
+    public Instrumenter(Configuration config) {
+        this.config = config;
+    }
 
     public byte[] instrumentClass(InputStream in, IClassResolver resolver, Configuration config, boolean containsJSRRET) throws IOException {
         return instrumentInternal(new ClassReader(in), resolver, config, null, containsJSRRET);

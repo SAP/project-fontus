@@ -1,9 +1,9 @@
 package com.sap.fontus.agent;
 
-import com.sap.fontus.asm.resolver.AgentClassResolver;
 import com.sap.fontus.asm.speculative.SpeculativeParallelInstrumenter;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.instrumentation.Instrumenter;
+import com.sap.fontus.instrumentation.InstrumenterInterface;
 import com.sap.fontus.utils.*;
 import com.sap.fontus.utils.lookups.AnnotationLookup;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
@@ -20,7 +20,7 @@ class TaintingTransformer implements ClassFileTransformer {
     private static final Logger logger = LogUtils.getLogger();
 
     private final Configuration config;
-    private final Instrumenter instrumenter;
+    private final InstrumenterInterface instrumenter;
     private final ClassFinder classFinder;
 
     private final Map<String, byte[]> classCache = new HashMap<>();
@@ -29,9 +29,14 @@ class TaintingTransformer implements ClassFileTransformer {
     private int nInstrumented;
 
     TaintingTransformer(Configuration config) {
-        this.instrumenter = new Instrumenter();
         this.config = config;
         this.classFinder = ClassResolverFactory.createClassFinder();
+
+        if (config.isSpeculativeActive()) {
+            instrumenter = SpeculativeParallelInstrumenter.getInstance();
+        } else {
+            instrumenter = new Instrumenter(config);
+        }
     }
 
     @Override
@@ -87,7 +92,7 @@ class TaintingTransformer implements ClassFileTransformer {
                 outArray = CacheHandler.get().fetchFromCache(hash, className);
             } else {
                 logger.info("Tainting class: {}", className);
-                outArray = SpeculativeParallelInstrumenter.getInstance().instrument(className, loader, classfileBuffer);
+                outArray = instrumenter.instrumentClassByteArray(classfileBuffer, loader, className);
                 if (this.config.usePersistentCache()) {
                     CacheHandler.get().put(hash, outArray, className);
                 }

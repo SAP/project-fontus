@@ -12,11 +12,12 @@ import java.io.*;
 
 public class OfflineClassInstrumenter {
     private static final Logger logger = LogUtils.getLogger();
-    private final Instrumenter instrumenter = new Instrumenter();
+    private final Instrumenter instrumenter;
     private final Configuration configuration;
 
     public OfflineClassInstrumenter(Configuration configuration) {
         this.configuration = configuration;
+        this.instrumenter = new Instrumenter(configuration);
     }
 
     public void instrumentClassFile(File input, File output) throws IOException {
