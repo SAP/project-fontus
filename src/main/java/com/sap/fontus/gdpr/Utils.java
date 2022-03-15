@@ -110,11 +110,13 @@ public final class Utils {
 
     public static Collection<AllowedPurpose> getPurposesFromRequest(ReflectedHttpServletRequest servlet) {
         ReflectedCookie[] cookies = servlet.getCookies();
-        for (ReflectedCookie cookie : cookies) {
-            if (ConsentCookie.isConsentCookie(cookie.getName().getString())) {
-                System.out.println("Found Consent Cookie: " + cookie.getName().getString() + " = " + cookie.getValue().getString());
-                ConsentCookie consentCookie = ConsentCookie.parse(cookie.getValue().getString());
-                return ConsentCookieMetadata.getAllowedPurposesFromConsentCookie(consentCookie);
+        if(cookies != null) {
+            for (ReflectedCookie cookie : cookies) {
+                if (ConsentCookie.isConsentCookie(cookie.getName().getString())) {
+                    System.out.println("Found Consent Cookie: " + cookie.getName().getString() + " = " + cookie.getValue().getString());
+                    ConsentCookie consentCookie = ConsentCookie.parse(cookie.getValue().getString());
+                    return ConsentCookieMetadata.getAllowedPurposesFromConsentCookie(consentCookie);
+                }
             }
         }
         // Return empty consent if no cookie is found

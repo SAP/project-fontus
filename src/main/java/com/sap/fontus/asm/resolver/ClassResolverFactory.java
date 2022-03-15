@@ -14,7 +14,7 @@ public class ClassResolverFactory {
 
     static {
         classResolvers = Caffeine.newBuilder().build(ClassResolverFactory::createOnlineClassResolver);
-        nullResolver = new AgentClassResolver(null);
+        nullResolver = Configuration.getConfiguration().isParallel() ? new ParallelAgentClassResolver(null) : new AgentClassResolver(null);
         offlineClassResolver = new OfflineClassResolver(classResolvers.get(ClassLoader.getSystemClassLoader()));
         classFinder = new ClassFinder(TaintAgent.getInstrumentation());
     }
@@ -35,7 +35,7 @@ public class ClassResolverFactory {
     }
 
     private static AgentClassResolver createOnlineClassResolver(ClassLoader classLoader) {
-        AgentClassResolver agentClassResolver = new AgentClassResolver(classLoader);
+        AgentClassResolver agentClassResolver = Configuration.getConfiguration().isParallel() ? new ParallelAgentClassResolver(classLoader) : new AgentClassResolver(classLoader);
 
         agentClassResolver.initialize();
 

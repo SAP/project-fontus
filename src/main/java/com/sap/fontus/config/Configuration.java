@@ -544,6 +544,18 @@ public class Configuration {
         isParallel = parallel;
     }
 
+    @JsonIgnore
+    private boolean isSpeculativeDeactive() {
+        return this.configuration.isOfflineInstrumentation()
+                || !this.configuration.isSpeculativeInstrumentation()
+                || this.configuration.isHybridMode();
+    }
+
+    @JsonIgnore
+    public boolean isSpeculativeActive() {
+        return !this.isSpeculativeDeactive();
+    }
+
     public void addExcludedClass(String clazzName) {
         if(!isClass(clazzName)) {
             System.out.printf("WARN: Trying to add %s as an excluded class. Classes should have the first letter capitalized and should not end with slashes!%n", clazzName);
