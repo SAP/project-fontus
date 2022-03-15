@@ -422,7 +422,6 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         // System.out.println("stackTrace : " + java.util.Arrays.toString(Thread.currentThread().getStackTrace()));
 
         if (isTainted) {
-            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
             return applyPolicy(taintAware, instance, sinkFunction, sinkName, getRequiredPurposesFromLoggedInUser());
         }
         return taintAware;
