@@ -1,6 +1,9 @@
 package com.sap.fontus.asm;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.sap.fontus.utils.ConversionUtils;
 import com.sap.fontus.utils.Utils;
 import org.objectweb.asm.Type;
 
@@ -130,39 +133,44 @@ public class Descriptor {
         return Objects.hash(this.parameters, this.returnType);
     }
 
+    // Cache class name conversions as this is called a lot at runtime
+    private static final Cache<String, String> classNameCache = Caffeine.newBuilder().build();
+
     /**
      * @param className Class name in the format "java.lang.Object"
      * @return Descriptor name in the format "Ljava/lang/Object;"
      */
     public static String classNameToDescriptorName(final String className) {
-        if ("int".equals(className)) {
-            return "I";
-        } else if ("byte".equals(className)) {
-            return "B";
-        } else if ("char".equals(className)) {
-            return "C";
-        } else if ("double".equals(className)) {
-            return "D";
-        } else if ("float".equals(className)) {
-            return "F";
-        } else if ("long".equals(className)) {
-            return "J";
-        } else if ("short".equals(className)) {
-            return "S";
-        } else if ("boolean".equals(className)) {
-            return "Z";
-        } else if ("void".equals(className)) {
-            return "V";
-        } else if (className.startsWith("[") && !className.endsWith(";")) {
-            // Primitive array
-            return className;
-        } else {
-            String converted = className;
-            if (!converted.startsWith("[")) {
-                converted = "L" + converted + ";";
+        return classNameCache.get(className, (s) -> {
+            if ("int".equals(s)) {
+                return "I";
+            } else if ("byte".equals(s)) {
+                return "B";
+            } else if ("char".equals(s)) {
+                return "C";
+            } else if ("double".equals(s)) {
+                return "D";
+            } else if ("float".equals(s)) {
+                return "F";
+            } else if ("long".equals(s)) {
+                return "J";
+            } else if ("short".equals(s)) {
+                return "S";
+            } else if ("boolean".equals(s)) {
+                return "Z";
+            } else if ("void".equals(s)) {
+                return "V";
+            } else if (s.startsWith("[") && !s.endsWith(";")) {
+                // Primitive array
+                return s;
+            } else {
+                String converted = s;
+                if (!converted.startsWith("[")) {
+                    converted = "L" + converted + ";";
+                }
+                return Utils.dotToSlash(converted);
             }
-            return Utils.dotToSlash(converted);
-        }
+        });
     }
 
     /**
