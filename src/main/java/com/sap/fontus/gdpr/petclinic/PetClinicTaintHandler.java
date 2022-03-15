@@ -3,6 +3,7 @@ package com.sap.fontus.gdpr.petclinic;
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.Source;
+import com.sap.fontus.gdpr.Utils;
 import com.sap.fontus.gdpr.cookie.ConsentCookie;
 import com.sap.fontus.gdpr.cookie.ConsentCookieMetadata;
 import com.sap.fontus.gdpr.metadata.*;
@@ -50,25 +51,12 @@ public class PetClinicTaintHandler extends IASTaintHandler {
             "()Ljava/util/Map;",
             true);
 
-    private static Collection<AllowedPurpose> getPurposesFromRequest(ReflectedHttpServletRequest servlet) {
-        ReflectedCookie[] cookies = servlet.getCookies();
-        for (ReflectedCookie cookie : cookies) {
-            if (ConsentCookie.isConsentCookie(cookie.getName().getString())) {
-                System.out.println("Found Consent Cookie: " + cookie.getName().getString() + " = " + cookie.getValue().getString());
-                ConsentCookie consentCookie = ConsentCookie.parse(cookie.getValue().getString());
-                return ConsentCookieMetadata.getAllowedPurposesFromConsentCookie(consentCookie);
-            }
-        }
-        // Return empty consent if no cookie is found
-        return new ArrayList<>();
-    }
-
     private static GdprMetadata getMetadataFromOwnerRequest(ReflectedHttpServletRequest servlet) {
         // Create some metadata from the name
         String subjectName = servlet.getParameter("firstName") + " " + servlet.getParameter("lastName");
         DataSubject dataSubject = new SimpleDataSubject(subjectName);
 
-        return new SimpleGdprMetadata(getPurposesFromRequest(servlet), ProtectionLevel.Normal, dataSubject,
+        return new SimpleGdprMetadata(Utils.getPurposesFromRequest(servlet), ProtectionLevel.Normal, dataSubject,
                 new SimpleDataId(), true, true, Identifiability.Explicit);
     }
 
@@ -118,7 +106,7 @@ public class PetClinicTaintHandler extends IASTaintHandler {
             int id = Integer.valueOf(id_match);
             // Can we get the Owner object corresponding to this?
             metadata = new SimpleGdprMetadata(
-                    getPurposesFromRequest(servlet),
+                    Utils.getPurposesFromRequest(servlet),
                     protectionLevel,
                     getDataSubjectFromRequest(servlet, id),
                     new SimpleDataId(),
