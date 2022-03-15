@@ -14,15 +14,18 @@ public class Descriptor {
     private static final Pattern PRIMITIVE_DATA_TYPES = Pattern.compile("[ZBCSIFDJ]");
     private final List<String> parameters;
     private final String returnType;
+    private final String descriptor;
 
     private Descriptor(List<String> parameters, String returnType) {
         this.parameters = parameters;
         this.returnType = returnType;
+        this.descriptor = this.toDescriptor();
     }
 
     public Descriptor(String[] parameters, String returnType) {
         this.parameters = Arrays.asList(parameters);
         this.returnType = returnType;
+        this.descriptor = this.toDescriptor();
     }
 
     public Descriptor(Type returnType, Type... arguments) {
@@ -30,9 +33,10 @@ public class Descriptor {
         // this.parameters = Arrays.stream(arguments).map(Type::getDescriptor).collect(Collectors.toList());
         this.parameters = convertTypeArrayToStringList(arguments);
         this.returnType = returnType.getDescriptor();
+        this.descriptor = this.toDescriptor();
     }
 
-    private List<String> convertTypeArrayToStringList(Type[] arguments) {
+    private static List<String> convertTypeArrayToStringList(Type[] arguments) {
         if (arguments == null) {
             return new ArrayList<>(0);
         }
@@ -52,15 +56,23 @@ public class Descriptor {
         return s;
     }
 
-    public Descriptor replaceType(String from, String to) {
+    public Descriptor replaceTypeSlow(String from, String to) {
         // Stopped using streams because it took 7% of total performance
         // List<String> replaced = this.parameters.stream().map(str -> replaceSuffix(str, from, to)).collect(Collectors.toList());
+        // This method still takes ~3% of performance
         List<String> replaced = new ArrayList<>(this.parameters.size());
         for (String param : this.parameters) {
             replaced.add(replaceSuffix(param, from, to));
         }
         String ret = replaceSuffix(this.returnType, from, to);
         return new Descriptor(replaced, ret);
+    }
+
+    public Descriptor replaceType(String from, String to) {
+        if (this.descriptor.contains(from)) {
+            return this;
+        }
+        return parseDescriptor(this.descriptor.replace(from, to));
     }
 
     public int parameterCount() {
@@ -118,20 +130,6 @@ public class Descriptor {
         return Objects.hash(this.parameters, this.returnType);
     }
 
-//    /**
-//     * Checks whether the parameter list contains String like Parameters that need conversion before calling.
-//     *
-//     * @return Whether on of the parameters is a String like type
-//     */
-//    boolean hasStringLikeParameters() {
-//        for (String p : this.getParameters()) {
-//            if (InstrumentationHelper.canHandleType(p)) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-
     /**
      * @param className Class name in the format "java.lang.Object"
      * @return Descriptor name in the format "Ljava/lang/Object;"
@@ -176,41 +174,6 @@ public class Descriptor {
     public static Descriptor parseDescriptor(String descriptor) {
         Type typeDescriptor = Type.getMethodType(descriptor);
         return new Descriptor(typeDescriptor.getReturnType(), typeDescriptor.getArgumentTypes());
-//        ArrayList<String> out;
-//        StringBuilder returnType;
-//        try (Scanner sc = new Scanner(descriptor)) {
-//            sc.useDelimiter("");
-//            String opening = sc.next();
-//            assert "(".equals(opening);
-//            out = new ArrayList<>();
-//            String next = sc.next();
-//            StringBuilder buffer = new StringBuilder();
-//            boolean inType = false;
-//            while (!")".equals(next)) {
-//                buffer.append(next);
-//                Matcher primitivesMatcher = PRIMITIVE_DATA_TYPES.matcher(next);
-//                if (!inType && primitivesMatcher.matches()) {
-//                    out.add(buffer.toString());
-//                    buffer = new StringBuilder();
-//                } else if (!"[".equals(next)) {
-//                    inType = true;
-//                    if (";".equals(next)) {
-//                        out.add(buffer.toString());
-//                        buffer = new StringBuilder();
-//                        inType = false;
-//                    }
-//                }
-//
-//                next = sc.next();
-//            }
-//
-//            returnType = new StringBuilder();
-//            while (sc.hasNext()) {
-//                returnType.append(sc.next());
-//            }
-//        }
-//
-//        return new Descriptor(out, returnType.toString());
     }
 
     public static Descriptor parseMethod(Method m) {
