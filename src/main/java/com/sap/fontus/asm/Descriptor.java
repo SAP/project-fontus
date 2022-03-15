@@ -69,7 +69,7 @@ public class Descriptor {
     }
 
     public Descriptor replaceType(String from, String to) {
-        if (this.descriptor.contains(from)) {
+        if (!this.descriptor.contains(from)) {
             return this;
         }
         return parseDescriptor(this.descriptor.replace(from, to));
