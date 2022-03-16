@@ -12,12 +12,8 @@ public abstract class ReflectedObject {
         try {
             Method original_method = c.getMethod(m.getName(), m.getParameterTypes());
             result = original_method.invoke(args);
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+            System.err.println("FONTUS Exception with reflected call: " + c.getName() + "." + m.getName() + ": " + e.getMessage());
         }
         return result;
     }
@@ -27,12 +23,8 @@ public abstract class ReflectedObject {
         try {
             Method original_method = o.getClass().getMethod(m.getName(), m.getParameterTypes());
             result = original_method.invoke(o, args);
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+            System.err.println("FONTUS Exception with reflected call: " + o.getClass().getName() + "." + m.getName() + ": " + e.getMessage());
         }
         return result;
     }
