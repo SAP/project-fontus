@@ -75,7 +75,7 @@ public class SinkConfig {
 
     public Sink getSinkForName(String name) {
         for (Sink s : this.sinks) {
-            if (s.getFunction().getName().equals(name)) {
+            if (s.getName().equals(name)) {
                 return s;
             }
         }
