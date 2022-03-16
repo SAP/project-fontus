@@ -73,6 +73,15 @@ public class SinkConfig {
         return null;
     }
 
+    public Sink getSinkForName(String name) {
+        for (Sink s : this.sinks) {
+            if (s.getFunction().getName().equals(name)) {
+                return s;
+            }
+        }
+        return null;
+    }
+
     public boolean containsFunction(FunctionCall fc) {
         return (this.getSinkForFunction(fc) != null);
     }
