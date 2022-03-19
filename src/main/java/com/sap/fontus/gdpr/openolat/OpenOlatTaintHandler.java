@@ -35,7 +35,7 @@ public class OpenOlatTaintHandler extends IASTaintHandler {
      * @return A possibly tainted version of the input object
      */
     private static IASTaintAware setFormTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
-        IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
+        //IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
         assert (parameters.length == 4);
         try {
             Object ureq = parameters[2];
@@ -65,7 +65,7 @@ public class OpenOlatTaintHandler extends IASTaintHandler {
 
     private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
         // General debug info
-        IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
+        //IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
         IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
         Source source = Configuration.getConfiguration().getSourceConfig().getSourceWithName(taintSource.getName());
         IASTaintMetadata metaData = getBasicTaintMetaDataFromRequest(parent, sourceId);
