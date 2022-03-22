@@ -39,7 +39,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
      * @return A possibly tainted version of the input object
      */
     private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
-	   if(taintAware.toString().isEmpty() || (parameters[0] instanceof IASString && parameters[0].equals(csrfTokenName))) {
+	   if(taintAware.toString().isEmpty() || (parameters.length > 0 && parameters[0] instanceof IASString && parameters[0].equals(csrfTokenName))) {
             return taintAware;
 	   }
         
