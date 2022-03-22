@@ -39,7 +39,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
      * @return A possibly tainted version of the input object
      */
     private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
-	   if(taintAware.toString().isEmpty() || (parameters.length > 0 && parameters[0] instanceof IASString && parameters[0].equals(csrfTokenName))) {
+	   if(taintAware.toString().isEmpty() || parent == null || (parameters.length > 0 && parameters[0] instanceof IASString && parameters[0].equals(csrfTokenName))) {
             return taintAware;
 	   }
         
@@ -54,7 +54,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
           //  System.out.println("source from config: " + source);
         }
 
-        if ((parent != null) && (source != null)) {
+        if (source != null) {
 
             // check if CONTEXT exists, most stuff not working without!
 
@@ -439,15 +439,15 @@ public class BroadleafTaintHandler extends IASTaintHandler {
             Method getAuthentication = springSecurityContext.getClass().getMethod("getAuthentication");
             Object authentication = getAuthentication.invoke(springSecurityContext);
             Method getPrincipal = authentication.getClass().getMethod("getPrincipal");
-            Method isAuthenticated = authentication.getClass().getMethod("isAuthenticated");
+            //Method isAuthenticated = authentication.getClass().getMethod("isAuthenticated");
             Object principal = getPrincipal.invoke(authentication);
-            isAuthenticated.invoke(authentication);
+            //isAuthenticated.invoke(authentication);
             Method getId = principal.getClass().getMethod("getId");
-            Method getUsername = principal.getClass().getMethod("getUsername");
-            Method getAuthorities = principal.getClass().getMethod("getAuthorities");
+            //Method getUsername = principal.getClass().getMethod("getUsername");
+            //Method getAuthorities = principal.getClass().getMethod("getAuthorities");
             long id = (long) getId.invoke(principal);
-            String username = ((IASString) getUsername.invoke(principal)).getString();
-            getAuthorities.invoke(principal);
+            //String username = ((IASString) getUsername.invoke(principal)).getString();
+            //getAuthorities.invoke(principal);
             return id;
         } catch (Exception ex) {
             ex.printStackTrace();
