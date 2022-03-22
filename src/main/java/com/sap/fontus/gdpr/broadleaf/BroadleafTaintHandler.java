@@ -1,35 +1,35 @@
 package com.sap.fontus.gdpr.broadleaf;
 
 //import com.sap.fontus.asm.FunctionCall;
+
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.Sink;
 import com.sap.fontus.config.Source;
-//import com.sap.fontus.gdpr.cookie.ConsentCookie;
-//import com.sap.fontus.gdpr.cookie.ConsentCookieMetadata;
-import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.Utils;
-import com.sap.fontus.gdpr.metadata.simple.*;
-//import com.sap.fontus.gdpr.servlet.ReflectedCookie;
+import com.sap.fontus.gdpr.metadata.*;
+import com.sap.fontus.gdpr.metadata.simple.SimpleDataId;
+import com.sap.fontus.gdpr.metadata.simple.SimpleDataSubject;
+import com.sap.fontus.gdpr.metadata.simple.SimpleGdprMetadata;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.gdpr.servlet.ReflectedSession;
 import com.sap.fontus.taintaware.IASTaintAware;
-import com.sap.fontus.taintaware.shared.*;
+import com.sap.fontus.taintaware.shared.IASTaintRange;
+import com.sap.fontus.taintaware.shared.IASTaintSource;
+import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
-//import com.sap.fontus.taintaware.unified.IASTaintInformationable;
-//import org.objectweb.asm.Opcodes;
 
-//import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-//import java.time.Instant;
-//import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 public class BroadleafTaintHandler extends IASTaintHandler {
 
     //private static final String productPurposeAttributeName = BroadleafTaintHandler.class.getName() + ".PRODUCTPURPOSE";
     private static final String addressServiceAttributeName = BroadleafTaintHandler.class.getName() + ".ADDRESSSERVICE";
-
+    private static final IASString csrfTokenName = IASString.valueOf("csrfToken");
     /**
      * Extracts the TCF consent string from a cookie and attaches it as the taint metadata
      * @param taintAware The Taint Aware String-like object
@@ -39,7 +39,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
      * @return A possibly tainted version of the input object
      */
     private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
-	   if(taintAware.toString().isEmpty()) {
+	   if(taintAware.toString().isEmpty() || (parameters[0] instanceof IASString && parameters[0].equals(csrfTokenName))) {
             return taintAware;
 	   }
         
@@ -67,7 +67,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
                 ReflectedSession session = request.getSession();
                 Object springSecurityContext = session.getAttribute(new IASString("SPRING_SECURITY_CONTEXT"));
 
-                Object obj100 = request.getAttribute(new IASString("org.springframework.web.servlet.DispatcherServlet.CONTEXT"));
+                /*Object obj100 = request.getAttribute(new IASString("org.springframework.web.servlet.DispatcherServlet.CONTEXT"));
                 if (obj100 != null) {
                     Method m100 = obj100.getClass().getMethod("getBean", IASString.class);
 
@@ -77,7 +77,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                }
+                }*/
 
                 /*
                 //Admin part
@@ -110,26 +110,27 @@ public class BroadleafTaintHandler extends IASTaintHandler {
                 //Customer case
                 } else {
                  */
-                    //Authenticated customer
-                    if (springSecurityContext != null) {
-                        long id = getIdFromSecurityContext(springSecurityContext);
-                        DataSubject ds = new SimpleDataSubject(String.valueOf(id));
-                        metadata = new SimpleGdprMetadata(Utils.getPurposesFromRequest(request), ProtectionLevel.Normal, ds, new SimpleDataId(), true, true, Identifiability.NotExplicit);
+                //Authenticated customer
+                if (springSecurityContext != null) {
+                    long id = getIdFromSecurityContext(springSecurityContext);
+                    DataSubject ds = new SimpleDataSubject(String.valueOf(id));
+                    metadata = new SimpleGdprMetadata(Utils.getPurposesFromRequest(request), ProtectionLevel.Normal, ds, new SimpleDataId(), true, true, Identifiability.NotExplicit);
                     //Not authenticated customer
-                    } else {
+                } else {
+                    if (path.equals("/register")) {
                         Object anonymousCustomer = session.getAttribute(new IASString("_blc_anonymousCustomer"));
-                        Object customerMerged = session.getAttribute(new IASString("_blc_anonymousCustomerMerged"));
+                        //Object customerMerged = session.getAttribute(new IASString("_blc_anonymousCustomerMerged"));
                         if (anonymousCustomer != null) {
                             Method getId = anonymousCustomer.getClass().getMethod("getId");
                             long id = (long) getId.invoke(anonymousCustomer);
-                            if (path.equals("/register")) {
-                                DataSubject ds = new SimpleDataSubject(String.valueOf(id));
-                                metadata = new SimpleGdprMetadata(Utils.getPurposesFromRequest(request), ProtectionLevel.Normal, ds, new SimpleDataId(), true, true, Identifiability.NotExplicit);
-                            }
-                        } else if (customerMerged != null) {
-                            //TODO stuff with merged customer?
+
+                            DataSubject ds = new SimpleDataSubject(String.valueOf(id));
+                            metadata = new SimpleGdprMetadata(Utils.getPurposesFromRequest(request), ProtectionLevel.Normal, ds, new SimpleDataId(), true, true, Identifiability.NotExplicit);
                         }
-                    }
+                    }// else if (customerMerged != null) {
+                    //TODO stuff with merged customer?
+                    //}
+                }
 
                     /*
                     if (path.contains("/checkout")) {
