@@ -64,7 +64,7 @@ public final class Utils {
     public static Collection<DataSubject> getDataSubjects(IASTaintInformationable taintInformation) {
         Collection<DataSubject> dataSubjects = new HashSet<>();
         return processGdprMetaData(taintInformation, dataSubjects, (acc, gdprData) -> {
-            acc.add(gdprData.getSubject());
+            acc.addAll(gdprData.getSubjects());
             return acc;
         });
     }

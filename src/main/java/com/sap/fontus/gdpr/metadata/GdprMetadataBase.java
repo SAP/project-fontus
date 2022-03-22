@@ -7,7 +7,7 @@ public abstract class GdprMetadataBase implements GdprMetadata {
         return "SimpleGdprMetadata{" +
                 "allowedPurposes=" + getAllowedPurposes() +
                 ", protectionLevel=" + getProtectionLevel() +
-                ", dataSubject=" + getSubject() +
+                ", dataSubject=" + getSubjects() +
                 ", dataId=" + getId() +
                 ", portability=" + isQualifiedForPortability() +
                 ", consent=" + isProcessingUnrestricted() +

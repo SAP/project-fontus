@@ -11,7 +11,7 @@ public class SimpleGdprMetadata extends GdprMetadataBase {
     // TODO(david): I have marked a bunch of them as final -- are there any more that can change values at runtime?
     private final Collection<AllowedPurpose> allowedPurposes;
     private ProtectionLevel protectionLevel;
-    private final DataSubject dataSubject;
+    private final Collection<DataSubject> dataSubjects;
     private final DataId dataId;
     private final boolean portability;
     private boolean processingUnrestricted;
@@ -20,17 +20,27 @@ public class SimpleGdprMetadata extends GdprMetadataBase {
     public SimpleGdprMetadata() {
         this.allowedPurposes = Set.of();
         this.protectionLevel = ProtectionLevel.Undefined;
-        this.dataSubject = null;
+        this.dataSubjects = Set.of();
         this.dataId = null;
         this.portability = false;
         this.processingUnrestricted = false;
         this.identifiability = Identifiability.Undefined;
     }
 
+    public SimpleGdprMetadata(Collection<AllowedPurpose> allowedPurposes, ProtectionLevel protectionLevel, Collection<DataSubject> dataSubjects, DataId dataId, boolean portability, boolean unrestricted, Identifiability identifiability) {
+        this.allowedPurposes = allowedPurposes;
+        this.protectionLevel = protectionLevel;
+        this.dataSubjects = dataSubjects;
+        this.dataId = dataId;
+        this.portability = portability;
+        this.processingUnrestricted = unrestricted;
+        this.identifiability = identifiability;
+    }
+
     public SimpleGdprMetadata(Collection<AllowedPurpose> allowedPurposes, ProtectionLevel protectionLevel, DataSubject dataSubject, DataId dataId, boolean portability, boolean unrestricted, Identifiability identifiability) {
         this.allowedPurposes = allowedPurposes;
         this.protectionLevel = protectionLevel;
-        this.dataSubject = dataSubject;
+        this.dataSubjects = Set.of(dataSubject);
         this.dataId = dataId;
         this.portability = portability;
         this.processingUnrestricted = unrestricted;
@@ -48,8 +58,8 @@ public class SimpleGdprMetadata extends GdprMetadataBase {
     }
 
     @Override
-    public DataSubject getSubject() {
-        return this.dataSubject;
+    public Collection<DataSubject> getSubjects() {
+        return this.dataSubjects;
     }
 
     @Override
@@ -95,14 +105,14 @@ public class SimpleGdprMetadata extends GdprMetadataBase {
                 && this.processingUnrestricted == that.processingUnrestricted
                 && Objects.equals(this.allowedPurposes, that.allowedPurposes)
                 && this.protectionLevel == that.protectionLevel
-                && Objects.equals(this.dataSubject, that.dataSubject)
+                && Objects.equals(this.dataSubjects, that.dataSubjects)
                 && Objects.equals(this.dataId, that.dataId)
                 && this.identifiability == that.identifiability;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.allowedPurposes, this.protectionLevel, this.dataSubject, this.dataId, this.portability, this.processingUnrestricted, this.identifiability);
+        return Objects.hash(this.allowedPurposes, this.protectionLevel, this.dataSubjects, this.dataId, this.portability, this.processingUnrestricted, this.identifiability);
     }
 
 }

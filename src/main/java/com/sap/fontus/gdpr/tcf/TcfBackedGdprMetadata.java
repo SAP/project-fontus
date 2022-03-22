@@ -52,7 +52,7 @@ public class TcfBackedGdprMetadata extends GdprMetadataBase {
     }
 
     @Override
-    public DataSubject getSubject() {
+    public Collection<DataSubject> getSubjects() {
         return null;
     }
 

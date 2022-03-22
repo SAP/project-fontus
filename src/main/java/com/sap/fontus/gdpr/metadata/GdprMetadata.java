@@ -1,9 +1,6 @@
 package com.sap.fontus.gdpr.metadata;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 public interface GdprMetadata {
 
@@ -19,7 +16,7 @@ public interface GdprMetadata {
     // The data subject needs to be identified
     // Metadatum 3
     // Enables Subject Access Request as per GDPR Article 15
-    public DataSubject getSubject();
+    public Collection<DataSubject> getSubjects();
 
     // Unique ID to uniquely identify this piece of data
     // Metadatum 4
@@ -45,8 +42,9 @@ public interface GdprMetadata {
     // Metadatum 7
     public Identifiability isIdentifiable();
 
-    public void setProtectionLevel(ProtectionLevel protectionLevel);
-
     // Switches Metadatum 6 to true
     public void restrictProcessing();
+
+    public void setProtectionLevel(ProtectionLevel protectionLevel);
+
 }
