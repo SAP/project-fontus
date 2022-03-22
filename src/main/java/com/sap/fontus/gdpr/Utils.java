@@ -113,7 +113,7 @@ public final class Utils {
         if(cookies != null) {
             for (ReflectedCookie cookie : cookies) {
                 if (ConsentCookie.isConsentCookie(cookie.getName().getString())) {
-                    System.out.println("Found Consent Cookie: " + cookie.getName().getString() + " = " + cookie.getValue().getString());
+                    //System.out.println("Found Consent Cookie: " + cookie.getName().getString() + " = " + cookie.getValue().getString());
                     ConsentCookie consentCookie = ConsentCookie.parse(cookie.getValue().getString());
                     return ConsentCookieMetadata.getAllowedPurposesFromConsentCookie(consentCookie);
                 }

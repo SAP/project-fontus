@@ -39,15 +39,19 @@ public class BroadleafTaintHandler extends IASTaintHandler {
      * @return A possibly tainted version of the input object
      */
     private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
+	   if(taintAware.toString().isEmpty()) {
+            return taintAware;
+	   }
+        
         // General debug info
-        IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
+        //IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
         IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
         Source source = null;
         GdprMetadata metadata = null;
 
         if (taintSource != null) {
             source = Configuration.getConfiguration().getSourceConfig().getSourceWithName(taintSource.getName());
-            System.out.println("source from config: " + source);
+          //  System.out.println("source from config: " + source);
         }
 
         if ((parent != null) && (source != null)) {
@@ -194,7 +198,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
 
             // Add taint information if match was found
             if (metadata != null) {
-                System.out.println("Adding Taint metadata to string '" + taintAware.toString() + "': " + metadata);
+                //System.out.println("Adding Taint metadata to string '" + taintAware.toString() + "': " + metadata);
                 taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
             } else {
                 System.out.println("Null metadata, not tainting!");
