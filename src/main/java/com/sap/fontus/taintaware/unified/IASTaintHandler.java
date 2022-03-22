@@ -144,9 +144,15 @@ public class IASTaintHandler {
                 traverser.apply(o);
             }
         } else if (isMap) {
-            Map<Object, Object> map = (Map) object;
+            Map<Object, Object> map = (Map<Object, Object>) object;
             if (!map.isEmpty()) {
-                object = map.entrySet().stream().collect(Collectors.toMap(e -> traverser.apply(e.getKey()), e -> traverser.apply(e.getValue())));
+                Map<Object, Object> newMap = new HashMap<>(map.size());
+                for(Map.Entry<Object, Object> e : map.entrySet()) {
+                    Object key = traverser.apply(e.getKey());
+                    Object value = traverser.apply(e.getValue());
+                    newMap.put(key, value);
+                }
+                object = newMap; // map.entrySet().stream().collect(Collectors.toMap(e -> traverser.apply(e.getKey()), e -> traverser.apply(e.getValue())));
             }
         } else if (isEnumerate) {
             Enumeration<Object> enumeration = (Enumeration<Object>) object;
