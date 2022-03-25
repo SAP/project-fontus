@@ -45,23 +45,21 @@ public class BroadleafTaintHandler extends IASTaintHandler {
         
         // General debug info
         //IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
-        IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
-        Source source = null;
-        GdprMetadata metadata = null;
+        //IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
+        //Source source = null;
 
-        if (taintSource != null) {
-            source = Configuration.getConfiguration().getSourceConfig().getSourceWithName(taintSource.getName());
+        //if (taintSource != null) {
+         //   source = Configuration.getConfiguration().getSourceConfig().getSourceWithName(taintSource.getName());
           //  System.out.println("source from config: " + source);
-        }
+        //}
 
-        if (source != null) {
+        //if (source != null) {
 
             // check if CONTEXT exists, most stuff not working without!
 
             try {
                 ReflectedHttpServletRequest request = new ReflectedHttpServletRequest(parent);
-                IASString uri = request.getRequestURI();
-                String path = uri.getString();
+
                 //Collection<AllowedPurpose> purposeses = Utils.getPurposesFromRequest(request);
 
                 ReflectedSession session = request.getSession();
@@ -114,9 +112,11 @@ public class BroadleafTaintHandler extends IASTaintHandler {
                 if (springSecurityContext != null) {
                     long id = getIdFromSecurityContext(springSecurityContext);
                     DataSubject ds = new SimpleDataSubject(String.valueOf(id));
-                    metadata = new SimpleGdprMetadata(Utils.getPurposesFromRequest(request), ProtectionLevel.Normal, ds, new SimpleDataId(), true, true, Identifiability.NotExplicit);
+                    taintAware.setTaint(new GdprTaintMetadata(sourceId, new SimpleGdprMetadata(Utils.getPurposesFromRequest(request), ProtectionLevel.Normal, ds, new SimpleDataId(), true, true, Identifiability.NotExplicit)));
                     //Not authenticated customer
                 } else {
+                    IASString uri = request.getRequestURI();
+                    String path = uri.getString();
                     if (path.equals("/register")) {
                         Object anonymousCustomer = session.getAttribute(new IASString("_blc_anonymousCustomer"));
                         //Object customerMerged = session.getAttribute(new IASString("_blc_anonymousCustomerMerged"));
@@ -125,7 +125,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
                             long id = (long) getId.invoke(anonymousCustomer);
 
                             DataSubject ds = new SimpleDataSubject(String.valueOf(id));
-                            metadata = new SimpleGdprMetadata(Utils.getPurposesFromRequest(request), ProtectionLevel.Normal, ds, new SimpleDataId(), true, true, Identifiability.NotExplicit);
+                            taintAware.setTaint(new GdprTaintMetadata(sourceId, new SimpleGdprMetadata(Utils.getPurposesFromRequest(request), ProtectionLevel.Normal, ds, new SimpleDataId(), true, true, Identifiability.NotExplicit)));
                         }
                     }// else if (customerMerged != null) {
                     //TODO stuff with merged customer?
@@ -198,13 +198,10 @@ public class BroadleafTaintHandler extends IASTaintHandler {
             }
 
             // Add taint information if match was found
-            if (metadata != null) {
-                //System.out.println("Adding Taint metadata to string '" + taintAware.toString() + "': " + metadata);
-                taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
-            } else {
+/* else {
                 System.out.println("Null metadata, not tainting!");
-            }
-        }
+            }*/
+        //}
         return taintAware;
     }
 
