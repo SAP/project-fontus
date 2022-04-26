@@ -10,7 +10,6 @@ import com.sap.fontus.config.abort.MultiAbort;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +34,10 @@ public class Sink {
     @XmlElement(name = "dataProtection")
     private final DataProtection dataProtection;
 
+    @JacksonXmlElementWrapper(localName = "positions")
+    @XmlElement(name = "position")
+    private final List<Position> positions;
+
     @XmlElement(name = "tainthandler")
     @JsonProperty("tainthandler")
     private final FunctionCall taintHandler;
@@ -45,16 +48,18 @@ public class Sink {
         this.parameters = new ArrayList<>();
         this.categories = new ArrayList<>();
         this.dataProtection = new DataProtection();
+        this.positions = new ArrayList<>();
         this.taintHandler = FunctionCall.EmptyFunctionCall;
     }
 
-    public Sink(String name, FunctionCall functionCall, List<SinkParameter> parameters, List<String> categories, DataProtection dataProtection, FunctionCall taintHandler) {
+    public Sink(String name, FunctionCall functionCall, List<SinkParameter> parameters, List<String> categories, DataProtection dataProtection, FunctionCall taintHandler, List<Position> positions) {
         this.name = name;
         this.function = functionCall;
         this.parameters = parameters;
         this.categories = categories;
         this.dataProtection = dataProtection;
         this.taintHandler = taintHandler;
+        this.positions = positions;
     }
 
     public Sink(String name, FunctionCall functionCall, List<SinkParameter> parameters, List<String> categories, DataProtection dataProtection) {
@@ -63,6 +68,7 @@ public class Sink {
         this.parameters = parameters;
         this.categories = categories;
         this.dataProtection = dataProtection;
+        this.positions = new ArrayList<>();
         this.taintHandler = FunctionCall.EmptyFunctionCall;
     }
 
@@ -107,6 +113,10 @@ public class Sink {
         return new MultiAbort(l);
     }
 
+    public List<Position> getPositions() {
+        return positions;
+    }
+
     @Override
     public String toString() {
         return "Sink{" +
@@ -116,6 +126,7 @@ public class Sink {
                 ", categories=" + categories +
                 ", dataProtection=" + dataProtection +
                 ", taintHandler=" + taintHandler +
+                ", positions=" + positions +
                 '}';
     }
 }

@@ -3,6 +3,7 @@ package com.sap.fontus.instrumentation;
 import com.sap.fontus.Constants;
 import com.sap.fontus.asm.*;
 import com.sap.fontus.config.Configuration;
+import com.sap.fontus.config.Position;
 import com.sap.fontus.config.Sink;
 import com.sap.fontus.config.Source;
 import com.sap.fontus.instrumentation.transformer.*;
@@ -33,6 +34,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     private final String name;
     private final String methodDescriptor;
     private final IClassResolver resolver;
+
+    private int line;
+
     /**
      * Some methods are not handled in a generic fashion, one can defined specialized proxies here
      */
@@ -330,7 +334,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         FunctionCall functionCall = this.instrumentationHelper.rewriteOwnerMethod(fc);
         if (functionCall != null) {
-            super.visitMethodInsn(functionCall.getOpcode(), functionCall.getOwner(), functionCall.getName(), functionCall.getDescriptor(), functionCall.isInterface());
+            this.rewriteParametersAndReturnTypeForInstrumentedCall(functionCall, fc);
             return;
         }
 
@@ -561,6 +565,39 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         return fc.getOwner().equals("java/lang/invoke/MethodHandles$Lookup") && fc.getName().equals("findConstructor");
     }
 
+    private boolean rewriteParametersAndReturnTypeForInstrumentedCall(FunctionCall call, FunctionCall uninstrumentedCall) {
+
+        MethodParameterTransformer transformer = new MethodParameterTransformer(this, call);
+
+        // Add Sink transformations
+        Sink sink = this.config.getSinkConfig().getSinkForFunction(uninstrumentedCall, new Position(owner, name, line));
+        if (sink != null) {
+	    System.out.println("Adding IASString sink: " + uninstrumentedCall.getOwner() + uninstrumentedCall.getName() + uninstrumentedCall.getDescriptor());
+            logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(uninstrumentedCall.getOpcode()), uninstrumentedCall.getOwner(), uninstrumentedCall.getName(), uninstrumentedCall.getDescriptor());
+            SinkTransformer t = new SinkTransformer(sink, this.instrumentationHelper, this.used);
+            transformer.addParameterTransformation(t);
+            transformer.addReturnTransformation(t);
+        }
+
+        // No transformations required
+        if (!transformer.needsTransformation()) {
+	    this.visitMethodInsn(call);
+            return false;
+        }
+
+        // Do the transformations
+        transformer.modifyStackParameters(this.used);
+        this.usedAfterInjection = Math.max(this.used + transformer.getExtraStackSlots(), this.usedAfterInjection);
+
+        this.visitMethodInsn(call);
+
+        // Modify Return parameters
+        transformer.modifyReturnType();
+
+        logger.info("Finished transforming parameters for [{}] {}.{}{}", Utils.opcodeToString(uninstrumentedCall.getOpcode()), uninstrumentedCall.getOwner(), uninstrumentedCall.getName(), uninstrumentedCall.getDescriptor());
+        return true;
+    }
+
     private boolean rewriteParametersAndReturnType(FunctionCall call) {
         boolean isExcluded = this.combinedExcludedLookup.isJdkOrAnnotation(call.getOwner()) || this.combinedExcludedLookup.isExcluded(call.getOwner());
 
@@ -599,7 +636,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         }
 
         // Add Sink transformations
-        Sink sink = this.config.getSinkConfig().getSinkForFunction(call);
+        Sink sink = this.config.getSinkConfig().getSinkForFunction(call, new Position(owner, name, line));
         if (sink != null) {
             logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
             SinkTransformer t = new SinkTransformer(sink, this.instrumentationHelper, this.used);
@@ -905,6 +942,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     @Override
     public void visitLineNumber(int line, Label start) {
         super.visitLineNumber(line, start);
+        this.line = line;
     }
 
     @Override
