@@ -2,48 +2,11 @@
 A modern framework for dynamic taint analysis with string-like classes in the JVM
 
 ## Building the Framework
-For building the framework execute the gradle task ``shadowJar`` or ``publishToMavenLocal``. Aftwerwords you will find the Framework JAR in ``./build/libs``
+For building the framework execute the gradle task ``shadowJar`` or ``publishToMavenLocal``. Aftwerwords you will find the Framework JAR in ``./fontus/build/libs``
 
 There will be two JAR files. First of all the one starting with ``fontus``, which is for doing the offline instrumentation and the agent instrumentation.
 And secondly the one which starts with ``util``, which is necessary to execute offline instrumented applications. 
 
-## Offline instrumentation
-### Instrumentation
-#### Class files
-To instrument a class file you have to execute the ``fontus`` JAR and passing the parameters ``-f`` for the source file and ``-o`` for the output file.
-
-**Attention**: Source and output cannot be the same, otherwise the instrumentation will fail
-
-Here is an example how to instrument a class file:
-```bash
-BASE_DIR=$(pwd)
-cd ${BASE_DIR}/build/libs;
-java -jar fontus-0.0.1-SNAPSHOT.jar -f ${BASE_DIR}/tests/TestString.class -o ${BASE_DIR}/tests/out/TestString.class
-```
-
-#### JAR Archives
-If one instruments a jar file, it is slightly more complicated. Due to [Stack Frame Verification](http://chrononsystems.com/blog/java-7-design-flaw-leads-to-huge-backward-step-for-the-jvm) the instrumenter needs to know common parent classes of types. It thus might have to load classes from the jar during instrumentation. Therefore one has to add the .jar to instrument to the classpath.
-
-For some reason, the -classpath and the -jar switches of the java executable are mutually exclusive however. This doesn't seem to be properly documented either sadly.
-
-So when instrumenting a jar, execute something like the following:
-```sh
-java -classpath "fontus-0.0.1-SNAPSHOT.jar:jar-file-to-instrument-X.Y.Z.RELEASE.jar" Main -f jar-file-to-instrument-X.Y.Z.RELEASE.jar -o jar-file-to-instrument-X.Y.Z.RELEASE.instrumented.jar
-```
-
-#### Select taint method
-To choose a specific taint method use the command line parameter ``--taintmethod method``, just replace ``method`` with a valid taint method (see [Available Tainting Methods](#Available Tainting Methods)).
-
-### Execution
-The instrumented file can then be executed by running ``java -classpath ".:util-0.0.1-SNAPSHOT.jar" TestString``.
-
-### Logging
-
-The instrumentation framework outputs a lot of information for debugging purposes. This can be disabled by setting the *log.level* property to *OFF*. E.g., by calling the instrumentation like this:
-
-```bash
-java -Dlog.level=OFF -jar fontus-0.0.1-SNAPSHOT.jar -f ${BASE_DIR}/tests/TestString.class -o ${BASE_DIR}/tests/out/TestString.class
-```
 
 ## Agent Instrumentation
 This instrumentation type works on-the-fly with starting the application.
@@ -109,3 +72,4 @@ To see the bytecode for a class file, run ``javap -l -v -p -s TestString.class``
 
 ## Troubleshoot
 
+Have a look in the [docs folder](./docs)!
