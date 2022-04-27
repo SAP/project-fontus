@@ -182,6 +182,9 @@ public class IASTaintHandler {
     public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName) {
         if (object instanceof IASTaintAware) {
             return handleTaint((IASTaintAware) object, instance, sinkFunction, sinkName);
+        } else if (instance instanceof IASTaintAware) {
+            // Things like String.toCharArray() can be handled here
+            return handleTaint((IASTaintAware) instance, object, sinkFunction, sinkName);
         }
 
         return traverseObject(object, taintAware -> handleTaint(taintAware, instance, sinkFunction, sinkName));

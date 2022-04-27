@@ -6,7 +6,6 @@ import com.sap.fontus.config.Sink;
 import com.sap.fontus.config.SinkParameter;
 import com.sap.fontus.utils.Utils;
 
-import javax.xml.crypto.Data;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -31,7 +30,7 @@ public class SinkGenerator extends AbstractGenerator {
             for (Method method : methods) {
                 List<SinkParameter> sinkParameters = extractParameters(isObject, method.getParameterTypes());
                 if (!sinkParameters.isEmpty()) {
-                    Sink sink = new Sink(generateName(method), FunctionCall.fromMethod(method), sinkParameters, this.categories, this.dp);
+                    Sink sink = new Sink(generateName(method), FunctionCall.fromMethod(method), sinkParameters, this.categories, this.dp,  FunctionCall.EmptyFunctionCall, new ArrayList<>());
                     sinks.add(sink);
                 }
             }
@@ -39,7 +38,7 @@ public class SinkGenerator extends AbstractGenerator {
             for (Constructor<?> constructor : constructors) {
                 List<SinkParameter> sinkParameters = extractParameters(isObject, constructor.getParameterTypes());
                 if (!sinkParameters.isEmpty()) {
-                    Sink sink = new Sink(generateName(constructor), FunctionCall.fromConstructor(constructor), sinkParameters, this.categories, this.dp);
+                    Sink sink = new Sink(generateName(constructor), FunctionCall.fromConstructor(constructor), sinkParameters, this.categories, this.dp, FunctionCall.EmptyFunctionCall, new ArrayList<>());
                     sinks.add(sink);
                 }
             }

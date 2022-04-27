@@ -21,7 +21,7 @@ public class AbortObject {
         this.payload = payload;
         this.ranges = ranges;
         this.stackTrace = stackTrace;
-        this.categories = Configuration.getConfiguration().getSinkConfig().getSinkForFqn(sinkFunction).getCategories();
+        this.categories = Configuration.getConfiguration().getSinkConfig().getSinkForName(sinkName).getCategories();
     }
 
     public String getSinkFunction() {

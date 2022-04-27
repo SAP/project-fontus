@@ -118,8 +118,9 @@ public class Converter implements Callable<Void> {
                 if (!isContained) {
                     List<SinkParameter> sinkParameters = parseParameters(sinkJson);
                     List<String> categories = parseCategories(sinkJson);
+                    List<Position> positions = parsePositions(sinkJson);
                     String sinkName = generateName(call);
-                    sinks.add(new Sink(sinkName, call, sinkParameters, categories, new DataProtection()));
+                    sinks.add(new Sink(sinkName, call, sinkParameters, categories, new DataProtection(), FunctionCall.EmptyFunctionCall, positions));
                 }
             } catch (Exception e) {
                 System.err.println("Some error occured with this:");
@@ -196,6 +197,19 @@ public class Converter implements Callable<Void> {
             JSONObject parameter = (JSONObject) parameterObject;
             int paramIndex = parameter.getInt("paramIndex");
             list.add(new SinkParameter(paramIndex));
+        }
+        return list;
+    }
+
+    private List<Position> parsePositions(JSONObject sinkJson) {
+        List<Position> list = new ArrayList<>();
+        JSONArray array = (JSONArray) sinkJson.get("positions");
+        for (Object positionObject : array) {
+            JSONObject position = (JSONObject) positionObject;
+            String className = position.getString("className");
+            String methodName = position.getString("methodName");
+            int javaSourcePosition = position.getInt("javaSourcePosition");
+            list.add(new Position(className,methodName,javaSourcePosition));
         }
         return list;
     }
