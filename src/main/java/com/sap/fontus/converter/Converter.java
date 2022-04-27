@@ -120,7 +120,7 @@ public class Converter implements Callable<Void> {
                     List<String> categories = parseCategories(sinkJson);
                     List<Position> positions = parsePositions(sinkJson);
                     String sinkName = generateName(call);
-                    sinks.add(new Sink(sinkName, call, sinkParameters, categories, new DataProtection(), positions));
+                    sinks.add(new Sink(sinkName, call, sinkParameters, categories, new DataProtection(), FunctionCall.EmptyFunctionCall, positions));
                 }
             } catch (Exception e) {
                 System.err.println("Some error occured with this:");

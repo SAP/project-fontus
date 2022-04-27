@@ -30,7 +30,7 @@ public class SinkGenerator extends AbstractGenerator {
             for (Method method : methods) {
                 List<SinkParameter> sinkParameters = extractParameters(isObject, method.getParameterTypes());
                 if (!sinkParameters.isEmpty()) {
-                    Sink sink = new Sink(generateName(method), FunctionCall.fromMethod(method), sinkParameters, this.categories, this.dp, new ArrayList<>());
+                    Sink sink = new Sink(generateName(method), FunctionCall.fromMethod(method), sinkParameters, this.categories, this.dp,  FunctionCall.EmptyFunctionCall, new ArrayList<>());
                     sinks.add(sink);
                 }
             }
@@ -38,7 +38,7 @@ public class SinkGenerator extends AbstractGenerator {
             for (Constructor<?> constructor : constructors) {
                 List<SinkParameter> sinkParameters = extractParameters(isObject, constructor.getParameterTypes());
                 if (!sinkParameters.isEmpty()) {
-                    Sink sink = new Sink(generateName(constructor), FunctionCall.fromConstructor(constructor), sinkParameters, this.categories, this.dp, new ArrayList<>());
+                    Sink sink = new Sink(generateName(constructor), FunctionCall.fromConstructor(constructor), sinkParameters, this.categories, this.dp, FunctionCall.EmptyFunctionCall, new ArrayList<>());
                     sinks.add(sink);
                 }
             }
