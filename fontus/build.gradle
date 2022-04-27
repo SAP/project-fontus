@@ -76,21 +76,6 @@ test {
     }
 }
 
-task utilJar(type: ShadowJar) {
-    from(sourceSets.main.output) {
-        include "**/fontus/taintaware/**"
-        include "**/fontus/instrumentation/strategies/*"
-        include "**/fontus/utils/**"
-        include "**/fontus/Constants*"
-        include "**/fontus/config/TaintStringConfig*"
-        include "**/fontus/config/TaintMethod*"
-        include "**/fontus/config/**"
-        include "**/fontus/asm/**"
-        include "**/fontus/asm/FunctionCall*" // Because of Configuration class
-        include "**/fontus/agent/AgentConfig*" // Because of Configuration class
-    }
-    utilJar.baseName = "util"
-}
 
 task relocateShadowJar(type: ConfigureShadowRelocation) {
     target = tasks.shadowJar
@@ -115,8 +100,7 @@ shadowJar {
     // This makes sure that the generated jar has no "-all" suffix
     classifier = ''
 
-    dependsOn utilJar
-    dependsOn relocateShadowJar
+      dependsOn relocateShadowJar
 //    dependsOn converterJar
 //    dependsOn generatorJar
 //    dependsOn aotJar
@@ -138,13 +122,6 @@ publishing {
             version = '0.0.1-SNAPSHOT'
             artifact tasks.sourcesJar
             artifact tasks.shadowJar
-        }
-
-        util(MavenPublication) {
-            groupId 'com.sap.fontus'
-            artifactId 'util'
-            version = '0.0.1-SNAPSHOT'
-            artifact utilJar
         }
     }
 }
