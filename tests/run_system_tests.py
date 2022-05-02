@@ -13,7 +13,7 @@ import re
 
 SCRIPT_PATH = path.dirname(path.abspath(__file__))
 PROJECT_BASE_PATH = path.join(SCRIPT_PATH, '..')
-ARTIFACT_DIR = path.join(PROJECT_BASE_PATH, "build", "libs")
+ARTIFACT_DIR = path.join(PROJECT_BASE_PATH, "fontus", "build", "libs")
 TESTS_DIR = path.join(PROJECT_BASE_PATH, "tests")
 JARS_BASE_PATH = path.join(TESTS_DIR, "jars")
 INPUTS_BASE_PATH = path.join(JARS_BASE_PATH, "inputs")
@@ -21,7 +21,7 @@ INPUTS_BASE_PATH = path.join(JARS_BASE_PATH, "inputs")
 TESTS_SOURCE_DIR = path.join(TESTS_DIR, "src")
 CONFIG_FILE = path.join(TESTS_DIR, "config.json")
 TMPDIR_OUTPUT_DIR_SUFFIX = "instrumented"
-JAR_BASE_NAMES = ["fontus", "util"]
+JAR_BASE_NAMES = ["fontus"]
 
 
 def check_return_value(func):
