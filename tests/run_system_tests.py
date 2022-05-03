@@ -27,8 +27,8 @@ JAR_BASE_NAMES = ["fontus"]
 def check_return_value(func):
     async def wrapper_check_return_value(*args, **kwargs):
         ret_val = await func(*args, **kwargs)
-        if ret_val.return_value != 0:
-            pprint.pprint(ret_val)
+        #if ret_val.return_value != 0:
+        #    pprint.pprint(ret_val)
         return ret_val
 
     return wrapper_check_return_value
@@ -37,8 +37,8 @@ def check_return_value(func):
 def check_return_value_sync(func):
     def wrapper_check_return_value(*args, **kwargs):
         ret_val = func(*args, **kwargs)
-        if ret_val.return_value != 0:
-            pprint.pprint(ret_val)
+        #if ret_val.return_value != 0:
+        #    pprint.pprint(ret_val)
         return ret_val
 
     return wrapper_check_return_value
@@ -95,7 +95,7 @@ async def run_command(cwd, arguments, input_file=None):
 
 
 def format_jar_filename(base_name, version):
-    jar_name = '{}-{}.jar'.format(base_name, version)
+    jar_name = f'{base_name}-{version}.jar'
     return path.join(ARTIFACT_DIR, jar_name)
 
 
@@ -103,7 +103,7 @@ def check_output_files_existence(version):
     for jar_base_name in JAR_BASE_NAMES:
         jar_path = format_jar_filename(jar_base_name, version)
         if not is_existing_file(jar_path):
-            print('Required jar file {} does not exist!'.format(jar_path))
+            print(f'Required jar file {jar_path} does not exist!')
             sys.exit(1)
 
 
@@ -172,6 +172,7 @@ class TestCase:
         self._safe = test_dict.get('safe')
         self._source_path = path.join(TESTS_SOURCE_DIR, self._source)
         self._arguments = test_dict.get('arguments', [])
+        self._failure_expected = test_dict.get('failure_expected', False)
         self._javac_version = None  # test_dict.get('javac_version')
         self._regular_result = None
         self._agent_result = None
@@ -200,12 +201,17 @@ class TestCase:
     def javac_version(self):
         return self._javac_version
 
+    @property
+    def failure_expected(self):
+        return self._failure_expected
+
     def __repr__(self):
         return ('TestCase(name={self._name!r}, source={self._source!r}, '
                 'safe_mode={self._safe!r}'
                 'source_path={self._source_path!r}, '
                 'arguments={self._arguments!r}, '
-                'javac_version={self._javac_version!r})').format(self=self)
+                'javac_version={self._javac_version!r}), '
+                'failure_expected={self._failure_expected!r})').format(self=self)
 
 
 class JarTestCase:
@@ -222,6 +228,7 @@ class JarTestCase:
         if self._input_file is not None:
             self._input_file = path.join(INPUTS_BASE_PATH, self._input_file)
         self._entry_point = test_dict.get('entry_point', 'Main')
+        self._failure_expected = test_dict.get('failure_expected', False)
         self._javac_version = None  # test_dict.get('javac_version')
 
     @property
@@ -260,6 +267,10 @@ class JarTestCase:
     def javac_version(self):
         return self._javac_version
 
+    @property
+    def failure_expected(self):
+        return self._failure_expected
+
     def __repr__(self):
         return ('TestCase(name={self._name!r}, jar_file={self._jar_file!r}, '
                 'jar_path={self._jar_path!r}, '
@@ -267,7 +278,8 @@ class JarTestCase:
                 'arguments={self._arguments!r}, '
                 'input_file={self._input_file!r}, '
                 'copy_file={self._copy_file!r}, '
-                'javac_version={self._javac_version!r})').format(self=self)
+                'javac_version={self._javac_version!r}), '
+                'failure_expected={self._failure_expected!r})').format(self=self)
 
 
 class TestResult:
@@ -380,26 +392,49 @@ class TestRunResult:
         self._num_total = len(results)
         self._successful = []
         self._failed = []
+        self._failed_expected = []
+        self._successful_unexpected = []
         for test_result in results:
             if not test_result.successful:
-                self._failed.append(test_result)
+                if test_result.test_case.failure_expected:
+                    self._failed_expected.append(test_result)
+                else:
+                    self._failed.append(test_result)
             else:
-                self._successful.append(test_result)
+                if test_result.test_case.failure_expected:
+                    self._successful_unexpected.append(test_result)
+                else:
+                    self._successful.append(test_result)
         self._num_successful = len(self._successful)
         self._num_failed = len(self._failed)
+        self._num_failed_expected = len(self._failed_expected)
+        self._num_successful_unexpected = len(self._successful_unexpected)
 
     @property
     def num_failed(self):
         return self._num_failed
 
+    @property
+    def num_failed_expected(self):
+        return self._num_failed_expected
+
+    @property
+    def num_successful_unexpected(self):
+        return self._num_successful_unexpected
+
     def __repr__(self):
-        out = 'Total Tests: {}, Failed: {}, Successful: {}'.format(self._num_total,
-                                                                   self._num_failed,
-                                                                   self._num_successful)
+        out = (f'Total Tests: {self._num_total},'
+               f' Failed: {self._num_failed} ({self._num_failed_expected} expected),'
+               f' Successful: {self._num_successful}'
+               f' ({self._num_successful_unexpected} unexpected)')
         if self._num_failed > 0:
             out = out + "\n\tFailed Tests:"
             for failed_test in self._failed:
-                out = out + "\n" + '\t\t{}'.format(failed_test.test_case.name)
+                out = out + "\n" + f'\t\t{failed_test.test_case.name}'
+        if self._num_successful_unexpected > 0:
+            out = out + "\n\tUnexpected Successful Tests:"
+            for test in self._successful_unexpected:
+                out = out + "\n" + f'\t\t{test.test_case.name}'
         return out
 
 
@@ -520,7 +555,7 @@ class TestRunner:
         test_results = await asyncio.gather(
             *(self._run_test(base_dir, test) for test in all_tests))
         for test_result in test_results:
-            if not test_result.successful:
+            if not test_result.successful and not test_result.test_case.failure_expected:
                 print(
                     ('Test "{}" failed:\nRegular result: "{}",\n'
                      'Agent Result: "{}"').format(

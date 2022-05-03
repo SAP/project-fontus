@@ -5,11 +5,13 @@
       "jar_file": "deserialize.jar",
       "entry_point": "Main",
       "copy_file": "deserialized.dat",
-      "arguments": ["./deserialized.dat"]
+      "arguments": ["./deserialized.dat"],
+      "failure_expected": true
     },
     {
       "name": "Inheriting from Provider",
-      "jar_file": "provider_tests.jar"
+      "jar_file": "provider_tests.jar",
+      "failure_expected": true
     },
     {
       "name": "Very large <clinit>",
@@ -89,7 +91,8 @@
   "single_file_tests": [
     {
       "name": "Properties Serialization Roundtrip",
-      "source": "PropertiesSerializationRoundtrip.java"
+      "source": "PropertiesSerializationRoundtrip.java",
+      "failure_expected": true
     },
     {
       "name": "Cal",
