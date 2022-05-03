@@ -13,5 +13,5 @@ _die() {
 CURRENT_DIR="$(pwd)"
 ./gradlew clean check jar publishToMavenLocal #|| _die "Build/Unit Test failed"
 cd tests || _die "Can't change directory to ${CURRENT_DIR}/tests"
-python run_system_tests.py --build-first
+python3 run_system_tests.py --build-first
 cd - || _die "Can't change directory back to ${CURRENT_DIR}"
