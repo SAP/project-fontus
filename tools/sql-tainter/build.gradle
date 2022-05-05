@@ -9,11 +9,14 @@ repositories {
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-compileJava {options.encoding = "UTF-8"}
+compileJava {
+  dependsOn ':fontus:jar'
+  options.encoding = "UTF-8"
+}
 compileTestJava {options.encoding = "UTF-8"}
 
 dependencies {
-    implementation project(':fontus')
+    implementation project(path: ':fontus', configuration: 'shadow')
     implementation 'com.github.jsqlparser:jsqlparser:4.2'
 }
 

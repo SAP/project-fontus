@@ -21,9 +21,9 @@ repositories {
     mavenLocal()
 }
 
-tasks.jar.configure {
-    classifier = 'default'
-}
+//tasks.jar.configure {
+//    classifier = 'default'
+//}
 
 dependencies {
     implementation group: 'com.alibaba', name: 'druid', version: '1.2.5'
@@ -106,12 +106,12 @@ shadowJar {
 //    dependsOn aotJar
 }
 
-task sourcesJar(type: Jar) {
+/*task sourcesJar(type: Jar) {
     classifier = 'sources'
     from subprojects.collect { it.sourceSets.main.allSource }
-}
+}*/
 
-shadowJar.finalizedBy sourcesJar
+//shadowJar.finalizedBy sourcesJar
 
 publishing {
     publications {
@@ -120,8 +120,8 @@ publishing {
             groupId = 'com.sap.fontus'
             artifactId = 'fontus'
             version = '0.0.1-SNAPSHOT'
-            artifact tasks.sourcesJar
-            artifact tasks.shadowJar
+            //artifact tasks.sourcesJar
+            //artifact tasks.shadowJar
         }
     }
 }
