@@ -33,6 +33,7 @@ jar {
                 'Main-Class': 'com.sap.fontus.gdpr.database.Application'
         )
     }
+    duplicatesStrategy = 'exclude'
 
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }

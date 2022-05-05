@@ -26,6 +26,7 @@ jar {
                 'Main-Class': 'com.sap.fontus.sql.tainter.SQLRewriter'
         )
     }
+    duplicatesStrategy = 'exclude'
 
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
