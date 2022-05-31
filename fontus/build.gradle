@@ -115,13 +115,11 @@ shadowJar {
 
 publishing {
     publications {
-        shadow(MavenPublication) {
-            from project.components.java
+        shadow(MavenPublication) { publication ->
+            project.shadow.component(publication)
             groupId = 'com.sap.fontus'
             artifactId = 'fontus'
             version = '0.0.1-SNAPSHOT'
-            //artifact tasks.sourcesJar
-            //artifact tasks.shadowJar
         }
     }
 }
