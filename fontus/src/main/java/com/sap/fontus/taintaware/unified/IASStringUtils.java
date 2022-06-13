@@ -2,11 +2,13 @@ package com.sap.fontus.taintaware.unified;
 
 import com.sap.fontus.utils.ConversionUtils;
 
+import java.io.BufferedReader;
 import java.io.Serializable;
 import java.text.CollationKey;
 import java.text.Collator;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public final class IASStringUtils {
     private static final IASString CONCAT_PLACEHOLDER = new IASString("\u0001");
@@ -189,6 +191,10 @@ public final class IASStringUtils {
         }
         // TODO: if this works shift length accordingly
         return new IASString(sb.toString(), tis);
+    }
+
+    public static Stream<Object> bufferedReaderLines(BufferedReader reader) {
+        return reader.lines().map(ConversionUtils::convertToInstrumented);
     }
 
     private IASStringUtils() {

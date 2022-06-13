@@ -33,6 +33,7 @@ JAR_FOLDERS=(
     provider_tests
     comparators
     nu-validator
+    streams
 )
 
 main() {

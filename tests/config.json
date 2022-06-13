@@ -9,6 +9,13 @@
       "failure_expected": true
     },
     {
+      "name": "Streams",
+      "jar_file": "streams.jar",
+      "entry_point": "Main",
+      "copy_file": "build.sh",
+      "arguments": ["./build.sh"]
+    },
+    {
       "name": "Inheriting from Provider",
       "jar_file": "provider_tests.jar",
       "failure_expected": true
