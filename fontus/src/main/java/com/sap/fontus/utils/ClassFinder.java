@@ -88,7 +88,9 @@ public class ClassFinder {
     }
 
     public void addClass(String internalName, ClassLoader classLoader) {
-        this.loadedClasses.putIfAbsent(internalName, classLoader);
+        if(classLoader != null) {
+            this.loadedClasses.putIfAbsent(internalName, classLoader);
+        }
     }
 
     public boolean isClassLoaded(String internalName) {
