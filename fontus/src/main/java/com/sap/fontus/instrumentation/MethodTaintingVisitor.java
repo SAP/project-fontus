@@ -228,7 +228,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         // 38: invokevirtual #8                  // Method java/io/BufferedReader.lines:()Ljava/util/stream/Stream;
         methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/io/BufferedReader", "lines", "()Ljava/util/stream/Stream;", false),
-                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASStringUtils.class), "bufferedReaderLines", "(java/io/BufferedReader;)Ljava/util/stream/Stream", false));
+                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASStringUtils.class), "bufferedReaderLines", "(Ljava/io/BufferedReader;)Ljava/util/stream/Stream;", false));
 
         // 215: invokeinterface #77,  1           // InterfaceMethod org/apache/tomcat/jdbc/pool/PoolConfiguration.getUseStatementFacade:()Z
         methodProxies.put(new FunctionCall(Opcodes.INVOKEINTERFACE, "org/apache/tomcat/jdbc/pool/PoolConfiguration", "getUseStatementFacade", "()Z", true),
