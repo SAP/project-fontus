@@ -197,6 +197,11 @@ public final class IASStringUtils {
         return reader.lines().map(ConversionUtils::convertToInstrumented);
     }
 
+    public static IASString getStringFromResourceBundle(ResourceBundle rb, IASString key) {
+        Object val = rb.getObject(key.getString());
+        return fromObject(val);
+    }
+
     private IASStringUtils() {
 
     }
