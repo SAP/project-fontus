@@ -18115,3 +18115,7 @@ jdk/nio/zipfs/JarFileSystemProvider
 jdk/nio/zipfs/ZipUtils
 jdk/nio/zipfs/ZipFileSystemProvider
 jdk/nio/zipfs/ZipFileAttributes
+javax/xml/transform/SecuritySupport
+javax/xml/parsers/SecuritySupport
+javax/xml/transform/stream/FilePathToURI
+org/xml/sax/helpers/SecuritySupport
