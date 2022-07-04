@@ -128,6 +128,21 @@
         </takeGeneric>
         <takeGeneric>
             <function>
+                <opcode>182</opcode>
+                <owner>javax/xml/transform/Transformer</owner>
+                <name>setParameter</name>
+                <descriptor>(Ljava/lang/String;Ljava/lang/Object;)V</descriptor>
+                <interface>false</interface>
+            </function>
+            <conversions>
+                <conversion>
+                    <converter>convertTObject</converter>
+                    <index>1</index>
+                </conversion>
+            </conversions>
+        </takeGeneric>
+        <takeGeneric>
+            <function>
                 <opcode>184</opcode>
                 <owner>jdk/nashorn/api/scripting</owner>
                 <name>ScriptObjectMirror</name>
