@@ -691,11 +691,12 @@ class ClassTaintingVisitor extends ClassVisitor {
     private void generateInstrumentedStaticProxyToSuper(MethodVisitor mv, Method m, Descriptor origDescriptor, Descriptor instrumentedDescriptor) {
         // TODO Handle lists
         mv.visitCode();
-        for (int i = 0; i < origDescriptor.parameterCount(); ) {
+        int idx = 0;
+        for (int i = 0; i < origDescriptor.parameterCount(); i++) {
             String param = origDescriptor.getParameters().get(i);
             // Creating new Object if necessary and duplicating it for initialization
             if (isDescriptorNameToInstrument(param)) {
-                mv.visitVarInsn(loadCodeByType(param), i);
+                mv.visitVarInsn(loadCodeByType(param), idx);
                 Type instrumentedParam = Type.getType(this.instrumentationHelper.instrumentQN(param));
                 Type origParam = Type.getType(param);
                 int arrayDimensions = calculateDescArrayDimensions(param);
@@ -713,9 +714,9 @@ class ClassTaintingVisitor extends ClassVisitor {
                 mv.visitLabel(label);
                 mv.visitTypeInsn(Opcodes.CHECKCAST, origParam.getInternalName());
             } else {
-                mv.visitVarInsn(loadCodeByType(param), i);
+                mv.visitVarInsn(loadCodeByType(param), idx);
             }
-            i += Type.getType(param).getSize();
+            idx += Type.getType(param).getSize();
         }
 
         // Calling the actual method
@@ -762,11 +763,12 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitCode();
         // Converting parameters
         mv.visitVarInsn(Opcodes.ALOAD, 0);
-        for (int i = 0; i < origDescriptor.parameterCount(); ) {
+        int idx = 1;
+        for (int i = 0; i < origDescriptor.parameterCount(); i++) {
             String param = origDescriptor.getParameters().get(i);
             // Creating new Object if necessary and duplicating it for initialization
             if (isDescriptorNameToInstrument(param)) {
-                mv.visitVarInsn(loadCodeByType(param), i + 1);
+                mv.visitVarInsn(loadCodeByType(param), idx);
                 Type instrumentedParam = Type.getType(this.instrumentationHelper.instrumentQN(param));
                 Type origParam = Type.getType(param);
                 int arrayDimensions = calculateDescArrayDimensions(param);
@@ -784,9 +786,9 @@ class ClassTaintingVisitor extends ClassVisitor {
                 mv.visitLabel(label);
                 mv.visitTypeInsn(Opcodes.CHECKCAST, origParam.getInternalName());
             } else {
-                mv.visitVarInsn(loadCodeByType(param), i + 1);
+                mv.visitVarInsn(loadCodeByType(param), idx);
             }
-            i += Type.getType(param).getSize();
+            idx += Type.getType(param).getSize();
         }
 
         // Calling the actual method
