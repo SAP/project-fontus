@@ -329,6 +329,10 @@
       "source": "ProcessBuilderTest.java"
     },
     {
+      "name": "Process Builder Env Test",
+      "source": "ProcessBuilderEnvTest.java"
+    },
+    {
       "name": "ArrayCloneTest",
       "source": "ArrayCloneTest.java",
       "arguments": ["Sup", "son", "?"]

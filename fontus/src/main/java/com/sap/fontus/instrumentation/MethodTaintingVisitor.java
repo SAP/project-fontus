@@ -246,6 +246,8 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         // Prevent that Fontus classes are detected by classloader
         methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Class.class), "getClassLoader", "()Ljava/lang/ClassLoader;", false),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getClassLoader", "(Ljava/lang/Class;)Ljava/lang/ClassLoader;", false));
+        methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, Type.getInternalName(ProcessBuilder.class), "environment", "()Ljava/util/Map;", false),
+                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(ProcessBuilderEnvironmentProxy.class), "getProcessBuilderEnv", "(Ljava/lang/ProcessBuilder;)Ljava/util/Map;", false));
     }
 
     private static void fillInterfaceProxies() {
