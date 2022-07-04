@@ -458,7 +458,7 @@ class ClassTaintingVisitor extends ClassVisitor {
                 Type uninstrumentedType = Type.getType(this.instrumentationHelper.uninstrument(param));
 
                 if (uninstrumentedType.equals(Type.getType(String.class))) {
-                    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(IASString.class), Constants.ToString, new Descriptor(Type.getType(String.class)).toDescriptor(), false);
+                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASString.class), "toStringNullable", new Descriptor(Type.getType(String.class), Type.getType(IASString.class)).toDescriptor(), false);
                 } else {
                     mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
                     mv.visitTypeInsn(Opcodes.CHECKCAST, uninstrumentedType.getInternalName());

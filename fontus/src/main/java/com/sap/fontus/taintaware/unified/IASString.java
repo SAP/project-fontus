@@ -700,6 +700,20 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         }
     }
 
+    /**
+     * In the ClassTaintingVisitor we call obj.toString() for JDK proxies.
+     *
+     * We however do not check for null values, this function is null safe
+     * @param str might be null
+     * @return null or the string value
+     */
+    public static String toStringNullable(IASString str) {
+        if(str == null) {
+            return null;
+        }
+        return str.string;
+    }
+
     public String getString() {
         return this.string;
     }
