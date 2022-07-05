@@ -246,7 +246,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         // Prevent that Fontus classes are detected by classloader
         methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Class.class), "getClassLoader", "()Ljava/lang/ClassLoader;", false),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASClassProxy.class), "getClassLoader", "(Ljava/lang/Class;)Ljava/lang/ClassLoader;", false));
-        // Fixes NPE
+        // Fixes ClassCastException
         methodProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, Type.getInternalName(ResourceBundle.class), "getString", "(Ljava/lang/String;)Ljava/lang/String;", false),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASStringUtils.class), "getStringFromResourceBundle", "(Ljava/util/ResourceBundle;Lcom/sap/fontus/taintaware/unified/IASString;)Lcom/sap/fontus/taintaware/unified/IASString;", false));
         // Fix environment mess
