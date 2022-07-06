@@ -30,6 +30,10 @@
       "entry_point": "Example"
     },
     {
+      "name": "jul-config",
+      "jar_file": "jul-config.jar"
+    },
+    {
       "name": "log4j",
       "jar_file": "log4j.jar",
       "entry_point": "Example"

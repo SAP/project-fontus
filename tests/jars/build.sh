@@ -34,6 +34,7 @@ JAR_FOLDERS=(
     comparators
     nu-validator
     streams
+    jul-config
 )
 
 main() {
