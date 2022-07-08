@@ -17,8 +17,14 @@ public final class Constants {
     public static final String TAINT_PREFIX = "__taint__";
 
     public static final String ConversionUtilsQN = Utils.getInternalName(ConversionUtils.class);
+    /**
+     * Converts regular objects to tainted objects.
+     */
     public static final String ConversionUtilsToConcreteName;
     public static final String ConversionUtilsToConcreteDesc;
+    /**
+     * Converts tainted to regular objects.
+     */
     public static final String ConversionUtilsToOrigName;
     public static final String ConversionUtilsToOrigDesc;
     public static final String TaintHandlerQN;
@@ -36,6 +42,7 @@ public final class Constants {
     public static final String UNTAINTED_METHOD_PATH = "untainted/";
     public static final String TMethodToMethodName = "getMethod";
     public static final String FROM_STRING_DESCRIPTOR = Type.getMethodDescriptor(Type.getType(IASString.class), Type.getType(String.class));
+    public static final String GET_STRING_DESCRIPTOR = Type.getMethodDescriptor(Type.getType(String.class));
     public static final String CONCAT_DESC = Type.getMethodDescriptor(Type.getType(IASString.class), Type.getType(String.class), Type.getType(Object[].class));
     public static final String TAccessibleObjectToAccesibleObject = "getAccessibleObject";
     public static final String TExecutableToExecutable = "getExecutable";
