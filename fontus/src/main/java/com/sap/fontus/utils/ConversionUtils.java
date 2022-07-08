@@ -26,7 +26,7 @@ public class ConversionUtils {
     private static final Cache<Class<?>, Optional<Converter>> converterCache = Caffeine.newBuilder().build();
     private static final Cache<Class<?>, Optional<Converter>> unconverterCache = Caffeine.newBuilder().build();
 
-    private static final List<Converter> instrumenter = Arrays.asList(
+    private static final Converter[] instrumenter = {
             new AlreadyTaintedConverter(),
             new ClassConverter((cls) -> cls),
             new TypeConverter(ConversionUtils::convertTypeToInstrumented),
@@ -48,9 +48,9 @@ public class ConversionUtils {
             new ArrayConverter(ConversionUtils::convertToInstrumented, ConversionUtils::convertClassToConcrete),
             new ListConverter(ConversionUtils::convertToInstrumented),
             new SetConverter(ConversionUtils::convertToInstrumented)
-    );
+    };
 
-    private static final List<Converter> uninstrumenter = Arrays.asList(
+    private static final Converter[] uninstrumenter = {
             new ClassConverter(ConversionUtils::convertClassToOrig),
             new TypeConverter(ConversionUtils::convertTypeToUninstrumented),
             new DefaultConverter<>(IASString.class, IASString::toString),
@@ -72,7 +72,7 @@ public class ConversionUtils {
             new ListConverter(ConversionUtils::convertToUninstrumented),
             new SetConverter(ConversionUtils::convertToUninstrumented),
             new AlreadyUntaintedConverter()
-    );
+    };
 
     private static final Map<Class<?>, MethodHandle> toOrigMethods = new HashMap<>();
     private static final Map<Class<?>, MethodHandle> toConcreteMethods = new HashMap<>();
