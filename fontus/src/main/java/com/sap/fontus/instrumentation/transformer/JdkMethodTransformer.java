@@ -9,8 +9,22 @@ import com.sap.fontus.instrumentation.InstrumentationHelper;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import java.util.Set;
+
 public class JdkMethodTransformer implements ParameterTransformation, ReturnTransformation {
 
+    /**
+     * TODO: This is really ugly and should probably be changed to something more generic, just an attempt to cut down on excessive ConversionUtils usage
+     */
+    private static Set<Type> neverConvert = Set.of(
+            Type.getType(Integer.class),
+            Type.getType(Long.class),
+            Type.getType(Boolean.class),
+            Type.getType(Float.class),
+            Type.getType(Double.class),
+            Type.getType(Short.class),
+            Type.getType(Byte.class)
+    );
     private final FunctionCall call;
     private final InstrumentationHelper instrumentationHelper;
     private final Configuration configuration;
@@ -40,9 +54,9 @@ public class JdkMethodTransformer implements ParameterTransformation, ReturnTran
             visitor.visitMethodInsn(converter);
             return;
         }
-
-        int returnSort = Type.getType(desc.getReturnType()).getSort();
-        if (returnSort == Type.ARRAY || returnSort == Type.OBJECT) {
+        Type returnType = Type.getType(desc.getReturnType());
+        int returnSort = returnType.getSort();
+        if (returnSort == Type.ARRAY || returnSort == Type.OBJECT && !neverConvert.contains(returnType)) {
             FunctionCall convert = new FunctionCall(Opcodes.INVOKESTATIC,
                     Constants.ConversionUtilsQN,
                     Constants.ConversionUtilsToConcreteName,
