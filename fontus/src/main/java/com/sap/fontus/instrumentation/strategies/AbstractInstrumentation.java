@@ -128,8 +128,7 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     }
 
     protected void origToTainted(MethodVisitor mv) {
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
-        mv.visitTypeInsn(Opcodes.CHECKCAST, this.instrumentedType.getInternalName());
+        TaintingUtils.convertTypeToTainted(this.origType, this.instrumentedType, mv);
     }
 
     @Override

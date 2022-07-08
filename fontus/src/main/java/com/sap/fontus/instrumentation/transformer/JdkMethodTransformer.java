@@ -23,7 +23,8 @@ public class JdkMethodTransformer implements ParameterTransformation, ReturnTran
             Type.getType(Float.class),
             Type.getType(Double.class),
             Type.getType(Short.class),
-            Type.getType(Byte.class)
+            Type.getType(Byte.class),
+            Type.getType(Character.class)
     );
     private final FunctionCall call;
     private final InstrumentationHelper instrumentationHelper;
@@ -56,7 +57,9 @@ public class JdkMethodTransformer implements ParameterTransformation, ReturnTran
         }
         Type returnType = Type.getType(desc.getReturnType());
         int returnSort = returnType.getSort();
-        if (returnSort == Type.ARRAY || returnSort == Type.OBJECT && !neverConvert.contains(returnType)) {
+        if (returnSort == Type.ARRAY || returnSort == Type.OBJECT && !neverConvert.contains(returnType)
+            // TODO: evaluate soundness:        &&!(this.call.getOwner().equals("java/util/Iterator") && this.call.getName().equals("next"))
+        ) {
             FunctionCall convert = new FunctionCall(Opcodes.INVOKESTATIC,
                     Constants.ConversionUtilsQN,
                     Constants.ConversionUtilsToConcreteName,
