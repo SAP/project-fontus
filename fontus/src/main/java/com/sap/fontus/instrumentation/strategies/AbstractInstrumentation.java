@@ -7,6 +7,7 @@ import com.sap.fontus.TriConsumer;
 import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.instrumentation.InstrumentationHelper;
+import com.sap.fontus.instrumentation.TaintingUtils;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
 import com.sap.fontus.utils.Utils;
@@ -198,8 +199,7 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     @Override
     public boolean insertJdkMethodParameterConversion(MethodVisitor mv, Type parameter) {
         if (this.origType.equals(parameter)) {
-            mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
-            mv.visitTypeInsn(Opcodes.CHECKCAST, this.origType.getInternalName());
+            TaintingUtils.convertTypeToUntainted(this.instrumentedType, this.origType, mv);
             return true;
         }
         if (this.getOrigArrayType().equals(parameter)) {
