@@ -202,6 +202,15 @@ public final class InstrumentationHelper implements InstrumentationStrategy {
         return false;
     }
 
+    public boolean insertJdkMethodParameterConversion(MethodVisitor mv, Type source, Type parameter) {
+        for (InstrumentationStrategy s : this.strategies) {
+            if (s.insertJdkMethodParameterConversion(mv, source, parameter)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public boolean needsJdkMethodParameterConversion(Type parameter) {
         for (InstrumentationStrategy s : this.strategies) {

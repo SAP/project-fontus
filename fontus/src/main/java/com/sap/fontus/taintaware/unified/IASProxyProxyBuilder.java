@@ -198,7 +198,7 @@ public class IASProxyProxyBuilder {
         if (method.getReturnType() == void.class) {
             mv.visitInsn(Opcodes.RETURN);
         } else {
-            unwrapParameter(mv, method.getReturnType());
+            unwrapParameter(mv, Object.class, method.getReturnType());
             mv.visitInsn(Type.getType(method.getReturnType()).getOpcode(Opcodes.IRETURN));
         }
 
@@ -219,15 +219,19 @@ public class IASProxyProxyBuilder {
         mv.visitEnd();
     }
 
-    private void unwrapParameter(MethodVisitor mv, Class<?> type) {
+    private void unwrapParameter(MethodVisitor mv, Class<?> source, Class<?> type) {
         if (type.isPrimitive()) {
             mv.visitTypeInsn(Opcodes.CHECKCAST, Utils.getInternalName(primitiveToWrapper(type)));
             mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Utils.getInternalName(primitiveToWrapper(type)), type.getCanonicalName() + "Value", MethodType.methodType(type).toMethodDescriptorString(), false);
         } else {
             if (this.instrumentationHelper.canHandleType(Type.getDescriptor(type))) {
-                this.instrumentationHelper.insertJdkMethodParameterConversion(mv, Type.getType(type));
+                boolean casted = this.instrumentationHelper.insertJdkMethodParameterConversion(mv, Type.getType(source), Type.getType(type));
+                if(!casted) {
+                    mv.visitTypeInsn(Opcodes.CHECKCAST, Utils.getInternalName(type));
+                }
+            } else {
+                mv.visitTypeInsn(Opcodes.CHECKCAST, Utils.getInternalName(type));
             }
-            mv.visitTypeInsn(Opcodes.CHECKCAST, Utils.getInternalName(type));
         }
     }
 

@@ -61,6 +61,11 @@ public interface InstrumentationStrategy {
     boolean insertJdkMethodParameterConversion(MethodVisitor mv, Type parameter);
 
     /**
+     * Inserts conversion instructions if the {@param parameter} corresponds wo the actual strategy.
+     */
+    boolean insertJdkMethodParameterConversion(MethodVisitor mv, Type source, Type parameter);
+
+    /**
      * Checks whether a JDK method conversion is necessary
      */
     boolean needsJdkMethodParameterConversion(Type parameter);

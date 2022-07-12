@@ -96,6 +96,11 @@ public class DefaultInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
+    public boolean insertJdkMethodParameterConversion(MethodVisitor mv, Type source, Type parameter) {
+        return false;
+    }
+
+    @Override
     public boolean needsJdkMethodParameterConversion(Type parameter) {
         return false;
     }

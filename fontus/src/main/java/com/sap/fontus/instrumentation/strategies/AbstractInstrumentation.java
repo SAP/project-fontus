@@ -210,6 +210,25 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
+    public boolean insertJdkMethodParameterConversion(MethodVisitor mv, Type source, Type parameter) {
+        if(this.instrumentedType.equals(source) && this.origType.equals(parameter)) {
+            TaintingUtils.convertTypeToUntainted(this.instrumentedType, this.origType, mv);
+            return true;
+        }
+        if (this.origType.equals(parameter)) {
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
+            mv.visitTypeInsn(Opcodes.CHECKCAST, this.origType.getInternalName());
+            return true;
+        }
+        if (this.getOrigArrayType().equals(parameter)) {
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
+            mv.visitTypeInsn(Opcodes.CHECKCAST, this.getOrigArrayType().getInternalName());
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public boolean needsJdkMethodParameterConversion(Type parameter) {
         return (this.origType.equals(parameter)) || (this.getOrigArrayType().equals(parameter));
     }
