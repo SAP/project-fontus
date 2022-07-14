@@ -444,15 +444,15 @@ class TestRunner:
         self._safe = safe
 
     async def _run_regular_class_file_with_agent(self, cwd, name, arguments):
+        fontus_jar = format_jar_filename("fontus", self._config.version)
+        verbose = ',verbose' if self._config.fontus_verbose else ''
         arguments = ["java",
                      "--add-opens",
                      "java.base/jdk.internal.misc=ALL-UNNAMED",
                      "--illegal-access=permit",
                      "-classpath",
                      '.',
-                     '-javaagent:{}=taintmethod={}{}'.format(format_jar_filename(
-                         "fontus", self._config.version), self._config.taintmethod,
-                         ',verbose' if self._config.fontus_verbose else ''),
+                     f'-javaagent:{fontus_jar}=taintmethod={self._config.taintmethod}{verbose}',
                      name
                      ] + arguments
         return await run_command(cwd, arguments)
@@ -463,13 +463,13 @@ class TestRunner:
         return await run_command(cwd, arguments)
 
     async def _run_agent_jar_internal(self, cwd, name, entry_point, additional_arguments, input_file):
+        fontus_jar = format_jar_filename("fontus", self._config.version)
+        verbose = ',verbose' if self._config.fontus_verbose else ''
         arguments = [
                         "java",
                         "--add-opens",
                         "java.base/jdk.internal.misc=ALL-UNNAMED",
-                        '-javaagent:{}=taintmethod={}{}'.format(format_jar_filename(
-                            "fontus", self._config.version), self._config.taintmethod,
-                            ',verbose' if self._config.fontus_verbose else ''),
+                        f'-javaagent:{fontus_jar}=taintmethod={self._config.taintmethod}{verbose}',
                         '-jar',
                         name
                     ] + additional_arguments
@@ -505,7 +505,7 @@ class TestRunner:
         return exec_result.return_value == 0
 
     async def _run_jar_test(self, base_dir, test):
-        print('Running Jar Test: "{}"'.format(test.name))
+        print(f'Running Jar Test: "{test.name}"')
         if test.copy_file is not None:
             copy_file(JARS_BASE_PATH, base_dir, test.copy_file)
 
@@ -531,7 +531,7 @@ class TestRunner:
     async def _run_test(self, base_dir, test):
         if isinstance(test, JarTestCase):
             return await self._run_jar_test(base_dir, test)
-        print('Running Test: "{}"'.format(test.name))
+        print(f'Running Test: "{test.name}"')
         (base_name, _, _) = test.source.partition(".java")
         copy_source_file(base_dir, test.source)
         await self._compile_source_file(base_dir, test.source)
@@ -557,13 +557,9 @@ class TestRunner:
         for test_result in test_results:
             if not test_result.successful and not test_result.test_case.failure_expected:
                 print(
-                    ('Test "{}" failed:\nRegular result: "{}",\n'
-                     'Agent Result: "{}"').format(
-                        test_result.test_case.name,
-                        test_result.regular_result,
-                        test_result.agent_result
-                    )
-                )
+                    (f'Test "{test_result.test_case.name}" failed:\n'
+                     f'Regular result: "{test_result.regular_result}",\n'
+                     f'Agent Result: "{test_result.agent_result}"')                )
             elif self._config.verbose:
                 print(test_result)
 
@@ -583,7 +579,7 @@ class TestRunner:
         return TestRunResult(test_results)
 
 
-def main(args):
+async def main(args):
     if args.build_first:
         compile_project(args)
 
@@ -600,9 +596,8 @@ def main(args):
     config.taintmethod = args.taint_type
     # pprint.pprint(config)
     runner = TestRunner(config, args.safe)
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(check_java_version())
-    result = loop.run_until_complete(runner.run_tests())
+    await check_java_version()
+    result = await runner.run_tests()
     print(result)
     sys.exit(result.num_failed)
 
@@ -628,4 +623,4 @@ if __name__ == "__main__":
                                                      'array', 'lazybasic', 'lazycomplex'],
                             default='boolean')
 
-    main(ARG_PARSER.parse_args())
+    asyncio.run(main(ARG_PARSER.parse_args()))

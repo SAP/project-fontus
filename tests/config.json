@@ -31,7 +31,8 @@
     },
     {
       "name": "jul-config",
-      "jar_file": "jul-config.jar"
+      "jar_file": "jul-config.jar",
+      "failure_expected": true
     },
     {
       "name": "log4j",
