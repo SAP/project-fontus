@@ -1,7 +1,10 @@
 package com.sap.fontus.sql.tainter;
 
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 
@@ -57,5 +60,24 @@ public final class Utils {
             newColumnDefinitions.add(newColumnDefinition);
         }
         return newColumnDefinitions;
+    }
+
+    /**
+     * For consumption by tools related to Fontus.
+     *
+     * This is factored out here, as it is very easy to get super confusing error messages iff one depends on the shadow
+     * jar of the fontus module and have the JSQLParser stuff as a dependency yourself.
+     * @param query original query
+     * @return tainted query
+     */
+    public static String taintSqlStatement(String query)  {
+        try {
+            StatementTainter tainter = new StatementTainter();
+            Statements stmts = CCJSqlParserUtil.parseStatements(query);
+            stmts.accept(tainter);
+            return stmts.toString().trim();
+        } catch(JSQLParserException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }

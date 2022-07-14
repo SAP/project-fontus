@@ -1,28 +1,21 @@
 package com.sap.fontus.sql.tainter;
 
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statements;
-
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class SQLRewriter {
 
-	private static List<String> keyWords;
-	private static List<String> passThrough;
+	//array of commands that should be taken into account when creating the new sql file
+	private static List<String> keyWords = Arrays.asList("ALTER", "CREATE", "DELETE", "INSERT",
+			"UPDATE", "WITH", "DROP", "LOCK", "UNLOCK", "SELECT");
+	private static List<String> passThrough = Arrays.asList("LOCK", "UNLOCK");
 
 	public static void main(String[] args) {
 		SQLRewriter rewriter = new SQLRewriter();
 
-		//array of commands that should be taken into account when creating the new sql file
-		String[] relevantSqlCommands = {"ALTER", "CREATE", "DELETE", "INSERT",
-				"UPDATE", "WITH", "DROP", "LOCK", "UNLOCK", "SELECT"};
-		keyWords = Arrays.asList(relevantSqlCommands);
-		String[] passThroughCommands = {"LOCK", "UNLOCK"};
-		passThrough = Arrays.asList(passThroughCommands);
 		try {
 			rewriter.readFile(args[0]);
 		} catch (Exception e) {
@@ -40,14 +33,11 @@ public class SQLRewriter {
 			return statement;
 		}
 		try {
-			Statements stmts = CCJSqlParserUtil.parseStatements(statement);
-			StatementTainter tainter = new StatementTainter();
 			System.out.println("Tainting: " + statement);
-			stmts.accept(tainter);
-			String taintedStatement = stmts.toString();
+			String taintedStatement = Utils.taintSqlStatement(statement);
 			System.out.println("Tainted: " + taintedStatement);
 			return taintedStatement;
-		} catch (JSQLParserException e) {
+		} catch (Exception e) {
 			System.out.printf("Error parsing '%s': %s%n", statement, e);
 		}
 		return null;
@@ -55,7 +45,7 @@ public class SQLRewriter {
 
 	private void readFile(String file) {
 		List<String> statements = new ArrayList<>();
-		try (BufferedReader br = new BufferedReader(new FileReader(file)); PrintStream pr = new PrintStream("tainted_" + file)){
+		try (BufferedReader br = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8)); PrintStream pr = new PrintStream("tainted_" + file)){
 			String line;
 			StringBuilder command = new StringBuilder(10);
 			boolean inCommand = true;
@@ -73,7 +63,7 @@ public class SQLRewriter {
 				if (line.endsWith(";")) {
 					inCommand = false;
 					if (command.length() > 0) {
-						pr.println(SQLRewriter.taintStatement(command.toString()));
+						pr.println(taintStatement(command.toString()));
 						command = new StringBuilder(10);
 					}
 				}
