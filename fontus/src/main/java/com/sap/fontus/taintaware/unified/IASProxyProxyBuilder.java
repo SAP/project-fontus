@@ -215,7 +215,7 @@ public class IASProxyProxyBuilder {
         mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Utils.getInternalName(UndeclaredThrowableException.class), Constants.Init, MethodType.methodType(void.class, Throwable.class).toMethodDescriptorString(), false);
         mv.visitInsn(Opcodes.ATHROW);
 
-        mv.visitMaxs(-1, -1);
+        mv.visitMaxs(Constants.MAX_STACK_DEFAULT, Constants.MAX_LOCALS_DEFAULT);
         mv.visitEnd();
     }
 
@@ -278,7 +278,7 @@ public class IASProxyProxyBuilder {
         mv.visitVarInsn(Opcodes.ALOAD, 1);
         mv.visitFieldInsn(Opcodes.PUTFIELD, this.name, HANDLER_FIELD_NAME, Type.getType(InvocationHandler.class).getDescriptor());
         mv.visitInsn(Opcodes.RETURN);
-        mv.visitMaxs(-1, -1);
+        mv.visitMaxs(Constants.MAX_STACK_DEFAULT, Constants.MAX_LOCALS_DEFAULT);
         mv.visitEnd();
     }
 
@@ -329,7 +329,7 @@ public class IASProxyProxyBuilder {
         }
         mv.visitInsn(Opcodes.RETURN);
 
-        mv.visitMaxs(-1, -1);
+        mv.visitMaxs(Constants.MAX_STACK_DEFAULT, Constants.MAX_LOCALS_DEFAULT);
         mv.visitEnd();
     }
 

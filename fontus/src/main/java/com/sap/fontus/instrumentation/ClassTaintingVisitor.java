@@ -651,7 +651,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 
         mv.visitMethodInsn(Opcodes.INVOKESTATIC, dynamicCall.getOriginal().getOwner(), dynamicCall.getOriginal().getName(), dynamicCall.getOriginal().getDesc(), false);
         mv.visitInsn(Opcodes.ARETURN);
-        mv.visitMaxs(-1, -1);
+        mv.visitMaxs(Constants.MAX_STACK_DEFAULT, Constants.MAX_LOCALS_DEFAULT);
         mv.visitEnd();
     }
 
@@ -668,7 +668,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         // Calling the actual method
         mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superName, m.getName(), instrumentedDescriptor.toDescriptor(), false);
         mv.visitInsn(returnCodeByReturnType(instrumentedDescriptor.getReturnType()));
-        mv.visitMaxs(-1, -1);
+        mv.visitMaxs(Constants.MAX_STACK_DEFAULT, Constants.MAX_LOCALS_DEFAULT);
         mv.visitEnd();
     }
 
@@ -737,7 +737,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
 
         mv.visitInsn(this.returnCodeByReturnType(instrumentedDescriptor.getReturnType()));
-        mv.visitMaxs(-1, -1);
+        mv.visitMaxs(Constants.MAX_STACK_DEFAULT, Constants.MAX_LOCALS_DEFAULT);
         mv.visitEnd();
     }
 
@@ -809,7 +809,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
 
         mv.visitInsn(returnCodeByReturnType(instrumentedDescriptor.getReturnType()));
-        mv.visitMaxs(-1, -1);
+        mv.visitMaxs(Constants.MAX_STACK_DEFAULT, Constants.MAX_LOCALS_DEFAULT);
         mv.visitEnd();
     }
 

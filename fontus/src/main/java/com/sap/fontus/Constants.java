@@ -282,4 +282,7 @@ public final class Constants {
         }
         return Integer.parseInt(version);
     }
+
+    public static int MAX_STACK_DEFAULT = -1;
+    public static int MAX_LOCALS_DEFAULT = -1;
 }
