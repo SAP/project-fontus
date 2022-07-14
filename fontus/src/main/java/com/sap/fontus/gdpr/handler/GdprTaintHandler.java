@@ -71,6 +71,8 @@ public class GdprTaintHandler extends IASTaintHandler {
      *
      * This snippet of XML can be added to the source:
      *
+     * <pre>
+     * {@code
      * <tainthandler>
      *     <opcode>184</opcode>
      *     <owner>com/sap/fontus/gdpr/GdprTaintHandler/handler</owner>
@@ -78,6 +80,8 @@ public class GdprTaintHandler extends IASTaintHandler {
      *     <descriptor>(Ljava/lang/Object;Ljava/lang/Object;[Ljava/lang/Object;I)Ljava/lang/Object;</descriptor>
      *     <interface>false</interface>
      * </tainthandler>
+     * }
+     * </pre>
      *
      */
     public static Object taint(Object object, Object parent, Object[] parameters, int sourceId) {
