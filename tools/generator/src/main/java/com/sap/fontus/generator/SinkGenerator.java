@@ -11,18 +11,18 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SinkGenerator extends AbstractGenerator {
+class SinkGenerator {
     private final String className;
     private final List<String> categories;
     private final DataProtection dp;
 
-    public SinkGenerator(String className, List<String> categories, DataProtection dp) {
+    SinkGenerator(String className, List<String> categories, DataProtection dp) {
         this.className = Utils.slashToDot(className);
         this.categories = categories;
         this.dp = dp;
     }
 
-    public List<Sink> readSinks(boolean isObject) {
+    List<Sink> readSinks(boolean isObject) {
         List<Sink> sinks = new ArrayList<>();
         try {
             Class<?> cls = Class.forName(this.className);
@@ -30,7 +30,7 @@ public class SinkGenerator extends AbstractGenerator {
             for (Method method : methods) {
                 List<SinkParameter> sinkParameters = extractParameters(isObject, method.getParameterTypes());
                 if (!sinkParameters.isEmpty()) {
-                    Sink sink = new Sink(generateName(method), FunctionCall.fromMethod(method), sinkParameters, this.categories, this.dp,  FunctionCall.EmptyFunctionCall, new ArrayList<>());
+                    Sink sink = new Sink(GeneratorUtils.generateName(method), FunctionCall.fromMethod(method), sinkParameters, this.categories, this.dp,  FunctionCall.EmptyFunctionCall, new ArrayList<>());
                     sinks.add(sink);
                 }
             }
@@ -38,7 +38,7 @@ public class SinkGenerator extends AbstractGenerator {
             for (Constructor<?> constructor : constructors) {
                 List<SinkParameter> sinkParameters = extractParameters(isObject, constructor.getParameterTypes());
                 if (!sinkParameters.isEmpty()) {
-                    Sink sink = new Sink(generateName(constructor), FunctionCall.fromConstructor(constructor), sinkParameters, this.categories, this.dp, FunctionCall.EmptyFunctionCall, new ArrayList<>());
+                    Sink sink = new Sink(GeneratorUtils.generateName(constructor), FunctionCall.fromConstructor(constructor), sinkParameters, this.categories, this.dp, FunctionCall.EmptyFunctionCall, new ArrayList<>());
                     sinks.add(sink);
                 }
             }
@@ -48,11 +48,10 @@ public class SinkGenerator extends AbstractGenerator {
         return sinks;
     }
 
-    private List<SinkParameter> extractParameters(boolean isObject, Class[] parameterTypes) {
-        Class[] parameters = parameterTypes;
+    private static List<SinkParameter> extractParameters(boolean isObject, Class<?>[] parameters) {
         List<SinkParameter> sinkParameters = new ArrayList<>();
         for (int i = 0; i < parameters.length; i++) {
-            Class parameter = parameters[i];
+            Class<?> parameter = parameters[i];
             if (String.class.isAssignableFrom(parameter) || (isObject && parameter.isAssignableFrom(Object.class))) {
                 sinkParameters.add(new SinkParameter(i));
             }

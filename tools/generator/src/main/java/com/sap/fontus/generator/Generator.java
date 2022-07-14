@@ -6,10 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
+
 import com.sap.fontus.config.*;
 import picocli.CommandLine;
 
-import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -93,7 +93,7 @@ public class Generator implements Callable<Void> {
         ObjectWriter objectWriter = objectMapper.writerFor(Configuration.class);
         StringWriter stringWriter = new StringWriter();
         objectWriter.writeValue(stringWriter, configuration);
-        System.out.println(stringWriter.toString());
+        System.out.println(stringWriter);
         return null;
     }
 

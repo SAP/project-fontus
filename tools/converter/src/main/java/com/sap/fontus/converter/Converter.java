@@ -18,6 +18,7 @@ import org.objectweb.asm.Type;
 import picocli.CommandLine;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -58,16 +59,16 @@ public class Converter implements Callable<Void> {
     @Override
     public Void call() throws Exception {
         try {
-            Configuration fontusConfig = readConfig();
-            JSONObject juturnaObject = readJuturnaConfig();
+            Configuration fontusConfig = this.readConfig();
+            JSONObject juturnaObject = this.readJuturnaConfig();
 
             JSONArray jsonArray = (JSONArray) juturnaObject.get("sinks");
-            Configuration configuration = mergeSinks(fontusConfig, jsonArray);
+            Configuration configuration = this.mergeSinks(fontusConfig, jsonArray);
             jsonArray = (JSONArray) juturnaObject.get("sources");
-            Configuration configuration1 = mergeSources(fontusConfig, jsonArray);
+            Configuration configuration1 = this.mergeSources(fontusConfig, jsonArray);
             configuration.append(configuration1);
 
-            saveConfig(configuration);
+            this.saveConfig(configuration);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -79,16 +80,16 @@ public class Converter implements Callable<Void> {
         for (Object sourceJsonO : jsonArray) {
             JSONObject sourceJson = (JSONObject) sourceJsonO;
             try {
-                FunctionCall call = parseFunctionCall(sourceJson);
-                boolean isContained = false;
+                FunctionCall call = this.parseFunctionCall(sourceJson);
+                boolean contained = false;
                 for (Source source : fontusConfig.getSourceConfig().getSources()) {
                     if (call.equals(source.getFunction())) {
-                        isContained = true;
+                        contained = true;
                         break;
                     }
                 }
-                if (!isContained) {
-                    String sourceName = generateName(call);
+                if (!contained) {
+                    String sourceName = Converter.generateName(call);
                     sources.add(new Source(sourceName, call));
                 }
             } catch (Exception e) {
@@ -107,19 +108,19 @@ public class Converter implements Callable<Void> {
         for (Object sinkJsonO : jsonArray) {
             JSONObject sinkJson = (JSONObject) sinkJsonO;
             try {
-                FunctionCall call = parseFunctionCall(sinkJson);
-                boolean isContained = false;
+                FunctionCall call = this.parseFunctionCall(sinkJson);
+                boolean contained = false;
                 for (Sink sink : fontusConfig.getSinkConfig().getSinks()) {
                     if (call.equals(sink.getFunction())) {
-                        isContained = true;
+                        contained = true;
                         break;
                     }
                 }
-                if (!isContained) {
-                    List<SinkParameter> sinkParameters = parseParameters(sinkJson);
-                    List<String> categories = parseCategories(sinkJson);
-                    List<Position> positions = parsePositions(sinkJson);
-                    String sinkName = generateName(call);
+                if (!contained) {
+                    List<SinkParameter> sinkParameters = Converter.parseParameters(sinkJson);
+                    List<String> categories = this.parseCategories(sinkJson);
+                    List<Position> positions = Converter.parsePositions(sinkJson);
+                    String sinkName = Converter.generateName(call);
                     sinks.add(new Sink(sinkName, call, sinkParameters, categories, new DataProtection(), FunctionCall.EmptyFunctionCall, positions));
                 }
             } catch (Exception e) {
@@ -169,18 +170,18 @@ public class Converter implements Callable<Void> {
     }
 
     private List<String> parseCategories(JSONObject sinkJson) {
-        return parseStringList(sinkJson, "categories", "category");
+        return this.parseStringList(sinkJson, "categories", "category");
     }
 
     private List<String> parseVendors(JSONObject sinkJson) {
-        return parseStringList(sinkJson, "vendors", "vendor");
+        return this.parseStringList(sinkJson, "vendors", "vendor");
     }
 
     private List<String> parsePurposes(JSONObject sinkJson) {
-        return parseStringList(sinkJson, "purposes", "purpose");
+        return this.parseStringList(sinkJson, "purposes", "purpose");
     }
 
-    private String generateName(FunctionCall call) {
+    private static String generateName(FunctionCall call) {
         String name = Utils.dotToSlash(call.getOwner()) + ".";
         if (call.getName().equals(Constants.Init)) {
             name += call.getOwner().substring(call.getOwner().lastIndexOf('/'));
@@ -190,7 +191,7 @@ public class Converter implements Callable<Void> {
         return name;
     }
 
-    private List<SinkParameter> parseParameters(JSONObject sinkJson) {
+    private static List<SinkParameter> parseParameters(JSONObject sinkJson) {
         List<SinkParameter> list = new ArrayList<>();
         JSONArray array = (JSONArray) sinkJson.get("parameters");
         for (Object parameterObject : array) {
@@ -201,7 +202,7 @@ public class Converter implements Callable<Void> {
         return list;
     }
 
-    private List<Position> parsePositions(JSONObject sinkJson) {
+    private static List<Position> parsePositions(JSONObject sinkJson) {
         List<Position> list = new ArrayList<>();
         JSONArray array = (JSONArray) sinkJson.get("positions");
         for (Object positionObject : array) {
@@ -235,23 +236,23 @@ public class Converter implements Callable<Void> {
             isConstructor = true;
             opcodes = Opcodes.INVOKESPECIAL;
         }
-        Class cls = Class.forName(className);
+        Class<?> cls = Class.forName(className);
         boolean isInterface = cls.isInterface();
         if (isInterface) {
             opcodes = Opcodes.INVOKEINTERFACE;
         }
         String internalName = Utils.dotToSlash(className);
         String[] parameters = fqn.substring(fqn.indexOf('(') + 1, fqn.indexOf(')')).split(", ");
-        List<Class> parameterClasses = new ArrayList<>();
-        for (int i = 0; i < parameters.length; i++) {
-            String parameter = convertForArray(parameters[i]);
-            parameterClasses.add(resolveClass(parameter));
+        List<Class<?>> parameterClasses = new ArrayList<>();
+        for (String s : parameters) {
+            String parameter = this.convertForArray(s);
+            parameterClasses.add(this.resolveClass(parameter));
         }
         Type type;
         if (isConstructor) {
-            type = Type.getType(cls.getConstructor(parameterClasses.toArray(new Class[0])));
+            type = Type.getType(cls.getConstructor(parameterClasses.toArray(new Class<?>[0])));
         } else {
-            type = Type.getType(cls.getMethod(methodName, parameterClasses.toArray(new Class[0])));
+            type = Type.getType(cls.getMethod(methodName, parameterClasses.toArray(new Class<?>[0])));
         }
         return new FunctionCall(opcodes, internalName, methodName, type.getDescriptor(), isInterface);
     }
@@ -260,7 +261,7 @@ public class Converter implements Callable<Void> {
         String result = string;
         if (result.contains("[]")) {
             result = result.substring(0, result.indexOf('['));
-            Class<?> cls = resolveClass(result);
+            Class<?> cls = this.resolveClass(result);
             if (!cls.isPrimitive()) {
                 result = "L" + result + ";";
             } else {
@@ -274,14 +275,17 @@ public class Converter implements Callable<Void> {
     }
 
     private JSONObject readJuturnaConfig() throws IOException {
-        FileReader fileReader = new FileReader(this.juturnaConfigFile);
-        BufferedReader bufferedReader = new BufferedReader(fileReader);
-        StringBuilder content = new StringBuilder();
-        String line;
-        while ((line = bufferedReader.readLine()) != null) {
-            content.append(line);
+        try(
+                FileReader fileReader = new FileReader(this.juturnaConfigFile, StandardCharsets.UTF_8);
+                BufferedReader bufferedReader = new BufferedReader(fileReader)
+        ) {
+            StringBuilder content = new StringBuilder();
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                content.append(line);
+            }
+            return new JSONObject(content.toString());
         }
-        return new JSONObject(content.toString());
     }
 
     private Configuration readConfig() {
@@ -292,7 +296,7 @@ public class Converter implements Callable<Void> {
         ObjectMapper objectMapper = new XmlMapper(new WstxInputFactory(), new WstxOutputFactory());
         objectMapper.registerModule(new JaxbAnnotationModule());
         ObjectWriter objectWriter = objectMapper.writerFor(Configuration.class);
-        FileWriter fileWriter = new FileWriter(this.outputFile);
+        FileWriter fileWriter = new FileWriter(this.outputFile, StandardCharsets.UTF_8);
         objectWriter.writeValue(fileWriter, configuration);
     }
 
