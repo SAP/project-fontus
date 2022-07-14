@@ -15,7 +15,7 @@ public enum IASTaintInformation implements IASTaintInformationable {
 
     IASTaintInformation(boolean taint) {
         this.taint = taint;
-        this.length = length;
+        this.length = 0;
     }
 
     @Override
