@@ -5,7 +5,6 @@ import com.sap.fontus.TriConsumer;
 import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.instrumentation.strategies.*;
-import com.sap.fontus.taintaware.unified.IASObjectInputStream;
 import com.sap.fontus.taintaware.unified.IASStringJoiner;
 import com.sap.fontus.taintaware.unified.reflect.*;
 import org.objectweb.asm.ClassVisitor;
@@ -13,9 +12,8 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
-import java.io.ObjectInputStream;
-import java.lang.reflect.*;
 import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;

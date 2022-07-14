@@ -4,11 +4,10 @@ import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.Source;
 import com.sap.fontus.gdpr.Utils;
-import com.sap.fontus.gdpr.cookie.ConsentCookie;
-import com.sap.fontus.gdpr.cookie.ConsentCookieMetadata;
 import com.sap.fontus.gdpr.metadata.*;
-import com.sap.fontus.gdpr.metadata.simple.*;
-import com.sap.fontus.gdpr.servlet.ReflectedCookie;
+import com.sap.fontus.gdpr.metadata.simple.SimpleDataId;
+import com.sap.fontus.gdpr.metadata.simple.SimpleDataSubject;
+import com.sap.fontus.gdpr.metadata.simple.SimpleGdprMetadata;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
@@ -19,8 +18,6 @@ import org.objectweb.asm.Opcodes;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

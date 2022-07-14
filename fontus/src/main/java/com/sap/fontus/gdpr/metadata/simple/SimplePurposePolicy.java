@@ -4,8 +4,6 @@ import com.sap.fontus.gdpr.metadata.*;
 
 import java.time.Instant;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 public class SimplePurposePolicy implements PurposePolicy {
 

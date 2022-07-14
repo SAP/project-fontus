@@ -11,12 +11,9 @@ import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import com.sap.fontus.utils.stats.Statistics;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static com.sap.fontus.utils.ClassTraverser.getAllFields;
 

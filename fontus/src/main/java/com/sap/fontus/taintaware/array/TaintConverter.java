@@ -2,8 +2,6 @@ package com.sap.fontus.taintaware.array;
 
 import com.sap.fontus.taintaware.shared.IASTaintMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
-import com.sap.fontus.taintaware.shared.IASTaintSource;
-import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 
 import java.util.ArrayList;
 import java.util.Arrays;

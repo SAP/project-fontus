@@ -3,15 +3,16 @@ package com.sap.fontus.gdpr.handler;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.Sink;
 import com.sap.fontus.config.abort.Abort;
-import com.sap.fontus.config.abort.MultiAbort;
-import com.sap.fontus.gdpr.metadata.*;
+import com.sap.fontus.gdpr.metadata.GdprMetadata;
+import com.sap.fontus.gdpr.metadata.GdprTaintMetadata;
+import com.sap.fontus.gdpr.metadata.PurposePolicy;
+import com.sap.fontus.gdpr.metadata.RequiredPurposes;
 import com.sap.fontus.gdpr.metadata.registry.RequiredPurposeRegistry;
-import com.sap.fontus.gdpr.metadata.simple.*;
+import com.sap.fontus.gdpr.metadata.simple.SimplePurposePolicy;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
 import com.sap.fontus.taintaware.unified.IASString;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class GdprAbort extends Abort {

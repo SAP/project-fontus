@@ -3,8 +3,6 @@ package com.sap.fontus.config.abort;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.gdpr.handler.GdprAbort;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public abstract class Abort {

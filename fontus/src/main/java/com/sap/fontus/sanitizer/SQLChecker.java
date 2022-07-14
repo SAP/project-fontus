@@ -1,27 +1,21 @@
 package com.sap.fontus.sanitizer;
 
+import com.alibaba.druid.DbType;
 import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.parser.*;
-import com.alibaba.druid.DbType;
-import com.sap.fontus.agent.TaintAgent;
 import com.sap.fontus.config.abort.AbortObject;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
 import com.sap.fontus.taintaware.shared.IASTaintRanges;
 import com.sap.fontus.utils.NetworkRequestObject;
 import com.sap.fontus.utils.NetworkResponseObject;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class SQLChecker {
 

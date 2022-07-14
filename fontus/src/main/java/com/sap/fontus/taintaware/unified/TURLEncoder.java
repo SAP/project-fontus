@@ -1,7 +1,6 @@
 package com.sap.fontus.taintaware.unified;
 
 import com.sap.fontus.taintaware.shared.IASTaintMetadata;
-import com.sap.fontus.taintaware.shared.IASTaintSource;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

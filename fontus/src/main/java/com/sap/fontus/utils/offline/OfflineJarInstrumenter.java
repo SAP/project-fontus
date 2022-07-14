@@ -10,8 +10,10 @@ import org.objectweb.asm.ClassReader;
 
 import java.io.*;
 import java.nio.ByteBuffer;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;

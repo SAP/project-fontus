@@ -9,10 +9,6 @@ import org.mutabilitydetector.asm.NonClassloadingClassWriter;
 import org.mutabilitydetector.asm.typehierarchy.TypeHierarchyReader;
 import org.objectweb.asm.ClassReader;
 
-import org.objectweb.asm.Type;
-
-import java.io.IOException;
-
 public class FontusNonClassLoadingClassWriter extends NonClassloadingClassWriter {
     private static final Logger logger = LogUtils.getLogger();
 

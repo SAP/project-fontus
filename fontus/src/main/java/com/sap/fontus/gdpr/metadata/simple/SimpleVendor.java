@@ -1,9 +1,6 @@
 package com.sap.fontus.gdpr.metadata.simple;
 
-import com.sap.fontus.gdpr.metadata.Vendor;
 import com.sap.fontus.gdpr.metadata.VendorBase;
-
-import java.util.Objects;
 
 public class SimpleVendor extends VendorBase {
 

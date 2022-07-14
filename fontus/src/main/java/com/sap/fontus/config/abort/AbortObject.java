@@ -5,8 +5,6 @@ import com.sap.fontus.taintaware.shared.IASTaintRanges;
 
 import java.util.List;
 
-import static com.sap.fontus.utils.Utils.convertStackTrace;
-
 public class AbortObject {
     private final String sinkFunction;
     private final String sinkName;

@@ -1,11 +1,8 @@
 package com.sap.fontus.taintaware.unified;
 
-import com.sap.fontus.utils.ConversionUtils;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.util.Properties;
 
 public class IASObjectInputStream extends ObjectInputStream {
     public IASObjectInputStream(InputStream in) throws IOException {

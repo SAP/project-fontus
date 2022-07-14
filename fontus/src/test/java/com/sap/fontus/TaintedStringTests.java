@@ -24,7 +24,7 @@ class TaintedStringTests {
         IASString t1 = lhs.concat(new IASString(", "));
         IASString t2 = t1.concat(rhs);
         IASString[] args = {t2, new IASString("User profile and visiting card")};
-        IASString result = IASStringUtils.concat("\u0001: \u0001", args);
+        IASString result = IASStringUtils.concat("\u0001: \u0001", (Object[]) args);
         assertTrue(result.isTainted(), "Concatenation of two untainted String should be untainted");
     }
 

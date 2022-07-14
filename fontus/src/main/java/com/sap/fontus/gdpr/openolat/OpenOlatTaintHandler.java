@@ -10,7 +10,6 @@ import com.sap.fontus.gdpr.metadata.simple.SimpleGdprMetadata;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.gdpr.servlet.ReflectedSession;
 import com.sap.fontus.taintaware.IASTaintAware;
-import com.sap.fontus.taintaware.shared.IASBasicMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
@@ -18,8 +17,10 @@ import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class OpenOlatTaintHandler extends IASTaintHandler {
 

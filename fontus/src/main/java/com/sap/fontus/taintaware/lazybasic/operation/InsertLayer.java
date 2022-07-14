@@ -1,15 +1,8 @@
 package com.sap.fontus.taintaware.lazybasic.operation;
 
-import com.sap.fontus.taintaware.lazybasic.IASTaintInformation;
-import com.sap.fontus.taintaware.shared.IASTaintRange;
-import com.sap.fontus.taintaware.shared.IASTaintRanges;
-import com.sap.fontus.taintaware.shared.IASTaintRangeUtils;
-import com.sap.fontus.taintaware.shared.IASTaintSource;
 import com.sap.fontus.taintaware.lazybasic.IASLayer;
-import com.sap.fontus.taintaware.shared.IASTaintRangeUtils;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.sap.fontus.taintaware.lazybasic.IASTaintInformation;
+import com.sap.fontus.taintaware.shared.IASTaintRanges;
 
 public class InsertLayer implements IASLayer {
     private final IASTaintInformation incomingTaintInformation;

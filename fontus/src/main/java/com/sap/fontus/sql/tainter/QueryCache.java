@@ -7,8 +7,6 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statements;
 
-import java.util.WeakHashMap;
-
 public enum QueryCache {
     INSTANCE;
     private int hits = 0;

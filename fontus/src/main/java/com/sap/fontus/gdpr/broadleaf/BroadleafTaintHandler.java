@@ -1,10 +1,7 @@
 package com.sap.fontus.gdpr.broadleaf;
 
-//import com.sap.fontus.asm.FunctionCall;
-
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.Sink;
-import com.sap.fontus.config.Source;
 import com.sap.fontus.gdpr.Utils;
 import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.simple.SimpleDataId;
@@ -14,8 +11,6 @@ import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.gdpr.servlet.ReflectedSession;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
-import com.sap.fontus.taintaware.shared.IASTaintSource;
-import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
 

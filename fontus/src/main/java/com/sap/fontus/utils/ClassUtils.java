@@ -1,14 +1,11 @@
 package com.sap.fontus.utils;
 
-import com.sap.fontus.config.Configuration;
-import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import com.sap.fontus.asm.resolver.ClassResolverFactory;
-import org.objectweb.asm.Type;
+import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.util.Optional;
 

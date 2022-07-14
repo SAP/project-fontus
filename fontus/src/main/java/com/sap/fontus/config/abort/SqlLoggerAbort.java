@@ -3,10 +3,7 @@ package com.sap.fontus.config.abort;
 import com.sap.fontus.sanitizer.SQLChecker;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.unified.IASString;
-import com.sap.fontus.taintaware.shared.IASTaintRanges;
 
-import java.io.IOException;
-import java.lang.reflect.*;
 import java.util.List;
 
 import static com.sap.fontus.utils.Utils.convertStackTrace;

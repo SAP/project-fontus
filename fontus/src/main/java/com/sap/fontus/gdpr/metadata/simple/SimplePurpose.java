@@ -1,9 +1,6 @@
 package com.sap.fontus.gdpr.metadata.simple;
 
-import com.sap.fontus.gdpr.metadata.Purpose;
 import com.sap.fontus.gdpr.metadata.PurposeBase;
-
-import java.util.Objects;
 
 public class SimplePurpose extends PurposeBase {
 

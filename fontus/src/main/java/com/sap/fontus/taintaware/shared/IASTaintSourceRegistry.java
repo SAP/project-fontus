@@ -1,7 +1,6 @@
 package com.sap.fontus.taintaware.shared;
 
 import com.sap.fontus.config.Configuration;
-import com.sap.fontus.config.Source;
 import com.sap.fontus.utils.GenericRegistry;
 
 public class IASTaintSourceRegistry extends GenericRegistry<IASTaintSource> {

@@ -1,9 +1,8 @@
 package com.sap.fontus.taintaware;
 
 import com.sap.fontus.taintaware.shared.IASTaintMetadata;
-import com.sap.fontus.taintaware.unified.IASTaintInformationable;
-import com.sap.fontus.taintaware.shared.IASTaintSource;
 import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 
 import java.io.Serializable;
 

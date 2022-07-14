@@ -1,11 +1,8 @@
 package com.sap.fontus.config.abort;
 
 import com.sap.fontus.taintaware.IASTaintAware;
-import com.sap.fontus.utils.Utils;
 
 import java.util.List;
-
-import static com.sap.fontus.utils.Utils.convertStackTrace;
 
 public class StdErrLoggingAbort extends Abort {
     @Override

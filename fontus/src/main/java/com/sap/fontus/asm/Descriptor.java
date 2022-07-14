@@ -1,9 +1,7 @@
 package com.sap.fontus.asm;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.sap.fontus.utils.ConversionUtils;
 import com.sap.fontus.utils.Utils;
 import org.objectweb.asm.Type;
 
@@ -11,7 +9,6 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class Descriptor {
     private static final Pattern PRIMITIVE_DATA_TYPES = Pattern.compile("[ZBCSIFDJ]");

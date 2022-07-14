@@ -3,9 +3,7 @@ package com.sap.fontus.utils;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 
 import java.lang.instrument.Instrumentation;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ClassFinder {

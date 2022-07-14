@@ -4,7 +4,6 @@ import com.sap.fontus.utils.ConversionUtils;
 
 import java.io.BufferedReader;
 import java.io.Serializable;
-import java.text.CollationKey;
 import java.text.Collator;
 import java.util.*;
 import java.util.function.Function;
@@ -87,7 +86,9 @@ public final class IASStringUtils {
     }
 
      public static IASString[] convertStringArray(String[] arr) {
-        if (arr == null) return null;
+        if (arr == null) {
+            return null;
+        }
          IASString[] ret = new IASString[arr.length];
         for (int i = 0; i < arr.length; i++) {
             String s = arr[i];
@@ -98,7 +99,9 @@ public final class IASStringUtils {
     }
 
     public static String[] convertTaintAwareStringArray(IASString[] arr) {
-        if (arr == null) return null;
+        if (arr == null) {
+            return null;
+        }
         String[] ret = new String[arr.length];
         for (int i = 0; i < arr.length; i++) {
             IASString s = arr[i];
@@ -120,7 +123,7 @@ public final class IASStringUtils {
     }
 
     public static Map<IASString, IASString> convertStringMapToTStringMap(Map<String, String> tbl) {
-        Hashtable<IASString, IASString> result = new Hashtable<>();
+        HashMap<IASString, IASString> result = new HashMap<>();
         tbl.forEach((key, value) -> result.put(IASString.valueOf(key), IASString.valueOf(value)));
         return result;
     }

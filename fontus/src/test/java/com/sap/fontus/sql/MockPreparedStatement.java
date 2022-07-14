@@ -7,6 +7,7 @@ import java.net.URL;
 import java.sql.*;
 import java.util.Calendar;
 
+@SuppressWarnings("RedundantThrows")
 public class MockPreparedStatement implements PreparedStatement {
     private final PreparedStatement delegate;
     MockPreparedStatement(PreparedStatement delegate, String sql) {
@@ -110,8 +111,8 @@ public class MockPreparedStatement implements PreparedStatement {
     }
 
     @Override
+    @Deprecated
     public void setBinaryStream(int parameterIndex, InputStream x, int length) throws SQLException {
-
     }
 
     @Override
@@ -391,7 +392,7 @@ public class MockPreparedStatement implements PreparedStatement {
 
     @Override
     public int getFetchDirection() throws SQLException {
-        return 0;
+        return ResultSet.FETCH_UNKNOWN;
     }
 
     @Override
@@ -406,12 +407,12 @@ public class MockPreparedStatement implements PreparedStatement {
 
     @Override
     public int getResultSetConcurrency() throws SQLException {
-        return 0;
+        return ResultSet.CONCUR_READ_ONLY;
     }
 
     @Override
     public int getResultSetType() throws SQLException {
-        return 0;
+        return ResultSet.TYPE_FORWARD_ONLY;
     }
 
     @Override

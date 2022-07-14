@@ -10,7 +10,6 @@ import org.objectweb.asm.Type;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Optional;
 
 public class Method {
     private final int access;

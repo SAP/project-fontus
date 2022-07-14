@@ -3,7 +3,6 @@ package com.sap.fontus.taintaware.unified;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.*;
 
-import java.util.List;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("Since15")

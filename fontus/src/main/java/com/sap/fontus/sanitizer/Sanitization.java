@@ -2,22 +2,13 @@ package com.sap.fontus.sanitizer;
 
 import com.sap.fontus.taintaware.shared.IASTaintRange;
 import com.sap.fontus.taintaware.shared.IASTaintRanges;
-import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 import org.owasp.encoder.Encode;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.ParameterMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Time;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 

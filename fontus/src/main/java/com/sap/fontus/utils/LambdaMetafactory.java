@@ -1,7 +1,5 @@
 package com.sap.fontus.utils;
 
-import com.sap.fontus.taintaware.unified.IASLookupUtils;
-
 import java.lang.invoke.*;
 
 public class LambdaMetafactory {

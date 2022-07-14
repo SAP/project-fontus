@@ -1,9 +1,7 @@
 package com.sap.fontus.manual.spring.converters;
 
 import com.sap.fontus.Constants;
-import com.sap.fontus.config.Configuration;
 import com.sap.fontus.taintaware.unified.IASString;
-import com.sap.fontus.utils.Utils;
 import org.objectweb.asm.Type;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;

@@ -4,7 +4,6 @@ import com.sap.fontus.config.Configuration;
 import com.sap.fontus.utils.VerboseLogger;
 
 import java.lang.instrument.Instrumentation;
-import java.util.HashMap;
 
 public class TaintAgent {
     private static Instrumentation instrumentation;

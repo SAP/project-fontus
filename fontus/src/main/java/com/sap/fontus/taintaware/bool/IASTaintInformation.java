@@ -1,11 +1,9 @@
 package com.sap.fontus.taintaware.bool;
 
-import com.sap.fontus.taintaware.shared.*;
+import com.sap.fontus.taintaware.shared.IASTaintMetadata;
+import com.sap.fontus.taintaware.shared.IASTaintRanges;
+import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.taintaware.unified.IASTaintInformationable;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public enum IASTaintInformation implements IASTaintInformationable {
     UNTAINTED(false), TAINTED(true);

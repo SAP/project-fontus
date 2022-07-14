@@ -2,7 +2,6 @@ package com.sap.fontus.asm;
 
 import com.sap.fontus.asm.resolver.IClassResolver;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
