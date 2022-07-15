@@ -164,6 +164,32 @@ public class FunctionCall {
     }
 
     @JsonIgnore
+    public boolean isRelevantMethodHandleInvocation() {
+        return "java/lang/invoke/MethodHandle".equals(this.owner) && (
+                "invoke".equals(this.name) ||
+                        "invokeExact".equals(this.name) ||
+                        "invokeWithArguments".equals(this.name));
+    }
+
+    @JsonIgnore
+    public boolean isVirtualOrStaticMethodHandleLookup() {
+        return "java/lang/invoke/MethodHandles$Lookup".equals(this.owner) && (
+                "findVirtual".equals(this.name) ||
+                        "findStatic".equals(this.name)
+        );
+    }
+
+    @JsonIgnore
+    public boolean isSpecialMethodHandleLookup() {
+        return "java/lang/invoke/MethodHandles$Lookup".equals(this.owner) && "findSpecial".equals(this.name);
+    }
+
+    @JsonIgnore
+    public boolean isConstructorMethodHandleLookup() {
+        return "java/lang/invoke/MethodHandles$Lookup".equals(this.owner) && "findConstructor".equals(this.name);
+    }
+
+    @JsonIgnore
     public boolean isConstructor() {
         return this.opcode == Opcodes.INVOKESPECIAL && "<init>".equals(this.name);
     }
@@ -188,7 +214,7 @@ public class FunctionCall {
      * Match the method class, name and descriptor, but not the opcode and interface flag
      * Means that the opcode and interface flags don't need to exactly match
      * @param obj Object to be matched
-     * @return
+     * @return are the function calls similar enough?
      */
     public boolean fuzzyEquals(final Object obj) {
         if (this == obj) {

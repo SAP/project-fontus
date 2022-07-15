@@ -18,8 +18,21 @@ public final class MethodUtils {
         return "()Ljava/lang/String;".equals(methodDescriptor) && Constants.ToString.equals(name);
     }
 
-    public static int tagToOpcode(int h_opcode) {
-        switch (h_opcode) {
+    /**
+     * Checks whether the method is the 'clinit' method.
+     */
+    public static boolean isClInit(int access, String name, String desc) {
+        return access == Opcodes.ACC_STATIC && Constants.ClInit.equals(name) && "()V".equals(desc);
+    }
+
+    /**
+     * TODO: acceptable for main is a parameter of String[] or String...! Those have different access bits set (i.e., the ACC_VARARGS bits are set too) -> Handle this nicer..
+     */
+    public static boolean isMain(int access, String name, String descriptor) {
+        return ((access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC) && (access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC && Constants.Main.equals(name) && descriptor.equals(Constants.MAIN_METHOD_DESC);
+    }
+    public static int tagToOpcode(int hOpcode) {
+        switch (hOpcode) {
             case Opcodes.H_GETFIELD:
                 return Opcodes.GETFIELD;
             case Opcodes.H_GETSTATIC:
@@ -38,7 +51,7 @@ public final class MethodUtils {
             case Opcodes.H_PUTSTATIC:
                 return Opcodes.PUTSTATIC;
             default:
-                return h_opcode;
+                return hOpcode;
         }
     }
 

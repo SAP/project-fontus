@@ -45,14 +45,8 @@ public class ClassTraverser {
             }
         } else {
             try {
-                ClassVisitor cv = new NopVisitor(Opcodes.ASM9) {
-                    @Override
-                    public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
-                        Method method = new Method(access, cls.getInternalName(), name, descriptor, signature, exceptions, false);
-                        ClassTraverser.this.addMethodIfNotContained(method);
-                        return super.visitMethod(access, name, descriptor, signature, exceptions);
-                    }
-                };
+                final String clsName = cls.getInternalName();
+                ClassVisitor cv = new MethodCollector(clsName);
                 ClassReader cr = new ClassReaderWithLoaderSupport(resolver, cls.getClassName());
                 cr.accept(cv, ClassReader.SKIP_FRAMES);
 
@@ -94,14 +88,7 @@ public class ClassTraverser {
                 } else {
                     try {
                         final String clsName = cls.getInternalName();
-                        ClassVisitor cv = new NopVisitor(Opcodes.ASM9) {
-                            @Override
-                            public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
-                                Method method = new Method(access, clsName, name, descriptor, signature, exceptions, false);
-                                ClassTraverser.this.addMethodIfNotContained(method);
-                                return super.visitMethod(access, name, descriptor, signature, exceptions);
-                            }
-                        };
+                        ClassVisitor cv = new MethodCollector(clsName);
                         ClassReader cr = new ClassReaderWithLoaderSupport(resolver, cls.getClassName());
                         cr.accept(cv, ClassReader.SKIP_FRAMES);
                     } catch (IOException e) {
@@ -143,7 +130,7 @@ public class ClassTraverser {
             ClassReader classReader = new ClassReader(bytes.get());
             ClassTraverser.MethodChecker methodChecker = new ClassTraverser.MethodChecker(m);
             classReader.accept(methodChecker, 0);
-            if (!methodChecker.superImplements) {
+            if (!methodChecker.isSuperImplements()) {
                 return this.isImplementedBySuperClass(classReader.getSuperName(), m, loader);
             }
             return true;
@@ -296,6 +283,26 @@ public class ClassTraverser {
                 this.superImplements = true;
             }
             return null;
+        }
+
+        boolean isSuperImplements() {
+            return this.superImplements;
+        }
+    }
+
+    private class MethodCollector extends NopVisitor {
+        private final String clsName;
+
+        MethodCollector(String clsName) {
+            super(Opcodes.ASM9);
+            this.clsName = clsName;
+        }
+
+        @Override
+        public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+            Method method = new Method(access, this.clsName, name, descriptor, signature, exceptions, false);
+            ClassTraverser.this.addMethodIfNotContained(method);
+            return super.visitMethod(access, name, descriptor, signature, exceptions);
         }
     }
 }

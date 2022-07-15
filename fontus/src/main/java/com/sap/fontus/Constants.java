@@ -12,6 +12,8 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 public final class Constants {
+    public static final String[] EMPTY_STRINGS = {};
+
     public static final String AGENT_DELIMITER = ",";
     public static final String TAINT_PREFIX = "__taint__";
 

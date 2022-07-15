@@ -32,26 +32,26 @@ class ClassTaintingVisitor extends ClassVisitor {
     private final boolean containsJSRRET;
     private boolean hasClInit = false;
     private boolean isAnnotation = false;
-    private boolean implementsInvocationHandler;
-    private MethodVisitRecording recording;
+    private boolean implementsInvocationHandler = false;
+    private MethodVisitRecording recording = null;
     private final ClassVisitor visitor;
     private final Configuration config;
     private final IClassResolver resolver;
     /**
      * The name of the class currently processed.
      */
-    private String owner;
-    private String superName;
-    private Set<Method> jdkMethods;
+    private String owner = null;
+    private String superName = null;
+    private Set<Method> jdkMethods = null;
     private final Set<Method> overriddenJdkMethods;
-    private String[] interfaces;
-    private boolean isInterface;
-    private boolean isFinal;
+    private String[] interfaces = Constants.EMPTY_STRINGS;
+    private boolean isInterface = false;
+    private boolean isFinal = false;
     private final CombinedExcludedLookup combinedExcludedLookup;
     private final SignatureInstrumenter signatureInstrumenter;
     private final List<org.objectweb.asm.commons.Method> instrumentedMethods = new ArrayList<>();
-    private boolean inEnd;
-    private boolean extendsJdkSuperClass;
+    private boolean inEnd = false;
+    private boolean extendsJdkSuperClass = false;
     private final List<DynamicCall> bootstrapMethods = new ArrayList<>();
     /**
      * Uninstrumented methods which are used as lambdas of JDK or excluded functions
@@ -167,13 +167,6 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
 
-    /**
-     * Checks whether the method is the 'clinit' method.
-     */
-    private static boolean isClInit(int access, String name, String desc) {
-        return access == Opcodes.ACC_STATIC && Constants.ClInit.equals(name) && "()V".equals(desc);
-    }
-
     @Override
     public MethodVisitor visitMethod(
             final int access,
@@ -201,7 +194,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         // Purge all final methods
         int instrumentedAccess = access & ~Modifier.FINAL;
 
-        if (this.recording == null && isClInit(access, name, desc) && !this.inEnd) {
+        if (this.recording == null && MethodUtils.isClInit(access, name, desc) && !this.inEnd) {
             logger.info("Recording static initializer");
             RecordingMethodVisitor rmv = new RecordingMethodVisitor();
             this.recording = rmv.getRecording();
@@ -209,9 +202,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             return rmv;
         }
         // Create a new main method, wrapping the regular one and translating all Strings to IASStrings
-        // TODO: acceptable for main is a parameter of String[] or String...! Those have different access bits set (i.e., the ACC_VARARGS bits are set too) -> Handle this nicer..
-        if (((access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC) && (access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC && Constants.Main.equals(name) && descriptor.equals(Constants.MAIN_METHOD_DESC)
-                && !this.config.isClassMainBlacklisted(this.owner)) {
+        if (MethodUtils.isMain(access, name, descriptor) && !this.config.isClassMainBlacklisted(this.owner)) {
             logger.info("Creating proxy main method");
             MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, Constants.Main, Constants.MAIN_METHOD_DESC, null, exceptions);
             this.createMainWrapperMethod(v);
@@ -303,14 +294,14 @@ class ClassTaintingVisitor extends ClassVisitor {
             }
         }
 
-        String owner;
+        String newOwner;
         if (lambdaCall.isPresent()) {
-            owner = lambdaCall.get().getImplementation().getOwner();
+            newOwner = lambdaCall.get().getImplementation().getOwner();
         } else {
-            owner = this.owner;
+            newOwner = this.owner;
         }
 
-        mv.visitMethodInsn(opcode, owner, instrumentedName, instrumentedDescriptor.toDescriptor(), opcode == Opcodes.INVOKEINTERFACE);
+        mv.visitMethodInsn(opcode, newOwner, instrumentedName, instrumentedDescriptor.toDescriptor(), opcode == Opcodes.INVOKEINTERFACE);
         if (this.isDescriptorNameToInstrument(originalDescriptor.getReturnType())) {
             TaintingUtils.convertTypeToUntainted(instrumentedDescriptor.getReturnType(), originalDescriptor.getReturnType(), mv);
         }
@@ -365,10 +356,10 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.inEnd = true;
         if (!this.isAnnotation) {
             logger.info("Overriding not overridden JDK methods which have to be instrumented");
-            if (!this.isInterface) {
-                this.overrideMissingJdkMethods();
-            } else {
+            if (this.isInterface) {
                 this.declareMissingJdkMethods();
+            } else {
+                this.overrideMissingJdkMethods();
             }
         }
         if (!this.hasClInit && !this.staticFinalFields.isEmpty()) {
@@ -393,7 +384,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private void generateLambdaProxiesForJdk() {
-        List<LambdaCall> distinct = new ArrayList<>();
+        List<LambdaCall> distinct = new ArrayList<>(this.jdkLambdaMethodProxies.size());
 
         for (LambdaCall f : this.jdkLambdaMethodProxies) {
             if (!distinct.contains(f)) {
@@ -459,9 +450,9 @@ class ClassTaintingVisitor extends ClassVisitor {
 
         int opcode = lambdaCall.getImplementation().getOpcode();
 
-        String owner = lambdaCall.getImplementation().getOwner();
+        String newOwner = lambdaCall.getImplementation().getOwner();
 
-        mv.visitMethodInsn(opcode, owner, name, uninstrumentedDescriptor.toDescriptor(), lambdaCall.isCallOnInterface());
+        mv.visitMethodInsn(opcode, newOwner, name, uninstrumentedDescriptor.toDescriptor(), lambdaCall.isCallOnInterface());
         if (this.instrumentationHelper.isInstrumented(proxyDescriptor.getReturnType())) {
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
             mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(proxyDescriptor.getReturnType()).getInternalName());
@@ -479,7 +470,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private void generateBootstrapMethods() {
-        List<DynamicCall> filtered = new ArrayList<>();
+        List<DynamicCall> filtered = new ArrayList<>(this.bootstrapMethods.size());
 
         // TODO: Refactor this piece of code to get rid of the continue <label>
         outer:
@@ -658,12 +649,13 @@ class ClassTaintingVisitor extends ClassVisitor {
     private void generateInstrumentedProxyToInstrumentedSuper(MethodVisitor mv, Method m, Descriptor instrumentedDescriptor) {
         mv.visitCode();
         mv.visitVarInsn(Opcodes.ALOAD, 0);
+        int idx = 1;
         // Load Parameters, but do not convert them in this case.Tr
-        for (int i = 0; i < instrumentedDescriptor.parameterCount(); ) {
+        for (int i = 0; i < instrumentedDescriptor.parameterCount(); i++) {
             String param = instrumentedDescriptor.getParameters().get(i);
             // Creating new Object if necessary and duplicating it for initialization
-            mv.visitVarInsn(loadCodeByType(param), i + 1);
-            i += Type.getType(param).getSize();
+            mv.visitVarInsn(loadCodeByType(param), idx);
+            idx += Type.getType(param).getSize();
         }
         // Calling the actual method
         mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superName, m.getName(), instrumentedDescriptor.toDescriptor(), false);

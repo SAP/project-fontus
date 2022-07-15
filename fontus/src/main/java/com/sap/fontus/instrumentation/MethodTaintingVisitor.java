@@ -367,24 +367,24 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             return;
         }
 
-        if (isVirtualOrStaticMethodHandleLookup(fc)) {
+        if (fc.isVirtualOrStaticMethodHandleLookup()) {
             this.generateVirtualOrStaticMethodHandleLookupIntercept(fc);
             return;
         }
 
-        if (isConstructorMethodHandleLookup(fc)) {
+        if (fc.isConstructorMethodHandleLookup()) {
             this.generateConstructorMethodHandleLookupIntercept(fc);
             return;
         }
 
-        if (isSpecialMethodHandleLookup(fc)) {
+        if (fc.isSpecialMethodHandleLookup()) {
             this.generateSpecialMethodHandleLookupIntercept(fc);
             return;
         }
 
         // Call any functions which manipulate function call parameters and return types
         // for example sources, sinks and JDK functions
-        if (!this.isRelevantMethodHandleInvocation(fc) && this.rewriteParametersAndReturnType(fc)) {
+        if (!fc.isRelevantMethodHandleInvocation() && this.rewriteParametersAndReturnType(fc)) {
             return;
         }
         boolean passThrough = this.config.shouldPassThroughTaint(fc);
@@ -432,13 +432,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             super.visitVarInsn(storeOpcode, this.used + i);
         }
         this.usedAfterInjection = Math.max(this.used + Utils.getArgumentsStackSize(call.getDescriptor()), this.usedAfterInjection);
-    }
-
-    private boolean isRelevantMethodHandleInvocation(FunctionCall fc) {
-        return "java/lang/invoke/MethodHandle".equals(fc.getOwner()) && (
-                "invoke".equals(fc.getName()) ||
-                        "invokeExact".equals(fc.getName()) ||
-                        "invokeWithArguments".equals(fc.getName()));
     }
 
     private void generateVirtualOrStaticMethodHandleLookupIntercept(FunctionCall fc) {
@@ -570,20 +563,8 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.usedAfterInjection = Math.max(this.used + Utils.getArgumentsStackSize(fc.getDescriptor()) + 2, this.usedAfterInjection);
     }
 
-    private static boolean isVirtualOrStaticMethodHandleLookup(FunctionCall fc) {
-        return "java/lang/invoke/MethodHandles$Lookup".equals(fc.getOwner()) && (
-                "findVirtual".equals(fc.getName()) ||
-                        "findStatic".equals(fc.getName())
-        );
-    }
 
-    private static boolean isSpecialMethodHandleLookup(FunctionCall fc) {
-        return "java/lang/invoke/MethodHandles$Lookup".equals(fc.getOwner()) && "findSpecial".equals(fc.getName());
-    }
 
-    private static boolean isConstructorMethodHandleLookup(FunctionCall fc) {
-        return "java/lang/invoke/MethodHandles$Lookup".equals(fc.getOwner()) && "findConstructor".equals(fc.getName());
-    }
 
     private boolean rewriteParametersAndReturnTypeForInstrumentedCall(FunctionCall call, FunctionCall uninstrumentedCall) {
 
@@ -592,7 +573,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         // Add Sink transformations
         Sink sink = this.config.getSinkConfig().getSinkForFunction(uninstrumentedCall, new Position(this.owner, this.name, this.line));
         if (sink != null) {
-	    System.out.println("Adding IASString sink: " + uninstrumentedCall.getOwner() + uninstrumentedCall.getName() + uninstrumentedCall.getDescriptor());
+	    System.out.printf("Adding IASString sink: %s%s:%s%n", uninstrumentedCall.getOwner(), uninstrumentedCall.getName(), uninstrumentedCall.getDescriptor());
             logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(uninstrumentedCall.getOpcode()), uninstrumentedCall.getOwner(), uninstrumentedCall.getName(), uninstrumentedCall.getDescriptor());
             SinkTransformer t = new SinkTransformer(sink, this.instrumentationHelper, this.used);
             transformer.addParameterTransformation(t);
@@ -741,7 +722,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             final Handle bootstrapMethodHandle,
             final Object... bootstrapMethodArguments) {
 
-        if (this.shouldBeDynProxied(name, descriptor)) {
+        if (MethodTaintingVisitor.shouldBeDynProxied(name, descriptor)) {
             return;
         }
 
@@ -824,7 +805,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     /**
      * Is there a dynamic proxy defined? If so apply and return true.
      */
-    private boolean shouldBeDynProxied(String name, String descriptor) {
+    private static boolean shouldBeDynProxied(String name, String descriptor) {
         ProxiedDynamicFunctionEntry pdfe = new ProxiedDynamicFunctionEntry(name, descriptor);
         if (dynProxies.containsKey(pdfe)) {
             logger.info("Proxying dynamic call to {}{}", name, descriptor);
