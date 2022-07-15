@@ -62,7 +62,7 @@ public class IASTaintRanges implements Iterable<IASTaintRange>, Serializable {
 
         if (shift) {
             this.ranges = before.concat(after).getTaintRanges();
-            this.length = this.length - (end - start);
+            this.length -= (end - start);
         } else {
             IASTaintRanges empty = new IASTaintRanges(end - start);
             this.ranges = before.concat(empty).concat(after).getTaintRanges();

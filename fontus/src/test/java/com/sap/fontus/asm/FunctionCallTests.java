@@ -8,10 +8,10 @@ import java.lang.reflect.Method;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-public class FunctionCallTests {
+class FunctionCallTests {
 
     @Test
-    public void testGetMethodFromFunctionCall() throws NoSuchMethodException, ClassNotFoundException {
+    void testGetMethodFromFunctionCall() throws Exception {
         Method m = String.class.getMethod("toString");
         FunctionCall fc = FunctionCall.fromMethod(m);
         Method m2 = FunctionCall.toMethod(fc);
@@ -19,7 +19,7 @@ public class FunctionCallTests {
     }
 
     @Test
-    public void testGetMethodFromFunctionCallWithArgs() throws NoSuchMethodException, ClassNotFoundException {
+    void testGetMethodFromFunctionCallWithArgs() throws Exception {
         Method m = String.class.getMethod("startsWith", String.class);
         FunctionCall fc = FunctionCall.fromMethod(m);
         Method m2 = FunctionCall.toMethod(fc);
@@ -27,7 +27,7 @@ public class FunctionCallTests {
     }
 
     @Test
-    public void testGetMethodFromFunctionCallWithPrimitive() throws NoSuchMethodException, ClassNotFoundException {
+    void testGetMethodFromFunctionCallWithPrimitive() throws Exception {
         Method m = String.class.getMethod("charAt", int.class);
         FunctionCall fc = FunctionCall.fromMethod(m);
         Method m2 = FunctionCall.toMethod(fc);
@@ -36,7 +36,7 @@ public class FunctionCallTests {
 
 
     @Test
-    public void testGetMethodFromFunctionCallWithArray() throws NoSuchMethodException, ClassNotFoundException {
+    void testGetMethodFromFunctionCallWithArray() throws Exception {
         Method m = String.class.getMethod("getChars", int.class, int.class, char[].class, int.class);
         FunctionCall fc = FunctionCall.fromMethod(m);
         Method m2 = FunctionCall.toMethod(fc);
@@ -44,7 +44,7 @@ public class FunctionCallTests {
     }
 
     @Test
-    public void testGetMethodFromTaintHandler() throws NoSuchMethodException, ClassNotFoundException {
+    void testGetMethodFromTaintHandler() throws Exception {
         Method m = IASTaintHandler.class.getMethod("taint", Object.class, Object.class, Object[].class, int.class);
         FunctionCall fc = FunctionCall.fromMethod(m);
         Method m2 = FunctionCall.toMethod(fc);
@@ -52,7 +52,7 @@ public class FunctionCallTests {
     }
 
     @Test
-    public void testGetMethodFromTaintChecker() throws NoSuchMethodException, ClassNotFoundException {
+    void testGetMethodFromTaintChecker() throws Exception {
         Method m = IASTaintHandler.class.getMethod("checkTaint", Object.class, Object.class, String.class, String.class);
         FunctionCall fc = FunctionCall.fromMethod(m);
         Method m2 = FunctionCall.toMethod(fc);

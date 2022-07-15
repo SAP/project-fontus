@@ -5,10 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class IASReflectRegistry {
-    private final static IASReflectRegistry INSTANCE = new IASReflectRegistry();
-    private Map<Field, IASField> fields = new HashMap<>();
-    private Map<Method, IASMethod> methods = new HashMap<>();
-    private Map<Constructor, IASConstructor> constructors = new HashMap<>();
+    private static final IASReflectRegistry INSTANCE = new IASReflectRegistry();
+    // TODO: Replace with ConcurrentHashMap and get rid of synchronized
+    private final Map<Field, IASField> fields = new HashMap<>();
+    private final Map<Method, IASMethod> methods = new HashMap<>();
+    private final Map<Constructor<?>, IASConstructor<?>> constructors = new HashMap<>();
 
     public static IASReflectRegistry getInstance() {
         return INSTANCE;

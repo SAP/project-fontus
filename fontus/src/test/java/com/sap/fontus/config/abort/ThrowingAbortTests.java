@@ -12,15 +12,15 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class ThrowingAbortTests {
+class ThrowingAbortTests {
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.RANGE);
     }
 
     @Test
-    public void throwAbortTest() {
+    void throwAbortTest() {
         String o = "FakeSinkObject";
         String s = "This is sensitive information";
 

@@ -104,7 +104,7 @@ public class Sink {
     @JsonIgnore
     public Abort getAbortFromSink() {
         List<Abort> l = new ArrayList<>();
-        for (String abortName : this.getDataProtection().getAborts()) {
+        for (String abortName : this.dataProtection.getAborts()) {
             Abort a = Abort.parse(abortName);
             if (a != null) {
                 l.add(a);

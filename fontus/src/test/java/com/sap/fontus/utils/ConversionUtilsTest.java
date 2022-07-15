@@ -13,15 +13,15 @@ import java.lang.reflect.Method;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ConversionUtilsTest {
+class ConversionUtilsTest {
 
     @BeforeAll
-    public static void setup() {
+    static void setup() {
         Configuration.setTestConfig(TaintMethod.defaultTaintMethod());
     }
 
     @Test
-    public void testConvertMethodToTainted() throws NoSuchMethodException {
+    void testConvertMethodToTainted() throws NoSuchMethodException {
         Method m = Class.class.getMethod("forName", String.class);
 
         Object converted = ConversionUtils.convertToInstrumented(m);
@@ -31,7 +31,7 @@ public class ConversionUtilsTest {
     }
 
     @Test
-    public void testConvertFieldArrayToTainted() throws NoSuchMethodException {
+    void testConvertFieldArrayToTainted() {
         class FieldTest {
             String f1;
             String f2;

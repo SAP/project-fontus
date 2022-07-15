@@ -32,21 +32,21 @@ public class SQLChecker {
             Token.LITERAL_ALIAS
     };
 
-    private static List<SqlTokenOverlap> getSqlInjectionInfo(List<SqlLexerToken> tokens, IASTaintRanges taint_ranges, int addl_pos, Token[] allowedTokens) {
+    private static List<SqlTokenOverlap> getSqlInjectionInfo(List<SqlLexerToken> tokens, IASTaintRanges taintRanges, int addlPos, Token[] allowedTokens) {
         List<SqlTokenOverlap> overlaps = new ArrayList<>();
-        for (IASTaintRange taint_range : taint_ranges) {
-            int taint_start = addl_pos + taint_range.getStart();
-            int taint_end = addl_pos + taint_range.getEnd();
+        for (IASTaintRange taintRange : taintRanges) {
+            int taintStart = addlPos + taintRange.getStart();
+            int taintEnd = addlPos + taintRange.getEnd();
             for (SqlLexerToken token : tokens) {
-                if (checkBorders(token, taint_start, taint_end) || (token.token_type == 1)) {
+                if (checkBorders(token, taintStart, taintEnd) || (token.tokenType == 1)) {
                     // First check if the tainted string tries to change the SQL syntax
-                    SqlTokenOverlap overlap = new SqlTokenOverlap(token, taint_range);
+                    SqlTokenOverlap overlap = new SqlTokenOverlap(token, taintRange);
                     System.out.println("Overlap:" + overlap);
                     overlaps.add(overlap);
-                } else if (checkContained(token, taint_start, taint_end)) {
+                } else if (checkContained(token, taintStart, taintEnd)) {
                     // If part or all of the token is tainted, check if it is in the allow list:
                     if (!Arrays.asList(allowedTokens).contains(token.getToken())) {
-                        SqlTokenOverlap overlap = new SqlTokenOverlap(token, taint_range);
+                        SqlTokenOverlap overlap = new SqlTokenOverlap(token, taintRange);
                         System.out.println("Contained:" + overlap);
                         overlaps.add(overlap);
                     }
@@ -56,142 +56,142 @@ public class SQLChecker {
         return overlaps;
     }
 
-    private static List<SqlTokenOverlap> getSqlInjectionInfo(List<SqlLexerToken> tokens, IASTaintRanges taint_ranges, int addl_pos) {
-        return getSqlInjectionInfo(tokens, taint_ranges, addl_pos, taintableTokens);
+    private static List<SqlTokenOverlap> getSqlInjectionInfo(List<SqlLexerToken> tokens, IASTaintRanges taintRanges, int addlPos) {
+        return getSqlInjectionInfo(tokens, taintRanges, addlPos, taintableTokens);
     }
 
-    private static boolean checkBorders(SqlLexerToken token, int taint_start, int taint_end){
-        return taint_start < token.begin && token.begin < taint_end ||
-                taint_start < token.end && token.end < taint_end;
+    private static boolean checkBorders(SqlLexerToken token, int taintStart, int taintEnd){
+        return taintStart < token.begin && token.begin < taintEnd ||
+                taintStart < token.end && token.end < taintEnd;
     }
 
-    private static boolean checkContained(SqlLexerToken token, int taint_start, int taint_end){
-        return taint_start >= token.begin && taint_start < token.end ||
-                taint_end > token.begin && taint_end <= token.end;
+    private static boolean checkContained(SqlLexerToken token, int taintStart, int taintEnd){
+        return taintStart >= token.begin && taintStart < token.end ||
+                taintEnd > token.begin && taintEnd <= token.end;
     }
 
-    private static List<SqlLexerToken> getLexerTokens(String sql_query) {
-        System.out.println("SQL Query : " + sql_query);
-        List<SqlLexerToken> lexer_tokens = new ArrayList<>();
-        DbType db_type = DbType.postgresql;
+    private static List<SqlLexerToken> getLexerTokens(String sqlQuery) {
+        System.out.println("SQL Query : " + sqlQuery);
+        List<SqlLexerToken> lexerTokens = new ArrayList<>();
+        DbType dbType = DbType.postgresql;
 
         try {
             // Parse SQL Query
-            SQLStatementParser parser = SQLParserUtils.createSQLStatementParser(sql_query, db_type);
+            SQLStatementParser parser = SQLParserUtils.createSQLStatementParser(sqlQuery, dbType);
             List<SQLStatement> statementList = parser.parseStatementList();
             if(statementList.size() > 1){
-                lexer_tokens.add(new SqlLexerToken(0,sql_query.length()-1,Token.EOF,1));
-                return lexer_tokens;
+                lexerTokens.add(new SqlLexerToken(0,sqlQuery.length()-1,Token.EOF,1));
+                return lexerTokens;
             }
-            Lexer lexer = SQLParserUtils.createLexer(sql_query, db_type);
+            Lexer lexer = SQLParserUtils.createLexer(sqlQuery, dbType);
             int startPos = lexer.pos();
             lexer.nextToken();
             while(lexer.token() != Token.EOF){
                 // Create the corresponding LexerToken
-                lexer_tokens.add(new SqlLexerToken(startPos,lexer.pos(),lexer.token(),0));
+                lexerTokens.add(new SqlLexerToken(startPos,lexer.pos(),lexer.token(),0));
                 System.out.println("tokenType : " + lexer.token() + ", startPos : " + startPos + ", endPos : " + lexer.pos());
                 startPos = lexer.pos();
                 lexer.nextToken();
             }
-//            if(startPos != sql_query.length()){
-//                lexer_tokens.add(new SqlLexerToken(startPos,sql_query.length(),"Unparsed_Segment",0,true));
+//            if(startPos != sqlQuery.length()){
+//                lexerTokens.add(new SqlLexerToken(startPos,sqlQuery.length(),"Unparsed_Segment",0,true));
 //            }
         }
         catch (ParserException e) {
             System.out.println("SQL Parsing Exception");
-            lexer_tokens.add(new SqlLexerToken(0,sql_query.length()-1,Token.ERROR,1));
-            //return lexer_tokens;
+            lexerTokens.add(new SqlLexerToken(0,sqlQuery.length()-1,Token.ERROR,1));
+            //return lexerTokens;
         }
         catch (Exception ex){
             ex.printStackTrace();
         }
 
-        return lexer_tokens;
+        return lexerTokens;
     }
 
-    public static boolean sqlInjectionDetected(String sql_string, IASTaintRanges taint_ranges) {
-        List<SqlLexerToken> token_ranges = getLexerTokens(sql_string);
-        List<SqlTokenOverlap> overlaps = getSqlInjectionInfo(token_ranges,taint_ranges,0);
+    public static boolean sqlInjectionDetected(String sqlString, IASTaintRanges taintRanges) {
+        List<SqlLexerToken> tokenRanges = getLexerTokens(sqlString);
+        List<SqlTokenOverlap> overlaps = getSqlInjectionInfo(tokenRanges,taintRanges,0);
         return !overlaps.isEmpty();
     }
 
-    public static boolean sqlInjectionDetected(String sql_string, IASTaintRanges taint_ranges, Token[] allowedTokens) {
-        List<SqlLexerToken> token_ranges = getLexerTokens(sql_string);
-        List<SqlTokenOverlap> overlaps = getSqlInjectionInfo(token_ranges,taint_ranges,0, allowedTokens);
+    public static boolean sqlInjectionDetected(String sqlString, IASTaintRanges taintRanges, Token[] allowedTokens) {
+        List<SqlLexerToken> tokenRanges = getLexerTokens(sqlString);
+        List<SqlTokenOverlap> overlaps = getSqlInjectionInfo(tokenRanges,taintRanges,0, allowedTokens);
         return !overlaps.isEmpty();
     }
 
     public static void reportTaintedString(AbortObject abortObject) {
-        String sql_string = abortObject.getPayload();
+        String sqlString = abortObject.getPayload();
         String sink = abortObject.getSinkFunction();
-        int addl_pos = 0;
+        int addlPos = 0;
 
-        IASTaintRanges taint_ranges = abortObject.getRanges();
+        IASTaintRanges taintRanges = abortObject.getRanges();
 
         // Sql String template (temporary fix) if parameters are bound to the original string
-        if(sink.equals("java/sql/PreparedStatement.setString(ILjava/lang/String;)V")) {
+        if("java/sql/PreparedStatement.setString(ILjava/lang/String;)V".equals(sink)) {
             class SQLElement{
-                public String sql_statement;
-                public int start_pos;
+                public final String sqlStatement;
+                public final int startPos;
 
-                public SQLElement(String sql_statement, int start_pos){
-                    this.sql_statement = sql_statement;
-                    this.start_pos = start_pos;
+                public SQLElement(String sqlStatement, int startPos){
+                    this.sqlStatement = sqlStatement;
+                    this.startPos = startPos;
                 }
             }
-            List<SQLElement> sql_element_list = new ArrayList<>();
-            sql_element_list.add(new SQLElement("SELECT * FROM table1 WHERE username = '" + sql_string + "'", 39));
-            sql_element_list.add(new SQLElement("SELECT * FROM table1 WHERE username = \"" + sql_string + "\"", 39));
+            List<SQLElement> sqlElementList = new ArrayList<>();
+            sqlElementList.add(new SQLElement("SELECT * FROM table1 WHERE username = '" + sqlString + "'", 39));
+            sqlElementList.add(new SQLElement("SELECT * FROM table1 WHERE username = \"" + sqlString + "\"", 39));
 
-            boolean sql_injection_present = false;
+            boolean sqlInjectionPresent = false;
 
-            for(SQLElement sql_element : sql_element_list) {
-                List<SqlLexerToken> token_ranges = getLexerTokens(sql_element.sql_statement);
-                List<SqlTokenOverlap> inj_info_array = getSqlInjectionInfo(token_ranges,taint_ranges,sql_element.start_pos);
-                System.out.println("checkTaintedString : " + inj_info_array);
-                if(!inj_info_array.isEmpty()){
-                    sql_injection_present = true;
+            for(SQLElement sqlElement : sqlElementList) {
+                List<SqlLexerToken> tokenRanges = getLexerTokens(sqlElement.sqlStatement);
+                List<SqlTokenOverlap> injInfoArray = getSqlInjectionInfo(tokenRanges,taintRanges,sqlElement.startPos);
+                System.out.println("checkTaintedString : " + injInfoArray);
+                if(!injInfoArray.isEmpty()){
+                    sqlInjectionPresent = true;
                 }
             }
-            NetworkResponseObject.setResponseMessage(new NetworkRequestObject(), sql_injection_present);
-        } else if (sink.equals("java/sql/PreparedStatement.setInt(II)V")) {
-            String sql_stmt = "SELECT * FROM table1 WHERE id = " + sql_string;
-            List<SqlLexerToken> token_ranges = getLexerTokens(sql_stmt);
+            NetworkResponseObject.setResponseMessage(new NetworkRequestObject(), sqlInjectionPresent);
+        } else if ("java/sql/PreparedStatement.setInt(II)V".equals(sink)) {
+            String sqlStmt = "SELECT * FROM table1 WHERE id = " + sqlString;
+            List<SqlLexerToken> tokenRanges = getLexerTokens(sqlStmt);
 
-            List<SqlTokenOverlap> inj_info_array = getSqlInjectionInfo(token_ranges,taint_ranges,32);
-            System.out.println("checkTaintedString : " + inj_info_array);
-            NetworkResponseObject.setResponseMessage(new NetworkRequestObject(), !inj_info_array.isEmpty());
+            List<SqlTokenOverlap> injInfoArray = getSqlInjectionInfo(tokenRanges,taintRanges,32);
+            System.out.println("checkTaintedString : " + injInfoArray);
+            NetworkResponseObject.setResponseMessage(new NetworkRequestObject(), !injInfoArray.isEmpty());
         } else {
-            List<SqlLexerToken> token_ranges = getLexerTokens(sql_string);
-            List<SqlTokenOverlap> inj_info_array = getSqlInjectionInfo(token_ranges,taint_ranges,addl_pos);
-            System.out.println("checkTaintedString : " + inj_info_array);
-            NetworkResponseObject.setResponseMessage(new NetworkRequestObject(), !inj_info_array.isEmpty());
+            List<SqlLexerToken> tokenRanges = getLexerTokens(sqlString);
+            List<SqlTokenOverlap> injInfoArray = getSqlInjectionInfo(tokenRanges,taintRanges,addlPos);
+            System.out.println("checkTaintedString : " + injInfoArray);
+            NetworkResponseObject.setResponseMessage(new NetworkRequestObject(), !injInfoArray.isEmpty());
         }
     }
 
     public static void logTaintedString(AbortObject abortObject) {
-        String sql_string = abortObject.getPayload();
+        String sqlString = abortObject.getPayload();
         String sink = abortObject.getSinkFunction();
-        int addl_pos = 0;
+        int addlPos = 0;
 
         // Sql String template (temporary fix) if parameters are bound to the original string
-        if(sink.equals("java/sql/PreparedStatement.setString(ILjava/lang/String;)V")){
-            sql_string = "SELECT * FROM table1 WHERE username = '" + sql_string + "'";
-            addl_pos = 39;
+        if("java/sql/PreparedStatement.setString(ILjava/lang/String;)V".equals(sink)){
+            sqlString = "SELECT * FROM table1 WHERE username = '" + sqlString + "'";
+            addlPos = 39;
         }
 
         // Sql Int template (temporary fix) if parameters are bound to the original string
-        if(sink.equals("java/sql/PreparedStatement.setInt(II)V")){
-            sql_string = "SELECT * FROM table1 WHERE id = " + sql_string + "";
-            addl_pos = 32;
+        if("java/sql/PreparedStatement.setInt(II)V".equals(sink)){
+            sqlString = "SELECT * FROM table1 WHERE id = " + sqlString;
+            addlPos = 32;
         }
 
-        List<SqlLexerToken> token_ranges = getLexerTokens(sql_string);
-        IASTaintRanges taint_ranges = abortObject.getRanges();
+        List<SqlLexerToken> tokenRanges = getLexerTokens(sqlString);
+        IASTaintRanges taintRanges = abortObject.getRanges();
 
-        List<SqlTokenOverlap> json_array = getSqlInjectionInfo(token_ranges,taint_ranges,addl_pos);
-        System.out.println("logTaintedString : " + json_array);
-        if(!json_array.isEmpty()){
+        List<SqlTokenOverlap> jsonArray = getSqlInjectionInfo(tokenRanges, taintRanges, addlPos);
+        System.out.println("logTaintedString : " + jsonArray);
+        if(!jsonArray.isEmpty()){
             Logger logger = Logger.getLogger("SqlInjectionLog");
             FileHandler fh;
             try {
@@ -202,7 +202,7 @@ public class SQLChecker {
                 fh.setFormatter(formatter);
 
                 // the following statement is used to log any messages
-                logger.info(json_array.toString());
+                logger.info(jsonArray.toString());
 
             } catch (SecurityException | IOException e) {
                 e.printStackTrace();

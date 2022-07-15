@@ -12,15 +12,15 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class CensoringAbortTest {
+class CensoringAbortTest {
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.RANGE);
     }
 
     @Test
-    public void censoringAbortTest() {
+    void censoringAbortTest() {
         String o = "FakeSinkObject";
         String s = "This is sensitive information";
 
@@ -35,7 +35,7 @@ public class CensoringAbortTest {
     }
 
     @Test
-    public void censoringUntaintedAbortTest() {
+    void censoringUntaintedAbortTest() {
         String o = "FakeSinkObject";
         String s = "This is sensitive information";
 
@@ -49,7 +49,7 @@ public class CensoringAbortTest {
     }
 
     @Test
-    public void censoringAbortTestTwoRanges() {
+    void censoringAbortTestTwoRanges() {
         String o = "FakeSinkObject";
         String s = "This is sensitive information";
 

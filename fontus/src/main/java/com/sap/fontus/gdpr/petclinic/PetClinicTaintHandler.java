@@ -98,9 +98,9 @@ public class PetClinicTaintHandler extends IASTaintHandler {
         GdprMetadata metadata = null;
         if (m.matches()) {
             // See if we can retrieve original the name using the PetClinic interface...
-            String id_match = m.group(1);
+            String idMatch = m.group(1);
             // Let it throw...
-            int id = Integer.valueOf(id_match);
+            int id = Integer.valueOf(idMatch);
             // Can we get the Owner object corresponding to this?
             metadata = new SimpleGdprMetadata(
                     Utils.getPurposesFromRequest(servlet),
@@ -168,7 +168,7 @@ public class PetClinicTaintHandler extends IASTaintHandler {
                 System.out.println("Edit Pets: " + editPetsMatcher.matches());
                 System.out.println("New Visit: " + newVisitMatcher.matches());
 
-                if (path.equals("/owners/new")) {
+                if ("/owners/new".equals(path)) {
                     // New owner
                     metadata = getMetadataFromOwnerRequest(request);
                 } else if (path.matches("\\/owners\\/[0-9]+\\/edit")) {
@@ -180,7 +180,7 @@ public class PetClinicTaintHandler extends IASTaintHandler {
                     metadata = getMetadataFromPetRequest(request, editPetsMatcher, ProtectionLevel.Normal);
                 } else if (newVisitMatcher.matches()) {
                     // The description should be higher sensitivity
-                    if ((name != null) && name.equals("description")) {
+                    if ("description".equals(name)) {
                         metadata = getMetadataFromPetRequest(request, newVisitMatcher, ProtectionLevel.Sensitive);
                     } else {
                         metadata = getMetadataFromPetRequest(request, newVisitMatcher, ProtectionLevel.Normal);
@@ -192,8 +192,8 @@ public class PetClinicTaintHandler extends IASTaintHandler {
                     System.out.println("Adding Taint metadata to string '" + taintAware.toString() + "': " + metadata);
                     // Check if encryption is needed
                     IASString content = taintAware.toIASString();
-                    if (metadata.getProtectionLevel().equals(ProtectionLevel.Sensitive)) {
-
+                    if (metadata.getProtectionLevel() == ProtectionLevel.Sensitive) {
+                        // TODO: ???
                     }
                     taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
                 }

@@ -3,6 +3,7 @@ package com.sap.fontus.taintaware.bool;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+@SuppressWarnings("ALL")
 public class StringTest {
     public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
 //        testInstrumentationConcat();
@@ -20,7 +21,7 @@ public class StringTest {
 
         StringBuilder sb = new StringBuilder(s1);
         sb.append(s2);
-        System.out.println(sb.toString());
+        System.out.println(sb);
 
         System.out.println(s.getClass());
         System.out.println(sb.getClass());

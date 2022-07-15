@@ -195,7 +195,7 @@ public final class ConversionUtils {
     }
 
     // TODO: Can't we get the list of the classes based on the Maps above? This is super ugly and error prone (it seems to be missing entries, but that might be what we want?
-    private static boolean isHandleable(Class cls) {
+    private static boolean isHandleable(Class<?> cls) {
         return cls == String.class || cls == StringBuilder.class || cls == StringBuffer.class || cls == Formatter.class || cls == Pattern.class || cls == Matcher.class || cls == Properties.class || Type.class.isAssignableFrom(cls) || cls == Method.class || cls == Field.class;
     }
 
@@ -280,7 +280,7 @@ public final class ConversionUtils {
     }
 
     private interface Converter {
-        boolean canConvert(Class o);
+        boolean canConvert(Class<?> o);
 
         Object convert(Object o);
     }
@@ -329,9 +329,9 @@ public final class ConversionUtils {
     }
 
     private static class ClassConverter implements Converter {
-        private final Function<Class, Class> atomicConverter;
+        private final Function<Class<?>, Class<?>> atomicConverter;
 
-        private ClassConverter(Function<Class, Class> atomicConverter) {
+        private ClassConverter(Function<Class<?>, Class<?>> atomicConverter) {
             this.atomicConverter = atomicConverter;
         }
 
@@ -349,9 +349,9 @@ public final class ConversionUtils {
 
     private static class ArrayConverter implements Converter {
         private final Function<Object, Object> atomicConverter;
-        private final Function<Class, Class> classConverter;
+        private final Function<Class<?>, Class<?>> classConverter;
 
-        private ArrayConverter(Function<Object, Object> atomicConverter, Function<Class, Class> classConverter) {
+        private ArrayConverter(Function<Object, Object> atomicConverter, Function<Class<?>, Class<?>> classConverter) {
             this.atomicConverter = atomicConverter;
             this.classConverter = classConverter;
         }
@@ -381,7 +381,7 @@ public final class ConversionUtils {
         private final Class<T> convertable;
         private final Function<T, R> converter;
 
-        public DefaultConverter(Class<T> convertable, Function<T, R> converter) {
+        DefaultConverter(Class<T> convertable, Function<T, R> converter) {
             this.convertable = convertable;
             this.converter = converter;
         }
@@ -405,9 +405,9 @@ public final class ConversionUtils {
         }
 
         @Override
-        public boolean canConvert(Class cls) {
+        public boolean canConvert(Class<?> cls) {
             // TODO: evil hack to prevent infinite recursion for hibernate collection classes
-            return Set.class.isAssignableFrom(cls) && !cls.getPackage().getName().equals("org.hibernate.collection.internal");
+            return Set.class.isAssignableFrom(cls) && !"org.hibernate.collection.internal".equals(cls.getPackage().getName());
         }
 
         @Override
@@ -418,7 +418,7 @@ public final class ConversionUtils {
                     if (set.isEmpty()) {
                         return o;
                     }
-                    if (set.getClass().getName().equals("java.util.LinkedHashMap$LinkedEntrySet")) {
+                    if ("java.util.LinkedHashMap$LinkedEntrySet".equals(set.getClass().getName())) {
                         // TODO: evil hack to avoid infinite recursion in hibernate..
                         return o;
                     }
@@ -466,14 +466,14 @@ public final class ConversionUtils {
         @Override
         public boolean canConvert(Class cls) {
             // TODO: evil hack to prevent infinite recursion for hibernate collection classes
-            return List.class.isAssignableFrom(cls) && !cls.getPackage().getName().equals("org.hibernate.collection.internal");
+            return List.class.isAssignableFrom(cls) && !"org.hibernate.collection.internal".equals(cls.getPackage().getName());
         }
 
         @Override
         public Object convert(Object o) {
             if (o instanceof List) {
-                List list = (List) o;
-                List result = new ArrayList();
+                List<Object> list = (List<Object>) o;
+                List<Object> result = new ArrayList<>();
 
                 for (Object listEntry : list) {
                     Object converted = this.atomicConverter.apply(listEntry);

@@ -7,13 +7,13 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TcpBackedGdprMetaDataTest {
+class TcfBackedMetadataTest {
 
-    private static String tc1 = "BOEFEAyOEFEAyAHABDENAI4AAAB9vABAASA";
-    private static String tc2 = "COvFyGBOvFyGBAbAAAENAPCAAOAAAAAAAAAAAEEUACCKAAA.IFoEUQQgAIQwgIwQABAEAAAAOIAACAIAAAAQAIAgEAACEAAAAAgAQBAAAAAAAGBAAgAAAAAAAFAAECAAAgAAQARAEQAAAAAJAAIAAgAAAYQEAAAQmAgBC3ZAYzUw";
+    private static final String tc1 = "BOEFEAyOEFEAyAHABDENAI4AAAB9vABAASA";
+    private static final String tc2 = "COvFyGBOvFyGBAbAAAENAPCAAOAAAAAAAAAAAEEUACCKAAA.IFoEUQQgAIQwgIwQABAEAAAAOIAACAIAAAAQAIAgEAACEAAAAAgAQBAAAAAAAGBAAgAAAAAAAFAAECAAAgAAQARAEQAAAAAJAAIAAgAAAYQEAAAQmAgBC3ZAYzUw";
 
     @Test
-    public void testVendorLoading() {
+    void testVendorLoading() {
         Purpose p = VendorList.GetPurposeFromTcfId(1);
         assertNotNull(p);
         assertEquals(1, p.getId());
@@ -21,7 +21,7 @@ public class TcpBackedGdprMetaDataTest {
     }
 
     @Test
-    public void testTCString() {
+    void testTCString() {
         TCString consent = TCString.decode(tc1);
         GdprMetadata metadata = new TcfBackedGdprMetadata(consent);
 
@@ -29,7 +29,7 @@ public class TcpBackedGdprMetaDataTest {
     }
 
     @Test
-    public void testTCString2() {
+    void testTCString2() {
         TCString consent = TCString.decode(tc2);
         GdprMetadata metadata = new TcfBackedGdprMetadata(consent);
 

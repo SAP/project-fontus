@@ -13,11 +13,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 class TURLEncoderTest {
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.RANGE);
         cs = new IASString(csString);
     }
@@ -26,7 +26,7 @@ class TURLEncoderTest {
     private static IASString cs;
 
     @Test
-    public void testEncodingUntainted1() throws UnsupportedEncodingException {
+    void testEncodingUntainted1() throws UnsupportedEncodingException {
         IASString s = new IASString("hello");
 
         IASString encode = TURLEncoder.encode(s, cs);
@@ -36,7 +36,7 @@ class TURLEncoderTest {
     }
 
     @Test
-    public void testEncodingUntainted2() throws UnsupportedEncodingException {
+    void testEncodingUntainted2() throws UnsupportedEncodingException {
         IASString s = new IASString("h.e-l*l_o World");
 
         IASString encode = TURLEncoder.encode(s, cs);
@@ -46,7 +46,7 @@ class TURLEncoderTest {
     }
 
     @Test
-    public void testEncodingUntainted3() throws UnsupportedEncodingException {
+    void testEncodingUntainted3() throws UnsupportedEncodingException {
         IASString s = new IASString("hellü");
 
         IASString encode = TURLEncoder.encode(s, cs);
@@ -56,7 +56,7 @@ class TURLEncoderTest {
     }
 
     @Test
-    public void testEncodingUntainted4() throws UnsupportedEncodingException {
+    void testEncodingUntainted4() throws UnsupportedEncodingException {
         IASString s = new IASString("hellࠀ");
 
         IASString encode = TURLEncoder.encode(s, cs);
@@ -66,7 +66,7 @@ class TURLEncoderTest {
     }
 
     @Test
-    public void testEncodingTainted1() throws UnsupportedEncodingException {
+    void testEncodingTainted1() throws UnsupportedEncodingException {
         IASString s1 = new IASString("hel");
         IASString s2 = new IASString("lo");
         s2.setTaint(true);
@@ -79,7 +79,7 @@ class TURLEncoderTest {
     }
 
     @Test
-    public void testEncodingTainted2() throws UnsupportedEncodingException {
+    void testEncodingTainted2() throws UnsupportedEncodingException {
         IASString s1 = new IASString("h");
         IASString s2 = new IASString(".");
         s2.setTaint(true);
@@ -113,7 +113,7 @@ class TURLEncoderTest {
     }
 
     @Test
-    public void testEncodingTainted3() throws UnsupportedEncodingException {
+    void testEncodingTainted3() throws UnsupportedEncodingException {
         IASString s1 = new IASString("hell");
         IASString s2 = new IASString("ü");
         s2.setTaint(true);
@@ -129,7 +129,7 @@ class TURLEncoderTest {
     }
 
     @Test
-    public void testEncodingTainted4() throws UnsupportedEncodingException {
+    void testEncodingTainted4() throws UnsupportedEncodingException {
         IASString s1 = new IASString("hell");
         IASString s2 = new IASString("ࠀ");
         s2.setTaint(true);
@@ -145,7 +145,7 @@ class TURLEncoderTest {
     }
 
     @Test
-    public void testEncodingTainted5() throws UnsupportedEncodingException {
+    void testEncodingTainted5() throws UnsupportedEncodingException {
         IASString s1 = new IASString("hell");
         s1.setTaint(true);
         IASString s2 = new IASString("ࠀ");

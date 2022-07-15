@@ -41,7 +41,7 @@ public class OfflineClassInstrumenter {
             outArray = this.instrumenter.instrumentClass(i, ClassResolverFactory.createClassResolver(ClassLoader.getSystemClassLoader()), this.configuration, false);
             VerboseLogger.saveIfVerbose(new ClassReader(outArray).getClassName(), outArray);
         } catch (IllegalArgumentException ex) {
-            if (ex.getMessage().equals("JSR/RET are not supported with computeFrames option")) {
+            if ("JSR/RET are not supported with computeFrames option".equals(ex.getMessage())) {
                 outArray = this.instrumenter.instrumentClass(i, ClassResolverFactory.createClassResolver(ClassLoader.getSystemClassLoader()), this.configuration, true);
             } else {
                 throw ex;

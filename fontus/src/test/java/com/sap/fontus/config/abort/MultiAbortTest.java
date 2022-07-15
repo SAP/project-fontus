@@ -15,15 +15,15 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class MultiAbortTest {
+class MultiAbortTest {
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.RANGE);
     }
 
     @Test
-    public void throwAbortTest() {
+    void throwAbortTest() {
         String o = "FakeSinkObject";
         String s = "This is sensitive information";
 

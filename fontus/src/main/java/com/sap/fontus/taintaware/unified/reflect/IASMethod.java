@@ -142,7 +142,7 @@ public class IASMethod extends IASExecutable<Method> {
     @SuppressWarnings("Since15")
     @CallerSensitive
     @ForceInline
-    public Object invoke(Object instance, Object... parameters) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException {
+    public Object invoke(Object instance, Object... parameters) throws IllegalAccessException, InvocationTargetException, ClassNotFoundException {
 
         Object returnObj = null;
 
@@ -155,7 +155,7 @@ public class IASMethod extends IASExecutable<Method> {
                 String[] result = (String[]) this.original.invoke(instance, parameters);
                 return IASStringUtils.convertStringArray(result);
             }  else if (this.original.getReturnType().equals(Class.class)) {
-                Class result = (Class) this.original.invoke(instance, parameters);
+                Class<?> result = (Class) this.original.invoke(instance, parameters);
                 return ConversionUtils.convertClassToConcrete(result);
             }
         }

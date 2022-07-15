@@ -12,17 +12,17 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
-public class SqlParsingTest {
+class SqlParsingTest {
 
     @Test
-    public void checkMultipleQueryParsing(){
+    void checkMultipleQueryParsing(){
         SQLStatementParser parser = SQLParserUtils.createSQLStatementParser("select * from table1; drop table table1", DbType.mysql);
         List<SQLStatement> statementList = parser.parseStatementList();
         assertFalse(statementList.size() != 2, "sql string should parse as 2 statements");
     }
 
     @Test
-    public void checkTokenParsing(){
+    void checkTokenParsing(){
         SQLStatementParser parser = SQLParserUtils.createSQLStatementParser("select column1 from table1 where column2='data'", DbType.mysql);
         List<SQLStatement> statementList = parser.parseStatementList();
         assertFalse(statementList.size() != 1, "sql string is a single statement");

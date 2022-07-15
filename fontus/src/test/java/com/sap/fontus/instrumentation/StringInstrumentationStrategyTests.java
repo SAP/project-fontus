@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class StringInstrumentationStrategyTests {
+class StringInstrumentationStrategyTests {
     @Test
     void multiDimensionalArrayHandlingTest() {
         InstrumentationHelper helper = new InstrumentationHelper();
@@ -35,7 +35,7 @@ public class StringInstrumentationStrategyTests {
 
     @ParameterizedTest
     @MethodSource("provideParameters")
-    public void testClassNameConversion(String input, String expected) {
+    void testClassNameConversion(String input, String expected) {
         InstrumentationHelper helper = new InstrumentationHelper();
         assertEquals(expected, helper.translateClassName(input).orElse(input));
     }

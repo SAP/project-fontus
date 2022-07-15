@@ -4,7 +4,7 @@ import java.util.*;
 
 public class ProcessBuilderEnvironmentProxy implements Map<IASString, IASString> {
 
-    private Map<String, String> backend;
+    private final Map<String, String> backend;
 
     ProcessBuilderEnvironmentProxy(Map<String, String> env) {
         this.backend = env;
@@ -32,7 +32,7 @@ public class ProcessBuilderEnvironmentProxy implements Map<IASString, IASString>
 
     @Override
     public IASString get(Object key) {
-        return null;
+        return IASString.fromString(this.backend.get(IASStringUtils.convertTObject(key)));
     }
 
     @Override
@@ -78,7 +78,7 @@ public class ProcessBuilderEnvironmentProxy implements Map<IASString, IASString>
     }
 
     @Override
-    public Set<Entry<IASString, IASString>> entrySet() {
+    public Set<Map.Entry<IASString, IASString>> entrySet() {
         Map<IASString, IASString> temp = new HashMap<>(this.backend.size());
         for(Map.Entry<String, String> e : this.backend.entrySet()) {
             temp.put(IASString.fromString(e.getKey()), IASString.fromString(e.getValue()));

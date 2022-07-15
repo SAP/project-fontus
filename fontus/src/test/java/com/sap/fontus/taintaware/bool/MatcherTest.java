@@ -11,10 +11,10 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class MatcherTest {
+class MatcherTest {
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.BOOLEAN);
     }
 
@@ -22,7 +22,7 @@ public class MatcherTest {
      * Regression for luindex benchmark bug
      */
     @Test
-    public void matcherRegression() {
+    void matcherRegression() {
         IASPattern pattern = IASPattern.compile(new IASString("_[a-z0-9]+(_.*)?\\..*"));
         IASMatcher m = pattern.matcher("");
         IASString s = new IASString("_0_Lucene50_0.doc");

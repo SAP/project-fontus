@@ -7,11 +7,12 @@ public abstract class ReflectedObject {
 
     protected Object o;
 
-    public static Object callMethodWithReflection(Class c, Method m, Object... args) {
+    public static Object callMethodWithReflection(Class<?> c, Method m, Object... args) {
         Object result = null;
         try {
-            Method original_method = c.getMethod(m.getName(), m.getParameterTypes());
-            result = original_method.invoke(args);
+            Method originalMethod = c.getMethod(m.getName(), m.getParameterTypes());
+            // TODO: check whether this is a bug with the missing instance parameter.
+            result = originalMethod.invoke(args);
         } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
             System.err.println("FONTUS Exception with reflected call: " + c.getName() + "." + m.getName() + ": " + e.getMessage());
         }
@@ -21,15 +22,15 @@ public abstract class ReflectedObject {
     protected Object callMethodWithReflection(Method m, Object... args) {
         Object result = null;
         try {
-            Method original_method = this.o.getClass().getMethod(m.getName(), m.getParameterTypes());
-            result = original_method.invoke(this.o, args);
+            Method originalMethod = this.o.getClass().getMethod(m.getName(), m.getParameterTypes());
+            result = originalMethod.invoke(this.o, args);
         } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
             System.err.println("FONTUS Exception with reflected call: " + this.o.getClass().getName() + "." + m.getName() + ": " + e.getMessage());
         }
         return result;
     }
 
-    protected ReflectedObject(Object o) {
+    ReflectedObject(Object o) {
         this.o = o;
     }
 

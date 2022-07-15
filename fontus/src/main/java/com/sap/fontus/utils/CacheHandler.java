@@ -39,7 +39,7 @@ public enum CacheHandler {
 
                 String fileName = f.getName();
                 // Assumption: all files of the form <hash>.class
-                String hash = fileName.substring(0, fileName.indexOf("."));
+                String hash = fileName.substring(0, fileName.indexOf('.'));
                 this.hashes.add(Integer.valueOf(hash));
 
             }
@@ -48,7 +48,7 @@ public enum CacheHandler {
         }
     }
     public void put(int hash, byte[] classFileBuffer, String className) throws IOException {
-        File cb = new File(String.format("./tmp/agent/cache/%d.%s%s", hash, className.replace("/", "."), Constants.CLASS_FILE_SUFFIX));
+        File cb = new File(String.format("./tmp/agent/cache/%d.%s%s", hash, Utils.slashToDot(className), Constants.CLASS_FILE_SUFFIX));
         boolean created = cb.createNewFile();
         if(!created) {
             System.out.printf("Tried to put file with hash %d into cache but file exists?%n", hash);
@@ -61,7 +61,7 @@ public enum CacheHandler {
         if(!this.hashes.contains(hash)) {
             throw new IllegalStateException(String.format("Trying to fetch file with hash %d from cache despite it not exisiting!!!", hash));
         }
-        File cb = new File(String.format("./tmp/agent/cache/%d.%s%s", hash, className.replace("/", "."), Constants.CLASS_FILE_SUFFIX));
+        File cb = new File(String.format("./tmp/agent/cache/%d.%s%s", hash, Utils.slashToDot(className), Constants.CLASS_FILE_SUFFIX));
         if(!cb.isFile()) {
             throw new IllegalStateException(String.format("Trying to fetch file ('%s') which does not exist!!!", cb.getName()));
         }

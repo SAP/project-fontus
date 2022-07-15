@@ -7,17 +7,14 @@ import com.sap.fontus.taintaware.unified.IASString;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class IASOutputStreamTest {
+class IASOutputStreamTest {
     @BeforeAll
-    public static void setup() {
+    static void setup() {
         Configuration.setTestConfig(TaintMethod.RANGE);
     }
 
@@ -25,7 +22,7 @@ public class IASOutputStreamTest {
     void testTaintableStringRoundtrip() throws Exception {
         Widget w = Widget.makeWidget();
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(os);
+        ObjectOutput oos = new ObjectOutputStream(os);
         oos.writeObject(w);
         oos.close();
         byte[] bytes = os.toByteArray();
@@ -39,7 +36,7 @@ public class IASOutputStreamTest {
         Widget w = Widget.makeWidget();
         w.setValue(IASString.tainted(w.getValue()));
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(os);
+        ObjectOutput oos = new ObjectOutputStream(os);
         oos.writeObject(w);
         oos.close();
         byte[] bytes = os.toByteArray();
@@ -62,7 +59,7 @@ public class IASOutputStreamTest {
         }
 
 
-        public Widget() {
+        Widget() {
             this.value = null;
             this.number = -1;
         }
@@ -85,8 +82,12 @@ public class IASOutputStreamTest {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || this.getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || this.getClass() != o.getClass()) {
+                return false;
+            }
             IASOutputStreamTest.Widget widget = (IASOutputStreamTest.Widget) o;
             return this.number == widget.number && Objects.equals(this.value, widget.value);
         }

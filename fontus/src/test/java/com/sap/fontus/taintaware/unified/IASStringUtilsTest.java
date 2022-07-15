@@ -10,50 +10,50 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class IASStringUtilsTest {
+class IASStringUtilsTest {
 
     @BeforeAll
-    public static void setup() {
+    static void setup() {
         Configuration.setTestConfig(TaintMethod.defaultTaintMethod());
     }
 
     @Test
-    public void testConvertObjectString() {
+    void testConvertObjectString() {
         String s = "test";
         Object o = IASStringUtils.convertObject(s);
         assertTrue(o instanceof IASString);
     }
 
     @Test
-    public void testConvertObjectIASString() {
+    void testConvertObjectIASString() {
         String s = "test";
         Object o = IASStringUtils.convertObject(IASString.fromString(s));
         assertTrue(o instanceof IASString);
     }
 
     @Test
-    public void testConvertObjectOther() {
+    void testConvertObjectOther() {
         List<Integer> l = new ArrayList<>();
         Object o = IASStringUtils.convertObject(l);
         assertTrue(o instanceof List);
     }
 
     @Test
-    public void testConvertTObjectString() {
+    void testConvertTObjectString() {
         String s = "test";
         Object o = IASStringUtils.convertTObject(s);
         assertTrue(o instanceof String);
     }
 
     @Test
-    public void testConvertTObjectIASString() {
+    void testConvertTObjectIASString() {
         String s = "test";
         Object o = IASStringUtils.convertTObject(IASString.fromString(s));
         assertTrue(o instanceof String);
     }
 
     @Test
-    public void testConvertTObjectOther() {
+    void testConvertTObjectOther() {
         List<Integer> l = new ArrayList<>();
         Object o = IASStringUtils.convertTObject(l);
         assertTrue(o instanceof List);

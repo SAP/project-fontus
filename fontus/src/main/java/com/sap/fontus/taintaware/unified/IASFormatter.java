@@ -1771,7 +1771,7 @@ public class IASFormatter implements Closeable, Flushable {
                 if (l < Math.pow(10, precision)) {
                     requireScientificRepresentation = false;
                     precision -= IASString.valueOf(l).length();
-                    precision = precision < 0 ? 0 : precision;
+                    precision = Math.max(precision, 0);
                     l = Math.round(d * Math.pow(10, precision + 1));
                     if (IASString.valueOf(l).length() <= this.formatToken
                             .getPrecision()) {
@@ -2027,7 +2027,7 @@ public class IASFormatter implements Closeable, Flushable {
             if (0 != (this.flags & newFlag)) {
                 throw new DuplicateFormatFlagsException(String.valueOf(c));
             }
-            this.flags = (this.flags | newFlag);
+            this.flags |= newFlag;
             this.strFlags.append(c);
             return true;
 

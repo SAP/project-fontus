@@ -6,8 +6,12 @@ public abstract class PurposeBase implements Purpose {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Purpose)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Purpose)) {
+            return false;
+        }
         Purpose that = (Purpose) o;
         return Objects.equals(this.getId(), that.getId()) && Objects.equals(this.getName(), that.getName()) && Objects.equals(this.getDescription(), that.getDescription()) && Objects.equals(this.getLegalDescription(), that.getLegalDescription());
     }

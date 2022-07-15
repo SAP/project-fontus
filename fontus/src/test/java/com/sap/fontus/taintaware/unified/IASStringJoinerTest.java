@@ -5,8 +5,8 @@ import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.taintaware.shared.IASBasicMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
-import com.sap.fontus.taintaware.testHelper.RangeChainer;
-import com.sap.fontus.taintaware.testHelper.TaintMatcher;
+import com.sap.fontus.taintaware.helper.RangeChainer;
+import com.sap.fontus.taintaware.helper.TaintMatcher;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -15,18 +15,18 @@ import java.util.StringJoiner;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class IASStringJoinerTest {
+class IASStringJoinerTest {
 
-    private final static IASTaintMetadata md1 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy"));
-    private final static IASTaintMetadata md2 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy2"));
+    private static final IASTaintMetadata md1 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy"));
+    private static final IASTaintMetadata md2 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy2"));
 
     @BeforeAll
-    public static void setup() {
+    static void setup() {
         Configuration.setTestConfig(TaintMethod.RANGE);
     }
 
     @Test
-    public void testStringJoiner() {
+    void testStringJoiner() {
         IASStringJoiner joiner = new IASStringJoiner(",");
         joiner.add(new IASString("hello"));
         joiner.add(new IASString("world"));
@@ -36,7 +36,7 @@ public class IASStringJoinerTest {
     }
 
     @Test
-    public void testStringJoinerUntainted() {
+    void testStringJoinerUntainted() {
         IASStringJoiner joiner = new IASStringJoiner(",");
         joiner.add(new IASString("hello"));
         joiner.add(new IASString("world"));
@@ -49,7 +49,7 @@ public class IASStringJoinerTest {
     }
 
     @Test
-    public void testStringJoinerTainted() {
+    void testStringJoinerTainted() {
         IASStringJoiner joiner = new IASStringJoiner(",");
         joiner.add(new IASString("hello"));
         IASString world = new IASString("world");
@@ -65,7 +65,7 @@ public class IASStringJoinerTest {
     }
 
     @Test
-    public void testStringJoinerDelimiterTainted() {
+    void testStringJoinerDelimiterTainted() {
         IASString delimiter = new IASString(",");
         delimiter.setTaint(md1);
         IASStringJoiner joiner = new IASStringJoiner(delimiter);
@@ -83,7 +83,7 @@ public class IASStringJoinerTest {
     }
 
     @Test
-    public void testStringJoinerPrefixTainted() {
+    void testStringJoinerPrefixTainted() {
         IASString prefix = new IASString("[");
         prefix.setTaint(md1);
         IASString suffix = new IASString("]");
@@ -104,7 +104,7 @@ public class IASStringJoinerTest {
     }
 
     @Test
-    public void testStringEmptyTainted() {
+    void testStringEmptyTainted() {
         IASString def = new IASString("default");
         def.setTaint(md1);
 
@@ -119,7 +119,7 @@ public class IASStringJoinerTest {
     }
 
     @Test
-    public void testStringEmptyNotDefined() {
+    void testStringEmptyNotDefined() {
         IASStringJoiner joiner = new IASStringJoiner(",");
         IASString taintedString = joiner.toIASString();
 
@@ -128,7 +128,7 @@ public class IASStringJoinerTest {
     }
 
     @Test
-    public void testFromStringJoiner() {
+    void testFromStringJoiner() {
         StringJoiner joiner = new StringJoiner(",");
         joiner.add(new IASString("hello"));
         joiner.add(new IASString("world"));
@@ -142,7 +142,7 @@ public class IASStringJoinerTest {
     }
 
     @Test
-    public void testStringJoinerMergeTainted() {
+    void testStringJoinerMergeTainted() {
         IASStringJoiner joiner = new IASStringJoiner(",");
         joiner.add(new IASString("hello"));
         IASString world = new IASString("world");

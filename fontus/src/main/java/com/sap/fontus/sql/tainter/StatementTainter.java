@@ -103,8 +103,7 @@ public class StatementTainter extends StatementVisitorAdapter {
 			if (texprs.get(0) instanceof SubSelect) {
 				for(int i = 0; i < columns.size(); i++) {
 					UpdateSet us = new UpdateSet();
-					ArrayList<Column> cols = new ArrayList<>();
-					cols.addAll(tcols);
+					ArrayList<Column> cols = new ArrayList<>(tcols);
 					us.setColumns(cols);
 					ArrayList<Expression> exprs = new ArrayList<>();
 					exprs.add(texprs.get(i));

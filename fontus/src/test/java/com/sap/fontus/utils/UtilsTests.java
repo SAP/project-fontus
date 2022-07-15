@@ -23,7 +23,7 @@ class UtilsTests {
     private static final String expected = String.format("(%s%s)I", Type.getType(IASString.class).getDescriptor(), Type.getType(IASString.class).getDescriptor());
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TAINT_METHOD);
     }
 

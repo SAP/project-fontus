@@ -8,6 +8,7 @@ import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
+import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
 
 public class GdprTaintHandler extends IASTaintHandler {
@@ -39,21 +40,21 @@ public class GdprTaintHandler extends IASTaintHandler {
             }
         }
 
-        String euconsent_name = "euconsent";
-        String euconsent_v2_name = "euconsent_v2";
+        IASString euconsentName = IASString.fromString("euconsent");
+        IASString euconsentV2Name = IASString.fromString("euconsent_v2");
         TCString vendorConsent = null;
         for (ReflectedCookie cookie : cookies) {
             // Make sure v2 is given priority
-            if (cookie.getName().equals(euconsent_v2_name)) {
+            if (cookie.getName().equals(euconsentV2Name)) {
                 vendorConsent = TCString.decode(cookie.getValue().getString());
                 break;
-            } else if (cookie.getName().equals(euconsent_name)) {
+            } else if (cookie.getName().equals(euconsentName)) {
                 vendorConsent = TCString.decode(cookie.getValue().getString());
                 break;
             }
         }
         if (vendorConsent != null) {
-            System.out.println("TCF Cookie: " + vendorConsent.toString());
+            System.out.println("TCF Cookie: " + vendorConsent);
             GdprMetadata metadata = new TcfBackedGdprMetadata(vendorConsent);
             System.out.println("Metadata: " + metadata);
         } else {

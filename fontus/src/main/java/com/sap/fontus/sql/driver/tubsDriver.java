@@ -6,9 +6,12 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
+@SuppressWarnings("UseOfJDBCDriverClass")
 public class tubsDriver implements Driver {
     private static final Driver instance = new tubsDriver();
+    private static final Pattern TUBS_DRIVER_PREFIX = Pattern.compile("tubs:", Pattern.LITERAL);
 
     static {
         try {
@@ -30,7 +33,7 @@ public class tubsDriver implements Driver {
      * @return the parsed URL
      */
     private String extractRealUrl(String url) {
-        return this.acceptsURL(url) ? url.replace("tubs:", "") : url;
+        return this.acceptsURL(url) ? TUBS_DRIVER_PREFIX.matcher(url).replaceAll("") : url;
     }
 
     static List<Driver> registeredDrivers() {

@@ -1,23 +1,23 @@
 package com.sap.fontus.taintaware.lazybasic.operation;
 
+import com.sap.fontus.taintaware.lazybasic.IASLayer;
 import com.sap.fontus.taintaware.lazybasic.IASTaintInformation;
 import com.sap.fontus.taintaware.shared.IASTaintRange;
 import com.sap.fontus.taintaware.shared.IASTaintRanges;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
-public class InsertLayerTest {
+class InsertLayerTest {
     @Test
-    public void testInsertEmpty() {
+    void testInsertEmpty() {
         int size = 10;
         IASTaintRanges previous = new IASTaintRanges(size);
-        InsertLayer insertLayer = new InsertLayer(0, new IASTaintInformation(size, Arrays.asList(new IASTaintRange(0, size, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN))));
+        IASLayer insertLayer = new InsertLayer(0, new IASTaintInformation(size, List.of(new IASTaintRange(0, size, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN))));
 
         IASTaintRanges result = insertLayer.apply(previous);
 
@@ -26,12 +26,12 @@ public class InsertLayerTest {
     }
 
     @Test
-    public void testInsertInTR() {
+    void testInsertInTR() {
         int size = 10;
-        IASTaintRanges previous = new IASTaintRanges(size, Arrays.asList(
+        IASTaintRanges previous = new IASTaintRanges(size, List.of(
                 new IASTaintRange(0, size, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN)
         ));
-        InsertLayer insertLayer = new InsertLayer(5, new IASTaintInformation(5, Arrays.asList(new IASTaintRange(0, 5, IASTaintSourceRegistry.MD_STRING_CREATED_FROM_CHAR_ARRAY))));
+        IASLayer insertLayer = new InsertLayer(5, new IASTaintInformation(5, List.of(new IASTaintRange(0, 5, IASTaintSourceRegistry.MD_STRING_CREATED_FROM_CHAR_ARRAY))));
 
         IASTaintRanges result = insertLayer.apply(previous);
 
@@ -46,12 +46,12 @@ public class InsertLayerTest {
     }
 
     @Test
-    public void testInsertInTR2() {
+    void testInsertInTR2() {
         IASTaintRanges previous = new IASTaintRanges(10, Arrays.asList(
                 new IASTaintRange(0, 7, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN),
                 new IASTaintRange(7, 10, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN)
         ));
-        InsertLayer insertLayer = new InsertLayer(5, new IASTaintInformation(5, Arrays.asList(new IASTaintRange(0, 5, IASTaintSourceRegistry.MD_STRING_CREATED_FROM_CHAR_ARRAY))));
+        IASLayer insertLayer = new InsertLayer(5, new IASTaintInformation(5, List.of(new IASTaintRange(0, 5, IASTaintSourceRegistry.MD_STRING_CREATED_FROM_CHAR_ARRAY))));
 
         IASTaintRanges result = insertLayer.apply(previous);
 
@@ -66,12 +66,12 @@ public class InsertLayerTest {
     }
 
     @Test
-    public void testInsertInTR3() {
+    void testInsertInTR3() {
         IASTaintRanges previous = new IASTaintRanges(10, Arrays.asList(
                 new IASTaintRange(0, 7, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN),
                 new IASTaintRange(7, 10, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN)
         ));
-        InsertLayer insertLayer = new InsertLayer(5, new IASTaintInformation(5, Arrays.asList(new IASTaintRange(0, 5, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN))));
+        IASLayer insertLayer = new InsertLayer(5, new IASTaintInformation(5, List.of(new IASTaintRange(0, 5, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN))));
 
         IASTaintRanges result = insertLayer.apply(previous);
 
@@ -84,12 +84,12 @@ public class InsertLayerTest {
     }
 
     @Test
-    public void testInsertCutOut() {
+    void testInsertCutOut() {
         IASTaintRanges previous = new IASTaintRanges(10, Arrays.asList(
                 new IASTaintRange(0, 7, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN),
                 new IASTaintRange(7, 10, IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN)
         ));
-        InsertLayer insertLayer = new InsertLayer(5, new IASTaintInformation(5, Arrays.asList(new IASTaintRange(0, 5, IASTaintSourceRegistry.MD_CHAR_UNKNOWN_ORIGIN))));
+        IASLayer insertLayer = new InsertLayer(5, new IASTaintInformation(5, List.of(new IASTaintRange(0, 5, IASTaintSourceRegistry.MD_CHAR_UNKNOWN_ORIGIN))));
 
         IASTaintRanges result = insertLayer.apply(previous);
 

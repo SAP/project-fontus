@@ -123,7 +123,7 @@ public final class IASStringUtils {
     }
 
     public static Map<IASString, IASString> convertStringMapToTStringMap(Map<String, String> tbl) {
-        HashMap<IASString, IASString> result = new HashMap<>();
+        Map<IASString, IASString> result = new HashMap<>();
         tbl.forEach((key, value) -> result.put(IASString.valueOf(key), IASString.valueOf(value)));
         return result;
     }
@@ -169,10 +169,14 @@ public final class IASStringUtils {
             }
     }
     public static IASString cleanUTF8ForXml(IASString string) {
-        if(string == null) return null;
+        if(string == null) {
+            return null;
+        }
 
         int length = string.length();
-        if(length == 0) return string;
+        if(length == 0) {
+            return string;
+        }
         IASTaintInformationable tis = string.getTaintInformation();
         StringBuilder sb = new StringBuilder(length);
         for(int i=0; i<length; i++) {

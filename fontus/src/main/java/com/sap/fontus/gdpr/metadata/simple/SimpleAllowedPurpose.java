@@ -54,8 +54,12 @@ public class SimpleAllowedPurpose implements AllowedPurpose {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
         SimpleAllowedPurpose that = (SimpleAllowedPurpose) o;
         return Objects.equals(this.expiryDate, that.expiryDate) && this.purpose == that.purpose && Objects.equals(this.vendors, that.vendors);
     }

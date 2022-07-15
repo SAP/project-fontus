@@ -5,7 +5,7 @@ import com.sap.fontus.taintaware.IASTaintAware;
 import java.util.List;
 
 public class ExitAbort extends Abort {
-    private StdErrLoggingAbort stdErrLoggingAbort = new StdErrLoggingAbort();
+    private final StdErrLoggingAbort stdErrLoggingAbort = new StdErrLoggingAbort();
     @Override
     public IASTaintAware abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
         this.stdErrLoggingAbort.abort(taintAware, instance, sinkFunction, sinkName, stackTrace);

@@ -176,14 +176,14 @@ public class IASTaintInformation implements IASTaintInformationable {
     }
 
     @Override
-    public synchronized IASTaintMetadata getTaint(int position) {
-        return this.getTaintRanges().getTaintFor(position);
+    public synchronized IASTaintMetadata getTaint(int index) {
+        return this.getTaintRanges().getTaintFor(index);
     }
 
     @Override
     public IASTaintInformationable setTaint(int start, int end, IASTaintMetadata taint) {
         this.appendLayer(new DeleteLayer(start, end));
-        this.appendLayer(new InsertLayer(start, new IASTaintInformation(end - start, Arrays.asList(new IASTaintRange(0, end - start, taint)))));
+        this.appendLayer(new InsertLayer(start, new IASTaintInformation(end - start, List.of(new IASTaintRange(0, end - start, taint)))));
         return this;
     }
 

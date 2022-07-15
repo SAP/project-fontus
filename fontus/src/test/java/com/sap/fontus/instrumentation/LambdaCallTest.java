@@ -42,12 +42,12 @@ public class LambdaCallTest {
     }
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.defaultTaintMethod());
     }
 
     @Test
-    public void testPatternParameter() {
+    void testPatternParameter() {
         InstrumentationHelper instrumentationHelper = new InstrumentationHelper();
         Descriptor implementationDescriptor = new Descriptor(new String[]{Type.getDescriptor(Pattern.class), Type.getDescriptor(File.class), Type.getDescriptor(String.class)}, Type.getDescriptor(boolean.class));
         Descriptor invokeDynamicDescriptor = new Descriptor(new String[]{}, Type.getDescriptor(Comparator.class));
@@ -60,7 +60,7 @@ public class LambdaCallTest {
     }
 
     @Test
-    public void testObjectParameter() {
+    void testObjectParameter() {
         InstrumentationHelper instrumentationHelper = new InstrumentationHelper();
         Descriptor implementationDescriptor = new Descriptor(new String[]{Type.getDescriptor(Integer.class), Type.getDescriptor(Integer.class)}, Type.getDescriptor(Integer.class));
         Descriptor invokeDynamicDescriptor = new Descriptor(new String[]{}, Type.getDescriptor(Comparator.class));
@@ -73,7 +73,7 @@ public class LambdaCallTest {
     }
 
     @Test
-    public void testObjectReturnUninstrumented() {
+    void testObjectReturnUninstrumented() {
         InstrumentationHelper instrumentationHelper = new InstrumentationHelper();
         Descriptor implementationDescriptor = new Descriptor(new String[]{Type.getDescriptor(Integer.class), Type.getDescriptor(Integer.class)}, Type.getDescriptor(Integer.class));
         Descriptor invokeDynamicDescriptor = new Descriptor(new String[]{}, Type.getDescriptor(BiFunction.class));
@@ -86,7 +86,7 @@ public class LambdaCallTest {
     }
 
     @Test
-    public void testObjectReturnInstrumented() {
+    void testObjectReturnInstrumented() {
         InstrumentationHelper instrumentationHelper = new InstrumentationHelper();
         Descriptor implementationDescriptor = new Descriptor(new String[]{Type.getDescriptor(IASString.class), Type.getDescriptor(IASString.class)}, Type.getDescriptor(IASString.class));
         Descriptor invokeDynamicDescriptor = new Descriptor(new String[]{}, Type.getDescriptor(BiFunction.class));

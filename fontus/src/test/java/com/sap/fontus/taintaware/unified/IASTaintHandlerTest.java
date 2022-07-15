@@ -4,9 +4,8 @@ import com.sap.fontus.agent.InstrumentationConfiguration;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-public class IASTaintHandlerTest {
+class IASTaintHandlerTest {
     @BeforeAll
     static void before() {
         IASTaintSourceRegistry.getInstance().getOrRegisterObject("mySource");
@@ -27,13 +26,13 @@ public class IASTaintHandlerTest {
     }
 
     @Test
-    public void testRecursiveTaint() {
+    void testRecursiveTaint() {
         IASString string = new IASString("test");
         A a = new A(string);
 
         IASTaintHandler.taint(a, null, null, 1);
 
-        Assertions.assertTrue(string.isTainted());
+        assertTrue(string.isTainted());
     }
 
     static class A {
@@ -47,7 +46,7 @@ public class IASTaintHandlerTest {
     }
 
     @Test
-    public void testTaintMap() {
+    void testTaintMap() {
         Map<String, Object> map = new HashMap<>();
         List<String> types = new ArrayList<>();
 
@@ -62,7 +61,7 @@ public class IASTaintHandlerTest {
     }
 
     @Test
-    public void testTaintMapTaintedString() {
+    void testTaintMapTaintedString() {
         Map<String, List<IASString>> map = new HashMap<>();
         List<IASString> types = new ArrayList<>();
 
@@ -81,7 +80,7 @@ public class IASTaintHandlerTest {
     }
 
     @Test
-    public void testTaintList() {
+    void testTaintList() {
         List<String> types = new ArrayList<>();
 
         types.add("element1");

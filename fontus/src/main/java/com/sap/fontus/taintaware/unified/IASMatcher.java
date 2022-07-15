@@ -130,8 +130,9 @@ public final class IASMatcher {
     public static IASString quoteReplacement(IASString s) {
         // From Apache Harmony
         // first check whether we have smth to quote
-        if (s.indexOf('\\') < 0 && s.indexOf('$') < 0)
+        if (s.indexOf('\\') < 0 && s.indexOf('$') < 0) {
             return s;
+        }
         IASStringBuilder res = new IASStringBuilder(s.length() * 2);
         IASString charString;
         int len = s.length();

@@ -3,8 +3,8 @@ package com.sap.fontus.taintaware.shared;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.taintaware.unified.IASString;
-import com.sap.fontus.taintaware.unified.reflect.IASMethod;
 import com.sap.fontus.taintaware.unified.reflect.IASClassProxy;
+import com.sap.fontus.taintaware.unified.reflect.IASMethod;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import outerpackage.Anno;
@@ -12,20 +12,20 @@ import outerpackage.ApplicationClass;
 
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class IASReflectionMethodProxyTest {
+class IASReflectionMethodProxyTest {
     @BeforeAll
-    public static void setup() {
+    static void setup() {
         Configuration.setTestConfig(TaintMethod.RANGE);
     }
 
     @Test
-    public void testGetMethodWithParameter() throws NoSuchMethodException {
+    void testGetMethodWithParameter() throws NoSuchMethodException {
         Class<?> cls = IASString.class;
         IASString methodName = new IASString("concat");
         Class<?>[] parameters = {IASString.class};
@@ -37,7 +37,7 @@ public class IASReflectionMethodProxyTest {
     }
 
     @Test
-    public void testGetMethodWithExternalParameter() throws NoSuchMethodException {
+    void testGetMethodWithExternalParameter() throws NoSuchMethodException {
         Class<?> cls = IASString.class;
         IASString methodName = new IASString("charAt");
         Class<?>[] parameters = {int.class};
@@ -49,7 +49,7 @@ public class IASReflectionMethodProxyTest {
     }
 
     @Test
-    public void testGetMethodWithEmptyParameter() throws NoSuchMethodException {
+    void testGetMethodWithEmptyParameter() throws NoSuchMethodException {
         Class<?> cls = IASString.class;
         IASString methodName = new IASString("trim");
         Class<?>[] parameters = {};
@@ -61,7 +61,7 @@ public class IASReflectionMethodProxyTest {
     }
 
     @Test
-    public void testGetMethodWithNullParameter() throws NoSuchMethodException {
+    void testGetMethodWithNullParameter() throws NoSuchMethodException {
         Class<?> cls = IASString.class;
         IASString methodName = new IASString("trim");
         Class<?>[] parameters = null;
@@ -74,7 +74,7 @@ public class IASReflectionMethodProxyTest {
 
     // Not reproducible test failure: Test fails for normal execution with ArrayStoreException, test succeeds for debugging execution without any exceptions
     @Test
-    public void testInvokeAnnotation() throws Throwable {
+    void testInvokeAnnotation() throws Throwable {
         Anno anno = ApplicationClass.class.getAnnotation(Anno.class);
         IASMethod valueMethod = IASClassProxy.getMethod(Anno.class, new IASString("value"), new Class[0]);
         IASMethod arrayMethod = IASClassProxy.getMethod(Anno.class, new IASString("array"), new Class[0]);
@@ -87,7 +87,7 @@ public class IASReflectionMethodProxyTest {
     }
 
     @Test
-    public void testInvokeJdk() throws Throwable {
+    void testInvokeJdk() throws Throwable {
         IASMethod method = IASClassProxy.getMethod(MessageFormat.class, new IASString("format"), new Class[]{IASString.class, Object[].class});
         IASString format = new IASString("{0}, {1}");
         IASString insert0 = new IASString("insert0");
@@ -99,7 +99,7 @@ public class IASReflectionMethodProxyTest {
     }
 
     @Test
-    public void testInvokeTaintaware() throws Throwable {
+    void testInvokeTaintaware() throws Throwable {
         IASMethod method = IASClassProxy.getMethod(IASString.class, new IASString("concat"), new Class[]{IASString.class});
         IASString first = new IASString("first");
         IASString second = new IASString("second");
@@ -110,7 +110,7 @@ public class IASReflectionMethodProxyTest {
     }
 
     @Test
-    public void testInvokeApplicationClass() throws Throwable {
+    void testInvokeApplicationClass() throws Throwable {
         IASMethod method = IASClassProxy.getMethod(ApplicationClass.class, new IASString("doStuff"), new Class[]{IASString.class});
         ApplicationClass applicationClass = new ApplicationClass();
         IASString input = new IASString("input");
@@ -122,12 +122,12 @@ public class IASReflectionMethodProxyTest {
     }
 
     @Test
-    public void testGetDeclaredMethodsSorting() throws NoSuchMethodException {
-        Method[] expected = new Method[]{MethodsToSortParameter.class.getMethod("method", IASString.class)};
+    void testGetDeclaredMethodsSorting() throws NoSuchMethodException {
+        Method[] expected = {MethodsToSortParameter.class.getMethod("method", IASString.class)};
 
         IASMethod[] actual = IASClassProxy.getDeclaredMethods(MethodsToSortParameter.class);
 
-        ArrayList<Method> actualMethods = new ArrayList<Method>();
+        List<Method> actualMethods = new ArrayList<>();
         for (IASMethod m : actual) {
             actualMethods.add(m.getMethod());
         }

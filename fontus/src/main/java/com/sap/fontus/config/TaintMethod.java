@@ -29,7 +29,7 @@ public enum TaintMethod {
     }
 
     public static TaintMethod getTaintMethodByArgumentName(String argName) {
-        for (TaintMethod tm : TaintMethod.values()) {
+        for (TaintMethod tm : values()) {
             if (tm.name.equals(argName)) {
                 return tm;
             }

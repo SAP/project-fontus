@@ -108,8 +108,8 @@ public final class Utils {
         return new Handle(h.getTag(), owner, h.getName(), desc.toDescriptor(), h.isInterface());
     }
 
-    public static String getInternalName(Class cls) {
-        return Utils.dotToSlash(cls.getName());
+    public static String getInternalName(Class<?> cls) {
+        return dotToSlash(cls.getName());
     }
 
     public static String slashToDot(String s) {
@@ -121,7 +121,7 @@ public final class Utils {
     }
 
     public static String getSimpleClassName(String s) {
-        return s.substring(s.lastIndexOf(".") + 1).trim();
+        return s.substring(s.lastIndexOf('.') + 1).trim();
     }
 
     public static void insertGenericConversionToOrig(MethodVisitor mv, String expectedTypeInternalName) {

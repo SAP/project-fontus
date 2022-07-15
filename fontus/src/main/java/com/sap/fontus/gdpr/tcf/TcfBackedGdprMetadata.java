@@ -88,8 +88,12 @@ public class TcfBackedGdprMetadata extends GdprMetadataBase {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
         TcfBackedGdprMetadata that = (TcfBackedGdprMetadata) o;
         return Objects.equals(this.tcString, that.tcString) && Objects.equals(this.dataId, that.dataId);
     }

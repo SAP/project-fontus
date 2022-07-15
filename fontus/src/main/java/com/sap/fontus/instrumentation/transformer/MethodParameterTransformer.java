@@ -131,11 +131,8 @@ public class MethodParameterTransformer {
             this.visitor.visitInsn(Opcodes.DUP);
             this.visitor.visitVarInsn(Type.getObjectType(this.function.getOwner()).getOpcode(Opcodes.ISTORE), ownerN);
 
-            List<String> paramList = new ArrayList<>(this.descriptor.getParameters());
-
             // Reload the local variables onto the stack
-            for (int i = 0; i < paramList.size(); i++) {
-                String p = paramList.get(i);
+            for (String p : this.descriptor.getParameters()) {
                 Type t = Type.getType(p);
 
                 n -= t.getSize();

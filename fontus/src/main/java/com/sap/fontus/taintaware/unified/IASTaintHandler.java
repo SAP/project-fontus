@@ -125,7 +125,7 @@ public class IASTaintHandler {
                 array[i] = traverser.apply(array[i]);
             }
         } else if (isList) {
-            List list = (List) object;
+            List<Object> list = (List<Object>) object;
 
             boolean isUnmodifiable = cls.getName().startsWith("java.util.Collections$Unmodifiable") || cls.getName().startsWith("java.util.Collections$Singleton");
 

@@ -12,14 +12,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-public class PatternTest extends AbstractTest {
+class PatternTest extends AbstractTest {
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.LAZYBASIC);
     }
 
     @Test
-    public void testSplitWithLimit_1() {
+    void testSplitWithLimit_1() {
         IASString s1 = new IASString("bye");
         IASString s2 = new IASString(",bye");
 
@@ -45,7 +45,7 @@ public class PatternTest extends AbstractTest {
     }
     
     @Test
-    public void testSplitWithLimit_3() {
+    void testSplitWithLimit_3() {
         IASString s1 = new IASString("hello");
         IASString s2 = new IASString(",hi");
         IASString s3 = new IASString(",bye");
@@ -81,7 +81,7 @@ public class PatternTest extends AbstractTest {
     }
 
     @Test
-    public void testSplit_1() {
+    void testSplit_1() {
         IASString s = new IASString("hello,bye");
 
         IASString[] t = s.split(new IASString(","));

@@ -1,7 +1,6 @@
 package com.sap.fontus.taintaware.shared;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 public class IASTaintRange implements Cloneable, Serializable {
 

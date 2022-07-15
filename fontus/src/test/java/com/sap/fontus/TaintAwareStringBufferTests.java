@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class TaintAwareStringBufferTests {
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.RANGE);
     }
 

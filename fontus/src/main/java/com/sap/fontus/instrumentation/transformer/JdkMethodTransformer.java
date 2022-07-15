@@ -16,7 +16,7 @@ public class JdkMethodTransformer implements ParameterTransformation, ReturnTran
     /**
      * TODO: This is really ugly and should probably be changed to something more generic, just an attempt to cut down on excessive ConversionUtils usage
      */
-    private static Set<Type> neverConvert = Set.of(
+    private static final Set<Type> neverConvert = Set.of(
             Type.getType(Integer.class),
             Type.getType(Long.class),
             Type.getType(Boolean.class),

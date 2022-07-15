@@ -34,8 +34,12 @@ public class TcfPurpose implements Purpose {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
         TcfPurpose that = (TcfPurpose) o;
         return Objects.equals(this.tcfPurpose, that.tcfPurpose);
     }

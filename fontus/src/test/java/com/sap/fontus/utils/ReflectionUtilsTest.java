@@ -2,29 +2,28 @@ package com.sap.fontus.utils;
 
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
-public class ReflectionUtilsTest {
+class ReflectionUtilsTest {
     @Test
-    public void testGetCallerClass() {
-        Class caller = this.getCallerClass();
+    void testGetCallerClass() {
+        Class<?> caller = getCallerClass();
 
-        assertEquals(ReflectionUtilsTest.class, caller);
+        assertSame(ReflectionUtilsTest.class, caller);
     }
 
     @Test
-    public void testGetCallerClassReflection() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    void testGetCallerClassReflection() throws Exception {
         Method m = ReflectionUtilsTest.class.getDeclaredMethod("getCallerClass");
 
-        Class caller = (Class) m.invoke(this);
+        Class<?> caller = (Class<?>) m.invoke(this);
 
-        assertEquals(ReflectionUtilsTest.class, caller);
+        assertSame(ReflectionUtilsTest.class, caller);
     }
 
-    private Class<?> getCallerClass() {
+    private static Class<?> getCallerClass() {
         return ReflectionUtils.getCallerClass();
     }
 }

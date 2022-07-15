@@ -30,7 +30,7 @@ public class CombinedExcludedLookup {
         return JdkClassesLookup.getInstance().isJdkClass(internalName, this.classLoader);
     }
 
-    public boolean isJdkClass(Class cls) {
+    public boolean isJdkClass(Class<?> cls) {
         return JdkClassesLookup.getInstance().isJdkClass(Utils.getInternalName(cls), this.classLoader);
     }
 

@@ -6,8 +6,12 @@ public abstract class VendorBase implements Vendor {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Vendor)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Vendor)) {
+            return false;
+        }
         Vendor that = (Vendor) o;
         return this.getId() == that.getId() && Objects.equals(this.getName(), that.getName());
     }

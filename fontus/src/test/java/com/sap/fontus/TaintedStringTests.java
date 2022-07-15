@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class TaintedStringTests {
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.RANGE);
     }
 

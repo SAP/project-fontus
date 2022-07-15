@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class AgentConfigTests {
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.RANGE);
     }
 

@@ -3,9 +3,7 @@ package com.sap.fontus.taintaware.range;
 /**
  * Created by d059349 on 18.07.17.
  */
-@SuppressWarnings("ALL")
-// David: As I didn't write this Code and don't want to mess with it I suppressed the warnings.
-// TODO: Work out whether we can adapt it to the style of the remaining project?
+
 public class TaintInformationTest {
 //    @Test
 //    public void createRange() {

@@ -57,7 +57,7 @@ public class Converter implements Callable<Void> {
     private File outputFile;
 
     @Override
-    public Void call() throws Exception {
+    public Void call() {
         try {
             Configuration fontusConfig = this.readConfig();
             JSONObject juturnaObject = this.readJuturnaConfig();
@@ -89,7 +89,7 @@ public class Converter implements Callable<Void> {
                     }
                 }
                 if (!contained) {
-                    String sourceName = Converter.generateName(call);
+                    String sourceName = generateName(call);
                     sources.add(new Source(sourceName, call));
                 }
             } catch (Exception e) {
@@ -103,7 +103,7 @@ public class Converter implements Callable<Void> {
         return configuration;
     }
 
-    private Configuration mergeSinks(Configuration fontusConfig, JSONArray jsonArray) throws NoSuchMethodException, ClassNotFoundException {
+    private Configuration mergeSinks(Configuration fontusConfig, JSONArray jsonArray) {
         List<Sink> sinks = new ArrayList<>();
         for (Object sinkJsonO : jsonArray) {
             JSONObject sinkJson = (JSONObject) sinkJsonO;
@@ -117,10 +117,10 @@ public class Converter implements Callable<Void> {
                     }
                 }
                 if (!contained) {
-                    List<SinkParameter> sinkParameters = Converter.parseParameters(sinkJson);
+                    List<SinkParameter> sinkParameters = parseParameters(sinkJson);
                     List<String> categories = this.parseCategories(sinkJson);
-                    List<Position> positions = Converter.parsePositions(sinkJson);
-                    String sinkName = Converter.generateName(call);
+                    List<Position> positions = parsePositions(sinkJson);
+                    String sinkName = generateName(call);
                     sinks.add(new Sink(sinkName, call, sinkParameters, categories, new DataProtection(), FunctionCall.EmptyFunctionCall, positions));
                 }
             } catch (Exception e) {

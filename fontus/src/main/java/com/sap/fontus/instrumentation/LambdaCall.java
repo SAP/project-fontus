@@ -206,8 +206,12 @@ public class LambdaCall implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof LambdaCall)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof LambdaCall)) {
+            return false;
+        }
         LambdaCall call = (LambdaCall) o;
         return Objects.equals(this.functionalInterface, call.functionalInterface) && Objects.equals(this.implementation, call.implementation) && Objects.equals(this.invokeDescriptor, call.invokeDescriptor);
     }

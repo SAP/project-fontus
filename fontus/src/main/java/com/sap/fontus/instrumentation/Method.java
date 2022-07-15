@@ -63,7 +63,7 @@ public class Method {
     }
 
     public String[] getParameterTypes() {
-        return Descriptor.parseDescriptor(this.getDescriptor()).getParameters().toArray(new String[0]);
+        return Descriptor.parseDescriptor(this.descriptor).getParameters().toArray(new String[0]);
     }
 
     public boolean isDefault() {
@@ -78,11 +78,11 @@ public class Method {
 
     public FunctionCall toFunctionCall() {
         int opcode;
-        if (Modifier.isStatic(this.getAccess())) {
+        if (Modifier.isStatic(this.access)) {
             opcode = Opcodes.INVOKESTATIC;
         } else if (this.ownerIsInterface) {
             opcode = Opcodes.INVOKEINTERFACE;
-        } else if (Modifier.isPrivate(this.getAccess())) {
+        } else if (Modifier.isPrivate(this.access)) {
             opcode = Opcodes.INVOKESPECIAL;
         } else {
             opcode = Opcodes.INVOKEVIRTUAL;
@@ -97,18 +97,32 @@ public class Method {
     }
 
     public boolean equalsNameAndDescriptor(Object o) {
-        if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
         Method method = (Method) o;
         return Objects.equals(this.name, method.name) && Objects.equals(this.descriptor, method.descriptor);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
         Method method = (Method) o;
-        return this.access == method.access && this.ownerIsInterface == method.ownerIsInterface && Objects.equals(this.owner, method.owner) && Objects.equals(this.name, method.name) && Objects.equals(this.descriptor, method.descriptor) && Objects.equals(this.signature, method.signature) && Arrays.equals(this.exceptions, method.exceptions);
+        return this.access == method.access
+                && this.ownerIsInterface == method.ownerIsInterface
+                && Objects.equals(this.owner, method.owner)
+                && Objects.equals(this.name, method.name)
+                && Objects.equals(this.descriptor, method.descriptor)
+                && Objects.equals(this.signature, method.signature)
+                && Arrays.equals(this.exceptions, method.exceptions);
     }
 
     @Override

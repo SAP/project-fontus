@@ -33,7 +33,7 @@ class ConfigurationTests {
     }
 
     @AfterAll
-    public static void restoreStreams() {
+    static void restoreStreams() {
         System.setOut(originalOut);
         System.setErr(originalErr);
     }

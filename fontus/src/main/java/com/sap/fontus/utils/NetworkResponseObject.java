@@ -13,7 +13,7 @@ public class NetworkResponseObject {
         Object respObject = null;
 
         try {
-            Class cls = ClassResolverFactory.createClassFinder().findClass("org.springframework.web.context.request.RequestContextHolder");
+            Class<?> cls = ClassResolverFactory.createClassFinder().findClass("org.springframework.web.context.request.RequestContextHolder");
             Method reqAttributeMethod = cls.getMethod("getRequestAttributes");
             Object reqAttributeObject = reqAttributeMethod.invoke(null);
             Method respObjectMethod = reqAttributeObject.getClass().getMethod("getResponse");
@@ -21,7 +21,7 @@ public class NetworkResponseObject {
         } catch (IllegalArgumentException | SecurityException | IllegalAccessException |
                  NoSuchMethodException | InvocationTargetException e) {
             System.out.println("Error getting Spring response object via reflection!");
-            System.out.println(e.toString());
+            System.out.println(e);
         }
 
         return respObject;
@@ -34,14 +34,14 @@ public class NetworkResponseObject {
                 respObject.getClass().getMethod("addHeader", IASString.class, IASString.class).invoke(respObject, new IASString("message"), new IASString("sql_injected"));
                 respObject.getClass().getMethod("setHeader", IASString.class, IASString.class).invoke(respObject, new IASString("Content-Type"), new IASString("text/plain"));
                 respObject.getClass().getMethod("setStatus", int.class).invoke(respObject, 418);
-                PrintWriter pw_res = (PrintWriter) respObject.getClass().getMethod("getWriter").invoke(respObject);
-                pw_res.getClass().getMethod("print",IASString.class).invoke(pw_res,new IASString(reqObj.getEncodedRequestBody()));
-                pw_res.getClass().getMethod("flush").invoke(pw_res);
-                pw_res.getClass().getMethod("close").invoke(pw_res);
+                PrintWriter pwRes = (PrintWriter) respObject.getClass().getMethod("getWriter").invoke(respObject);
+                pwRes.getClass().getMethod("print",IASString.class).invoke(pwRes,new IASString(reqObj.getEncodedRequestBody()));
+                pwRes.getClass().getMethod("flush").invoke(pwRes);
+                pwRes.getClass().getMethod("close").invoke(pwRes);
             } catch (IllegalArgumentException | SecurityException | IllegalAccessException |
                  NoSuchMethodException | InvocationTargetException e) {
                 System.out.println("Error getting Spring response object via reflection!");
-                System.out.println(e.toString());
+                System.out.println(e);
             }
         }
     }
@@ -54,7 +54,7 @@ public class NetworkResponseObject {
             } catch (IllegalArgumentException | SecurityException | IllegalAccessException |
                  NoSuchMethodException | InvocationTargetException e) {
                 System.out.println("Error getting Spring response object via reflection!");
-                System.out.println(e.toString());
+                System.out.println(e);
             }
         }
     }

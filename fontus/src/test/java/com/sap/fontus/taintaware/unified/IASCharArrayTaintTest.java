@@ -5,31 +5,30 @@ import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.taintaware.range.IASTaintInformation;
 import com.sap.fontus.taintaware.shared.IASBasicMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintMetadata;
-import com.sap.fontus.taintaware.shared.IASTaintRanges;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
-import com.sap.fontus.taintaware.testHelper.THelper;
-import com.sap.fontus.taintaware.testHelper.TaintMatcher;
-import com.sap.fontus.taintaware.testHelper.RangeChainer;
+import com.sap.fontus.taintaware.helper.THelper;
+import com.sap.fontus.taintaware.helper.TaintMatcher;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static com.sap.fontus.taintaware.testHelper.RangeChainer.range;
-import static org.junit.jupiter.api.Assertions.*;
+import static com.sap.fontus.taintaware.helper.RangeChainer.range;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-public class IASCharArrayTaintTest {
+class IASCharArrayTaintTest {
 
     private static final IASTaintMetadata md = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy"));
 
-    IASCharArrayTaint taintCache = IASCharArrayTaint.getInstance();
+    private final IASCharArrayTaint taintCache = IASCharArrayTaint.getInstance();
     
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.RANGE);
     }
 
     @Test
-    public void testGetSetTaint() {
+    void testGetSetTaint() {
         // Extract to char
         char[] chars = {'h','e','l','l','o' };
 
@@ -40,7 +39,7 @@ public class IASCharArrayTaintTest {
     }
 
     @Test
-    public void testGetSetTaintTwoCharArrays() {
+    void testGetSetTaintTwoCharArrays() {
         // Extract to char
         char[] chars = {'h','e','l','l','o' };
 	char[] chars2 = {'b','y','e'};
@@ -57,7 +56,7 @@ public class IASCharArrayTaintTest {
     }
 
     @Test
-    public void testGetSetTaintTwoCharArraysSameContent() {
+    void testGetSetTaintTwoCharArraysSameContent() {
         // Extract to char
         char[] chars = {'h','e','l','l','o'};
 	char[] chars2 = {'h','e','l','l','o'};
@@ -74,7 +73,7 @@ public class IASCharArrayTaintTest {
     }
 
     @Test
-    public void testGetSetTaintTwoCharArraysSameContentDifferentRanges() {
+    void testGetSetTaintTwoCharArraysSameContentDifferentRanges() {
         // Extract to char
         char[] chars = {'h','e','l','l','o'};
 	char[] chars2 = {'h','e','l','l','o'};
@@ -91,7 +90,7 @@ public class IASCharArrayTaintTest {
     }
 
     @Test
-    public void testCharArrayTaint() {
+    void testCharArrayTaint() {
         IASString foo = new IASString("foo");
         THelper.get(foo).addRange(0, 3, md);
 
@@ -106,7 +105,7 @@ public class IASCharArrayTaintTest {
     }
     
     @Test
-    public void testCharArrayTaintStringBuilder() {
+    void testCharArrayTaintStringBuilder() {
         IASStringBuilder foo = new IASStringBuilder("foo");
         THelper.get(foo).addRange(0, 3, md);
 
@@ -121,7 +120,7 @@ public class IASCharArrayTaintTest {
     }
 
     @Test
-    public void testCharArrayTaintSubTaint() {
+    void testCharArrayTaintSubTaint() {
         IASStringBuilder foo = new IASStringBuilder("foobar");
         THelper.get(foo).addRange(2, 4, md);
 
@@ -136,7 +135,7 @@ public class IASCharArrayTaintTest {
     }
 
     @Test
-    public void testCharArrayTaintSubString() {
+    void testCharArrayTaintSubString() {
         IASStringBuilder foo = new IASStringBuilder("foobar");
         THelper.get(foo).addRange(3, 6, md);
 
@@ -152,7 +151,7 @@ public class IASCharArrayTaintTest {
     }
 
     @Test
-    public void testCharArrayTaintDstSubString() {
+    void testCharArrayTaintDstSubString() {
         IASStringBuilder foo = new IASStringBuilder("foobar");
         THelper.get(foo).addRange(3, 6, md);
 
@@ -169,7 +168,7 @@ public class IASCharArrayTaintTest {
     }
 
     @Test
-    public void testCharArrayTaintNewStringOffset() {
+    void testCharArrayTaintNewStringOffset() {
         IASString foo = new IASString("foobar");
         THelper.get(foo).addRange(0, 3, md);
 

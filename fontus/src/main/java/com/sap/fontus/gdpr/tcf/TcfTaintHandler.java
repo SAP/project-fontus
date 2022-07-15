@@ -6,12 +6,13 @@ import com.sap.fontus.gdpr.metadata.GdprTaintMetadata;
 import com.sap.fontus.gdpr.servlet.ReflectedCookie;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.taintaware.IASTaintAware;
+import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
 
 public class TcfTaintHandler extends IASTaintHandler {
 
-    private static String consent_name = "euconsent";
-    private static String consent_v2_name = "euconsent_v2";
+    private static final IASString CONSENT_NAME = IASString.fromString("euconsent");
+    private static final IASString CONSENT_V_2_NAME = IASString.fromString("euconsent_v2");
 
     /**
      * Extracts the TCF consent string from a cookie and attaches it as the taint metadata
@@ -28,24 +29,24 @@ public class TcfTaintHandler extends IASTaintHandler {
         // This might not work as we relocate the HttpServletRequest object...
         ReflectedHttpServletRequest servlet = new ReflectedHttpServletRequest(parent);
 
-        System.out.print(servlet.toString());
+        System.out.print(servlet);
 
         ReflectedCookie[] cookies = servlet.getCookies();
         TCString vendorConsent = null;
         for (ReflectedCookie cookie : cookies) {
             // Make sure v2 is given priority
-            if (cookie.getName().equals(consent_v2_name)) {
+            if (cookie.getName().equals(CONSENT_V_2_NAME)) {
                 vendorConsent = TCString.decode(cookie.getValue().getString());
                 break;
-            } else if (cookie.getName().equals(consent_name)) {
+            } else if (cookie.getName().equals(CONSENT_NAME)) {
                 vendorConsent = TCString.decode(cookie.getValue().getString());
                 break;
             }
         }
         if (vendorConsent != null) {
-            System.out.println("TCF Cookie: " + vendorConsent.toString());
+            System.out.println("TCF Cookie: " + vendorConsent);
             GdprMetadata metadata = new TcfBackedGdprMetadata(vendorConsent);
-            System.out.println("Metadata: " + metadata.toString());
+            System.out.println("Metadata: " + metadata);
             taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
         } else {
             System.out.println("No euconsent[_v2] Cookie found!");

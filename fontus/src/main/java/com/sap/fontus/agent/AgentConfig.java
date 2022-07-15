@@ -148,9 +148,7 @@ public class AgentConfig {
                 taintlossHandler = TaintlossHandler.parse(taintlossHandlerName);
             }
         }
-        if (c == null) {
-            c = ConfigurationLoader.defaultConfiguration();
-        }
+
         c.setVerbose(verbose || c.isVerbose());
         c.setPersistentCache(persistentCache || c.usePersistentCache());
         c.setTaintPersistence(taintPersistence || c.hasTaintPersistence());

@@ -100,21 +100,21 @@ public class FunctionCall {
             case '[':
                 return Array.newInstance(getClazz(s.substring(1)), 0).getClass();
             case 'L':
-                return Class.forName(s.substring(1, s.length() - 1).replaceAll("/", "."));
+                return Class.forName(Utils.slashToDot(s.substring(1, s.length() - 1)));
             default:
-                return Class.forName(s.replaceAll("/", "."));
+                return Class.forName(Utils.slashToDot(s));
         }
     }
 
     public static Method toMethod(FunctionCall functionCall) throws ClassNotFoundException, NoSuchMethodException {
-        Class clazz = Class.forName(Utils.slashToDot(functionCall.getOwner()));
+        Class<?> clazz = Class.forName(Utils.slashToDot(functionCall.owner));
         List<String> params = functionCall.getParsedDescriptor().getParameters();
-        List<Class> paramClasses = new ArrayList<>(params.size());
+        List<Class<?>> paramClasses = new ArrayList<>(params.size());
         for (String s : params) {
             paramClasses.add(getClazz(s));
         }
 
-        return clazz.getMethod(functionCall.getName(), paramClasses.toArray(new Class[0]));
+        return clazz.getMethod(functionCall.name, paramClasses.toArray(new Class[0]));
     }
 
     public static FunctionCall fromHandle(Handle handle) {
@@ -136,7 +136,7 @@ public class FunctionCall {
 
     @JsonIgnore
     public String getFqn() {
-        return this.getOwner() + "." + this.getName() + this.getDescriptor();
+        return this.owner + "." + this.name + this.descriptor;
     }
 
     public String getDescriptor() {
@@ -160,12 +160,12 @@ public class FunctionCall {
 
     @JsonIgnore
     public boolean isInstanceMethod() {
-        return this.getOpcode() == Opcodes.INVOKESPECIAL || this.getOpcode() == Opcodes.INVOKEVIRTUAL || this.getOpcode() == Opcodes.INVOKEINTERFACE;
+        return this.opcode == Opcodes.INVOKESPECIAL || this.opcode == Opcodes.INVOKEVIRTUAL || this.opcode == Opcodes.INVOKEINTERFACE;
     }
 
     @JsonIgnore
     public boolean isConstructor() {
-        return this.getOpcode() == Opcodes.INVOKESPECIAL && "<init>".equals(this.getName());
+        return this.opcode == Opcodes.INVOKESPECIAL && "<init>".equals(this.name);
     }
 
     @JsonIgnore
@@ -191,10 +191,12 @@ public class FunctionCall {
      * @return
      */
     public boolean fuzzyEquals(final Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null || this.getClass() != obj.getClass())
+        }
+        if (obj == null || this.getClass() != obj.getClass()) {
             return false;
+        }
         final FunctionCall that = (FunctionCall) obj;
         return this.owner.equals(that.owner) &&
                this.name.equals(that.name) &&
@@ -203,10 +205,12 @@ public class FunctionCall {
 
     @Override
     public boolean equals(final Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null || this.getClass() != obj.getClass())
+        }
+        if (obj == null || this.getClass() != obj.getClass()) {
             return false;
+        }
         final FunctionCall that = (FunctionCall) obj;
         return this.opcode == that.opcode &&
                 this.isInterface == that.isInterface &&

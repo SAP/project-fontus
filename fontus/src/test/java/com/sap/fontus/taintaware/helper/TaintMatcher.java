@@ -1,4 +1,4 @@
-package com.sap.fontus.taintaware.testHelper;
+package com.sap.fontus.taintaware.helper;
 
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.range.IASTaintInformation;
@@ -9,10 +9,10 @@ import org.hamcrest.Matcher;
 
 import java.util.List;
 
-@SuppressWarnings("ALL")
-// David: As I didn't write this Code and don't want to mess with it I suppressed the warnings.
-// TODO: Work out whether we can adapt it to the style of the remaining project?
-public class TaintMatcher {
+public final class TaintMatcher {
+    private TaintMatcher() {
+    }
+
     public static Matcher<Object> taintEquals(List<IASTaintRange> ranges) {
         return new BaseMatcher<Object>() {
             boolean taintNotInitialized;
@@ -25,7 +25,7 @@ public class TaintMatcher {
 
             @Override
             public void describeMismatch(Object s, Description mismatchDescription) {
-                if (taintNotInitialized) {
+                if (this.taintNotInitialized) {
                     mismatchDescription.appendText("String '").appendValue(s).appendText("' is not taint-aware!");
                     return;
                 }
@@ -37,10 +37,10 @@ public class TaintMatcher {
             public boolean matches(Object s) {
                 assert s instanceof IASTaintAware;
 
-                operand = s;
-                taintNotInitialized = THelper.isUninitialized((IASTaintAware) s);
+                this.operand = s;
+                this.taintNotInitialized = THelper.isUninitialized((IASTaintAware) s);
 
-                if (taintNotInitialized) {
+                if (this.taintNotInitialized) {
                     return false;
                 }
 
@@ -61,14 +61,14 @@ public class TaintMatcher {
 
             @Override
             public boolean matches(Object item) {
-                operand = item;
+                this.operand = item;
 
                 return THelper.isUninitialized((IASTaintAware) item);
             }
 
             @Override
             public void describeTo(Description description) {
-                description.appendText("\"" + operand.toString() + "\"'s taint property should be uninitialized.");
+                description.appendText("\"" + this.operand.toString() + "\"'s taint property should be uninitialized.");
             }
 
             @Override

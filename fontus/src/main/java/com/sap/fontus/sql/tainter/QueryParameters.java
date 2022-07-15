@@ -18,8 +18,12 @@ public class QueryParameters {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
         QueryParameters that = (QueryParameters) o;
         return this.indicesCalculated == that.indicesCalculated && this.types.equals(that.types) && this.indices.equals(that.indices) && this.stateStack.equals(that.stateStack);
     }

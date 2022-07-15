@@ -31,8 +31,12 @@ public final class FieldData {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || this.getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || this.getClass() != obj.getClass()) {
+            return false;
+        }
         FieldData fieldData = (FieldData) obj;
         return Objects.equals(this.name, fieldData.name) &&
                 Objects.equals(this.descriptor, fieldData.descriptor) &&

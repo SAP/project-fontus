@@ -12,9 +12,10 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class IASProxyProxyBuilder {
-    private static volatile int counter = 0;
+    private static final AtomicInteger counter = new AtomicInteger();
     private static final String PROXY_BASE_PACKAGE = Constants.PACKAGE_NEW + ".internal";
     public static final String HANDLER_FIELD_NAME = "h";
     private final String name;
@@ -159,7 +160,7 @@ public class IASProxyProxyBuilder {
         MethodVisitor mv = this.classWriter.visitMethod(modifiers, method.getName(), methodType.toMethodDescriptorString(), null, exceptionNames);
         mv.visitCode();
 
-        if (exceptions.size() > 0) {
+        if (!exceptions.isEmpty()) {
             for (Class<?> ex : exceptions) {
                 mv.visitTryCatchBlock(startLabel, endLabel, annotatedExceptionsLabel,
                         Utils.getInternalName(ex));
@@ -340,12 +341,12 @@ public class IASProxyProxyBuilder {
     }
 
     private List<IASProxyProxyBuilder.ProxyMethod> generateProxyMethods() {
-        int counter = 0;
+        int proxyCount = 0;
         List<IASProxyProxyBuilder.ProxyMethod> methods = new ArrayList<>();
         for (Class<?> intf : this.interfaces) {
             for (Method m : intf.getMethods()) {
                 if (!Modifier.isStatic(m.getModifiers())) {
-                    IASProxyProxyBuilder.ProxyMethod newProxyMethod = new IASProxyProxyBuilder.ProxyMethod(m, "m" + counter);
+                    IASProxyProxyBuilder.ProxyMethod newProxyMethod = new IASProxyProxyBuilder.ProxyMethod(m, "m" + proxyCount);
 
                     boolean isAlreadyContained = false;
                     for (IASProxyProxyBuilder.ProxyMethod pm : methods) {
@@ -358,7 +359,7 @@ public class IASProxyProxyBuilder {
 
                     if (!isAlreadyContained) {
                         methods.add(newProxyMethod);
-                        counter++;
+                        proxyCount++;
                     }
                 }
             }
@@ -412,10 +413,8 @@ public class IASProxyProxyBuilder {
         }
     }
 
-    private static synchronized String newProxyName(Class<?>[] interfaces) {
+    private static String newProxyName(Class<?>[] interfaces) {
         String packageName = calculatePackage(interfaces);
-        String name = packageName + ".$Proxy" + counter;
-        counter++;
-        return name;
+        return packageName + ".$Proxy" + counter.getAndIncrement();
     }
 }

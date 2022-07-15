@@ -8,7 +8,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 
 public class Test {
-    public static MethodHandle findStatic(MethodHandles.Lookup lookup, Class cls, IASString name, MethodType methodType) throws NoSuchMethodException, IllegalAccessException {
+    public static MethodHandle findStatic(MethodHandles.Lookup lookup, Class<?> cls, IASString name, MethodType methodType) throws NoSuchMethodException, IllegalAccessException {
         boolean isExcluded = IASLookupUtils.isJdkOrExcluded(cls);
         if (isExcluded) {
             methodType = IASLookupUtils.uninstrumentForJdk(methodType);

@@ -74,7 +74,7 @@ public final class Utils {
                 }
             }
             reader.endObject();
-            return Instant.ofEpochSecond(epochSecond, (long) nano);
+            return Instant.ofEpochSecond(epochSecond, nano);
         }
     }
 }

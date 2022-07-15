@@ -66,7 +66,7 @@ public enum Statistics implements StatisticsMXBean {
 
     public synchronized void addRangeCount(IASTaintInformationable taintInformationable) {
         this.stringCount++;
-        int rangeCount = 0;
+        long rangeCount = 0;
         if (taintInformationable instanceof IASTaintInformation) {
             rangeCount = ((IASTaintInformation) taintInformationable).getTaintRanges().getTaintRanges().size();
         }

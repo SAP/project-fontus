@@ -21,8 +21,12 @@ public class ProxiedDynamicFunctionEntry {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || this.getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || this.getClass() != obj.getClass()) {
+            return false;
+        }
         ProxiedDynamicFunctionEntry that = (ProxiedDynamicFunctionEntry) obj;
         return this.name.equals(that.name) &&
                 this.descriptor.equals(that.descriptor);

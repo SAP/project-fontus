@@ -59,7 +59,7 @@ public final class TURLEncoder {
         for (int i = start; i < end; i++) {
             IASString s = url.substring(i, i + 1);
             IASTaintMetadata source = s.getTaintInformationInitialized().getTaint(0);
-            if (s.getString().equals(" ")) {
+            if (" ".equals(s.getString())) {
                 IASAbstractStringBuilder toAppend = new IASStringBuilder();
                 toAppend.append('+');
                 toAppend.setTaint(source);

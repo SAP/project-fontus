@@ -58,7 +58,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
                 //Collection<AllowedPurpose> purposeses = Utils.getPurposesFromRequest(request);
 
                 ReflectedSession session = request.getSession();
-                Object springSecurityContext = session.getAttribute(new IASString("SPRING_SECURITY_CONTEXT"));
+                Object securityContext = session.getAttribute(new IASString("SPRING_SECURITY_CONTEXT"));
 
                 /*Object obj100 = request.getAttribute(new IASString("org.springframework.web.servlet.DispatcherServlet.CONTEXT"));
                 if (obj100 != null) {
@@ -76,8 +76,8 @@ public class BroadleafTaintHandler extends IASTaintHandler {
                 //Admin part
                 if (path.contains("/admin/")) {
                     //Authenticed admin
-                    if (springSecurityContext != null) {
-                        long id = getIdFromSecurityContext(springSecurityContext);
+                    if (securityContext != null) {
+                        long id = getIdFromSecurityContext(securityContext);
                         //TODO what is the data subject? Admin can register new admins or create new customers!
                         //Call customer service?
                         Object obj = request.getAttribute(new IASString("org.springframework.web.servlet.DispatcherServlet.CONTEXT"));
@@ -104,15 +104,15 @@ public class BroadleafTaintHandler extends IASTaintHandler {
                 } else {
                  */
                 //Authenticated customer
-                if (springSecurityContext != null) {
-                    long id = getIdFromSecurityContext(springSecurityContext);
+                if (securityContext != null) {
+                    long id = getIdFromSecurityContext(securityContext);
                     DataSubject ds = new SimpleDataSubject(String.valueOf(id));
                     taintAware.setTaint(new GdprTaintMetadata(sourceId, new SimpleGdprMetadata(Utils.getPurposesFromRequest(request), ProtectionLevel.Normal, ds, new SimpleDataId(), true, true, Identifiability.NotExplicit)));
                     //Not authenticated customer
                 } else {
                     IASString uri = request.getRequestURI();
                     String path = uri.getString();
-                    if (path.equals("/register")) {
+                    if ("/register".equals(path)) {
                         Object anonymousCustomer = session.getAttribute(new IASString("_blc_anonymousCustomer"));
                         //Object customerMerged = session.getAttribute(new IASString("_blc_anonymousCustomerMerged"));
                         if (anonymousCustomer != null) {
@@ -131,7 +131,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
                     if (path.contains("/checkout")) {
                         ProductPurpose productPurpose = null;
                         Object o = session.getAttribute(productPurposeAttributeName);
-                        long id = getIdFromSecurityContext(springSecurityContext);
+                        long id = getIdFromSecurityContext(securityContext);
 
                         if ((o != null) && (o instanceof ProductPurpose)) {
                             getTaintMetadataFromExistingUser(request, id, (ProductPurpose) o);
@@ -230,7 +230,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
         Sink sink = Configuration.getConfiguration().getSinkConfig().getSinkForFqn(sinkFunction);
         //List<String> sinkPurposes = sink.getDataProtection().getPurposes();
         List<String> sinkVendors = sink.getDataProtection().getVendors();
-        if (object.getClass().getName().equals("com.broadleafcommerce.rest.api.wrapper.CustomerWrapper")) {
+        if ("com.broadleafcommerce.rest.api.wrapper.CustomerWrapper".equals(object.getClass().getName())) {
             try {
                 Method getId = object.getClass().getMethod("getId");
                 Method getFirstName = object.getClass().getMethod("getFirstName");
@@ -249,9 +249,9 @@ public class BroadleafTaintHandler extends IASTaintHandler {
                 ex.printStackTrace();
             }
         } else if (object instanceof List) {
-            List<Object> listOfObjects = (List) object;
+            List<Object> listOfObjects = (List<Object>) object;
             for (Object obj : listOfObjects) {
-                if (obj.getClass().getName().equals("com.broadleafcommerce.rest.api.wrapper.CustomerAddressWrapper")) {
+                if ("com.broadleafcommerce.rest.api.wrapper.CustomerAddressWrapper".equals(obj.getClass().getName())) {
                     try {
                         Method getId = obj.getClass().getMethod("getId");
                         Method getAddressName = obj.getClass().getMethod("getAddressName");
@@ -263,7 +263,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
 
                         System.out.println("Data with id " + addressName.toString() + " was sent to " + sinkVendors.get(0));
 
-                        if (addressWrapper.getClass().getName().equals("com.broadleafcommerce.rest.api.wrapper.AddressWrapper")) {
+                        if ("com.broadleafcommerce.rest.api.wrapper.AddressWrapper".equals(addressWrapper.getClass().getName())) {
                             Method getAddressId = addressWrapper.getClass().getMethod("getId");
                             Method getFirstName = addressWrapper.getClass().getMethod("getFirstName");
                             Method getLastName = addressWrapper.getClass().getMethod("getLastName");
@@ -309,7 +309,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
     public static Object checkCustomer(Object object, Object instance, String sinkFunction, String sinkName) {
         // object is the customer
         // instance is the CustomerServiceImpl
-        if (object.getClass().getName().equals("org.broadleafcommerce.profile.core.domain.CustomerImpl")) {
+        if ("org.broadleafcommerce.profile.core.domain.CustomerImpl".equals(object.getClass().getName())) {
             try {
                 Sink sink = Configuration.getConfiguration().getSinkConfig().getSinkForFqn(sinkFunction);
                 List<String> sinkPurposes = sink.getDataProtection().getPurposes();
@@ -439,10 +439,9 @@ public class BroadleafTaintHandler extends IASTaintHandler {
             Method getId = principal.getClass().getMethod("getId");
             //Method getUsername = principal.getClass().getMethod("getUsername");
             //Method getAuthorities = principal.getClass().getMethod("getAuthorities");
-            long id = (long) getId.invoke(principal);
             //String username = ((IASString) getUsername.invoke(principal)).getString();
             //getAuthorities.invoke(principal);
-            return id;
+            return (long) getId.invoke(principal);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -526,9 +525,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
                     return ((GdprTaintMetadata) range.getMetadata()).getMetadata().getId().getUUID();
                 }
             }
-            return null;
-        } else {
-            return null;
         }
+        return null;
     }
 }

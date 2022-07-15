@@ -8,19 +8,18 @@ import com.sap.fontus.taintaware.unified.IASStringBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class StringTest {
+
+class StringTest {
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.ARRAY);
     }
 
     @Test
-    public void constructorTest1() {
+    void constructorTest1() {
         String s = "Hello World";
 
         IASString ts = new IASString(s);
@@ -30,7 +29,7 @@ public class StringTest {
     }
 
     @Test
-    public void constructorTest2() {
+    void constructorTest2() {
         String s = "Hello World";
 
         IASString ts = IASString.fromString(s);
@@ -40,7 +39,7 @@ public class StringTest {
     }
 
     @Test
-    public void constructorTest3() {
+    void constructorTest3() {
         IASString s = new IASString("Hello World");
         assertTrue(s.isUninitialized());
 
@@ -52,7 +51,7 @@ public class StringTest {
     }
 
     @Test
-    public void constructorTest4() {
+    void constructorTest4() {
         IASStringBuilder s = new IASStringBuilder("Hello World");
         assertTrue(s.isUninitialized());
 
@@ -64,7 +63,7 @@ public class StringTest {
     }
 
     @Test
-    public void constructorTest5() {
+    void constructorTest5() {
         IASStringBuffer s = new IASStringBuffer("Hello World");
         assertTrue(s.isUninitialized());
 
@@ -77,7 +76,7 @@ public class StringTest {
 
     @Test
     // Assumption: empty strings have always a negative taint
-    public void testReplaceFirst_15() {
+    void testReplaceFirst_15() {
         IASString s1 = new IASString(new IASString("hello"));
 
         s1.setTaint(true);

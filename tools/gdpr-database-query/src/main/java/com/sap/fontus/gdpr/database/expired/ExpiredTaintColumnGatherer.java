@@ -17,7 +17,7 @@ class ExpiredTaintColumnGatherer extends AbstractInformationGatherer {
             paramLabel = "dates until expiry",
             description = "Number of days in the future the data expires"
     )
-    private int days = 21;
+    private long days = 21L;
 
     ExpiredTaintColumnGatherer() {
         super();

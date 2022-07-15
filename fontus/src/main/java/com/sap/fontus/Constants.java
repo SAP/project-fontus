@@ -274,7 +274,7 @@ public final class Constants {
         if (version.startsWith("1.")) {
             version = version.substring(2, 3);
         } else {
-            int dot = version.indexOf(".");
+            int dot = version.indexOf('.');
             if (dot != -1) {
                 version = version.substring(0, dot);
             }
@@ -282,6 +282,6 @@ public final class Constants {
         return Integer.parseInt(version);
     }
 
-    public static int MAX_STACK_DEFAULT = -1;
-    public static int MAX_LOCALS_DEFAULT = -1;
+    public static final int MAX_STACK_DEFAULT = -1;
+    public static final int MAX_LOCALS_DEFAULT = -1;
 }

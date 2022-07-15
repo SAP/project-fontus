@@ -5,27 +5,28 @@ import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.taintaware.shared.IASBasicMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
+import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TaintInformationTest {
+class TaintInformationTest {
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.ARRAY);
     }
 
-    private final static IASTaintMetadata md0 = null;
-    private final static IASTaintMetadata md1 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy"));
-    private final static IASTaintMetadata md2 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy2"));
-    private final static IASTaintMetadata md3 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy3"));
-    private final static IASTaintMetadata md4 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy4"));
-    private final static IASTaintMetadata md5 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy5"));
+    private static final IASTaintMetadata md0 = null;
+    private static final IASTaintMetadata md1 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy"));
+    private static final IASTaintMetadata md2 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy2"));
+    private static final IASTaintMetadata md3 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy3"));
+    private static final IASTaintMetadata md4 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy4"));
+    private static final IASTaintMetadata md5 = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy5"));
 
     @Test
-    public void testSetTaint1() {
+    void testSetTaint1() {
         IASTaintInformation ti = new IASTaintInformation(5);
 
         ti.setTaint(0, 5, md1);
@@ -35,7 +36,7 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testSetTaint2() {
+    void testSetTaint2() {
         IASTaintInformation ti = new IASTaintInformation(5);
 
         ti.setTaint(1, 4, md1);
@@ -45,7 +46,7 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testSetTaint3() {
+    void testSetTaint3() {
         IASTaintInformation ti = new IASTaintInformation(0);
 
         ti.setTaint(0, 5, md1);
@@ -55,7 +56,7 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testSetTaint4() {
+    void testSetTaint4() {
         IASTaintInformation ti = new IASTaintInformation(0);
 
         ti.setTaint(1, 4, md1);
@@ -65,7 +66,7 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testSetTaint5() {
+    void testSetTaint5() {
         IASTaintInformation ti = new IASTaintInformation(3);
 
         ti.setTaint(0, 5, md1);
@@ -75,7 +76,7 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testSetTaint6() {
+    void testSetTaint6() {
         IASTaintInformation ti = new IASTaintInformation(3);
 
         ti.setTaint(1, 4, md2);
@@ -85,7 +86,7 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testSetTaint7() {
+    void testSetTaint7() {
         IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md2, md2, md2, md2, md2});
 
         ti.setTaint(0, 5, md1);
@@ -95,7 +96,7 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testSetTaint8() {
+    void testSetTaint8() {
         IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md2, md2, md2, md2, md2});
 
         ti.setTaint(1, 4, md1);
@@ -105,7 +106,7 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testGetTaint1() {
+    void testGetTaint1() {
         IASTaintInformation ti = new IASTaintInformation(0);
 
         IASTaintMetadata[] taint = ti.getTaints();
@@ -114,7 +115,7 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testGetTaint2() {
+    void testGetTaint2() {
         IASTaintInformation ti = new IASTaintInformation(1);
 
         IASTaintMetadata[] taint = ti.getTaints();
@@ -123,7 +124,7 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testGetTaint3() {
+    void testGetTaint3() {
         IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md1, md2, md3});
 
         IASTaintMetadata[] taint = ti.getTaints();
@@ -132,25 +133,21 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testGetTaintByIndex1() {
+    void testGetTaintByIndex1() {
         IASTaintInformation ti = new IASTaintInformation(0);
 
-        assertThrows(IndexOutOfBoundsException.class, () -> {
-            ti.getTaints(0, 1);
-        });
+        assertThrows(IndexOutOfBoundsException.class, () -> ti.getTaints(0, 1));
     }
 
     @Test
-    public void testGetTaintByIndex2() {
+    void testGetTaintByIndex2() {
         IASTaintInformation ti = new IASTaintInformation(3);
 
-        assertThrows(IndexOutOfBoundsException.class, () -> {
-            ti.getTaints(1, 5);
-        });
+        assertThrows(IndexOutOfBoundsException.class, () -> ti.getTaints(1, 5));
     }
 
     @Test
-    public void testGetTaintByIndex3() {
+    void testGetTaintByIndex3() {
         IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md1, md2, md3, md4, md5});
 
         IASTaintMetadata[] taint = ti.getTaints(1, 4);
@@ -159,8 +156,8 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testResize1() {
-        IASTaintInformation ti = new IASTaintInformation(0);
+    void testResize1() {
+        IASTaintInformationable ti = new IASTaintInformation(0);
 
         ti.resize(5);
 
@@ -168,8 +165,8 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testResize2() {
-        IASTaintInformation ti = new IASTaintInformation(2);
+    void testResize2() {
+        IASTaintInformationable ti = new IASTaintInformation(2);
 
         ti.resize(5);
 
@@ -177,7 +174,7 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testResize3() {
+    void testResize3() {
         IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md0, md0});
 
         ti.resize(5);
@@ -187,7 +184,7 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testResize4() {
+    void testResize4() {
         IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md1, md2});
 
         ti.resize(5);
@@ -197,7 +194,7 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testResize5() {
+    void testResize5() {
         IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md1, md2, md3, md4, md5});
 
         ti.resize(2);
@@ -207,8 +204,8 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testResize6() {
-        IASTaintInformation ti = new IASTaintInformation(5);
+    void testResize6() {
+        IASTaintInformationable ti = new IASTaintInformation(5);
 
         ti.resize(2);
 
@@ -216,8 +213,8 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testRemoveAll1() {
-        IASTaintInformation ti = new IASTaintInformation(0);
+    void testRemoveAll1() {
+        IASTaintInformationable ti = new IASTaintInformation(0);
 
         ti.clearTaint(0,0);
 
@@ -225,8 +222,8 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testRemoveAll2() {
-        IASTaintInformation ti = new IASTaintInformation(3);
+    void testRemoveAll2() {
+        IASTaintInformationable ti = new IASTaintInformation(3);
 
         ti.clearTaint(0, 3);
 
@@ -234,8 +231,8 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testRemoveAll3() {
-        IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md1, md2, md3});
+    void testRemoveAll3() {
+        IASTaintInformationable ti = new IASTaintInformation(new IASTaintMetadata[]{md1, md2, md3});
 
         ti.clearTaint(0, 3);
 
@@ -243,7 +240,7 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testInsert1() {
+    void testInsert1() {
         IASTaintInformation ti = new IASTaintInformation(0);
 
         ti.insertTaint(5, new IASTaintMetadata[]{md1, md2, md3});
@@ -252,7 +249,7 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testInsert2() {
+    void testInsert2() {
         IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md0, md0, md0, md0, md0});
 
         ti.insertTaint(5, new IASTaintMetadata[]{md1, md2, md3});
@@ -261,7 +258,7 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testInsert3() {
+    void testInsert3() {
         IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md0, md0, md0});
 
         ti.insertTaint(2, new IASTaintMetadata[]{md1, md2, md3});
@@ -270,7 +267,7 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testRemoveTaintFor1() {
+    void testRemoveTaintFor1() {
         IASTaintInformation ti = new IASTaintInformation(new IASTaintMetadata[]{md1, md2, md3, md4, md5});
 
         ti.deleteWithShift(1, 4);
@@ -279,8 +276,8 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testRemoveTaintFor3() {
-        IASTaintInformation ti = new IASTaintInformation(5);
+    void testRemoveTaintFor3() {
+        IASTaintInformationable ti = new IASTaintInformation(5);
 
         ti.deleteWithShift(1, 4);
 
@@ -288,8 +285,8 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testRemoveTaintFor4() {
-        IASTaintInformation ti = new IASTaintInformation(5);
+    void testRemoveTaintFor4() {
+        IASTaintInformationable ti = new IASTaintInformation(5);
 
         ti.deleteWithShift(1, 4);
 
@@ -297,14 +294,14 @@ public class TaintInformationTest {
     }
 
     @Test
-    public void testRemoveTaintFor5() {
+    void testRemoveTaintFor5() {
         IASTaintInformation ti = new IASTaintInformation(0);
 
         assertThrows(IndexOutOfBoundsException.class, () -> ti.deleteWithShift(1, 4));
     }
 
     @Test
-    public void testRemoveTaintFor6() {
+    void testRemoveTaintFor6() {
         IASTaintInformation ti = new IASTaintInformation(0);
 
         assertThrows(IndexOutOfBoundsException.class, () -> ti.deleteWithShift(1, 4));

@@ -153,7 +153,7 @@ public class ClassTraverser {
     }
 
 
-    private void discoverAllJdkInterfaces(Collection<String> interfacesToLookThrough, Set<String> result, TypeHierarchyReaderWithLoaderSupport typeHierarchyReader) {
+    private void discoverAllJdkInterfaces(Iterable<String> interfacesToLookThrough, Set<String> result, TypeHierarchyReaderWithLoaderSupport typeHierarchyReader) {
         for (String interfaceName : interfacesToLookThrough) {
             if (this.combinedExcludedLookup.isPackageExcludedOrJdk(interfaceName) || this.combinedExcludedLookup.isAnnotation(interfaceName)) {
                 result.add(interfaceName);
@@ -270,7 +270,7 @@ public class ClassTraverser {
         private boolean implementsInterface = false;
         private boolean superImplements = false;
 
-        public MethodChecker(Method method) {
+        MethodChecker(Method method) {
             super(Opcodes.ASM9);
             this.method = method;
         }

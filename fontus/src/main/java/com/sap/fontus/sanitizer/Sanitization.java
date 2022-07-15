@@ -153,7 +153,7 @@ public final class Sanitization {
 
                 if (numberOfDoubleQuotes % 2L == 0L && numberOfSingleQuotes % 2L == 0L) {
                     // attribute value is NOT a text set in quotes
-                    char[] notTextChars = new char[]{' ', ',', ';', '<', '>', '=', '(', ')'};
+                    char[] notTextChars = {' ', ',', ';', '<', '>', '=', '(', ')'};
                     String help = preparedString.substring(0, taintRangeStart);
                     for (char c : notTextChars) {
                         startTaintIndex = Math.max(startTaintIndex, help.lastIndexOf(c) + 1);

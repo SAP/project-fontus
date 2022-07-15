@@ -1,7 +1,5 @@
 package com.sap.fontus;
 
-import com.sap.fontus.Constants;
-
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.ConfigurationLoader;
 import com.sap.fontus.config.DataProtection;
@@ -40,7 +38,7 @@ class SourceSinkConfigTests {
     }
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.RANGE);
     }
 

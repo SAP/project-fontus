@@ -14,7 +14,7 @@ public final class MethodTaintingUtils {
     /**
      * Functional interfaces or packages with func interfaces which are JDK or excluded but should still not be uninstrumented as lmabda
      */
-    private static final String[] lambdaIncluded = new String[]{"java/util/function/", "java/lang/", "java/util/Comparator", "java/util/concurrent/"};
+    private static final String[] lambdaIncluded = {"java/util/function/", "java/lang/", "java/util/Comparator", "java/util/concurrent/"};
 
     private MethodTaintingUtils() {
     }

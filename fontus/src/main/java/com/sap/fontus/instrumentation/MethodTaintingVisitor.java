@@ -78,7 +78,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         logger.info("Instrumenting method: {}{}", name, methodDescriptor);
         this.used = Type.getArgumentsAndReturnSizes(methodDescriptor) >> 2;
         this.usedAfterInjection = this.used;
-        if ((acc & Opcodes.ACC_STATIC) != 0) this.used--; // no this
+        if ((acc & Opcodes.ACC_STATIC) != 0) {
+            this.used--; // no this
+        }
         this.name = name;
         this.methodDescriptor = methodDescriptor;
         this.instrumentationHelper = instrumentationHelper;
@@ -113,19 +115,27 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     @Override
     public void visitFrame(
             int type, int numLocal, Object[] local, int numStack, Object[] stack) {
-        if (type != Opcodes.F_NEW)
+        if (type != Opcodes.F_NEW) {
             throw new IllegalStateException("only expanded frames supported");
+        }
         int l = numLocal;
-        for (int ix = 0; ix < numLocal; ix++)
-            if (local[ix] == Opcodes.LONG || local[ix] == Opcodes.DOUBLE) l++;
-        if (l > this.used) this.used = l;
+        for (int ix = 0; ix < numLocal; ix++) {
+            if (local[ix] == Opcodes.LONG || local[ix] == Opcodes.DOUBLE) {
+                l++;
+            }
+        }
+        if (l > this.used) {
+            this.used = l;
+        }
         super.visitFrame(type, numLocal, local, numStack, stack);
     }
 
     @Override
     public void visitVarInsn(int opcode, int var) {
         int newMax = var + Utils.storeOpcodeSize(opcode);
-        if (newMax > this.used) this.used = newMax;
+        if (newMax > this.used) {
+            this.used = newMax;
+        }
         super.visitVarInsn(opcode, var);
     }
 
@@ -290,7 +300,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
     private boolean isInvocationHandlerMethod(String name, String descriptor) {
-        boolean nameEquals = name.equals("invoke");
+        boolean nameEquals = "invoke".equals(name);
         String expectedDescriptor = String.format("(L%s;L%s;[L%s;)L%s;", Utils.dotToSlash(Object.class.getName()), Utils.dotToSlash(Method.class.getName()), Utils.dotToSlash(Object.class.getName()), Utils.dotToSlash(Object.class.getName()));
         boolean descriptorEquals = descriptor.equals(expectedDescriptor);
         return nameEquals && descriptorEquals && this.implementsInvocationHandler;
@@ -348,8 +358,8 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             return;
         }
 
-        if (this.name.equals("toString") && this.methodDescriptor.equals(Type.getMethodDescriptor(Type.getType(IASString.class)))
-                && opcode == Opcodes.INVOKESPECIAL && name.equals("toString") && descriptor.equals(Type.getMethodDescriptor(Type.getType(String.class)))
+        if ("toString".equals(this.name) && this.methodDescriptor.equals(Type.getMethodDescriptor(Type.getType(IASString.class)))
+                && opcode == Opcodes.INVOKESPECIAL && "toString".equals(name) && descriptor.equals(Type.getMethodDescriptor(Type.getType(String.class)))
                 && this.combinedExcludedLookup.isPackageExcludedOrJdk(owner)
                 && !this.combinedExcludedLookup.isPackageExcludedOrJdk(this.ownerSuperClass)) {
             Descriptor instrumented = new Descriptor(Type.getType(IASString.class));
@@ -357,17 +367,17 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             return;
         }
 
-        if (this.isVirtualOrStaticMethodHandleLookup(fc)) {
+        if (isVirtualOrStaticMethodHandleLookup(fc)) {
             this.generateVirtualOrStaticMethodHandleLookupIntercept(fc);
             return;
         }
 
-        if (this.isConstructorMethodHandleLookup(fc)) {
+        if (isConstructorMethodHandleLookup(fc)) {
             this.generateConstructorMethodHandleLookupIntercept(fc);
             return;
         }
 
-        if (this.isSpecialMethodHandleLookup(fc)) {
+        if (isSpecialMethodHandleLookup(fc)) {
             this.generateSpecialMethodHandleLookupIntercept(fc);
             return;
         }
@@ -425,10 +435,10 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
     private boolean isRelevantMethodHandleInvocation(FunctionCall fc) {
-        return fc.getOwner().equals("java/lang/invoke/MethodHandle") && (
-                fc.getName().equals("invoke") ||
-                        fc.getName().equals("invokeExact") ||
-                        fc.getName().equals("invokeWithArguments"));
+        return "java/lang/invoke/MethodHandle".equals(fc.getOwner()) && (
+                "invoke".equals(fc.getName()) ||
+                        "invokeExact".equals(fc.getName()) ||
+                        "invokeWithArguments".equals(fc.getName()));
     }
 
     private void generateVirtualOrStaticMethodHandleLookupIntercept(FunctionCall fc) {
@@ -560,19 +570,19 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.usedAfterInjection = Math.max(this.used + Utils.getArgumentsStackSize(fc.getDescriptor()) + 2, this.usedAfterInjection);
     }
 
-    private boolean isVirtualOrStaticMethodHandleLookup(FunctionCall fc) {
-        return fc.getOwner().equals("java/lang/invoke/MethodHandles$Lookup") && (
-                fc.getName().equals("findVirtual") ||
-                        fc.getName().equals("findStatic")
+    private static boolean isVirtualOrStaticMethodHandleLookup(FunctionCall fc) {
+        return "java/lang/invoke/MethodHandles$Lookup".equals(fc.getOwner()) && (
+                "findVirtual".equals(fc.getName()) ||
+                        "findStatic".equals(fc.getName())
         );
     }
 
-    private boolean isSpecialMethodHandleLookup(FunctionCall fc) {
-        return fc.getOwner().equals("java/lang/invoke/MethodHandles$Lookup") && fc.getName().equals("findSpecial");
+    private static boolean isSpecialMethodHandleLookup(FunctionCall fc) {
+        return "java/lang/invoke/MethodHandles$Lookup".equals(fc.getOwner()) && "findSpecial".equals(fc.getName());
     }
 
-    private boolean isConstructorMethodHandleLookup(FunctionCall fc) {
-        return fc.getOwner().equals("java/lang/invoke/MethodHandles$Lookup") && fc.getName().equals("findConstructor");
+    private static boolean isConstructorMethodHandleLookup(FunctionCall fc) {
+        return "java/lang/invoke/MethodHandles$Lookup".equals(fc.getOwner()) && "findConstructor".equals(fc.getName());
     }
 
     private boolean rewriteParametersAndReturnTypeForInstrumentedCall(FunctionCall call, FunctionCall uninstrumentedCall) {
@@ -831,17 +841,16 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     private FunctionCall shouldBeProxied(FunctionCall pfe) {
         if (methodProxies.containsKey(pfe)) {
             logger.info("Proxying call to {}.{}{}", pfe.getOwner(), pfe.getName(), pfe.getDescriptor());
-            FunctionCall pf = methodProxies.get(pfe);
-            return pf;
+            return methodProxies.get(pfe);
         }
         if (pfe.getOpcode() == Opcodes.INVOKEVIRTUAL || pfe.getOpcode() == Opcodes.INVOKEINTERFACE) {
             if (this.combinedExcludedLookup.isJdkClass(pfe.getOwner())) {
-                for (FunctionCall mip : methodInterfaceProxies.keySet()) {
+                for (Map.Entry<FunctionCall, FunctionCall> entry : methodInterfaceProxies.entrySet()) {
+                    FunctionCall mip = entry.getKey();
                     if (pfe.getName().equals(mip.getName()) && pfe.getDescriptor().equals(mip.getDescriptor())) {
-                        if (this.thisOrSuperQNEquals(pfe.getOwner(), mip.getOwner())) {
+                        if (thisOrSuperQNEquals(pfe.getOwner(), mip.getOwner())) {
                             logger.info("Proxying interface call to {}.{}{}", pfe.getOwner(), pfe.getName(), pfe.getDescriptor());
-                            FunctionCall pf = methodInterfaceProxies.get(mip);
-                            return pf;
+                            return entry.getValue();
                         }
                     }
                 }
@@ -851,7 +860,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         return pfe;
     }
 
-    private boolean thisOrSuperQNEquals(String thisQn, final String requiredQn) {
+    private static boolean thisOrSuperQNEquals(String thisQn, final String requiredQn) {
         if (thisQn.equals(requiredQn)) {
             return true;
         }

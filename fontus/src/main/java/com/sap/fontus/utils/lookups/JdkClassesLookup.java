@@ -56,7 +56,9 @@ public final class JdkClassesLookup {
     }
 
     public boolean isJdkClass(String internalName, ClassLoader loader) {
-        if (internalName == null) return true;
+        if (internalName == null) {
+            return true;
+        }
 
         boolean blacklisted = false;
         for (String blacklistedPrefix : this.blacklistedPrefixes) {

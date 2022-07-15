@@ -12,7 +12,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SimplePurposePolicyTest {
+class SimplePurposePolicyTest {
 
     private final Purpose p1 = new SimplePurpose(1, "logging");
     private final Purpose p2 = new SimplePurpose(2, "storage");
@@ -23,7 +23,7 @@ public class SimplePurposePolicyTest {
     private final Vendor v3 = new SimpleVendor(3, "E-Corp");
 
     @Test
-    public void purposePolicyTestOk() {
+    void purposePolicyTestOk() {
 
         SimpleRequiredPurposes required = new SimpleRequiredPurposes();
         // Required Vendors
@@ -44,7 +44,7 @@ public class SimplePurposePolicyTest {
     }
 
     @Test
-    public void purposePolicyTestPurposeNotAllowed() {
+    void purposePolicyTestPurposeNotAllowed() {
 
         SimpleRequiredPurposes required = new SimpleRequiredPurposes();
         // Required Vendors
@@ -65,7 +65,7 @@ public class SimplePurposePolicyTest {
     }
 
     @Test
-    public void purposePolicyTestOneOfTwoPurposesNotAllowed() {
+    void purposePolicyTestOneOfTwoPurposesNotAllowed() {
         SimpleRequiredPurposes required = new SimpleRequiredPurposes();
         // Required Vendors
         required.addVendor(this.v1);
@@ -86,7 +86,7 @@ public class SimplePurposePolicyTest {
     }
 
     @Test
-    public void purposePolicyTestTwoPurposesAllowed() {
+    void purposePolicyTestTwoPurposesAllowed() {
         SimpleRequiredPurposes required = new SimpleRequiredPurposes();
         // Required Vendors
         required.addVendor(this.v1);
@@ -108,7 +108,7 @@ public class SimplePurposePolicyTest {
     }
 
     @Test
-    public void purposePolicyTestVendorNotAllowed() {
+    void purposePolicyTestVendorNotAllowed() {
 
         SimpleRequiredPurposes required = new SimpleRequiredPurposes();
         // Required Vendors
@@ -129,7 +129,7 @@ public class SimplePurposePolicyTest {
     }
 
     @Test
-    public void purposePolicyTestVendorTooManyVendors() {
+    void purposePolicyTestVendorTooManyVendors() {
 
         SimpleRequiredPurposes required = new SimpleRequiredPurposes();
         // Required Vendors
@@ -151,7 +151,7 @@ public class SimplePurposePolicyTest {
     }
 
     @Test
-    public void purposePolicyTestVendorTooManyVendorsOk() {
+    void purposePolicyTestVendorTooManyVendorsOk() {
 
         SimpleRequiredPurposes required = new SimpleRequiredPurposes();
         // Required Vendors

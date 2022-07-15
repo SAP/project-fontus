@@ -106,7 +106,7 @@ public class IASConstructor<T> extends IASExecutable<Constructor<T>> {
                 || (!Modifier.isPublic(this.original.getDeclaringClass().getModifiers()) && !Modifier.isProtected(this.original.getDeclaringClass().getModifiers()) && !Modifier.isPrivate(this.original.getDeclaringClass().getModifiers()))) {
             // This method is package private. If the declaring class is in the same package as the calling class we must set it accessible
             // Otherwise the caller class (which is this class) is not in the same package as the declaring class an an IllegalAccessException is thrown
-            Class callerClass;
+            Class<?> callerClass;
             if (Constants.JAVA_VERSION >= 9) {
                 callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
                         .getCallerClass();

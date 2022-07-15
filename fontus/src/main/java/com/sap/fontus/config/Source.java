@@ -92,9 +92,9 @@ public class Source {
 
     public boolean isAllowedCaller(FunctionCall caller) {
         // If there are no allowed callers, then allow everything
-        boolean applySource = this.getAllowedCallers().isEmpty();
+        boolean applySource = this.allowedCallers.isEmpty();
         if(!applySource) {
-            for (FunctionCall fc : this.getAllowedCallers()) {
+            for (FunctionCall fc : this.allowedCallers) {
                 // So that the function call opcode doesn't need to match
                 if (caller.fuzzyEquals(fc)) {
                     applySource = true;

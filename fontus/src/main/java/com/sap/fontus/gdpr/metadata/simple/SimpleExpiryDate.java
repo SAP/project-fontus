@@ -30,10 +30,10 @@ public class SimpleExpiryDate implements ExpiryDate {
     @Override
     public int compareTo(ExpiryDate o) {
         // Instances are equal (also includes null pointers)
-        if (this.getDate() == o.getDate()) {
+        if (this.expiry == o.getDate()) {
             return 0;
         }
-        if (this.hasExpiry() && o.hasExpiry()) {
+        if (this.expiry != null && o.hasExpiry()) {
             return this.expiry.compareTo(o.getDate());
         } else if (this.hasExpiry()) {
             return -1;
@@ -44,8 +44,12 @@ public class SimpleExpiryDate implements ExpiryDate {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
         SimpleExpiryDate that = (SimpleExpiryDate) o;
         return Objects.equals(this.expiry, that.expiry);
     }

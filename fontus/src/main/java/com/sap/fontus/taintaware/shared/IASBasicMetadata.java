@@ -25,8 +25,12 @@ public class IASBasicMetadata implements IASTaintMetadata {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
         IASBasicMetadata that = (IASBasicMetadata) o;
         return Objects.equals(this.source, that.source);
     }

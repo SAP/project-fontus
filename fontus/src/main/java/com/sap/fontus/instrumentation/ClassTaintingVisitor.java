@@ -60,7 +60,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private final List<LambdaCall> jdkLambdaMethodProxies = new ArrayList<>();
     private final InstrumentationHelper instrumentationHelper;
 
-    public ClassTaintingVisitor(ClassVisitor cv, IClassResolver resolver, Configuration config, ClassLoader loader, boolean containsJSRRET, CombinedExcludedLookup excludedLookup) {
+    ClassTaintingVisitor(ClassVisitor cv, IClassResolver resolver, Configuration config, ClassLoader loader, boolean containsJSRRET, CombinedExcludedLookup excludedLookup) {
         super(Opcodes.ASM9, cv);
         this.visitor = cv;
         this.staticFinalFields = new ArrayList<>();

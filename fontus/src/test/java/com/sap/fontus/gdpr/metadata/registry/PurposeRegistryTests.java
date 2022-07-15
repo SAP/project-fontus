@@ -1,15 +1,14 @@
 package com.sap.fontus.gdpr.metadata.registry;
 
 import com.sap.fontus.gdpr.metadata.Purpose;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
-public class PurposeRegistryTests {
+class PurposeRegistryTests {
 
     @Test
-    public void testPurposeRegistry() {
+    void testPurposeRegistry() {
         Purpose p = new RegistryLinkedPurpose("storage");
         Purpose p2 = PurposeRegistry.getInstance().getOrRegisterObject("storage");
 
@@ -17,7 +16,7 @@ public class PurposeRegistryTests {
     }
 
     @Test
-    public void testPurposeEquals() {
+    void testPurposeEquals() {
         Purpose p = new RegistryLinkedPurpose("storage");
         Purpose p2 = new RegistryLinkedPurpose("storage");
 
@@ -25,7 +24,7 @@ public class PurposeRegistryTests {
     }
 
     @Test
-    public void testPurposeNotEquals() {
+    void testPurposeNotEquals() {
         Purpose p = new RegistryLinkedPurpose("storage");
         Purpose p2 = new RegistryLinkedPurpose("baking");
 

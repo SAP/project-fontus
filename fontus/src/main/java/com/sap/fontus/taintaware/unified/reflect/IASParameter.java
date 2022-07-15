@@ -33,7 +33,7 @@ public class IASParameter implements AnnotatedElement {
         return new IASString(this.parameter.toString());
     }
 
-    public IASExecutable getDeclaringExecutable() {
+    public IASExecutable<?> getDeclaringExecutable() {
         return IASReflectRegistry.getInstance().mapExecutable(this.parameter.getDeclaringExecutable());
     }
 

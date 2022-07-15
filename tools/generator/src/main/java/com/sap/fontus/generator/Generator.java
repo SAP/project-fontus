@@ -77,8 +77,8 @@ public class Generator implements Callable<Void> {
                 String className = sink;
                 List<String> categories = new ArrayList<>();
                 if (sink.contains("=")) {
-                    className = sink.substring(0, sink.indexOf("="));
-                    String[] categoriesArray = sink.substring(sink.indexOf("=") + 1).split("=");
+                    className = sink.substring(0, sink.indexOf('='));
+                    String[] categoriesArray = sink.substring(sink.indexOf('=') + 1).split("=");
                     categories = Arrays.asList(categoriesArray);
                 }
                 // For now don't support generating sinks with purposes and vendors

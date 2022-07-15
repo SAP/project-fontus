@@ -1,7 +1,6 @@
 package com.sap.fontus.taintaware.array;
 
 import com.sap.fontus.config.TaintMethod;
-import com.sap.fontus.taintaware.array.IASTaintInformation;
 import com.sap.fontus.taintaware.shared.IASTaintMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.config.Configuration;
@@ -11,21 +10,18 @@ import com.sap.fontus.taintaware.unified.IASStringBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class StringBuilderTest {
+class StringBuilderTest {
     private static final IASTaintMetadata TAINT = IASTaintSourceRegistry.MD_CS_UNKNOWN_ORIGIN;
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.ARRAY);
     }
 
     @Test
-    public void testConstructor1() {
+    void testConstructor1() {
         IASString string = new IASString("Hello World");
 
         IASStringBuilder sb = new IASStringBuilder(string);
@@ -36,7 +32,7 @@ public class StringBuilderTest {
     }
 
     @Test
-    public void testConstructor2() {
+    void testConstructor2() {
         IASString string = new IASString("Hello World", true);
 
         IASStringBuilder sb = new IASStringBuilder(string);
@@ -47,7 +43,7 @@ public class StringBuilderTest {
     }
 
     @Test
-    public void testAppend1() {
+    void testAppend1() {
         IASStringBuilder sb = new IASStringBuilder();
         IASString toAppend = IASString.fromString("Hello World");
 
@@ -58,7 +54,7 @@ public class StringBuilderTest {
     }
 
     @Test
-    public void testAppend2() {
+    void testAppend2() {
         IASStringBuilder sb = new IASStringBuilder("Hello");
         IASString toAppend = IASString.fromString(" World");
 
@@ -69,7 +65,7 @@ public class StringBuilderTest {
     }
 
     @Test
-    public void testAppend3() {
+    void testAppend3() {
         IASStringBuilder sb = new IASStringBuilder("Hello");
         IASString toAppend = new IASString(" World", true);
 
@@ -80,7 +76,7 @@ public class StringBuilderTest {
     }
 
     @Test
-    public void testAppend4() {
+    void testAppend4() {
         IASStringBuilder sb = new IASStringBuilder("Hello");
         sb.setTaint(true);
         IASString toAppend = new IASString(" World", true);
@@ -92,7 +88,7 @@ public class StringBuilderTest {
     }
 
     @Test
-    public void testAppend5() {
+    void testAppend5() {
         IASStringBuilder sb = new IASStringBuilder("Hello");
         sb.setTaint(true);
         IASString toAppend = new IASString(" World");
@@ -104,7 +100,7 @@ public class StringBuilderTest {
     }
 
     @Test
-    public void testInsert() {
+    void testInsert() {
         IASString s2 = new IASString("World");
         IASString s1 = new IASString("Hello ");
         IASStringBuffer sb1 = new IASStringBuffer(s2);
@@ -124,7 +120,7 @@ public class StringBuilderTest {
     }
 
     @Test
-    public void testReplace1() {
+    void testReplace1() {
         IASStringBuffer sb1 = new IASStringBuffer("hello");
         IASString s = new IASString("HELLO");
 

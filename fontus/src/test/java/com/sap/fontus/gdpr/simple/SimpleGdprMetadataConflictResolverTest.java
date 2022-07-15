@@ -11,23 +11,23 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class SimpleGdprMetadataConflictResolverTest {
+class SimpleGdprMetadataConflictResolverTest {
 
-    Purpose ads = new SimplePurpose(1, "ads", "advertising", "legal text");
-    Purpose evil = new SimplePurpose(2, "evil", "evil stuff", "legal text");
+    private final Purpose ads = new SimplePurpose(1, "ads", "advertising", "legal text");
+    private final Purpose evil = new SimplePurpose(2, "evil", "evil stuff", "legal text");
 
-    Vendor acme = new SimpleVendor(1, "acme");
-    Vendor acu = new SimpleVendor(2, "acu");
+    private final Vendor acme = new SimpleVendor(1, "acme");
+    private final Vendor acu = new SimpleVendor(2, "acu");
 
-    ExpiryDate never = new SimpleExpiryDate();
-    ExpiryDate epoch = new SimpleExpiryDate(Instant.EPOCH);
-    ExpiryDate now = new SimpleExpiryDate(Instant.now());
+    private final ExpiryDate never = new SimpleExpiryDate();
+    private final ExpiryDate epoch = new SimpleExpiryDate(Instant.EPOCH);
+    private final ExpiryDate now = new SimpleExpiryDate(Instant.now());
 
-    DataSubject firstSubject = new SimpleDataSubject();
-    DataSubject secondSubject = new SimpleDataSubject();
+    private final DataSubject firstSubject = new SimpleDataSubject();
+    private final DataSubject secondSubject = new SimpleDataSubject();
 
-    DataId firstDataId = new SimpleDataId();
-    DataId secondDataId = new SimpleDataId();
+    private final DataId firstDataId = new SimpleDataId();
+    private final DataId secondDataId = new SimpleDataId();
 
     private final GdprMetadataConflictResolverInterface resolver = new SimpleGdprMetadataConflictResolver();
 
@@ -101,7 +101,7 @@ public class SimpleGdprMetadataConflictResolverTest {
     }
 
     @Test
-    public void testConflictResolution() {
+    void testConflictResolution() {
         GdprMetadata metadata = this.resolver.resolveConflicts(this.getFirst(), this.getSecond());
 
         // Should always apply
@@ -124,7 +124,7 @@ public class SimpleGdprMetadataConflictResolverTest {
 
 
     @Test
-    public void testConflictResolution2() {
+    void testConflictResolution2() {
         GdprMetadata metadata = this.resolver.resolveConflicts(this.getFirst(), this.getThird());
 
         // Should always apply
@@ -146,7 +146,7 @@ public class SimpleGdprMetadataConflictResolverTest {
     }
 
     @Test
-    public void testConflictResolution3() {
+    void testConflictResolution3() {
         GdprMetadata metadata = this.resolver.resolveConflicts(this.getFirst(), this.getFourth());
 
         // Should always apply
@@ -168,7 +168,7 @@ public class SimpleGdprMetadataConflictResolverTest {
     }
 
     @Test
-    public void testConflictResolution4() {
+    void testConflictResolution4() {
         GdprMetadata metadata = this.resolver.resolveConflicts(this.getFirst(), this.getFifth());
 
         // Should always apply
@@ -195,7 +195,7 @@ public class SimpleGdprMetadataConflictResolverTest {
     }
 
     @Test
-    public void testConflictResolution5() {
+    void testConflictResolution5() {
         GdprMetadata metadata = this.resolver.resolveConflicts(this.getFirst(), this.getSixth());
 
         // Should always apply

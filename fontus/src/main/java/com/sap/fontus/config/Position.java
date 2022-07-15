@@ -69,6 +69,6 @@ public class Position {
             return false;
         }
         Position position = (Position) o;
-        return this.javaSourcePosition == position.getJavaSourcePosition() && this.className.equals(position.getClassName()) && this.methodName.equals(position.getMethodName());
+        return this.javaSourcePosition == position.javaSourcePosition && this.className.equals(position.className) && this.methodName.equals(position.methodName);
     }
 }

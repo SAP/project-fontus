@@ -9,7 +9,7 @@ import java.util.concurrent.Executor;
 public class MockConnection implements Connection {
     private final Connection delegate;
 
-    public MockConnection(Connection delegate) {
+    MockConnection(Connection delegate) {
         this.delegate = delegate;
     }
     @Override

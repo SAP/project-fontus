@@ -10,14 +10,14 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class StringReplaceTaintTest extends AbstractTest {
+class StringReplaceTaintTest extends AbstractTest {
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.LAZYBASIC);
     }
 
     @Test
-    public void testReplace_1() {
+    void testReplace_1() {
         IASString s1 = new IASString("hello");
         // Assumption is that the setTaint() method
         // taints *all* characters in the IASString
@@ -31,7 +31,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplace_2() {
+    void testReplace_2() {
         IASString s1 = new IASString("hello");
 
         this.getTaintChecker().setTaint(s1, false);
@@ -44,7 +44,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplace_3() {
+    void testReplace_3() {
         IASString s1 = new IASString("hello");
 
         this.getTaintChecker().setTaint(s1, true);
@@ -58,7 +58,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplace_4() {
+    void testReplace_4() {
         IASString s1 = new IASString("hello");
 
         this.getTaintChecker().setTaint(s1, false);
@@ -72,7 +72,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceCharsequence_1() {
+    void testReplaceCharsequence_1() {
         IASString s = new IASString("hello");
         IASString sequence1 = new IASString("lo");
         IASString sequence2 = new IASString("bye");
@@ -94,7 +94,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceCharsequence_2() {
+    void testReplaceCharsequence_2() {
         IASString s = new IASString("hello");
         IASString sequence1 = new IASString("lo");
         IASString sequence2 = new IASString("bye");
@@ -116,7 +116,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceCharsequence_3() {
+    void testReplaceCharsequence_3() {
         IASString s = new IASString("hello");
         IASString sequence1 = new IASString("lo");
         IASString sequence2 = new IASString("bye");
@@ -138,7 +138,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceCharsequence_4() {
+    void testReplaceCharsequence_4() {
         IASString s = new IASString("hello");
         IASString sequence1 = new IASString("lo");
         IASString sequence2 = new IASString("bye");
@@ -160,7 +160,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceCharsequence_5() {
+    void testReplaceCharsequence_5() {
         IASString s = new IASString("hello");
         IASString sequence1 = new IASString("lo");
         IASString sequence2 = new IASString("bye");
@@ -182,7 +182,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceCharsequence_6() {
+    void testReplaceCharsequence_6() {
         IASString s = new IASString("hello");
         IASString sequence1 = new IASString("lo");
         IASString sequence2 = new IASString("bye");
@@ -204,7 +204,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceCharsequence_7() {
+    void testReplaceCharsequence_7() {
         IASString s = new IASString("hello");
         IASString sequence1 = new IASString("lo");
         IASString sequence2 = new IASString("bye");
@@ -226,7 +226,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceCharsequence_8() {
+    void testReplaceCharsequence_8() {
         IASString s = new IASString("hello");
         IASString sequence1 = new IASString("lo");
         IASString sequence2 = new IASString("bye");
@@ -249,7 +249,7 @@ public class StringReplaceTaintTest extends AbstractTest {
 
     @Test
     // Assumption: empty IASStrings have always a negative taint
-    public void testReplaceCharsequence_9() {
+    void testReplaceCharsequence_9() {
         IASString s = new IASString("hello");
 
         this.getTaintChecker().setTaint(s, true);
@@ -264,7 +264,7 @@ public class StringReplaceTaintTest extends AbstractTest {
 
     @Test
     // Assumption: empty IASStrings have always a negative taint
-    public void testReplaceCharsequence_10() {
+    void testReplaceCharsequence_10() {
         IASString s = new IASString("hello");
 
         this.getTaintChecker().setTaint(s, false);
@@ -278,7 +278,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceCharsequence_11() {
+    void testReplaceCharsequence_11() {
         IASString s1 = new IASString("hello x");
         IASString s2 = new IASString("this is a very long IASString to test if long IASStrings can cause a problem here");
         IASString t = s1.replace("x", s2);
@@ -292,7 +292,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceCharsequence_12() {
+    void testReplaceCharsequence_12() {
         IASString s1 = new IASString("hello x");
         IASString s2 = new IASString("this is a very long IASString to test if long IASStrings can cause a problem here");
 
@@ -309,7 +309,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceCharsequence_13() {
+    void testReplaceCharsequence_13() {
         IASString s1 = new IASString("hello x");
         IASString s2 = new IASString("this is a very long IASString to test if long IASStrings can cause a problem here");
 
@@ -326,7 +326,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceCharsequence_14() {
+    void testReplaceCharsequence_14() {
         IASString s1 = new IASString("hello x");
         IASString s2 = new IASString("this is a very long IASString to test if long IASStrings can cause a problem here");
 
@@ -344,7 +344,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceAll_1() {
+    void testReplaceAll_1() {
         IASString s1 = new IASString("hello");
         IASString s2 = new IASString("zz");
 
@@ -362,7 +362,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceAll_2() {
+    void testReplaceAll_2() {
         IASString s1 = new IASString("hello");
         IASString s2 = new IASString("zz");
 
@@ -380,7 +380,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceAll_3() {
+    void testReplaceAll_3() {
         IASString s1 = new IASString("hello");
         IASString s2 = new IASString("zz");
 
@@ -398,7 +398,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceAll_4() {
+    void testReplaceAll_4() {
         IASString s1 = new IASString("hello");
         IASString s2 = new IASString("zz");
 
@@ -416,7 +416,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceAll_5() {
+    void testReplaceAll_5() {
         IASString s1 = new IASString("hello");
 
         this.getTaintChecker().setTaint(s1, true);
@@ -430,7 +430,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceAll_6() {
+    void testReplaceAll_6() {
         IASString s1 = new IASString("hello");
 
         this.getTaintChecker().setTaint(s1, false);
@@ -449,7 +449,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     // IASString are replaced.
     // I think here the data flow is *not* tainted, but the
     // control flow is.
-    public void testReplaceAll_7() {
+    void testReplaceAll_7() {
         IASString s1 = new IASString("hello");
         IASString s2 = new IASString("zz");
         IASString s3 = new IASString("l*");
@@ -471,7 +471,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceAll_8() {
+    void testReplaceAll_8() {
         IASString s1 = new IASString("hello");
         IASString s2 = new IASString("zz");
         IASString s3 = new IASString("l*");
@@ -493,7 +493,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceAll_9() {
+    void testReplaceAll_9() {
         IASString s1 = new IASString("hello");
         IASString s2 = new IASString("zz");
         IASString s3 = new IASString("l*");
@@ -515,7 +515,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceAll_10() {
+    void testReplaceAll_10() {
         IASString s1 = new IASString("hello");
         IASString s2 = new IASString("zz");
         IASString s3 = new IASString("l*");
@@ -537,7 +537,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceAll_11() {
+    void testReplaceAll_11() {
         IASString s1 = new IASString("hello");
 
         this.getTaintChecker().setTaint(s1, true);
@@ -551,7 +551,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceAll_12() {
+    void testReplaceAll_12() {
         IASString s1 = new IASString("hello");
 
         this.getTaintChecker().setTaint(s1, false);
@@ -566,7 +566,7 @@ public class StringReplaceTaintTest extends AbstractTest {
 
     @Test
     // Assumption: empty IASStrings have always a negative taint
-    public void testReplaceAll_13() {
+    void testReplaceAll_13() {
         IASString s1 = new IASString("hello");
 
         this.getTaintChecker().setTaint(s1, false);
@@ -581,7 +581,7 @@ public class StringReplaceTaintTest extends AbstractTest {
 
     @Test
     // Assumption: empty IASStrings have always a negative taint
-    public void testReplaceAll_14() {
+    void testReplaceAll_14() {
         IASString s1 = new IASString("hello");
 
         this.getTaintChecker().setTaint(s1, true);
@@ -595,7 +595,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceAll_15() {
+    void testReplaceAll_15() {
         IASString s1 = new IASString("hello");
         IASString s2 = new IASString("zz");
 
@@ -613,7 +613,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceAll_16() {
+    void testReplaceAll_16() {
         IASString s1 = new IASString("hello");
         IASString s2 = new IASString("zz");
 
@@ -631,7 +631,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceAll_17() {
+    void testReplaceAll_17() {
         IASString s1 = new IASString("hello");
         IASString s2 = new IASString("zz");
 
@@ -649,7 +649,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceAll_18() {
+    void testReplaceAll_18() {
         IASString s1 = new IASString("hello");
         IASString s2 = new IASString("zz");
 
@@ -667,7 +667,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceFirst_1() {
+    void testReplaceFirst_1() {
         IASString s1 = new IASString("hellllo");
         IASString s2 = new IASString("zz");
         IASString s3 = new IASString("ll");
@@ -689,7 +689,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceFirst_2() {
+    void testReplaceFirst_2() {
         IASString s1 = new IASString("hellllo");
         IASString s2 = new IASString("zz");
         IASString s3 = new IASString("ll");
@@ -711,7 +711,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceFirst_3() {
+    void testReplaceFirst_3() {
         IASString s1 = new IASString("hellllo");
         IASString s2 = new IASString("zz");
         IASString s3 = new IASString("ll");
@@ -733,7 +733,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceFirst_4() {
+    void testReplaceFirst_4() {
         IASString s1 = new IASString("hellllo");
         IASString s2 = new IASString("zz");
         IASString s3 = new IASString("ll");
@@ -755,7 +755,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceFirst_5() {
+    void testReplaceFirst_5() {
         IASString s1 = new IASString("hellllo");
         IASString s2 = new IASString("zz");
         IASString s3 = new IASString("ll");
@@ -777,7 +777,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceFirst_6() {
+    void testReplaceFirst_6() {
         IASString s1 = new IASString("hellllo");
         IASString s2 = new IASString("zz");
         IASString s3 = new IASString("ll");
@@ -799,7 +799,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceFirst_7() {
+    void testReplaceFirst_7() {
         IASString s1 = new IASString("hellllo");
         IASString s2 = new IASString("zz");
         IASString s3 = new IASString("ll");
@@ -821,7 +821,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceFirst_8() {
+    void testReplaceFirst_8() {
         IASString s1 = new IASString("hellllo");
         IASString s2 = new IASString("zz");
         IASString s3 = new IASString("ll");
@@ -843,7 +843,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceFirst_9() {
+    void testReplaceFirst_9() {
         IASString s1 = new IASString("hello");
 
         this.getTaintChecker().setTaint(s1, true);
@@ -857,7 +857,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceFirst_10() {
+    void testReplaceFirst_10() {
         IASString s1 = new IASString("hello");
 
         this.getTaintChecker().setTaint(s1, false);
@@ -871,7 +871,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceFirst_11() {
+    void testReplaceFirst_11() {
         IASString s1 = new IASString("hello");
         IASString s2 = new IASString("zz");
 
@@ -889,7 +889,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceFirst_12() {
+    void testReplaceFirst_12() {
         IASString s1 = new IASString("hello");
         IASString s2 = new IASString("zz");
 
@@ -907,7 +907,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceFirst_13() {
+    void testReplaceFirst_13() {
         IASString s1 = new IASString("hello");
         IASString s2 = new IASString("zz");
 
@@ -925,7 +925,7 @@ public class StringReplaceTaintTest extends AbstractTest {
     }
 
     @Test
-    public void testReplaceFirst_14() {
+    void testReplaceFirst_14() {
         IASString s1 = new IASString("hello");
         IASString s2 = new IASString("zz");
 
@@ -944,7 +944,7 @@ public class StringReplaceTaintTest extends AbstractTest {
 
     @Test
     // Assumption: empty IASStrings have always a negative taint
-    public void testReplaceFirst_15() {
+    void testReplaceFirst_15() {
         IASString s1 = new IASString("hello");
 
         this.getTaintChecker().setTaint(s1, true);
@@ -959,7 +959,7 @@ public class StringReplaceTaintTest extends AbstractTest {
 
     @Test
     // Assumption: empty IASStrings have always a negative taint
-    public void testReplaceFirst_16() {
+    void testReplaceFirst_16() {
         IASString s1 = new IASString("hello");
 
         this.getTaintChecker().setTaint(s1, false);

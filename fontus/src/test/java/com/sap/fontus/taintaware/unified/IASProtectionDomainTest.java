@@ -7,9 +7,9 @@ import java.security.ProtectionDomain;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class IASProtectionDomainTest {
+class IASProtectionDomainTest {
     @Test
-    public void testFontusCodeSourceIsNull() {
+    void testFontusCodeSourceIsNull() {
         ProtectionDomain protectionDomain = IASString.class.getProtectionDomain();
 
         CodeSource codeSource = IASProtectionDomain.getCodeSource(protectionDomain);
@@ -18,7 +18,7 @@ public class IASProtectionDomainTest {
     }
 
     @Test
-    public void testSystemCodeSourceIsNull() {
+    void testSystemCodeSourceIsNull() {
         ProtectionDomain protectionDomain = String.class.getProtectionDomain();
 
         CodeSource codeSource = IASProtectionDomain.getCodeSource(protectionDomain);

@@ -6,13 +6,13 @@ public class SqlLexerToken {
     public int begin;
     public int end;
     public Token token;
-    public int token_type;
+    public int tokenType;
 
-    public SqlLexerToken(int begin, int end, Token token, int token_type){
+    public SqlLexerToken(int begin, int end, Token token, int tokenType){
         this.begin = begin;
         this.end = end;
         this.token = token;
-        this.token_type = token_type;
+        this.tokenType = tokenType;
     }
 
     @Override
@@ -21,7 +21,7 @@ public class SqlLexerToken {
                 "begin=" + this.begin +
                 ", end=" + this.end +
                 ", token=" + this.token +
-                ", token_type=" + this.token_type +
+                ", token_type=" + this.tokenType +
                 '}';
     }
 

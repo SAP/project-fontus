@@ -55,8 +55,7 @@ public class FontusNonClassLoadingClassWriter extends NonClassloadingClassWriter
         String type1Uninstrumented = this.helper.uninstrumentQN(type1);
         String type2Uninstrumented = this.helper.uninstrumentQN(type2);
         try {
-            String resultInitial = super.getCommonSuperClass(type1Uninstrumented, type2Uninstrumented);
-            String result = resultInitial;
+            String result = super.getCommonSuperClass(type1Uninstrumented, type2Uninstrumented);
 
             if (!this.combinedExcludedLookup.isPackageExcludedOrJdk(type1) && !this.combinedExcludedLookup.isPackageExcludedOrJdk(type2)) {
                 result = this.helper.instrumentQN(result);

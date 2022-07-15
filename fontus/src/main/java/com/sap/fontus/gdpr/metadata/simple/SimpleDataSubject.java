@@ -27,8 +27,12 @@ public class SimpleDataSubject implements DataSubject {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
         SimpleDataSubject that = (SimpleDataSubject) o;
         return Objects.equals(this.id, that.id);
     }

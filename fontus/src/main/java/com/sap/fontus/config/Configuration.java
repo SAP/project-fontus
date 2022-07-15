@@ -435,28 +435,28 @@ public class Configuration {
     }
 
     public static void parseAgent(String args) {
-        Configuration configuration = AgentConfig.parseConfig(args);
-        configuration.setOfflineInstrumentation(false);
-        setConfiguration(configuration);
+        Configuration config = AgentConfig.parseConfig(args);
+        config.isOfflineInstrumentation = false;
+        setConfiguration(config);
     }
 
     public static void setTestConfig(TaintMethod taintMethod) {
         if (configuration == null) {
             parseOffline(taintMethod);
         } else {
-            getConfiguration().setTaintMethod(taintMethod);
+            getConfiguration().taintMethod = taintMethod;
         }
     }
 
     public static void parseOffline(TaintMethod method) {
-        Configuration configuration = new Configuration();
-        configuration.setTaintMethod(method);
+        Configuration config = new Configuration();
+        config.taintMethod = method;
 
         String collectStatsString = System.getenv("ASM_COLLECT_STATS");
         if (collectStatsString != null) {
             try {
                 boolean collectStats = Boolean.parseBoolean(collectStatsString);
-                configuration.setCollectStats(collectStats);
+                config.collectStats = collectStats;
                 logger.info("Set collect_stats to {}", collectStats);
             } catch (Exception ex) {
                 logger.error("Couldn't parse ASM_COLLECT_STATS environment variable: {}", collectStatsString);
@@ -467,7 +467,7 @@ public class Configuration {
         if (useCachingString != null) {
             try {
                 boolean useCaching = Boolean.parseBoolean(useCachingString);
-                configuration.setUseCaching(useCaching);
+                config.useCaching = useCaching;
                 logger.info("Set use_caching to {}", useCaching);
             } catch (Exception ex) {
                 logger.error("Couldn't parse ASM_USE_CACHING environment variable: {}", collectStatsString);
@@ -478,14 +478,14 @@ public class Configuration {
         if (layerThresholdString != null) {
             try {
                 int layerThreshold = Integer.parseInt(layerThresholdString);
-                configuration.setLayerThreshold(layerThreshold);
+                config.layerThreshold = layerThreshold;
                 logger.info("Set layer_threshold to {}", layerThreshold);
             } catch (Exception ex) {
                 logger.error("Couldn't parse ASM_LAYER_THRESHOLD environment variable: {}", collectStatsString);
             }
         }
 
-        setConfiguration(configuration);
+        setConfiguration(config);
     }
 
     public static void setConfiguration(Configuration configuration) {
@@ -546,9 +546,9 @@ public class Configuration {
 
     @JsonIgnore
     private boolean isSpeculativeDeactive() {
-        return configuration.isOfflineInstrumentation()
-                || !configuration.isSpeculativeInstrumentation()
-                || configuration.isHybridMode();
+        return configuration.isOfflineInstrumentation
+                || !configuration.speculativeInstrumentation
+                || configuration.isHybridMode;
     }
 
     @JsonIgnore
@@ -587,8 +587,8 @@ public class Configuration {
 
     public String summary() {
         return "Configuration: " +
-                this.getSourceConfig().getSources().size() + " sources and " +
-                this.getSinkConfig().getSinks().size() + " sinks.";
+                this.sourceConfig.getSources().size() + " sources and " +
+                this.sinkConfig.getSinks().size() + " sinks.";
     }
 
     @Override

@@ -21,7 +21,7 @@ public class NetworkRequestObject implements Serializable {
     private static Object fillRequestObject() {
         Object req = null;
         try {
-            Class cls = ClassResolverFactory.createClassFinder().findClass("org.springframework.web.context.request.RequestContextHolder");
+            Class<?> cls = ClassResolverFactory.createClassFinder().findClass("org.springframework.web.context.request.RequestContextHolder");
             Method reqAttributeMethod = cls.getMethod("getRequestAttributes");
             Object reqAttributeObject = reqAttributeMethod.invoke(null);
             Method reqObjectMethod = reqAttributeObject.getClass().getMethod("getRequest");
@@ -47,9 +47,9 @@ public class NetworkRequestObject implements Serializable {
     }
 
     public JSONArray getCookies() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        IASString cookies_temp = (IASString) this.reqObject.getClass().getMethod("getHeader", IASString.class).invoke(this.reqObject, new IASString("cookie"));
-        String cookies_string = cookies_temp.toString();
-        String[] rawCookieParams = cookies_string.split(";");
+        IASString cookiesTemp = (IASString) this.reqObject.getClass().getMethod("getHeader", IASString.class).invoke(this.reqObject, new IASString("cookie"));
+        String cookiesString = cookiesTemp.toString();
+        String[] rawCookieParams = cookiesString.split(";");
         JSONArray cookies = new JSONArray();
         for (String cookie:rawCookieParams){
             cookies.put(Cookie.toJSONObject(cookie));
@@ -58,9 +58,9 @@ public class NetworkRequestObject implements Serializable {
     }
 
     public String getCookieByName(String cookie_name) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        IASString cookies_temp = (IASString) this.reqObject.getClass().getMethod("getHeader", IASString.class).invoke(this.reqObject, new IASString("cookie"));
-        String cookies_string = cookies_temp.toString();
-        String[] rawCookieParams = cookies_string.split(";");
+        IASString cookiesTemp = (IASString) this.reqObject.getClass().getMethod("getHeader", IASString.class).invoke(this.reqObject, new IASString("cookie"));
+        String cookiesString = cookiesTemp.toString();
+        String[] rawCookieParams = cookiesString.split(";");
         for (String cookie:rawCookieParams){
             if(Cookie.toJSONObject(cookie).get("name").equals(cookie_name)){
                 return (String) Cookie.toJSONObject(cookie).get("value");
@@ -71,47 +71,48 @@ public class NetworkRequestObject implements Serializable {
 
     public String getEncodedRequestBody() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         // Main request json
-        JSONObject req_json = new JSONObject();
+        JSONObject reqJson = new JSONObject();
 
         // Construct Method in json
         String method = this.reqObject.getClass().getMethod("getMethod").invoke(this.reqObject).toString();
-        req_json.put("method", method);
+        reqJson.put("method", method);
 
         // Construct Path in json
         String path = this.reqObject.getClass().getMethod("getServletPath").invoke(this.reqObject).toString();
-        req_json.put("path", path);
+        reqJson.put("path", path);
 
         // Construct Path in json
         String protocol = this.reqObject.getClass().getMethod("getProtocol").invoke(this.reqObject).toString();
-        req_json.put("protocol", protocol);
+        reqJson.put("protocol", protocol);
 
         // Construct Headers in json
-        Enumeration<IASString> header_names = (Enumeration<IASString>) this.reqObject.getClass().getMethod("getHeaderNames").invoke(this.reqObject);
+        Enumeration<IASString> headerNames = (Enumeration<IASString>) this.reqObject.getClass().getMethod("getHeaderNames").invoke(this.reqObject);
         JSONArray headers = new JSONArray();
-        if (header_names != null) {
+        if (headerNames != null) {
             JSONObject header = new JSONObject();
-            while (header_names.hasMoreElements()) {
-                IASString header_name_ias = header_names.nextElement();
-                String header_name = header_name_ias.toString();
-                String header_value = this.reqObject.getClass().getMethod("getHeader", IASString.class).invoke(this.reqObject, header_name_ias).toString();
-                header.put(header_name, header_value);
+            while (headerNames.hasMoreElements()) {
+                IASString headerNameIas = headerNames.nextElement();
+                String headerName = headerNameIas.toString();
+                String headerValue = this.reqObject.getClass().getMethod("getHeader", IASString.class).invoke(this.reqObject, headerNameIas).toString();
+                header.put(headerName, headerValue);
             }
             headers.put(header);
         }
-        req_json.put("headers", headers);
+        reqJson.put("headers", headers);
 
         // Construct Parameters in json
         JSONArray parameters = new JSONArray();
-        Map<IASString, IASString[]> parameter_names = (Map<IASString, IASString[]>) this.reqObject.getClass().getMethod("getParameterMap").invoke(this.reqObject);
-        for (IASString key : parameter_names.keySet()) {
-            IASString[] strArr = parameter_names.get(key);
+        Map<IASString, IASString[]> parameterNames = (Map<IASString, IASString[]>) this.reqObject.getClass().getMethod("getParameterMap").invoke(this.reqObject);
+        for (Map.Entry<IASString, IASString[]> entry : parameterNames.entrySet()) {
+            String key = entry.getKey().toString();
+            IASString[] strArr = entry.getValue();
             for (IASString val : strArr) {
                 JSONObject parameter = new JSONObject();
-                parameter.put(key.toString(), val.toString());
+                parameter.put(key, val.toString());
                 parameters.put(parameter);
             }
         }
-        req_json.put("parameters", parameters);
+        reqJson.put("parameters", parameters);
 
         //Construct body if present
         StringBuilder bb = new StringBuilder();
@@ -123,15 +124,13 @@ public class NetworkRequestObject implements Serializable {
             }
         }
         catch (Exception ignored){}
-        req_json.put("body",bb.toString());
+        reqJson.put("body",bb.toString());
 
-        String encoded_req = Base64.getEncoder().encodeToString(req_json.toString().getBytes(StandardCharsets.UTF_8));
-
-//        byte[] decodedBytes = Base64.getDecoder().decode(encoded_req);
+        //        byte[] decodedBytes = Base64.getDecoder().decode(encodedReq);
 //        String decodedString = new String(decodedBytes);
 //        System.out.println(decodedString);
 
-        return encoded_req;
+        return Base64.getEncoder().encodeToString(reqJson.toString().getBytes(StandardCharsets.UTF_8));
     }
 }
 

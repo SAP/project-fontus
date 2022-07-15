@@ -207,8 +207,8 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
     }
 
     
-    public Map getParameterMap() {
-        return (Map) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod());
+    public Map<Object, Object> getParameterMap() {
+        return (Map<Object, Object>) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod());
     }
 
     

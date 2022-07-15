@@ -81,12 +81,12 @@ public final class IASTaintRangeUtils {
     public static List<IASTaintRange> delete(List<IASTaintRange> ranges, int start, int end, boolean shift) {
         List<IASTaintRange> before = new ArrayList<>(ranges);
         List<IASTaintRange> after = new ArrayList<>(ranges);
-        IASTaintRangeUtils.adjustAndRemoveRanges(before, 0, start, 0);
-        IASTaintRangeUtils.adjustAndRemoveRanges(after, end, Integer.MAX_VALUE, shift ? end - start : 0);
+        adjustAndRemoveRanges(before, 0, start, 0);
+        adjustAndRemoveRanges(after, end, Integer.MAX_VALUE, shift ? end - start : 0);
         List<IASTaintRange> taintRanges = new ArrayList<>(before.size() + after.size());
         taintRanges.addAll(before);
         taintRanges.addAll(after);
-        IASTaintRangeUtils.merge(taintRanges);
+        merge(taintRanges);
 
         return taintRanges;
     }

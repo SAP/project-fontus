@@ -98,7 +98,7 @@ public class IASStringJoiner {
     }
 
     public IASStringJoiner merge(IASStringJoiner other) {
-        this.joiner.merge(other.getStringJoiner());
+        this.joiner.merge(other.joiner);
         if (this.taintList != null) {
             this.taintList.add(other.getTaintInformation());
         }

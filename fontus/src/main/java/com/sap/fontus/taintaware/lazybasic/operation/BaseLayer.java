@@ -6,7 +6,7 @@ import com.sap.fontus.taintaware.shared.IASTaintRange;
 import com.sap.fontus.taintaware.shared.IASTaintRangeUtils;
 import com.sap.fontus.taintaware.shared.IASTaintRanges;
 
-import java.util.Arrays;
+import java.util.List;
 
 public class BaseLayer implements IASLayer {
     private final IASTaintRanges base;
@@ -20,7 +20,7 @@ public class BaseLayer implements IASLayer {
     }
 
     public BaseLayer(int start, int end, IASTaintMetadata data) {
-        this(new IASTaintRanges(end, Arrays.asList(new IASTaintRange(start, end, data))));
+        this(new IASTaintRanges(end, List.of(new IASTaintRange(start, end, data))));
     }
 
     public IASTaintRanges getBase() {
@@ -28,7 +28,7 @@ public class BaseLayer implements IASLayer {
     }
 
     @Override
-    public IASTaintRanges apply(IASTaintRanges previousRanges) {
+    public IASTaintRanges apply(IASTaintRanges ranges) {
         return this.base.copy();
     }
 

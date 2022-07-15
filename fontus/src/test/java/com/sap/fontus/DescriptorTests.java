@@ -1,6 +1,5 @@
 package com.sap.fontus;
 
-import com.sap.fontus.Constants;
 import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
@@ -25,7 +24,7 @@ import java.util.stream.Stream;
 class DescriptorTests {
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.RANGE);
     }
 
@@ -142,7 +141,7 @@ class DescriptorTests {
     }
 
     @Test
-    public void testParseMethodPrimitive() throws NoSuchMethodException {
+    void testParseMethodPrimitive() throws NoSuchMethodException {
         Method m = Dummy.class.getDeclaredMethod("primitives", byte.class, short.class, int.class, long.class, boolean.class, double.class, float.class);
 
         Descriptor d = Descriptor.parseMethod(m);
@@ -152,7 +151,7 @@ class DescriptorTests {
     }
 
     @Test
-    public void testParseMethodPrimitiveArrays() throws NoSuchMethodException {
+    void testParseMethodPrimitiveArrays() throws NoSuchMethodException {
         Method m = Dummy.class.getDeclaredMethod("primitiveArrays", byte[].class, short[].class, int[].class, long[].class, boolean[].class, double[].class, float[].class);
 
         Descriptor d = Descriptor.parseMethod(m);
@@ -162,7 +161,7 @@ class DescriptorTests {
     }
 
     @Test
-    public void testParseMethodClass() throws NoSuchMethodException {
+    void testParseMethodClass() throws NoSuchMethodException {
         Method m = Dummy.class.getDeclaredMethod("clazz", String.class);
 
         Descriptor d = Descriptor.parseMethod(m);
@@ -172,7 +171,7 @@ class DescriptorTests {
     }
 
     @Test
-    public void testParseMethodClassArray() throws NoSuchMethodException {
+    void testParseMethodClassArray() throws NoSuchMethodException {
         Method m = Dummy.class.getDeclaredMethod("clazzArrays", String[].class);
 
         Descriptor d = Descriptor.parseMethod(m);
@@ -182,7 +181,7 @@ class DescriptorTests {
     }
 
     @Test
-    public void testParseMethodReturnTypeClass() throws NoSuchMethodException {
+    void testParseMethodReturnTypeClass() throws NoSuchMethodException {
         Method m = Dummy.class.getDeclaredMethod("returnTypeClass");
 
         Descriptor d = Descriptor.parseMethod(m);
@@ -192,19 +191,19 @@ class DescriptorTests {
     }
 
     class Dummy {
-        public void primitives(byte b, short s, int i, long l, boolean bool, double d, float f) {
+        void primitives(byte b, short s, int i, long l, boolean bool, double d, float f) {
         }
 
-        public void primitiveArrays(byte[] b, short[] s, int[] i, long[] l, boolean[] bool, double[] d, float[] f) {
+        void primitiveArrays(byte[] b, short[] s, int[] i, long[] l, boolean[] bool, double[] d, float[] f) {
         }
 
-        public void clazz(String s) {
+        void clazz(String s) {
         }
 
-        public void clazzArrays(String[] s) {
+        void clazzArrays(String[] s) {
         }
 
-        public String returnTypeClass() {
+        String returnTypeClass() {
             return null;
         }
     }

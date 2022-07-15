@@ -1,9 +1,9 @@
-package com.sap.fontus.taintaware.testHelper;
+package com.sap.fontus.taintaware.helper;
 
-@SuppressWarnings("ALL")
-// David: As I didn't write this Code and don't want to mess with it I suppressed the warnings.
-// TODO: Work out whether we can adapt it to the style of the remaining project?
-public class HelperUtils {
+public final class HelperUtils {
+    private HelperUtils() {
+    }
+
     public static CharSequence createCharSequence(String retValue) {
         return new CharSequence() {
             @Override

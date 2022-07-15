@@ -10,15 +10,15 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class StringTest extends AbstractTest {
+class StringTest extends AbstractTest {
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.LAZYBASIC);
     }
 
     @Test
-    public void testSubSequence_1() {
+    void testSubSequence_1() {
         IASString s = new IASString("hello");
 
         this.getTaintChecker().setTaint(s, true);
@@ -48,7 +48,7 @@ public class StringTest extends AbstractTest {
     }
 
     @Test
-    public void testJoin_4() {
+    void testJoin_4() {
         IASString s1 = new IASString("hello");
         IASString s2 = new IASString("bye");
         IASString delimiter = new IASString("-");

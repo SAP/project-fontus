@@ -25,15 +25,16 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class IASClassProxyTest {
+class IASClassProxyTest {
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.RANGE);
     }
 
     @Test
-    public void testReflectionOnJdkInterface() throws NoSuchMethodException {
+    void testReflectionOnJdkInterface() throws NoSuchMethodException {
+        @SuppressWarnings("WeakerAccess")
         class FilterImpl implements FilenameFilter {
             @Override
             public boolean accept(File dir, String name) {
@@ -51,7 +52,7 @@ public class IASClassProxyTest {
     }
 
     @Test
-    public void testInstrumentationHelper() {
+    void testInstrumentationHelper() {
         InstrumentationHelper instrumentationHelper = new InstrumentationHelper();
 
         Type stringType = Type.getType(String.class);
@@ -86,19 +87,19 @@ public class IASClassProxyTest {
 
     @ParameterizedTest
     @MethodSource("provideParameters")
-    public void testClassProxyGetName(Class<?> input, Class<?> instrumented) {
+    void testClassProxyGetName(Class<?> input, Class<?> instrumented) {
         assertEquals(instrumented.getName(), IASClassProxy.getName(input).getString());
     }
 
     @ParameterizedTest
     @MethodSource("provideParameters")
-    public void testClassProxyGetSimpleName(Class<?> input, Class<?> instrumented) {
+    void testClassProxyGetSimpleName(Class<?> input, Class<?> instrumented) {
         assertEquals(instrumented.getSimpleName(), IASClassProxy.getSimpleName(input).getString());
     }
 
     @ParameterizedTest
     @MethodSource("provideParameters")
-    public void testClassProxyGetCanonicalName(Class<?> input, Class<?> instrumented) {
+    void testClassProxyGetCanonicalName(Class<?> input, Class<?> instrumented) {
         assertEquals(instrumented.getCanonicalName(), IASClassProxy.getCanonicalName(input).getString());
     }
 

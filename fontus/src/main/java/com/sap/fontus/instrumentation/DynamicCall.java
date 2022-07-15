@@ -8,7 +8,7 @@ import java.util.Objects;
 public class DynamicCall {
     public final Handle original;
     public final Handle proxy;
-    public final Object[] bootstrapArguments;
+    private final Object[] bootstrapArguments;
 
     public DynamicCall(Handle original, Handle proxy, Object[] bootstrapArguments) {
         this.original = original;
@@ -30,8 +30,12 @@ public class DynamicCall {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DynamicCall)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof DynamicCall)) {
+            return false;
+        }
         DynamicCall that = (DynamicCall) o;
         return Objects.equals(this.original, that.original) && Objects.equals(this.proxy, that.proxy) && Arrays.equals(this.bootstrapArguments, that.bootstrapArguments);
     }

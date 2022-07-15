@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 /**
  * JUnit test for sanitization of sql statements.
  */
-public class SqlSanitizationTest {
+class SqlSanitizationTest {
 
     private static final Token[] taintableTokens = {
             Token.IDENTIFIER,
@@ -33,16 +33,13 @@ public class SqlSanitizationTest {
             Token.LITERAL_ALIAS
     };
 
-    public SqlSanitizationTest() {
-    }
-
-    private static IASTaintMetadata source = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy"));
+    private static final IASTaintMetadata source = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy"));
     /**
      * One complete attribute value is tainted. Wouldn't have changed syntax of
      * query.
      */
     @Test
-    public void testAttributeValueTainted_1() {
+    void testAttributeValueTainted_1() {
         String taintedString = "SELECT ID, City FROM Students WHERE City='London'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         // London is tainted, i.e. the '' are NOT included in the taint
@@ -57,7 +54,7 @@ public class SqlSanitizationTest {
      * of syntax and therefore converted into the string London.
      */
     @Test
-    public void testAttributeValueTainted_2() {
+    void testAttributeValueTainted_2() {
         String taintedString = "SELECT ID, City FROM Students WHERE City=4c6f6e646f6e"; // hex for London
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 12, taintedString.length(), source);
@@ -71,7 +68,7 @@ public class SqlSanitizationTest {
      * because hex would have been interpreted as part of command.
      */
     @Test
-    public void testAttributeValueTainted_3() {
+    void testAttributeValueTainted_3() {
         String badInput = "' OR 1=1--";
         String taintedString = "SELECT ID, City FROM Students WHERE City='" + badInput + "'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
@@ -86,7 +83,7 @@ public class SqlSanitizationTest {
      * One complete attribute value is tainted. Interpreted as integer.
      */
     @Test
-    public void testAttributeValueTainted_4() {
+    void testAttributeValueTainted_4() {
         String taintedString = "SELECT ID, City FROM Students WHERE ID=1";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 1, taintedString.length(), source);
@@ -100,7 +97,7 @@ public class SqlSanitizationTest {
      * because hex would have been interpreted as part of command, not as integer.
      */
     @Test
-    public void testAttributeValueTainted_5() {
+    void testAttributeValueTainted_5() {
         String badInput = "31204f5220313d312d2d"; // is hex representation of 1 OR 1=1--
         String taintedString = "SELECT ID, City FROM Students WHERE ID=" + badInput;
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
@@ -114,7 +111,7 @@ public class SqlSanitizationTest {
      * One complete attribute value is tainted, other attributes are not tainted.
      */
     @Test
-    public void testAttributeValueTainted_6() {
+    void testAttributeValueTainted_6() {
         String taintedString = "SELECT ID, City FROM Students WHERE 1=1 AND ID=1 AND City='London'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 19, taintedString.length() - 18, source);
@@ -127,7 +124,7 @@ public class SqlSanitizationTest {
      * Not all attribute values are tainted
      */
     @Test
-    public void testAttributeValueTainted_7() {
+    void testAttributeValueTainted_7() {
         String taintedString = "SELECT ID, City FROM Students WHERE ID=1 AND City='London'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         // London is tainted, i.e. the '' are NOT included in the taint
@@ -141,7 +138,7 @@ public class SqlSanitizationTest {
      * Multiple complete attribute values are tainted. Resultset is not empty.
      */
     @Test
-    public void testAttributeValueTainted_8() {
+    void testAttributeValueTainted_8() {
         String taintedString = "SELECT ID, City FROM Students WHERE City='London' AND ID=1";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         // London is tainted
@@ -157,7 +154,7 @@ public class SqlSanitizationTest {
      * Multiple complete attribute values are tainted. Resultset is not empty.
      */
     @Test
-    public void testAttributeValueTainted_9() {
+    void testAttributeValueTainted_9() {
         String badInput = "' OR 1=1--";
         String taintedString = "SELECT ID, City FROM Students WHERE City='" + badInput + "' AND ID=1";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
@@ -174,7 +171,7 @@ public class SqlSanitizationTest {
      * Tainted attribute value
      */
     @Test
-    public void testAttributeValueTainted_10() {
+    void testAttributeValueTainted_10() {
         String taintedString = "SELECT TOP 1 ID FROM Students";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(11, 12, source); // 1 is tainted
@@ -187,7 +184,7 @@ public class SqlSanitizationTest {
      * Tainted attribute value
      */
     @Test
-    public void testAttributeValueTainted_11() {
+    void testAttributeValueTainted_11() {
         String taintedString = "SELECT ID FROM Students WHERE ID BETWEEN 1 AND 2";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 7, taintedString.length() - 6, source); // 1 is tainted
@@ -200,7 +197,7 @@ public class SqlSanitizationTest {
      * Tainted value
      */
     @Test
-    public void testAttributeValueTainted_12() {
+    void testAttributeValueTainted_12() {
         String taintedString = "ALTER TABLE Students ADD Age INTEGER DEFAULT 20 NOT NULL";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 11, taintedString.length() - 9, source); // 20 is tainted
@@ -213,7 +210,7 @@ public class SqlSanitizationTest {
      * Tainted value
      */
     @Test
-    public void testAttributeValueTainted_13() {
+    void testAttributeValueTainted_13() {
         String taintedString = "SELECT ID, City FROM Students WHERE City LIKE 'London'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 7, taintedString.length() - 1, source); // London is tainted
@@ -226,7 +223,7 @@ public class SqlSanitizationTest {
      * Tainted value
      */
     @Test
-    public void testAttributeValueTainted_14() {
+    void testAttributeValueTainted_14() {
         String taintedString = "SELECT ID FROM Students WHERE ID IN(1,2)";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 2, taintedString.length() - 1, source); // 2 is tainted
@@ -239,7 +236,7 @@ public class SqlSanitizationTest {
      * Tainted value
      */
     @Test
-    public void testAttributeValueTainted_15() {
+    void testAttributeValueTainted_15() {
          String taintedString = "SELECT City FROM Students WHERE City='\' OR 1=1\''";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 10, taintedString.length() - 1, source);
@@ -252,7 +249,7 @@ public class SqlSanitizationTest {
      * Tainted static value
      */
     @Test
-    public void testAttributeValueTainted_16() {
+    void testAttributeValueTainted_16() {
         String taintedString = "SELECT City FROM Students WHERE TRUE=TRUE";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 4, taintedString.length(), source);// second TRUE is tainted
@@ -267,7 +264,7 @@ public class SqlSanitizationTest {
      * sanitizeAndExecuteQuery method.
      */
     @Test
-    public void testAttributeValueTainted_17() {
+    void testAttributeValueTainted_17() {
         String taintedString = "SELECT City FROM Students WHERE City='St. John\'s' OR City='London'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         // St. John's is tainted
@@ -285,7 +282,7 @@ public class SqlSanitizationTest {
      * creator of the sql query.
      */
     @Test
-    public void testAttributeValueTainted_18() {
+    void testAttributeValueTainted_18() {
         String taintedString = "SELECT City FROM Students WHERE City='St. John''s' OR City='London'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 7, taintedString.length() - 1, source);// London is tainted
@@ -303,7 +300,7 @@ public class SqlSanitizationTest {
      * creator of the sql query.
      */
     @Test
-    public void testAttributeValueTainted_19() {
+    void testAttributeValueTainted_19() {
         String taintedString = "SELECT City FROM Students WHERE City='London' OR City='St. John''s'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 29, taintedString.length() - 23, source);// London is tainted
@@ -317,7 +314,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_1() {
+    void testKeywordTainted_1() {
         String taintedString = "SELECT ID, City FROM Students WHERE ID=1 AND City='London'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(0, 6, source);// SELECT is tainted
@@ -332,7 +329,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_2() {
+    void testKeywordTainted_2() {
         String taintedString = "SELECT ID, City FROM Students WHERE ID=1 AND City='London'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(16, 20, source);// FROM is tainted
@@ -345,7 +342,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_3() {
+    void testKeywordTainted_3() {
         String taintedString = "SELECT ID, City FROM Students WHERE ID=1 AND City='London'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(30, 35, source);// WHERE is tainted
@@ -358,7 +355,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_4() {
+    void testKeywordTainted_4() {
         String taintedString = "SELECT City FROM Students GROUP BY Students.City";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(26, 34, source);// GROUP BY is tainted
@@ -371,7 +368,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_5() {
+    void testKeywordTainted_5() {
         String taintedString = "SELECT ID, City FROM Students GROUP BY Students.City, Students.ID HAVING ID<2";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(66, 72, source);// HAVING is tainted
@@ -384,7 +381,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_6() {
+    void testKeywordTainted_6() {
         String taintedString = "SELECT ID, City FROM Students ORDER BY City";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(30, 38, source);// ORDER BY is tainted
@@ -397,7 +394,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_7() {
+    void testKeywordTainted_7() {
         String taintedString = "SELECT s.ID, s.City FROM Students s INNER JOIN Students t ON s.City=t.City WHERE t.City='London'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(36, 46, source);// INNER JOIN is tainted
@@ -410,7 +407,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_8() {
+    void testKeywordTainted_8() {
         String taintedString = "SELECT ID, City FROM Students WHERE ID=1 AND City='London'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(41, 44, source);// AND is tainted
@@ -423,7 +420,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_9() {
+    void testKeywordTainted_9() {
         String taintedString = "SELECT SUM(ID) AS Sum_ID, City FROM Students GROUP BY Students.City ORDER BY City ASC";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(7, 10, source);// SUM is tainted
@@ -436,7 +433,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_10() {
+    void testKeywordTainted_10() {
         String taintedString = "SELECT SUM(ID) AS Sum_ID, City FROM Students GROUP BY Students.City ORDER BY City ASC";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(15, 17, source);// AS is tainted
@@ -449,7 +446,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_11() {
+    void testKeywordTainted_11() {
         String taintedString = "SELECT SUM(ID) AS Sum_ID, City FROM Students GROUP BY Students.City ORDER BY City ASC";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 3, taintedString.length(), source);// ASC is tainted
@@ -462,7 +459,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_12() {
+    void testKeywordTainted_12() {
         String taintedString = "SELECT TOP 1 ID FROM Students";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(7, 10, source);// TOP is tainted
@@ -475,7 +472,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_13() {
+    void testKeywordTainted_13() {
         String taintedString = "SELECT ID FROM Students WHERE ID BETWEEN 1 AND 2";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 15, taintedString.length() - 8, source); // BETWEEN is tainted
@@ -488,7 +485,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_14() {
+    void testKeywordTainted_14() {
         String taintedString = "CREATE TABLE Profs (Name VARCHAR(50), Age INTEGER)";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(0, 6, source); // CREATE is tainted
@@ -504,7 +501,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_15() {
+    void testKeywordTainted_15() {
          String taintedString = "CREATE TABLE Profs (Name VARCHAR(50), Age INTEGER)";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 8, taintedString.length() - 1, source); // INTEGER is tainted
@@ -520,7 +517,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_16() {
+    void testKeywordTainted_16() {
         String taintedString = "ALTER TABLE Students ADD Age INTEGER DEFAULT 20 NOT NULL";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 8, taintedString.length() - 5, source); // NOT is tainted
@@ -536,7 +533,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_17() {
+    void testKeywordTainted_17() {
         String taintedString = "ALTER TABLE Students ADD Age INTEGER DEFAULT 20 NOT NULL";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 19, taintedString.length() - 12, source); // DEFAULT is tainted
@@ -552,7 +549,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_18() {
+    void testKeywordTainted_18() {
         String taintedString = "ALTER TABLE Students ADD Age INTEGER DEFAULT 20 NOT NULL";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(21, 24, source); // ADD is tainted
@@ -568,7 +565,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_19() {
+    void testKeywordTainted_19() {
         String taintedString = "ALTER TABLE Students ADD Age INTEGER DEFAULT 20 NOT NULL";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(0, 5, source); // ALTER is tainted
@@ -584,7 +581,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_20() {
+    void testKeywordTainted_20() {
         String taintedString = "DROP TABLE Profs";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(0, 4, source); // DROP is tainted
@@ -600,7 +597,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_21() {
+    void testKeywordTainted_21() {
         String taintedString = "TRUNCATE TABLE Profs";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(0, 8, source); // TRUNCATE is tainted
@@ -616,7 +613,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_22() {
+    void testKeywordTainted_22() {
         String taintedString = "SELECT ID FROM Students WHERE ID IS NOT NULL";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 11, taintedString.length(), source); // IS NOT NULL is
@@ -632,7 +629,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_23() {
+    void testKeywordTainted_23() {
         String taintedString = "SELECT ID FROM Students WHERE ID IS NULL";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 7, taintedString.length(), source); // IS NULL is tainted
@@ -645,7 +642,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_24() {
+    void testKeywordTainted_24() {
         String taintedString = "SELECT ID, City FROM Students WHERE City LIKE 'London'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 13, taintedString.length() - 9, source); // LIKE is tainted
@@ -658,7 +655,7 @@ public class SqlSanitizationTest {
      * SQL commands/keywords are tainted. Query should NOT be executed.
      */
     @Test
-    public void testKeywordTainted_25() {
+    void testKeywordTainted_25() {
         String taintedString = "SELECT ID FROM Students WHERE ID IN(1,2)";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 7, taintedString.length() - 5, source); // IN is tainted
@@ -671,7 +668,7 @@ public class SqlSanitizationTest {
      * SQL table name is tainted. Query should NOT be executed.
      */
     @Test
-    public void testTableNameTainted_1() {
+    void testTableNameTainted_1() {
         String taintedString = "SELECT ID, City FROM Students WHERE ID=1 AND City='London'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(21, 29, source);// Students is tainted
@@ -686,7 +683,7 @@ public class SqlSanitizationTest {
      * SQL table name is tainted. Query should NOT be executed.
      */
     @Test
-    public void testTableNameTainted_2() {
+    void testTableNameTainted_2() {
         String taintedString = "CREATE TABLE Profs (Name VARCHAR(50), Age INTEGER)";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(13, 18, source); // Profs is tainted
@@ -702,7 +699,7 @@ public class SqlSanitizationTest {
      * SQL table name is tainted. Query should NOT be executed.
      */
     @Test
-    public void testTableNameTainted_3() {
+    void testTableNameTainted_3() {
         String taintedString = "ALTER TABLE Students ADD Age INTEGER DEFAULT 20 NOT NULL";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(12, 20, source); // Students is tainted
@@ -718,7 +715,7 @@ public class SqlSanitizationTest {
      * SQL table name is tainted. Query should NOT be executed.
      */
     @Test
-    public void testTableNameTainted_4() {
+    void testTableNameTainted_4() {
         String taintedString = "DROP TABLE Profs";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(11, 16, source); // Profs is tainted
@@ -734,7 +731,7 @@ public class SqlSanitizationTest {
      * SQL table name is tainted. Query should NOT be executed.
      */
     @Test
-    public void testTableNameTainted_5() {
+    void testTableNameTainted_5() {
         String taintedString = "TRUNCATE TABLE Profs";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(15, 20, source); // Profs is tainted
@@ -751,7 +748,7 @@ public class SqlSanitizationTest {
      * NOT be executed.
      */
     @Test
-    public void testColumnNameTainted_1() {
+    void testColumnNameTainted_1() {
         String taintedString = "SELECT ID, City FROM Students WHERE ID=1 AND City='London'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(7, 9, source); // first ID is tainted
@@ -769,7 +766,7 @@ public class SqlSanitizationTest {
      * should NOT be executed.
      */
     @Test
-    public void testColumnNameTainted_2() {
+    void testColumnNameTainted_2() {
         String taintedString = "SELECT IDS, City FROM Students";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(7, 10, source); // first IDS is tainted
@@ -785,7 +782,7 @@ public class SqlSanitizationTest {
      * SQL attribute/column name is tainted. Query should NOT be executed.
      */
     @Test
-    public void testColumnNameTainted_3() {
+    void testColumnNameTainted_3() {
         String taintedString = "SELECT ID, City FROM Students WHERE ID=1 AND City='London'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(36, 38, source); // second ID is tainted
@@ -800,7 +797,7 @@ public class SqlSanitizationTest {
      * SQL attribute/column name is tainted. Query should NOT be executed.
      */
     @Test
-    public void testColumnNameTainted_4() {
+    void testColumnNameTainted_4() {
         String taintedString = "SELECT ID, City FROM Students WHERE ID=1 GROUP BY City";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(50, 54, source);// second City is tainted
@@ -815,7 +812,7 @@ public class SqlSanitizationTest {
      * SQL attribute/column name is tainted. Query should NOT be executed.
      */
     @Test
-    public void testColumnNameTainted_5() {
+    void testColumnNameTainted_5() {
         String taintedString = "SELECT SUM(ID) AS Sum_ID, City FROM Students GROUP BY Students.City ORDER BY City ASC";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(11, 13, source);// first ID is tainted
@@ -830,7 +827,7 @@ public class SqlSanitizationTest {
      * SQL attribute/column name is tainted. Query should NOT be executed.
      */
     @Test
-    public void testColumnNameTainted_6() {
+    void testColumnNameTainted_6() {
         String taintedString = "SELECT SUM(ID) AS Sum_ID, City FROM Students GROUP BY Students.City ORDER BY City ASC";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(18, 24, source);// Sum_ID is tainted
@@ -845,7 +842,7 @@ public class SqlSanitizationTest {
      * SQL attribute/column name is tainted. Query should NOT be executed.
      */
     @Test
-    public void testColumnNameTainted_7() {
+    void testColumnNameTainted_7() {
         String taintedString = "SELECT SUM(ID) AS Sum_ID, City FROM Students GROUP BY Students.City ORDER BY City ASC";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 8, taintedString.length() - 4, source);// third City is tainted
@@ -860,7 +857,7 @@ public class SqlSanitizationTest {
      * SQL attribute/column name is tainted. Query should NOT be executed.
      */
     @Test
-    public void testColumnNameTainted_8() {
+    void testColumnNameTainted_8() {
         String taintedString = "CREATE TABLE Profs (Name VARCHAR(50), Age INTEGER)";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 12, taintedString.length() - 9, source); // Age is tainted
@@ -876,7 +873,7 @@ public class SqlSanitizationTest {
      * SQL attribute/column name is tainted. Query should NOT be executed.
      */
     @Test
-    public void testColumnNameTainted_9() {
+    void testColumnNameTainted_9() {
         String taintedString = "ALTER TABLE Students ADD Age INTEGER DEFAULT 20 NOT NULL";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(25, 28, source); // Age is tainted
@@ -893,7 +890,7 @@ public class SqlSanitizationTest {
      * executed.
      */
     @Test
-    public void testMixedTainted_1() {
+    void testMixedTainted_1() {
         String taintedString = "SELECT ID FROM Students WHERE ID=1";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 4, taintedString.length(), source);// ID=1 is tainted
@@ -910,7 +907,7 @@ public class SqlSanitizationTest {
      * executed.
      */
     @Test
-    public void testMixedTainted_2() {
+    void testMixedTainted_2() {
         String taintedString = "SELECT ID FROM Students WHERE ID=1";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(7, 8, source);// first ID is tainted
@@ -928,7 +925,7 @@ public class SqlSanitizationTest {
      * executed.
      */
     @Test
-    public void testMixedTainted_3() {
+    void testMixedTainted_3() {
            String taintedString = "SELECT ID FROM Students WHERE ID=1";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(0, taintedString.length(), source);// everything is tainted
@@ -945,7 +942,7 @@ public class SqlSanitizationTest {
      * query correctly.
      */
     @Test
-    public void testPartiallyTainted_1() {
+    void testPartiallyTainted_1() {
         String taintedString = "SELECT City FROM Students WHERE TRUE=TRUE";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 3, taintedString.length() - 1, source);// RU of second TRUE is
@@ -963,7 +960,7 @@ public class SqlSanitizationTest {
      * query correctly.
      */
     @Test
-    public void testPartiallyTainted_2() {
+    void testPartiallyTainted_2() {
         String taintedString = "SELECT City FROM Students WHERE ID=123";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 2, taintedString.length() - 1, source);// 2 is tainted
@@ -981,7 +978,7 @@ public class SqlSanitizationTest {
      * query correctly.
      */
     @Test
-    public void testPartiallyTainted_3() {
+    void testPartiallyTainted_3() {
         String taintedString = "SELECT City FROM Students WHERE ID=123 OR ID=1";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 10, taintedString.length() - 9, source);// 2 is tainted
@@ -995,7 +992,7 @@ public class SqlSanitizationTest {
      * query correctly.
      */
     @Test
-    public void testPartiallyTainted_4() {
+    void testPartiallyTainted_4() {
         String s = "12";
         String taintedString = "SELECT City FROM Students WHERE ID=" + s + "3 OR ID=1";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
@@ -1010,7 +1007,7 @@ public class SqlSanitizationTest {
      * query correctly.
      */
     @Test
-    public void testPartiallyTainted_5() {
+    void testPartiallyTainted_5() {
         String taintedString = "SELECT City FROM Students WHERE ID=1234 OR ID=1";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 11, taintedString.length() - 9, source);// 23 is tainted
@@ -1025,7 +1022,7 @@ public class SqlSanitizationTest {
      * query correctly.
      */
     @Test
-    public void testPartiallyTainted_6() {
+    void testPartiallyTainted_6() {
         String taintedString = "SELECT City FROM Students WHERE City='Rome'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 3, taintedString.length() - 1, source);// me is tainted
@@ -1039,7 +1036,7 @@ public class SqlSanitizationTest {
      * query correctly.
      */
     @Test
-    public void testPartiallyTainted_7() {
+    void testPartiallyTainted_7() {
         String taintedString = "SELECT City FROM Students WHERE City='New York'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         ranges.setTaint(taintedString.length() - 5, taintedString.length() - 3, source);// Yo is tainted
@@ -1052,7 +1049,7 @@ public class SqlSanitizationTest {
      * taintrange is empty, resultset is NOT empty
      */
     @Test
-    public void testEmptyTaintRange_1() {
+    void testEmptyTaintRange_1() {
         String taintedString = "SELECT * FROM Students WHERE City='London'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         boolean detected = SQLChecker.sqlInjectionDetected(taintedString, ranges, taintableTokens);
@@ -1066,7 +1063,7 @@ public class SqlSanitizationTest {
      * taintrange is empty, resultset is empty aswell
      */
     @Test
-    public void testEmptyTaintRange_2() {
+    void testEmptyTaintRange_2() {
         String taintedString = "SELECT * FROM Students WHERE City='Eden'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         boolean detected = SQLChecker.sqlInjectionDetected(taintedString, ranges, taintableTokens);
@@ -1080,7 +1077,7 @@ public class SqlSanitizationTest {
      * taintrange is empty, resultset is empty aswell
      */
     @Test
-    public void testEmptyTaintRange_3() {
+    void testEmptyTaintRange_3() {
         String taintedString = "SELECT ID, City FROM Students ORDER BY City";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         boolean detected = SQLChecker.sqlInjectionDetected(taintedString, ranges, taintableTokens);
@@ -1094,7 +1091,7 @@ public class SqlSanitizationTest {
      * taintrange is empty, resultset is empty aswell
      */
     @Test
-    public void testEmptyTaintRange_4() {
+    void testEmptyTaintRange_4() {
         String taintedString = "SELECT s.ID, s.City FROM Students s INNER JOIN Students t ON s.City=t.City WHERE t.City='London'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         boolean detected = SQLChecker.sqlInjectionDetected(taintedString, ranges, taintableTokens);
@@ -1108,7 +1105,7 @@ public class SqlSanitizationTest {
      * taintrange is empty, resultset is empty aswell
      */
     @Test
-    public void testEmptyTaintRange_5() {
+    void testEmptyTaintRange_5() {
         String taintedString = "SELECT City FROM Students GROUP BY Students.City";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         boolean detected = SQLChecker.sqlInjectionDetected(taintedString, ranges, taintableTokens);
@@ -1122,7 +1119,7 @@ public class SqlSanitizationTest {
      * taintrange is empty, resultset is empty aswell
      */
     @Test
-    public void testEmptyTaintRange_6() {
+    void testEmptyTaintRange_6() {
         String taintedString = "SELECT ID, City FROM Students GROUP BY Students.City, Students.ID HAVING ID<2";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         boolean detected = SQLChecker.sqlInjectionDetected(taintedString, ranges, taintableTokens);
@@ -1136,7 +1133,7 @@ public class SqlSanitizationTest {
      * taintrange is empty, resultset is empty aswell
      */
     @Test
-    public void testEmptyTaintRange_7() {
+    void testEmptyTaintRange_7() {
         String taintedString = "SELECT SUM(ID) AS Sum_ID, City FROM Students GROUP BY Students.City ORDER BY City ASC";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         boolean detected = SQLChecker.sqlInjectionDetected(taintedString, ranges, taintableTokens);
@@ -1150,7 +1147,7 @@ public class SqlSanitizationTest {
      * taintrange is empty, resultset is empty aswell
      */
     @Test
-    public void testEmptyTaintRange_8() {
+    void testEmptyTaintRange_8() {
         String taintedString = "SELECT TOP 1 ID FROM Students";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         boolean detected = SQLChecker.sqlInjectionDetected(taintedString, ranges, taintableTokens);
@@ -1164,7 +1161,7 @@ public class SqlSanitizationTest {
      * taintrange is empty, resultset is empty aswell
      */
     @Test
-    public void testEmptyTaintRange_9() {
+    void testEmptyTaintRange_9() {
         String taintedString = "CREATE TABLE Studentss AS SELECT * FROM Students;";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         boolean detected = SQLChecker.sqlInjectionDetected(taintedString, ranges, taintableTokens);
@@ -1179,7 +1176,7 @@ public class SqlSanitizationTest {
      * taintrange is empty, resultset is empty aswell
      */
     @Test
-    public void testEmptyTaintRange_10() {
+    void testEmptyTaintRange_10() {
         String taintedString = "ALTER TABLE Students ADD Age INT DEFAULT 20 NOT NULL";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         boolean detected = SQLChecker.sqlInjectionDetected(taintedString, ranges, taintableTokens);
@@ -1194,7 +1191,7 @@ public class SqlSanitizationTest {
      * taintrange is empty, resultset is empty aswell
      */
     @Test
-    public void testEmptyTaintRange_11() {
+    void testEmptyTaintRange_11() {
         String taintedString = "DROP TABLE Profs";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         boolean detected = SQLChecker.sqlInjectionDetected(taintedString, ranges, taintableTokens);
@@ -1209,7 +1206,7 @@ public class SqlSanitizationTest {
      * taintrange is empty, resultset is empty aswell
      */
     @Test
-    public void testEmptyTaintRange_12() {
+    void testEmptyTaintRange_12() {
         String taintedString = "TRUNCATE TABLE Profs";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         boolean detected = SQLChecker.sqlInjectionDetected(taintedString, ranges, taintableTokens);
@@ -1224,7 +1221,7 @@ public class SqlSanitizationTest {
      * taintrange is empty, resultset is empty aswell
      */
     @Test
-    public void testEmptyTaintRange_13() {
+    void testEmptyTaintRange_13() {
         String taintedString = "SELECT ID, City FROM Students WHERE City LIKE 'London'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         boolean detected = SQLChecker.sqlInjectionDetected(taintedString, ranges, taintableTokens);
@@ -1236,7 +1233,7 @@ public class SqlSanitizationTest {
      * taintrange is empty, resultset is empty aswell
      */
     @Test
-    public void testEmptyTaintRange_14() {
+    void testEmptyTaintRange_14() {
         String taintedString = "SELECT ID FROM Students WHERE ID IS NULL";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         boolean detected = SQLChecker.sqlInjectionDetected(taintedString, ranges, taintableTokens);
@@ -1248,7 +1245,7 @@ public class SqlSanitizationTest {
      * taintrange is empty, resultset is empty aswell
      */
     @Test
-    public void testEmptyTaintRange_15() {
+    void testEmptyTaintRange_15() {
          String taintedString = "SELECT ID FROM Students WHERE ID IN(1,2)";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         boolean detected = SQLChecker.sqlInjectionDetected(taintedString, ranges, taintableTokens);
@@ -1260,7 +1257,7 @@ public class SqlSanitizationTest {
      * taintrange is empty, resultset is empty aswell
      */
     @Test
-    public void testEmptyTaintRange_16() {
+    void testEmptyTaintRange_16() {
         String taintedString = "SELECT City FROM Students WHERE City='London' OR City='St. John''s'";
         IASTaintRanges ranges = new IASTaintRanges(taintedString.length());
         boolean detected = SQLChecker.sqlInjectionDetected(taintedString, ranges, taintableTokens);

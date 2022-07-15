@@ -20,7 +20,6 @@ public class RegularParameterTransformer implements ParameterTransformation {
         FunctionCall converter = this.configuration.getConverterForParameter(this.call, index);
         if (converter != null) {
             visitor.visitMethodInsn(converter);
-            return;
         }
     }
 

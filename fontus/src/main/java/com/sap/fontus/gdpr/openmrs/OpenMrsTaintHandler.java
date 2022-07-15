@@ -375,7 +375,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
     public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName) {
         if (object instanceof IASTaintAware) {
             return handleTaint((IASTaintAware) object, instance, sinkFunction, sinkName);
-        } else if (object.getClass().getName().equals("org.hl7.fhir.r4.model.HumanName")) {
+        } else if ("org.hl7.fhir.r4.model.HumanName".equals(object.getClass().getName())) {
             try {
                 Method m = object.getClass().getMethod("getNameAsSingleString");
                 IASString s = (IASString) m.invoke(object);
@@ -396,7 +396,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         String loggedInUser = "UnknownUser";
 
         try {
-            Class contextClass = Class.forName("org.openmrs.api.context.Context", false, Thread.currentThread().getContextClassLoader());
+            Class<?> contextClass = Class.forName("org.openmrs.api.context.Context", false, Thread.currentThread().getContextClassLoader());
             Object user = contextClass.getMethod("getAuthenticatedUser").invoke(null);
             if (user != null) {
                 Object userName = user.getClass().getMethod("getUsername").invoke(user);

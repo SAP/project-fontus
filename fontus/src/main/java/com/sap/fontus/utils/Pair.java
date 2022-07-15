@@ -18,8 +18,12 @@ public class Pair<X, Y> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
         Pair<?, ?> pair = (Pair<?, ?>) o;
         return Objects.equals(this.x, pair.x) && Objects.equals(this.y, pair.y);
     }

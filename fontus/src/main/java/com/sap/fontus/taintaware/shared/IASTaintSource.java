@@ -27,7 +27,9 @@ public class IASTaintSource implements NamedObject, Externalizable {
         if (this == other) {
             return true;
         }
-        if (other.getClass() != this.getClass()) return false;
+        if (other.getClass() != this.getClass()) {
+            return false;
+        }
 
         IASTaintSource source = (IASTaintSource) other;
 

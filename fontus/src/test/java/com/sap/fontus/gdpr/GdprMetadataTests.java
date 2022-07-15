@@ -15,9 +15,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 
-public class GdprMetadataTests {
+class GdprMetadataTests {
     @BeforeAll
-    public static void init() {
+    static void init() {
         Configuration.setTestConfig(TaintMethod.RANGE);
     }
 

@@ -239,7 +239,7 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     }
 
     protected Type getOrigArrayType() {
-        return AbstractInstrumentation.getArrayType(this.origType, this.origType.getDimensions());
+        return getArrayType(this.origType, this.origType.getDimensions());
     }
 
     private static Type getArrayType(Type type, int dimensions) {
@@ -247,7 +247,7 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     }
 
     protected Type getInstrumentedArrayType(int dimensions) {
-        return AbstractInstrumentation.getArrayType(this.instrumentedType, dimensions);
+        return getArrayType(this.instrumentedType, dimensions);
     }
 
     private static final LoadingCache<String, Pattern> patternCache = Caffeine.newBuilder().build(Pattern::compile);

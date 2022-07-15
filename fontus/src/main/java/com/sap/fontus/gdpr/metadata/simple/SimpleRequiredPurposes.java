@@ -44,8 +44,12 @@ public class SimpleRequiredPurposes implements RequiredPurposes {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
         SimpleRequiredPurposes that = (SimpleRequiredPurposes) o;
         return Objects.equals(this.purposeCollection, that.purposeCollection) && Objects.equals(this.vendorCollection, that.vendorCollection);
     }

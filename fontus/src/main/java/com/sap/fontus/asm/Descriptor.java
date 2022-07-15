@@ -118,8 +118,12 @@ public class Descriptor {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || this.getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || this.getClass() != obj.getClass()) {
+            return false;
+        }
         Descriptor that = (Descriptor) obj;
         return this.parameters.equals(that.parameters) &&
                 this.returnType.equals(that.returnType);
@@ -172,9 +176,6 @@ public class Descriptor {
 
     /**
      * Parses a textual Descriptor and disassembles it into its types
-     * TODO: maybe remove the ';'s?
-     * TODO: throw exception on invalid descriptor
-     * TODO: think of a nicer structure, this is really messy
      */
     public static Descriptor parseDescriptor(String descriptor) {
         Type typeDescriptor = Type.getMethodType(descriptor);
@@ -183,8 +184,8 @@ public class Descriptor {
 
     public static Descriptor parseMethod(Method m) {
         List<String> parameters = new ArrayList<>(m.getParameterCount());
-        for (Class param : m.getParameterTypes()) {
-            parameters.add(Descriptor.classNameToDescriptorName(param.getName()));
+        for (Class<?> param : m.getParameterTypes()) {
+            parameters.add(classNameToDescriptorName(param.getName()));
         }
         String returnType = classNameToDescriptorName(m.getReturnType().getName());
         return new Descriptor(parameters, returnType);
@@ -195,8 +196,8 @@ public class Descriptor {
             return parseMethod((Method) m);
         } else {
             List<String> parameters = new ArrayList<>(m.getParameterCount());
-            for (Class param : m.getParameterTypes()) {
-                parameters.add(Descriptor.classNameToDescriptorName(param.getName()));
+            for (Class<?> param : m.getParameterTypes()) {
+                parameters.add(classNameToDescriptorName(param.getName()));
             }
             return new Descriptor(parameters, "V");
         }
