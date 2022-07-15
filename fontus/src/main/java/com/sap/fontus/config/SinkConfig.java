@@ -93,7 +93,7 @@ public class SinkConfig {
     @Override
     public String toString() {
         return "SinkConfig{" +
-                "sinks=" + sinks +
+                "sinks=" + this.sinks +
                 '}';
     }
 }

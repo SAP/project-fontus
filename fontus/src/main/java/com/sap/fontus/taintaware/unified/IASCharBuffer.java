@@ -15,11 +15,11 @@ public class IASCharBuffer {
     }
 
     public boolean hasRemaining() {
-        return position < limit;
+        return this.position < this.limit;
     }
 
     public char get() {
-        if (!hasRemaining()) {
+        if (!this.hasRemaining()) {
             throw new IllegalStateException("Nothing remaining");
         }
         char c = this.stringBuffer.charAt(this.position);
@@ -28,11 +28,11 @@ public class IASCharBuffer {
     }
 
     public void rewind() {
-        position = 0;
+        this.position = 0;
     }
 
     public IASString subSequence(int start, int end) {
-        return stringBuffer.substring(start, end);
+        return this.stringBuffer.substring(start, end);
     }
 
     public IASCharBuffer position(int newPosition) {

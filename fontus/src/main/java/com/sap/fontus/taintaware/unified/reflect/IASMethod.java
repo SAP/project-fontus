@@ -193,11 +193,11 @@ public class IASMethod extends IASExecutable<Method> {
         }
 
         // Check for JDK classes
-        if (lookup.isPackageExcludedOrJdk(Utils.getInternalName(this.original.getDeclaringClass())) || isWrapperForUninstrumentedMethod()) {
-            Object[] converted = convertParametersToOriginal(parameters);
+        if (lookup.isPackageExcludedOrJdk(Utils.getInternalName(this.original.getDeclaringClass())) || this.isWrapperForUninstrumentedMethod()) {
+            Object[] converted = this.convertParametersToOriginal(parameters);
 
             if (this.original.equals(forNameMethod)) {
-                Class caller = ReflectionUtils.getCallerClass();
+                Class<?> caller = ReflectionUtils.getCallerClass();
                 ClassLoader callerLoader = caller.getClassLoader();
                 returnObj = Class.forName((String) converted[0], true, callerLoader);
             } else {
@@ -209,7 +209,7 @@ public class IASMethod extends IASExecutable<Method> {
                     || (!Modifier.isPublic(this.original.getDeclaringClass().getModifiers()) && !Modifier.isProtected(this.original.getDeclaringClass().getModifiers()) && !Modifier.isPrivate(this.original.getDeclaringClass().getModifiers()))) {
                 // This method is package private. Iuff the declaring class is in the same package as the calling class we must set it accessible
                 // Otherwise the caller class (which is this class) is not in the same package as the declaring class an an IllegalAccessException is thrown
-                Class callerClass;
+                Class<?> callerClass;
                 if (Constants.JAVA_VERSION >= 9) {
                     callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
                             .getCallerClass();

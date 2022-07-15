@@ -9,10 +9,13 @@ import org.objectweb.asm.Type;
 import java.lang.reflect.Array;
 import java.util.Optional;
 
-public class ClassUtils {
+public final class ClassUtils {
     private static final Logger logger = LogUtils.getLogger();
     public static CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(null);
     private static final ClassFinder classFinder = ClassResolverFactory.createClassFinder();
+
+    private ClassUtils() {
+    }
 
     public static Class<?> findLoadedClass(String internalName) {
         Class<?> loaded = classFinder.findClass(Utils.slashToDot(internalName));
@@ -46,7 +49,7 @@ public class ClassUtils {
     }
 
     public static boolean isInterface(String internalName) {
-        return ClassUtils.isInterface(internalName, null);
+        return isInterface(internalName, null);
     }
 
     public static boolean isInterface(int access) {
@@ -54,7 +57,7 @@ public class ClassUtils {
     }
 
     public static boolean isInterface(byte[] bytes) {
-        return ClassUtils.isInterface(new ClassReader(bytes).getAccess());
+        return isInterface(new ClassReader(bytes).getAccess());
     }
 
     public static boolean isInterface(String internalName, ClassLoader loader) {
@@ -62,7 +65,7 @@ public class ClassUtils {
                 .createClassResolver(loader)
                 .resolve(internalName);
         if (bytes.isPresent()) {
-            return ClassUtils.isInterface(new ClassReader(bytes.get()).getAccess());
+            return isInterface(new ClassReader(bytes.get()).getAccess());
         } else {
             logger.error("Could not resolve class " + internalName + " for isInterface checking");
             return false;

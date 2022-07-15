@@ -68,12 +68,12 @@ public final class IASPattern {
     }
 
     public IASString[] split(CharSequence input) {
-        return split(input, 0);
+        return this.split(input, 0);
     }
 
     public IASString[] split(CharSequence input, int limit) {
         IASString string = IASString.valueOf(input);
-        IASMatcher matcher = matcher(string);
+        IASMatcher matcher = this.matcher(string);
 
         ArrayList<IASString> result = new ArrayList<>();
         boolean isLimited = limit > 0;
@@ -84,7 +84,7 @@ public final class IASPattern {
             }
 
             int matchSize = matcher.end() - matcher.start();
-            if (result.size() != 0 || matchSize > 0) {
+            if (!result.isEmpty() || matchSize > 0) {
                 int end = matcher.start();
 
                 IASString part = string.substring(start, end);
@@ -97,7 +97,7 @@ public final class IASPattern {
         if (start < string.length() || limit < 0) {
             IASString endPart = string.substring(start);
             result.add(endPart);
-        } else if (start == 0 && string.length() == 0) {
+        } else if (start == 0 && string.isEmpty()) {
             result.add(string);
         }
 
@@ -105,11 +105,11 @@ public final class IASPattern {
     }
 
     public Stream<IASString> splitAsStream(CharSequence input) {
-        return Arrays.stream(split(input));
+        return Arrays.stream(this.split(input));
     }
 
     public IASString toIASString() {
-        return pattern();
+        return this.pattern();
     }
 
     @Override

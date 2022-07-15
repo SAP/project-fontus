@@ -1,12 +1,13 @@
 package com.sap.fontus.taintaware.unified;
 
-import com.sap.fontus.taintaware.unified.IASString;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class IASToArrayProxy {
+public final class IASToArrayProxy {
+
+    private IASToArrayProxy() {
+    }
 
     public static Object[] toArray(Collection<?> list, Object[] array) {
         if (array instanceof IASString[]) {
@@ -30,7 +31,7 @@ public class IASToArrayProxy {
 
     public static Object[] toArray(Collection<?> list) {
         boolean isString = true;
-        if (list.size() > 0) {
+        if (!list.isEmpty()) {
             for (Object e : list) {
                 if (!(e instanceof String)) {
                     isString = false;

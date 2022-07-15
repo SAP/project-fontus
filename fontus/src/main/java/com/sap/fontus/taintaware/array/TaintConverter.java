@@ -7,8 +7,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class TaintConverter {
-    public static List<IASTaintRange> toTaintRanges(IASTaintMetadata[] taints) {
+final class TaintConverter {
+    private TaintConverter() {
+    }
+
+    static List<IASTaintRange> toTaintRanges(IASTaintMetadata[] taints) {
         List<IASTaintRange> ranges = new ArrayList<>();
         int start = 0;
         IASTaintMetadata taint = null;
@@ -27,7 +30,7 @@ public class TaintConverter {
         return ranges;
     }
 
-    public static IASTaintMetadata[] toTaintArray(int size, List<IASTaintRange> ranges) {
+    static IASTaintMetadata[] toTaintArray(int size, List<IASTaintRange> ranges) {
         IASTaintMetadata[] taints = new IASTaintMetadata[size];
         if (ranges != null) {
             for (IASTaintRange range : ranges) {

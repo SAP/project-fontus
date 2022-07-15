@@ -21,9 +21,9 @@ public class Purpose {
     }
 
     public Purpose() {
-        this.name = new String();
-        this.description = new String();
-        this.legal = new String();
+        this.name = "";
+        this.description = "";
+        this.legal = "";
     }
 
     public String getName() {

@@ -5,7 +5,10 @@ import com.sap.fontus.sql.driver.IASResultSet;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class IASResultSetUtils {
+public final class IASResultSetUtils {
+
+    private IASResultSetUtils() {
+    }
 
     public static IASString getString(ResultSet rs, int idx) throws SQLException {
         if (rs instanceof IASResultSet) {

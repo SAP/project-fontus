@@ -57,7 +57,7 @@ public class SourceConfig {
     @Override
     public String toString() {
         return "SourceConfig{" +
-                "sources=" + sources +
+                "sources=" + this.sources +
                 '}';
     }
 }

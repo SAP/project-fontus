@@ -7,7 +7,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 
-public class DGMMethodConverter {
+public final class DGMMethodConverter {
     private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
     private static final MethodHandle parameterFieldGetter;
     private static final MethodHandle returnTypeGetter;
@@ -26,6 +26,9 @@ public class DGMMethodConverter {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
+    }
+
+    private DGMMethodConverter() {
     }
 
     public static List<?> convertTypes(List<?> methods) {

@@ -24,10 +24,10 @@ public class InstrumentationConfiguration {
     }
 
     public File getInput() {
-        return input;
+        return this.input;
     }
 
     public File getOutput() {
-        return output;
+        return this.output;
     }
 }

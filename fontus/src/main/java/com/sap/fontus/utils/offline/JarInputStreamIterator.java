@@ -39,11 +39,11 @@ class JarInputStreamIterator implements Iterator<Pair<JarEntry, byte[]>> {
 
     private synchronized Pair<JarEntry, byte[]> readJarEntry() {
         try {
-            JarEntry jei = jis.getNextJarEntry();
+            JarEntry jei = this.jis.getNextJarEntry();
             if (jei == null) {
                 return null;
             }
-            byte[] entryBytes = IOUtils.readStream(jis);
+            byte[] entryBytes = IOUtils.readStream(this.jis);
 
             return new Pair<>(jei, entryBytes);
         } catch (IOException e) {

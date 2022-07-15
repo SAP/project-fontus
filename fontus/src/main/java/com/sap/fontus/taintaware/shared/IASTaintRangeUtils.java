@@ -3,7 +3,10 @@ package com.sap.fontus.taintaware.shared;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IASTaintRangeUtils {
+public final class IASTaintRangeUtils {
+    private IASTaintRangeUtils() {
+    }
+
     /**
      * Cuts the ranges at the beginning and the end so that it's within the specified bounds. Afterwords it will be shifted.
      *
@@ -35,7 +38,9 @@ public class IASTaintRangeUtils {
         IASTaintRange last = ranges.get(ranges.size() - 1);
         ranges.set(ranges.size() - 1, new IASTaintRange(last.getStart() - leftShift, Math.min(last.getEnd(), endIndex) - leftShift, last.getMetadata()));
 
-        if (leftShift == 0) return;
+        if (leftShift == 0) {
+            return;
+        }
 
         for (int i = 1; i < ranges.size() - 1; i++) {
             ranges.set(i, ranges.get(i).shiftRight(-leftShift));
@@ -90,15 +95,15 @@ public class IASTaintRangeUtils {
         List<IASTaintRange> before = new ArrayList<>(ranges);
         List<IASTaintRange> after = new ArrayList<>(ranges);
 
-        IASTaintRangeUtils.adjustAndRemoveRanges(before, 0, start, 0);
-        IASTaintRangeUtils.adjustAndRemoveRanges(after, start, Integer.MAX_VALUE, start - end);
-        IASTaintRangeUtils.adjustAndRemoveRanges(incomingTaint, 0, end - start, -start);
+        adjustAndRemoveRanges(before, 0, start, 0);
+        adjustAndRemoveRanges(after, start, Integer.MAX_VALUE, start - end);
+        adjustAndRemoveRanges(incomingTaint, 0, end - start, -start);
 
         List<IASTaintRange> result = new ArrayList<>(before.size() + incomingTaint.size() + after.size());
         result.addAll(before);
         result.addAll(incomingTaint);
         result.addAll(after);
-        IASTaintRangeUtils.merge(result);
+        merge(result);
 
         return result;
     }
@@ -166,8 +171,7 @@ public class IASTaintRangeUtils {
             sb.append("length: ");
             sb.append(ranges.getLength());
             sb.append(" ranges: { ");
-            for (int i = 0; i < rangeslist.size(); i++) {
-                IASTaintRange range = rangeslist.get(i);
+            for (IASTaintRange range : rangeslist) {
                 sb.append("[ ").append(range.getStart());
                 sb.append(", ").append(range.getEnd());
                 sb.append(" ), ");

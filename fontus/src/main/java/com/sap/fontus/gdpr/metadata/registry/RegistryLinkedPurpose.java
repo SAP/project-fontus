@@ -13,37 +13,37 @@ public class RegistryLinkedPurpose extends PurposeBase {
 
     public RegistryLinkedPurpose(String name) {
         this.name = name;
-        getRegisteredPurpose();
+        this.getRegisteredPurpose();
     }
 
     public RegistryLinkedPurpose() {
         this.name = "Default";
-        getRegisteredPurpose();
+        this.getRegisteredPurpose();
     }
 
     public void setName(String name) {
         this.name = name;
-        getRegisteredPurpose();
+        this.getRegisteredPurpose();
     }
 
     @Override
     public int getId() {
-        return getRegisteredPurpose().getId();
+        return this.getRegisteredPurpose().getId();
     }
 
     @Override
     public String getName() {
-        return getRegisteredPurpose().getName();
+        return this.getRegisteredPurpose().getName();
     }
 
     @Override
     public String getDescription() {
-        return getRegisteredPurpose().getDescription();
+        return this.getRegisteredPurpose().getDescription();
     }
 
     @Override
     public String getLegalDescription() {
-        return getRegisteredPurpose().getLegalDescription();
+        return this.getRegisteredPurpose().getLegalDescription();
     }
 
 }

@@ -26,7 +26,7 @@ public class GdprTaintMetadata extends IASBasicMetadata {
     }
 
     public GdprMetadata getMetadata() {
-        return metadata;
+        return this.metadata;
     }
 
     public void setMetadata(GdprMetadata metadata) {
@@ -36,21 +36,21 @@ public class GdprTaintMetadata extends IASBasicMetadata {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || this.getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         GdprTaintMetadata that = (GdprTaintMetadata) o;
-        return Objects.equals(metadata, that.metadata);
+        return Objects.equals(this.metadata, that.metadata);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), metadata);
+        return Objects.hash(super.hashCode(), this.metadata);
     }
 
     @Override
     public String toString() {
         return "GdprTaintMetadata{" +
-                "metadata=" + metadata +
+                "metadata=" + this.metadata +
                 '}';
     }
 }

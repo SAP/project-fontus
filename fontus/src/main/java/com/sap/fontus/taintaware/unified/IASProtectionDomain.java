@@ -3,8 +3,11 @@ package com.sap.fontus.taintaware.unified;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 
-public class IASProtectionDomain {
+public final class IASProtectionDomain {
     private static final ProtectionDomain fontusProtectionDomain = IASProtectionDomain.class.getProtectionDomain();
+
+    private IASProtectionDomain() {
+    }
 
     public static CodeSource getCodeSource(ProtectionDomain protectionDomain) {
         if (isFontusProtectionDomain(protectionDomain)) {

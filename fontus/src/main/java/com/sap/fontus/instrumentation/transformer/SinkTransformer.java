@@ -41,12 +41,12 @@ public class SinkTransformer extends SourceOrSinkTransformer implements Paramete
         logger.debug("Type: {}", type);
         // Check whether this parameter needs to be checked for taint
         if (this.sink.findParameter(index) != null) {
-            String instrumentedType = instrumentationHelper.instrumentQN(type);
+            String instrumentedType = this.instrumentationHelper.instrumentQN(type);
             logger.info("Adding taint check for sink {}, parameter {} ({})", this.sink.getName(), index, type);
 
             // Put the owning object instance onto the stack
             MethodVisitor originalVisitor = mv.getParent();
-            addParentObjectToStack(originalVisitor, this.sink.getFunction());
+            this.addParentObjectToStack(originalVisitor, this.sink.getFunction());
 
             // Add string information about the sink
             originalVisitor.visitLdcInsn(this.sink.getFunction().getFqn());
@@ -77,7 +77,7 @@ public class SinkTransformer extends SourceOrSinkTransformer implements Paramete
     @Override
     public void transformReturnValue(MethodTaintingVisitor mv, Descriptor desc) {
         // Also add a transformation for return types
-        transformParameter(-1, desc.getReturnType(), mv);
+        this.transformParameter(-1, desc.getReturnType(), mv);
     }
 
     @Override

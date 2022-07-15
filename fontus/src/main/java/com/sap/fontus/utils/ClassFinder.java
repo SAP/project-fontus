@@ -38,8 +38,8 @@ public class ClassFinder {
             }
         }
 
-        if (loadedClasses.containsKey(internalName)) {
-            ClassLoader classLoader = loadedClasses.get(internalName);
+        if (this.loadedClasses.containsKey(internalName)) {
+            ClassLoader classLoader = this.loadedClasses.get(internalName);
             if (classLoader != null) {
                 return this.findClassPerClassLoader(className, classLoader);
             } else {
@@ -51,17 +51,17 @@ public class ClassFinder {
     }
 
     private Class<?> findClassPerClassLoader(String className, ClassLoader classLoader) {
-        if (!cachePerClassLoader.containsKey(classLoader)) {
-            updateCacheForClassLoader(classLoader);
-            Map<String, Class<?>> cache = cachePerClassLoader.get(classLoader);
+        if (!this.cachePerClassLoader.containsKey(classLoader)) {
+            this.updateCacheForClassLoader(classLoader);
+            Map<String, Class<?>> cache = this.cachePerClassLoader.get(classLoader);
             if (cache.containsKey(className)) {
                 return cache.get(className);
             }
         } else {
-            Map<String, Class<?>> cache = cachePerClassLoader.get(classLoader);
+            Map<String, Class<?>> cache = this.cachePerClassLoader.get(classLoader);
 
             if (!cache.containsKey(className)) {
-                updateCacheForClassLoader(classLoader);
+                this.updateCacheForClassLoader(classLoader);
             }
 
             if (cache.containsKey(className)) {
@@ -72,11 +72,11 @@ public class ClassFinder {
     }
 
     private void updateCacheForClassLoader(ClassLoader classLoader) {
-        Class<?>[] classes = instrumentation.getInitiatedClasses(classLoader);
+        Class<?>[] classes = this.instrumentation.getInitiatedClasses(classLoader);
 
-        cachePerClassLoader.putIfAbsent(classLoader, new ConcurrentHashMap<>());
+        this.cachePerClassLoader.putIfAbsent(classLoader, new ConcurrentHashMap<>());
 
-        Map<String, Class<?>> cache = cachePerClassLoader.get(classLoader);
+        Map<String, Class<?>> cache = this.cachePerClassLoader.get(classLoader);
 
         if (classes != null) {
             for (Class<?> cls : classes) {

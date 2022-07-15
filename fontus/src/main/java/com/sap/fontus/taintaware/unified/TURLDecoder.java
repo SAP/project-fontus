@@ -7,7 +7,10 @@ import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
 
-public class TURLDecoder {
+public final class TURLDecoder {
+    private TURLDecoder() {
+    }
+
     @Deprecated
     public static IASString decode(IASString url) {
         return decode(url, Charset.defaultCharset());

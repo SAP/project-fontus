@@ -18,14 +18,14 @@ public class SqlLexerToken {
     @Override
     public String toString() {
         return "SqlLexerToken{" +
-                "begin=" + begin +
-                ", end=" + end +
-                ", token=" + token +
-                ", token_type=" + token_type +
+                "begin=" + this.begin +
+                ", end=" + this.end +
+                ", token=" + this.token +
+                ", token_type=" + this.token_type +
                 '}';
     }
 
     public Token getToken() {
-        return token;
+        return this.token;
     }
 }

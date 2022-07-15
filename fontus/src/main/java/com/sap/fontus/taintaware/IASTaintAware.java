@@ -26,7 +26,7 @@ public interface IASTaintAware extends Serializable {
     boolean isInitialized();
 
     default boolean isUninitialized() {
-        return !isInitialized();
+        return !this.isInitialized();
     }
 
     void initialize();

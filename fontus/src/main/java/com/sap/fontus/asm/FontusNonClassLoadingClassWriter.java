@@ -52,14 +52,14 @@ public class FontusNonClassLoadingClassWriter extends NonClassloadingClassWriter
         //
         // The bigger question is why the TypeHierarcyReader doesn't return the instrumented superclass...
         //
-        String type1Uninstrumented = helper.uninstrumentQN(type1);
-        String type2Uninstrumented = helper.uninstrumentQN(type2);
+        String type1Uninstrumented = this.helper.uninstrumentQN(type1);
+        String type2Uninstrumented = this.helper.uninstrumentQN(type2);
         try {
             String resultInitial = super.getCommonSuperClass(type1Uninstrumented, type2Uninstrumented);
             String result = resultInitial;
 
             if (!this.combinedExcludedLookup.isPackageExcludedOrJdk(type1) && !this.combinedExcludedLookup.isPackageExcludedOrJdk(type2)) {
-                result = helper.instrumentQN(result);
+                result = this.helper.instrumentQN(result);
             } else {
                 result = super.getCommonSuperClass(type1, type2);
             }

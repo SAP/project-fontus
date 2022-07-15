@@ -81,7 +81,7 @@ public class Descriptor {
 
     public int getParameterTotalSize() {
         // Sum up the total size of the parameters
-        return getParameters().stream().mapToInt((param) -> Type.getType(param).getSize()).sum();
+        return this.getParameters().stream().mapToInt((param) -> Type.getType(param).getSize()).sum();
     }
 
     public Stack<String> getParameterStack() {
@@ -107,7 +107,7 @@ public class Descriptor {
 
     public Type toAsmMethodType() {
         Type[] parameterTypes = this.parameters.stream().map(Type::getType).toArray(Type[]::new);
-        return Type.getMethodType(Type.getType(returnType), parameterTypes);
+        return Type.getMethodType(Type.getType(this.returnType), parameterTypes);
     }
 
     @Override

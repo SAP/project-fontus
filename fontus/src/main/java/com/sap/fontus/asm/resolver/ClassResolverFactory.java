@@ -6,7 +6,7 @@ import com.sap.fontus.agent.TaintAgent;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.utils.ClassFinder;
 
-public class ClassResolverFactory {
+public final class ClassResolverFactory {
     private static final LoadingCache<ClassLoader, AgentClassResolver> classResolvers;
     private static final OfflineClassResolver offlineClassResolver;
     private static final AgentClassResolver nullResolver;
@@ -17,6 +17,9 @@ public class ClassResolverFactory {
         nullResolver = Configuration.getConfiguration().isParallel() ? new ParallelAgentClassResolver(null) : new AgentClassResolver(null);
         offlineClassResolver = new OfflineClassResolver(classResolvers.get(ClassLoader.getSystemClassLoader()));
         classFinder = new ClassFinder(TaintAgent.getInstrumentation());
+    }
+
+    private ClassResolverFactory() {
     }
 
     public static IClassResolver createClassResolver(ClassLoader classLoader) {

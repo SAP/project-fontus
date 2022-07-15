@@ -31,30 +31,27 @@ public class IASTaintSource implements NamedObject, Externalizable {
 
         IASTaintSource source = (IASTaintSource) other;
 
-        if (!name.equals(source.name)) {
+        if (!this.name.equals(source.name)) {
             return false;
         }
-        if (id != source.id) {
-            return false;
-        }
-        return true;
+        return this.id == source.id;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, id);
+        return Objects.hash(this.name, this.id);
     }
 
     @Override
     public String getName() {
-        return name;
+        return this.name;
     }
 
     @Override
     public String toString() {
         return "IASTaintSource{" +
-                "name='" + name + '\'' +
-                ", id=" + id +
+                "name='" + this.name + '\'' +
+                ", id=" + this.id +
                 '}';
     }
 

@@ -5,7 +5,10 @@ import com.sap.fontus.sql.driver.IASPreparedStatement;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class IASPreparedStatementUtils {
+public final class IASPreparedStatementUtils {
+
+    private IASPreparedStatementUtils() {
+    }
 
     public static void setString(PreparedStatement ps, int idx, IASString value) throws SQLException {
         if (ps instanceof IASPreparedStatement) {

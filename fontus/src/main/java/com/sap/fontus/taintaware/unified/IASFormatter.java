@@ -15,7 +15,7 @@ import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.*;
 
-public class IASFormatter implements Closeable, Flushable, AutoCloseable {
+public class IASFormatter implements Closeable, Flushable {
     private final Appendable output;
     private final Locale locale;
     private IOException lastIOException;
@@ -92,32 +92,32 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
     }
 
     public IASFormatter format(IASString format, Object... args) {
-        return format(this.locale, format, args);
+        return this.format(this.locale, format, args);
     }
 
     public IASFormatter format(Locale l, IASString format, Object... args) {
-        checkClosed();
-        IASCharBuffer formatBuffer = new IASCharBuffer((IASString) format);
-        ParserStateMachine parser = new ParserStateMachine(formatBuffer);
-        Transformer transformer = new Transformer(this, l);
+        this.checkClosed();
+        IASCharBuffer formatBuffer = new IASCharBuffer(format);
+        IASFormatter.ParserStateMachine parser = new IASFormatter.ParserStateMachine(formatBuffer);
+        IASFormatter.Transformer transformer = new IASFormatter.Transformer(this, l);
 
         int currentObjectIndex = 0;
         Object lastArgument = null;
         boolean hasLastArgumentSet = false;
         while (formatBuffer.hasRemaining()) {
             parser.reset();
-            FormatToken token = parser.getNextFormatToken();
+            IASFormatter.FormatToken token = parser.getNextFormatToken();
             IASString result;
             IASString plainText = token.getPlainText();
-            if (token.getConversionType() == (char) FormatToken.UNSET) {
+            if (token.getConversionType() == (char) IASFormatter.FormatToken.UNSET) {
                 result = plainText;
             } else {
                 plainText = plainText.substring(0, plainText.indexOf('%'));
                 Object argument = null;
                 if (token.requireArgument()) {
-                    int index = token.getArgIndex() == FormatToken.UNSET ? currentObjectIndex++
+                    int index = token.getArgIndex() == IASFormatter.FormatToken.UNSET ? currentObjectIndex++
                             : token.getArgIndex();
-                    argument = getArgument(args, index, token, lastArgument,
+                    argument = this.getArgument(args, index, token, lastArgument,
                             hasLastArgumentSet);
                     lastArgument = argument;
                     hasLastArgumentSet = true;
@@ -128,9 +128,9 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             // if output is made by formattable callback
             if (null != result) {
                 try {
-                    output.append(result);
+                    this.output.append(result);
                 } catch (IOException e) {
-                    lastIOException = e;
+                    this.lastIOException = e;
                 }
             }
         }
@@ -144,7 +144,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
     }
 
     public IOException ioException() {
-        return lastIOException;
+        return this.lastIOException;
     }
 
     public Locale locale() {
@@ -207,20 +207,20 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
 
         private static final int SUFFIX_STATE = 7;
 
-        private FormatToken token;
+        private IASFormatter.FormatToken token;
 
         private int state = ENTRY_STATE;
 
         private char currentChar = 0;
 
-        private IASCharBuffer format = null;
+        private IASCharBuffer format;
 
         ParserStateMachine(IASCharBuffer format) {
             this.format = format;
         }
 
         void reset() {
-            this.currentChar = (char) FormatToken.UNSET;
+            this.currentChar = (char) IASFormatter.FormatToken.UNSET;
             this.state = ENTRY_STATE;
             this.token = null;
         }
@@ -230,56 +230,56 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
          * recorded in the FormatToken returned and the position of the stream
          * for the format string will be advanced till the next format token.
          */
-        FormatToken getNextFormatToken() {
-            token = new FormatToken();
-            token.setFormatStringStartIndex(format.position());
+        IASFormatter.FormatToken getNextFormatToken() {
+            this.token = new IASFormatter.FormatToken();
+            this.token.setFormatStringStartIndex(this.format.position());
 
             // FINITE AUTOMATIC MACHINE
             while (true) {
 
-                if (ParserStateMachine.EXIT_STATE != state) {
+                if (EXIT_STATE != this.state) {
                     // exit state does not need to get next char
-                    currentChar = getNextFormatChar();
-                    if (EOS == currentChar
-                            && ParserStateMachine.ENTRY_STATE != state) {
-                        throw new UnknownFormatConversionException(getFormatString().toString());
+                    this.currentChar = this.getNextFormatChar();
+                    if (EOS == this.currentChar
+                            && ENTRY_STATE != this.state) {
+                        throw new UnknownFormatConversionException(this.getFormatString().toString());
                     }
                 }
 
-                switch (state) {
+                switch (this.state) {
                     // exit state
-                    case ParserStateMachine.EXIT_STATE: {
-                        process_EXIT_STATE();
-                        return token;
+                    case EXIT_STATE: {
+                        this.process_EXIT_STATE();
+                        return this.token;
                     }
                     // plain text state, not yet applied converter
-                    case ParserStateMachine.ENTRY_STATE: {
-                        process_ENTRY_STATE();
+                    case ENTRY_STATE: {
+                        this.process_ENTRY_STATE();
                         break;
                     }
                     // begins converted string
-                    case ParserStateMachine.START_CONVERSION_STATE: {
-                        process_START_CONVERSION_STATE();
+                    case START_CONVERSION_STATE: {
+                        this.process_START_CONVERSION_STATE();
                         break;
                     }
-                    case ParserStateMachine.FLAGS_STATE: {
-                        process_FlAGS_STATE();
+                    case FLAGS_STATE: {
+                        this.process_FlAGS_STATE();
                         break;
                     }
-                    case ParserStateMachine.WIDTH_STATE: {
-                        process_WIDTH_STATE();
+                    case WIDTH_STATE: {
+                        this.process_WIDTH_STATE();
                         break;
                     }
-                    case ParserStateMachine.PRECISION_STATE: {
-                        process_PRECISION_STATE();
+                    case PRECISION_STATE: {
+                        this.process_PRECISION_STATE();
                         break;
                     }
-                    case ParserStateMachine.CONVERSION_TYPE_STATE: {
-                        process_CONVERSION_TYPE_STATE();
+                    case CONVERSION_TYPE_STATE: {
+                        this.process_CONVERSION_TYPE_STATE();
                         break;
                     }
-                    case ParserStateMachine.SUFFIX_STATE: {
-                        process_SUFFIX_STATE();
+                    case SUFFIX_STATE: {
+                        this.process_SUFFIX_STATE();
                         break;
                     }
                 }
@@ -290,38 +290,38 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
          * Gets next char from the format string.
          */
         private char getNextFormatChar() {
-            if (format.hasRemaining()) {
-                return format.get();
+            if (this.format.hasRemaining()) {
+                return this.format.get();
             }
             return EOS;
         }
 
         private IASString getFormatString() {
-            int end = format.position();
-            format.rewind();
-            IASString formatString = format.subSequence(
-                    token.getFormatStringStartIndex(), end);
-            format.position(end);
+            int end = this.format.position();
+            this.format.rewind();
+            IASString formatString = this.format.subSequence(
+                    this.token.getFormatStringStartIndex(), end);
+            this.format.position(end);
             return formatString;
         }
 
         private void process_ENTRY_STATE() {
-            if (EOS == currentChar) {
-                state = ParserStateMachine.EXIT_STATE;
-            } else if ('%' == currentChar) {
+            if (EOS == this.currentChar) {
+                this.state = EXIT_STATE;
+            } else if ('%' == this.currentChar) {
                 // change to conversion type state
-                state = START_CONVERSION_STATE;
+                this.state = START_CONVERSION_STATE;
             }
             // else remains in ENTRY_STATE
         }
 
         private void process_START_CONVERSION_STATE() {
-            if (Character.isDigit(currentChar)) {
-                int position = format.position() - 1;
-                int number = parseInt(format);
+            if (Character.isDigit(this.currentChar)) {
+                int position = this.format.position() - 1;
+                int number = this.parseInt(this.format);
                 char nextChar = (char) 0;
-                if (format.hasRemaining()) {
-                    nextChar = format.get();
+                if (this.format.hasRemaining()) {
+                    nextChar = this.format.get();
                 }
                 if ('$' == nextChar) {
                     // the digital sequence stands for the argument
@@ -330,90 +330,90 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
                     // k$ stands for the argument whose index is k-1 except that
                     // 0$ and 1$ both stands for the first element.
                     if (argIndex > 0) {
-                        token.setArgIndex(argIndex - 1);
-                    } else if (argIndex == FormatToken.UNSET) {
+                        this.token.setArgIndex(argIndex - 1);
+                    } else if (argIndex == IASFormatter.FormatToken.UNSET) {
                         throw new MissingFormatArgumentException(
-                                getFormatString().toString());
+                                this.getFormatString().toString());
                     }
-                    state = FLAGS_STATE;
+                    this.state = FLAGS_STATE;
                 } else {
                     // the digital zero stands for one format flag.
-                    if ('0' == currentChar) {
-                        state = FLAGS_STATE;
-                        format.position(position);
+                    if ('0' == this.currentChar) {
+                        this.state = FLAGS_STATE;
+                        this.format.position(position);
                     } else {
                         // the digital sequence stands for the width.
-                        state = WIDTH_STATE;
+                        this.state = WIDTH_STATE;
                         // do not get the next char.
-                        format.position(format.position() - 1);
-                        token.setWidth(number);
+                        this.format.position(this.format.position() - 1);
+                        this.token.setWidth(number);
                     }
                 }
-                currentChar = nextChar;
-            } else if ('<' == currentChar) {
-                state = FLAGS_STATE;
-                token.setArgIndex(FormatToken.LAST_ARGUMENT_INDEX);
+                this.currentChar = nextChar;
+            } else if ('<' == this.currentChar) {
+                this.state = FLAGS_STATE;
+                this.token.setArgIndex(IASFormatter.FormatToken.LAST_ARGUMENT_INDEX);
             } else {
-                state = FLAGS_STATE;
+                this.state = FLAGS_STATE;
                 // do not get the next char.
-                format.position(format.position() - 1);
+                this.format.position(this.format.position() - 1);
             }
 
         }
 
         private void process_FlAGS_STATE() {
-            if (token.setFlag(currentChar)) {
+            if (this.token.setFlag(this.currentChar)) {
                 // remains in FLAGS_STATE
-            } else if (Character.isDigit(currentChar)) {
-                token.setWidth(parseInt(format));
-                state = WIDTH_STATE;
-            } else if ('.' == currentChar) {
-                state = PRECISION_STATE;
+            } else if (Character.isDigit(this.currentChar)) {
+                this.token.setWidth(this.parseInt(this.format));
+                this.state = WIDTH_STATE;
+            } else if ('.' == this.currentChar) {
+                this.state = PRECISION_STATE;
             } else {
-                state = CONVERSION_TYPE_STATE;
+                this.state = CONVERSION_TYPE_STATE;
                 // do not get the next char.
-                format.position(format.position() - 1);
+                this.format.position(this.format.position() - 1);
             }
         }
 
         private void process_WIDTH_STATE() {
-            if ('.' == currentChar) {
-                state = PRECISION_STATE;
+            if ('.' == this.currentChar) {
+                this.state = PRECISION_STATE;
             } else {
-                state = CONVERSION_TYPE_STATE;
+                this.state = CONVERSION_TYPE_STATE;
                 // do not get the next char.
-                format.position(format.position() - 1);
+                this.format.position(this.format.position() - 1);
             }
         }
 
         private void process_PRECISION_STATE() {
-            if (Character.isDigit(currentChar)) {
-                token.setPrecision(parseInt(format));
+            if (Character.isDigit(this.currentChar)) {
+                this.token.setPrecision(this.parseInt(this.format));
             } else {
                 // the precision is required but not given by the
                 // format string.
-                throw new UnknownFormatConversionException(getFormatString().toString());
+                throw new UnknownFormatConversionException(this.getFormatString().toString());
             }
-            state = CONVERSION_TYPE_STATE;
+            this.state = CONVERSION_TYPE_STATE;
         }
 
         private void process_CONVERSION_TYPE_STATE() {
-            token.setConversionType(currentChar);
-            if ('t' == currentChar || 'T' == currentChar) {
-                state = SUFFIX_STATE;
+            this.token.setConversionType(this.currentChar);
+            if ('t' == this.currentChar || 'T' == this.currentChar) {
+                this.state = SUFFIX_STATE;
             } else {
-                state = EXIT_STATE;
+                this.state = EXIT_STATE;
             }
 
         }
 
         private void process_SUFFIX_STATE() {
-            token.setDateSuffix(currentChar);
-            state = EXIT_STATE;
+            this.token.setDateSuffix(this.currentChar);
+            this.state = EXIT_STATE;
         }
 
         private void process_EXIT_STATE() {
-            token.setPlainText(getFormatString());
+            this.token.setPlainText(this.getFormatString());
         }
 
         /*
@@ -434,7 +434,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             try {
                 return Integer.parseInt(intStr.getString());
             } catch (NumberFormatException e) {
-                return FormatToken.UNSET;
+                return IASFormatter.FormatToken.UNSET;
             }
         }
     }
@@ -452,7 +452,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             this.locale = locale;
         }
 
-        void transform(FormatToken formatToken, Calendar aCalendar,
+        void transform(IASFormatter.FormatToken formatToken, Calendar aCalendar,
                        IASStringBuilder aResult) {
             this.result = aResult;
             this.calendar = aCalendar;
@@ -460,125 +460,125 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
 
             switch (suffix) {
                 case 'H': {
-                    transform_H();
+                    this.transform_H();
                     break;
                 }
                 case 'I': {
-                    transform_I();
+                    this.transform_I();
                     break;
                 }
                 case 'M': {
-                    transform_M();
+                    this.transform_M();
                     break;
                 }
                 case 'S': {
-                    transform_S();
+                    this.transform_S();
                     break;
                 }
                 case 'L': {
-                    transform_L();
+                    this.transform_L();
                     break;
                 }
                 case 'N': {
-                    transform_N();
+                    this.transform_N();
                     break;
                 }
                 case 'k': {
-                    transform_k();
+                    this.transform_k();
                     break;
                 }
                 case 'l': {
-                    transform_l();
+                    this.transform_l();
                     break;
                 }
                 case 'p': {
-                    transform_p(true);
+                    this.transform_p(true);
                     break;
                 }
                 case 's': {
-                    transform_s();
+                    this.transform_s();
                     break;
                 }
                 case 'z': {
-                    transform_z();
+                    this.transform_z();
                     break;
                 }
                 case 'Z': {
-                    transform_Z();
+                    this.transform_Z();
                     break;
                 }
                 case 'Q': {
-                    transform_Q();
+                    this.transform_Q();
                     break;
                 }
                 case 'B': {
-                    transform_B();
+                    this.transform_B();
                     break;
                 }
                 case 'b':
                 case 'h': {
-                    transform_b();
+                    this.transform_b();
                     break;
                 }
                 case 'A': {
-                    transform_A();
+                    this.transform_A();
                     break;
                 }
                 case 'a': {
-                    transform_a();
+                    this.transform_a();
                     break;
                 }
                 case 'C': {
-                    transform_C();
+                    this.transform_C();
                     break;
                 }
                 case 'Y': {
-                    transform_Y();
+                    this.transform_Y();
                     break;
                 }
                 case 'y': {
-                    transform_y();
+                    this.transform_y();
                     break;
                 }
                 case 'j': {
-                    transform_j();
+                    this.transform_j();
                     break;
                 }
                 case 'm': {
-                    transform_m();
+                    this.transform_m();
                     break;
                 }
                 case 'd': {
-                    transform_d();
+                    this.transform_d();
                     break;
                 }
                 case 'e': {
-                    transform_e();
+                    this.transform_e();
                     break;
                 }
                 case 'R': {
-                    transform_R();
+                    this.transform_R();
                     break;
                 }
 
                 case 'T': {
-                    transform_T();
+                    this.transform_T();
                     break;
                 }
                 case 'r': {
-                    transform_r();
+                    this.transform_r();
                     break;
                 }
                 case 'D': {
-                    transform_D();
+                    this.transform_D();
                     break;
                 }
                 case 'F': {
-                    transform_F();
+                    this.transform_F();
                     break;
                 }
                 case 'c': {
-                    transform_c();
+                    this.transform_c();
                     break;
                 }
                 default: {
@@ -590,202 +590,202 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         }
 
         private void transform_e() {
-            int day = calendar.get(Calendar.DAY_OF_MONTH);
-            result.append(day);
+            int day = this.calendar.get(Calendar.DAY_OF_MONTH);
+            this.result.append(day);
         }
 
         private void transform_d() {
-            int day = calendar.get(Calendar.DAY_OF_MONTH);
-            result.append(paddingZeros(day, 2));
+            int day = this.calendar.get(Calendar.DAY_OF_MONTH);
+            this.result.append(paddingZeros(day, 2));
         }
 
         private void transform_m() {
-            int month = calendar.get(Calendar.MONTH);
+            int month = this.calendar.get(Calendar.MONTH);
             // The returned month starts from zero, which needs to be
             // incremented by 1.
             month++;
-            result.append(paddingZeros(month, 2));
+            this.result.append(paddingZeros(month, 2));
         }
 
         private void transform_j() {
-            int day = calendar.get(Calendar.DAY_OF_YEAR);
-            result.append(paddingZeros(day, 3));
+            int day = this.calendar.get(Calendar.DAY_OF_YEAR);
+            this.result.append(paddingZeros(day, 3));
         }
 
         private void transform_y() {
-            int year = calendar.get(Calendar.YEAR);
+            int year = this.calendar.get(Calendar.YEAR);
             year %= 100;
-            result.append(paddingZeros(year, 2));
+            this.result.append(paddingZeros(year, 2));
         }
 
         private void transform_Y() {
-            int year = calendar.get(Calendar.YEAR);
-            result.append(paddingZeros(year, 4));
+            int year = this.calendar.get(Calendar.YEAR);
+            this.result.append(paddingZeros(year, 4));
         }
 
         private void transform_C() {
-            int year = calendar.get(Calendar.YEAR);
+            int year = this.calendar.get(Calendar.YEAR);
             year /= 100;
-            result.append(paddingZeros(year, 2));
+            this.result.append(paddingZeros(year, 2));
         }
 
         private void transform_a() {
-            int day = calendar.get(Calendar.DAY_OF_WEEK);
-            result.append(getDateFormatSymbols().getShortWeekdays()[day]);
+            int day = this.calendar.get(Calendar.DAY_OF_WEEK);
+            this.result.append(this.getDateFormatSymbols().getShortWeekdays()[day]);
         }
 
         private void transform_A() {
-            int day = calendar.get(Calendar.DAY_OF_WEEK);
-            result.append(getDateFormatSymbols().getWeekdays()[day]);
+            int day = this.calendar.get(Calendar.DAY_OF_WEEK);
+            this.result.append(this.getDateFormatSymbols().getWeekdays()[day]);
         }
 
         private void transform_b() {
-            int month = calendar.get(Calendar.MONTH);
-            result.append(getDateFormatSymbols().getShortMonths()[month]);
+            int month = this.calendar.get(Calendar.MONTH);
+            this.result.append(this.getDateFormatSymbols().getShortMonths()[month]);
         }
 
         private void transform_B() {
-            int month = calendar.get(Calendar.MONTH);
-            result.append(getDateFormatSymbols().getMonths()[month]);
+            int month = this.calendar.get(Calendar.MONTH);
+            this.result.append(this.getDateFormatSymbols().getMonths()[month]);
         }
 
         private void transform_Q() {
-            long milliSeconds = calendar.getTimeInMillis();
-            result.append(milliSeconds);
+            long milliSeconds = this.calendar.getTimeInMillis();
+            this.result.append(milliSeconds);
         }
 
         private void transform_s() {
-            long milliSeconds = calendar.getTimeInMillis();
+            long milliSeconds = this.calendar.getTimeInMillis();
             milliSeconds /= 1000;
-            result.append(milliSeconds);
+            this.result.append(milliSeconds);
         }
 
         private void transform_Z() {
-            TimeZone timeZone = calendar.getTimeZone();
-            result.append(timeZone
+            TimeZone timeZone = this.calendar.getTimeZone();
+            this.result.append(timeZone
                     .getDisplayName(
-                            timeZone.inDaylightTime(calendar.getTime()),
-                            TimeZone.SHORT, locale));
+                            timeZone.inDaylightTime(this.calendar.getTime()),
+                            TimeZone.SHORT, this.locale));
         }
 
         private void transform_z() {
-            int zoneOffset = calendar.get(Calendar.ZONE_OFFSET);
+            int zoneOffset = this.calendar.get(Calendar.ZONE_OFFSET);
             zoneOffset /= 3600000;
             zoneOffset *= 100;
             if (zoneOffset >= 0) {
-                result.append('+');
+                this.result.append('+');
             }
-            result.append(paddingZeros(zoneOffset, 4));
+            this.result.append(paddingZeros(zoneOffset, 4));
         }
 
         private void transform_p(boolean isLowerCase) {
-            int i = calendar.get(Calendar.AM_PM);
-            IASString s = IASString.valueOf(getDateFormatSymbols().getAmPmStrings()[i]);
+            int i = this.calendar.get(Calendar.AM_PM);
+            IASString s = IASString.valueOf(this.getDateFormatSymbols().getAmPmStrings()[i]);
             if (isLowerCase) {
-                s = s.toLowerCase(locale);
+                s = s.toLowerCase(this.locale);
             }
-            result.append(s);
+            this.result.append(s);
         }
 
         private void transform_N() {
             // TODO System.nanoTime();
-            long nanosecond = calendar.get(Calendar.MILLISECOND) * 1000000L;
-            result.append(paddingZeros(nanosecond, 9));
+            long nanosecond = this.calendar.get(Calendar.MILLISECOND) * 1000000L;
+            this.result.append(paddingZeros(nanosecond, 9));
         }
 
         private void transform_L() {
-            int millisecond = calendar.get(Calendar.MILLISECOND);
-            result.append(paddingZeros(millisecond, 3));
+            int millisecond = this.calendar.get(Calendar.MILLISECOND);
+            this.result.append(paddingZeros(millisecond, 3));
         }
 
         private void transform_S() {
-            int second = calendar.get(Calendar.SECOND);
-            result.append(paddingZeros(second, 2));
+            int second = this.calendar.get(Calendar.SECOND);
+            this.result.append(paddingZeros(second, 2));
         }
 
         private void transform_M() {
-            int minute = calendar.get(Calendar.MINUTE);
-            result.append(paddingZeros(minute, 2));
+            int minute = this.calendar.get(Calendar.MINUTE);
+            this.result.append(paddingZeros(minute, 2));
         }
 
         private void transform_l() {
-            int hour = calendar.get(Calendar.HOUR);
+            int hour = this.calendar.get(Calendar.HOUR);
             if (0 == hour) {
                 hour = 12;
             }
-            result.append(hour);
+            this.result.append(hour);
         }
 
         private void transform_k() {
-            int hour = calendar.get(Calendar.HOUR_OF_DAY);
-            result.append(hour);
+            int hour = this.calendar.get(Calendar.HOUR_OF_DAY);
+            this.result.append(hour);
         }
 
         private void transform_I() {
-            int hour = calendar.get(Calendar.HOUR);
+            int hour = this.calendar.get(Calendar.HOUR);
             if (0 == hour) {
                 hour = 12;
             }
-            result.append(paddingZeros(hour, 2));
+            this.result.append(paddingZeros(hour, 2));
         }
 
         private void transform_H() {
-            int hour = calendar.get(Calendar.HOUR_OF_DAY);
-            result.append(paddingZeros(hour, 2));
+            int hour = this.calendar.get(Calendar.HOUR_OF_DAY);
+            this.result.append(paddingZeros(hour, 2));
         }
 
         private void transform_R() {
-            transform_H();
-            result.append(':');
-            transform_M();
+            this.transform_H();
+            this.result.append(':');
+            this.transform_M();
         }
 
         private void transform_T() {
-            transform_H();
-            result.append(':');
-            transform_M();
-            result.append(':');
-            transform_S();
+            this.transform_H();
+            this.result.append(':');
+            this.transform_M();
+            this.result.append(':');
+            this.transform_S();
         }
 
         private void transform_r() {
-            transform_I();
-            result.append(':');
-            transform_M();
-            result.append(':');
-            transform_S();
-            result.append(' ');
-            transform_p(false);
+            this.transform_I();
+            this.result.append(':');
+            this.transform_M();
+            this.result.append(':');
+            this.transform_S();
+            this.result.append(' ');
+            this.transform_p(false);
         }
 
         private void transform_D() {
-            transform_m();
-            result.append('/');
-            transform_d();
-            result.append('/');
-            transform_y();
+            this.transform_m();
+            this.result.append('/');
+            this.transform_d();
+            this.result.append('/');
+            this.transform_y();
         }
 
         private void transform_F() {
-            transform_Y();
-            result.append('-');
-            transform_m();
-            result.append('-');
-            transform_d();
+            this.transform_Y();
+            this.result.append('-');
+            this.transform_m();
+            this.result.append('-');
+            this.transform_d();
         }
 
         private void transform_c() {
-            transform_a();
-            result.append(' ');
-            transform_b();
-            result.append(' ');
-            transform_d();
-            result.append(' ');
-            transform_T();
-            result.append(' ');
-            transform_Z();
-            result.append(' ');
-            transform_Y();
+            this.transform_a();
+            this.result.append(' ');
+            this.transform_b();
+            this.result.append(' ');
+            this.transform_d();
+            this.result.append(' ');
+            this.transform_T();
+            this.result.append(' ');
+            this.transform_Z();
+            this.result.append(' ');
+            this.transform_Y();
         }
 
         private static IASString paddingZeros(long number, int length) {
@@ -807,10 +807,10 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         }
 
         private DateFormatSymbols getDateFormatSymbols() {
-            if (null == dateFormatSymbols) {
-                dateFormatSymbols = new DateFormatSymbols(locale);
+            if (null == this.dateFormatSymbols) {
+                this.dateFormatSymbols = new DateFormatSymbols(this.locale);
             }
-            return dateFormatSymbols;
+            return this.dateFormatSymbols;
         }
     }/*
      * Transforms the argument to the formatted string according to the format
@@ -821,7 +821,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
 
         private final IASFormatter formatter;
 
-        private FormatToken formatToken;
+        private IASFormatter.FormatToken formatToken;
 
         private Object arg;
 
@@ -833,7 +833,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
 
         private DecimalFormatSymbols decimalFormatSymbols;
 
-        private DateTimeUtil dateTimeUtil;
+        private IASFormatter.DateTimeUtil dateTimeUtil;
 
         Transformer(IASFormatter formatter, Locale locale) {
             this.formatter = formatter;
@@ -841,24 +841,24 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         }
 
         private NumberFormat getNumberFormat() {
-            if (null == numberFormat) {
-                numberFormat = NumberFormat.getInstance(locale);
+            if (null == this.numberFormat) {
+                this.numberFormat = NumberFormat.getInstance(this.locale);
             }
-            return numberFormat;
+            return this.numberFormat;
         }
 
         private DecimalFormatSymbols getDecimalFormatSymbols() {
-            if (null == decimalFormatSymbols) {
-                decimalFormatSymbols = new DecimalFormatSymbols(locale);
+            if (null == this.decimalFormatSymbols) {
+                this.decimalFormatSymbols = new DecimalFormatSymbols(this.locale);
             }
-            return decimalFormatSymbols;
+            return this.decimalFormatSymbols;
         }
 
         /*
          * Gets the formatted string according to the format token and the
          * argument.
          */
-        IASString transform(FormatToken token, Object argument) {
+        IASString transform(IASFormatter.FormatToken token, Object argument) {
 
             /* init data member to print */
             this.formatToken = token;
@@ -868,32 +868,32 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             switch (token.getConversionType()) {
                 case 'B':
                 case 'b': {
-                    result = transformFromBoolean();
+                    result = this.transformFromBoolean();
                     break;
                 }
                 case 'H':
                 case 'h': {
-                    result = transformFromHashCode();
+                    result = this.transformFromHashCode();
                     break;
                 }
                 case 'S':
                 case 's': {
-                    result = transformFromString();
+                    result = this.transformFromString();
                     break;
                 }
                 case 'C':
                 case 'c': {
-                    result = transformFromCharacter();
+                    result = this.transformFromCharacter();
                     break;
                 }
                 case 'd':
                 case 'o':
                 case 'x':
                 case 'X': {
-                    if (null == arg || arg instanceof BigInteger) {
-                        result = transformFromBigInteger();
+                    if (null == this.arg || this.arg instanceof BigInteger) {
+                        result = this.transformFromBigInteger();
                     } else {
-                        result = transformFromInteger();
+                        result = this.transformFromInteger();
                     }
                     break;
                 }
@@ -904,20 +904,20 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
                 case 'f':
                 case 'a':
                 case 'A': {
-                    result = transformFromFloat();
+                    result = this.transformFromFloat();
                     break;
                 }
                 case '%': {
-                    result = transformFromPercent();
+                    result = this.transformFromPercent();
                     break;
                 }
                 case 'n': {
-                    result = transformFromLineSeparator();
+                    result = this.transformFromLineSeparator();
                     break;
                 }
                 case 't':
                 case 'T': {
-                    result = transformFromDateTime();
+                    result = this.transformFromDateTime();
                     break;
                 }
                 default: {
@@ -940,29 +940,29 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         private IASString transformFromBoolean() {
             IASStringBuilder result = new IASStringBuilder();
             int startIndex = 0;
-            int flags = formatToken.getFlags();
+            int flags = this.formatToken.getFlags();
 
-            if (formatToken.isFlagSet(FormatToken.FLAG_MINUS)
-                    && !formatToken.isWidthSet()) {
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_MINUS)
+                    && !this.formatToken.isWidthSet()) {
                 throw new MissingFormatWidthException("-" //$NON-NLS-1$
-                        + formatToken.getConversionType());
+                        + this.formatToken.getConversionType());
             }
 
             // only '-' is valid for flags
-            if (FormatToken.FLAGS_UNSET != flags
-                    && FormatToken.FLAG_MINUS != flags) {
-                throw new FormatFlagsConversionMismatchException(formatToken
-                        .getStrFlags().getString(), formatToken.getConversionType());
+            if (IASFormatter.FormatToken.FLAGS_UNSET != flags
+                    && IASFormatter.FormatToken.FLAG_MINUS != flags) {
+                throw new FormatFlagsConversionMismatchException(this.formatToken
+                        .getStrFlags().getString(), this.formatToken.getConversionType());
             }
 
-            if (null == arg) {
+            if (null == this.arg) {
                 result.append("false"); //$NON-NLS-1$
-            } else if (arg instanceof Boolean) {
-                result.append(arg);
+            } else if (this.arg instanceof Boolean) {
+                result.append(this.arg);
             } else {
                 result.append("true"); //$NON-NLS-1$
             }
-            return padding(result, startIndex);
+            return this.padding(result, startIndex);
         }
 
         /*
@@ -972,32 +972,32 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             IASStringBuilder result = new IASStringBuilder();
 
             int startIndex = 0;
-            int flags = formatToken.getFlags();
+            int flags = this.formatToken.getFlags();
 
-            if (formatToken.isFlagSet(FormatToken.FLAG_MINUS)
-                    && !formatToken.isWidthSet()) {
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_MINUS)
+                    && !this.formatToken.isWidthSet()) {
                 throw new MissingFormatWidthException("-" //$NON-NLS-1$
-                        + formatToken.getConversionType());
+                        + this.formatToken.getConversionType());
             }
 
             // only '-' is valid for flags
-            if (FormatToken.FLAGS_UNSET != flags
-                    && FormatToken.FLAG_MINUS != flags) {
-                throw new FormatFlagsConversionMismatchException(formatToken
-                        .getStrFlags().toString(), formatToken.getConversionType());
+            if (IASFormatter.FormatToken.FLAGS_UNSET != flags
+                    && IASFormatter.FormatToken.FLAG_MINUS != flags) {
+                throw new FormatFlagsConversionMismatchException(this.formatToken
+                        .getStrFlags().toString(), this.formatToken.getConversionType());
             }
 
-            if (null == arg) {
+            if (null == this.arg) {
                 result.append("null"); //$NON-NLS-1$
             } else {
-                String hexString = Integer.toHexString(arg.hashCode());
+                String hexString = Integer.toHexString(this.arg.hashCode());
                 IASString taintedHexString = new IASString(hexString);
-                if (arg instanceof IASTaintAware && ((IASTaintAware) arg).isTainted()) {
+                if (this.arg instanceof IASTaintAware && ((IASTaintAware) this.arg).isTainted()) {
                     taintedHexString.setTaint(true);
                 }
                 result.append(taintedHexString);
             }
-            return padding(result, startIndex);
+            return this.padding(result, startIndex);
         }
 
         /*
@@ -1006,32 +1006,32 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         private IASString transformFromString() {
             IASStringBuilder result = new IASStringBuilder();
             int startIndex = 0;
-            int flags = formatToken.getFlags();
+            int flags = this.formatToken.getFlags();
 
-            if (formatToken.isFlagSet(FormatToken.FLAG_MINUS)
-                    && !formatToken.isWidthSet()) {
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_MINUS)
+                    && !this.formatToken.isWidthSet()) {
                 throw new MissingFormatWidthException("-" //$NON-NLS-1$
-                        + formatToken.getConversionType());
+                        + this.formatToken.getConversionType());
             }
 
-            if (arg instanceof Formattable) {
+            if (this.arg instanceof Formattable) {
                 int flag = 0;
                 // only minus and sharp flag is valid
-                if (FormatToken.FLAGS_UNSET != (flags & ~FormatToken.FLAG_MINUS & ~FormatToken.FLAG_SHARP)) {
-                    throw new IllegalFormatFlagsException(formatToken
+                if (IASFormatter.FormatToken.FLAGS_UNSET != (flags & ~IASFormatter.FormatToken.FLAG_MINUS & ~IASFormatter.FormatToken.FLAG_SHARP)) {
+                    throw new IllegalFormatFlagsException(this.formatToken
                             .getStrFlags().toString());
                 }
-                if (formatToken.isFlagSet(FormatToken.FLAG_MINUS)) {
+                if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_MINUS)) {
                     flag |= FormattableFlags.LEFT_JUSTIFY;
                 }
-                if (formatToken.isFlagSet(FormatToken.FLAG_SHARP)) {
+                if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_SHARP)) {
                     flag |= FormattableFlags.ALTERNATE;
                 }
-                if (Character.isUpperCase(formatToken.getConversionType())) {
+                if (Character.isUpperCase(this.formatToken.getConversionType())) {
                     flag |= FormattableFlags.UPPERCASE;
                 }
-                ((Formattable) arg).formatTo(formatter.getFormatter(), flag, formatToken
-                        .getWidth(), formatToken.getPrecision());
+                ((Formattable) this.arg).formatTo(this.formatter.getFormatter(), flag, this.formatToken
+                        .getWidth(), this.formatToken.getPrecision());
                 // all actions have been taken out in the
                 // Formattable.formatTo, thus there is nothing to do, just
                 // returns null, which tells the Parser to add nothing to the
@@ -1040,14 +1040,14 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             }
             // only '-' is valid for flags if the argument is not an
             // instance of Formattable
-            if (FormatToken.FLAGS_UNSET != flags
-                    && FormatToken.FLAG_MINUS != flags) {
-                throw new FormatFlagsConversionMismatchException(formatToken
-                        .getStrFlags().toString(), formatToken.getConversionType());
+            if (IASFormatter.FormatToken.FLAGS_UNSET != flags
+                    && IASFormatter.FormatToken.FLAG_MINUS != flags) {
+                throw new FormatFlagsConversionMismatchException(this.formatToken
+                        .getStrFlags().toString(), this.formatToken.getConversionType());
             }
 
-            result.append(arg);
-            return padding(result, startIndex);
+            result.append(this.arg);
+            return this.padding(result, startIndex);
         }
 
         /*
@@ -1057,56 +1057,56 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             IASStringBuilder result = new IASStringBuilder();
 
             int startIndex = 0;
-            int flags = formatToken.getFlags();
+            int flags = this.formatToken.getFlags();
 
-            if (formatToken.isFlagSet(FormatToken.FLAG_MINUS)
-                    && !formatToken.isWidthSet()) {
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_MINUS)
+                    && !this.formatToken.isWidthSet()) {
                 throw new MissingFormatWidthException("-" //$NON-NLS-1$
-                        + formatToken.getConversionType());
+                        + this.formatToken.getConversionType());
             }
 
             // only '-' is valid for flags
-            if (FormatToken.FLAGS_UNSET != flags
-                    && FormatToken.FLAG_MINUS != flags) {
-                throw new FormatFlagsConversionMismatchException(formatToken
-                        .getStrFlags().toString(), formatToken.getConversionType());
+            if (IASFormatter.FormatToken.FLAGS_UNSET != flags
+                    && IASFormatter.FormatToken.FLAG_MINUS != flags) {
+                throw new FormatFlagsConversionMismatchException(this.formatToken
+                        .getStrFlags().toString(), this.formatToken.getConversionType());
             }
 
-            if (formatToken.isPrecisionSet()) {
-                throw new IllegalFormatPrecisionException(formatToken
+            if (this.formatToken.isPrecisionSet()) {
+                throw new IllegalFormatPrecisionException(this.formatToken
                         .getPrecision());
             }
 
-            if (null == arg) {
+            if (null == this.arg) {
                 result.append("null"); //$NON-NLS-1$
             } else {
-                if (arg instanceof Character) {
-                    result.append(arg);
-                } else if (arg instanceof Byte) {
-                    byte b = ((Byte) arg).byteValue();
+                if (this.arg instanceof Character) {
+                    result.append(this.arg);
+                } else if (this.arg instanceof Byte) {
+                    byte b = ((Byte) this.arg).byteValue();
                     if (!Character.isValidCodePoint(b)) {
                         throw new IllegalFormatCodePointException(b);
                     }
                     result.append((char) b);
-                } else if (arg instanceof Short) {
-                    short s = ((Short) arg).shortValue();
+                } else if (this.arg instanceof Short) {
+                    short s = ((Short) this.arg).shortValue();
                     if (!Character.isValidCodePoint(s)) {
                         throw new IllegalFormatCodePointException(s);
                     }
                     result.append((char) s);
-                } else if (arg instanceof Integer) {
-                    int codePoint = ((Integer) arg).intValue();
+                } else if (this.arg instanceof Integer) {
+                    int codePoint = ((Integer) this.arg).intValue();
                     if (!Character.isValidCodePoint(codePoint)) {
                         throw new IllegalFormatCodePointException(codePoint);
                     }
                     result.append(IASString.valueOf(Character.toChars(codePoint)));
                 } else {
                     // argument of other class is not acceptable.
-                    throw new IllegalFormatConversionException(formatToken
-                            .getConversionType(), arg.getClass());
+                    throw new IllegalFormatConversionException(this.formatToken
+                            .getConversionType(), this.arg.getClass());
                 }
             }
-            return padding(result, startIndex);
+            return this.padding(result, startIndex);
         }
 
         /*
@@ -1117,24 +1117,24 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             IASStringBuilder result = new IASStringBuilder("%"); //$NON-NLS-1$
 
             int startIndex = 0;
-            int flags = formatToken.getFlags();
+            int flags = this.formatToken.getFlags();
 
-            if (formatToken.isFlagSet(FormatToken.FLAG_MINUS)
-                    && !formatToken.isWidthSet()) {
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_MINUS)
+                    && !this.formatToken.isWidthSet()) {
                 throw new MissingFormatWidthException("-" //$NON-NLS-1$
-                        + formatToken.getConversionType());
+                        + this.formatToken.getConversionType());
             }
 
-            if (FormatToken.FLAGS_UNSET != flags
-                    && FormatToken.FLAG_MINUS != flags) {
-                throw new FormatFlagsConversionMismatchException(formatToken
-                        .getStrFlags().getString(), formatToken.getConversionType());
+            if (IASFormatter.FormatToken.FLAGS_UNSET != flags
+                    && IASFormatter.FormatToken.FLAG_MINUS != flags) {
+                throw new FormatFlagsConversionMismatchException(this.formatToken
+                        .getStrFlags().getString(), this.formatToken.getConversionType());
             }
-            if (formatToken.isPrecisionSet()) {
-                throw new IllegalFormatPrecisionException(formatToken
+            if (this.formatToken.isPrecisionSet()) {
+                throw new IllegalFormatPrecisionException(this.formatToken
                         .getPrecision());
             }
-            return padding(result, startIndex);
+            return this.padding(result, startIndex);
         }
 
         /*
@@ -1142,18 +1142,18 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
          * or the precision is illegal.
          */
         private IASString transformFromLineSeparator() {
-            if (formatToken.isPrecisionSet()) {
-                throw new IllegalFormatPrecisionException(formatToken
+            if (this.formatToken.isPrecisionSet()) {
+                throw new IllegalFormatPrecisionException(this.formatToken
                         .getPrecision());
             }
 
-            if (formatToken.isWidthSet()) {
-                throw new IllegalFormatWidthException(formatToken.getWidth());
+            if (this.formatToken.isWidthSet()) {
+                throw new IllegalFormatWidthException(this.formatToken.getWidth());
             }
 
-            int flags = formatToken.getFlags();
-            if (FormatToken.FLAGS_UNSET != flags) {
-                throw new IllegalFormatFlagsException(formatToken.getStrFlags().getString());
+            int flags = this.formatToken.getFlags();
+            if (IASFormatter.FormatToken.FLAGS_UNSET != flags) {
+                throw new IllegalFormatFlagsException(this.formatToken.getStrFlags().getString());
             }
 
             if (null == lineSeparator) {
@@ -1170,12 +1170,12 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
          */
         private IASString padding(IASStringBuilder source, int startIndex) {
             int start = startIndex;
-            boolean paddingRight = formatToken
-                    .isFlagSet(FormatToken.FLAG_MINUS);
+            boolean paddingRight = this.formatToken
+                    .isFlagSet(IASFormatter.FormatToken.FLAG_MINUS);
             char paddingChar = '\u0020';// space as padding char.
-            if (formatToken.isFlagSet(FormatToken.FLAG_ZERO)) {
-                if ('d' == formatToken.getConversionType()) {
-                    paddingChar = getDecimalFormatSymbols().getZeroDigit();
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_ZERO)) {
+                if ('d' == this.formatToken.getConversionType()) {
+                    paddingChar = this.getDecimalFormatSymbols().getZeroDigit();
                 } else {
                     paddingChar = '0';
                 }
@@ -1184,8 +1184,8 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
                 // location.
                 start = 0;
             }
-            int width = formatToken.getWidth();
-            int precision = formatToken.getPrecision();
+            int width = this.formatToken.getWidth();
+            int precision = this.formatToken.getPrecision();
 
             int length = source.length();
             if (precision >= 0) {
@@ -1218,52 +1218,52 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             int startIndex = 0;
             boolean isNegative = false;
             IASStringBuilder result = new IASStringBuilder();
-            char currentConversionType = formatToken.getConversionType();
+            char currentConversionType = this.formatToken.getConversionType();
             long value;
 
-            if (formatToken.isFlagSet(FormatToken.FLAG_MINUS)
-                    || formatToken.isFlagSet(FormatToken.FLAG_ZERO)) {
-                if (!formatToken.isWidthSet()) {
-                    throw new MissingFormatWidthException(formatToken
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_MINUS)
+                    || this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_ZERO)) {
+                if (!this.formatToken.isWidthSet()) {
+                    throw new MissingFormatWidthException(this.formatToken
                             .getStrFlags().getString());
                 }
             }
             // Combination of '+' & ' ' is illegal.
-            if (formatToken.isFlagSet(FormatToken.FLAG_ADD)
-                    && formatToken.isFlagSet(FormatToken.FLAG_SPACE)) {
-                throw new IllegalFormatFlagsException(formatToken.getStrFlags().getString());
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_ADD)
+                    && this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_SPACE)) {
+                throw new IllegalFormatFlagsException(this.formatToken.getStrFlags().getString());
             }
-            if (formatToken.isPrecisionSet()) {
-                throw new IllegalFormatPrecisionException(formatToken
+            if (this.formatToken.isPrecisionSet()) {
+                throw new IllegalFormatPrecisionException(this.formatToken
                         .getPrecision());
             }
-            if (arg instanceof Long) {
-                value = ((Long) arg).longValue();
-            } else if (arg instanceof Integer) {
-                value = ((Integer) arg).longValue();
-            } else if (arg instanceof Short) {
-                value = ((Short) arg).longValue();
-            } else if (arg instanceof Byte) {
-                value = ((Byte) arg).longValue();
+            if (this.arg instanceof Long) {
+                value = ((Long) this.arg).longValue();
+            } else if (this.arg instanceof Integer) {
+                value = ((Integer) this.arg).longValue();
+            } else if (this.arg instanceof Short) {
+                value = ((Short) this.arg).longValue();
+            } else if (this.arg instanceof Byte) {
+                value = ((Byte) this.arg).longValue();
             } else {
-                throw new IllegalFormatConversionException(formatToken
-                        .getConversionType(), arg.getClass());
+                throw new IllegalFormatConversionException(this.formatToken
+                        .getConversionType(), this.arg.getClass());
             }
             if ('d' != currentConversionType) {
-                if (formatToken.isFlagSet(FormatToken.FLAG_ADD)
-                        || formatToken.isFlagSet(FormatToken.FLAG_SPACE)
-                        || formatToken.isFlagSet(FormatToken.FLAG_COMMA)
-                        || formatToken.isFlagSet(FormatToken.FLAG_PARENTHESIS)) {
+                if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_ADD)
+                        || this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_SPACE)
+                        || this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_COMMA)
+                        || this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_PARENTHESIS)) {
                     throw new FormatFlagsConversionMismatchException(
-                            formatToken.getStrFlags().getString(), formatToken
+                            this.formatToken.getStrFlags().getString(), this.formatToken
                             .getConversionType());
                 }
             }
 
-            if (formatToken.isFlagSet(FormatToken.FLAG_SHARP)) {
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_SHARP)) {
                 if ('d' == currentConversionType) {
                     throw new FormatFlagsConversionMismatchException(
-                            formatToken.getStrFlags().getString(), formatToken
+                            this.formatToken.getStrFlags().getString(), this.formatToken
                             .getConversionType());
                 } else if ('o' == currentConversionType) {
                     result.append("0"); //$NON-NLS-1$
@@ -1274,9 +1274,9 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
                 }
             }
 
-            if (formatToken.isFlagSet(FormatToken.FLAG_MINUS)
-                    && formatToken.isFlagSet(FormatToken.FLAG_ZERO)) {
-                throw new IllegalFormatFlagsException(formatToken.getStrFlags().getString());
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_MINUS)
+                    && this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_ZERO)) {
+                throw new IllegalFormatFlagsException(this.formatToken.getStrFlags().getString());
             }
 
             if (value < 0) {
@@ -1284,19 +1284,19 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             }
 
             if ('d' == currentConversionType) {
-                NumberFormat numberFormat = getNumberFormat();
-                numberFormat.setGroupingUsed(formatToken.isFlagSet(FormatToken.FLAG_COMMA));
-                result.append(numberFormat.format(arg));
+                NumberFormat numberFormat = this.getNumberFormat();
+                numberFormat.setGroupingUsed(this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_COMMA));
+                result.append(numberFormat.format(this.arg));
             } else {
                 long BYTE_MASK = 0x00000000000000FFL;
                 long SHORT_MASK = 0x000000000000FFFFL;
                 long INT_MASK = 0x00000000FFFFFFFFL;
                 if (isNegative) {
-                    if (arg instanceof Byte) {
+                    if (this.arg instanceof Byte) {
                         value &= BYTE_MASK;
-                    } else if (arg instanceof Short) {
+                    } else if (this.arg instanceof Short) {
                         value &= SHORT_MASK;
-                    } else if (arg instanceof Integer) {
+                    } else if (this.arg instanceof Integer) {
                         value &= INT_MASK;
                     }
                 }
@@ -1309,11 +1309,11 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             }
 
             if (!isNegative) {
-                if (formatToken.isFlagSet(FormatToken.FLAG_ADD)) {
+                if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_ADD)) {
                     result.insert(0, '+');
                     startIndex += 1;
                 }
-                if (formatToken.isFlagSet(FormatToken.FLAG_SPACE)) {
+                if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_SPACE)) {
                     result.insert(0, ' ');
                     startIndex += 1;
                 }
@@ -1321,15 +1321,15 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
 
             /* pad paddingChar to the output */
             if (isNegative
-                    && formatToken.isFlagSet(FormatToken.FLAG_PARENTHESIS)) {
-                result = wrapParentheses(result);
+                    && this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_PARENTHESIS)) {
+                result = this.wrapParentheses(result);
                 return result.toIASString();
 
             }
-            if (isNegative && formatToken.isFlagSet(FormatToken.FLAG_ZERO)) {
+            if (isNegative && this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_ZERO)) {
                 startIndex++;
             }
-            return padding(result, startIndex);
+            return this.padding(result, startIndex);
         }
 
         /*
@@ -1341,13 +1341,13 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             // delete the '-'
             result.deleteCharAt(0);
             result.insert(0, '(');
-            if (formatToken.isFlagSet(FormatToken.FLAG_ZERO)) {
-                formatToken.setWidth(formatToken.getWidth() - 1);
-                padding(result, 1);
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_ZERO)) {
+                this.formatToken.setWidth(this.formatToken.getWidth() - 1);
+                this.padding(result, 1);
                 result.append(')');
             } else {
                 result.append(')');
-                padding(result, 0);
+                this.padding(result, 0);
             }
             return result;
         }
@@ -1355,25 +1355,25 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         private IASString transformFromSpecialNumber() {
             IASString source = null;
 
-            if (!(arg instanceof Number) || arg instanceof BigDecimal) {
+            if (!(this.arg instanceof Number) || this.arg instanceof BigDecimal) {
                 return null;
             }
 
-            Number number = (Number) arg;
+            Number number = (Number) this.arg;
             double d = number.doubleValue();
             if (Double.isNaN(d)) {
                 source = IASString.valueOf("NaN"); //$NON-NLS-1$
             } else if (Double.isInfinite(d)) {
                 if (d >= 0) {
-                    if (formatToken.isFlagSet(FormatToken.FLAG_ADD)) {
+                    if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_ADD)) {
                         source = IASString.valueOf("+Infinity"); //$NON-NLS-1$
-                    } else if (formatToken.isFlagSet(FormatToken.FLAG_SPACE)) {
+                    } else if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_SPACE)) {
                         source = IASString.valueOf(" Infinity"); //$NON-NLS-1$
                     } else {
                         source = IASString.valueOf("Infinity"); //$NON-NLS-1$
                     }
                 } else {
-                    if (formatToken.isFlagSet(FormatToken.FLAG_PARENTHESIS)) {
+                    if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_PARENTHESIS)) {
                         source = IASString.valueOf("(Infinity)"); //$NON-NLS-1$
                     } else {
                         source = IASString.valueOf("-Infinity"); //$NON-NLS-1$
@@ -1382,18 +1382,18 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             }
 
             if (null != source) {
-                formatToken.setPrecision(FormatToken.UNSET);
-                formatToken.setFlags(formatToken.getFlags()
-                        & (~FormatToken.FLAG_ZERO));
-                source = padding(new IASStringBuilder(source), 0);
+                this.formatToken.setPrecision(IASFormatter.FormatToken.UNSET);
+                this.formatToken.setFlags(this.formatToken.getFlags()
+                        & (~IASFormatter.FormatToken.FLAG_ZERO));
+                source = this.padding(new IASStringBuilder(source), 0);
             }
             return source;
         }
 
         private IASString transformFromNull() {
-            formatToken.setFlags(formatToken.getFlags()
-                    & (~FormatToken.FLAG_ZERO));
-            return padding(new IASStringBuilder("null"), 0); //$NON-NLS-1$
+            this.formatToken.setFlags(this.formatToken.getFlags()
+                    & (~IASFormatter.FormatToken.FLAG_ZERO));
+            return this.padding(new IASStringBuilder("null"), 0); //$NON-NLS-1$
         }
 
         /*
@@ -1403,56 +1403,56 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             int startIndex = 0;
             boolean isNegative = false;
             IASStringBuilder result = new IASStringBuilder();
-            BigInteger bigInt = (BigInteger) arg;
-            char currentConversionType = formatToken.getConversionType();
+            BigInteger bigInt = (BigInteger) this.arg;
+            char currentConversionType = this.formatToken.getConversionType();
 
-            if (formatToken.isFlagSet(FormatToken.FLAG_MINUS)
-                    || formatToken.isFlagSet(FormatToken.FLAG_ZERO)) {
-                if (!formatToken.isWidthSet()) {
-                    throw new MissingFormatWidthException(formatToken
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_MINUS)
+                    || this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_ZERO)) {
+                if (!this.formatToken.isWidthSet()) {
+                    throw new MissingFormatWidthException(this.formatToken
                             .getStrFlags().getString());
                 }
             }
 
             // Combination of '+' & ' ' is illegal.
-            if (formatToken.isFlagSet(FormatToken.FLAG_ADD)
-                    && formatToken.isFlagSet(FormatToken.FLAG_SPACE)) {
-                throw new IllegalFormatFlagsException(formatToken.getStrFlags().getString());
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_ADD)
+                    && this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_SPACE)) {
+                throw new IllegalFormatFlagsException(this.formatToken.getStrFlags().getString());
             }
 
             // Combination of '-' & '0' is illegal.
-            if (formatToken.isFlagSet(FormatToken.FLAG_ZERO)
-                    && formatToken.isFlagSet(FormatToken.FLAG_MINUS)) {
-                throw new IllegalFormatFlagsException(formatToken.getStrFlags().getString());
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_ZERO)
+                    && this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_MINUS)) {
+                throw new IllegalFormatFlagsException(this.formatToken.getStrFlags().getString());
             }
 
-            if (formatToken.isPrecisionSet()) {
-                throw new IllegalFormatPrecisionException(formatToken
+            if (this.formatToken.isPrecisionSet()) {
+                throw new IllegalFormatPrecisionException(this.formatToken
                         .getPrecision());
             }
 
             if ('d' != currentConversionType
-                    && formatToken.isFlagSet(FormatToken.FLAG_COMMA)) {
-                throw new FormatFlagsConversionMismatchException(formatToken
+                    && this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_COMMA)) {
+                throw new FormatFlagsConversionMismatchException(this.formatToken
                         .getStrFlags().getString(), currentConversionType);
             }
 
-            if (formatToken.isFlagSet(FormatToken.FLAG_SHARP)
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_SHARP)
                     && 'd' == currentConversionType) {
-                throw new FormatFlagsConversionMismatchException(formatToken
-                        .getStrFlags().getString(), currentConversionType);
+                throw new FormatFlagsConversionMismatchException(this.formatToken
+                        .getStrFlags().getString(), 'd');
             }
 
             if (null == bigInt) {
-                return transformFromNull();
+                return this.transformFromNull();
             }
 
             isNegative = (bigInt.compareTo(BigInteger.ZERO) < 0);
 
             if ('d' == currentConversionType) {
-                NumberFormat numberFormat = getNumberFormat();
-                boolean readableName = formatToken
-                        .isFlagSet(FormatToken.FLAG_COMMA);
+                NumberFormat numberFormat = this.getNumberFormat();
+                boolean readableName = this.formatToken
+                        .isFlagSet(IASFormatter.FormatToken.FLAG_COMMA);
                 numberFormat.setGroupingUsed(readableName);
                 result.append(numberFormat.format(bigInt));
             } else if ('o' == currentConversionType) {
@@ -1462,7 +1462,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
                 // convert BigInteger to a string presentation using radix 16
                 result.append(bigInt.toString(16));
             }
-            if (formatToken.isFlagSet(FormatToken.FLAG_SHARP)) {
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_SHARP)) {
                 startIndex = isNegative ? 1 : 0;
                 if ('o' == currentConversionType) {
                     result.insert(startIndex, "0"); //$NON-NLS-1$
@@ -1475,11 +1475,11 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             }
 
             if (!isNegative) {
-                if (formatToken.isFlagSet(FormatToken.FLAG_ADD)) {
+                if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_ADD)) {
                     result.insert(0, '+');
                     startIndex += 1;
                 }
-                if (formatToken.isFlagSet(FormatToken.FLAG_SPACE)) {
+                if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_SPACE)) {
                     result.insert(0, ' ');
                     startIndex += 1;
                 }
@@ -1487,15 +1487,15 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
 
             /* pad paddingChar to the output */
             if (isNegative
-                    && formatToken.isFlagSet(FormatToken.FLAG_PARENTHESIS)) {
-                result = wrapParentheses(result);
+                    && this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_PARENTHESIS)) {
+                result = this.wrapParentheses(result);
                 return result.toIASString();
 
             }
-            if (isNegative && formatToken.isFlagSet(FormatToken.FLAG_ZERO)) {
+            if (isNegative && this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_ZERO)) {
                 startIndex++;
             }
-            return padding(result, startIndex);
+            return this.padding(result, startIndex);
         }
 
         /*
@@ -1504,93 +1504,93 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         private IASString transformFromFloat() {
             IASStringBuilder result = new IASStringBuilder();
             int startIndex = 0;
-            char currentConversionType = formatToken.getConversionType();
+            char currentConversionType = this.formatToken.getConversionType();
 
-            if (formatToken.isFlagSet(FormatToken.FLAG_MINUS
-                    | FormatToken.FLAG_ZERO)) {
-                if (!formatToken.isWidthSet()) {
-                    throw new MissingFormatWidthException(formatToken
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_MINUS
+                    | IASFormatter.FormatToken.FLAG_ZERO)) {
+                if (!this.formatToken.isWidthSet()) {
+                    throw new MissingFormatWidthException(this.formatToken
                             .getStrFlags().getString());
                 }
             }
 
-            if (formatToken.isFlagSet(FormatToken.FLAG_ADD)
-                    && formatToken.isFlagSet(FormatToken.FLAG_SPACE)) {
-                throw new IllegalFormatFlagsException(formatToken.getStrFlags().getString());
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_ADD)
+                    && this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_SPACE)) {
+                throw new IllegalFormatFlagsException(this.formatToken.getStrFlags().getString());
             }
 
-            if (formatToken.isFlagSet(FormatToken.FLAG_MINUS)
-                    && formatToken.isFlagSet(FormatToken.FLAG_ZERO)) {
-                throw new IllegalFormatFlagsException(formatToken.getStrFlags().getString());
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_MINUS)
+                    && this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_ZERO)) {
+                throw new IllegalFormatFlagsException(this.formatToken.getStrFlags().getString());
             }
 
             if ('e' == Character.toLowerCase(currentConversionType)) {
-                if (formatToken.isFlagSet(FormatToken.FLAG_COMMA)) {
+                if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_COMMA)) {
                     throw new FormatFlagsConversionMismatchException(
-                            formatToken.getStrFlags().getString(), currentConversionType);
+                            this.formatToken.getStrFlags().getString(), currentConversionType);
                 }
             }
 
             if ('g' == Character.toLowerCase(currentConversionType)) {
-                if (formatToken.isFlagSet(FormatToken.FLAG_SHARP)) {
+                if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_SHARP)) {
                     throw new FormatFlagsConversionMismatchException(
-                            formatToken.getStrFlags().getString(), currentConversionType);
+                            this.formatToken.getStrFlags().getString(), currentConversionType);
                 }
             }
 
             if ('a' == Character.toLowerCase(currentConversionType)) {
-                if (formatToken.isFlagSet(FormatToken.FLAG_COMMA)
-                        || formatToken.isFlagSet(FormatToken.FLAG_PARENTHESIS)) {
+                if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_COMMA)
+                        || this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_PARENTHESIS)) {
                     throw new FormatFlagsConversionMismatchException(
-                            formatToken.getStrFlags().getString(), currentConversionType);
+                            this.formatToken.getStrFlags().getString(), currentConversionType);
                 }
             }
 
-            if (null == arg) {
-                return transformFromNull();
+            if (null == this.arg) {
+                return this.transformFromNull();
             }
 
-            if (!(arg instanceof Float || arg instanceof Double || arg instanceof BigDecimal)) {
+            if (!(this.arg instanceof Float || this.arg instanceof Double || this.arg instanceof BigDecimal)) {
                 throw new IllegalFormatConversionException(
-                        currentConversionType, arg.getClass());
+                        currentConversionType, this.arg.getClass());
             }
 
-            IASString specialNumberResult = transformFromSpecialNumber();
+            IASString specialNumberResult = this.transformFromSpecialNumber();
             if (null != specialNumberResult) {
                 return specialNumberResult;
             }
 
             if ('a' != Character.toLowerCase(currentConversionType)) {
-                formatToken
-                        .setPrecision(formatToken.isPrecisionSet() ? formatToken
+                this.formatToken
+                        .setPrecision(this.formatToken.isPrecisionSet() ? this.formatToken
                                 .getPrecision()
-                                : FormatToken.DEFAULT_PRECISION);
+                                : IASFormatter.FormatToken.DEFAULT_PRECISION);
             }
             // output result
-            FloatUtil floatUtil = new FloatUtil(result, formatToken,
-                    (DecimalFormat) NumberFormat.getInstance(locale), arg);
-            floatUtil.transform(formatToken, result);
+            IASFormatter.FloatUtil floatUtil = new IASFormatter.FloatUtil(result, this.formatToken,
+                    (DecimalFormat) NumberFormat.getInstance(this.locale), this.arg);
+            floatUtil.transform(this.formatToken, result);
 
-            formatToken.setPrecision(FormatToken.UNSET);
+            this.formatToken.setPrecision(IASFormatter.FormatToken.UNSET);
 
-            if (getDecimalFormatSymbols().getMinusSign() == result.charAt(0)) {
-                if (formatToken.isFlagSet(FormatToken.FLAG_PARENTHESIS)) {
-                    result = wrapParentheses(result);
+            if (this.getDecimalFormatSymbols().getMinusSign() == result.charAt(0)) {
+                if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_PARENTHESIS)) {
+                    result = this.wrapParentheses(result);
                     return result.toIASString();
                 }
             } else {
-                if (formatToken.isFlagSet(FormatToken.FLAG_SPACE)) {
+                if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_SPACE)) {
                     result.insert(0, ' ');
                     startIndex++;
                 }
-                if (formatToken.isFlagSet(FormatToken.FLAG_ADD)) {
+                if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_ADD)) {
                     result.insert(0, floatUtil.getAddSign());
                     startIndex++;
                 }
             }
 
             char firstChar = result.charAt(0);
-            if (formatToken.isFlagSet(FormatToken.FLAG_ZERO)
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_ZERO)
                     && (firstChar == floatUtil.getAddSign() || firstChar == floatUtil
                     .getMinusSign())) {
                 startIndex = 1;
@@ -1599,7 +1599,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             if ('a' == Character.toLowerCase(currentConversionType)) {
                 startIndex += 2;
             }
-            return padding(result, startIndex);
+            return this.padding(result, startIndex);
         }
 
         /*
@@ -1607,52 +1607,52 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
          */
         private IASString transformFromDateTime() {
             int startIndex = 0;
-            char currentConversionType = formatToken.getConversionType();
+            char currentConversionType = this.formatToken.getConversionType();
 
-            if (formatToken.isPrecisionSet()) {
-                throw new IllegalFormatPrecisionException(formatToken
+            if (this.formatToken.isPrecisionSet()) {
+                throw new IllegalFormatPrecisionException(this.formatToken
                         .getPrecision());
             }
 
-            if (formatToken.isFlagSet(FormatToken.FLAG_SHARP)) {
-                throw new FormatFlagsConversionMismatchException(formatToken
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_SHARP)) {
+                throw new FormatFlagsConversionMismatchException(this.formatToken
                         .getStrFlags().getString(), currentConversionType);
             }
 
-            if (formatToken.isFlagSet(FormatToken.FLAG_MINUS)
-                    && FormatToken.UNSET == formatToken.getWidth()) {
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_MINUS)
+                    && IASFormatter.FormatToken.UNSET == this.formatToken.getWidth()) {
                 throw new MissingFormatWidthException("-" //$NON-NLS-1$
                         + currentConversionType);
             }
 
-            if (null == arg) {
-                return transformFromNull();
+            if (null == this.arg) {
+                return this.transformFromNull();
             }
 
             Calendar calendar;
-            if (arg instanceof Calendar) {
-                calendar = (Calendar) arg;
+            if (this.arg instanceof Calendar) {
+                calendar = (Calendar) this.arg;
             } else {
                 Date date = null;
-                if (arg instanceof Long) {
-                    date = new Date(((Long) arg).longValue());
-                } else if (arg instanceof Date) {
-                    date = (Date) arg;
+                if (this.arg instanceof Long) {
+                    date = new Date(((Long) this.arg).longValue());
+                } else if (this.arg instanceof Date) {
+                    date = (Date) this.arg;
                 } else {
                     throw new IllegalFormatConversionException(
-                            currentConversionType, arg.getClass());
+                            currentConversionType, this.arg.getClass());
                 }
-                calendar = Calendar.getInstance(locale);
+                calendar = Calendar.getInstance(this.locale);
                 calendar.setTime(date);
             }
 
-            if (null == dateTimeUtil) {
-                dateTimeUtil = new DateTimeUtil(locale);
+            if (null == this.dateTimeUtil) {
+                this.dateTimeUtil = new IASFormatter.DateTimeUtil(this.locale);
             }
             IASStringBuilder result = new IASStringBuilder();
             // output result
-            dateTimeUtil.transform(formatToken, calendar, result);
-            return padding(result, startIndex);
+            this.dateTimeUtil.transform(this.formatToken, calendar, result);
+            return this.padding(result, startIndex);
         }
     }
 
@@ -1661,13 +1661,13 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
 
         private final DecimalFormat decimalFormat;
 
-        private FormatToken formatToken;
+        private IASFormatter.FormatToken formatToken;
 
         private final Object argument;
 
         private final char minusSign;
 
-        FloatUtil(IASStringBuilder result, FormatToken formatToken,
+        FloatUtil(IASStringBuilder result, IASFormatter.FormatToken formatToken,
                   DecimalFormat decimalFormat, Object argument) {
             this.result = result;
             this.formatToken = formatToken;
@@ -1677,38 +1677,38 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
                     .getMinusSign();
         }
 
-        void transform(FormatToken aFormatToken, IASStringBuilder aResult) {
+        void transform(IASFormatter.FormatToken aFormatToken, IASStringBuilder aResult) {
             this.result = aResult;
             this.formatToken = aFormatToken;
-            switch (formatToken.getConversionType()) {
+            switch (this.formatToken.getConversionType()) {
                 case 'e':
                 case 'E': {
-                    transform_e();
+                    this.transform_e();
                     break;
                 }
                 case 'f': {
-                    transform_f();
+                    this.transform_f();
                     break;
                 }
                 case 'g':
                 case 'G': {
-                    transform_g();
+                    this.transform_g();
                     break;
                 }
                 case 'a':
                 case 'A': {
-                    transform_a();
+                    this.transform_a();
                     break;
                 }
                 default: {
                     throw new UnknownFormatConversionException(String
-                            .valueOf(formatToken.getConversionType()));
+                            .valueOf(this.formatToken.getConversionType()));
                 }
             }
         }
 
         char getMinusSign() {
-            return minusSign;
+            return this.minusSign;
         }
 
         char getAddSign() {
@@ -1718,49 +1718,49 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         void transform_e() {
             IASStringBuilder pattern = new IASStringBuilder();
             pattern.append('0');
-            if (formatToken.getPrecision() > 0) {
+            if (this.formatToken.getPrecision() > 0) {
                 pattern.append('.');
-                char[] zeros = new char[formatToken.getPrecision()];
+                char[] zeros = new char[this.formatToken.getPrecision()];
                 Arrays.fill(zeros, '0');
                 pattern.append(zeros);
             }
             pattern.append('E');
             pattern.append("+00"); //$NON-NLS-1$
-            decimalFormat.applyPattern(pattern.toString());
-            IASString formattedString = IASString.valueOf(decimalFormat.format(argument));
-            result.append(formattedString.replace('E', 'e'));
+            this.decimalFormat.applyPattern(pattern.toString());
+            IASString formattedString = IASString.valueOf(this.decimalFormat.format(this.argument));
+            this.result.append(formattedString.replace('E', 'e'));
 
             // if the flag is sharp and decimal seperator is always given
             // out.
-            if (formatToken.isFlagSet(FormatToken.FLAG_SHARP)
-                    && 0 == formatToken.getPrecision()) {
-                int indexOfE = result.indexOf(IASString.fromString("e")); //$NON-NLS-1$
-                char dot = decimalFormat.getDecimalFormatSymbols()
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_SHARP)
+                    && 0 == this.formatToken.getPrecision()) {
+                int indexOfE = this.result.indexOf(IASString.fromString("e")); //$NON-NLS-1$
+                char dot = this.decimalFormat.getDecimalFormatSymbols()
                         .getDecimalSeparator();
-                result.insert(indexOfE, dot);
+                this.result.insert(indexOfE, dot);
             }
         }
 
         void transform_g() {
-            int precision = formatToken.getPrecision();
+            int precision = this.formatToken.getPrecision();
             precision = (0 == precision ? 1 : precision);
-            formatToken.setPrecision(precision);
+            this.formatToken.setPrecision(precision);
 
-            if (0.0 == ((Number) argument).doubleValue()) {
+            if (0.0 == ((Number) this.argument).doubleValue()) {
                 precision--;
-                formatToken.setPrecision(precision);
-                transform_f();
+                this.formatToken.setPrecision(precision);
+                this.transform_f();
                 return;
             }
 
             boolean requireScientificRepresentation = true;
-            double d = ((Number) argument).doubleValue();
+            double d = ((Number) this.argument).doubleValue();
             d = Math.abs(d);
             if (Double.isInfinite(d)) {
-                precision = formatToken.getPrecision();
+                precision = this.formatToken.getPrecision();
                 precision--;
-                formatToken.setPrecision(precision);
-                transform_e();
+                this.formatToken.setPrecision(precision);
+                this.transform_e();
                 return;
             }
             BigDecimal b = new BigDecimal(d, new MathContext(precision));
@@ -1773,11 +1773,11 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
                     precision -= IASString.valueOf(l).length();
                     precision = precision < 0 ? 0 : precision;
                     l = Math.round(d * Math.pow(10, precision + 1));
-                    if (IASString.valueOf(l).length() <= formatToken
+                    if (IASString.valueOf(l).length() <= this.formatToken
                             .getPrecision()) {
                         precision++;
                     }
-                    formatToken.setPrecision(precision);
+                    this.formatToken.setPrecision(precision);
                 }
 
             } else {
@@ -1786,32 +1786,32 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
                     requireScientificRepresentation = false;
                     precision += 4 - IASString.valueOf(l).length();
                     l = b.movePointRight(precision + 1).longValue();
-                    if (IASString.valueOf(l).length() <= formatToken
+                    if (IASString.valueOf(l).length() <= this.formatToken
                             .getPrecision()) {
                         precision++;
                     }
                     l = b.movePointRight(precision).longValue();
                     if (l >= Math.pow(10, precision - 4)) {
-                        formatToken.setPrecision(precision);
+                        this.formatToken.setPrecision(precision);
                     }
                 }
             }
             if (requireScientificRepresentation) {
-                precision = formatToken.getPrecision();
+                precision = this.formatToken.getPrecision();
                 precision--;
-                formatToken.setPrecision(precision);
-                transform_e();
+                this.formatToken.setPrecision(precision);
+                this.transform_e();
             } else {
-                transform_f();
+                this.transform_f();
             }
 
         }
 
         void transform_f() {
             IASStringBuilder pattern = new IASStringBuilder();
-            if (formatToken.isFlagSet(FormatToken.FLAG_COMMA)) {
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_COMMA)) {
                 pattern.append(',');
-                int groupingSize = decimalFormat.getGroupingSize();
+                int groupingSize = this.decimalFormat.getGroupingSize();
                 if (groupingSize > 1) {
                     char[] sharps = new char[groupingSize - 1];
                     Arrays.fill(sharps, '#');
@@ -1821,49 +1821,49 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
 
             pattern.append(0);
 
-            if (formatToken.getPrecision() > 0) {
+            if (this.formatToken.getPrecision() > 0) {
                 pattern.append('.');
-                char[] zeros = new char[formatToken.getPrecision()];
+                char[] zeros = new char[this.formatToken.getPrecision()];
                 Arrays.fill(zeros, '0');
                 pattern.append(zeros);
             }
-            decimalFormat.applyPattern(pattern.toString());
-            result.append(decimalFormat.format(argument));
+            this.decimalFormat.applyPattern(pattern.toString());
+            this.result.append(this.decimalFormat.format(this.argument));
             // if the flag is sharp and decimal seperator is always given
             // out.
-            if (formatToken.isFlagSet(FormatToken.FLAG_SHARP)
-                    && 0 == formatToken.getPrecision()) {
-                char dot = decimalFormat.getDecimalFormatSymbols()
+            if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_SHARP)
+                    && 0 == this.formatToken.getPrecision()) {
+                char dot = this.decimalFormat.getDecimalFormatSymbols()
                         .getDecimalSeparator();
-                result.append(dot);
+                this.result.append(dot);
             }
 
         }
 
         void transform_a() {
-            char currentConversionType = formatToken.getConversionType();
+            char currentConversionType = this.formatToken.getConversionType();
 
-            if (argument instanceof Float) {
-                Float F = (Float) argument;
-                result.append(Float.toHexString(F.floatValue()));
+            if (this.argument instanceof Float) {
+                Float F = (Float) this.argument;
+                this.result.append(Float.toHexString(F.floatValue()));
 
-            } else if (argument instanceof Double) {
-                Double D = (Double) argument;
-                result.append(Double.toHexString(D.doubleValue()));
+            } else if (this.argument instanceof Double) {
+                Double D = (Double) this.argument;
+                this.result.append(Double.toHexString(D.doubleValue()));
             } else {
                 // BigInteger is not supported.
                 throw new IllegalFormatConversionException(
-                        currentConversionType, argument.getClass());
+                        currentConversionType, this.argument.getClass());
             }
 
-            if (!formatToken.isPrecisionSet()) {
+            if (!this.formatToken.isPrecisionSet()) {
                 return;
             }
 
-            int precision = formatToken.getPrecision();
+            int precision = this.formatToken.getPrecision();
             precision = (0 == precision ? 1 : precision);
-            int indexOfFirstFracitoanlDigit = result.indexOf(IASString.fromString(".")) + 1; //$NON-NLS-1$
-            int indexOfP = result.indexOf(IASString.fromString("p")); //$NON-NLS-1$
+            int indexOfFirstFracitoanlDigit = this.result.indexOf(IASString.fromString(".")) + 1; //$NON-NLS-1$
+            int indexOfP = this.result.indexOf(IASString.fromString("p")); //$NON-NLS-1$
             int fractionalLength = indexOfP - indexOfFirstFracitoanlDigit;
 
             if (fractionalLength == precision) {
@@ -1873,10 +1873,10 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             if (fractionalLength < precision) {
                 char[] zeros = new char[precision - fractionalLength];
                 Arrays.fill(zeros, '0');
-                result.insert(indexOfP, zeros);
+                this.result.insert(indexOfP, zeros);
                 return;
             }
-            result.delete(indexOfFirstFracitoanlDigit + precision, indexOfP);
+            this.result.delete(indexOfFirstFracitoanlDigit + precision, indexOfP);
         }
     }/*
      * Information about the format string of a specified argument, which
@@ -1931,27 +1931,27 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         private char conversionType = (char) UNSET;
 
         boolean isPrecisionSet() {
-            return precision != UNSET;
+            return this.precision != UNSET;
         }
 
         boolean isWidthSet() {
-            return width != UNSET;
+            return this.width != UNSET;
         }
 
         boolean isFlagSet(int flag) {
-            return 0 != (flags & flag);
+            return 0 != (this.flags & flag);
         }
 
         int getArgIndex() {
-            return argIndex;
+            return this.argIndex;
         }
 
         void setArgIndex(int index) {
-            argIndex = index;
+            this.argIndex = index;
         }
 
         IASString getPlainText() {
-            return plainText;
+            return this.plainText;
         }
 
         void setPlainText(IASString plainText) {
@@ -1959,7 +1959,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         }
 
         int getWidth() {
-            return width;
+            return this.width;
         }
 
         void setWidth(int width) {
@@ -1967,7 +1967,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         }
 
         int getPrecision() {
-            return precision;
+            return this.precision;
         }
 
         void setPrecision(int precise) {
@@ -1975,11 +1975,11 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
         }
 
         IASString getStrFlags() {
-            return strFlags.toIASString();
+            return this.strFlags.toIASString();
         }
 
         int getFlags() {
-            return flags;
+            return this.flags;
         }
 
         void setFlags(int flags) {
@@ -2024,47 +2024,47 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
                 default:
                     return false;
             }
-            if (0 != (flags & newFlag)) {
+            if (0 != (this.flags & newFlag)) {
                 throw new DuplicateFormatFlagsException(String.valueOf(c));
             }
-            flags = (flags | newFlag);
-            strFlags.append(c);
+            this.flags = (this.flags | newFlag);
+            this.strFlags.append(c);
             return true;
 
         }
 
         int getFormatStringStartIndex() {
-            return formatStringStartIndex;
+            return this.formatStringStartIndex;
         }
 
         void setFormatStringStartIndex(int index) {
-            formatStringStartIndex = index;
+            this.formatStringStartIndex = index;
         }
 
         char getConversionType() {
-            return conversionType;
+            return this.conversionType;
         }
 
         void setConversionType(char c) {
-            conversionType = c;
+            this.conversionType = c;
         }
 
         char getDateSuffix() {
-            return dateSuffix;
+            return this.dateSuffix;
         }
 
         void setDateSuffix(char c) {
-            dateSuffix = c;
+            this.dateSuffix = c;
         }
 
         boolean requireArgument() {
-            return conversionType != '%' && conversionType != 'n';
+            return this.conversionType != '%' && this.conversionType != 'n';
         }
     }
 
-    private Object getArgument(Object[] args, int index, FormatToken token,
+    private Object getArgument(Object[] args, int index, IASFormatter.FormatToken token,
                                Object lastArgument, boolean hasLastArgumentSet) {
-        if (index == FormatToken.LAST_ARGUMENT_INDEX && !hasLastArgumentSet) {
+        if (index == IASFormatter.FormatToken.LAST_ARGUMENT_INDEX && !hasLastArgumentSet) {
             throw new MissingFormatArgumentException("<"); //$NON-NLS-1$
         }
 
@@ -2076,7 +2076,7 @@ public class IASFormatter implements Closeable, Flushable, AutoCloseable {
             throw new MissingFormatArgumentException(token.getPlainText().getString());
         }
 
-        if (index == FormatToken.LAST_ARGUMENT_INDEX) {
+        if (index == IASFormatter.FormatToken.LAST_ARGUMENT_INDEX) {
             return lastArgument;
         }
 

@@ -15,7 +15,7 @@ public class ReturnsGeneric {
     private String converter;
 
     @XmlElement
-    private boolean alwaysApply = false;
+    private final boolean alwaysApply = false;
 
     public FunctionCall getFunctionCall() {
         return this.functionCall;
@@ -26,6 +26,6 @@ public class ReturnsGeneric {
     }
 
     public boolean isAlwaysApply() {
-        return alwaysApply;
+        return this.alwaysApply;
     }
 }

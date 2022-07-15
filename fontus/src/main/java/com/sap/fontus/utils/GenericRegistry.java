@@ -14,14 +14,14 @@ public abstract class GenericRegistry<T extends NamedObject> {
         T o = this.get(name);
         if (o == null) {
             this.counter++;
-            o = getNewObject(name, this.counter);
+            o = this.getNewObject(name, this.counter);
             this.objects.add(o);
         }
         return o;
     }
 
     public synchronized T get(String name) {
-        for (T o : objects) {
+        for (T o : this.objects) {
             if (o.getName().equals(name)) {
                 return o;
             }

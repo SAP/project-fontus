@@ -5,13 +5,13 @@ public abstract class GdprMetadataBase implements GdprMetadata {
     @Override
     public String toString() {
         return "SimpleGdprMetadata{" +
-                "allowedPurposes=" + getAllowedPurposes() +
-                ", protectionLevel=" + getProtectionLevel() +
-                ", dataSubject=" + getSubjects() +
-                ", dataId=" + getId() +
-                ", portability=" + isQualifiedForPortability() +
-                ", consent=" + isProcessingUnrestricted() +
-                ", identifiability=" + isIdentifiable() +
+                "allowedPurposes=" + this.getAllowedPurposes() +
+                ", protectionLevel=" + this.getProtectionLevel() +
+                ", dataSubject=" + this.getSubjects() +
+                ", dataId=" + this.getId() +
+                ", portability=" + this.isQualifiedForPortability() +
+                ", consent=" + this.isProcessingUnrestricted() +
+                ", identifiability=" + this.isIdentifiable() +
                 '}';
     }
 }

@@ -25,9 +25,9 @@ public class OfflineClassResolver implements IClassResolver {
         InstrumentationConfiguration configuration = InstrumentationConfiguration.getInstance();
         File input = configuration.getInput();
 
-        ConcurrentHashMap<String, byte[]> classData = new ConcurrentHashMap<>();
+        Map<String, byte[]> classData = new ConcurrentHashMap<>();
 
-        walkInput(input, classData);
+        this.walkInput(input, classData);
 
         this.classes = Collections.unmodifiableMap(classData);
     }
@@ -38,7 +38,7 @@ public class OfflineClassResolver implements IClassResolver {
 
     @Override
     public Optional<byte[]> resolve(String className) {
-        if (!isInitialized()) {
+        if (!this.isInitialized()) {
             this.initialize();
         }
 
@@ -65,7 +65,7 @@ public class OfflineClassResolver implements IClassResolver {
                 File[] inputs = input.listFiles();
                 if (inputs != null) {
                     for (File file : inputs) {
-                        walkInput(file, classes);
+                        this.walkInput(file, classes);
                     }
                 }
             } else {

@@ -30,11 +30,11 @@ public class IASTaintRanges implements Iterable<IASTaintRange>, Serializable {
 
     @Override
     public Iterator<IASTaintRange> iterator() {
-        return ranges.iterator();
+        return this.ranges.iterator();
     }
 
     public boolean isEmpty() {
-        return ranges.isEmpty();
+        return this.ranges.isEmpty();
     }
 
     public synchronized void setTaint(int start, int end, IASTaintMetadata data) {
@@ -95,7 +95,7 @@ public class IASTaintRanges implements Iterable<IASTaintRange>, Serializable {
     }
 
     public boolean isTainted() {
-        return !ranges.isEmpty();
+        return !this.ranges.isEmpty();
     }
 
     public synchronized void resize(int length) {
@@ -182,10 +182,10 @@ public class IASTaintRanges implements Iterable<IASTaintRange>, Serializable {
 
     public synchronized void reversed() {
         List<IASTaintRange> r = this.getTaintRanges();
-        List<IASTaintRange> newRanges = new ArrayList<IASTaintRange>(r.size());
+        List<IASTaintRange> newRanges = new ArrayList<>(r.size());
 
         for (IASTaintRange range : r) {
-            int newEnd = length - range.getStart();
+            int newEnd = this.length - range.getStart();
             int newStart = newEnd - (range.getEnd() - range.getStart());
             IASTaintRange newRange = new IASTaintRange(newStart, newEnd, range.getMetadata());
             newRanges.add(0, newRange);
@@ -199,7 +199,7 @@ public class IASTaintRanges implements Iterable<IASTaintRange>, Serializable {
     }
 
     public boolean isTaintedAt(int index) {
-        return getTaintFor(index) != null;
+        return this.getTaintFor(index) != null;
     }
 
     public IASTaintMetadata getTaintFor(int position) {
@@ -212,6 +212,6 @@ public class IASTaintRanges implements Iterable<IASTaintRange>, Serializable {
     }
 
     public int getLength() {
-        return length;
+        return this.length;
     }
 }

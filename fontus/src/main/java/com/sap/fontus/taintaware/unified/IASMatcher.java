@@ -40,18 +40,18 @@ public final class IASMatcher {
     public IASMatcher appendReplacement(IASStringBuffer sb, IASString replacement) {
         IASMatcherReplacement replacer = IASMatcherReplacement.createReplacement(replacement, new IASStringBuilder());
         int end = this.start();
-        IASString first = this.input.substring(appendPos, end);
+        IASString first = this.input.substring(this.appendPos, end);
         sb.append(first);
         IASString currRepl = replacer.doReplacement(this.matcher, this.input, new IASStringBuilder());
         sb.append(currRepl);
-        appendPos = this.end();
+        this.appendPos = this.end();
 
         return this;
     }
 
     public IASStringBuffer appendTail(IASStringBuffer sb) {
-        if (appendPos < this.input.length()) {
-            IASString last = this.input.substring(appendPos);
+        if (this.appendPos < this.input.length()) {
+            IASString last = this.input.substring(this.appendPos);
             sb.append(last);
         }
         return sb;
@@ -131,7 +131,7 @@ public final class IASMatcher {
         // From Apache Harmony
         // first check whether we have smth to quote
         if (s.indexOf('\\') < 0 && s.indexOf('$') < 0)
-            return (IASString) s;
+            return s;
         IASStringBuilder res = new IASStringBuilder(s.length() * 2);
         IASString charString;
         int len = s.length();
@@ -148,7 +148,7 @@ public final class IASMatcher {
                     res.append('\\');
                     break;
                 default:
-                    charString = (IASString) s.substring(i, i + 1);
+                    charString = s.substring(i, i + 1);
                     res.append(charString);
             }
         }
@@ -228,7 +228,7 @@ public final class IASMatcher {
     }
 
     public Matcher getMatcher() {
-        return matcher;
+        return this.matcher;
     }
 
     public IASMatchResult toMatchResult() {

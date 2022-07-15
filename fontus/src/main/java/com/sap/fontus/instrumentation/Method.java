@@ -31,35 +31,35 @@ public class Method {
     }
 
     public int getAccess() {
-        return access;
+        return this.access;
     }
 
     public String getOwner() {
-        return owner;
+        return this.owner;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public String getDescriptor() {
-        return descriptor;
+        return this.descriptor;
     }
 
     public Descriptor getParsedDescriptor() {
-        return Descriptor.parseDescriptor(descriptor);
+        return Descriptor.parseDescriptor(this.descriptor);
     }
 
     public Type getDescriptorType() {
-        return Type.getMethodType(descriptor);
+        return Type.getMethodType(this.descriptor);
     }
 
     public String getSignature() {
-        return signature;
+        return this.signature;
     }
 
     public String[] getExceptions() {
-        return exceptions;
+        return this.exceptions;
     }
 
     public String[] getParameterTypes() {
@@ -93,28 +93,28 @@ public class Method {
 
     @Override
     public String toString() {
-        return owner + '.' + name + descriptor;
+        return this.owner + '.' + this.name + this.descriptor;
     }
 
     public boolean equalsNameAndDescriptor(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || this.getClass() != o.getClass()) return false;
         Method method = (Method) o;
-        return Objects.equals(name, method.name) && Objects.equals(descriptor, method.descriptor);
+        return Objects.equals(this.name, method.name) && Objects.equals(this.descriptor, method.descriptor);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || this.getClass() != o.getClass()) return false;
         Method method = (Method) o;
-        return access == method.access && ownerIsInterface == method.ownerIsInterface && Objects.equals(owner, method.owner) && Objects.equals(name, method.name) && Objects.equals(descriptor, method.descriptor) && Objects.equals(signature, method.signature) && Arrays.equals(exceptions, method.exceptions);
+        return this.access == method.access && this.ownerIsInterface == method.ownerIsInterface && Objects.equals(this.owner, method.owner) && Objects.equals(this.name, method.name) && Objects.equals(this.descriptor, method.descriptor) && Objects.equals(this.signature, method.signature) && Arrays.equals(this.exceptions, method.exceptions);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(access, owner, name, descriptor, signature, ownerIsInterface);
-        result = 31 * result + Arrays.hashCode(exceptions);
+        int result = Objects.hash(this.access, this.owner, this.name, this.descriptor, this.signature, this.ownerIsInterface);
+        result = 31 * result + Arrays.hashCode(this.exceptions);
         return result;
     }
 }

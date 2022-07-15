@@ -20,7 +20,8 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ConversionUtils {
+public final class ConversionUtils {
+    private ConversionUtils() {}
     private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
     private static final CombinedExcludedLookup excludedLookup = new CombinedExcludedLookup();
     private static final Cache<Class<?>, Optional<Converter>> converterCache = Caffeine.newBuilder().build();
@@ -150,6 +151,7 @@ public class ConversionUtils {
         }
     }
 
+
     public static Object convertToInstrumented(Object object) {
         if (object == null) {
             return null;
@@ -193,7 +195,7 @@ public class ConversionUtils {
     }
 
     // TODO: Can't we get the list of the classes based on the Maps above? This is super ugly and error prone (it seems to be missing entries, but that might be what we want?
-    private static boolean isHandlable(Class cls) {
+    private static boolean isHandleable(Class cls) {
         return cls == String.class || cls == StringBuilder.class || cls == StringBuffer.class || cls == Formatter.class || cls == Pattern.class || cls == Matcher.class || cls == Properties.class || Type.class.isAssignableFrom(cls) || cls == Method.class || cls == Field.class;
     }
 
@@ -322,7 +324,7 @@ public class ConversionUtils {
 
         @Override
         public Object convert(Object o) {
-            return atomicConverter.apply((Type) o);
+            return this.atomicConverter.apply((Type) o);
         }
     }
 
@@ -362,12 +364,12 @@ public class ConversionUtils {
         @Override
         public Object convert(Object o) {
             Class<?> cls = o.getClass().getComponentType();
-            if (!cls.isPrimitive() && isHandlable(convertClassToOrig(cls))) {
+            if (!cls.isPrimitive() && isHandleable(convertClassToOrig(cls))) {
                 Object[] array = (Object[]) o;
-                Class<?> arrayType = classConverter.apply(cls);
+                Class<?> arrayType = this.classConverter.apply(cls);
                 Object[] result = (Object[]) Array.newInstance(arrayType, array.length);
                 for (int i = 0; i < array.length; i++) {
-                    result[i] = atomicConverter.apply(array[i]);
+                    result[i] = this.atomicConverter.apply(array[i]);
                 }
                 return result;
             }
@@ -474,7 +476,7 @@ public class ConversionUtils {
                 List result = new ArrayList();
 
                 for (Object listEntry : list) {
-                    Object converted = atomicConverter.apply(listEntry);
+                    Object converted = this.atomicConverter.apply(listEntry);
                     result.add(converted);
                 }
 

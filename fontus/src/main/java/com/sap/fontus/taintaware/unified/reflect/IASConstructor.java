@@ -72,7 +72,7 @@ public class IASConstructor<T> extends IASExecutable<Constructor<T>> {
     public boolean equals(Object obj) {
         if (obj instanceof IASConstructor) {
             IASConstructor<?> other = (IASConstructor<?>)obj;
-            if (getDeclaringClass() == other.getDeclaringClass()) {
+            if (this.getDeclaringClass() == other.getDeclaringClass()) {
                 return Arrays.equals(this.getParameterTypes(), other.getParameterTypes());
             }
         }
@@ -99,7 +99,7 @@ public class IASConstructor<T> extends IASExecutable<Constructor<T>> {
 //    @ForceInline
     public Object newInstance(Object... parameters) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         if (lookup.isPackageExcludedOrJdk(Utils.getInternalName(this.original.getDeclaringClass()))) {
-            Object[] converted = convertParametersToOriginal(parameters);
+            Object[] converted = this.convertParametersToOriginal(parameters);
             return this.original.newInstance(converted);
         }
         if ((!Modifier.isPublic(this.original.getModifiers()) && !Modifier.isProtected(this.original.getModifiers()) && !Modifier.isPrivate(this.original.getModifiers()))

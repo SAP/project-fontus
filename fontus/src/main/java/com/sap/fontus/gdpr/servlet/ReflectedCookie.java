@@ -82,14 +82,14 @@ public class ReflectedCookie extends ReflectedObject {
 
     @Override
     public Object clone() {
-        return new ReflectedCookie(o);
+        return new ReflectedCookie(this.o);
     }
 
     @Override
     public String toString() {
         return "ReflectedCookie{" +
-                "name=" + getName().toString() +
-                ", value=" + getValue().toString() +
+                "name=" + this.getName().toString() +
+                ", value=" + this.getValue().toString() +
                 '}';
     }
 }

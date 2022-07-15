@@ -9,11 +9,11 @@ import java.io.IOException;
 import java.io.InputStream;
 
 
-public class VendorList {
+public final class VendorList {
 
     private static Gvl gvl = null;
     // Latest version from here: https://vendor-list.consensu.org/v2/vendor-list.json
-    private static String vendorListFile = "vendor-list.json";
+    private static final String vendorListFile = "vendor-list.json";
 
     static {
         ClassLoader classLoader = VendorList.class.getClassLoader();
@@ -25,6 +25,9 @@ public class VendorList {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private VendorList() {
     }
 
     public static Purpose GetPurposeFromTcfId(int p) {

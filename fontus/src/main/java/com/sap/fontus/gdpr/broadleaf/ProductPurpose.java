@@ -9,10 +9,10 @@ import java.util.Set;
 public class ProductPurpose {
 
     private static ProductPurpose INSTANCE;
-    private Set<AllowedPurpose> productPurposes;
+    private final Set<AllowedPurpose> productPurposes;
 
     private ProductPurpose() {
-        productPurposes = new HashSet<>();
+        this.productPurposes = new HashSet<>();
     }
 
     public static ProductPurpose getInstance() {
@@ -24,18 +24,18 @@ public class ProductPurpose {
     }
 
     public Set<AllowedPurpose> getPurposes() {
-        return productPurposes;
+        return this.productPurposes;
     }
 
     public void addPurpose(AllowedPurpose productPurpose) {
         boolean exists = false;
-        for (AllowedPurpose a : productPurposes) {
+        for (AllowedPurpose a : this.productPurposes) {
             if (a.getAllowedPurpose().getId() == productPurpose.getAllowedPurpose().getId()) {
                 exists = true;
             }
         }
         if (!exists) {
-            productPurposes.add(productPurpose);
+            this.productPurposes.add(productPurpose);
         }
     }
 

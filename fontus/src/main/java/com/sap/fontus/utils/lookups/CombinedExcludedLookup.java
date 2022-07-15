@@ -27,11 +27,11 @@ public class CombinedExcludedLookup {
     }
 
     public boolean isJdkClass(String internalName) {
-        return JdkClassesLookup.getInstance().isJdkClass(internalName, classLoader);
+        return JdkClassesLookup.getInstance().isJdkClass(internalName, this.classLoader);
     }
 
     public boolean isJdkClass(Class cls) {
-        return JdkClassesLookup.getInstance().isJdkClass(Utils.getInternalName(cls), classLoader);
+        return JdkClassesLookup.getInstance().isJdkClass(Utils.getInternalName(cls), this.classLoader);
     }
 
     public boolean isPackageExcludedOrJdk(String internalName) {
@@ -74,14 +74,14 @@ public class CombinedExcludedLookup {
     }
 
     public boolean isAnnotation(Class<?> cls) {
-        return isAnnotation(Utils.dotToSlash(cls.getName()));
+        return this.isAnnotation(Utils.dotToSlash(cls.getName()));
     }
 
     public boolean isPackageExcluded(Class<?> cls) {
-        return isPackageExcluded(Utils.dotToSlash(cls.getName()));
+        return this.isPackageExcluded(Utils.dotToSlash(cls.getName()));
     }
 
     public boolean isPackageExcludedOrJdk(Class<?> cls) {
-        return isPackageExcludedOrJdk(Type.getInternalName(cls));
+        return this.isPackageExcludedOrJdk(Type.getInternalName(cls));
     }
 }

@@ -129,7 +129,7 @@ public final class Main implements Callable<Void> {
         this.configuration.setHybridMode(this.isHybrid);
         this.configuration.setLoggingEnabled(this.logging);
         this.configuration.setParallel(this.isParallel);
-        Configuration.setConfiguration(configuration);
+        Configuration.setConfiguration(this.configuration);
     }
 
     @Override

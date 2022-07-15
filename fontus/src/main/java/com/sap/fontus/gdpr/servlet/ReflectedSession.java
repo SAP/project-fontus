@@ -19,7 +19,7 @@ public class ReflectedSession extends ReflectedObject {
     }
 
     public void setAttribute(String name, Object o) {
-        setAttribute(new IASString(name), o);
+        this.setAttribute(new IASString(name), o);
     }
 
     public void setAttribute(IASString name, Object o) {

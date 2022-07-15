@@ -5,8 +5,11 @@ import com.sap.fontus.taintaware.shared.IASTaintRange;
 
 import java.util.List;
 
-public class TaintInformationFactory {
-    public static IASTaintInformationable createTaintInformation(int size) {
+public final class TaintInformationFactory {
+    private TaintInformationFactory() {
+    }
+
+    static IASTaintInformationable createTaintInformation(int size) {
         switch (Configuration.getConfiguration().getTaintMethod()) {
             case ARRAY:
                 return new com.sap.fontus.taintaware.array.IASTaintInformation(size);
@@ -26,7 +29,7 @@ public class TaintInformationFactory {
     }
 
     public static IASTaintInformationable createTaintInformation(int size, List<IASTaintRange> ranges) {
-        if (ranges == null || ranges.size() == 0) {
+        if (ranges == null || ranges.isEmpty()) {
             return createTaintInformation(size);
         }
 

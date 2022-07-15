@@ -13,7 +13,7 @@ public class Pair<X, Y> {
 
     @Override
     public String toString() {
-        return "(" + x + "," + y + ")";
+        return "(" + this.x + "," + this.y + ")";
     }
 
     @Override

@@ -17,15 +17,15 @@ public class DynamicCall {
     }
 
     public Handle getOriginal() {
-        return original;
+        return this.original;
     }
 
     public Handle getProxy() {
-        return proxy;
+        return this.proxy;
     }
 
     public Object[] getBootstrapArguments() {
-        return bootstrapArguments;
+        return this.bootstrapArguments;
     }
 
     @Override
@@ -33,13 +33,13 @@ public class DynamicCall {
         if (this == o) return true;
         if (!(o instanceof DynamicCall)) return false;
         DynamicCall that = (DynamicCall) o;
-        return Objects.equals(original, that.original) && Objects.equals(proxy, that.proxy) && Arrays.equals(bootstrapArguments, that.bootstrapArguments);
+        return Objects.equals(this.original, that.original) && Objects.equals(this.proxy, that.proxy) && Arrays.equals(this.bootstrapArguments, that.bootstrapArguments);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(original, proxy);
-        result = 31 * result + Arrays.hashCode(bootstrapArguments);
+        int result = Objects.hash(this.original, this.proxy);
+        result = 31 * result + Arrays.hashCode(this.bootstrapArguments);
         return result;
     }
 

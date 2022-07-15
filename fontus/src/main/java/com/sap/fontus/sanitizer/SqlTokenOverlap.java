@@ -4,8 +4,8 @@ import com.sap.fontus.taintaware.shared.IASTaintRange;
 
 public class SqlTokenOverlap {
 
-    private SqlLexerToken token;
-    private IASTaintRange range;
+    private final SqlLexerToken token;
+    private final IASTaintRange range;
 
     public SqlTokenOverlap(SqlLexerToken token, IASTaintRange range) {
         this.token = token;
@@ -23,8 +23,8 @@ public class SqlTokenOverlap {
     @Override
     public String toString() {
         return "SqlTokenOverlap{" +
-                "token=" + token +
-                ", range=" + range +
+                "token=" + this.token +
+                ", range=" + this.range +
                 '}';
     }
 }

@@ -12,7 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class Sanitization {
+public final class Sanitization {
+
+    private Sanitization() {
+    }
 
     public static String sanitizeSinks(String taintedString, IASTaintInformationable taintInfo, List<String> sinkChecks) {
         String sanitizedString = taintedString;
@@ -137,18 +140,18 @@ public class Sanitization {
 
                 // TODO: quotes might be part of text and not the syntax! should not be counted
                 // if part of value and not query syntax
-                long numberOfDoubleQuotes = 0;
-                long numberOfSingleQuotes = 0;
+                long numberOfDoubleQuotes = 0L;
+                long numberOfSingleQuotes = 0L;
                 for (char c : quoteCountingString.substring(0, taintRangeStart).toCharArray()) {
-                    if (c == '\'' && numberOfDoubleQuotes % 2 == 0) {
+                    if (c == '\'' && numberOfDoubleQuotes % 2L == 0L) {
                         numberOfSingleQuotes++;
                     }
-                    if (c == '\"' && numberOfSingleQuotes % 2 == 0) {
+                    if (c == '\"' && numberOfSingleQuotes % 2L == 0L) {
                         numberOfDoubleQuotes++;
                     }
                 }
 
-                if (numberOfDoubleQuotes % 2 == 0 && numberOfSingleQuotes % 2 == 0) {
+                if (numberOfDoubleQuotes % 2L == 0L && numberOfSingleQuotes % 2L == 0L) {
                     // attribute value is NOT a text set in quotes
                     char[] notTextChars = new char[]{' ', ',', ';', '<', '>', '=', '(', ')'};
                     String help = preparedString.substring(0, taintRangeStart);
@@ -166,7 +169,7 @@ public class Sanitization {
                         }
                         // check is necessary to include whole charsequence at end of sql query
                         if (noMatch != -1) {
-                            endTaintIndex = endTaintIndex - 1;
+                            endTaintIndex -= 1;
                         } else {
                             endTaintIndex = preparedString.length() - 1;
                         }
@@ -177,7 +180,7 @@ public class Sanitization {
                     // "range" to set the value
                     startTaintIndex = taintRangeStart;
                     endTaintIndex = preparedString.length() - 1;
-                    char[] textChars = new char[]{'\"', '\''};
+                    char[] textChars = {'\"', '\''};
                     String temp = preparedString;
                     if (taintRangeStart > 0 && taintRangeEnd < preparedString.length()) {
                         char quoteType = '\"';
@@ -390,7 +393,7 @@ public class Sanitization {
                 if (insideTag) {
                     if (taintedString.charAt(i) <= ' ') {
                         // ignore whitespaces
-                        if (!tag.toString().equals("")) {
+                        if (!tag.toString().isEmpty()) {
                             tagDeclaration = false;
                         }
                     } else if (taintedString.charAt(i) == '>') { // end of tag

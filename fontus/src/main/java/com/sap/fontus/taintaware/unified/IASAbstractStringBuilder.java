@@ -3,11 +3,12 @@ package com.sap.fontus.taintaware.unified;
 import com.sap.fontus.Constants;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.*;
+import jdk.internal.vm.annotation.ForceInline;
 
 import java.io.Serializable;
 import java.util.stream.IntStream;
 
-@SuppressWarnings({"unused", "Since15"})
+@SuppressWarnings({"unused", "Since15", "StringBufferField"})
 public abstract class IASAbstractStringBuilder implements Serializable, Comparable<IASAbstractStringBuilder>, Appendable, CharSequence, IASTaintAware {
     protected StringBuilder stringBuilder;
     private IASTaintInformationable taintInformation;
@@ -42,13 +43,13 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
 
     protected void appendShifted(IASTaintInformationable append, int length) {
         if (append == null) {
-            if (isInitialized()) {
+            if (this.isInitialized()) {
                 this.taintInformation.resize(this.length() + length);
             }
             return;
         }
 
-        if (isUninitialized()) {
+        if (this.isUninitialized()) {
             this.taintInformation = TaintInformationFactory.createTaintInformation(this.length());
         }
 
@@ -57,7 +58,7 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
 
 
     public void initialize() {
-        if (isUninitialized()) {
+        if (this.isUninitialized()) {
             this.taintInformation = TaintInformationFactory.createTaintInformation(this.length());
         }
     }
@@ -71,7 +72,7 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
     public void setTaint(IASTaintMetadata data) {
         if (data != null) {
             if (!this.isTainted()) {
-                if (isUninitialized()) {
+                if (this.isUninitialized()) {
                     this.taintInformation = TaintInformationFactory.createTaintInformation(this.length());
                 }
                 this.taintInformation.addRange(0, this.length(), data);
@@ -88,7 +89,7 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
     }
 
     public boolean isTainted() {
-        if (isUninitialized()) {
+        if (this.isUninitialized()) {
             return false;
         }
         return this.taintInformation.isTainted();
@@ -173,7 +174,7 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
 
     public IASAbstractStringBuilder delete(int start, int end) {
         this.stringBuilder.delete(start, end);
-        if (isTainted()) {
+        if (this.isTainted()) {
             this.taintInformation.deleteWithShift(start, end);
         }
         return this;
@@ -181,7 +182,7 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
 
     public IASAbstractStringBuilder deleteCharAt(int index) {
         this.stringBuilder.deleteCharAt(index);
-        if (isTainted()) {
+        if (this.isTainted()) {
             this.taintInformation.deleteWithShift(index, index + 1);
         }
         return this;
@@ -189,7 +190,7 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
 
     public IASAbstractStringBuilder replace(int start, int end, IASString str) {
         this.stringBuilder.replace(start, end, str.toString());
-        if (isUninitialized() && str.isTainted()) {
+        if (this.isUninitialized() && str.isTainted()) {
             this.taintInformation = TaintInformationFactory.createTaintInformation(this.length());
         }
         if (this.isTainted() || str.isTainted()) {
@@ -212,7 +213,7 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
     }
 
     public IASAbstractStringBuilder insert(int offset, IASString str) {
-        if (isUninitialized() && str.isTainted()) {
+        if (this.isUninitialized() && str.isTainted()) {
             this.taintInformation = TaintInformationFactory.createTaintInformation(this.length());
         }
         if (this.isTainted() || str.isTainted()) {
@@ -288,16 +289,16 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
 
     public IASAbstractStringBuilder reverse() {
         this.stringBuilder.reverse();
-        if (isTainted()) {
+        if (this.isTainted()) {
             this.taintInformation.reversed();
         }
-        handleSurrogatesForReversed();
+        this.handleSurrogatesForReversed();
 
         return this;
     }
 
     private void handleSurrogatesForReversed() {
-        if (!isTainted()) {
+        if (!this.isTainted()) {
             return;
         }
 
@@ -344,7 +345,7 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
 
     public void setCharAt(int index, char c) {
         this.stringBuilder.setCharAt(index, c);
-        if (isTainted()) {
+        if (this.isTainted()) {
             this.taintInformation.clearTaint(index, index + 1);
         }
     }
@@ -399,7 +400,7 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
 
 
     public int offsetByCodePoints(int index, int codePointOffset) {
-        return this.offsetByCodePoints(index, codePointOffset);
+        return this.stringBuilder.offsetByCodePoints(index, codePointOffset);
     }
 
 
@@ -414,14 +415,14 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
 
     public void setLength(int newLength) {
         this.stringBuilder.setLength(newLength);
-        if (isTainted()) {
+        if (this.isTainted()) {
             this.taintInformation.resize(newLength);
         }
     }
 
     @Override
     public boolean isTaintedAt(int index) {
-        if (isUninitialized()) {
+        if (this.isUninitialized()) {
             return false;
         }
 
@@ -435,7 +436,7 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
 
     @Override
     public IASTaintInformationable getTaintInformationInitialized() {
-        if (isUninitialized()) {
+        if (this.isUninitialized()) {
             return TaintInformationFactory.createTaintInformation(this.length());
         }
         return this.taintInformation;
@@ -446,15 +447,18 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
     }
 
     @Override
+    @ForceInline
     public boolean isUninitialized() {
         return !this.isInitialized();
     }
 
     @Override
+    @ForceInline
     public boolean isInitialized() {
         return this.taintInformation != null;
     }
 
+    @Override
     public int compareTo(IASAbstractStringBuilder o) {
         if (Constants.JAVA_VERSION < 11) {
             return this.toIASString().compareTo(IASString.valueOf(o));

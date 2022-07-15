@@ -20,8 +20,8 @@ public class ParallelInstrumenter {
     }
 
     public void execute() {
-        JarInputStreamIterator jisi = new JarInputStreamIterator(jis);
-        JarOutputStreamWriter josw = new JarOutputStreamWriter(jos);
+        JarInputStreamIterator jisi = new JarInputStreamIterator(this.jis);
+        JarOutputStreamWriter josw = new JarOutputStreamWriter(this.jos);
         ExecutorService processingExecutor = Executors.newFixedThreadPool(4);
         ExecutorService outputExecutor = Executors.newSingleThreadExecutor();
 
@@ -35,8 +35,8 @@ public class ParallelInstrumenter {
         }
 
         try {
-            processingExecutor.awaitTermination(15, TimeUnit.MINUTES);
-            outputExecutor.awaitTermination(15, TimeUnit.MINUTES);
+            processingExecutor.awaitTermination(15L, TimeUnit.MINUTES);
+            outputExecutor.awaitTermination(15L, TimeUnit.MINUTES);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

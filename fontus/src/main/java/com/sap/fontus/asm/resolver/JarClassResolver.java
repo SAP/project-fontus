@@ -19,7 +19,7 @@ public class JarClassResolver {
 
     public Map<String, byte[]> loadClassesFrom(InputStream inputStream) {
         try(JarInputStream jis = new JarInputStream(inputStream)) {
-            return loadClassesFrom(jis);
+            return this.loadClassesFrom(jis);
         } catch (IOException e) {
             throw new IllegalArgumentException("InputStream not readable as JAR");
         }

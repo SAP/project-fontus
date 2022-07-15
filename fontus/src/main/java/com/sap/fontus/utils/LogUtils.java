@@ -5,7 +5,10 @@ import com.sap.fontus.Constants;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class LogUtils {
+public final class LogUtils {
+    private LogUtils() {
+    }
+
     @SuppressWarnings("Since15")
     public synchronized static Logger getLogger() {
         Class<?> callerClass;

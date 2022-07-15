@@ -6,7 +6,10 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 
-public class TURLEncoder {
+public final class TURLEncoder {
+    private TURLEncoder() {
+    }
+
     @Deprecated
     public static IASString encode(IASString url) {
         try {

@@ -10,34 +10,35 @@ import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.Map;
 
+// Todo: Convert to atomics
 public enum Statistics implements StatisticsMXBean {
     INSTANCE;
 
-    private long stringCount;
-    private long taintRangeSum;
-    private long untaintedStringCount;
-    private long lazyTaintInformationCreated;
-    private long lazyTaintInformationEvaluated;
-    private long initializedStrings;
-    private long taintCheckUntainted;
-    private long taintCheckTainted;
-    private long lazyThresholdExceededCount;
-    private Map<String, Long> taintlossHits = new HashMap<>();
+    private long stringCount = 0L;
+    private long taintRangeSum = 0L;
+    private long untaintedStringCount = 0L;
+    private long lazyTaintInformationCreated = 0L;
+    private long lazyTaintInformationEvaluated = 0L;
+    private long initializedStrings = 0L;
+    private long taintCheckUntainted = 0L;
+    private long taintCheckTainted = 0L;
+    private long lazyThresholdExceededCount = 0L;
+    private final Map<String, Long> taintlossHits = new HashMap<>();
 
     Statistics() {
-        register();
+        this.register();
     }
 
     @Override
     public synchronized void reset() {
-        stringCount = 0;
-        taintRangeSum = 0;
-        untaintedStringCount = 0;
-        lazyTaintInformationCreated = 0;
-        lazyTaintInformationEvaluated = 0;
-        taintCheckUntainted = 0;
-        taintCheckTainted = 0;
-        initializedStrings = 0;
+        this.stringCount = 0L;
+        this.taintRangeSum = 0L;
+        this.untaintedStringCount = 0L;
+        this.lazyTaintInformationCreated = 0L;
+        this.lazyTaintInformationEvaluated = 0L;
+        this.taintCheckUntainted = 0L;
+        this.taintCheckTainted = 0L;
+        this.initializedStrings = 0L;
         this.taintlossHits.clear();
     }
 
@@ -46,45 +47,45 @@ public enum Statistics implements StatisticsMXBean {
             if (longVal == null) {
                 return 1L;
             } else {
-                return longVal + 1;
+                return longVal + 1L;
             }
         }));
     }
 
     public synchronized void incrementLazyTaintInformationCreated() {
-        lazyTaintInformationCreated++;
+        this.lazyTaintInformationCreated++;
     }
 
     public synchronized void incrementLazyTaintInformationEvaluated() {
-        lazyTaintInformationEvaluated++;
+        this.lazyTaintInformationEvaluated++;
     }
 
     public synchronized void incrementLazyThresholdExceededCount() {
-        lazyThresholdExceededCount++;
+        this.lazyThresholdExceededCount++;
     }
 
     public synchronized void addRangeCount(IASTaintInformationable taintInformationable) {
-        stringCount++;
+        this.stringCount++;
         int rangeCount = 0;
         if (taintInformationable instanceof IASTaintInformation) {
             rangeCount = ((IASTaintInformation) taintInformationable).getTaintRanges().getTaintRanges().size();
         }
 
-        taintRangeSum += rangeCount;
+        this.taintRangeSum += rangeCount;
         if (rangeCount == 0) {
-            untaintedStringCount++;
+            this.untaintedStringCount++;
         }
-        long tainted = stringCount - untaintedStringCount;
+        long tainted = this.stringCount - this.untaintedStringCount;
     }
 
     @Override
     public synchronized double getRangeCountAverage() {
-        return ((double) taintRangeSum) / stringCount;
+        return ((double) this.taintRangeSum) / this.stringCount;
     }
 
     @Override
     public synchronized double getZeroTaintRangeShare() {
-        return ((double) untaintedStringCount) / stringCount;
+        return ((double) this.untaintedStringCount) / this.stringCount;
     }
 
     private void register() {
@@ -98,27 +99,27 @@ public enum Statistics implements StatisticsMXBean {
 
     @Override
     public long getStringCount() {
-        return stringCount;
+        return this.stringCount;
     }
 
     @Override
     public long getTaintRangeSum() {
-        return taintRangeSum;
+        return this.taintRangeSum;
     }
 
     @Override
     public long getUntaintedStringCount() {
-        return untaintedStringCount;
+        return this.untaintedStringCount;
     }
 
     @Override
     public long getLazyCreatedCount() {
-        return getLazyTaintInformationCreated();
+        return this.lazyTaintInformationCreated;
     }
 
     @Override
     public long getLazyEvaluatedCount() {
-        return getLazyTaintInformationEvaluated();
+        return this.lazyTaintInformationEvaluated;
     }
 
     @Override
@@ -127,11 +128,11 @@ public enum Statistics implements StatisticsMXBean {
     }
 
     public long getLazyTaintInformationCreated() {
-        return lazyTaintInformationCreated;
+        return this.lazyTaintInformationCreated;
     }
 
     public long getLazyTaintInformationEvaluated() {
-        return lazyTaintInformationEvaluated;
+        return this.lazyTaintInformationEvaluated;
     }
 
     public synchronized void incrementInitialized() {
@@ -140,30 +141,30 @@ public enum Statistics implements StatisticsMXBean {
 
     @Override
     public synchronized long getInitializedStrings() {
-        return initializedStrings;
+        return this.initializedStrings;
     }
 
     public synchronized void recordTaintCheck(boolean isTainted) {
         if (isTainted) {
-            taintCheckTainted++;
+            this.taintCheckTainted++;
         } else {
-            taintCheckUntainted++;
+            this.taintCheckUntainted++;
         }
     }
 
     @Override
     public long getTaintChecked() {
-        return taintCheckTainted + taintCheckUntainted;
+        return this.taintCheckTainted + this.taintCheckUntainted;
     }
 
     @Override
     public long getTaintCheckUntainted() {
-        return taintCheckUntainted;
+        return this.taintCheckUntainted;
     }
 
     @Override
     public long getTaintCheckTainted() {
-        return taintCheckTainted;
+        return this.taintCheckTainted;
     }
 
     @Override

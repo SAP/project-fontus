@@ -33,7 +33,7 @@ public class OfflineJarInstrumenter {
     }
 
     public List<String> getClasses() {
-        return classes;
+        return this.classes;
     }
 
     private Pair<JarEntry, byte[]> processJarEntry(Pair<JarEntry, byte[]> input) {
@@ -57,7 +57,7 @@ public class OfflineJarInstrumenter {
 
                     JarEntry jeo = createJarEntry(jei.getName(), bytes);
 
-                    this.classes.add(getName(entryBytes));
+                    this.classes.add(this.getName(entryBytes));
                     return new Pair<>(jeo, bytes);
                 } catch (Exception e) {
                     logger.error("Class %s could not be instrumented: %s", jei.getName(), e);

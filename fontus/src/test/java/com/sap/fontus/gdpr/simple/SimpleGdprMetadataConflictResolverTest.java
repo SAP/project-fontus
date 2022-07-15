@@ -29,86 +29,86 @@ public class SimpleGdprMetadataConflictResolverTest {
     DataId firstDataId = new SimpleDataId();
     DataId secondDataId = new SimpleDataId();
 
-    private GdprMetadataConflictResolverInterface resolver = new SimpleGdprMetadataConflictResolver();
+    private final GdprMetadataConflictResolverInterface resolver = new SimpleGdprMetadataConflictResolver();
 
     private GdprMetadata getFirst() {
         Set<Vendor> vendors = new HashSet<>();
-        vendors.add(acme);
+        vendors.add(this.acme);
 
-        AllowedPurpose allowedPurpose = new SimpleAllowedPurpose(epoch, ads, vendors);
+        AllowedPurpose allowedPurpose = new SimpleAllowedPurpose(this.epoch, this.ads, vendors);
         Set<AllowedPurpose> allowedPurposes = new HashSet<>();
         allowedPurposes.add(allowedPurpose);
 
-        return new SimpleGdprMetadata(allowedPurposes, ProtectionLevel.Normal, firstSubject, firstDataId, true, true, Identifiability.Explicit);
+        return new SimpleGdprMetadata(allowedPurposes, ProtectionLevel.Normal, this.firstSubject, this.firstDataId, true, true, Identifiability.Explicit);
     }
 
     private GdprMetadata getSecond() {
         Set<Vendor> vendors = new HashSet<>();
-        vendors.add(acu);
+        vendors.add(this.acu);
 
-        AllowedPurpose allowedPurpose = new SimpleAllowedPurpose(now, evil, vendors);
+        AllowedPurpose allowedPurpose = new SimpleAllowedPurpose(this.now, this.evil, vendors);
         Set<AllowedPurpose> allowedPurposes = new HashSet<>();
         allowedPurposes.add(allowedPurpose);
 
-        return new SimpleGdprMetadata(allowedPurposes, ProtectionLevel.Normal, secondSubject, firstDataId, true, true, Identifiability.Explicit);
+        return new SimpleGdprMetadata(allowedPurposes, ProtectionLevel.Normal, this.secondSubject, this.firstDataId, true, true, Identifiability.Explicit);
     }
 
 
     private GdprMetadata getThird() {
         Set<Vendor> vendors = new HashSet<>();
-        vendors.add(acu);
+        vendors.add(this.acu);
 
-        AllowedPurpose allowedPurpose = new SimpleAllowedPurpose(now, evil, vendors);
+        AllowedPurpose allowedPurpose = new SimpleAllowedPurpose(this.now, this.evil, vendors);
         Set<AllowedPurpose> allowedPurposes = new HashSet<>();
         allowedPurposes.add(allowedPurpose);
 
-        return new SimpleGdprMetadata(allowedPurposes, ProtectionLevel.Sensitive, secondSubject, firstDataId, false, false, Identifiability.NotExplicit);
+        return new SimpleGdprMetadata(allowedPurposes, ProtectionLevel.Sensitive, this.secondSubject, this.firstDataId, false, false, Identifiability.NotExplicit);
     }
 
     private GdprMetadata getFourth() {
         Set<Vendor> vendors = new HashSet<>();
-        vendors.add(acu);
+        vendors.add(this.acu);
 
-        AllowedPurpose allowedPurpose = new SimpleAllowedPurpose(now, evil, vendors);
+        AllowedPurpose allowedPurpose = new SimpleAllowedPurpose(this.now, this.evil, vendors);
         Set<AllowedPurpose> allowedPurposes = new HashSet<>();
         allowedPurposes.add(allowedPurpose);
 
-        return new SimpleGdprMetadata(allowedPurposes, ProtectionLevel.Undefined, secondSubject, firstDataId, false, false, Identifiability.Undefined);
+        return new SimpleGdprMetadata(allowedPurposes, ProtectionLevel.Undefined, this.secondSubject, this.firstDataId, false, false, Identifiability.Undefined);
     }
 
     private GdprMetadata getFifth() {
         Set<Vendor> vendors = new HashSet<>();
-        vendors.add(acu);
-        vendors.add(acme);
+        vendors.add(this.acu);
+        vendors.add(this.acme);
 
         Set<AllowedPurpose> allowedPurposes = new HashSet<>();
-        allowedPurposes.add(new SimpleAllowedPurpose(now, evil, vendors));
-        allowedPurposes.add(new SimpleAllowedPurpose(now, ads, vendors));
+        allowedPurposes.add(new SimpleAllowedPurpose(this.now, this.evil, vendors));
+        allowedPurposes.add(new SimpleAllowedPurpose(this.now, this.ads, vendors));
 
-        return new SimpleGdprMetadata(allowedPurposes, ProtectionLevel.Undefined, secondSubject, firstDataId, false, false, Identifiability.Undefined);
+        return new SimpleGdprMetadata(allowedPurposes, ProtectionLevel.Undefined, this.secondSubject, this.firstDataId, false, false, Identifiability.Undefined);
     }
 
     private GdprMetadata getSixth() {
         Set<Vendor> vendors = new HashSet<>();
-        vendors.add(acu);
-        vendors.add(acme);
+        vendors.add(this.acu);
+        vendors.add(this.acme);
 
         Set<AllowedPurpose> allowedPurposes = new HashSet<>();
-        allowedPurposes.add(new SimpleAllowedPurpose(now, evil, vendors));
-        allowedPurposes.add(new SimpleAllowedPurpose(never, ads, vendors));
+        allowedPurposes.add(new SimpleAllowedPurpose(this.now, this.evil, vendors));
+        allowedPurposes.add(new SimpleAllowedPurpose(this.never, this.ads, vendors));
 
-        return new SimpleGdprMetadata(allowedPurposes, ProtectionLevel.Undefined, secondSubject, firstDataId, false, false, Identifiability.Undefined);
+        return new SimpleGdprMetadata(allowedPurposes, ProtectionLevel.Undefined, this.secondSubject, this.firstDataId, false, false, Identifiability.Undefined);
     }
 
     @Test
     public void testConflictResolution() {
-        GdprMetadata metadata = resolver.resolveConflicts(getFirst(), getSecond());
+        GdprMetadata metadata = this.resolver.resolveConflicts(this.getFirst(), this.getSecond());
 
         // Should always apply
-        assertTrue(metadata.getSubjects().contains(firstSubject));
-        assertTrue(metadata.getSubjects().contains(secondSubject));
-        assertNotEquals(firstDataId, metadata.getId());
-        assertNotEquals(secondDataId, metadata.getId());
+        assertTrue(metadata.getSubjects().contains(this.firstSubject));
+        assertTrue(metadata.getSubjects().contains(this.secondSubject));
+        assertNotEquals(this.firstDataId, metadata.getId());
+        assertNotEquals(this.secondDataId, metadata.getId());
         assertFalse(metadata.isQualifiedForPortability());
 
         // Test specific stuff
@@ -125,13 +125,13 @@ public class SimpleGdprMetadataConflictResolverTest {
 
     @Test
     public void testConflictResolution2() {
-        GdprMetadata metadata = resolver.resolveConflicts(getFirst(), getThird());
+        GdprMetadata metadata = this.resolver.resolveConflicts(this.getFirst(), this.getThird());
 
         // Should always apply
-        assertTrue(metadata.getSubjects().contains(firstSubject));
-        assertTrue(metadata.getSubjects().contains(secondSubject));
-        assertNotEquals(firstDataId, metadata.getId());
-        assertNotEquals(secondDataId, metadata.getId());
+        assertTrue(metadata.getSubjects().contains(this.firstSubject));
+        assertTrue(metadata.getSubjects().contains(this.secondSubject));
+        assertNotEquals(this.firstDataId, metadata.getId());
+        assertNotEquals(this.secondDataId, metadata.getId());
         assertFalse(metadata.isQualifiedForPortability());
 
         // Test specific stuff
@@ -147,13 +147,13 @@ public class SimpleGdprMetadataConflictResolverTest {
 
     @Test
     public void testConflictResolution3() {
-        GdprMetadata metadata = resolver.resolveConflicts(getFirst(), getFourth());
+        GdprMetadata metadata = this.resolver.resolveConflicts(this.getFirst(), this.getFourth());
 
         // Should always apply
-        assertTrue(metadata.getSubjects().contains(firstSubject));
-        assertTrue(metadata.getSubjects().contains(secondSubject));
-        assertNotEquals(firstDataId, metadata.getId());
-        assertNotEquals(secondDataId, metadata.getId());
+        assertTrue(metadata.getSubjects().contains(this.firstSubject));
+        assertTrue(metadata.getSubjects().contains(this.secondSubject));
+        assertNotEquals(this.firstDataId, metadata.getId());
+        assertNotEquals(this.secondDataId, metadata.getId());
         assertFalse(metadata.isQualifiedForPortability());
 
         // Test specific stuff
@@ -169,23 +169,23 @@ public class SimpleGdprMetadataConflictResolverTest {
 
     @Test
     public void testConflictResolution4() {
-        GdprMetadata metadata = resolver.resolveConflicts(getFirst(), getFifth());
+        GdprMetadata metadata = this.resolver.resolveConflicts(this.getFirst(), this.getFifth());
 
         // Should always apply
-        assertTrue(metadata.getSubjects().contains(firstSubject));
-        assertTrue(metadata.getSubjects().contains(secondSubject));
-        assertNotEquals(firstDataId, metadata.getId());
-        assertNotEquals(secondDataId, metadata.getId());
+        assertTrue(metadata.getSubjects().contains(this.firstSubject));
+        assertTrue(metadata.getSubjects().contains(this.secondSubject));
+        assertNotEquals(this.firstDataId, metadata.getId());
+        assertNotEquals(this.secondDataId, metadata.getId());
         assertFalse(metadata.isQualifiedForPortability());
 
         // Test specific stuff
         Collection<AllowedPurpose> allowedPurposes = metadata.getAllowedPurposes();
         assertEquals(1, allowedPurposes.size());
         AllowedPurpose ap = allowedPurposes.iterator().next();
-        assertEquals(epoch, ap.getExpiryDate());
-        assertEquals(ads, ap.getAllowedPurpose());
+        assertEquals(this.epoch, ap.getExpiryDate());
+        assertEquals(this.ads, ap.getAllowedPurpose());
         assertEquals(1, ap.getAllowedVendors().size());
-        assertEquals(acme, ap.getAllowedVendors().iterator().next());
+        assertEquals(this.acme, ap.getAllowedVendors().iterator().next());
 
         assertEquals(ProtectionLevel.Normal, metadata.getProtectionLevel());
 
@@ -196,23 +196,23 @@ public class SimpleGdprMetadataConflictResolverTest {
 
     @Test
     public void testConflictResolution5() {
-        GdprMetadata metadata = resolver.resolveConflicts(getFirst(), getSixth());
+        GdprMetadata metadata = this.resolver.resolveConflicts(this.getFirst(), this.getSixth());
 
         // Should always apply
-        assertTrue(metadata.getSubjects().contains(firstSubject));
-        assertTrue(metadata.getSubjects().contains(secondSubject));
-        assertNotEquals(firstDataId, metadata.getId());
-        assertNotEquals(secondDataId, metadata.getId());
+        assertTrue(metadata.getSubjects().contains(this.firstSubject));
+        assertTrue(metadata.getSubjects().contains(this.secondSubject));
+        assertNotEquals(this.firstDataId, metadata.getId());
+        assertNotEquals(this.secondDataId, metadata.getId());
         assertFalse(metadata.isQualifiedForPortability());
 
         // Test specific stuff
         Collection<AllowedPurpose> allowedPurposes = metadata.getAllowedPurposes();
         assertEquals(1, allowedPurposes.size());
         AllowedPurpose ap = allowedPurposes.iterator().next();
-        assertEquals(epoch, ap.getExpiryDate());
-        assertEquals(ads, ap.getAllowedPurpose());
+        assertEquals(this.epoch, ap.getExpiryDate());
+        assertEquals(this.ads, ap.getAllowedPurpose());
         assertEquals(1, ap.getAllowedVendors().size());
-        assertEquals(acme, ap.getAllowedVendors().iterator().next());
+        assertEquals(this.acme, ap.getAllowedVendors().iterator().next());
 
         assertEquals(ProtectionLevel.Normal, metadata.getProtectionLevel());
 

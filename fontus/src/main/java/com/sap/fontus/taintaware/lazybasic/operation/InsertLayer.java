@@ -36,8 +36,8 @@ public class InsertLayer implements IASLayer {
 
     @Override
     public String toString() {
-        return "InsertLayer: " + offset + " length: " +
-                getIncomingTaint().getLength();
+        return "InsertLayer: " + this.offset + " length: " +
+                this.getIncomingTaint().getLength();
     }
 
 }

@@ -170,7 +170,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         DataSubject dataSubject = null;
         // First try retrieving from cached attribute value
         Object o = request.getAttribute(dataSubjectAttributeName);
-        if ((o != null) && (o instanceof DataSubject)) {
+        if ((o instanceof DataSubject)) {
             dataSubject = (DataSubject) o;
         } else {
             dataSubject = new SimpleDataSubject(UUID.randomUUID().toString());

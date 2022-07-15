@@ -18,8 +18,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ConfigurationLoader {
+public final class ConfigurationLoader {
     private static final Logger logger = LogUtils.getLogger();
+
+    private ConfigurationLoader() {}
 
     public static Configuration readXmlConfiguration(InputStream stream) {
         ObjectMapper objectMapper = new XmlMapper();

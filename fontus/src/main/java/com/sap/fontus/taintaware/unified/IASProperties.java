@@ -74,7 +74,7 @@ public class IASProperties extends Hashtable<Object, Object> implements External
         this.properties.store(out, comments == null ? null : comments.getString());
     }
 
-    public synchronized void loadFromXML(InputStream in) throws IOException, InvalidPropertiesFormatException {
+    public synchronized void loadFromXML(InputStream in) throws IOException {
         this.properties.loadFromXML(in);
     }
 
@@ -94,14 +94,14 @@ public class IASProperties extends Hashtable<Object, Object> implements External
     public IASString getProperty(IASString key) {
         Object orig = ConversionUtils.convertToInstrumented(this.properties.getProperty(key.getString()));
         IASString taintaware = this.shadow.get(key);
-        return (IASString) chooseReturn(orig, taintaware);
+        return (IASString) this.chooseReturn(orig, taintaware);
     }
 
     public IASString getProperty(IASString key, IASString defaultValue) {
         String defaultStringValue = defaultValue != null ? defaultValue.getString() : null;
         Object orig = ConversionUtils.convertToInstrumented(this.properties.getProperty(key.getString(), defaultStringValue));
         IASString taintaware = this.shadow.get(ConversionUtils.convertToInstrumented(key));
-        return (IASString) chooseReturn(orig, taintaware);
+        return (IASString) this.chooseReturn(orig, taintaware);
     }
 
     public Enumeration<?> propertyNames() {
@@ -187,7 +187,7 @@ public class IASProperties extends Hashtable<Object, Object> implements External
         if (value instanceof IASString) {
             taintaware = this.shadow.put(ConversionUtils.convertToInstrumented(key), (IASString) value);
         }
-        return chooseReturn(orig, taintaware);
+        return this.chooseReturn(orig, taintaware);
     }
 
     private Object chooseReturn(Object orig, IASString taintaware) {
@@ -362,7 +362,7 @@ public class IASProperties extends Hashtable<Object, Object> implements External
     @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public synchronized Object clone() {
-        return IASProperties.fromProperties((Properties) this.properties.clone());
+        return fromProperties((Properties) this.properties.clone());
     }
 
     public static IASProperties fromProperties(Properties clone) {
@@ -370,7 +370,7 @@ public class IASProperties extends Hashtable<Object, Object> implements External
     }
 
     public Properties getProperties() {
-        return properties;
+        return this.properties;
     }
 
     @Override

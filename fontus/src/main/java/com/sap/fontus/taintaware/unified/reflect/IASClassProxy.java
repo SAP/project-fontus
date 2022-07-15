@@ -18,39 +18,45 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.function.Function;
 
-public class IASClassProxy {
+public final class IASClassProxy {
     private static final InstrumentationHelper instrumentationHelper = new InstrumentationHelper();
-    private final static CombinedExcludedLookup lookup = new CombinedExcludedLookup();
+    private static final CombinedExcludedLookup lookup = new CombinedExcludedLookup();
 
-    public static TypeVariable<Class>[] getTypeParameters(Class cls) {
-        return Arrays.stream(cls.getTypeParameters()).map(IASTypeVariableImpl<Class>::new).toArray(IASTypeVariableImpl[]::new);
+    private IASClassProxy() {
     }
 
-    public static Class<?>[] getInterfaces(Class cls) {
+    public static TypeVariable<Class<?>>[] getTypeParameters(Class<?> cls) {
+        return Arrays.stream(cls.getTypeParameters()).map(IASTypeVariableImpl::new).toArray(IASTypeVariableImpl[]::new);
+    }
+
+    public static Class<?>[] getInterfaces(Class<?> cls) {
         return Arrays.stream(cls.getInterfaces()).map(ConversionUtils::convertClassToConcrete).toArray(Class[]::new);
     }
 
-    public static Type[] getGenericInterfaces(Class cls) {
+    /**
+     * TODO: Investigate the return type, returns asm Type but we might need a JVM Type?
+     */
+    public static Type[] getGenericInterfaces(Class<?> cls) {
         return Arrays.stream(cls.getGenericInterfaces()).map(ConversionUtils::convertTypeToInstrumented).toArray(Type[]::new);
     }
 
-    public static IASMethod getEnclosingMethod(Class cls) throws SecurityException {
+    public static IASMethod getEnclosingMethod(Class<?> cls) throws SecurityException {
         Method m = cls.getEnclosingMethod();
         if(m == null) { return null; }
         return IASReflectRegistry.getInstance().map(m);
     }
 
-    public static IASConstructor<?> getEnclosingConstructor(Class cls) throws SecurityException {
+    public static IASConstructor<?> getEnclosingConstructor(Class<?> cls) throws SecurityException {
         Constructor<?> c = cls.getEnclosingConstructor();
         if(c == null) { return null; }
         return IASReflectRegistry.getInstance().map(c);
     }
 
-    public static IASField[] getFields(Class cls) throws SecurityException {
+    public static IASField[] getFields(Class<?> cls) throws SecurityException {
         return Arrays.stream(cls.getFields()).map(IASReflectRegistry.getInstance()::map).toArray(IASField[]::new);
     }
 
-    public static IASMethod[] getMethods(Class cls) throws SecurityException {
+    public static IASMethod[] getMethods(Class<?> cls) throws SecurityException {
         return filterFontusProxies(cls.getMethods())
                 .stream()
                 .map(IASReflectRegistry.getInstance()::map)
@@ -81,15 +87,15 @@ public class IASClassProxy {
         return filterFontusProxies(cls.getConstructors()).stream().map(IASReflectRegistry.getInstance()::map).toArray(IASConstructor[]::new);
     }
 
-    public static IASField getField(Class cls, IASString name) throws NoSuchFieldException, SecurityException {
+    public static IASField getField(Class<?> cls, IASString name) throws NoSuchFieldException, SecurityException {
         return IASReflectRegistry.getInstance().map(cls.getField(name.getString()));
     }
 
-    public static IASField[] getDeclaredFields(Class cls) throws SecurityException {
+    public static IASField[] getDeclaredFields(Class<?> cls) throws SecurityException {
         return Arrays.stream(cls.getDeclaredFields()).map(IASReflectRegistry.getInstance()::map).toArray(IASField[]::new);
     }
 
-    public static IASMethod[] getDeclaredMethods(Class cls) throws SecurityException {
+    public static IASMethod[] getDeclaredMethods(Class<?> cls) throws SecurityException {
         return filterFontusProxies(cls.getDeclaredMethods()).stream().map(IASReflectRegistry.getInstance()::map).toArray(IASMethod[]::new);
     }
 
@@ -97,11 +103,11 @@ public class IASClassProxy {
         return filterFontusProxies(cls.getDeclaredConstructors()).stream().map(IASReflectRegistry.getInstance()::map).toArray(IASConstructor[]::new);
     }
 
-    public static IASField getDeclaredField(Class cls, IASString name) throws NoSuchFieldException, SecurityException {
+    public static IASField getDeclaredField(Class<?> cls, IASString name) throws NoSuchFieldException, SecurityException {
         return IASReflectRegistry.getInstance().map(cls.getDeclaredField(name.getString()));
     }
 
-    public static InputStream getResourceAsStream(Class cls, IASString name) {
+    public static InputStream getResourceAsStream(Class<?> cls, IASString name) {
         InputStream stream = cls.getResourceAsStream(name.getString());
         if (Configuration.getConfiguration().isResourceToInstrument(name.getString())) {
             return new IASInstrumenterInputStream(stream);
@@ -109,7 +115,7 @@ public class IASClassProxy {
         return stream;
     }
 
-    public static <T> IASConstructor<T> getDeclaredConstructor(Class<T> clazz, Class[] parameterTypes) throws NoSuchMethodException, SecurityException {
+    public static <T> IASConstructor<T> getDeclaredConstructor(Class<T> clazz, Class<?>[] parameterTypes) throws NoSuchMethodException, SecurityException {
         if (lookup.isPackageExcludedOrJdk(Utils.getInternalName(clazz))) {
             parameterTypes = transformParametersForJdk(parameterTypes);
         } else if (lookup.isFontusClass(clazz)) {
@@ -119,7 +125,7 @@ public class IASClassProxy {
         return IASReflectRegistry.getInstance().map(clazz.getDeclaredConstructor(parameterTypes));
     }
 
-    public static IASMethod getDeclaredMethod(Class<?> clazz, IASString name, Class[] parameters) throws NoSuchMethodException, SecurityException {
+    public static IASMethod getDeclaredMethod(Class<?> clazz, IASString name, Class<?>[] parameters) throws NoSuchMethodException, SecurityException {
         String methodNameString = transformMethodName(clazz, name.getString(), parameters);
 
         if (lookup.isPackageExcludedOrJdk(Utils.getInternalName(clazz))) {
@@ -131,7 +137,7 @@ public class IASClassProxy {
         return IASReflectRegistry.getInstance().map(clazz.getDeclaredMethod(methodNameString, parameters));
     }
 
-    public static <T> IASConstructor<T> getConstructor(Class<T> clazz, Class[] parameters) throws NoSuchMethodException, SecurityException {
+    public static <T> IASConstructor<T> getConstructor(Class<T> clazz, Class<?>[] parameters) throws NoSuchMethodException, SecurityException {
         if (lookup.isPackageExcludedOrJdk(Utils.getInternalName(clazz))) {
             parameters = transformParametersForJdk(parameters);
         } else {
@@ -141,7 +147,7 @@ public class IASClassProxy {
         return IASReflectRegistry.getInstance().map(clazz.getConstructor(parameters));
     }
 
-    public static IASMethod getMethod(Class<?> clazz, IASString name, Class[] parameters) throws NoSuchMethodException, SecurityException {
+    public static IASMethod getMethod(Class<?> clazz, IASString name, Class<?>[] parameters) throws NoSuchMethodException, SecurityException {
         String methodNameString = transformMethodName(clazz, name.getString(), parameters);
 
         if (lookup.isPackageExcludedOrJdk(Utils.getInternalName(clazz))) {
@@ -153,27 +159,27 @@ public class IASClassProxy {
         return IASReflectRegistry.getInstance().map(clazz.getMethod(methodNameString, parameters));
     }
 
-    static Class[] transformParametersForJdk(Class[] parameters) {
+    static Class<?>[] transformParametersForJdk(Class<?>[] parameters) {
         return transformParameters(parameters, ConversionUtils::convertClassToOrig);
     }
 
-    static Class[] transformParametersForInstrumentedWithConcrete(Class[] parameters) {
+    static Class<?>[] transformParametersForInstrumentedWithConcrete(Class<?>[] parameters) {
         return transformParameters(parameters, ConversionUtils::convertClassToConcrete);
     }
 
-    private static Class[] transformParameters(Class[] parameters, Function<Class<?>, Class<?>> converter) {
+    private static Class<?>[] transformParameters(Class<?>[] parameters, Function<Class<?>, Class<?>> converter) {
         if (parameters == null) {
             return null;
         }
-        Class[] classes = new Class[parameters.length];
+        Class<?>[] classes = new Class[parameters.length];
         for (int i = 0; i < parameters.length; i++) {
-            Class cls = parameters[i];
+            Class<?> cls = parameters[i];
             classes[i] = converter.apply(cls);
         }
         return classes;
     }
 
-    private static String transformMethodName(Class<?> clazz, String methodName, Class[] parameters) {
+    private static String transformMethodName(Class<?> clazz, String methodName, Class<?>[] parameters) {
         boolean isToString = methodName.equals(Constants.ToString) && (parameters == null || parameters.length == 0);
         boolean isTaintAware = IASTaintAware.class.isAssignableFrom(clazz);
 
@@ -219,11 +225,11 @@ public class IASClassProxy {
             return 0;
         }
 
-        private static boolean isParameterSameUninstrumented(Class c1, Class c2) {
+        private static boolean isParameterSameUninstrumented(Class<?> c1, Class<?> c2) {
             return ConversionUtils.convertClassToOrig(c1) == ConversionUtils.convertClassToOrig(c2);
         }
 
-        private static boolean isInstrumented(Class cls) {
+        private static boolean isInstrumented(Class<?> cls) {
             if (cls.isPrimitive()) {
                 return false;
             }
@@ -286,16 +292,16 @@ public class IASClassProxy {
         return Class.forName(clazz, initialize, loader);
     }
 
-    public static boolean isAssignableFrom(Class thisClass, Class toClass) {
+    public static boolean isAssignableFrom(Class<?> thisClass, Class<?> toClass) {
         if(thisClass.isAssignableFrom(toClass)) {
             return true;
         }
-        Class thisConverted = ConversionUtils.convertClassToOrig(thisClass);
-        Class toConverted = ConversionUtils.convertClassToOrig(toClass);
+        Class<?> thisConverted = ConversionUtils.convertClassToOrig(thisClass);
+        Class<?> toConverted = ConversionUtils.convertClassToOrig(toClass);
         return thisConverted.isAssignableFrom(toConverted);
     }
 
-    public static ClassLoader getClassLoader(Class cls) {
+    public static ClassLoader getClassLoader(Class<?> cls) {
         if (lookup.isFontusClass(cls)) {
             return null;
         }

@@ -36,12 +36,12 @@ public class ClassTraverser {
     }
 
     public void readMethods(Type cls, IClassResolver resolver) {
-        if (combinedExcludedLookup.isJdkClass(cls.getInternalName())) {
+        if (this.combinedExcludedLookup.isJdkClass(cls.getInternalName())) {
             Class<?> clazz = ClassUtils.findLoadedClass(cls.getInternalName());
 
             java.lang.reflect.Method[] methods = clazz.getMethods();
             for (java.lang.reflect.Method declaredMethod : methods) {
-                addMethodIfNotContained(Method.from(declaredMethod));
+                this.addMethodIfNotContained(Method.from(declaredMethod));
             }
         } else {
             try {
@@ -49,7 +49,7 @@ public class ClassTraverser {
                     @Override
                     public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
                         Method method = new Method(access, cls.getInternalName(), name, descriptor, signature, exceptions, false);
-                        addMethodIfNotContained(method);
+                        ClassTraverser.this.addMethodIfNotContained(method);
                         return super.visitMethod(access, name, descriptor, signature, exceptions);
                     }
                 };
@@ -89,7 +89,7 @@ public class ClassTraverser {
                 if (clazz != null) {
                     java.lang.reflect.Method[] declaredMethods = clazz.getDeclaredMethods();
                     for (java.lang.reflect.Method declaredMethod : declaredMethods) {
-                        addMethodIfNotContained(Method.from(declaredMethod));
+                        this.addMethodIfNotContained(Method.from(declaredMethod));
                     }
                 } else {
                     try {
@@ -98,7 +98,7 @@ public class ClassTraverser {
                             @Override
                             public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
                                 Method method = new Method(access, clsName, name, descriptor, signature, exceptions, false);
-                                addMethodIfNotContained(method);
+                                ClassTraverser.this.addMethodIfNotContained(method);
                                 return super.visitMethod(access, name, descriptor, signature, exceptions);
                             }
                         };
@@ -120,7 +120,7 @@ public class ClassTraverser {
      */
     private void addMethodIfNotContained(Method methodToAdd) {
         if (MethodUtils.isPublicOrProtected(methodToAdd)) {
-            boolean alreadyContained = methodList.stream().anyMatch(methodInMethods -> {
+            boolean alreadyContained = this.methodList.stream().anyMatch(methodInMethods -> {
                 boolean nameEquals = methodToAdd.getName().equals(methodInMethods.getName());
                 boolean correctVisibility = MethodUtils.isPublicOrProtected(methodInMethods);
                 boolean signatureEquals = Arrays.equals(methodToAdd.getParameterTypes(), methodInMethods.getParameterTypes());
@@ -128,7 +128,7 @@ public class ClassTraverser {
             });
 
             if (!alreadyContained) {
-                methodList.add(methodToAdd);
+                this.methodList.add(methodToAdd);
             }
         }
     }
@@ -141,10 +141,10 @@ public class ClassTraverser {
         Optional<byte[]> bytes = ClassResolverFactory.createClassResolver(loader).resolve(superName);
         if (bytes.isPresent()) {
             ClassReader classReader = new ClassReader(bytes.get());
-            MethodChecker methodChecker = new MethodChecker(m);
+            ClassTraverser.MethodChecker methodChecker = new ClassTraverser.MethodChecker(m);
             classReader.accept(methodChecker, 0);
             if (!methodChecker.superImplements) {
-                return isImplementedBySuperClass(classReader.getSuperName(), m, loader);
+                return this.isImplementedBySuperClass(classReader.getSuperName(), m, loader);
             }
             return true;
         } else {
@@ -162,7 +162,7 @@ public class ClassTraverser {
             // It can happen that a JDK abstract superclass implements a JDK interface
             try {
                 List<String> superInterfaces = typeHierarchyReader.hierarchyOf(Type.getObjectType(interfaceName)).getInterfaces().stream().map(Type::getInternalName).collect(Collectors.toList());
-                discoverAllJdkInterfaces(superInterfaces, result, typeHierarchyReader);
+                this.discoverAllJdkInterfaces(superInterfaces, result, typeHierarchyReader);
             } catch (Exception e) {
                 // Class might be an optional dependency, continuing
                 logger.debug("Skipped recursing further into {} due to Exception", interfaceName);
@@ -186,8 +186,8 @@ public class ClassTraverser {
 
         // Find all JDK interfaces directly implemented by the class
         Set<String> jdkOnly = new HashSet<>();
-        Set<String> directInheritedSet = new HashSet<String>(Arrays.asList(directInheritedInterfaces));
-        discoverAllJdkInterfaces(directInheritedSet, jdkOnly, typeHierarchyReader);
+        Set<String> directInheritedSet = new HashSet<>(Arrays.asList(directInheritedInterfaces));
+        this.discoverAllJdkInterfaces(directInheritedSet, jdkOnly, typeHierarchyReader);
 
         // Find all interfaces implemented by the super class
         Set<Type> superInterfaces = new HashSet<>();
@@ -209,7 +209,7 @@ public class ClassTraverser {
         }
         // JDK Interfaces implemented by the super class
         Set<String> jdkSuperInterfaces = new HashSet<>();
-        discoverAllJdkInterfaces(superInterfaces.stream().map(Type::getInternalName).collect(Collectors.toList()), jdkSuperInterfaces, typeHierarchyReader);
+        this.discoverAllJdkInterfaces(superInterfaces.stream().map(Type::getInternalName).collect(Collectors.toList()), jdkSuperInterfaces, typeHierarchyReader);
 
         // Combine directly implemented and super class interfaces
         // Do not try to filter as we might have an abstract superclass which implements an interface but does not explicitly implement each method
@@ -253,8 +253,8 @@ public class ClassTraverser {
                 }
 
                 for (Method method : intfMethods) {
-                    if (!isImplementedBySuperClass(superName, method, loader)) {
-                        addMethodIfNotContained(method);
+                    if (!this.isImplementedBySuperClass(superName, method, loader)) {
+                        this.addMethodIfNotContained(method);
                     }
                 }
             }
@@ -292,8 +292,8 @@ public class ClassTraverser {
             // Only flag this method if the superclass implements the interface we want
             // There are some cases where the method is implemented but *not* as part of an interface!
             // (I'm looking at you org.apache.xerces.dom.CharacterDataImpl!)
-            if (implementsInterface && name.equals(this.method.getName()) && this.method.getDescriptor().equals(descriptor) && (access & Opcodes.ACC_ABSTRACT) == 0) {
-                superImplements = true;
+            if (this.implementsInterface && name.equals(this.method.getName()) && this.method.getDescriptor().equals(descriptor) && (access & Opcodes.ACC_ABSTRACT) == 0) {
+                this.superImplements = true;
             }
             return null;
         }

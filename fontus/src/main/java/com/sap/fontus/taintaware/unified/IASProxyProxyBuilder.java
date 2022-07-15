@@ -25,7 +25,7 @@ public class IASProxyProxyBuilder {
     private final InstrumentationHelper instrumentationHelper;
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     private IASProxyProxyBuilder(String name, Class<?>[] interfaces, ClassWriter classWriter, ClassLoader classLoader) {
@@ -101,19 +101,19 @@ public class IASProxyProxyBuilder {
     }
 
     public byte[] build() {
-        generateClassHeader();
+        this.generateClassHeader();
 
-        generateInvocationHandlerField();
+        this.generateInvocationHandlerField();
 
-        generateConstructor();
+        this.generateConstructor();
 
-        List<ProxyMethod> methods = generateProxyMethods();
+        List<IASProxyProxyBuilder.ProxyMethod> methods = this.generateProxyMethods();
 
-        generateMethodFields(methods);
+        this.generateMethodFields(methods);
 
-        generateMethods(methods);
+        this.generateMethods(methods);
 
-        generateStaticInitializer(methods);
+        this.generateStaticInitializer(methods);
 
         return this.classWriter.toByteArray();
     }
@@ -137,7 +137,7 @@ public class IASProxyProxyBuilder {
         return new IASProxyProxyBuilder(Utils.dotToSlash(name), interfaces, classWriter, classLoader);
     }
 
-    public void generateProxyMethod(ProxyMethod proxyMethod) {
+    public void generateProxyMethod(IASProxyProxyBuilder.ProxyMethod proxyMethod) {
         Method method = proxyMethod.getMethod();
         String methodFieldName = proxyMethod.getMethodFieldName();
         List<Class<?>> exceptions = proxyMethod.getAllExceptions();
@@ -156,7 +156,7 @@ public class IASProxyProxyBuilder {
 
         int modifiers = method.getModifiers();
         modifiers &= ~Opcodes.ACC_ABSTRACT;
-        MethodVisitor mv = classWriter.visitMethod(modifiers, method.getName(), methodType.toMethodDescriptorString(), null, exceptionNames);
+        MethodVisitor mv = this.classWriter.visitMethod(modifiers, method.getName(), methodType.toMethodDescriptorString(), null, exceptionNames);
         mv.visitCode();
 
         if (exceptions.size() > 0) {
@@ -198,7 +198,7 @@ public class IASProxyProxyBuilder {
         if (method.getReturnType() == void.class) {
             mv.visitInsn(Opcodes.RETURN);
         } else {
-            unwrapParameter(mv, Object.class, method.getReturnType());
+            this.unwrapParameter(mv, Object.class, method.getReturnType());
             mv.visitInsn(Type.getType(method.getReturnType()).getOpcode(Opcodes.IRETURN));
         }
 
@@ -221,8 +221,8 @@ public class IASProxyProxyBuilder {
 
     private void unwrapParameter(MethodVisitor mv, Class<?> source, Class<?> type) {
         if (type.isPrimitive()) {
-            mv.visitTypeInsn(Opcodes.CHECKCAST, Utils.getInternalName(primitiveToWrapper(type)));
-            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Utils.getInternalName(primitiveToWrapper(type)), type.getCanonicalName() + "Value", MethodType.methodType(type).toMethodDescriptorString(), false);
+            mv.visitTypeInsn(Opcodes.CHECKCAST, Utils.getInternalName(this.primitiveToWrapper(type)));
+            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Utils.getInternalName(this.primitiveToWrapper(type)), type.getCanonicalName() + "Value", MethodType.methodType(type).toMethodDescriptorString(), false);
         } else {
             if (this.instrumentationHelper.canHandleType(Type.getDescriptor(type))) {
                 boolean casted = this.instrumentationHelper.insertJdkMethodParameterConversion(mv, Type.getType(source), Type.getType(type));
@@ -238,7 +238,7 @@ public class IASProxyProxyBuilder {
     private int loadAndWrapParameter(MethodVisitor mv, Class<?> arg, int registerIndex) {
         if (arg.isPrimitive()) {
             int opcode = Type.getType(arg).getOpcode(Opcodes.ILOAD);
-            Class<?> wrapper = primitiveToWrapper(arg);
+            Class<?> wrapper = this.primitiveToWrapper(arg);
             mv.visitVarInsn(opcode, registerIndex);
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, Utils.getInternalName(wrapper), "valueOf", MethodType.methodType(wrapper, new Class[]{arg}).toMethodDescriptorString(), false);
         } else {
@@ -270,7 +270,7 @@ public class IASProxyProxyBuilder {
     }
 
     public void generateConstructor() {
-        MethodVisitor mv = classWriter.visitMethod(Opcodes.ACC_PUBLIC, Constants.Init, MethodType.methodType(void.class, InvocationHandler.class).toMethodDescriptorString(), null, null);
+        MethodVisitor mv = this.classWriter.visitMethod(Opcodes.ACC_PUBLIC, Constants.Init, MethodType.methodType(void.class, InvocationHandler.class).toMethodDescriptorString(), null, null);
         mv.visitCode();
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Utils.getInternalName(Object.class), Constants.Init, MethodType.methodType(void.class).toMethodDescriptorString(), false);
@@ -283,16 +283,16 @@ public class IASProxyProxyBuilder {
     }
 
     private void generateClassHeader() {
-        String[] interfaceNames = new String[interfaces.length];
-        for (int i = 0; i < interfaces.length; i++) {
-            interfaceNames[i] = Utils.getInternalName(interfaces[i]);
+        String[] interfaceNames = new String[this.interfaces.length];
+        for (int i = 0; i < this.interfaces.length; i++) {
+            interfaceNames[i] = Utils.getInternalName(this.interfaces[i]);
         }
 //        classWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC, Utils.dotToSlash(this.name), null, Utils.getInternalName(IASProxyProxy.class), interfaceNames);
-        classWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC, Utils.dotToSlash(this.name), null, Utils.getInternalName(Object.class), interfaceNames);
+        this.classWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC, Utils.dotToSlash(this.name), null, Utils.getInternalName(Object.class), interfaceNames);
     }
 
-    private void generateMethodFields(List<ProxyMethod> methods) {
-        for (ProxyMethod proxyMethod : methods) {
+    private void generateMethodFields(List<IASProxyProxyBuilder.ProxyMethod> methods) {
+        for (IASProxyProxyBuilder.ProxyMethod proxyMethod : methods) {
             String methodFieldName = proxyMethod.getMethodFieldName();
 
             FieldVisitor fv = this.classWriter.visitField(Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC, methodFieldName, Type.getType(Method.class).getDescriptor(), null, null);
@@ -300,10 +300,10 @@ public class IASProxyProxyBuilder {
         }
     }
 
-    private void generateStaticInitializer(List<ProxyMethod> methods) {
-        MethodVisitor mv = classWriter.visitMethod(Opcodes.INVOKESTATIC, Constants.ClInit, "()V", null, null);
+    private void generateStaticInitializer(List<IASProxyProxyBuilder.ProxyMethod> methods) {
+        MethodVisitor mv = this.classWriter.visitMethod(Opcodes.INVOKESTATIC, Constants.ClInit, "()V", null, null);
 
-        for (ProxyMethod proxyMethod : methods) {
+        for (IASProxyProxyBuilder.ProxyMethod proxyMethod : methods) {
             Method method = proxyMethod.getMethod();
             String methodFieldName = proxyMethod.getMethodFieldName();
 
@@ -317,7 +317,7 @@ public class IASProxyProxyBuilder {
                 mv.visitInsn(Opcodes.DUP);
                 mv.visitLdcInsn(i);
                 if (param.isPrimitive()) {
-                    mv.visitFieldInsn(Opcodes.GETSTATIC, Utils.getInternalName(primitiveToWrapper(param)), "TYPE", Type.getType(Class.class).getDescriptor());
+                    mv.visitFieldInsn(Opcodes.GETSTATIC, Utils.getInternalName(this.primitiveToWrapper(param)), "TYPE", Type.getType(Class.class).getDescriptor());
                 } else {
                     mv.visitLdcInsn(Type.getType(param));
                 }
@@ -333,22 +333,22 @@ public class IASProxyProxyBuilder {
         mv.visitEnd();
     }
 
-    private void generateMethods(List<ProxyMethod> methods) {
-        for (ProxyMethod m : methods) {
-            generateProxyMethod(m);
+    private void generateMethods(List<IASProxyProxyBuilder.ProxyMethod> methods) {
+        for (IASProxyProxyBuilder.ProxyMethod m : methods) {
+            this.generateProxyMethod(m);
         }
     }
 
-    private List<ProxyMethod> generateProxyMethods() {
+    private List<IASProxyProxyBuilder.ProxyMethod> generateProxyMethods() {
         int counter = 0;
-        List<ProxyMethod> methods = new ArrayList<>();
-        for (Class<?> intf : interfaces) {
+        List<IASProxyProxyBuilder.ProxyMethod> methods = new ArrayList<>();
+        for (Class<?> intf : this.interfaces) {
             for (Method m : intf.getMethods()) {
                 if (!Modifier.isStatic(m.getModifiers())) {
-                    ProxyMethod newProxyMethod = new ProxyMethod(m, "m" + counter);
+                    IASProxyProxyBuilder.ProxyMethod newProxyMethod = new IASProxyProxyBuilder.ProxyMethod(m, "m" + counter);
 
                     boolean isAlreadyContained = false;
-                    for (ProxyMethod pm : methods) {
+                    for (IASProxyProxyBuilder.ProxyMethod pm : methods) {
                         if (pm.getNameWithDescriptor().equals(newProxyMethod.getNameWithDescriptor())) {
                             isAlreadyContained = true;
                             pm.addExceptions(m.getExceptionTypes());
@@ -372,11 +372,11 @@ public class IASProxyProxyBuilder {
         private final List<Class<?>> exceptionTypes = new ArrayList<>();
 
         public Method getMethod() {
-            return method;
+            return this.method;
         }
 
         public String getMethodFieldName() {
-            return methodFieldName;
+            return this.methodFieldName;
         }
 
         public ProxyMethod(Method method, String methodFieldName) {

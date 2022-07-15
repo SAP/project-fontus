@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public class SimpleDataId implements DataId {
 
-    private UUID uuid;
+    private final UUID uuid;
 
     public SimpleDataId(UUID uuid) {
         this.uuid = uuid;
@@ -17,11 +17,11 @@ public class SimpleDataId implements DataId {
     }
 
     public SimpleDataId() {
-        uuid = UUID.randomUUID();
+        this.uuid = UUID.randomUUID();
     }
 
     public UUID getUUID() {
-        return uuid;
+        return this.uuid;
     }
 
 }

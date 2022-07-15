@@ -24,7 +24,7 @@ public class SinkParameter {
     @Override
     public String toString() {
         return "SinkParameter{" +
-                "index=" + index +
+                "index=" + this.index +
                 '}';
     }
 }

@@ -12,7 +12,7 @@ public class tubsDriver implements Driver {
 
     static {
         try {
-            DriverManager.registerDriver(tubsDriver.instance);
+            DriverManager.registerDriver(instance);
         } catch (SQLException e) {
             throw new IllegalStateException("Could not register tubs driver with DriverManager", e);
         }
@@ -34,7 +34,7 @@ public class tubsDriver implements Driver {
     }
 
     static List<Driver> registeredDrivers() {
-        List<Driver> result = new ArrayList<Driver>();
+        List<Driver> result = new ArrayList<>();
         for (Enumeration<Driver> driverEnumeration = DriverManager.getDrivers(); driverEnumeration.hasMoreElements(); ) {
             result.add(driverEnumeration.nextElement());
         }
@@ -62,7 +62,7 @@ public class tubsDriver implements Driver {
         return ConnectionWrapper.wrap(conn);
     }
 
-    protected Driver findPassthru(String url) throws SQLException {
+    private Driver findPassthru(String url) throws SQLException {
 
         String realUrl = this.extractRealUrl(url);
         Driver passthru = null;

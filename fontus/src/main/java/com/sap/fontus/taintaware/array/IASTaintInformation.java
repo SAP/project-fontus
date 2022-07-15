@@ -51,7 +51,7 @@ public class IASTaintInformation implements IASTaintInformationable {
     }
 
     public IASTaintMetadata[] getTaints() {
-        return getTaints(0, this.taints.length);
+        return this.getTaints(0, this.taints.length);
     }
 
     public IASTaintMetadata[] getTaints(int start, int end) {
@@ -118,7 +118,7 @@ public class IASTaintInformation implements IASTaintInformationable {
     @Override
     public IASTaintInformationable shiftRight(int offset) {
         int newSize = this.taints.length + offset;
-        IASTaintMetadata newArray[] = new IASTaintMetadata[newSize];
+        IASTaintMetadata[] newArray = new IASTaintMetadata[newSize];
         System.arraycopy(this.taints, 0, newArray, offset, this.taints.length);
         // TODO(david): This used to return this without changing anything -> I think we want to change the taints?
         this.taints = newArray;

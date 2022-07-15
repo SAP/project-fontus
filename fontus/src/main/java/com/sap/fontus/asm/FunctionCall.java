@@ -46,7 +46,7 @@ public class FunctionCall {
     private final String descriptor;
 
     @XmlElement(name = "interface")
-    @JsonProperty(value = "interface")
+    @JsonProperty("interface")
     private final boolean isInterface;
 
     @JsonIgnore
@@ -136,7 +136,7 @@ public class FunctionCall {
 
     @JsonIgnore
     public String getFqn() {
-        return getOwner() + "." + getName() + getDescriptor();
+        return this.getOwner() + "." + this.getName() + this.getDescriptor();
     }
 
     public String getDescriptor() {
@@ -176,11 +176,11 @@ public class FunctionCall {
     @Override
     public String toString() {
         return "FunctionCall{" +
-                "opcode=" + opcode +
-                ", owner='" + owner + '\'' +
-                ", name='" + name + '\'' +
-                ", descriptor='" + descriptor + '\'' +
-                ", isInterface=" + isInterface +
+                "opcode=" + this.opcode +
+                ", owner='" + this.owner + '\'' +
+                ", name='" + this.name + '\'' +
+                ", descriptor='" + this.descriptor + '\'' +
+                ", isInterface=" + this.isInterface +
                 '}';
     }
 

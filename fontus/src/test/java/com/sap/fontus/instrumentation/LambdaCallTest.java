@@ -34,7 +34,7 @@ public class LambdaCallTest {
          * 
          * The LambdaCall class will wrap these calls depending on the presence of Taintable variables
          */
-        test((a, b) -> b - a - c);
+        this.test((a, b) -> b - a - c);
     }
 
     public void test(Comparator<Integer> test) {

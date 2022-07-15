@@ -11,8 +11,8 @@ import java.util.Set;
 public class SimpleAllowedPurpose implements AllowedPurpose {
 
     private ExpiryDate expiryDate;
-    private Purpose purpose;
-    private Set<Vendor> vendors;
+    private final Purpose purpose;
+    private final Set<Vendor> vendors;
 
     public SimpleAllowedPurpose() {
         this.expiryDate = new SimpleExpiryDate();
@@ -34,7 +34,7 @@ public class SimpleAllowedPurpose implements AllowedPurpose {
 
     @Override
     public ExpiryDate getExpiryDate() {
-        return expiryDate;
+        return this.expiryDate;
     }
 
     @Override
@@ -44,33 +44,33 @@ public class SimpleAllowedPurpose implements AllowedPurpose {
 
     @Override
     public Purpose getAllowedPurpose() {
-        return purpose;
+        return this.purpose;
     }
 
     @Override
     public Set<Vendor> getAllowedVendors() {
-        return vendors;
+        return this.vendors;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || this.getClass() != o.getClass()) return false;
         SimpleAllowedPurpose that = (SimpleAllowedPurpose) o;
-        return Objects.equals(expiryDate, that.expiryDate) && purpose == that.purpose && Objects.equals(vendors, that.vendors);
+        return Objects.equals(this.expiryDate, that.expiryDate) && this.purpose == that.purpose && Objects.equals(this.vendors, that.vendors);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(expiryDate, purpose, vendors);
+        return Objects.hash(this.expiryDate, this.purpose, this.vendors);
     }
 
     @Override
     public String toString() {
         return "SimpleAllowedPurpose{" +
-                "expiryDate=" + expiryDate +
-                ", purpose=" + purpose +
-                ", vendors=" + vendors +
+                "expiryDate=" + this.expiryDate +
+                ", purpose=" + this.purpose +
+                ", vendors=" + this.vendors +
                 '}';
     }
 }

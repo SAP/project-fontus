@@ -10,9 +10,9 @@ import java.util.Objects;
 
 public class SimpleRequiredPurposes implements RequiredPurposes {
 
-    private Collection<Purpose> purposeCollection;
+    private final Collection<Purpose> purposeCollection;
 
-    private Collection<Vendor> vendorCollection;
+    private final Collection<Vendor> vendorCollection;
 
     public SimpleRequiredPurposes(Collection<Purpose> purposeCollection, Collection<Vendor> vendorCollection) {
         this.purposeCollection = purposeCollection;
@@ -26,40 +26,40 @@ public class SimpleRequiredPurposes implements RequiredPurposes {
 
     @Override
     public Collection<Purpose> getPurposes() {
-        return purposeCollection;
+        return this.purposeCollection;
     }
 
     @Override
     public Collection<Vendor> getVendors() {
-        return vendorCollection;
+        return this.vendorCollection;
     }
 
     public void addPurpose(Purpose purpose) {
-        purposeCollection.add(purpose);
+        this.purposeCollection.add(purpose);
     }
 
     public void addVendor(Vendor vendor) {
-        vendorCollection.add(vendor);
+        this.vendorCollection.add(vendor);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || this.getClass() != o.getClass()) return false;
         SimpleRequiredPurposes that = (SimpleRequiredPurposes) o;
-        return Objects.equals(purposeCollection, that.purposeCollection) && Objects.equals(vendorCollection, that.vendorCollection);
+        return Objects.equals(this.purposeCollection, that.purposeCollection) && Objects.equals(this.vendorCollection, that.vendorCollection);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(purposeCollection, vendorCollection);
+        return Objects.hash(this.purposeCollection, this.vendorCollection);
     }
 
     @Override
     public String toString() {
         return "SimpleRequiredPurposes{" +
-                "purposeCollection=" + purposeCollection +
-                ", vendorCollection=" + vendorCollection +
+                "purposeCollection=" + this.purposeCollection +
+                ", vendorCollection=" + this.vendorCollection +
                 '}';
     }
 }

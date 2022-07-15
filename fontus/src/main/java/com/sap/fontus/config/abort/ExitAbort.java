@@ -8,7 +8,7 @@ public class ExitAbort extends Abort {
     private StdErrLoggingAbort stdErrLoggingAbort = new StdErrLoggingAbort();
     @Override
     public IASTaintAware abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
-        stdErrLoggingAbort.abort(taintAware, instance, sinkFunction, sinkName, stackTrace);
+        this.stdErrLoggingAbort.abort(taintAware, instance, sinkFunction, sinkName, stackTrace);
         System.exit(1);
         return taintAware;
     }

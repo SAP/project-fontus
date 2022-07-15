@@ -11,8 +11,8 @@ public class CallingThreadAgentClassResolver extends CachingAgentClassResolver {
 
     public void initialize() {
 
-        if (classLoader instanceof URLClassLoader) {
-            URL[] urls = ((URLClassLoader) classLoader).getURLs();
+        if (this.classLoader instanceof URLClassLoader) {
+            URL[] urls = ((URLClassLoader) this.classLoader).getURLs();
             if (urls != null) {
                 for (URL url : urls) {
                     if ("jar".equals(url.getProtocol())) {

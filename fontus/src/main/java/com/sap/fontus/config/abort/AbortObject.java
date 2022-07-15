@@ -23,26 +23,26 @@ public class AbortObject {
     }
 
     public String getSinkFunction() {
-        return sinkFunction;
+        return this.sinkFunction;
     }
 
     public String getSinkName() {
-        return sinkName;
+        return this.sinkName;
     }
 
     public String getPayload() {
-        return payload;
+        return this.payload;
     }
 
     public IASTaintRanges getRanges() {
-        return ranges;
+        return this.ranges;
     }
 
     public List<String> getStackTrace() {
-        return stackTrace;
+        return this.stackTrace;
     }
 
     public List<String> getCategories() {
-        return categories;
+        return this.categories;
     }
 }

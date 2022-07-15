@@ -20,12 +20,12 @@ public class SimpleVendor extends VendorBase {
 
     @Override
     public int getId() {
-        return id;
+        return this.id;
     }
 
     @Override
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setId(int id) {

@@ -9,12 +9,15 @@ import org.objectweb.asm.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MethodTaintingUtils {
+public final class MethodTaintingUtils {
     private static final CombinedExcludedLookup lookup = new CombinedExcludedLookup(null);
     /**
      * Functional interfaces or packages with func interfaces which are JDK or excluded but should still not be uninstrumented as lmabda
      */
     private static final String[] lambdaIncluded = new String[]{"java/util/function/", "java/lang/", "java/util/Comparator", "java/util/concurrent/"};
+
+    private MethodTaintingUtils() {
+    }
 
     /**
      * Pushes an integer onto the stack.
@@ -65,7 +68,9 @@ public class MethodTaintingUtils {
         types.put("Z", "Boolean");
 
         // No primitive type, nop
-        if (!types.containsKey(type)) return;
+        if (!types.containsKey(type)) {
+            return;
+        }
 
         String full = types.get(type);
         String owner = String.format("java/lang/%s", full);

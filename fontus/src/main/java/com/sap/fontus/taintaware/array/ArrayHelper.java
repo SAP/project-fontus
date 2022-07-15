@@ -1,6 +1,9 @@
 package com.sap.fontus.taintaware.array;
 
-public class ArrayHelper {
+public final class ArrayHelper {
+    private ArrayHelper() {
+    }
+
     public static int[] concat(int[]... arrays) {
         int length = 0;
         for (int[] array : arrays) {

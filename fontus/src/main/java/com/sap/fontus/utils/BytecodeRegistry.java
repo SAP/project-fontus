@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class BytecodeRegistry {
-    private final static BytecodeRegistry INSTANCE = new BytecodeRegistry();
+    private static final BytecodeRegistry INSTANCE = new BytecodeRegistry();
     private final Map<String, byte[]> bytecodeCache;
 
     private BytecodeRegistry() {
@@ -24,7 +24,7 @@ public class BytecodeRegistry {
 
         internalName = Utils.dotToSlash(internalName);
 
-        bytecodeCache.putIfAbsent(internalName, data);
+        this.bytecodeCache.putIfAbsent(internalName, data);
     }
 
     public Optional<byte[]> getClassData(String internalName) {
@@ -35,11 +35,11 @@ public class BytecodeRegistry {
     }
 
     public Map<String, byte[]> getModifiableBytecodeCache() {
-        return bytecodeCache;
+        return this.bytecodeCache;
     }
 
     public Map<String, byte[]> getUnmodifiableBytecodeCache() {
-        return Collections.unmodifiableMap(bytecodeCache);
+        return Collections.unmodifiableMap(this.bytecodeCache);
     }
 
 }

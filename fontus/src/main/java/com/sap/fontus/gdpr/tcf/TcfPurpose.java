@@ -6,49 +6,49 @@ import java.util.Objects;
 
 public class TcfPurpose implements Purpose {
 
-    private com.iabtcf.extras.gvl.Purpose tcf_purpose;
+    private final com.iabtcf.extras.gvl.Purpose tcfPurpose;
 
-    public TcfPurpose(com.iabtcf.extras.gvl.Purpose tcf_purpose) {
-        this.tcf_purpose = tcf_purpose;
+    public TcfPurpose(com.iabtcf.extras.gvl.Purpose tcfPurpose) {
+        this.tcfPurpose = tcfPurpose;
     }
 
     @Override
     public int getId() {
-        return tcf_purpose.getId();
+        return this.tcfPurpose.getId();
     }
 
     @Override
     public String getName() {
-        return tcf_purpose.getName();
+        return this.tcfPurpose.getName();
     }
 
     @Override
     public String getDescription() {
-        return tcf_purpose.getDescription();
+        return this.tcfPurpose.getDescription();
     }
 
     @Override
     public String getLegalDescription() {
-        return tcf_purpose.getDescriptionLegal();
+        return this.tcfPurpose.getDescriptionLegal();
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || this.getClass() != o.getClass()) return false;
         TcfPurpose that = (TcfPurpose) o;
-        return Objects.equals(tcf_purpose, that.tcf_purpose);
+        return Objects.equals(this.tcfPurpose, that.tcfPurpose);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(tcf_purpose);
+        return Objects.hash(this.tcfPurpose);
     }
 
     @Override
     public String toString() {
         return "TcfPurpose{" +
-                "tcf_purpose=" + tcf_purpose +
+                "tcf_purpose=" + this.tcfPurpose +
                 '}';
     }
 }

@@ -13,7 +13,7 @@ public class AlwaysApplyReturnGenericTransformer implements ReturnTransformation
 
     @Override
     public void transformReturnValue(MethodTaintingVisitor visitor, Descriptor desc) {
-        visitor.visitMethodInsn(converter);
+        visitor.visitMethodInsn(this.converter);
     }
 
     @Override

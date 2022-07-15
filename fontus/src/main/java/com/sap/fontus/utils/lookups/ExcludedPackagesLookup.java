@@ -2,7 +2,10 @@ package com.sap.fontus.utils.lookups;
 
 import com.sap.fontus.config.Configuration;
 
-public class ExcludedPackagesLookup {
+public final class ExcludedPackagesLookup {
+    private ExcludedPackagesLookup() {
+    }
+
     public static boolean isExcludedPackage(String internalName) {
         for (String excludedPackage : Configuration.getConfiguration().getExcludedPackages()) {
             if(internalName.startsWith(excludedPackage)) {

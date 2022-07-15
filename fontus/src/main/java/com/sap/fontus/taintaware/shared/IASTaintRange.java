@@ -1,6 +1,7 @@
 package com.sap.fontus.taintaware.shared;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class IASTaintRange implements Cloneable, Serializable {
 
@@ -36,56 +37,64 @@ public class IASTaintRange implements Cloneable, Serializable {
     }
 
     public IASTaintRange shiftRight(int shift) {
-        if (start + shift < 0) {
+        if (this.start + shift < 0) {
             throw new IllegalArgumentException("Illegal shift argument. Through shifting start index would be negative!");
         }
-        return new IASTaintRange(start + shift, end + shift, data);
+        return new IASTaintRange(this.start + shift, this.end + shift, this.data);
     }
 
     @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     protected Object clone() {
-        return new IASTaintRange(start, end, data);
+        return new IASTaintRange(this.start, this.end, this.data);
     }
 
     public int getStart() {
-        return start;
+        return this.start;
     }
 
     public int getEnd() {
-        return end;
+        return this.end;
     }
 
     public IASTaintMetadata getMetadata() {
-        return data;
+        return this.data;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
 
         IASTaintRange that = (IASTaintRange) o;
 
-        if (start != that.start) return false;
-        if (end != that.end) return false;
-        return data.equals(that.data);
+        if (this.start != that.start) {
+            return false;
+        }
+        if (this.end != that.end) {
+            return false;
+        }
+        return this.data.equals(that.data);
     }
 
     @Override
     public int hashCode() {
-        int result = start;
-        result = 31 * result + end;
-        result = 31 * result + data.hashCode();
+        int result = this.start;
+        result = 31 * result + this.end;
+        result = 31 * result + this.data.hashCode();
         return result;
     }
 
     @Override
     public String toString() {
         return "TRange{" +
-                "b=" + start +
-                ", e=" + end +
-                ", data=" + data +
+                "b=" + this.start +
+                ", e=" + this.end +
+                ", data=" + this.data +
                 '}';
     }
 }

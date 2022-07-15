@@ -27,14 +27,14 @@ public class ParentLogger extends java.util.logging.Logger {
     public void error(String message, Object... insertions) {
         message = this.format(message, insertions);
         LogRecord logRecord = new LogRecord(Level.SEVERE, message);
-        logRecord.setSourceClassName(getSourceClassName());
+        logRecord.setSourceClassName(this.getSourceClassName());
         this.log(logRecord);
     }
 
     public void info(String message, Object... insertions) {
         message = this.format(message, insertions);
         LogRecord logRecord = new LogRecord(Level.INFO, message);
-        logRecord.setSourceClassName(getSourceClassName());
+        logRecord.setSourceClassName(this.getSourceClassName());
         this.log(logRecord);
     }
 
@@ -48,14 +48,14 @@ public class ParentLogger extends java.util.logging.Logger {
     public void debug(String message, String insertions) {
         message = this.format(message, insertions);
         LogRecord logRecord = new LogRecord(Level.FINE, message);
-        logRecord.setSourceClassName(getSourceClassName());
+        logRecord.setSourceClassName(this.getSourceClassName());
         this.log(logRecord);
     }
 
     public void warn(String message, Object... insertions) {
         message = this.format(message, insertions);
         LogRecord logRecord = new LogRecord(Level.WARNING, message);
-        logRecord.setSourceClassName(getSourceClassName());
+        logRecord.setSourceClassName(this.getSourceClassName());
         this.log(logRecord);
     }
 }

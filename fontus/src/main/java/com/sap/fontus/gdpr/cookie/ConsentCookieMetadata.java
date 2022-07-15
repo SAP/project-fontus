@@ -12,7 +12,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ConsentCookieMetadata {
+public final class ConsentCookieMetadata {
+
+    private ConsentCookieMetadata() {
+    }
 
     public static Collection<AllowedPurpose> getAllowedPurposesFromConsentCookie(ConsentCookie cookie) {
         Collection<AllowedPurpose> purposes = new ArrayList<>();

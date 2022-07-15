@@ -9,19 +9,19 @@ public abstract class VendorBase implements Vendor {
         if (this == o) return true;
         if (!(o instanceof Vendor)) return false;
         Vendor that = (Vendor) o;
-        return getId() == that.getId() && Objects.equals(getName(), that.getName());
+        return this.getId() == that.getId() && Objects.equals(this.getName(), that.getName());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getName());
+        return Objects.hash(this.getId(), this.getName());
     }
 
     @Override
     public String toString() {
         return "Vendor{" +
-                "id=" + getId() +
-                ", name='" + getName() + '\'' +
+                "id=" + this.getId() +
+                ", name='" + this.getName() + '\'' +
                 '}';
     }
 

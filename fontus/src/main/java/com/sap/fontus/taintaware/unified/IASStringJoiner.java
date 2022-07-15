@@ -25,11 +25,11 @@ public class IASStringJoiner {
     public IASStringJoiner(CharSequence delimiter,
                            CharSequence prefix,
                            CharSequence suffix) {
-        joiner = new StringJoiner(delimiter, prefix, suffix);
-        taintList = new ArrayList<>();
-        delimiterTaint = getOrCreateTaintInformation(delimiter);
-        prefixTaint = getOrCreateTaintInformation(prefix);
-        suffixTaint = getOrCreateTaintInformation(suffix);
+        this.joiner = new StringJoiner(delimiter, prefix, suffix);
+        this.taintList = new ArrayList<>();
+        this.delimiterTaint = this.getOrCreateTaintInformation(delimiter);
+        this.prefixTaint = this.getOrCreateTaintInformation(prefix);
+        this.suffixTaint = this.getOrCreateTaintInformation(suffix);
 
     }
 
@@ -39,14 +39,14 @@ public class IASStringJoiner {
     }
 
     public IASStringJoiner setEmptyValue(CharSequence emptyValue) {
-        joiner.setEmptyValue(emptyValue);
-        emptyValueTaint = getOrCreateTaintInformation(emptyValue);
+        this.joiner.setEmptyValue(emptyValue);
+        this.emptyValueTaint = this.getOrCreateTaintInformation(emptyValue);
         return this;
     }
 
     @Override
     public String toString() {
-        return joiner.toString();
+        return this.joiner.toString();
     }
 
     public IASString toIASString() {
@@ -54,7 +54,7 @@ public class IASStringJoiner {
     }
 
     private IASTaintInformationable getTaintInformation() {
-        if (taintList == null) {
+        if (this.taintList == null) {
             return null;
         }
         // Check for empty value
@@ -65,42 +65,42 @@ public class IASStringJoiner {
         int length = 0;
         IASTaintInformationable taintInformation = TaintInformationFactory.createTaintInformation(length);
         // Append prefix
-        if (prefixTaint != null) {
-            taintInformation.insertWithShift(length, prefixTaint);
+        if (this.prefixTaint != null) {
+            taintInformation.insertWithShift(length, this.prefixTaint);
             length += taintInformation.getLength();
         }
-        for (int i = 0; i < taintList.size(); i++) {
-            IASTaintInformationable e = taintList.get(i);
+        for (int i = 0; i < this.taintList.size(); i++) {
+            IASTaintInformationable e = this.taintList.get(i);
             if (e != null) {
                 taintInformation.insertWithShift(length, e.copy());
                 length += e.getLength();
             }
             // Check if we need to add delimiter
-            if (i < (taintList.size() - 1)) {
-                if (delimiterTaint != null) {
-                    taintInformation.insertWithShift(length, delimiterTaint.copy());
-                    length += delimiterTaint.getLength();
+            if (i < (this.taintList.size() - 1)) {
+                if (this.delimiterTaint != null) {
+                    taintInformation.insertWithShift(length, this.delimiterTaint.copy());
+                    length += this.delimiterTaint.getLength();
                 }
             }
         }
-        if (suffixTaint != null) {
-            taintInformation.insertWithShift(length, suffixTaint.copy());
+        if (this.suffixTaint != null) {
+            taintInformation.insertWithShift(length, this.suffixTaint.copy());
         }
         return taintInformation;
     }
 
     public IASStringJoiner add(CharSequence newElement) {
-        joiner.add(newElement);
-        if (taintList != null) {
-            taintList.add(getOrCreateTaintInformation(newElement));
+        this.joiner.add(newElement);
+        if (this.taintList != null) {
+            this.taintList.add(this.getOrCreateTaintInformation(newElement));
         }
         return this;
     }
 
     public IASStringJoiner merge(IASStringJoiner other) {
-        joiner.merge(other.getStringJoiner());
-        if (taintList != null) {
-            taintList.add(other.getTaintInformation());
+        this.joiner.merge(other.getStringJoiner());
+        if (this.taintList != null) {
+            this.taintList.add(other.getTaintInformation());
         }
         return this;
     }
@@ -126,7 +126,7 @@ public class IASStringJoiner {
     }
 
     public int length() {
-        return joiner.length();
+        return this.joiner.length();
     }
 
 }

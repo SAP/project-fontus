@@ -6,7 +6,10 @@ import com.sap.fontus.taintaware.unified.IASString;
 
 import java.io.InputStream;
 
-public class IASClassLoaderProxy {
+public final class IASClassLoaderProxy {
+    private IASClassLoaderProxy() {
+    }
+
     public static InputStream getResourceAsStream(ClassLoader cls, IASString resource) {
         InputStream stream = cls.getResourceAsStream(resource.getString());
         if (Configuration.getConfiguration().isResourceToInstrument(resource.getString())) {

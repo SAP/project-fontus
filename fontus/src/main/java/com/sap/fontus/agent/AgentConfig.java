@@ -38,7 +38,7 @@ public class AgentConfig {
         this.verbose = false;
         this.blacklist = new ArrayList<>();
         this.taintMethod = TaintMethod.defaultTaintMethod();
-        taintPersistence = false;
+        this.taintPersistence = false;
     }
 
     private AgentConfig(boolean verbose, List<String> blacklist, TaintMethod taintMethod, boolean taintPersistence) {

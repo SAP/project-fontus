@@ -28,7 +28,7 @@ public class Position {
     }
 
     public String getClassName() {
-        return className;
+        return this.className;
     }
 
     public void setClassName(String className) {
@@ -36,7 +36,7 @@ public class Position {
     }
 
     public String getMethodName() {
-        return methodName;
+        return this.methodName;
     }
 
     public void setMethodName(String methodName) {
@@ -44,7 +44,7 @@ public class Position {
     }
 
     public int getJavaSourcePosition() {
-        return javaSourcePosition;
+        return this.javaSourcePosition;
     }
 
     public void setJavaSourcePosition(int javaSourcePosition) {
@@ -54,9 +54,9 @@ public class Position {
     @Override
     public String toString() {
         return "Position{" +
-                "class=" + className +
-                ", method=" + methodName +
-                ", position=" + javaSourcePosition +
+                "class=" + this.className +
+                ", method=" + this.methodName +
+                ", position=" + this.javaSourcePosition +
                 "}";
     }
 
@@ -69,6 +69,6 @@ public class Position {
             return false;
         }
         Position position = (Position) o;
-        return javaSourcePosition == position.getJavaSourcePosition() && className.equals(position.getClassName()) && methodName.equals(position.getMethodName());
+        return this.javaSourcePosition == position.getJavaSourcePosition() && this.className.equals(position.getClassName()) && this.methodName.equals(position.getMethodName());
     }
 }

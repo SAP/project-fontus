@@ -21,10 +21,10 @@ public abstract class ReflectedObject {
     protected Object callMethodWithReflection(Method m, Object... args) {
         Object result = null;
         try {
-            Method original_method = o.getClass().getMethod(m.getName(), m.getParameterTypes());
-            result = original_method.invoke(o, args);
+            Method original_method = this.o.getClass().getMethod(m.getName(), m.getParameterTypes());
+            result = original_method.invoke(this.o, args);
         } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
-            System.err.println("FONTUS Exception with reflected call: " + o.getClass().getName() + "." + m.getName() + ": " + e.getMessage());
+            System.err.println("FONTUS Exception with reflected call: " + this.o.getClass().getName() + "." + m.getName() + ": " + e.getMessage());
         }
         return result;
     }

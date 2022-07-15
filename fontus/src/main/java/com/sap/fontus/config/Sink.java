@@ -85,7 +85,7 @@ public class Sink {
         return null;
     }
 
-    public DataProtection getDataProtection() { return dataProtection; }
+    public DataProtection getDataProtection() { return this.dataProtection; }
 
     public List<String> getCategories() {
         return Collections.unmodifiableList(this.categories);
@@ -104,7 +104,7 @@ public class Sink {
     @JsonIgnore
     public Abort getAbortFromSink() {
         List<Abort> l = new ArrayList<>();
-        for (String abortName : getDataProtection().getAborts()) {
+        for (String abortName : this.getDataProtection().getAborts()) {
             Abort a = Abort.parse(abortName);
             if (a != null) {
                 l.add(a);
@@ -114,19 +114,19 @@ public class Sink {
     }
 
     public List<Position> getPositions() {
-        return positions;
+        return this.positions;
     }
 
     @Override
     public String toString() {
         return "Sink{" +
-                "name='" + name + '\'' +
-                ", function=" + function +
-                ", parameters=" + parameters +
-                ", categories=" + categories +
-                ", dataProtection=" + dataProtection +
-                ", taintHandler=" + taintHandler +
-                ", positions=" + positions +
+                "name='" + this.name + '\'' +
+                ", function=" + this.function +
+                ", parameters=" + this.parameters +
+                ", categories=" + this.categories +
+                ", dataProtection=" + this.dataProtection +
+                ", taintHandler=" + this.taintHandler +
+                ", positions=" + this.positions +
                 '}';
     }
 }

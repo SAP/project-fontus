@@ -48,9 +48,9 @@ public class DataProtection {
     @Override
     public String toString() {
         return "DataProtection{" +
-                "vendors=" + vendors +
-                ", purposes=" + purposes +
-                ", aborts=" + aborts +
+                "vendors=" + this.vendors +
+                ", purposes=" + this.purposes +
+                ", aborts=" + this.aborts +
                 '}';
     }
 }

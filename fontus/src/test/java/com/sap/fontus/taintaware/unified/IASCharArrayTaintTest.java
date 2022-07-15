@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class IASCharArrayTaintTest {
 
-    private final static IASTaintMetadata md = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy"));
+    private static final IASTaintMetadata md = new IASBasicMetadata(IASTaintSourceRegistry.getInstance().getOrRegisterObject("dummy"));
 
     IASCharArrayTaint taintCache = IASCharArrayTaint.getInstance();
     
@@ -34,9 +34,9 @@ public class IASCharArrayTaintTest {
         char[] chars = {'h','e','l','l','o' };
 
 	IASTaintInformationable taint = new IASTaintInformation(chars.length);
-	taintCache.setTaint(chars, taint);
+        this.taintCache.setTaint(chars, taint);
 
-	assertEquals(taint, taintCache.getTaint(chars));
+	assertEquals(taint, this.taintCache.getTaint(chars));
     }
 
     @Test
@@ -46,14 +46,14 @@ public class IASCharArrayTaintTest {
 	char[] chars2 = {'b','y','e'};
 
 	IASTaintInformationable taint = new IASTaintInformation(chars.length);
-	taintCache.setTaint(chars, taint);
+        this.taintCache.setTaint(chars, taint);
 
 	IASTaintInformationable taint2 = new IASTaintInformation(chars2.length);
-	taintCache.setTaint(chars2, taint2);
+        this.taintCache.setTaint(chars2, taint2);
 
-	assertEquals(taint, taintCache.getTaint(chars));
-	assertEquals(taint2, taintCache.getTaint(chars2));
-	assertNotEquals(taintCache.getTaint(chars), taintCache.getTaint(chars2));
+	assertEquals(taint, this.taintCache.getTaint(chars));
+	assertEquals(taint2, this.taintCache.getTaint(chars2));
+	assertNotEquals(this.taintCache.getTaint(chars), this.taintCache.getTaint(chars2));
     }
 
     @Test
@@ -63,14 +63,14 @@ public class IASCharArrayTaintTest {
 	char[] chars2 = {'h','e','l','l','o'};
 
 	IASTaintInformationable taint = new IASTaintInformation(chars.length);
-	taintCache.setTaint(chars, taint);
+        this.taintCache.setTaint(chars, taint);
 
 	IASTaintInformationable taint2 = new IASTaintInformation(chars2.length);
-	taintCache.setTaint(chars2, taint2);
+        this.taintCache.setTaint(chars2, taint2);
 
-	assertEquals(taint, taintCache.getTaint(chars));
-	assertEquals(taint2, taintCache.getTaint(chars2));
-	assertNotEquals(taintCache.getTaint(chars), taintCache.getTaint(chars2));
+	assertEquals(taint, this.taintCache.getTaint(chars));
+	assertEquals(taint2, this.taintCache.getTaint(chars2));
+	assertNotEquals(this.taintCache.getTaint(chars), this.taintCache.getTaint(chars2));
     }
 
     @Test
@@ -79,21 +79,21 @@ public class IASCharArrayTaintTest {
         char[] chars = {'h','e','l','l','o'};
 	char[] chars2 = {'h','e','l','l','o'};
 
-	IASTaintInformationable taint = new IASTaintInformation(chars.length, RangeChainer.range(0, 1, md).done());
-	taintCache.setTaint(chars, taint);
+	IASTaintInformationable taint = new IASTaintInformation(chars.length, range(0, 1, md).done());
+        this.taintCache.setTaint(chars, taint);
 
-	IASTaintInformationable taint2 = new IASTaintInformation(chars2.length, RangeChainer.range(0, 3, md).done());
-	taintCache.setTaint(chars2, taint2);
+	IASTaintInformationable taint2 = new IASTaintInformation(chars2.length, range(0, 3, md).done());
+        this.taintCache.setTaint(chars2, taint2);
 
-	assertEquals(taint, taintCache.getTaint(chars));
-	assertEquals(taint2, taintCache.getTaint(chars2));
-	assertNotEquals(taintCache.getTaint(chars), taintCache.getTaint(chars2));
+	assertEquals(taint, this.taintCache.getTaint(chars));
+	assertEquals(taint2, this.taintCache.getTaint(chars2));
+	assertNotEquals(this.taintCache.getTaint(chars), this.taintCache.getTaint(chars2));
     }
 
     @Test
     public void testCharArrayTaint() {
         IASString foo = new IASString("foo");
-        ((IASTaintInformation) THelper.get(foo)).addRange(0, 3, md);
+        THelper.get(foo).addRange(0, 3, md);
 
         // Extract to char
         char[] chars = new char[foo.length()];
@@ -108,7 +108,7 @@ public class IASCharArrayTaintTest {
     @Test
     public void testCharArrayTaintStringBuilder() {
         IASStringBuilder foo = new IASStringBuilder("foo");
-        ((IASTaintInformation) THelper.get(foo)).addRange(0, 3, md);
+        THelper.get(foo).addRange(0, 3, md);
 
         // Extract to char
         char[] chars = new char[foo.length()];
@@ -123,7 +123,7 @@ public class IASCharArrayTaintTest {
     @Test
     public void testCharArrayTaintSubTaint() {
         IASStringBuilder foo = new IASStringBuilder("foobar");
-        ((IASTaintInformation) THelper.get(foo)).addRange(2, 4, md);
+        THelper.get(foo).addRange(2, 4, md);
 
         // Extract to char
         char[] chars = new char[foo.length()];
@@ -138,7 +138,7 @@ public class IASCharArrayTaintTest {
     @Test
     public void testCharArrayTaintSubString() {
         IASStringBuilder foo = new IASStringBuilder("foobar");
-        ((IASTaintInformation) THelper.get(foo)).addRange(3, 6, md);
+        THelper.get(foo).addRange(3, 6, md);
 
         // Extract to char
         char[] chars = new char[3];
@@ -154,7 +154,7 @@ public class IASCharArrayTaintTest {
     @Test
     public void testCharArrayTaintDstSubString() {
         IASStringBuilder foo = new IASStringBuilder("foobar");
-        ((IASTaintInformation) THelper.get(foo)).addRange(3, 6, md);
+        THelper.get(foo).addRange(3, 6, md);
 
         // Extract to char
         char[] chars = new char[4];
@@ -171,7 +171,7 @@ public class IASCharArrayTaintTest {
     @Test
     public void testCharArrayTaintNewStringOffset() {
         IASString foo = new IASString("foobar");
-        ((IASTaintInformation) THelper.get(foo)).addRange(0, 3, md);
+        THelper.get(foo).addRange(0, 3, md);
 
         // Extract to char
         char[] chars = new char[foo.length()];

@@ -33,9 +33,9 @@ class TaintingTransformer implements ClassFileTransformer {
         this.classFinder = ClassResolverFactory.createClassFinder();
 
         if (config.isSpeculativeActive()) {
-            instrumenter = SpeculativeParallelInstrumenter.getInstance();
+            this.instrumenter = SpeculativeParallelInstrumenter.getInstance();
         } else {
-            instrumenter = new Instrumenter(config);
+            this.instrumenter = new Instrumenter(config);
         }
     }
 
@@ -59,7 +59,7 @@ class TaintingTransformer implements ClassFileTransformer {
 
         CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(loader);
 
-        if (config.isHybridMode() && combinedExcludedLookup.isClassAlreadyInstrumentedForHybrid(className)) {
+        if (this.config.isHybridMode() && combinedExcludedLookup.isClassAlreadyInstrumentedForHybrid(className)) {
             logger.info("Skipping already instrumented class in hybrid mode: {}", className);
             return classfileBuffer;
         }
@@ -92,7 +92,7 @@ class TaintingTransformer implements ClassFileTransformer {
                 outArray = CacheHandler.get().fetchFromCache(hash, className);
             } else {
                 logger.info("Tainting class: {}", className);
-                outArray = instrumenter.instrumentClassByteArray(classfileBuffer, loader, className);
+                outArray = this.instrumenter.instrumentClassByteArray(classfileBuffer, loader, className);
                 if (this.config.usePersistentCache()) {
                     CacheHandler.get().put(hash, outArray, className);
                 }
@@ -100,8 +100,8 @@ class TaintingTransformer implements ClassFileTransformer {
             this.classCache.put(className, outArray);
             VerboseLogger.saveIfVerbose(className, outArray);
             this.nInstrumented += 1;
-            if (config.isShowWelcomeMessage() && ((nInstrumented % 100) == 0)) {
-                System.out.println("FONTUS: Processed " + nClasses + " classes, Instrumented " + nInstrumented + " classes");
+            if (this.config.isShowWelcomeMessage() && ((this.nInstrumented % 100) == 0)) {
+                System.out.println("FONTUS: Processed " + this.nClasses + " classes, Instrumented " + this.nInstrumented + " classes");
             }
             return outArray;
         } catch (Exception e) {

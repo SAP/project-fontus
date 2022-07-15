@@ -13,27 +13,27 @@ public class RegistryLinkedVendor extends VendorBase {
 
     public RegistryLinkedVendor(String name) {
         this.name = name;
-        getRegisteredVendor();
+        this.getRegisteredVendor();
     }
 
     public RegistryLinkedVendor() {
         this.name = "Default";
-        getRegisteredVendor();
+        this.getRegisteredVendor();
     }
 
     public void setName(String name) {
         this.name = name;
-        getRegisteredVendor();
+        this.getRegisteredVendor();
     }
 
     @Override
     public int getId() {
-        return getRegisteredVendor().getId();
+        return this.getRegisteredVendor().getId();
     }
 
     @Override
     public String getName() {
-        return getRegisteredVendor().getName();
+        return this.getRegisteredVendor().getName();
     }
 
 }

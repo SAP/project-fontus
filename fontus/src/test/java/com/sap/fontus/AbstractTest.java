@@ -16,6 +16,6 @@ public abstract class AbstractTest {
     }
 
     protected Tainter getTaintChecker() {
-        return tainter;
+        return this.tainter;
     }
 }

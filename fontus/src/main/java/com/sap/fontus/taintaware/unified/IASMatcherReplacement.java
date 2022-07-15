@@ -41,7 +41,7 @@ public final class IASMatcherReplacement {
 
             IASString insert = orig.substring(start, end);
 
-            int index = groups.get(key);
+            int index = this.groups.get(key);
             if (index < lastIndex) {
                 throw new IllegalStateException("Map not sorted ascending");
             }

@@ -24,7 +24,7 @@ public class BaseLayer implements IASLayer {
     }
 
     public IASTaintRanges getBase() {
-        return base.copy();
+        return this.base.copy();
     }
 
     @Override
@@ -34,7 +34,7 @@ public class BaseLayer implements IASLayer {
 
     @Override
     public String toString() {
-        return "BaseLayer: " + IASTaintRangeUtils.taintRangesAsString(base);
+        return "BaseLayer: " + IASTaintRangeUtils.taintRangesAsString(this.base);
     }
 
 }

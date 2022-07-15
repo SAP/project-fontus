@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public class SimpleExpiryDate implements ExpiryDate {
 
-    private Instant expiry;
+    private final Instant expiry;
 
     public SimpleExpiryDate() {
         this.expiry = null;
@@ -19,7 +19,7 @@ public class SimpleExpiryDate implements ExpiryDate {
 
     @Override
     public Instant getDate() {
-        return expiry;
+        return this.expiry;
     }
 
     @Override
@@ -34,7 +34,7 @@ public class SimpleExpiryDate implements ExpiryDate {
             return 0;
         }
         if (this.hasExpiry() && o.hasExpiry()) {
-            return expiry.compareTo(o.getDate());
+            return this.expiry.compareTo(o.getDate());
         } else if (this.hasExpiry()) {
             return -1;
         } else {
@@ -45,20 +45,20 @@ public class SimpleExpiryDate implements ExpiryDate {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || this.getClass() != o.getClass()) return false;
         SimpleExpiryDate that = (SimpleExpiryDate) o;
-        return Objects.equals(expiry, that.expiry);
+        return Objects.equals(this.expiry, that.expiry);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(expiry);
+        return Objects.hash(this.expiry);
     }
 
     @Override
     public String toString() {
         return "SimpleExpiryDate{" +
-                "expiry=" + expiry +
+                "expiry=" + this.expiry +
                 '}';
     }
 

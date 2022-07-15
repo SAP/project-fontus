@@ -9,7 +9,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Optional;
 
-public class MethodUtils {
+public final class MethodUtils {
+
+    private MethodUtils() {
+    }
 
     public static boolean isToString(String name, String methodDescriptor) {
         return "()Ljava/lang/String;".equals(methodDescriptor) && Constants.ToString.equals(name);

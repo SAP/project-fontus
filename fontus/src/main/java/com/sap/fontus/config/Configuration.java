@@ -39,10 +39,10 @@ public class Configuration {
     private Abort abort = defaultAbort();
 
     @JsonIgnore
-    private TaintlossHandler taintlossHandler = null;
+    private TaintlossHandler taintlossHandler;
 
     @JsonIgnore
-    private Collection<String> instumentedClasses = null;
+    private Collection<String> instumentedClasses;
 
     @JsonIgnore
     private boolean isOfflineInstrumentation = true;
@@ -201,7 +201,7 @@ public class Configuration {
     }
 
     public Map<String, List<BlackListEntry>> getJdkInheritanceBlacklist() {
-        return jdkInheritanceBlacklist;
+        return this.jdkInheritanceBlacklist;
     }
 
     public void setJdkInheritanceBlacklist(Map<String, List<BlackListEntry>> jdkInheritanceBlacklist) {
@@ -209,15 +209,15 @@ public class Configuration {
     }
 
     public boolean isOfflineInstrumentation() {
-        return isOfflineInstrumentation;
+        return this.isOfflineInstrumentation;
     }
 
     public void setOfflineInstrumentation(boolean offlineInstrumentation) {
-        isOfflineInstrumentation = offlineInstrumentation;
+        this.isOfflineInstrumentation = offlineInstrumentation;
     }
 
     public Collection<String> getInstumentedClasses() {
-        return instumentedClasses;
+        return this.instumentedClasses;
     }
 
     public void setInstumentedClasses(Collection<String> instumentedClasses) {
@@ -245,7 +245,7 @@ public class Configuration {
     }
 
     public boolean useCaching() {
-        return useCaching;
+        return this.useCaching;
     }
 
     public void setUseCaching(boolean useCaching) {
@@ -261,7 +261,7 @@ public class Configuration {
     }
 
     public int getLayerThreshold() {
-        return layerThreshold;
+        return this.layerThreshold;
     }
 
     public void setLayerThreshold(int layerThreshold) {
@@ -397,11 +397,11 @@ public class Configuration {
     }
 
     public Abort getAbort() {
-        return abort;
+        return this.abort;
     }
 
     public static boolean isInitialized() {
-        return Configuration.configuration != null;
+        return configuration != null;
     }
 
     public static Configuration getConfiguration() {
@@ -412,7 +412,7 @@ public class Configuration {
     }
 
     public static boolean isLoggingEnabled() {
-        return !isInitialized() || Configuration.getConfiguration().loggingEnabled;
+        return !isInitialized() || getConfiguration().loggingEnabled;
     }
 
     public void setLoggingEnabled(boolean loggingEnabled) {
@@ -420,10 +420,10 @@ public class Configuration {
     }
 
     public List<String> getExcludedPackages() {
-        return excludedPackages;
+        return this.excludedPackages;
     }
     public List<String> getExcludedClasses() {
-        return excludedClasses;
+        return this.excludedClasses;
     }
 
     public List<String> getResourcesToInstrument() {
@@ -441,10 +441,10 @@ public class Configuration {
     }
 
     public static void setTestConfig(TaintMethod taintMethod) {
-        if (Configuration.configuration == null) {
+        if (configuration == null) {
             parseOffline(taintMethod);
         } else {
-            Configuration.getConfiguration().setTaintMethod(taintMethod);
+            getConfiguration().setTaintMethod(taintMethod);
         }
     }
 
@@ -505,7 +505,7 @@ public class Configuration {
     }
 
     public boolean isRecursiveTainting() {
-        return recursiveTainting;
+        return this.recursiveTainting;
     }
 
     public boolean handleTaintloss() {
@@ -513,7 +513,7 @@ public class Configuration {
     }
 
     public TaintlossHandler getTaintlossHandler() {
-        return taintlossHandler;
+        return this.taintlossHandler;
     }
 
     public void setTaintlossHandler(TaintlossHandler taintlossHandler) {
@@ -521,7 +521,7 @@ public class Configuration {
     }
 
     public boolean isShowWelcomeMessage() {
-        return showWelcomeMessage;
+        return this.showWelcomeMessage;
     }
 
     public void setShowWelcomeMessage(boolean showWelcomeMessage) {
@@ -529,26 +529,26 @@ public class Configuration {
     }
 
     public boolean isHybridMode() {
-        return isHybridMode;
+        return this.isHybridMode;
     }
 
     public void setHybridMode(boolean hybridMode) {
-        isHybridMode = hybridMode;
+        this.isHybridMode = hybridMode;
     }
 
     public boolean isParallel() {
-        return isParallel;
+        return this.isParallel;
     }
 
     public void setParallel(boolean parallel) {
-        isParallel = parallel;
+        this.isParallel = parallel;
     }
 
     @JsonIgnore
     private boolean isSpeculativeDeactive() {
-        return this.configuration.isOfflineInstrumentation()
-                || !this.configuration.isSpeculativeInstrumentation()
-                || this.configuration.isHybridMode();
+        return configuration.isOfflineInstrumentation()
+                || !configuration.isSpeculativeInstrumentation()
+                || configuration.isHybridMode();
     }
 
     @JsonIgnore
@@ -587,37 +587,37 @@ public class Configuration {
 
     public String summary() {
         return "Configuration: " +
-            getSourceConfig().getSources().size() + " sources and " +
-            getSinkConfig().getSinks().size() + " sinks.";
+                this.getSourceConfig().getSources().size() + " sources and " +
+                this.getSinkConfig().getSinks().size() + " sinks.";
     }
 
     @Override
     public String toString() {
         return "Configuration{" +
-                "taintMethod=" + taintMethod +
-                ", showWelcomeMessage=" + showWelcomeMessage +
-                ", jdkInheritanceBlacklist=" + jdkInheritanceBlacklist +
-                ", useCaching=" + useCaching +
-                ", layerThreshold=" + layerThreshold +
-                ", collectStats=" + collectStats +
-                ", abort=" + abort +
-                ", taintlossHandler=" + taintlossHandler +
-                ", isOfflineInstrumentation=" + isOfflineInstrumentation +
-                ", verbose=" + verbose +
-                ", taintPersistence=" + taintPersistence +
-                ", loggingEnabled=" + loggingEnabled +
-                ", recursiveTainting=" + recursiveTainting +
-                ", sourceConfig=" + sourceConfig +
-                ", sinkConfig=" + sinkConfig +
-                ", vendors=" + vendors +
-                ", purposes=" + purposes +
-                ", converters=" + converters +
-                ", returnGeneric=" + returnGeneric +
-                ", takeGeneric=" + takeGeneric +
-                ", blacklistedMainClasses=" + blacklistedMainClasses +
-                ", excludedPackages=" + excludedPackages +
+                "taintMethod=" + this.taintMethod +
+                ", showWelcomeMessage=" + this.showWelcomeMessage +
+                ", jdkInheritanceBlacklist=" + this.jdkInheritanceBlacklist +
+                ", useCaching=" + this.useCaching +
+                ", layerThreshold=" + this.layerThreshold +
+                ", collectStats=" + this.collectStats +
+                ", abort=" + this.abort +
+                ", taintlossHandler=" + this.taintlossHandler +
+                ", isOfflineInstrumentation=" + this.isOfflineInstrumentation +
+                ", verbose=" + this.verbose +
+                ", taintPersistence=" + this.taintPersistence +
+                ", loggingEnabled=" + this.loggingEnabled +
+                ", recursiveTainting=" + this.recursiveTainting +
+                ", sourceConfig=" + this.sourceConfig +
+                ", sinkConfig=" + this.sinkConfig +
+                ", vendors=" + this.vendors +
+                ", purposes=" + this.purposes +
+                ", converters=" + this.converters +
+                ", returnGeneric=" + this.returnGeneric +
+                ", takeGeneric=" + this.takeGeneric +
+                ", blacklistedMainClasses=" + this.blacklistedMainClasses +
+                ", excludedPackages=" + this.excludedPackages +
                 ", excludedClasses=" + this.excludedClasses +
-                ", resourcesToInstrument=" + resourcesToInstrument +
+                ", resourcesToInstrument=" + this.resourcesToInstrument +
                 ", passThroughTaints=" + this.passThroughTaints +
                 '}';
     }

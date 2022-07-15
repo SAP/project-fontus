@@ -59,7 +59,7 @@ public final class JdkClassesLookup {
         if (internalName == null) return true;
 
         boolean blacklisted = false;
-        for (String blacklistedPrefix : blacklistedPrefixes) {
+        for (String blacklistedPrefix : this.blacklistedPrefixes) {
             if (internalName.startsWith(blacklistedPrefix)) {
                 blacklisted = true;
                 break;

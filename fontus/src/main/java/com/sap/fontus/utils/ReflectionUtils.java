@@ -9,29 +9,32 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class ReflectionUtils {
-    private static Class MethodAccessor;
-    private static Class ConstructorAccessor;
+public final class ReflectionUtils {
+    private static Class<?> MethodAccessor;
+    private static Class<?> ConstructorAccessor;
+
+    private ReflectionUtils() {
+    }
 
     @SuppressWarnings("Since15")
-    public static Class getCallerClass() {
+    public static Class<?> getCallerClass() {
         if (Constants.JAVA_VERSION >= 9) {
             return StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).walk((Function<Stream<StackWalker.StackFrame>, Class>) stackFrameStream -> stackFrameStream.filter(new Predicate<StackWalker.StackFrame>() {
                 private int counter = 0;
 
                 @Override
                 public boolean test(StackWalker.StackFrame stackFrame) {
-                    counter++;
-                    return counter == 3;
+                    this.counter++;
+                    return this.counter == 3;
                 }
             }).findFirst().get().getDeclaringClass());
         }
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-        Class caller = null;
+        Class<?> caller = null;
         for (int i = 3; i < stackTraceElements.length; i++) {
             String currentCallerName = stackTraceElements[i].getClassName();
             try {
-                Class currentCaller = Class.forName(currentCallerName, false, Thread.currentThread().getContextClassLoader());
+                Class<?> currentCaller = Class.forName(currentCallerName, false, Thread.currentThread().getContextClassLoader());
                 if (!isReflectionFrame(currentCaller)) {
                     caller = currentCaller;
                     break;
@@ -45,7 +48,7 @@ public class ReflectionUtils {
         return caller;
     }
 
-    private static boolean isReflectionFrame(Class c) {
+    private static boolean isReflectionFrame(Class<?> c) {
         if (Constants.JAVA_VERSION < 9 && (MethodAccessor == null || ConstructorAccessor == null)) {
             try {
                 MethodAccessor = Class.forName("sun.reflect.MethodAccessor");

@@ -10,11 +10,14 @@ import java.lang.invoke.MethodType;
 
 import static com.sap.fontus.utils.ConversionUtils.*;
 
-public class IASLookupUtils {
+public final class IASLookupUtils {
     private static final CombinedExcludedLookup lookup = new CombinedExcludedLookup();
     private static final InstrumentationHelper instrumentationHelper = new InstrumentationHelper();
 
-    public static boolean isJdkOrExcluded(Class cls) {
+    private IASLookupUtils() {
+    }
+
+    public static boolean isJdkOrExcluded(Class<?> cls) {
         return lookup.isJdkClass(cls) || lookup.isPackageExcluded(cls);
     }
 

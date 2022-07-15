@@ -1,6 +1,9 @@
 package com.sap.fontus.taintaware.unified;
 
-public class IASCompareProxy {
+public final class IASCompareProxy {
+    private IASCompareProxy() {
+    }
+
     @SuppressWarnings("StringEquality")
     public static boolean compareRefEquals(Object a, Object b) {
         if (a != null && b != null) {

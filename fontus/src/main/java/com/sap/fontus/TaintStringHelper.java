@@ -13,7 +13,10 @@ import java.util.Collections;
 import java.util.List;
 
 @SuppressWarnings({"ClassUnconnectedToPackage", "ClassOnlyUsedInOnePackage"})
-public class TaintStringHelper {
+public final class TaintStringHelper {
+
+    private TaintStringHelper() {
+    }
 
     public static char[] getTaintMethodName() {
         return Configuration.getConfiguration().getTaintMethod().getName().toCharArray();

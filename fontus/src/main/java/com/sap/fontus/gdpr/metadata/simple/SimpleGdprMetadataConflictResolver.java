@@ -27,11 +27,11 @@ public class SimpleGdprMetadataConflictResolver implements GdprMetadataConflictR
     }
 
     private Identifiability combineIdentifiability(Identifiability first, Identifiability second) {
-        return (Identifiability) getMax(first, second);
+        return (Identifiability) this.getMax(first, second);
     }
 
     private ProtectionLevel combineProtectionLevels(ProtectionLevel first, ProtectionLevel second) {
-        return (ProtectionLevel) getMax(first, second);
+        return (ProtectionLevel) this.getMax(first, second);
     }
 
     private Collection<AllowedPurpose> combineAllowedPurposes(Collection<AllowedPurpose> first, Collection<AllowedPurpose> second) {
@@ -41,7 +41,7 @@ public class SimpleGdprMetadataConflictResolver implements GdprMetadataConflictR
             for (AllowedPurpose p2 : second) {
                 if (p1.getAllowedPurpose().equals(p2.getAllowedPurpose())) {
                     // The soonest expiry date
-                    ExpiryDate expiryDate = (ExpiryDate) getMin(p1.getExpiryDate(), p2.getExpiryDate());
+                    ExpiryDate expiryDate = (ExpiryDate) this.getMin(p1.getExpiryDate(), p2.getExpiryDate());
                     // Intersection between sets
                     Set<Vendor> vendors = new HashSet<>(p1.getAllowedVendors());
                     vendors.retainAll(p2.getAllowedVendors());
@@ -59,11 +59,11 @@ public class SimpleGdprMetadataConflictResolver implements GdprMetadataConflictR
         // Metadatum 1
         // Purposes, Recipients -> intersection
         // Expiry -> minimum
-        Collection<AllowedPurpose> allowedPurposes = combineAllowedPurposes(first.getAllowedPurposes(), second.getAllowedPurposes());
+        Collection<AllowedPurpose> allowedPurposes = this.combineAllowedPurposes(first.getAllowedPurposes(), second.getAllowedPurposes());
 
         // Metadatum 2
         // Maximum
-        ProtectionLevel protectionLevel = combineProtectionLevels(first.getProtectionLevel(), second.getProtectionLevel());
+        ProtectionLevel protectionLevel = this.combineProtectionLevels(first.getProtectionLevel(), second.getProtectionLevel());
 
         // Metadatum 3
         // Union
@@ -84,7 +84,7 @@ public class SimpleGdprMetadataConflictResolver implements GdprMetadataConflictR
 
         // Metadatum 7
         // OR
-        Identifiability isIdentifiable = combineIdentifiability(first.isIdentifiable(), second.isIdentifiable());
+        Identifiability isIdentifiable = this.combineIdentifiability(first.isIdentifiable(), second.isIdentifiable());
 
         return new SimpleGdprMetadata(allowedPurposes, protectionLevel, dataSubjects, newId, isQualifiedForPortability, isProcessingUnrestricted, isIdentifiable);
     }

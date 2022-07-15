@@ -28,7 +28,7 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
 
     
     public long getDateHeader(String name) {
-        return 0;
+        return 0L;
     }
 
     
@@ -37,12 +37,12 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
     }
 
     
-    public Enumeration getHeaders(String name) {
+    public Enumeration<?> getHeaders(String name) {
         return null;
     }
 
     
-    public Enumeration getHeaderNames() {
+    public Enumeration<?> getHeaderNames() {
         return null;
     }
 
@@ -102,7 +102,7 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
     }
 
     public String getRequestURIString() {
-        return getRequestURI().getString();
+        return this.getRequestURI().getString();
     }
     
     public IASStringBuffer getRequestURL() {
@@ -148,15 +148,15 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
         if (name == null) {
             return null;
         }
-        return getAttribute(new IASString(name));
+        return this.getAttribute(new IASString(name));
     }
     
     public Object getAttribute(IASString name) {
-        return (Object) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod(), name);
+        return this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod(), name);
     }
 
-    public Enumeration getAttributeNames() {
-        return (Enumeration) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod());
+    public Enumeration<?> getAttributeNames() {
+        return (Enumeration<?>) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod());
     }
 
     
@@ -185,7 +185,7 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
 	if (name == null) {
 	    return null;
 	}
-	IASString result = getParameter(new IASString(name));
+	IASString result = this.getParameter(new IASString(name));
 	if (result == null) {
 	    return null;
 	}
@@ -197,8 +197,8 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
     }
 
     
-    public Enumeration getParameterNames() {
-        return (Enumeration) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod());
+    public Enumeration<?> getParameterNames() {
+        return (Enumeration<?>) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod());
     }
 
     
@@ -248,7 +248,7 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
 
     
     public void setAttribute(String name, Object o) {
-        setAttribute(new IASString(name), o);
+        this.setAttribute(new IASString(name), o);
     }
 
     public void setAttribute(IASString name, Object o) {
@@ -265,7 +265,7 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
     }
 
     
-    public Enumeration getLocales() {
+    public Enumeration<?> getLocales() {
         return null;
     }
 
@@ -319,7 +319,7 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
 	    sb.append("URI: " + this.getRequestURI());
 	    sb.append(System.getProperty("line.separator"));
 
-	    Enumeration e = this.getParameterNames();
+	    Enumeration<?> e = this.getParameterNames();
 	    sb.append("Query Parameters:");
 	    sb.append(System.getProperty("line.separator"));
 	    if (e == null) {
@@ -336,7 +336,7 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
 	    }
 	    sb.append(System.getProperty("line.separator"));
 
-	    Enumeration a = this.getAttributeNames();
+	    Enumeration<?> a = this.getAttributeNames();
 	    sb.append("Attributes:");
 	    sb.append(System.getProperty("line.separator"));
 	    if (a == null) {

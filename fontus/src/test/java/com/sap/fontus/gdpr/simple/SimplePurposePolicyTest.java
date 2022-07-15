@@ -14,30 +14,30 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SimplePurposePolicyTest {
 
-    private Purpose p1 = new SimplePurpose(1, "logging");
-    private Purpose p2 = new SimplePurpose(2, "storage");
-    private Purpose p3 = new SimplePurpose(2, "profiling");
+    private final Purpose p1 = new SimplePurpose(1, "logging");
+    private final Purpose p2 = new SimplePurpose(2, "storage");
+    private final Purpose p3 = new SimplePurpose(2, "profiling");
 
-    private Vendor v1 = new SimpleVendor(1, "Acme");
-    private Vendor v2 = new SimpleVendor(2, "Bodgit Ltd.");
-    private Vendor v3 = new SimpleVendor(3, "E-Corp");
+    private final Vendor v1 = new SimpleVendor(1, "Acme");
+    private final Vendor v2 = new SimpleVendor(2, "Bodgit Ltd.");
+    private final Vendor v3 = new SimpleVendor(3, "E-Corp");
 
     @Test
     public void purposePolicyTestOk() {
 
         SimpleRequiredPurposes required = new SimpleRequiredPurposes();
         // Required Vendors
-        required.addVendor(v1);
+        required.addVendor(this.v1);
         // Required Purposes
-        required.addPurpose(p1);
+        required.addPurpose(this.p1);
 
         Collection<AllowedPurpose> allowed = new ArrayList<>();
         Set<Vendor> allowedVendors = new HashSet<>();
 
         // Allowed Vendors
-        allowedVendors.add(v1);
+        allowedVendors.add(this.v1);
         // Allowed Purpose
-        allowed.add(new SimpleAllowedPurpose(new SimpleExpiryDate(), p1, allowedVendors));
+        allowed.add(new SimpleAllowedPurpose(new SimpleExpiryDate(), this.p1, allowedVendors));
 
         PurposePolicy policy = new SimplePurposePolicy();
         assertTrue(policy.areRequiredPurposesAllowed(required, allowed));
@@ -48,17 +48,17 @@ public class SimplePurposePolicyTest {
 
         SimpleRequiredPurposes required = new SimpleRequiredPurposes();
         // Required Vendors
-        required.addVendor(v1);
+        required.addVendor(this.v1);
         // Required Purposes
-        required.addPurpose(p2);
+        required.addPurpose(this.p2);
 
         Collection<AllowedPurpose> allowed = new ArrayList<>();
         Set<Vendor> allowedVendors = new HashSet<>();
 
         // Allowed Vendors
-        allowedVendors.add(v1);
+        allowedVendors.add(this.v1);
         // Allowed Purpose
-        allowed.add(new SimpleAllowedPurpose(new SimpleExpiryDate(), p1, allowedVendors));
+        allowed.add(new SimpleAllowedPurpose(new SimpleExpiryDate(), this.p1, allowedVendors));
 
         PurposePolicy policy = new SimplePurposePolicy();
         assertFalse(policy.areRequiredPurposesAllowed(required, allowed));
@@ -68,18 +68,18 @@ public class SimplePurposePolicyTest {
     public void purposePolicyTestOneOfTwoPurposesNotAllowed() {
         SimpleRequiredPurposes required = new SimpleRequiredPurposes();
         // Required Vendors
-        required.addVendor(v1);
+        required.addVendor(this.v1);
         // Required Purposes
-        required.addPurpose(p1);
-        required.addPurpose(p2);
+        required.addPurpose(this.p1);
+        required.addPurpose(this.p2);
 
         Collection<AllowedPurpose> allowed = new ArrayList<>();
         Set<Vendor> allowedVendors = new HashSet<>();
 
         // Allowed Vendors
-        allowedVendors.add(v1);
+        allowedVendors.add(this.v1);
         // Allowed Purpose
-        allowed.add(new SimpleAllowedPurpose(new SimpleExpiryDate(), p1, allowedVendors));
+        allowed.add(new SimpleAllowedPurpose(new SimpleExpiryDate(), this.p1, allowedVendors));
 
         PurposePolicy policy = new SimplePurposePolicy();
         assertFalse(policy.areRequiredPurposesAllowed(required, allowed));
@@ -89,19 +89,19 @@ public class SimplePurposePolicyTest {
     public void purposePolicyTestTwoPurposesAllowed() {
         SimpleRequiredPurposes required = new SimpleRequiredPurposes();
         // Required Vendors
-        required.addVendor(v1);
+        required.addVendor(this.v1);
         // Required Purposes
-        required.addPurpose(p1);
-        required.addPurpose(p2);
+        required.addPurpose(this.p1);
+        required.addPurpose(this.p2);
 
         Collection<AllowedPurpose> allowed = new ArrayList<>();
         Set<Vendor> allowedVendors = new HashSet<>();
 
         // Allowed Vendors
-        allowedVendors.add(v1);
+        allowedVendors.add(this.v1);
         // Allowed Purpose
-        allowed.add(new SimpleAllowedPurpose(new SimpleExpiryDate(), p1, allowedVendors));
-        allowed.add(new SimpleAllowedPurpose(new SimpleExpiryDate(), p2, allowedVendors));
+        allowed.add(new SimpleAllowedPurpose(new SimpleExpiryDate(), this.p1, allowedVendors));
+        allowed.add(new SimpleAllowedPurpose(new SimpleExpiryDate(), this.p2, allowedVendors));
 
         PurposePolicy policy = new SimplePurposePolicy();
         assertTrue(policy.areRequiredPurposesAllowed(required, allowed));
@@ -112,17 +112,17 @@ public class SimplePurposePolicyTest {
 
         SimpleRequiredPurposes required = new SimpleRequiredPurposes();
         // Required Vendors
-        required.addVendor(v2);
+        required.addVendor(this.v2);
         // Required Purposes
-        required.addPurpose(p2);
+        required.addPurpose(this.p2);
 
         Collection<AllowedPurpose> allowed = new ArrayList<>();
         Set<Vendor> allowedVendors = new HashSet<>();
 
         // Allowed Vendors
-        allowedVendors.add(v1);
+        allowedVendors.add(this.v1);
         // Allowed Purpose
-        allowed.add(new SimpleAllowedPurpose(new SimpleExpiryDate(), p1, allowedVendors));
+        allowed.add(new SimpleAllowedPurpose(new SimpleExpiryDate(), this.p1, allowedVendors));
 
         PurposePolicy policy = new SimplePurposePolicy();
         assertFalse(policy.areRequiredPurposesAllowed(required, allowed));
@@ -133,18 +133,18 @@ public class SimplePurposePolicyTest {
 
         SimpleRequiredPurposes required = new SimpleRequiredPurposes();
         // Required Vendors
-        required.addVendor(v1);
-        required.addVendor(v2);
+        required.addVendor(this.v1);
+        required.addVendor(this.v2);
         // Required Purposes
-        required.addPurpose(p2);
+        required.addPurpose(this.p2);
 
         Collection<AllowedPurpose> allowed = new ArrayList<>();
         Set<Vendor> allowedVendors = new HashSet<>();
 
         // Allowed Vendors
-        allowedVendors.add(v1);
+        allowedVendors.add(this.v1);
         // Allowed Purpose
-        allowed.add(new SimpleAllowedPurpose(new SimpleExpiryDate(), p1, allowedVendors));
+        allowed.add(new SimpleAllowedPurpose(new SimpleExpiryDate(), this.p1, allowedVendors));
 
         PurposePolicy policy = new SimplePurposePolicy();
         assertFalse(policy.areRequiredPurposesAllowed(required, allowed));
@@ -155,19 +155,19 @@ public class SimplePurposePolicyTest {
 
         SimpleRequiredPurposes required = new SimpleRequiredPurposes();
         // Required Vendors
-        required.addVendor(v1);
-        required.addVendor(v2);
+        required.addVendor(this.v1);
+        required.addVendor(this.v2);
         // Required Purposes
-        required.addPurpose(p1);
+        required.addPurpose(this.p1);
 
         Collection<AllowedPurpose> allowed = new ArrayList<>();
         Set<Vendor> allowedVendors = new HashSet<>();
 
         // Allowed Vendors
-        allowedVendors.add(v1);
-        allowedVendors.add(v2);
+        allowedVendors.add(this.v1);
+        allowedVendors.add(this.v2);
         // Allowed Purpose
-        allowed.add(new SimpleAllowedPurpose(new SimpleExpiryDate(), p1, allowedVendors));
+        allowed.add(new SimpleAllowedPurpose(new SimpleExpiryDate(), this.p1, allowedVendors));
 
         PurposePolicy policy = new SimplePurposePolicy();
         assertTrue(policy.areRequiredPurposesAllowed(required, allowed));

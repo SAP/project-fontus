@@ -15,7 +15,7 @@ public class SingleThreadAgentClassResolver extends BackgroundAgentClassResolver
         // Now wait for shutdown with a timeout
         this.executorService.shutdown();
         try {
-            this.executorService.awaitTermination(5, TimeUnit.MINUTES);
+            this.executorService.awaitTermination(5L, TimeUnit.MINUTES);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

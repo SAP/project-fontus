@@ -446,7 +446,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        return -1;
+        return -1L;
     }
 
     /*

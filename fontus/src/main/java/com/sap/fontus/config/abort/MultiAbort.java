@@ -6,7 +6,7 @@ import java.util.List;
 
 public class MultiAbort extends Abort {
 
-    private List<Abort> aborts;
+    private final List<Abort> aborts;
 
     public MultiAbort(List<Abort> aborts) {
         this.aborts = aborts;
@@ -14,7 +14,7 @@ public class MultiAbort extends Abort {
 
     @Override
     public IASTaintAware abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {
-        for (Abort a : aborts) {
+        for (Abort a : this.aborts) {
             if (a != null) {
                 taintAware = a.abort(taintAware, instance, sinkFunction, sinkName, stackTrace);
             }

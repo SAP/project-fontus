@@ -68,7 +68,7 @@ public class IASTaintInformation implements IASTaintInformationable {
 
     @Override
     public int getLength() {
-        return length;
+        return this.length;
     }
 
     @Override

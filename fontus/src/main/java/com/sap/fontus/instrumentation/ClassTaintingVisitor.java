@@ -163,7 +163,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 
         SpeculativeParallelInstrumenter.getInstance().submitSpeculativeInstrumentation(internalName, this.loader);
 
-        return this.instrumentationHelper.instrumentFieldInstruction(this.visitor, access, name, descriptor, signature, value, (n, d, v) -> staticFinalFields.add(FieldData.of(n, d, v))).orElse(null);
+        return this.instrumentationHelper.instrumentFieldInstruction(this.visitor, access, name, descriptor, signature, value, (n, d, v) -> this.staticFinalFields.add(FieldData.of(n, d, v))).orElse(null);
     }
 
 
@@ -195,7 +195,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 
         String instrumentedSignature = this.signatureInstrumenter.instrumentSignature(signature);
         MethodVisitor mv;
-        Method method = new Method(access, owner, name, descriptor, signature, exceptions, this.isInterface);
+        Method method = new Method(access, this.owner, name, descriptor, signature, exceptions, this.isInterface);
         String desc = descriptor;
         String newName = name;
         // Purge all final methods
@@ -219,11 +219,11 @@ class ClassTaintingVisitor extends ClassVisitor {
             mv = super.visitMethod(access, Constants.MainWrapper, this.newMainDescriptor, signature, exceptions);
             newName = Constants.MainWrapper;
             desc = this.newMainDescriptor;
-        } else if (!this.isAnnotation && overridesJdkSuperMethod(method) && shouldBeInstrumented(descriptor)) {
+        } else if (!this.isAnnotation && this.overridesJdkSuperMethod(method) && this.shouldBeInstrumented(descriptor)) {
             int newAccess = access & ~Opcodes.ACC_ABSTRACT;
             MethodVisitor v = super.visitMethod(newAccess, name, descriptor, signature, exceptions);
 
-            this.overriddenJdkMethods.add(overriddenJdkSuperMethod(method));
+            this.overriddenJdkMethods.add(this.overriddenJdkSuperMethod(method));
 
             this.generateProxyToInstrumented(v, newName, Descriptor.parseDescriptor(descriptor), null, Optional.empty());
 
@@ -239,7 +239,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             int newAccess = instrumentedAccess & ~Opcodes.ACC_ABSTRACT;
             MethodVisitor v = super.visitMethod(newAccess, name, descriptor, signature, exceptions);
 
-            this.overriddenJdkMethods.add(overriddenJdkSuperMethod(method));
+            this.overriddenJdkMethods.add(this.overriddenJdkSuperMethod(method));
 
             this.generateProxyToInstrumented(v, newName, Descriptor.parseDescriptor(descriptor), null, Optional.empty());
             return null;
@@ -283,7 +283,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         for (int i = 0; i < instrumentedDescriptor.parameterCount(); i++) {
             String param = originalDescriptor.getParameters().get(i + diff);
             mv.visitVarInsn(loadCodeByType(param), register);
-            if (isDescriptorNameToInstrument(param) && !param.equals(instrumentedDescriptor.getParameters().get(i))) {
+            if (this.isDescriptorNameToInstrument(param) && !param.equals(instrumentedDescriptor.getParameters().get(i))) {
                 Type instrumentedType = Type.getType(this.instrumentationHelper.instrumentQN(param));
                 Type source = Type.getType(param);
                 TaintingUtils.convertTypeToTainted(source, instrumentedType, mv);
@@ -311,7 +311,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
 
         mv.visitMethodInsn(opcode, owner, instrumentedName, instrumentedDescriptor.toDescriptor(), opcode == Opcodes.INVOKEINTERFACE);
-        if (isDescriptorNameToInstrument(originalDescriptor.getReturnType())) {
+        if (this.isDescriptorNameToInstrument(originalDescriptor.getReturnType())) {
             TaintingUtils.convertTypeToUntainted(instrumentedDescriptor.getReturnType(), originalDescriptor.getReturnType(), mv);
         }
 
@@ -326,7 +326,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitEnd();
     }
 
-    private int calculateDescArrayDimensions(String descriptor) {
+    private static int calculateDescArrayDimensions(String descriptor) {
         int counter = 0;
         for (int i = descriptor.indexOf('['); i >= 0; i = descriptor.indexOf('[', i + 1)) {
             counter++;
@@ -334,11 +334,11 @@ class ClassTaintingVisitor extends ClassVisitor {
         return counter;
     }
 
-    private int loadCodeByType(String type) {
+    private static int loadCodeByType(String type) {
         return Type.getType(type).getOpcode(Opcodes.ILOAD);
     }
 
-    private int returnCodeByReturnType(String returnTypeDescriptor) {
+    private static int returnCodeByReturnType(String returnTypeDescriptor) {
         return Type.getType(returnTypeDescriptor).getOpcode(Opcodes.IRETURN);
     }
 
@@ -498,8 +498,8 @@ class ClassTaintingVisitor extends ClassVisitor {
     private void declareMissingJdkMethods() {
         List<Method> methods = this.jdkMethods
                 .stream()
-                .filter(method -> !containsOverriddenJdkMethod(method))
-                .filter(method -> shouldBeInstrumented(method.getDescriptor()))
+                .filter(method -> !this.containsOverriddenJdkMethod(method))
+                .filter(method -> this.shouldBeInstrumented(method.getDescriptor()))
                 .filter(method -> !Modifier.isStatic(method.getAccess()))
                 .filter(method -> !MethodUtils.isToString(method.getName(), method.getDescriptor()))
                 .collect(Collectors.toList());
@@ -530,8 +530,8 @@ class ClassTaintingVisitor extends ClassVisitor {
         Object comparator;
         List<Method> methods = this.jdkMethods
                 .stream()
-                .filter(method -> !containsOverriddenJdkMethod(method))
-                .filter(method -> shouldBeInstrumented(method.getDescriptor()))
+                .filter(method -> !this.containsOverriddenJdkMethod(method))
+                .filter(method -> this.shouldBeInstrumented(method.getDescriptor()))
                 //.filter(method -> !Modifier.isStatic(method.getAccess()))
                 .collect(Collectors.toList());
         methods.forEach(this::createInstrumentedJdkProxy);
@@ -604,7 +604,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         int diff = originalDescriptor.parameterCount() - instrumentedDescriptor.parameterCount();
         for (int i = 0; i < instrumentedDescriptor.parameterCount(); i++) {
             String param = originalDescriptor.getParameters().get(i + diff);
-            mv.visitVarInsn(this.loadCodeByType(param), register);
+            mv.visitVarInsn(loadCodeByType(param), register);
             if (this.isDescriptorNameToInstrument(param) && !param.equals(instrumentedDescriptor.getParameters().get(i))) {
                 Type instrumentedType = Type.getType(this.instrumentationHelper.instrumentQN(param));
                 Type uninstrumentedType = Type.getType(param);
@@ -623,7 +623,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
 
 
-        int returnCode = this.returnCodeByReturnType(originalDescriptor.getReturnType());
+        int returnCode = returnCodeByReturnType(originalDescriptor.getReturnType());
 
         mv.visitInsn(returnCode);
         mv.visitMaxs(originalDescriptor.parameterCount() + 1, originalDescriptor.parameterCount() + 1);
@@ -679,7 +679,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         for (int i = 0; i < origDescriptor.parameterCount(); i++) {
             String param = origDescriptor.getParameters().get(i);
             // Creating new Object if necessary and duplicating it for initialization
-            if (isDescriptorNameToInstrument(param)) {
+            if (this.isDescriptorNameToInstrument(param)) {
                 mv.visitVarInsn(loadCodeByType(param), idx);
                 Type instrumentedParam = Type.getType(this.instrumentationHelper.instrumentQN(param));
                 Type origParam = Type.getType(param);
@@ -706,7 +706,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.superName, m.getName(), origDescriptor.toDescriptor(), false);
 
         // Converting the return type back
-        if (isDescriptorNameToInstrument(origDescriptor.getReturnType())) {
+        if (this.isDescriptorNameToInstrument(origDescriptor.getReturnType())) {
             Type returnType = Type.getType(this.instrumentationHelper.instrumentQN(origDescriptor.getReturnType()));
 
             int arrayDimensions = calculateDescArrayDimensions(returnType.getInternalName());
@@ -736,7 +736,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             }
         }
 
-        mv.visitInsn(this.returnCodeByReturnType(instrumentedDescriptor.getReturnType()));
+        mv.visitInsn(returnCodeByReturnType(instrumentedDescriptor.getReturnType()));
         mv.visitMaxs(Constants.MAX_STACK_DEFAULT, Constants.MAX_LOCALS_DEFAULT);
         mv.visitEnd();
     }
@@ -750,7 +750,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         for (int i = 0; i < origDescriptor.parameterCount(); i++) {
             String param = origDescriptor.getParameters().get(i);
             // Creating new Object if necessary and duplicating it for initialization
-            if (isDescriptorNameToInstrument(param)) {
+            if (this.isDescriptorNameToInstrument(param)) {
                 mv.visitVarInsn(loadCodeByType(param), idx);
                 Type instrumentedParam = Type.getType(this.instrumentationHelper.instrumentQN(param));
                 Type origParam = Type.getType(param);
@@ -778,7 +778,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.superName, m.getName(), origDescriptor.toDescriptor(), false);
 
         // Converting the return type back
-        if (isDescriptorNameToInstrument(origDescriptor.getReturnType())) {
+        if (this.isDescriptorNameToInstrument(origDescriptor.getReturnType())) {
             Type returnType = Type.getType(this.instrumentationHelper.instrumentQN(origDescriptor.getReturnType()));
 
             int arrayDimensions = calculateDescArrayDimensions(returnType.getInternalName());
@@ -824,7 +824,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         mv.visitCode();
 
         // Setup configuration if offline instrumentation
-        if (config.isOfflineInstrumentation() && !config.isHybridMode()) {
+        if (this.config.isOfflineInstrumentation() && !this.config.isHybridMode()) {
             org.objectweb.asm.commons.Method parseOffline;
             try {
                 parseOffline = org.objectweb.asm.commons.Method.getMethod(Configuration.class.getMethod("parseOffline", TaintMethod.class));
@@ -897,7 +897,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     }
 
     private boolean overridesJdkSuperMethod(Method m) {
-        return overriddenJdkSuperMethod(m) != null;
+        return this.overriddenJdkSuperMethod(m) != null;
     }
 
     private Method overriddenJdkSuperMethod(Method m) {

@@ -12,7 +12,7 @@ public class Vendor {
     }
 
     public Vendor() {
-        this.name = new String();
+        this.name = "";
     }
 
     public String getName() {
@@ -22,7 +22,7 @@ public class Vendor {
     @Override
     public String toString() {
         return "Vendor{" +
-                "name='" + name + '\'' +
+                "name='" + this.name + '\'' +
                 '}';
     }
 }

@@ -26,28 +26,28 @@ public class SimplePurpose extends PurposeBase {
     public SimplePurpose(int id, String name) {
         this.id = id;
         this.name = name;
-        this.description = new String();
-        this.legal = new String();
+        this.description = "";
+        this.legal = "";
     }
 
     @Override
     public int getId() {
-        return id;
+        return this.id;
     }
 
     @Override
     public String getName() {
-        return name;
+        return this.name;
     }
 
     @Override
     public String getDescription() {
-        return description;
+        return this.description;
     }
 
     @Override
     public String getLegalDescription() {
-        return legal;
+        return this.legal;
     }
 
     public void setDescription(String description) { this.description = description; }

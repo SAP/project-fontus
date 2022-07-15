@@ -2,7 +2,10 @@ package com.sap.fontus.utils;
 
 import java.lang.invoke.*;
 
-public class LambdaMetafactory {
+public final class LambdaMetafactory {
+    private LambdaMetafactory() {
+    }
+
     public static CallSite metafactory(
             MethodHandles.Lookup caller,
             String invokedName,
@@ -11,9 +14,7 @@ public class LambdaMetafactory {
             MethodHandle implMethod,
             MethodType instantiatedMethodType) throws LambdaConversionException {
 
-        CallSite cs = java.lang.invoke.LambdaMetafactory.metafactory(caller, invokedName, invokedType, samMethodType, implMethod, instantiatedMethodType);
-
-        return cs;
+        return java.lang.invoke.LambdaMetafactory.metafactory(caller, invokedName, invokedType, samMethodType, implMethod, instantiatedMethodType);
     }
 
     public static CallSite altMetafactory(MethodHandles.Lookup caller, String invokedName, MethodType invokedType, Object... args) throws LambdaConversionException {

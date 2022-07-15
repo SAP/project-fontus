@@ -53,11 +53,11 @@ public class MethodParameterTransformer {
     }
 
     public boolean needsTransformation() {
-        return needsParameterTransformation() || needsReturnTransformation();
+        return this.needsParameterTransformation() || this.needsReturnTransformation();
     }
 
     public boolean needsParameterTransformation() {
-        for (ParameterTransformation p : paramTransformations) {
+        for (ParameterTransformation p : this.paramTransformations) {
             List<String> paramList = new ArrayList<>(this.descriptor.getParameters());
             for (int i = 0; i < paramList.size(); i++) {
                 String pName = paramList.get(i);
@@ -70,7 +70,7 @@ public class MethodParameterTransformer {
     }
 
     public boolean needsParametersAsLocalVariables() {
-        for (ReturnTransformation r : returnTransformations) {
+        for (ReturnTransformation r : this.returnTransformations) {
             if (r.requireParameterVariableLocals()) {
                 return true;
             }
@@ -79,8 +79,8 @@ public class MethodParameterTransformer {
     }
 
     public boolean needsReturnTransformation() {
-        for (ReturnTransformation r : returnTransformations) {
-            if (r.requiresReturnTransformation(descriptor)) {
+        for (ReturnTransformation r : this.returnTransformations) {
+            if (r.requiresReturnTransformation(this.descriptor)) {
                 return true;
             }
         }

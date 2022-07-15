@@ -40,15 +40,15 @@ public class LambdaCall implements Serializable {
     }
 
     public Type getFunctionalInterface() {
-        return functionalInterface;
+        return this.functionalInterface;
     }
 
     public FunctionCall getImplementation() {
-        return implementation;
+        return this.implementation;
     }
 
     public Handle getImplementationHandle() {
-        return implementationHandle;
+        return this.implementationHandle;
     }
 
     public Descriptor getProxyDescriptor(ClassLoader loader, InstrumentationHelper instrumentationHelper) {

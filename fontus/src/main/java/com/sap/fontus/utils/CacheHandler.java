@@ -22,7 +22,7 @@ public enum CacheHandler {
         if(!this.cacheFolder.exists()) {
             this.cacheFolder.mkdirs();
         }
-        populate();
+        this.populate();
     }
 
     public static CacheHandler get() {

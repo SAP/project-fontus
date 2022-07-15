@@ -81,7 +81,7 @@ public final class AnnotationLookup {
         // Not necessary anymore as every Class which was loaded was registered in the AnnotationLookup by the TaintingTransformer
         // Try again using the class via reflection
         if (!isAnnotation) {
-            if (combinedExcludedLookup.isJdkClass(className)) {
+            if (this.combinedExcludedLookup.isJdkClass(className)) {
                 Class<?> cls = ClassUtils.findLoadedClass(className);
                 if (cls != null) {
                     if (cls.isAnnotation()) {

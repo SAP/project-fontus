@@ -20,7 +20,7 @@ public class PurposeRegistry extends GenericRegistry<Purpose> {
     }
 
     public synchronized Purpose getOrRegisterObject(String name, String description, String legal) {
-        for (Purpose o : objects) {
+        for (Purpose o : this.objects) {
             if (o.getName().equals(name)) {
                 return o;
             }

@@ -28,11 +28,11 @@ class JarOutputStreamWriter implements Consumer<Pair<JarEntry, byte[]>> {
 
     private synchronized void writeJarEntry(JarEntry jeo, byte[] bytes) {
         try {
-            jos.putNextEntry(jeo);
+            this.jos.putNextEntry(jeo);
             if (bytes != null) {
-                copySingleEntry(new ByteArrayInputStream(bytes), jos);
+                copySingleEntry(new ByteArrayInputStream(bytes), this.jos);
             }
-            jos.closeEntry();
+            this.jos.closeEntry();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

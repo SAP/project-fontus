@@ -7,7 +7,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-public class XMLBeanClassNameConverter {
+public final class XMLBeanClassNameConverter {
+    private XMLBeanClassNameConverter() {
+    }
+
     public static Document replaceStringClass(Document document) {
         replaceStringClassInNode(document);
         return document;

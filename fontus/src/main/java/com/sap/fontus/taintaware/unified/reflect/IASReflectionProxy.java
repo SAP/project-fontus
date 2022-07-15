@@ -5,7 +5,10 @@ import com.sap.fontus.utils.ConversionUtils;
 
 import java.lang.reflect.Method;
 
-public class IASReflectionProxy {
+public final class IASReflectionProxy {
+    private IASReflectionProxy() {
+    }
+
     public static Object handleInvocationProxyCall(Object result, Object proxy, Method method, Object[] args) {
         if (method.getReturnType().equals(String.class) || method.getReturnType().equals(String[].class)) {
             if (result instanceof IASString) {

@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ReflectionUtilsTest {
     @Test
     public void testGetCallerClass() {
-        Class caller = getCallerClass();
+        Class caller = this.getCallerClass();
 
         assertEquals(ReflectionUtilsTest.class, caller);
     }
@@ -24,7 +24,7 @@ public class ReflectionUtilsTest {
         assertEquals(ReflectionUtilsTest.class, caller);
     }
 
-    private Class getCallerClass() {
+    private Class<?> getCallerClass() {
         return ReflectionUtils.getCallerClass();
     }
 }

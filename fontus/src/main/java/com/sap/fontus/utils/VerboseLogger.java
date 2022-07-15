@@ -8,8 +8,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class VerboseLogger {
+public final class VerboseLogger {
     private static final Logger logger = LogUtils.getLogger();
+
+    private VerboseLogger() {
+    }
 
     public static void saveIfVerbose(String className, byte[] outArray) {
         if (Configuration.getConfiguration().isVerbose()) {

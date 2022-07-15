@@ -16,7 +16,7 @@ public class SimplePurposePolicy implements PurposePolicy {
             // This must appear in the allowed list
             for (AllowedPurpose a : allowed) {
                 // Check consent has not expired
-                if (!hasExpired(a.getExpiryDate())) {
+                if (!this.hasExpired(a.getExpiryDate())) {
                     // Check whether the required purpose is in the list of allowed purposes
                     if (a.getAllowedPurpose().equals(r)) {
                         // Check that we allow all vendors which are required
@@ -37,9 +37,7 @@ public class SimplePurposePolicy implements PurposePolicy {
 
     private boolean hasExpired(ExpiryDate date) {
         if (date.hasExpiry()) {
-            if (date.getDate().isBefore(Instant.now())) {
-                return true;
-            }
+            return date.getDate().isBefore(Instant.now());
         }
         return false;
     }

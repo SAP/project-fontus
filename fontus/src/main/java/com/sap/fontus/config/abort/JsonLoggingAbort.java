@@ -22,14 +22,14 @@ public class JsonLoggingAbort extends Abort {
         AbortObject abort = new AbortObject(sinkFunction, sinkName, taintedString.getString(),
                 taintedString.getTaintInformationInitialized().getTaintRanges(taintedString.length()),
                 convertStackTrace(stackTrace));
-        previousAborts.add(abort);
-        saveAborts();
+        this.previousAborts.add(abort);
+        this.saveAborts();
         return taintAware;
     }
 
     private void saveAborts() {
         try {
-            this.objectMapper.writeValue(Configuration.getConfiguration().getAbortOutputFile(), previousAborts);
+            this.objectMapper.writeValue(Configuration.getConfiguration().getAbortOutputFile(), this.previousAborts);
         } catch (IOException e) {
             e.printStackTrace();
         }

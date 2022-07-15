@@ -40,11 +40,11 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     /**
      * Some methods are not handled in a generic fashion, one can defined specialized proxies here
      */
-    private final static Map<FunctionCall, FunctionCall> methodProxies = new HashMap<>();
+    private static final Map<FunctionCall, FunctionCall> methodProxies = new HashMap<>();
     /**
      * Some dynamic method invocations can't be handled generically. Add proxy functions here.
      */
-    private final static Map<ProxiedDynamicFunctionEntry, Runnable> dynProxies = new HashMap<>();
+    private static final Map<ProxiedDynamicFunctionEntry, Runnable> dynProxies = new HashMap<>();
     private final String ownerSuperClass;
     private final List<LambdaCall> jdkLambdaMethodProxies;
     private final boolean isOwnerInterface;
@@ -65,7 +65,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
      * If a method which is part of an interface should be proxied, place it here
      * The owner should be the interface
      */
-    private final static Map<FunctionCall, FunctionCall> methodInterfaceProxies = new HashMap<>();
+    private static final Map<FunctionCall, FunctionCall> methodInterfaceProxies = new HashMap<>();
     private final ClassLoader loader;
 
     public MethodTaintingVisitor(int acc, String owner, String name, String methodDescriptor, MethodVisitor methodVisitor, IClassResolver resolver, Configuration config, boolean implementsInvocationHandler, InstrumentationHelper instrumentationHelper, CombinedExcludedLookup combinedExcludedLookup, List<DynamicCall> bootstrapMethods, List<LambdaCall> jdkLambdaMethodProxies, String ownerSuperClass, ClassLoader loader, boolean isOwnerInterface, com.sap.fontus.instrumentation.Method caller) {
@@ -304,20 +304,20 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         if (this.combinedExcludedLookup.isJdkClass(owner) && this.instrumentationHelper.canHandleType(descriptor)) {
             if ((opcode == Opcodes.PUTFIELD || opcode == Opcodes.PUTSTATIC)) {
-                mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
-                mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(descriptor).getInternalName());
-                mv.visitFieldInsn(opcode, owner, name, descriptor);
+                this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
+                this.mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(descriptor).getInternalName());
+                this.mv.visitFieldInsn(opcode, owner, name, descriptor);
             } else {
-                mv.visitFieldInsn(opcode, owner, name, descriptor);
-                mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
+                this.mv.visitFieldInsn(opcode, owner, name, descriptor);
+                this.mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
                 Type fieldType = Type.getType(descriptor);
                 String instrumentedFieldDescriptor = this.instrumentationHelper.instrumentQN(fieldType.getInternalName());
-                mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedFieldDescriptor);
+                this.mv.visitTypeInsn(Opcodes.CHECKCAST, instrumentedFieldDescriptor);
             }
             return;
         }
 
-        if (this.instrumentationHelper.instrumentFieldIns(mv, opcode, owner, name, descriptor)) {
+        if (this.instrumentationHelper.instrumentFieldIns(this.mv, opcode, owner, name, descriptor)) {
             return;
         }
     }
@@ -580,7 +580,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         MethodParameterTransformer transformer = new MethodParameterTransformer(this, call);
 
         // Add Sink transformations
-        Sink sink = this.config.getSinkConfig().getSinkForFunction(uninstrumentedCall, new Position(owner, name, line));
+        Sink sink = this.config.getSinkConfig().getSinkForFunction(uninstrumentedCall, new Position(this.owner, this.name, this.line));
         if (sink != null) {
 	    System.out.println("Adding IASString sink: " + uninstrumentedCall.getOwner() + uninstrumentedCall.getName() + uninstrumentedCall.getDescriptor());
             logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(uninstrumentedCall.getOpcode()), uninstrumentedCall.getOwner(), uninstrumentedCall.getName(), uninstrumentedCall.getDescriptor());
@@ -624,7 +624,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             transformer.addReturnTransformation(new AlwaysApplyReturnGenericTransformer(converter));
         }
 
-        if (config.needsParameterConversion(call)) {
+        if (this.config.needsParameterConversion(call)) {
             // Always apply transformation for the parameters as well (even JDK classes)
             transformer.addParameterTransformation(new RegularParameterTransformer(call, this.instrumentationHelper, this.config));
         }
@@ -639,14 +639,14 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         // Add Source transformations
         Source source = this.config.getSourceConfig().getSourceForFunction(call);
-        if ((source != null) && (source.isAllowedCaller(caller.toFunctionCall()))) {
+        if ((source != null) && (source.isAllowedCaller(this.caller.toFunctionCall()))) {
             logger.info("Adding source tainting for [{}] {}.{}{} for caller {}.{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor(), this.caller.getOwner(), this.caller.getName());
             SourceTransformer t = new SourceTransformer(source, this.used);
             transformer.addReturnTransformation(t);
         }
 
         // Add Sink transformations
-        Sink sink = this.config.getSinkConfig().getSinkForFunction(call, new Position(owner, name, line));
+        Sink sink = this.config.getSinkConfig().getSinkForFunction(call, new Position(this.owner, this.name, this.line));
         if (sink != null) {
             logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
             SinkTransformer t = new SinkTransformer(sink, this.instrumentationHelper, this.used);
@@ -745,7 +745,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
                 call.setConcreteImplementationType(desc.getArgumentTypes().length == 1 ? desc.getArgumentTypes()[0] : null);
             }
 
-            MethodTaintingUtils.invokeVisitLambdaCall(this.getParentVisitor(), this.instrumentationHelper, call.getProxyDescriptor(this.loader, this.instrumentationHelper), call, this.owner, name, descriptor, isOwnerInterface, bootstrapMethodHandle, bootstrapMethodArguments);
+            MethodTaintingUtils.invokeVisitLambdaCall(this.getParentVisitor(), this.instrumentationHelper, call.getProxyDescriptor(this.loader, this.instrumentationHelper), call, this.owner, name, descriptor, this.isOwnerInterface, bootstrapMethodHandle, bootstrapMethodArguments);
 
             if (MethodTaintingUtils.needsLambdaProxy(descriptor, realFunction, (Type) bootstrapMethodArguments[2], this.instrumentationHelper)) {
                 this.jdkLambdaMethodProxies.add(call);
@@ -838,7 +838,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             if (this.combinedExcludedLookup.isJdkClass(pfe.getOwner())) {
                 for (FunctionCall mip : methodInterfaceProxies.keySet()) {
                     if (pfe.getName().equals(mip.getName()) && pfe.getDescriptor().equals(mip.getDescriptor())) {
-                        if (thisOrSuperQNEquals(pfe.getOwner(), mip.getOwner())) {
+                        if (this.thisOrSuperQNEquals(pfe.getOwner(), mip.getOwner())) {
                             logger.info("Proxying interface call to {}.{}{}", pfe.getOwner(), pfe.getName(), pfe.getDescriptor());
                             FunctionCall pf = methodInterfaceProxies.get(mip);
                             return pf;

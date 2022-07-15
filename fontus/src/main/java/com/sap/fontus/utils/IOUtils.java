@@ -1,10 +1,14 @@
 package com.sap.fontus.utils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IOUtils {
+public final class IOUtils {
+    private IOUtils() {
+    }
+
     public static byte[] readStream(InputStream inputStream) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
@@ -24,8 +28,7 @@ public class IOUtils {
         }
 
         if (!output.exists()) {
-            boolean created = output.createNewFile();
-            if (!created) {
+            if (!output.createNewFile()) {
                 throw new IOException("Could not create file: " + output.getAbsolutePath());
             }
         }
@@ -36,7 +39,7 @@ public class IOUtils {
 
         String concatenated = String.join("\n", strings);
 
-        BufferedWriter writer = new BufferedWriter(new FileWriter(output));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(output, StandardCharsets.UTF_8));
 
         writer.write(concatenated);
 
@@ -45,7 +48,7 @@ public class IOUtils {
     }
 
     public static List<String> readAllLines(File file) throws IOException {
-        try(BufferedReader reader = new BufferedReader(new FileReader(file))) {
+        try(BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
             List<String> lines = new ArrayList<>();
             String line;
             while ((line = reader.readLine()) != null) {

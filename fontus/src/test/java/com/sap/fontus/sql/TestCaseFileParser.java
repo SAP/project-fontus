@@ -14,7 +14,7 @@ import java.util.StringJoiner;
 class TestCaseFileParser {
     static List<Arguments> parseTestCases(@SuppressWarnings("SameParameterValue") String filename) throws IOException {
         List<Arguments> testCases = new ArrayList<>();
-        TestCaseFileReader reader = new TestCaseFileReader(filename);
+        TestCaseFileParser.TestCaseFileReader reader = new TestCaseFileParser.TestCaseFileReader(filename);
         while (!reader.isEndOfFile()) {
             String[] lines = reader.readToBlank();
             if (lines.length < 2) {
@@ -37,22 +37,22 @@ class TestCaseFileParser {
     }
 
     private static class TestCaseFileReader {
-        private BufferedReader reader;
+        private final BufferedReader reader;
         private int lineNumber;
         private boolean isEndOfFile;
 
         TestCaseFileReader(String filename) throws FileNotFoundException {
-            reader = new BufferedReader(new FileReader(filename));
+            this.reader = new BufferedReader(new FileReader(filename));
         }
 
         String[] readToBlank() throws IOException {
-            if(isEndOfFile) {
+            if(this.isEndOfFile) {
                 return new String[]{};
             }
 
             List<String> lines = new LinkedList<>();
             while(true) {
-                String line = readLine();
+                String line = this.readLine();
                 if(line == null || line.isEmpty()) {
                     break;
                 }
@@ -63,24 +63,24 @@ class TestCaseFileParser {
         }
 
         boolean isEndOfFile() {
-            return isEndOfFile;
+            return this.isEndOfFile;
         }
 
         void throwOnLine(String message) {
-            String s = String.format("Error on line %s: %s", lineNumber, message);
+            String s = String.format("Error on line %s: %s", this.lineNumber, message);
             throw new RuntimeException(s);
         }
 
         private String readLine() throws IOException {
-            String line = reader.readLine();
+            String line = this.reader.readLine();
             if(line != null) {
-                lineNumber++;
+                this.lineNumber++;
 
                 if(line.startsWith("#")) {
-                    return readLine();
+                    return this.readLine();
                 }
             } else {
-                isEndOfFile = true;
+                this.isEndOfFile = true;
             }
 
             return line;
