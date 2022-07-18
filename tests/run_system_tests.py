@@ -456,7 +456,11 @@ class TestRunner:
         arguments = ["java",
                      "--add-opens",
                      "java.base/jdk.internal.misc=ALL-UNNAMED",
-                     "--illegal-access=permit",
+                     "--add-opens",
+                     "java.base/java.lang.reflect=ALL-UNNAMED",
+                     "--add-opens",
+                     "java.base/jdk.internal.vm.annotation=ALL-UNNAMED"
+#                     "--illegal-access=permit",
                      "-classpath",
                      '.',
                      f'-javaagent:{fontus_jar}=taintmethod={self._config.taintmethod}{verbose}',
@@ -476,6 +480,10 @@ class TestRunner:
                         "java",
                         "--add-opens",
                         "java.base/jdk.internal.misc=ALL-UNNAMED",
+                        "--add-opens",
+                        "java.base/java.lang.reflect=ALL-UNNAMED",
+                        "--add-opens",
+                        "java.base/jdk.internal.vm.annotation=ALL-UNNAMED"
                         f'-javaagent:{fontus_jar}=taintmethod={self._config.taintmethod}{verbose}',
                         '-jar',
                         name
