@@ -112,6 +112,9 @@ shadowJar {
 }*/
 
 //shadowJar.finalizedBy sourcesJar
+test {
+    jvmArgs('--add-opens', 'java.base/jdk.internal.misc=ALL-UNNAMED')
+}
 
 publishing {
     publications {

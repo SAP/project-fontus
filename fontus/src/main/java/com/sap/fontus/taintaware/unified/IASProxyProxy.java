@@ -1,5 +1,6 @@
 package com.sap.fontus.taintaware.unified;
 
+import com.sap.fontus.utils.UnsafeUtils;
 import com.sap.fontus.utils.Utils;
 import com.sap.fontus.utils.VerboseLogger;
 import jdk.internal.misc.Unsafe;
@@ -13,20 +14,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class IASProxyProxy {
-    private static final Unsafe UNSAFE;
     protected final InvocationHandler h;
     private static final Map<byte[], Class<?>> proxyCache = new HashMap<>();
 
-    static {
-        try {
-            UNSAFE = Unsafe.getUnsafe();
-        } catch (Throwable ex) {
-            System.err.println("Couldn't load unsafe! Please make sure you added \"--add-opens java.base/jdk.internal.misc=ALL-UNNAMED\" as JVM parameter!");
-            ex.printStackTrace();
-            System.exit(1);
-            throw ex;
-        }
-    }
 
     protected IASProxyProxy(InvocationHandler h) {
         this.h = h;
@@ -104,7 +94,7 @@ public class IASProxyProxy {
 
 
     private static Class<?> loadClass(String name, byte[] bytes, ClassLoader classLoader) {
-        return UNSAFE.defineClass(Utils.slashToDot(name), bytes, 0, bytes.length, classLoader, null);
+        return UnsafeUtils.defineClass(Utils.slashToDot(name), bytes, classLoader);
     }
 
     private static Class<?> findProxyClassInternal(Class<?>[] interfaces) {
