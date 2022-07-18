@@ -1,6 +1,7 @@
 package com.sap.fontus.taintaware.unified.reflect;
 
 import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.utils.UnsafeUtils;
 import jdk.internal.vm.annotation.ForceInline;
 
 import java.lang.annotation.Annotation;
@@ -31,12 +32,13 @@ public abstract class IASAccessibleObject<T extends AccessibleObject> implements
 
     public static void setAccessible(IASAccessibleObject<?>[] array, boolean flag) {
         for (IASAccessibleObject<?> object : array) {
-            object.setAccessible(flag);
+            UnsafeUtils.setAccessible(object.original);
+            //object.setAccessible(flag);
         }
     }
 
     public void setAccessible(boolean flag) {
-        this.original.setAccessible(flag);
+        UnsafeUtils.setAccessible(this.original);
     }
 
     public boolean isAccessible() {

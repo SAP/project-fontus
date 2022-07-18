@@ -1,5 +1,7 @@
 package com.sap.fontus.gdpr.servlet;
 
+import com.sap.fontus.utils.UnsafeUtils;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -23,6 +25,7 @@ public abstract class ReflectedObject {
         Object result = null;
         try {
             Method originalMethod = this.o.getClass().getMethod(m.getName(), m.getParameterTypes());
+            UnsafeUtils.setAccessible(originalMethod);
             result = originalMethod.invoke(this.o, args);
         } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
             System.err.println("FONTUS Exception with reflected call: " + this.o.getClass().getName() + "." + m.getName() + ": " + e.getMessage());
