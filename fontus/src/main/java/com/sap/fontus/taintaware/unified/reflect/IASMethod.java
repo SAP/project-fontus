@@ -219,7 +219,7 @@ public class IASMethod extends IASExecutable<Method> {
                     callerClass = ReflectionUtils.getCallerClass();
                 }
                 if (this.original.getDeclaringClass().getPackage().equals(callerClass.getPackage())) {
-                    this.original.setAccessible(true);
+                    UnsafeUtils.setAccessible(this.original);
                 }
             } else if(Modifier.isPrivate(modifiers) || Modifier.isProtected(modifiers)) {
                 UnsafeUtils.setAccessible(this.original);
