@@ -396,13 +396,12 @@ class StringTest {
     }
 
     @Test
-    @Ignore
     void replaceAll() {
         // Primary test cases for this are located in PatternTest#replaceAll
         IASString foofoo = new IASString("foofoo");
 
         THelper.get(foofoo).addRange(0, 4, md);
-        THelper.get(this.bar).addRange(3, 5, md2);
+        THelper.get(this.bar).addRange(0, 3, md2);
 
         IASString s = foofoo.replaceAll(new IASString("o+"), this.bar);
 

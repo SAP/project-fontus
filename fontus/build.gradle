@@ -113,7 +113,7 @@ shadowJar {
 
 //shadowJar.finalizedBy sourcesJar
 test {
-    jvmArgs('--add-opens', 'java.base/jdk.internal.misc=ALL-UNNAMED')
+    jvmArgs('--add-opens', 'java.base/jdk.internal.misc=ALL-UNNAMED', '--add-opens', 'java.base/java.lang.reflect=ALL-UNNAMED', '--add-opens', 'java.base/jdk.internal.vm.annotation=ALL-UNNAMED')
 }
 
 publishing {
