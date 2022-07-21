@@ -85,6 +85,7 @@ public class IASTaintRanges implements Iterable<IASTaintRange>, Serializable {
             IASTaintRange nextRange = this.ranges.get(i + 1);
 
             // Is merge possible?
+            // TODO: Metadata cant be compared properly with ==, this looks like a bug?
             if (currRange.getEnd() == nextRange.getStart() && currRange.getMetadata() == nextRange.getMetadata()) {
                 IASTaintRange newRange = new IASTaintRange(currRange.getStart(), nextRange.getEnd(), nextRange.getMetadata());
                 this.ranges.set(i, newRange);

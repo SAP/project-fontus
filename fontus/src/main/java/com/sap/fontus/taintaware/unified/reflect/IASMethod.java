@@ -254,6 +254,7 @@ public class IASMethod extends IASExecutable<Method> {
                     e.printStackTrace();
                 }
             }
+            // TODO: Why are we we checking on taintCheckerMethod here and invoking taintHandlerMethod, seems like a bug?
             if (taintCheckerMethod != null) {
                 returnObj = taintHandlerMethod.invoke(null, returnObj, instance, parameters,
                         IASTaintSourceRegistry.getInstance().get(source.getName()).getId());

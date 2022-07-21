@@ -138,6 +138,7 @@ public final class IASTaintRangeUtils {
                 continue;
             }
 
+            // TODO: Metadata cant be compared properly with ==, this looks like a bug?
             if (first.getMetadata() == second.getMetadata() && first.getEnd() == second.getStart()) {
                 IASTaintRange merged = new IASTaintRange(first.getStart(), second.getEnd(), first.getMetadata());
                 taintRanges.set(i, merged);
