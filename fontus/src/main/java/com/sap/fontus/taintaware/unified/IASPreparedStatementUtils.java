@@ -17,7 +17,11 @@ public final class IASPreparedStatementUtils {
             IASPreparedStatement iasPreparedStatement = ps.unwrap(IASPreparedStatement.class);
             iasPreparedStatement.setString(idx, value);
         } else {
-            ps.setString(idx, value.getString());
+            if (value != null) {
+                ps.setString(idx, value.getString());
+            } else {
+                ps.setString(idx, null);
+            }
         }
     }
 
@@ -28,7 +32,11 @@ public final class IASPreparedStatementUtils {
             IASPreparedStatement iasPreparedStatement = ps.unwrap(IASPreparedStatement.class);
             iasPreparedStatement.setNString(idx, value);
         } else {
-            ps.setNString(idx, value.getString());
+            if (value != null) {
+                ps.setNString(idx, value.getString());
+            } else {
+                ps.setNString(idx, null);
+            }
         }
     }
 

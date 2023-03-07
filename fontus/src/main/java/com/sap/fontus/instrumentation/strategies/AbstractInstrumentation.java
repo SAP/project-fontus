@@ -55,6 +55,11 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
+    public String instrument(String typeDescriptor) {
+        return replaceSuffix(typeDescriptor, this.origType.getDescriptor(), this.instrumentedType.getDescriptor());
+    }
+
+    @Override
     public String uninstrument(String typeDescriptor) {
         return replaceSuffix(typeDescriptor, this.instrumentedType.getDescriptor(), this.origType.getDescriptor());
     }

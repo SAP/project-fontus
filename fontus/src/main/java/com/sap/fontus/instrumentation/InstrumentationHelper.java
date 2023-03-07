@@ -103,6 +103,15 @@ public final class InstrumentationHelper implements InstrumentationStrategy {
     }
 
     @Override
+    public String instrument(String typeDescriptor) {
+        String newDesc = typeDescriptor;
+        for (InstrumentationStrategy is : this.strategies) {
+            newDesc = is.instrument(newDesc);
+        }
+        return newDesc;
+    }
+
+    @Override
     public String uninstrument(String typeDescriptor) {
         String newDesc = typeDescriptor;
         for (InstrumentationStrategy is : this.strategies) {

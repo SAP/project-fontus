@@ -17,9 +17,14 @@ public interface InstrumentationStrategy {
     Descriptor instrument(Descriptor desc);
 
     /**
-     * Returns concrete type of the tainted type
+     * Returns uninstrumented type of the tainted type
      */
     String uninstrument(String typeDescriptor);
+
+    /**
+     * Returns instrumented type of the untainted type
+     */
+    String instrument(String typeDescriptor);
 
     /**
      * Returns concrete type of the tainted type
@@ -34,8 +39,6 @@ public interface InstrumentationStrategy {
      * Replaces taintable type occurences in the parameters with the interface and in the return with the concrete type
      * Used for instrumenting calls to taintable classes e.g. String/IASString.replaceAll
      */
-//    String instrumentDescForIASCall(String desc);
-
     Optional<String> translateClassName(String className);
 
     boolean handlesType(String descriptor);

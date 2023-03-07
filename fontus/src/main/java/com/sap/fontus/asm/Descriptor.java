@@ -174,6 +174,13 @@ public class Descriptor {
         });
     }
 
+    public static String removeLeadingLandTrailingSemiColon(String descriptor) {
+        if (descriptor.startsWith("L") && descriptor.endsWith(";")) {
+            descriptor = descriptor.substring(1, descriptor.length() - 1);
+        }
+        return descriptor;
+    }
+
     /**
      * Parses a textual Descriptor and disassembles it into its types
      */

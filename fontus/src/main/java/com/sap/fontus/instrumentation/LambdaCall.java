@@ -51,6 +51,10 @@ public class LambdaCall implements Serializable {
         return this.implementationHandle;
     }
 
+    private Type getConcreteOrOwnerImplementation() {
+        return this.concreteImplementationType == null ? Type.getObjectType(this.implementation.getOwner()) : this.concreteImplementationType;
+    }
+
     public Descriptor getProxyDescriptor(ClassLoader loader, InstrumentationHelper instrumentationHelper) {
         CombinedExcludedLookup lookup = new CombinedExcludedLookup(loader);
         IClassResolver classResolver = ClassResolverFactory.createClassResolver(loader);
@@ -87,7 +91,9 @@ public class LambdaCall implements Serializable {
             }
         }
 
-        if (lookup.isPackageExcludedOrJdk(this.implementation.getOwner())) {
+        // Type.getDescriptor will give a class name back like Ljava/lang/Integer; so need to convert it
+        String descriptor = Descriptor.removeLeadingLandTrailingSemiColon(getConcreteOrOwnerImplementation().getDescriptor());
+        if (lookup.isPackageExcludedOrJdk(descriptor)) {
             return this.generateProxyToJdkDescriptor(instrumentationHelper);
         } else {
             return this.generateProxyToInstrumentedDescriptor(enclosedCount, instrumentationHelper);
@@ -99,8 +105,11 @@ public class LambdaCall implements Serializable {
         Descriptor instrumentedImplementationDesc = instrumentationHelper.instrument(implementationDesc);
 
         List<String> proxyParameters = new ArrayList<>(implementationDesc.parameterCount());
+
         if (this.isInstanceCall()) {
-            proxyParameters.add(this.concreteImplementationType == null ? Type.getObjectType(this.implementation.getOwner()).getDescriptor() : this.concreteImplementationType.getDescriptor());
+            String concreteOwnerOrImplementation = getConcreteOrOwnerImplementation().getDescriptor();
+            String instrumentedConcreteOwnerOrImplementation = instrumentationHelper.instrument(concreteOwnerOrImplementation);
+            proxyParameters.add(instrumentedConcreteOwnerOrImplementation);
         }
 
         for (int i = 0; i < instrumentedImplementationDesc.parameterCount(); i++) {
@@ -139,7 +148,9 @@ public class LambdaCall implements Serializable {
         List<String> mergedParameters = new ArrayList<>(implementationDesc.parameterCount());
 
         if (this.isInstanceCall()) {
-            mergedParameters.add(this.concreteImplementationType == null ? Type.getObjectType(this.implementation.getOwner()).getDescriptor() : this.concreteImplementationType.getDescriptor());
+            String concreteOwnerOrImplementation = getConcreteOrOwnerImplementation().getDescriptor();
+            String instrumentedConcreteOwnerOrImplementation = instrumentationHelper.instrument(concreteOwnerOrImplementation);
+            mergedParameters.add(instrumentedConcreteOwnerOrImplementation);
         }
         for (int i = 0; i < enclosedCount; i++) {
             mergedParameters.add(instrumentedImplementationDesc.getParameters().get(i));
