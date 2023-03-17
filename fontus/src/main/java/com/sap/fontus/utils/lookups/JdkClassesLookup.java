@@ -29,7 +29,8 @@ public final class JdkClassesLookup {
                 "net/sf/jopt-simple/",
                 "org/objectweb/asm/",
                 "org/openjdk/jmh/",
-                "org/apache/commons/commons-math3/"));
+                "org/apache/commons/commons-math3/",
+                "org/jacoco"));
     }
 
     public static JdkClassesLookup getInstance() {

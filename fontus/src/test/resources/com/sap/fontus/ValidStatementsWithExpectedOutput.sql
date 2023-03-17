@@ -1248,6 +1248,12 @@ CREATE TABLE `rss` (`ap_bssid` varchar (17) NOT NULL, `__taint__ap_bssid` TEXT, 
 INSERT INTO `rss` VALUES ('FF:E3:2D:EC:CE:14',1,-54);
 INSERT INTO `rss` VALUES ('FF:E3:2D:EC:CE:14', '0', 1, '0', -54, '0');
 #
+#SELECT OrderID, Quantity, IF(Quantity>10, QuantityH, QuantityL) FROM OrderDetails;
+#SELECT OrderID, Quantity, IF(Quantity>10, QuantityH, QuantityL) FROM OrderDetails;
+#
+#SELECT OrderID, concat(Quantity, OrderID), IF(Quantity>10, QuantityH, QuantityL) FROM OrderDetails;
+#SELECT OrderID, Quantity, IF(Quantity>10, QuantityH, QuantityL) FROM OrderDetails;
+#
 # This does not parse. See https://github.com/JSQLParser/JSqlParser/issues/798
 #CREATE TABLE `comment` (`text_hash` varchar(32) COLLATE utf8_bin)
 #expected_to_fail
