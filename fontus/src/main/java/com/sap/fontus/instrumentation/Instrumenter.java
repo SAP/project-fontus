@@ -19,7 +19,7 @@ import java.util.Arrays;
 public class Instrumenter implements InstrumenterInterface {
     private static final Logger logger = LogUtils.getLogger();
 
-    private Configuration config;
+    private final Configuration config;
 
     public Instrumenter(Configuration config) {
         this.config = config;

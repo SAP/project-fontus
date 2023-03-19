@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public final class ClassUtils {
     private static final Logger logger = LogUtils.getLogger();
-    public static CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(null);
+    public static final CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(null);
     private static final ClassFinder classFinder = ClassResolverFactory.createClassFinder();
 
     private ClassUtils() {

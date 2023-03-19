@@ -155,7 +155,7 @@ public class IASMethod extends IASExecutable<Method> {
                 String[] result = (String[]) this.original.invoke(instance, parameters);
                 return IASStringUtils.convertStringArray(result);
             }  else if (this.original.getReturnType().equals(Class.class)) {
-                Class<?> result = (Class) this.original.invoke(instance, parameters);
+                Class<?> result = (Class<?>) this.original.invoke(instance, parameters);
                 return ConversionUtils.convertClassToConcrete(result);
             }
         }
@@ -207,7 +207,7 @@ public class IASMethod extends IASExecutable<Method> {
         } else {
             if ((!Modifier.isPublic(this.original.getModifiers()) && !Modifier.isProtected(this.original.getModifiers()) && !Modifier.isPrivate(this.original.getModifiers()))
                     || (!Modifier.isPublic(this.original.getDeclaringClass().getModifiers()) && !Modifier.isProtected(this.original.getDeclaringClass().getModifiers()) && !Modifier.isPrivate(this.original.getDeclaringClass().getModifiers()))) {
-                // This method is package private. Iuff the declaring class is in the same package as the calling class we must set it accessible
+                // This method is package private. Iff the declaring class is in the same package as the calling class we must set it accessible
                 // Otherwise the caller class (which is this class) is not in the same package as the declaring class an an IllegalAccessException is thrown
                 Class<?> callerClass;
                 if (Constants.JAVA_VERSION >= 9) {

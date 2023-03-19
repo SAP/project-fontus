@@ -351,9 +351,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
         } else if (object instanceof IASTaintAware) {
             return handleTaint((IASTaintAware)object, instance, sinkFunction, sinkName);
         } else {
-            return traverseObject(object, (taintAware) -> {
-                return handleTaint(taintAware, instance, sinkFunction, sinkName);
-            });
+            return traverseObject(object, (taintAware) -> handleTaint(taintAware, instance, sinkFunction, sinkName));
         }
     }
 

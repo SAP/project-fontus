@@ -3,7 +3,6 @@ package com.sap.fontus.taintaware.unified;
 import com.sap.fontus.utils.UnsafeUtils;
 import com.sap.fontus.utils.Utils;
 import com.sap.fontus.utils.VerboseLogger;
-import jdk.internal.misc.Unsafe;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

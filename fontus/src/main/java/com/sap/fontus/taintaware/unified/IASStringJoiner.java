@@ -10,7 +10,7 @@ import java.util.*;
  */
 public class IASStringJoiner {
     
-    StringJoiner joiner;
+    final StringJoiner joiner;
 
     List<IASTaintInformationable> taintList;
     IASTaintInformationable prefixTaint;

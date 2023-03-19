@@ -4,8 +4,8 @@ import com.sap.fontus.gdpr.metadata.PurposeBase;
 
 public class SimplePurpose extends PurposeBase {
 
-    private int id;
-    private String name;
+    private final int id;
+    private final String name;
     private String description;
     private String legal;
 

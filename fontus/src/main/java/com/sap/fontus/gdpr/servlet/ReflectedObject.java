@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
 
 public abstract class ReflectedObject {
 
-    protected Object o;
+    protected final Object o;
 
     public static Object callMethodWithReflection(Class<?> c, Method m, Object... args) {
         Object result = null;

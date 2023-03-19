@@ -11,6 +11,8 @@ import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
 
+import java.util.Arrays;
+
 public class GdprTaintHandler extends IASTaintHandler {
 
 
@@ -21,7 +23,7 @@ public class GdprTaintHandler extends IASTaintHandler {
         System.out.println("FONTUS: Source: " + source);
         System.out.println("        taintAware: " + taintAware);
         System.out.println("        Caller Type:" + parent);
-        System.out.println("        Input Parameters: " + parameters);
+        System.out.println("        Input Parameters: " + Arrays.toString(parameters));
         if (parameters != null) {
             for (int i = 0; i < parameters.length; i++) {
                 System.out.println("                  " + i + ": " + parameters[i].toString());
@@ -33,7 +35,7 @@ public class GdprTaintHandler extends IASTaintHandler {
         System.out.println("URL: " + servlet.getRequestURL());
 
         ReflectedCookie[] cookies = servlet.getCookies();
-        System.out.println("Cookies: " + cookies);
+        System.out.println("Cookies: " + Arrays.toString(cookies));
         if (cookies != null) {
             for (ReflectedCookie cookie : cookies) {
                 System.out.println(cookie);

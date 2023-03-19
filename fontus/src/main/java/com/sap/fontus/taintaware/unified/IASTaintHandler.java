@@ -21,7 +21,7 @@ import static com.sap.fontus.utils.ClassTraverser.getAllFields;
  * This class provides the interface between the instrumented bytecode and taint setters / getters
  */
 public class IASTaintHandler {
-    public static CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(ClassLoader.getSystemClassLoader());
+    public static final CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(ClassLoader.getSystemClassLoader());
 
     protected static void printObjectInfo(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
 
@@ -30,7 +30,7 @@ public class IASTaintHandler {
         System.out.println("FONTUS: Source: " + source);
         System.out.println("        taintAware: " + taintAware);
         System.out.println("        Caller Type:" + parent);
-        System.out.println("        Input Parameters: " + parameters);
+        System.out.println("        Input Parameters: " + Arrays.toString(parameters));
 
         if (parameters != null) {
             for (int i = 0; i < parameters.length; i++) {

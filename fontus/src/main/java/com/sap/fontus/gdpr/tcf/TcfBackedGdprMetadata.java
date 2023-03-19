@@ -14,8 +14,8 @@ import java.util.Set;
 
 public class TcfBackedGdprMetadata extends GdprMetadataBase {
 
-    TCString tcString;
-    DataId dataId;
+    private final TCString tcString;
+    private final DataId dataId;
 
     public TcfBackedGdprMetadata(TCString tcString){
         this.tcString = tcString;

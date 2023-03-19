@@ -11,7 +11,7 @@ import com.sap.fontus.sanitizer.Sanitization;
 
 public class SanitizationAbort extends Abort {
 
-    private static List<IASString> alreadySanitized = new ArrayList<>();
+    private static final List<IASString> alreadySanitized = new ArrayList<>();
 
     @Override
     public IASTaintAware abort(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, List<StackTraceElement> stackTrace) {

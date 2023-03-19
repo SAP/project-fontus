@@ -19,7 +19,7 @@ public class SimpleGdprMetadataConflictResolver implements GdprMetadataConflictR
         return second;
     }
 
-    private Comparable getMin(Comparable first, Comparable second) {
+    private Comparable getMin(Comparable first, Comparable<ExpiryDate> second) {
         if (first.compareTo(second) <= 0) {
             return first;
         }

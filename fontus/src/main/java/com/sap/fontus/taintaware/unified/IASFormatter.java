@@ -213,7 +213,7 @@ public class IASFormatter implements Closeable, Flushable {
 
         private char currentChar = 0;
 
-        private IASCharBuffer format;
+        private final IASCharBuffer format;
 
         ParserStateMachine(IASCharBuffer format) {
             this.format = format;

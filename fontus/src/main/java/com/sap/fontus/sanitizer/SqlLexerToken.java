@@ -3,10 +3,10 @@ package com.sap.fontus.sanitizer;
 import com.alibaba.druid.sql.parser.Token;
 
 public class SqlLexerToken {
-    public int begin;
-    public int end;
-    public Token token;
-    public int tokenType;
+    public final int begin;
+    public final int end;
+    public final Token token;
+    public final int tokenType;
 
     public SqlLexerToken(int begin, int end, Token token, int tokenType){
         this.begin = begin;

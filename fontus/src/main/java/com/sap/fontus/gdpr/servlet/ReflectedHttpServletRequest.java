@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
@@ -349,7 +350,7 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
 		}
 	    }
 	    ReflectedCookie[] cookies = this.getCookies();
-	    sb.append("Cookies: " + cookies);
+	    sb.append("Cookies: " + Arrays.toString(cookies));
 	    sb.append(System.getProperty("line.separator"));
 	    if (cookies != null) {
 		for (ReflectedCookie cookie : cookies) {

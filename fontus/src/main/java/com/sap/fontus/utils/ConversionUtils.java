@@ -288,7 +288,7 @@ public final class ConversionUtils {
     private static class AlreadyUntaintedConverter implements Converter {
 
         @Override
-        public boolean canConvert(Class cls) {
+        public boolean canConvert(Class<?> cls) {
             return excludedLookup.isPackageExcludedOrJdk(cls);
         }
 
@@ -300,7 +300,7 @@ public final class ConversionUtils {
 
     private static class AlreadyTaintedConverter implements Converter {
         @Override
-        public boolean canConvert(Class cls) {
+        public boolean canConvert(Class<?> cls) {
             return excludedLookup.isFontusClass(cls);
         }
 
@@ -318,7 +318,7 @@ public final class ConversionUtils {
         }
 
         @Override
-        public boolean canConvert(Class cls) {
+        public boolean canConvert(Class<?> cls) {
             return Type.class.isAssignableFrom(cls) && !excludedLookup.isFontusClass(cls);
         }
 
@@ -337,13 +337,13 @@ public final class ConversionUtils {
 
 
         @Override
-        public boolean canConvert(Class cls) {
+        public boolean canConvert(Class<?> cls) {
             return cls == Class.class;
         }
 
         @Override
         public Object convert(Object o) {
-            return this.atomicConverter.apply((Class) o);
+            return this.atomicConverter.apply((Class<?>) o);
         }
     }
 
@@ -357,7 +357,7 @@ public final class ConversionUtils {
         }
 
         @Override
-        public boolean canConvert(Class cls) {
+        public boolean canConvert(Class<?> cls) {
             return cls.isArray();
         }
 
@@ -387,7 +387,7 @@ public final class ConversionUtils {
         }
 
         @Override
-        public boolean canConvert(Class cls) {
+        public boolean canConvert(Class<?> cls) {
             return this.convertable.isAssignableFrom(cls);
         }
 
@@ -464,7 +464,7 @@ public final class ConversionUtils {
         }
 
         @Override
-        public boolean canConvert(Class cls) {
+        public boolean canConvert(Class<?> cls) {
             // TODO: evil hack to prevent infinite recursion for hibernate collection classes
             return List.class.isAssignableFrom(cls) && !"org.hibernate.collection.internal".equals(cls.getPackage().getName());
         }
