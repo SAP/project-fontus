@@ -78,6 +78,7 @@ test {
 
 
 task relocateShadowJar(type: ConfigureShadowRelocation) {
+    dependsOn tasks.jar
     target = tasks.shadowJar
     prefix = "com.sap.fontus.shadow" // Default value is "shadow"
 }
