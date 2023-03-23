@@ -454,12 +454,10 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         return builder.toIASString();
     }
 
-    // TODO: this propagates the taint for the whole string
     public IASString[] split(IASString regex, int limit) {
         return IASPattern.compile(regex).split(this, limit);
     }
 
-    // TODO: this propagates the taint for the whole string
     public IASString[] split(IASString regex) {
         return this.split(regex, 0);
     }
@@ -593,15 +591,11 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public static IASString format(IASString format, Object... args) {
-        // TODO Implement rainting
-//        return new IASString(String.format(format.toString(), args), isTainted(args));
         return new IASFormatter().format(format, args).toIASString();
     }
 
 
     public static IASString format(Locale l, IASString format, Object... args) {
-        // TODO Implement rainting
-//        return new IASString(String.format(l, format.toString(), args), isTainted(args));
         return new IASFormatter(l).format(format, args).toIASString();
     }
 
