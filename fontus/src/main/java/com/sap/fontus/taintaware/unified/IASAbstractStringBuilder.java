@@ -36,7 +36,7 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
     }
 
     public IASAbstractStringBuilder(CharSequence seq) {
-        IASString str = IASString.valueOf(seq);
+        IASString str = IASString.valueOfInternal(seq);
         this.stringBuilder = new StringBuilder(str.length() + 16);
         this.append(str);
     }
@@ -96,7 +96,7 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
     }
 
     public IASAbstractStringBuilder append(Object obj) {
-        IASString iasString = IASString.valueOf(obj);
+        IASString iasString = IASString.valueOfInternal(obj);
         this.append(iasString);
         return this;
     }
@@ -235,7 +235,7 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
 
     public IASAbstractStringBuilder insert(int dstOffset, CharSequence s,
                                            int start, int end) {
-        IASString iasString = IASString.valueOf(s);
+        IASString iasString = IASString.valueOfInternal(s);
         iasString = iasString.substring(start, end);
         this.insert(dstOffset, iasString);
         return this;
@@ -461,7 +461,7 @@ public abstract class IASAbstractStringBuilder implements Serializable, Comparab
     @Override
     public int compareTo(IASAbstractStringBuilder o) {
         if (Constants.JAVA_VERSION < 11) {
-            return this.toIASString().compareTo(IASString.valueOf(o));
+            return this.toIASString().compareTo(IASString.valueOfInternal(o));
         } else {
             return this.stringBuilder.compareTo(o.getStringBuilder());
         }

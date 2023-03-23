@@ -25,7 +25,7 @@ public final class IASMatcher {
     }
 
     IASMatcher(IASPattern pattern, CharSequence input) {
-        this.input = IASString.valueOf(input);
+        this.input = IASString.valueOfInternal(input);
         this.pattern = pattern;
         this.matcher = pattern.getPattern().matcher(input);
     }
@@ -212,7 +212,7 @@ public final class IASMatcher {
     public IASMatcher reset(CharSequence input) {
         this.matcher.reset(input);
         this.appendPos = 0;
-        this.input = IASString.valueOf(input);
+        this.input = IASString.valueOfInternal(input);
         return this;
     }
 

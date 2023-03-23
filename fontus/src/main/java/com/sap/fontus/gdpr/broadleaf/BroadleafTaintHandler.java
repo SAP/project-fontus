@@ -24,7 +24,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
 
     //private static final String productPurposeAttributeName = BroadleafTaintHandler.class.getName() + ".PRODUCTPURPOSE";
     private static final String addressServiceAttributeName = BroadleafTaintHandler.class.getName() + ".ADDRESSSERVICE";
-    private static final IASString csrfTokenName = IASString.valueOf("csrfToken");
+    private static final IASString csrfTokenName = IASString.fromString("csrfToken");
     /**
      * Extracts the TCF consent string from a cookie and attaches it as the taint metadata
      * @param taintAware The Taint Aware String-like object

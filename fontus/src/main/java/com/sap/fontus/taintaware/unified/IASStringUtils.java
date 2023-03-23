@@ -114,7 +114,7 @@ public final class IASStringUtils {
         IASString ret = IASString.fromString(format);
         for (int i = args.length - 1; i >= 0; i--) {
             Object a = args[i];
-            IASString arg = a == null ? IASString.fromString("null") : IASString.valueOf(a);
+            IASString arg = IASString.valueOf(a);
             arg = IASMatcher.quoteReplacement(arg);
             ret = ret.replaceFirst(CONCAT_PLACEHOLDER, arg);
         }
@@ -124,13 +124,13 @@ public final class IASStringUtils {
 
     public static Map<IASString, IASString> convertStringMapToTStringMap(Map<String, String> tbl) {
         Map<IASString, IASString> result = new HashMap<>();
-        tbl.forEach((key, value) -> result.put(IASString.valueOf(key), IASString.valueOf(value)));
+        tbl.forEach((key, value) -> result.put(IASString.valueOfInternal(key), IASString.valueOfInternal(value)));
         return result;
     }
 
     public static Hashtable<IASString, IASString> convertStringHashtableToTStringHashtable(Hashtable<String, String> tbl) {
         Hashtable<IASString, IASString> result = new Hashtable<>();
-        tbl.forEach((key, value) -> result.put(IASString.valueOf(key), IASString.valueOf(value)));
+        tbl.forEach((key, value) -> result.put(IASString.valueOfInternal(key), IASString.valueOfInternal(value)));
         return result;
     }
 

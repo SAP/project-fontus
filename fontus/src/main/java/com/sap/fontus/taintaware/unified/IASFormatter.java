@@ -180,7 +180,7 @@ public class IASFormatter implements Closeable, Flushable {
     }
 
     public IASString toIASString() {
-        return IASString.valueOf(this.output);
+        return IASString.valueOfInternal(this.output);
     }
 
     public Formatter getFormatter() {
@@ -1159,7 +1159,7 @@ public class IASFormatter implements Closeable, Flushable {
             if (null == lineSeparator) {
                 lineSeparator = AccessController
                         .doPrivileged((PrivilegedAction<IASString>) () -> {
-                            return IASString.valueOf(System.getProperty("line.separator")); //$NON-NLS-1$
+                            return IASString.valueOfInternal(System.getProperty("line.separator")); //$NON-NLS-1$
                         });
             }
             return lineSeparator;
@@ -1362,21 +1362,21 @@ public class IASFormatter implements Closeable, Flushable {
             Number number = (Number) this.arg;
             double d = number.doubleValue();
             if (Double.isNaN(d)) {
-                source = IASString.valueOf("NaN"); //$NON-NLS-1$
+                source = IASString.valueOfInternal("NaN"); //$NON-NLS-1$
             } else if (Double.isInfinite(d)) {
                 if (d >= 0) {
                     if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_ADD)) {
-                        source = IASString.valueOf("+Infinity"); //$NON-NLS-1$
+                        source = IASString.valueOfInternal("+Infinity"); //$NON-NLS-1$
                     } else if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_SPACE)) {
-                        source = IASString.valueOf(" Infinity"); //$NON-NLS-1$
+                        source = IASString.valueOfInternal(" Infinity"); //$NON-NLS-1$
                     } else {
-                        source = IASString.valueOf("Infinity"); //$NON-NLS-1$
+                        source = IASString.valueOfInternal("Infinity"); //$NON-NLS-1$
                     }
                 } else {
                     if (this.formatToken.isFlagSet(IASFormatter.FormatToken.FLAG_PARENTHESIS)) {
-                        source = IASString.valueOf("(Infinity)"); //$NON-NLS-1$
+                        source = IASString.valueOfInternal("(Infinity)"); //$NON-NLS-1$
                     } else {
-                        source = IASString.valueOf("-Infinity"); //$NON-NLS-1$
+                        source = IASString.valueOfInternal("-Infinity"); //$NON-NLS-1$
                     }
                 }
             }
@@ -1727,7 +1727,7 @@ public class IASFormatter implements Closeable, Flushable {
             pattern.append('E');
             pattern.append("+00"); //$NON-NLS-1$
             this.decimalFormat.applyPattern(pattern.toString());
-            IASString formattedString = IASString.valueOf(this.decimalFormat.format(this.argument));
+            IASString formattedString = IASString.valueOfInternal(this.decimalFormat.format(this.argument));
             this.result.append(formattedString.replace('E', 'e'));
 
             // if the flag is sharp and decimal seperator is always given

@@ -31,7 +31,7 @@ public final class ConversionUtils {
             new AlreadyTaintedConverter(),
             new ClassConverter((cls) -> cls),
             new TypeConverter(ConversionUtils::convertTypeToInstrumented),
-            new DefaultConverter<>(String.class, IASString::valueOf),
+            new DefaultConverter<>(String.class, IASString::valueOfInternal),
             new DefaultConverter<>(StringBuilder.class, IASStringBuilder::fromStringBuilder),
             new DefaultConverter<>(StringBuffer.class, IASStringBuffer::fromStringBuffer),
             new DefaultConverter<>(Formatter.class, IASFormatter::fromFormatter),

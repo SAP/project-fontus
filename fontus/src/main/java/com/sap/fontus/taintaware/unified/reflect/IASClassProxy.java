@@ -138,25 +138,26 @@ public final class IASClassProxy {
     }
 
     public static <T> IASConstructor<T> getConstructor(Class<T> clazz, Class<?>[] parameters) throws NoSuchMethodException, SecurityException {
+        Class<?>[] params;
         if (lookup.isPackageExcludedOrJdk(Utils.getInternalName(clazz))) {
-            parameters = transformParametersForJdk(parameters);
+            params = transformParametersForJdk(parameters);
         } else {
-            parameters = transformParametersForInstrumentedWithConcrete(parameters);
+            params = transformParametersForInstrumentedWithConcrete(parameters);
         }
 
-        return IASReflectRegistry.getInstance().map(clazz.getConstructor(parameters));
+        return IASReflectRegistry.getInstance().map(clazz.getConstructor(params));
     }
 
     public static IASMethod getMethod(Class<?> clazz, IASString name, Class<?>[] parameters) throws NoSuchMethodException, SecurityException {
         String methodNameString = transformMethodName(clazz, name.getString(), parameters);
-
+        Class<?>[] params;
         if (lookup.isPackageExcludedOrJdk(Utils.getInternalName(clazz))) {
-            parameters = transformParametersForJdk(parameters);
+            params = transformParametersForJdk(parameters);
         } else {
-            parameters = transformParametersForInstrumentedWithConcrete(parameters);
+            params = transformParametersForInstrumentedWithConcrete(parameters);
         }
 
-        return IASReflectRegistry.getInstance().map(clazz.getMethod(methodNameString, parameters));
+        return IASReflectRegistry.getInstance().map(clazz.getMethod(methodNameString, params));
     }
 
     static Class<?>[] transformParametersForJdk(Class<?>[] parameters) {

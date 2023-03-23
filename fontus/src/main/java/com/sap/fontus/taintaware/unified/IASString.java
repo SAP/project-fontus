@@ -430,7 +430,7 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     }
 
     public IASString replace(CharSequence target, CharSequence replacement) {
-        IASString replString = IASString.valueOf(replacement);
+        IASString replString = IASString.valueOfInternal(replacement);
 
         if (!this.isTainted() && !replString.isTainted()) {
             return new IASString(this.string.replace(target, replacement));
@@ -466,14 +466,14 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         if (elements == null || elements.length == 0) {
             return new IASString();
         } else if (elements.length == 1) {
-            return IASString.valueOf(elements[0]);
+            return IASString.valueOfInternal(elements[0]);
         } else {
-            IASString iasDelimiter = IASString.valueOf(delimiter);
+            IASString iasDelimiter = IASString.valueOfInternal(delimiter);
             IASStringBuilder sb = new IASStringBuilder(elements[0]);
 
             for (int i = 1; i < elements.length; i++) {
                 sb.append(iasDelimiter);
-                sb.append(IASString.valueOf(elements[i]));
+                sb.append(IASString.valueOfInternal(elements[i]));
             }
             return sb.toIASString();
         }
@@ -599,7 +599,8 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         return new IASFormatter(l).format(format, args).toIASString();
     }
 
-    public static IASString valueOf(Object obj) {
+    // TODO: clarify if we can switch internal usage to valueOf
+    public static IASString valueOfInternal(Object obj) {
         if(obj == null) {
             return null;
         }
@@ -614,6 +615,21 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         }
     }
 
+    // The valueOf Contract states that null is converted to string null values
+    public static IASString valueOf(Object obj) {
+        if(obj == null) {
+            return new IASString("null");
+        }
+        if (obj instanceof IASString) {
+            return (IASString) obj;
+        } else if (obj instanceof IASStringBuffer) {
+            return ((IASStringBuffer) obj).toIASString();
+        } else if (obj instanceof IASStringBuilder) {
+            return ((IASStringBuilder) obj).toIASString();
+        } else {
+            return new IASString(String.valueOf(obj));
+        }
+    }
     public static IASString valueOf(CharSequence s, int start, int end) {
         if (s instanceof IASString) {
             return ((IASString) s).substring(start, end);

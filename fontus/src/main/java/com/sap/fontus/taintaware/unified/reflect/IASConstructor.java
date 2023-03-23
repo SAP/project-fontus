@@ -30,7 +30,7 @@ public class IASConstructor<T> extends IASExecutable<Constructor<T>> {
 
     @Override
     public IASString getName() {
-        return IASString.valueOf(this.original.getName());
+        return IASString.fromString(this.original.getName());
     }
 
     @Override

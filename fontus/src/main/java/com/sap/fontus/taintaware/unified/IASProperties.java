@@ -117,7 +117,7 @@ public class IASProperties extends Hashtable<Object, Object> implements External
     public Set<IASString> stringPropertyNames() {
         return this.properties.stringPropertyNames()
                 .stream()
-                .map(IASString::valueOf)
+                .map(IASString::valueOfInternal)
                 .collect(Collectors.toSet());
     }
 

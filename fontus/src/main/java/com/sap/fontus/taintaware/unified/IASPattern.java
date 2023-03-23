@@ -11,7 +11,7 @@ public final class IASPattern {
     private final IASString patternString;
 
     public IASPattern(Pattern pattern) {
-        this(IASString.valueOf(pattern.pattern()), pattern.flags());
+        this(IASString.valueOfInternal(pattern.pattern()), pattern.flags());
     }
 
     private IASPattern(IASString p, int f) {
@@ -72,7 +72,7 @@ public final class IASPattern {
     }
 
     public IASString[] split(CharSequence input, int limit) {
-        IASString string = IASString.valueOf(input);
+        IASString string = IASString.valueOfInternal(input);
         IASMatcher matcher = this.matcher(string);
 
         ArrayList<IASString> result = new ArrayList<>();

@@ -42,7 +42,7 @@ public class IASParameter implements AnnotatedElement {
     }
 
     public IASString getName() {
-        return IASString.valueOf(this.parameter.getName());
+        return IASString.fromString(this.parameter.getName());
     }
 
     public Type getParameterizedType() {

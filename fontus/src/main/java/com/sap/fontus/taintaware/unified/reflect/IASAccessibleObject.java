@@ -66,7 +66,7 @@ public abstract class IASAccessibleObject<T extends AccessibleObject> implements
     }
 
     public IASString toIASString() {
-        return IASString.valueOf(this.toString());
+        return IASString.valueOfInternal(this.toString());
     }
 
     public AccessibleObject getAccessibleObject() {

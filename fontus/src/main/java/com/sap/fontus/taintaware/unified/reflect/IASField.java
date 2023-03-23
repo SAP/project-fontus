@@ -24,7 +24,7 @@ public class IASField extends IASAccessibleObject<Field> implements IASMember {
     }
 
     public IASString getName() {
-        return IASString.valueOf(this.original.getName());
+        return IASString.fromString(this.original.getName());
     }
 
     public int getModifiers() {

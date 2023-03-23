@@ -136,7 +136,7 @@ public class IASMethod extends IASExecutable<Method> {
 
     @Override
     public IASString toGenericString() {
-        return IASString.valueOf(this.original.toGenericString());
+        return IASString.fromString(this.original.toGenericString());
     }
 
     @SuppressWarnings("Since15")

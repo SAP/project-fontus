@@ -18,7 +18,7 @@ public final class IASToArrayProxy {
                     notToConvert = true;
                     break;
                 }
-                converted.add(IASString.valueOf(s));
+                converted.add(IASString.valueOfInternal(s));
             }
             if (notToConvert) {
                 return list.toArray(array);
