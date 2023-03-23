@@ -360,6 +360,11 @@
       "source": "StringConstantUtf8.java"
     },
     {
+      "name": "String.valueOf(null) test",
+      "source": "StringValueOfNull.java",
+      "safe": true
+    },
+    {
       "name": "Large method test",
       "source": "LargeMethod.java"
     }
