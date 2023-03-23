@@ -93,7 +93,11 @@ public class IASProxyProxy {
 
 
     private static Class<?> loadClass(String name, byte[] bytes, ClassLoader classLoader) {
-        return UnsafeUtils.defineClass(Utils.slashToDot(name), bytes, classLoader);
+        ClassLoader loader = classLoader;
+        if(loader == null) {
+            loader = IASProxyProxy.class.getClassLoader();
+        }
+        return UnsafeUtils.defineClass(Utils.slashToDot(name), bytes, loader);
     }
 
     private static Class<?> findProxyClassInternal(Class<?>[] interfaces) {
