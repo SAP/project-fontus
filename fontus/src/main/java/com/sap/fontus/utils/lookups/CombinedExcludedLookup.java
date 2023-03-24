@@ -57,6 +57,10 @@ public class CombinedExcludedLookup {
         return AnnotationLookup.getInstance().isAnnotation(internalName, this.resolver);
     }
 
+    public boolean isPackageExcludedOrJdkOrAnnotation(String internalName) {
+        return this.isPackageExcludedOrJdk(internalName) || this.isAnnotation(internalName);
+    }
+
     public boolean isProxyClass(String internalName, byte[] classBuffer) {
         return ProxyLookup.isProxyClass(internalName, classBuffer);
     }

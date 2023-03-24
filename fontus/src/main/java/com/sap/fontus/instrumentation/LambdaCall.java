@@ -6,6 +6,7 @@ import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.asm.resolver.IClassResolver;
 import com.sap.fontus.utils.ClassTraverser;
 import com.sap.fontus.asm.resolver.ClassResolverFactory;
+import com.sap.fontus.utils.lookups.AnnotationLookup;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
@@ -92,8 +93,9 @@ public class LambdaCall implements Serializable {
         }
 
         // Type.getDescriptor will give a class name back like Ljava/lang/Integer; so need to convert it
+        // Also check whether the class is an annotation, which we also do not instrument, and therefore need to proxy
         String descriptor = Descriptor.removeLeadingLandTrailingSemiColon(getConcreteOrOwnerImplementation().getDescriptor());
-        if (lookup.isPackageExcludedOrJdk(descriptor)) {
+        if (lookup.isPackageExcludedOrJdkOrAnnotation(descriptor)) {
             return this.generateProxyToJdkDescriptor(instrumentationHelper);
         } else {
             return this.generateProxyToInstrumentedDescriptor(enclosedCount, instrumentationHelper);

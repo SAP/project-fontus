@@ -79,14 +79,14 @@ public final class MethodTaintingUtils {
     }
 
     public static boolean isMethodReferenceJdkOrExcluded(Handle realFunction) {
-        return lookup.isPackageExcludedOrJdk(realFunction.getOwner());
+        return lookup.isPackageExcludedOrJdkOrAnnotation(realFunction.getOwner());
     }
 
     public static boolean isFunctionalInterfaceJdkOrExcluded(String descriptor) {
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
         Type instance = Type.getType(desc.getReturnType());
 
-        boolean excluded = lookup.isPackageExcludedOrJdk(instance.getInternalName());
+        boolean excluded = lookup.isPackageExcludedOrJdkOrAnnotation(instance.getInternalName());
         for (String clsOrPackage : lambdaIncluded) {
             if (instance.getInternalName().startsWith(clsOrPackage)) {
                 excluded = false;
@@ -149,8 +149,6 @@ public final class MethodTaintingUtils {
     }
 
     public static boolean needsLambdaProxy(String descriptor, Handle realFunction, Type concreteDescriptor, InstrumentationHelper instrumentationHelper) {
-        String instrumentedConcreteDescriptor = instrumentationHelper.instrumentForNormalCall(concreteDescriptor.getDescriptor());
-        boolean canBeInstrumented = !instrumentedConcreteDescriptor.equals(concreteDescriptor.getDescriptor());
         return isFunctionalInterfaceJdkOrExcluded(descriptor) || (!instrumentationHelper.canHandleType(Type.getObjectType(realFunction.getOwner()).getDescriptor()) && isMethodReferenceJdkOrExcluded(realFunction));
     }
 }

@@ -403,7 +403,7 @@ class ClassTaintingVisitor extends ClassVisitor {
 
         MethodVisitor mv = super.visitMethod(access, call.getProxyMethodName(), proxyDescriptor.toDescriptor(), null, null);
 
-        if (this.combinedExcludedLookup.isPackageExcludedOrJdk(call.getImplementationHandle().getOwner())) {
+        if (this.combinedExcludedLookup.isPackageExcludedOrJdkOrAnnotation(call.getImplementationHandle().getOwner())) {
             Descriptor uninstrumentedDescriptor = Descriptor.parseDescriptor(this.instrumentationHelper.uninstrument(call.getImplementation().getDescriptor()));
             this.generateProxyToJdk(mv, call.getImplementation().getName(), proxyDescriptor, uninstrumentedDescriptor, call);
         } else {
