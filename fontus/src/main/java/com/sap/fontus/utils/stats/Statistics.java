@@ -7,85 +7,88 @@ import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 
 import javax.management.*;
 import java.lang.management.ManagementFactory;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
-// Todo: Convert to atomics
 public enum Statistics implements StatisticsMXBean {
     INSTANCE;
 
-    private long stringCount = 0L;
-    private long taintRangeSum = 0L;
-    private long untaintedStringCount = 0L;
-    private long lazyTaintInformationCreated = 0L;
-    private long lazyTaintInformationEvaluated = 0L;
-    private long initializedStrings = 0L;
-    private long taintCheckUntainted = 0L;
-    private long taintCheckTainted = 0L;
-    private long lazyThresholdExceededCount = 0L;
-    private final Map<String, Long> taintlossHits = new HashMap<>();
+    private final AtomicLong stringCount;
+    private final AtomicLong taintRangeSum ;
+    private final AtomicLong untaintedStringCount;
+    private final AtomicLong lazyTaintInformationCreated;
+    private final AtomicLong lazyTaintInformationEvaluated;
+    private final AtomicLong initializedStrings;
+    private final AtomicLong taintCheckUntainted;
+    private final AtomicLong taintCheckTainted;
+    private final AtomicLong lazyThresholdExceededCount;
+    private final Map<String, Long> taintlossHits = new ConcurrentHashMap<>();
 
     Statistics() {
+        this.stringCount = new AtomicLong();
+        this.taintRangeSum = new AtomicLong();
+        this.untaintedStringCount = new AtomicLong();
+        this.lazyTaintInformationCreated = new AtomicLong();
+        this.lazyTaintInformationEvaluated = new AtomicLong();
+        this.initializedStrings = new AtomicLong();
+        this.taintCheckUntainted = new AtomicLong();
+        this.taintCheckTainted = new AtomicLong();
+        this.lazyThresholdExceededCount = new AtomicLong();
         this.register();
     }
 
     @Override
-    public synchronized void reset() {
-        this.stringCount = 0L;
-        this.taintRangeSum = 0L;
-        this.untaintedStringCount = 0L;
-        this.lazyTaintInformationCreated = 0L;
-        this.lazyTaintInformationEvaluated = 0L;
-        this.taintCheckUntainted = 0L;
-        this.taintCheckTainted = 0L;
-        this.initializedStrings = 0L;
+    public void reset() {
+        this.stringCount.set(0L);
+        this.taintRangeSum.set(0L);
+        this.untaintedStringCount.set(0L);
+        this.lazyTaintInformationCreated.set(0L);
+        this.lazyTaintInformationEvaluated.set(0L);
+        this.taintCheckUntainted.set(0L);
+        this.taintCheckTainted.set(0L);
+        this.initializedStrings.set(0L);
         this.taintlossHits.clear();
     }
 
-    public synchronized void incrementTaintlossHits(String call) {
-        this.taintlossHits.compute(call, ((tuple, longVal) -> {
-            if (longVal == null) {
-                return 1L;
-            } else {
-                return longVal + 1L;
-            }
-        }));
+    public void incrementTaintlossHits(String call) {
+        this.taintlossHits.merge(call, 1L, Long::sum);
     }
 
-    public synchronized void incrementLazyTaintInformationCreated() {
-        this.lazyTaintInformationCreated++;
+    public  void incrementLazyTaintInformationCreated() {
+        this.lazyTaintInformationCreated.incrementAndGet();
     }
 
-    public synchronized void incrementLazyTaintInformationEvaluated() {
-        this.lazyTaintInformationEvaluated++;
+    public  void incrementLazyTaintInformationEvaluated() {
+        this.lazyTaintInformationEvaluated.incrementAndGet();
     }
 
-    public synchronized void incrementLazyThresholdExceededCount() {
-        this.lazyThresholdExceededCount++;
+    public  void incrementLazyThresholdExceededCount() {
+        this.lazyThresholdExceededCount.incrementAndGet();
     }
 
-    public synchronized void addRangeCount(IASTaintInformationable taintInformationable) {
-        this.stringCount++;
-        long rangeCount = 0;
+    public  void addRangeCount(IASTaintInformationable taintInformationable) {
+        long rangeCount = 0L;
         if (taintInformationable instanceof IASTaintInformation) {
             rangeCount = ((IASTaintInformation) taintInformationable).getTaintRanges().getTaintRanges().size();
         }
 
-        this.taintRangeSum += rangeCount;
-        if (rangeCount == 0) {
-            this.untaintedStringCount++;
+        this.taintRangeSum.addAndGet(rangeCount);
+        long untaintedCount = this.untaintedStringCount.get();
+        if (rangeCount == 0L) {
+            untaintedCount = this.untaintedStringCount.incrementAndGet();
         }
-        long tainted = this.stringCount - this.untaintedStringCount;
+        long tainted = this.stringCount.incrementAndGet() - untaintedCount;
     }
 
     @Override
-    public synchronized double getRangeCountAverage() {
-        return ((double) this.taintRangeSum) / this.stringCount;
+    public double getRangeCountAverage() {
+        return ((double) this.taintRangeSum.get()) / this.stringCount.get();
     }
 
     @Override
-    public synchronized double getZeroTaintRangeShare() {
-        return ((double) this.untaintedStringCount) / this.stringCount;
+    public  double getZeroTaintRangeShare() {
+        return ((double) this.untaintedStringCount.get()) / this.stringCount.get();
     }
 
     private void register() {
@@ -99,72 +102,72 @@ public enum Statistics implements StatisticsMXBean {
 
     @Override
     public long getStringCount() {
-        return this.stringCount;
+        return this.stringCount.get();
     }
 
     @Override
     public long getTaintRangeSum() {
-        return this.taintRangeSum;
+        return this.taintRangeSum.get();
     }
 
     @Override
     public long getUntaintedStringCount() {
-        return this.untaintedStringCount;
+        return this.untaintedStringCount.get();
     }
 
     @Override
     public long getLazyCreatedCount() {
-        return this.lazyTaintInformationCreated;
+        return this.lazyTaintInformationCreated.get();
     }
 
     @Override
     public long getLazyEvaluatedCount() {
-        return this.lazyTaintInformationEvaluated;
+        return this.lazyTaintInformationEvaluated.get();
     }
 
     @Override
     public long getLazyThresholdExceededCount() {
-        return this.lazyThresholdExceededCount;
+        return this.lazyThresholdExceededCount.get();
     }
 
     public long getLazyTaintInformationCreated() {
-        return this.lazyTaintInformationCreated;
+        return this.lazyTaintInformationCreated.get();
     }
 
     public long getLazyTaintInformationEvaluated() {
-        return this.lazyTaintInformationEvaluated;
+        return this.lazyTaintInformationEvaluated.get();
     }
 
-    public synchronized void incrementInitialized() {
-        this.initializedStrings++;
+    public void incrementInitialized() {
+        this.initializedStrings.incrementAndGet();
     }
 
     @Override
-    public synchronized long getInitializedStrings() {
-        return this.initializedStrings;
+    public long getInitializedStrings() {
+        return this.initializedStrings.get();
     }
 
-    public synchronized void recordTaintCheck(boolean isTainted) {
+    public void recordTaintCheck(boolean isTainted) {
         if (isTainted) {
-            this.taintCheckTainted++;
+            this.taintCheckTainted.incrementAndGet();
         } else {
-            this.taintCheckUntainted++;
+            this.taintCheckUntainted.incrementAndGet();
         }
     }
 
     @Override
     public long getTaintChecked() {
-        return this.taintCheckTainted + this.taintCheckUntainted;
+        return this.taintCheckTainted.get() + this.taintCheckUntainted.get();
     }
 
     @Override
     public long getTaintCheckUntainted() {
-        return this.taintCheckUntainted;
+        return this.taintCheckUntainted.get();
     }
 
     @Override
     public long getTaintCheckTainted() {
-        return this.taintCheckTainted;
+        return this.taintCheckTainted.get();
     }
 
     @Override
