@@ -257,7 +257,7 @@ public final class IASClassProxy {
     @SuppressWarnings("Since15")
     public static Class<?> forName(IASString str) throws ClassNotFoundException {
         String s = str.getString();
-        String clazz = instrumentationHelper.translateClassName(s).orElse(s);
+        String clazz = s.isEmpty() ? s : instrumentationHelper.translateClassName(s).orElse(s);
 
         // Get caller class classloader
         Class<?> callerClass;
@@ -276,7 +276,7 @@ public final class IASClassProxy {
     public static Class<?> forName(IASString str, boolean initialize,
                                    ClassLoader loader) throws ClassNotFoundException {
         String s = str.getString();
-        String clazz = instrumentationHelper.translateClassName(s).orElse(s);
+        String clazz = s.isEmpty() ? s : instrumentationHelper.translateClassName(s).orElse(s);
 
         if (loader == null) {
             // Get caller class classloader
