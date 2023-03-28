@@ -9,7 +9,7 @@ allowed_package_prefixes = ['org.broadleafcommerce']
 def perc_of(a,b):
     return a/(b/100)
 
-def parse(input, allowed_prefixes, blocked_prefixes):
+def parse(input, allowed_prefixes, blocked_prefixes, no_filter):
     with open(input, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         ins_total = 0
@@ -19,7 +19,10 @@ def parse(input, allowed_prefixes, blocked_prefixes):
         meth_total = 0
         meth_total_covered = 0
         for row in reader:
-            keep = False
+            if no_filter:
+                keep = True
+            else:
+                keep = False
             for allowed_prefix in allowed_prefixes:
                 package = row['PACKAGE']
                 class_name = row['CLASS']
@@ -57,8 +60,10 @@ def main():
     parser.add_argument('--keep', default=[], action="extend", nargs="+", type=str)
     parser.add_argument('--block', default=[], action="extend", nargs="+", type=str)
     parser.add_argument('--input', type=pathlib.Path, required=True)
+    parser.add_argument('--no-filter', action='store_true', default=False)
     args = parser.parse_args()
-    parse(args.input, args.keep, args.block)
+    pprint.pprint(args)
+    parse(args.input, args.keep, args.block, args.no_filter)
 
 if __name__ == '__main__':
     main()
