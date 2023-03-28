@@ -17,9 +17,9 @@ docker exec -i $CONTAINER_NAME mysqldump -u $USER -p "$DBNAME" >> "$DBNAME.sql
 
 3. Taint the DB dump
 
-The `com.sap.fontus.sql.tainter.SQLRewriter` class has a main method to taint all SQL statements in a text file. This assumes the input file (called `dump.sql`) is in the current working directory. If run that way it will create a `tainted_dump.sql` file containing all tainted statements.
+The `sql-tainter` tool taints all SQL statements in a provided text file. This jar takes an input file, e.g., called `dump.sql`. When invoked via `java -jar ./tools/sql-tainter/build/libs/sql-tainter.jar`  it will create a `tainted_dump.sql` file containing all tainted statements in the current working directory.
 
-If this worked without errors (haha), go to TODO.
+If this worked without errors (haha), go to step 5.
 
 4. There were a bunch of errors...
 
