@@ -58,7 +58,6 @@ def main():
     parser.add_argument('--block', default=[], action="extend", nargs="+", type=str)
     parser.add_argument('--input', type=pathlib.Path, required=True)
     args = parser.parse_args()
-    pprint.pprint(args)
     parse(args.input, args.keep, args.block)
 
 if __name__ == '__main__':
