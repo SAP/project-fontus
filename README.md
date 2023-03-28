@@ -31,14 +31,14 @@ This instrumentation type works on-the-fly with starting the application.
 ### Execution
 For instrumenting via java agents just add the following to your VM option parameters:
 ```bash
---add-opens java.base/jdk.internal.misc=ALL-UNNAMED -javaagent:fontus-0.0.1-SNAPSHOT.jar
+--add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/jdk.internal.vm.annotation=ALL-UNNAMED -javaagent:fontus-0.0.1-SNAPSHOT.jar
 ```
 
-The `--add-opens` is necessary because the framework is using Java internal classes
+The `--add-opens` are necessary because Fontus is using Java internal classes
 
 A complete java execution command could look like this:
 ```bash
-java -jar your-application.jar -javaagent:fontus-0.0.1-SNAPSHOT.jar
+java --add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/jdk.internal.vm.annotation=ALL-UNNAMED -jar your-application.jar -javaagent:fontus-0.0.1-SNAPSHOT.jar
 ```
 
 ### Parameters
@@ -62,8 +62,8 @@ An example for parameters passed to the agent ``-javaagent:"fontus-0.0.1-SNAPSHO
 ## Available Tainting Methods
 Currently there are 5 different tainting mechanisms available:
 - **boolean**: Only tainting per string. Differentiation which character is tainted is *not* possible. Very fast, little memory overhead, but more false positives
-- **array**: Naive tainting per character. Differentiation which character is tainted *is* possible. Linear overhead regarding length for cpu and memory (slow and expensive), nearly no false positives.
-- **range**: Optimized tainting per character. Differentiation which character is tainted *is* possible. Linear overhead regarding count of taints per string for cpu and memory (most times a lot more efficient than *array*). As precise as *array*.
+- **array**: Naive tainting per character. Differentiation which character is tainted *is* possible. Linear overhead regarding length for CPU and memory (slow and expensive), nearly no false positives.
+- **range**: Optimized tainting per character. Differentiation which character is tainted *is* possible. Linear overhead regarding count of taints per string for CPU and memory (most times a lot more efficient than *array*). As precise as *array*.
 - **lazybasic**: Optimized range approach. Differentiation which character is tainted *is* possible. As long as no taint evaluation is done, faster than range. Memory overhead mostly correlates with the number of string manipulations. As precise as *array*.
 - **lazycomplex**: Optimized lazybasic approach. Differentiation which character is tainted *is* possible. Less computation effort during runtime and during taint evaluation. Memory overhead mostly correlates with the number of string manipulations. As precise as *array*.
 - **untainted**: An wrapper class is used to redirect all calls to the original classes. No taint calculation is performed! The taint is always "false"
@@ -71,10 +71,10 @@ Currently there are 5 different tainting mechanisms available:
 ## Abort types
 Currently there are four possibilities what can happen, if a tainted string reaches a sink:
 
-- **exit**: Exits the application through System.exit(int). Beforehands the string is printed to stderr
+- **exit**: Exits the application through System.exit(int). Beforehand the string is printed to stderr
 - **nothing**: Nothing happens if a tainted string reaches a sink
 - **stderr_logging**: Logs the tainted string to stderr as well as an stacktrace
-- **json_logging**: Logs the tainted string to a json file in ``./fontus-results.json``
+- **json_logging**: Logs the tainted string to a JSON file in ``./fontus-results.json``
 
 ## Taintloss handler types
 - **stderr_logging**: Logs to stderr if a potentially taintlossy method is called
