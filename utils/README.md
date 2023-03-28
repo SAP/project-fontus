@@ -16,6 +16,8 @@ python coverage.py --input="$HOME/Projects/TU_BS/gdpr/Broadleaf-Heatclinic-taint
 This used the report given as parameter via the *input* flag and filters it to all fully qualified names starting with *org.broadleafcommerce* but not with *org.broadleafcommerce.core.web.checkout.service*. 
 Both `--keep` and `--block` take several parameters like this: `--keep a b c`
 
+If you want to get a total coverage metric, simply pass `--no-filter` which overrides both `keep` and `block` parameters.
+
 ## [List JDK classes](./list.jdk.classes)
 
 Extracts a list of classes belonging to a Java JDK
