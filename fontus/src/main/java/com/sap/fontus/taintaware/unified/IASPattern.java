@@ -84,7 +84,7 @@ public final class IASPattern {
             }
 
             int matchSize = matcher.end() - matcher.start();
-            if (!result.isEmpty() || matchSize > 0) {
+            if (!result.isEmpty() || matchSize >= 0) {
                 int end = matcher.start();
 
                 IASString part = string.substring(start, end);
@@ -101,7 +101,7 @@ public final class IASPattern {
             result.add(string);
         }
 
-        return result.toArray(new IASString[0]);
+            return result.toArray(new IASString[0]);
     }
 
     public Stream<IASString> splitAsStream(CharSequence input) {
