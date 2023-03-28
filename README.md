@@ -1,12 +1,29 @@
-# Realizing dataflow tainting via non-intrusive Java Bytecode instrumentation
+# Fontus: Realizing dataflow tainting via non-intrusive Java Bytecode instrumentation
 A modern framework for dynamic taint analysis with string-like classes in the JVM
 
 ## Building the Framework
-For building the framework execute the gradle task ``shadowJar`` or ``publishToMavenLocal``. Aftwerwords you will find the Framework JAR in ``./fontus/build/libs``
+For building the framework execute the gradle task ``shadowJar`` or ``publishToMavenLocal``. Afterwards you will find the Framework JAR in ``./fontus/build/libs``
 
-There will be two JAR files. First of all the one starting with ``fontus``, which is for doing the offline instrumentation and the agent instrumentation.
-And secondly the one which starts with ``util``, which is necessary to execute offline instrumented applications. 
+## Building additional tools
 
+In the [tools](./tools) folder some tools related to Fontus are provided. They can be build via `/gradlew tools:TOOLNAME:jar` and the resulting jar is stored in the corresponding build folder of the tool. For Example, to build the SQL definition taint jar, invoke: `./gradlew tools:sql-tainter:jar` and then run it via `java -jar ./tools/sql-tainter/build/libs/sql-tainter.jar <inputfile>`.
+
+The provided tools are the following:
+
+### [SQL Tainter](./tools/sql-tainter)
+
+Takes a .sql file as input, taints all included statements and writes them to `tainted_<inputfilename>.sql`.
+
+### [GDPR Database query (db-query)](./tools/gdpr-database-query)
+
+Queries a provided database for GDPR tainting related questions. Can be used to realize the following tasks: Subject Access Request, Collect expired PII, contesting wrong data and to collect PII statistics.
+
+### [Converter](./tools/converter)
+Converts a Juturna configuration to a Fontus one. Untested by me, as I have no access to Juturna source code.
+
+### [Generator](./tools/generator)
+
+Generates a source and sink configuration for the passed classes. No idea how this works either!
 
 ## Agent Instrumentation
 This instrumentation type works on-the-fly with starting the application.
@@ -26,12 +43,12 @@ java -jar your-application.jar -javaagent:fontus-0.0.1-SNAPSHOT.jar
 
 ### Parameters
 It is also possible to pass multiple parameters to the agent
-- **verbose**: If this option is set, all instrumented classes are safed to ``./tmp/agent``
+- **verbose**: If this option is set, all instrumented classes are saved to ``./tmp/agent``
 - **logging_enabled**: If this option is set, a log file of the instrumentation process will be created in the working dir named ``asm-{datetime}.log`` 
 - **taintmethod**: Specifying the used taint method. For all options see [Available Tainting Methods](#Available Tainting Methods). The default is *boolean*
 - **use_caching**: Possible values: *true* or *false*. Default is true. Enables/Disables caching of taint evaluation results for lazy tainting methods
 - **layer_threshold**: Specifies a maximum depth of layers for lazybasic tainting. If this threshold is exceeded the taint is calculated and new layers will be stacked on top again. Default value is *30*. If caching is disabled, the threshold is also disabled.
-- **collect_stats**: Possible values: *true* or *false*. Default is false. If this option is enabled, the stats about taints in strings will be collected. This only applies if taintmethod *range* is used and can cause massive overhead.
+- **collect_stats**: Possible values: *true* or *false*. Default is false. If this option is enabled, the stats about taints in strings will be collected. This only applies iff taintmethod *range* is used and can cause massive overhead.
 - **config**: Specifies a path for a config file
 - **blacklisted_main_classes**: Specifies a filepath to a file which contains blacklisted main classes
 - **abort**: Specifies what happens if a tainted string reaches a sink. For all options see [Abort types](#Abort types). The default is *stderr_logging*
@@ -39,9 +56,7 @@ It is also possible to pass multiple parameters to the agent
 
 The arguments are appended to the agent path like this: ``-javaagent:jarpath[=options]``. Therefore options are defined as ``key=value`` pair and ``,`` is used as delimiter between key-value-pairs.
 
-**Attention:** If you pass multiple key-value pairs, you have to put the javaagent string in quotation marks. Otherwise bash will understand semicolons as command seperators.
-
-An example for parameters passed to the agent ``-javaagent:"fontus-0.0.1-SNAPSHOT.jar=taintmethod=range,use_caching=false"``.
+An example for parameters passed to the agent ``-javaagent:"fontus-0.0.1-SNAPSHOT.jar=taintmethod=range,use_caching=false,verbose"``.
 
 
 ## Available Tainting Methods
@@ -66,9 +81,9 @@ Currently there are four possibilities what can happen, if a tainted string reac
 - **file_logging**: Logs to file``./taintloss.log`` formatted in the same way we stderr_logging
 - **statistics_logging**: Logs to the statistics MXBean in the format "Caller.method -> Taintloss.method: Hits"
 
-## Inspect bytecode of a class
+## Inspect Bytecode of a class
 
-To see the bytecode for a class file, run ``javap -l -v -p -s TestString.class``
+To see the Bytecode for a class file, run ``javap -l -v -p -s TestString.class``
 
 ## Troubleshoot
 
