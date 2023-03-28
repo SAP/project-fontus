@@ -10,6 +10,11 @@ Adjust the configuration accordingly! In theory other DBMS are also supported, b
 
 With something like `mysqldump -u $USER -p "$DBNAME" >> "$DBNAME.sql"` you can dump the database to a SQL file. Before continuing ensure the dump contains both the creation of the schema (all DDL required to setup the tables) as well as the data (a bunch of insert statements).
 
+To do this with a running docker container, you can run:
+```
+docker exec -i $CONTAINER_NAME mysqldump -u $USER -p "$DBNAME" >> "$DBNAME.sql
+```
+
 3. Taint the DB dump
 
 The `com.sap.fontus.sql.tainter.SQLRewriter` class has a main method to taint all SQL statements in a text file. This assumes the input file (called `dump.sql`) is in the current working directory. If run that way it will create a `tainted_dump.sql` file containing all tainted statements.
