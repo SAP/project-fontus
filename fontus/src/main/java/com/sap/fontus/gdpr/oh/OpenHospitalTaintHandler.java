@@ -11,6 +11,7 @@ import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.registry.PurposeRegistry;
 import com.sap.fontus.gdpr.metadata.registry.VendorRegistry;
 import com.sap.fontus.gdpr.metadata.simple.*;
+import com.sap.fontus.gdpr.openmrs.OpenMrsTaintHandler;
 import com.sap.fontus.gdpr.servlet.ReflectedCookie;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.taintaware.IASTaintAware;
@@ -26,6 +27,7 @@ import java.util.*;
 
 public class OpenHospitalTaintHandler extends IASTaintHandler {
 
+    private static final String dataSubjectAttributeName = OpenHospitalTaintHandler.class.getName() + ".DATASUBJECT";
 
     private static Collection<AllowedPurpose> getPurposesFromRequest(ReflectedHttpServletRequest servlet) {
         ReflectedCookie[] cookies = servlet.getCookies();
@@ -53,6 +55,26 @@ public class OpenHospitalTaintHandler extends IASTaintHandler {
         return i;
     }
 
+    private static DataSubject getOrCreateDataSubjectUuid(ReflectedHttpServletRequest request) {
+        DataSubject dataSubject = null;
+        // First try retrieving from cached attribute value
+        Object o = request.getAttribute(dataSubjectAttributeName);
+        if ((o instanceof DataSubject)) {
+            dataSubject = (DataSubject) o;
+        } else {
+            dataSubject = new SimpleDataSubject(UUID.randomUUID().toString());
+            request.setAttribute(dataSubjectAttributeName, dataSubject);
+        }
+        //System.out.println("FONTUS: got data subject uuid: " + dataSubject);
+        return dataSubject;
+    }
+
+    private static GdprMetadata createNewPatientMetadata(ReflectedHttpServletRequest request) {
+        DataSubject dataSubject = getOrCreateDataSubjectUuid(request);
+        return new SimpleGdprMetadata(getPurposesFromRequest(request), ProtectionLevel.Normal, dataSubject,
+                new SimpleDataId(), true, true, Identifiability.Explicit);
+    }
+
     private static ReflectedHttpServletRequest getRequestFromStreamParser(Object parser) {
         ReflectedHttpServletRequest request = null;
 
@@ -77,6 +99,7 @@ public class OpenHospitalTaintHandler extends IASTaintHandler {
             Object httpInputOverHTTP = f2.get(pushBackInputStream);
             Field f3 = httpInputOverHTTP.getClass().getSuperclass().getDeclaredField("_channelState");
             f3.setAccessible(true);
+
 
             Object channelState = f3.get(httpInputOverHTTP);
             Method m2 = channelState.getClass().getMethod("getBaseRequest");
@@ -116,6 +139,10 @@ public class OpenHospitalTaintHandler extends IASTaintHandler {
             ReflectedHttpServletRequest request = getRequestFromStreamParser(parameters[0]);
             System.out.println("Request: " + request);
 
+            if ("POST".equals(request.getMethodString()) && "patients".equals(request.getRequestURIString())) {
+                System.out.println("Creating new patient...");
+                metadata = createNewPatientMetadata(request);
+            }
             // Add taint information if match was found
             if (metadata != null) {
                 System.out.println("Adding Taint metadata to string '" + taintAware.toString() + "': " + metadata);

@@ -53,10 +53,13 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
     }
 
     
-    public String getMethod() {
-        return null;
+    public IASString getMethod() {
+        return (IASString) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod());;
     }
 
+    public String getMethodString() {
+        return getMethod().getString();
+    }
     
     public IASString getPathInfo() {
         return (IASString) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod());
