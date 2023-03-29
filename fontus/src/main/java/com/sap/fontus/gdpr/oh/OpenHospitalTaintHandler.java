@@ -139,7 +139,7 @@ public class OpenHospitalTaintHandler extends IASTaintHandler {
             ReflectedHttpServletRequest request = getRequestFromStreamParser(parameters[0]);
             System.out.println("Request: " + request);
 
-            if ("POST".equals(request.getMethodString()) && "patients".equals(request.getRequestURIString())) {
+            if (request.getMethodString().equals("POST") && request.getRequestURIString().endsWith("patients")) {
                 System.out.println("Creating new patient...");
                 metadata = createNewPatientMetadata(request);
             }
