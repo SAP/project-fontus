@@ -75,7 +75,7 @@ public class OpenHospitalTaintHandler extends IASTaintHandler {
 
             // org/eclipse/jetty/server/HttpInputOverHTTP
             Object httpInputOverHTTP = f2.get(pushBackInputStream);
-            Field f3 = httpInputOverHTTP.getClass().getDeclaredField("_channelState");
+            Field f3 = httpInputOverHTTP.getClass().getSuperclass().getDeclaredField("_channelState");
             f3.setAccessible(true);
 
             Object channelState = f3.get(httpInputOverHTTP);
