@@ -54,7 +54,7 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
 
     
     public IASString getMethod() {
-        return (IASString) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod());;
+        return (IASString) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod());
     }
 
     public String getMethodString() {
