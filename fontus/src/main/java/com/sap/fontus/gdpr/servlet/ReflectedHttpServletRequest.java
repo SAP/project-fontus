@@ -38,7 +38,7 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
     }
 
     public String getHeader(String name) {
-        return this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod(), new IASString(name)).toString();
+        return getHeader(new IASString(name)).getString();
     }
 
     
