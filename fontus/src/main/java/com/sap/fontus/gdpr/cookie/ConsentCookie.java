@@ -49,4 +49,5 @@ public class ConsentCookie {
 
     public static boolean isConsentCookie(String name) { return name.equals(cookieName); }
 
+    public static String getConsentCookieName() { return cookieName; }
 }

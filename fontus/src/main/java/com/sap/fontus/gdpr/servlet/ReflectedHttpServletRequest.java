@@ -33,8 +33,12 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
     }
 
     
+    public IASString getHeader(IASString name) {
+        return (IASString) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod(), name);
+    }
+
     public String getHeader(String name) {
-        return null;
+        return this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod(), new IASString(name)).toString();
     }
 
     
