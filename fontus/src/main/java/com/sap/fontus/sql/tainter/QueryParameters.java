@@ -61,6 +61,10 @@ public class QueryParameters {
         int oldIdx = 1;
         for(ParameterType type : this.types) {
             switch (type) {
+                case ASSIGNMENT_UNTAINTED:
+                    this.indices.put(oldIdx, new TaintAssignment(oldIdx, currentIdx,  type));
+                    currentIdx ++;
+                    break;
                 case ASSIGNMENT:
                     this.indices.put(oldIdx, new TaintAssignment(oldIdx, currentIdx, currentIdx+1, type));
                     currentIdx += 2;

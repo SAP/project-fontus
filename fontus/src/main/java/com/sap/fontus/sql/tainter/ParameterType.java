@@ -50,5 +50,7 @@ public enum ParameterType {
      * We need to duplicate the subselect, one for the insert of the regular value and one for the tainted value
      * The tainted value thus can move further to the back, as the select might have several parameters in its where clause
      */
-    ASSIGNMENT_SUBSELECT
+    ASSIGNMENT_SUBSELECT,
+
+    ASSIGNMENT_UNTAINTED
 }
