@@ -179,7 +179,13 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 	}
 
 	@Override
-	public void visit(Addition arg0) {
+	public void visit(Addition addition) {
+		if(addition.getLeftExpression() instanceof JdbcParameter) {
+			this.parameters.addParameter(ParameterType.ASSIGNMENT);
+		}
+		if(addition.getRightExpression() instanceof JdbcParameter) {
+			this.parameters.addParameter(ParameterType.ASSIGNMENT);
+		}
 		// add '0' for correct column count
 		this.expressionReference.add(new StringValue("'0'"));
 	}

@@ -243,7 +243,23 @@ class PreparedStatementTests {
         TaintAssignment first = parameters.computeAssignment(1);
         assertTrue(true);
     }
-
+    // UPDATE jforum_forums SET forum_topics = forum_topics + ? WHERE forum_id = ?
+    @Test
+    void testUpdateThatIncrementsByStepSize() throws Exception {
+        //String sql = "Update foo set a = ? where b = ?\n";
+        String sql = "UPDATE jforum_forums SET c = ?, forum_topics = forum_topics + ? WHERE forum_id = ?\n";
+        StatementTainter tainter = new StatementTainter();
+        Statements stmts=  CCJSqlParserUtil.parseStatements(sql);
+        stmts.accept(tainter);
+        //System.out.println((stmts.toString().trim()));
+        QueryParameters parameters = tainter.getParameters();
+        TaintAssignment first = parameters.computeAssignment(1);
+        assertNotNull(first);
+        TaintAssignment second = parameters.computeAssignment(2);
+        assertNotNull(second);
+        TaintAssignment third = parameters.computeAssignment(3);
+        assertNotNull(third);
+    }
     @Test
     void testSubselectWithJoin() throws Exception {
         String query = "SELECT first_name, (select count(*) from meta join contacts c where meta.contact_id = c.id) FROM contacts WHERE id = ?\n;";
