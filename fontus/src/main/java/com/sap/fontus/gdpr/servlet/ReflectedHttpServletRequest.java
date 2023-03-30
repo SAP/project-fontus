@@ -48,10 +48,9 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
 
     
     public Enumeration<?> getHeaderNames() {
-        return null;
+        return (Enumeration<?>) this.callMethodWithReflection(new Object(){}.getClass().getEnclosingMethod());
     }
 
-    
     public int getIntHeader(String name) {
         return 0;
     }
@@ -329,22 +328,38 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
 
 	    Enumeration<?> e = this.getParameterNames();
 	    sb.append("Query Parameters:");
-	    sb.append(System.getProperty("line.separator"));
-	    if (e == null) {
-		sb.append("NULL");
-	    } else {
-		while (e.hasMoreElements()) {
-		    IASString s = (IASString) e.nextElement();
-		    sb.append(s.getString() + " = ");
-		    for (IASString value : this.getParameterValues(s)) {
-			sb.append(value.getString() + ", ");
-		    }
-		    sb.append(System.getProperty("line.separator"));
-		}
-	    }
-	    sb.append(System.getProperty("line.separator"));
+        sb.append(System.getProperty("line.separator"));
+        if (e == null) {
+            sb.append("NULL");
+        } else {
+            while (e.hasMoreElements()) {
+                IASString s = (IASString) e.nextElement();
+                sb.append(s.getString() + " = ");
+                for (IASString value : this.getParameterValues(s)) {
+                    sb.append(value.getString() + ", ");
+                }
+                sb.append(System.getProperty("line.separator"));
+            }
+        }
+        sb.append(System.getProperty("line.separator"));
 
-	    Enumeration<?> a = this.getAttributeNames();
+        Enumeration<?> h = this.getHeaderNames();
+        sb.append("Headers:");
+        sb.append(System.getProperty("line.separator"));
+        if (h == null) {
+            sb.append("NULL");
+        } else {
+            while (h.hasMoreElements()) {
+                IASString s = (IASString) h.nextElement();
+                sb.append(s.getString() + " = ");
+                IASString header = getHeader(s);
+                sb.append(header.getString() + ", ");
+                sb.append(System.getProperty("line.separator"));
+            }
+        }
+        sb.append(System.getProperty("line.separator"));
+
+        Enumeration<?> a = this.getAttributeNames();
 	    sb.append("Attributes:");
 	    sb.append(System.getProperty("line.separator"));
 	    if (a == null) {
