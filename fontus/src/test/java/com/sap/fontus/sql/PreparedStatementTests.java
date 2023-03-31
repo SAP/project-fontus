@@ -1,15 +1,20 @@
 package com.sap.fontus.sql;
 
+import com.sap.fontus.config.Configuration;
+import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.sql.driver.ConnectionWrapper;
 import com.sap.fontus.sql.driver.PreparedStatementWrapper;
 import com.sap.fontus.sql.tainter.ParameterType;
 import com.sap.fontus.sql.tainter.QueryParameters;
 import com.sap.fontus.sql.tainter.StatementTainter;
 import com.sap.fontus.sql.tainter.TaintAssignment;
+import com.sap.fontus.taintaware.unified.IASPreparedStatementUtils;
+import com.sap.fontus.taintaware.unified.IASString;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statements;
 import org.junit.Ignore;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.migrationsupport.EnableJUnit4MigrationSupport;
@@ -21,6 +26,12 @@ import static org.junit.jupiter.api.Assertions.*;
 @SuppressWarnings({"JDBCResourceOpenedButNotSafelyClosed", "CallToDriverManagerGetConnection", "SqlResolve", "JDBCPrepareStatementWithNonConstantString", "JDBCExecuteWithNonConstantString"})
 @EnableJUnit4MigrationSupport
 class PreparedStatementTests {
+
+    @BeforeAll
+    static void init() {
+        Configuration.setTestConfig(TaintMethod.RANGE);
+    }
+    
     private Connection conn;
     @BeforeEach
     void setup() throws SQLException {
@@ -259,6 +270,36 @@ class PreparedStatementTests {
         assertNotNull(second);
         TaintAssignment third = parameters.computeAssignment(3);
         assertNotNull(third);
+    }
+    @Test
+    void testInsertNullParam() throws Exception {
+        String query = "INSERT INTO contacts VALUES(?, ?, ?, ?, ?)";
+        Connection mc = new MockConnection(this.conn);
+        Connection c = ConnectionWrapper.wrap(mc);
+        PreparedStatement ps = c.prepareStatement(query);
+        MockPreparedStatement mps = ps.unwrap(MockPreparedStatement.class);
+        PreparedStatementWrapper unwrapped = ps.unwrap(PreparedStatementWrapper.class);
+        QueryParameters parameters = unwrapped.getParameters();
+
+        TaintAssignment[] assignments = new TaintAssignment[5];
+        for(int i = 0; i < 5; i++) {
+            assignments[i] = new TaintAssignment(i+1, (i*2)+1, (i*2)+2, ParameterType.ASSIGNMENT);
+        }
+        ps.setInt(1, 5);
+        IASString untainted = new IASString("foo");
+        IASString ne = null;
+        IASString tainted = new IASString("bar");
+        tainted.setTaint(true);
+        IASPreparedStatementUtils.setString(ps, 2, untainted);
+        IASPreparedStatementUtils.setString(ps, 3, ne);
+        IASPreparedStatementUtils.setString(ps, 3, tainted);
+        ps.setString(5, "1234");
+        for(int i = 1; i <= parameters.getParameterCount(); i++) {
+            TaintAssignment expected = assignments[i-1];
+            TaintAssignment actual = parameters.computeAssignment(i);
+            assertEquals(expected, actual);
+        }
+        ResultSet rss = ps.executeQuery();
     }
     @Test
     void testSubselectWithJoin() throws Exception {

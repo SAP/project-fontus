@@ -538,9 +538,9 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         //System.out.println(Arrays.toString(this.newIndex));
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
 
-        this.delegate.setString(assignment.getNewIndex(), x.getString());
+        this.delegate.setString(assignment.getNewIndex(), x != null ? x.getString() : null);
         //System.out.printf("Setting tainted? (%b) string in prep statement: %s%n", x.isTainted(), x.getString());
-        if(x.isTainted() && assignment.isHasTaint()) {
+        if(x != null && x.isTainted() && assignment.isHasTaint()) {
             //System.out.printf("Setting String at idx %d: %s/%s%n", parameterIndex, x.getString(), "foo");
             //System.out.println(Arrays.toString(this.setVariables));
             //System.out.println(Arrays.toString(this.newIndex));
@@ -554,8 +554,8 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     @Override
     public void setNString(int parameterIndex, IASString value) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
-        this.delegate.setNString(assignment.getNewIndex(), value.getString());
-        if(value.isTainted() && assignment.isHasTaint()) {
+        this.delegate.setNString(assignment.getNewIndex(), value != null ? value.getString() : null);
+        if(value != null &&value.isTainted() && assignment.isHasTaint()) {
             //System.out.printf("Setting String at idx %d: %s/%s%n", parameterIndex, x.getString(), "foo");
             //System.out.println(Arrays.toString(this.setVariables));
             //System.out.println(Arrays.toString(this.newIndex));
