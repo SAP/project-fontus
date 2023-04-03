@@ -48,7 +48,8 @@ def parse(input, allowed_prefixes, blocked_prefixes, no_filter):
                     elif type == "INSTRUCTION":
                         class_ins_missed = int(counter.get("missed"))
                         class_ins_covered = int(counter.get("covered"))
-
+                if class_meth_missed > 0:
+                    print(method_name)
                 class_meth_total = class_meth_missed + class_meth_covered
                 class_line_total = class_line_missed + class_line_covered
                 class_ins_total = class_ins_missed + class_ins_covered
