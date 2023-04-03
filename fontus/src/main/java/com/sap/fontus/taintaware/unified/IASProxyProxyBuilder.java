@@ -29,6 +29,8 @@ public class IASProxyProxyBuilder {
         return this.name;
     }
 
+    private int line = 0;
+
     private IASProxyProxyBuilder(String name, Class<?>[] interfaces, ClassWriter classWriter, ClassLoader classLoader) {
         this.classWriter = classWriter;
         this.name = name;
@@ -102,6 +104,9 @@ public class IASProxyProxyBuilder {
     }
 
     public byte[] build() {
+
+        this.line = 1;
+
         this.generateClassHeader();
 
         this.generateInvocationHandlerField();
@@ -171,6 +176,7 @@ public class IASProxyProxyBuilder {
         }
 
         mv.visitLabel(startLabel);
+        mv.visitLineNumber(++this.line, startLabel);
 
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitFieldInsn(Opcodes.GETFIELD, this.name, HANDLER_FIELD_NAME, Type.getType(InvocationHandler.class).getDescriptor());
@@ -204,11 +210,14 @@ public class IASProxyProxyBuilder {
         }
 
         mv.visitLabel(endLabel);
+        mv.visitLineNumber(++this.line, endLabel);
 
         mv.visitLabel(annotatedExceptionsLabel);
+        mv.visitLineNumber(++this.line, annotatedExceptionsLabel);
         mv.visitInsn(Opcodes.ATHROW);
 
         mv.visitLabel(unknownExceptionLabel);
+        mv.visitLineNumber(++this.line, unknownExceptionLabel);
         mv.visitTypeInsn(Opcodes.NEW, Utils.getInternalName(UndeclaredThrowableException.class));
         mv.visitInsn(Opcodes.DUP);
         mv.visitInsn(Opcodes.DUP2_X1);
