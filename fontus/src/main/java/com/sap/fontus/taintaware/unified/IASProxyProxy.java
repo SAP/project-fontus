@@ -146,7 +146,7 @@ public class IASProxyProxy {
             Constructor<?> constructor = proxy.getConstructor(InvocationHandler.class);
 
             try {
-                return constructor.newInstance(h);
+                return constructor.newInstance(new Object[]{h});
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new InternalError(e.toString(), e);
             } catch (InvocationTargetException e) {
