@@ -1,5 +1,6 @@
 package com.sap.fontus.instrumentation;
 
+import com.sap.fontus.agent.InstrumentationConfiguration;
 import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.TaintMethod;
@@ -43,6 +44,7 @@ public class LambdaCallTest {
 
     @BeforeAll
     static void init() {
+        InstrumentationConfiguration.init(null, null);
         Configuration.setTestConfig(TaintMethod.defaultTaintMethod());
     }
 
