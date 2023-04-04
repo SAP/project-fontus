@@ -82,7 +82,7 @@ public interface InstrumentationStrategy {
      */
     FunctionCall rewriteOwnerMethod(final FunctionCall functionCall);
 
-    void instrumentStackTop(MethodVisitor mv, Type origType);
+    Type instrumentStackTop(MethodVisitor mv, Type origType);
 
     boolean handleLdc(MethodVisitor mv, final Object value);
 

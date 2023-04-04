@@ -45,12 +45,12 @@ public class StringInstrumentation extends AbstractInstrumentation {
         //mv.visitTypeInsn(Opcodes.NEW, this.instrumentedType.getInternalName());
         //mv.visitInsn(Opcodes.DUP);
         mv.visitLdcInsn(value);
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.instrumentedType.getInternalName(), Constants.FROM_STRING, String.format("(%s)%s", Type.getType(String.class).getDescriptor(), Type.getType(IASString.class).getDescriptor()), false);
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.instrumentedType.getInternalName(), Constants.FROM_STRING, String.format("(%s)%s", this.origType.getDescriptor(), this.instrumentedType.getDescriptor()), false);
         //mv.visitMethodInsn(Opcodes.INVOKESPECIAL, this.instrumentedType.getInternalName(), Constants.Init, Constants.TStringInitUntaintedDesc, false);
         // Interning not necessary, because CompareProxy catches comparings
         // Maybe increases memory footprint enormous
 //        this.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, this.stringConfig.getTStringQN(), "intern", String.format("()%s", Type.getType(IASStringable.class).getDescriptor()), false);
-        mv.visitTypeInsn(Opcodes.CHECKCAST, this.instrumentedType.getInternalName());
+       // mv.visitTypeInsn(Opcodes.CHECKCAST, this.instrumentedType.getInternalName());
     }
 
     @Override

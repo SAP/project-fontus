@@ -119,21 +119,24 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
-    public void instrumentStackTop(MethodVisitor mv, Type origType) {
+    public Type instrumentStackTop(MethodVisitor mv, Type origType) {
         if (this.origType.equals(origType)) {
-            this.origToTainted(mv);
+            return this.origToTainted(mv);
         } else if (this.getOrigArrayType().equals(origType)) {
-            this.arrayOrigToTainted(mv);
+            return this.arrayOrigToTainted(mv);
         }
+        return null;
     }
 
-    private void arrayOrigToTainted(MethodVisitor mv) {
+    private Type arrayOrigToTainted(MethodVisitor mv) {
+        Type retType = this.getInstrumentedArrayType(1);
         mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
-        mv.visitTypeInsn(Opcodes.CHECKCAST, this.getInstrumentedArrayType(1).getInternalName());
+        mv.visitTypeInsn(Opcodes.CHECKCAST, retType.getInternalName());
+        return retType;
     }
 
-    protected void origToTainted(MethodVisitor mv) {
-        TaintingUtils.convertTypeToTainted(this.origType, this.instrumentedType, mv);
+    protected Type origToTainted(MethodVisitor mv) {
+        return TaintingUtils.convertTypeToTainted(this.origType, this.instrumentedType, mv);
     }
 
     @Override

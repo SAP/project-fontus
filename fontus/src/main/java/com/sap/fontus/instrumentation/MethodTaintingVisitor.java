@@ -79,7 +79,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.used = Type.getArgumentsAndReturnSizes(methodDescriptor) >> 2;
         this.usedAfterInjection = this.used;
         if ((acc & Opcodes.ACC_STATIC) != 0) {
-            this.used--; // no this
+            this.used--; // Don't have a 'this' pointer
         }
         this.name = name;
         this.methodDescriptor = methodDescriptor;
@@ -111,7 +111,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
      * See https://stackoverflow.com/questions/47674972/getting-the-number-of-local-variables-in-a-method
      * for keeping track of used locals..
      */
-
     @Override
     public void visitFrame(
             int type, int numLocal, Object[] local, int numStack, Object[] stack) {

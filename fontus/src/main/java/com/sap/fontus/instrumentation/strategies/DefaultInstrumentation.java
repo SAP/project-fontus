@@ -126,7 +126,8 @@ public class DefaultInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
-    public void instrumentStackTop(MethodVisitor mv, Type origType) {
+    public Type instrumentStackTop(MethodVisitor mv, Type origType) {
+        return null;
     }
 
     @Override

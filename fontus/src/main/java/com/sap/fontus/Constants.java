@@ -17,6 +17,8 @@ public final class Constants {
     public static final String AGENT_DELIMITER = ",";
     public static final String TAINT_PREFIX = "__taint__";
 
+    public static final String TAINTAWARE_PACKAGE_NAME = "com.sap.fontus.taintaware";
+
     public static final String ConversionUtilsQN = Utils.getInternalName(ConversionUtils.class);
     /**
      * Converts regular objects to tainted objects.

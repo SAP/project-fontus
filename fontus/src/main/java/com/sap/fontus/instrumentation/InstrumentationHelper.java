@@ -29,7 +29,6 @@ public final class InstrumentationHelper implements InstrumentationStrategy {
         this.strategies.add(new MatcherInstrumentation(this));
         this.strategies.add(new PatternInstrumentation(this));
         this.strategies.add(new AbstractInstrumentation(Type.getType(MatchResult.class), Type.getType(IASMatchResult.class), this, "toMatchResult"));
-
         this.strategies.add(new StringInstrumentation(this));
         this.strategies.add(new StringBuilderInstrumentation(this));
         this.strategies.add(new StringBufferInstrumentation(this));
@@ -244,10 +243,15 @@ public final class InstrumentationHelper implements InstrumentationStrategy {
     }
 
     @Override
-    public void instrumentStackTop(MethodVisitor mv, Type origType) {
+    public Type instrumentStackTop(MethodVisitor mv, Type origType) {
+        Type returnType = origType;
         for (InstrumentationStrategy strategy : this.strategies) {
-            strategy.instrumentStackTop(mv, origType);
+            Type r = strategy.instrumentStackTop(mv, origType);
+            if(r != null) {
+                returnType = r;
+            }
         }
+        return returnType;
     }
 
     @Override

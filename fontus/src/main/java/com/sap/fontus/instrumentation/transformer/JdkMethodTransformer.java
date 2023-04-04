@@ -48,16 +48,18 @@ public class JdkMethodTransformer implements ParameterTransformation, ReturnTran
 
     @Override
     public void transformReturnValue(MethodTaintingVisitor visitor, Descriptor desc) {
-        this.instrumentationHelper.instrumentStackTop(visitor.getParentVisitor(), Type.getType(desc.getReturnType()));
+        Type returnType = Type.getType(desc.getReturnType());
+        returnType = this.instrumentationHelper.instrumentStackTop(visitor.getParentVisitor(), returnType);
 
         FunctionCall converter = this.configuration.getConverterForReturnValue(this.call);
         if (converter != null) {
             visitor.visitMethodInsn(converter);
             return;
         }
-        Type returnType = Type.getType(desc.getReturnType());
+
+
         int returnSort = returnType.getSort();
-        if (returnSort == Type.ARRAY || returnSort == Type.OBJECT && !neverConvert.contains(returnType)
+        if (!returnType.getClassName().startsWith(Constants.TAINTAWARE_PACKAGE_NAME) && ((returnSort == Type.ARRAY && (returnType.getElementType().getSort() >= Type.ARRAY && !neverConvert.contains(returnType.getElementType()))) || returnSort == Type.OBJECT && !neverConvert.contains(returnType))
             // TODO: evaluate soundness:        &&!(this.call.getOwner().equals("java/util/Iterator") && this.call.getName().equals("next"))
         ) {
             FunctionCall convert = new FunctionCall(Opcodes.INVOKESTATIC,

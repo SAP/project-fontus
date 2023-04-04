@@ -57,12 +57,13 @@ public final class TaintingUtils {
      * @param target The target type
      * @param mv The MethodVisitor where the conversion call shall be inserted
      */
-    public static void convertTypeToTainted(Type source, Type target, MethodVisitor mv) {
+    public static Type convertTypeToTainted(Type source, Type target, MethodVisitor mv) {
         if (target.equals(Type.getType(IASString.class)) && source.equals(Type.getType(String.class))) {
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASString.class), Constants.FROM_STRING, Constants.FROM_STRING_DESCRIPTOR, false);
         } else {
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToConcreteName, Constants.ConversionUtilsToConcreteDesc, false);
             mv.visitTypeInsn(Opcodes.CHECKCAST, target.getInternalName());
         }
+        return target;
     }
 }
