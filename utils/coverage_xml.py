@@ -26,7 +26,7 @@ def parse(input, allowed_prefixes, blocked_prefixes, no_filter):
             clazz_name = clazz.get("name")
             if any(substring in clazz_name for substring in forbidden_classes):
                 continue
-            if len(allowed_classes) > 0 and not any(substring in clazz_name for substring in allowed_classes):
+            if not no_filter and len(allowed_classes) > 0 and not any(substring in clazz_name for substring in allowed_classes):
                 continue
             for method in clazz.findall("method"):
                 method_name = method.get("name")
@@ -34,6 +34,7 @@ def parse(input, allowed_prefixes, blocked_prefixes, no_filter):
                 class_meth_missed = 0
                 class_meth_covered = 0
                 class_line_missed = 0
+                class_line_covered = 0
                 class_ins_missed = 0
                 class_ins_covered = 0
 
