@@ -109,11 +109,13 @@ public class IASProxyProxy {
         Class<?>[] paramInterfaces = interfaces.clone();
         Arrays.sort(paramInterfaces, (o1, o2) -> o2.hashCode() - o1.hashCode());
         for (Class<?> proxy : proxyCache.values()) {
-            Class<?>[] proxyInterfaces = proxy.getInterfaces();
-            if (proxyInterfaces.length == paramInterfaces.length) {
-                Arrays.sort(proxyInterfaces, (o1, o2) -> o2.hashCode() - o1.hashCode());
-                if (Arrays.equals(proxyInterfaces, paramInterfaces)) {
-                    return proxy;
+            if (proxy != null) {
+                Class<?>[] proxyInterfaces = proxy.getInterfaces();
+                if (proxyInterfaces.length == paramInterfaces.length) {
+                    Arrays.sort(proxyInterfaces, (o1, o2) -> o2.hashCode() - o1.hashCode());
+                    if (Arrays.equals(proxyInterfaces, paramInterfaces)) {
+                        return proxy;
+                    }
                 }
             }
         }
