@@ -125,7 +125,8 @@ public class IASProxyProxyBuilder {
     }
 
     private void generateInvocationHandlerField() {
-        FieldVisitor fv = this.classWriter.visitField(Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL, HANDLER_FIELD_NAME, Type.getType(InvocationHandler.class).getDescriptor(), null, null);
+        FieldVisitor fv = this.classWriter.visitField(Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL,
+                HANDLER_FIELD_NAME, Type.getType(InvocationHandler.class).getDescriptor(), null, null);
         fv.visitEnd();
     }
 
@@ -280,13 +281,13 @@ public class IASProxyProxyBuilder {
     }
 
     public void generateConstructor() {
-        MethodVisitor mv = this.classWriter.visitMethod(Opcodes.ACC_PUBLIC, Constants.Init, MethodType.methodType(void.class, InvocationHandler.class).toMethodDescriptorString(), null, null);
+        MethodVisitor mv = this.classWriter.visitMethod(Opcodes.ACC_PUBLIC, Constants.Init,
+                MethodType.methodType(void.class, InvocationHandler.class).toMethodDescriptorString(), null, null);
         mv.visitCode();
         mv.visitVarInsn(Opcodes.ALOAD, 0);
-        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Utils.getInternalName(Object.class), Constants.Init, MethodType.methodType(void.class).toMethodDescriptorString(), false);
-        mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitVarInsn(Opcodes.ALOAD, 1);
-        mv.visitFieldInsn(Opcodes.PUTFIELD, this.name, HANDLER_FIELD_NAME, Type.getType(InvocationHandler.class).getDescriptor());
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Utils.getInternalName(IASProxyProxy.class), Constants.Init,
+                "(Ljava/lang/reflect/InvocationHandler;)V", false);
         mv.visitInsn(Opcodes.RETURN);
         mv.visitMaxs(Constants.MAX_STACK_DEFAULT, Constants.MAX_LOCALS_DEFAULT);
         mv.visitEnd();
@@ -297,8 +298,8 @@ public class IASProxyProxyBuilder {
         for (int i = 0; i < this.interfaces.length; i++) {
             interfaceNames[i] = Utils.getInternalName(this.interfaces[i]);
         }
-//        classWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC, Utils.dotToSlash(this.name), null, Utils.getInternalName(IASProxyProxy.class), interfaceNames);
-        this.classWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC, Utils.dotToSlash(this.name), null, Utils.getInternalName(Object.class), interfaceNames);
+        // Inherit from IASProxyProxy
+        this.classWriter.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC, Utils.dotToSlash(this.name), null, Utils.getInternalName(IASProxyProxy.class), interfaceNames);
     }
 
     private void generateMethodFields(List<IASProxyProxyBuilder.ProxyMethod> methods) {

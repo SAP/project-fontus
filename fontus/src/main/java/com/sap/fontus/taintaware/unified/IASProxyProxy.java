@@ -11,6 +11,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class IASProxyProxy {
     protected final InvocationHandler h;
@@ -18,8 +19,12 @@ public class IASProxyProxy {
 
 
     protected IASProxyProxy(InvocationHandler h) {
+        Objects.requireNonNull(h);
         this.h = h;
     }
+
+    // Prevent instantiation
+    private IASProxyProxy() { h = null; }
 
     public static boolean isProxyClass(Class<?> cls) {
         return proxyCache.containsValue(cls);
