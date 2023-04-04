@@ -18,6 +18,7 @@ public class IASProxyProxyBuilder {
     private static final AtomicInteger counter = new AtomicInteger();
     private static final String PROXY_BASE_PACKAGE = Constants.PACKAGE_NEW + ".internal";
     public static final String HANDLER_FIELD_NAME = "h";
+    public static final String PROXY_PROXY_NAME = Utils.getInternalName(IASProxyProxy.class);
     private final String name;
     private final Class<?>[] interfaces;
     private final ClassWriter classWriter;
@@ -109,8 +110,6 @@ public class IASProxyProxyBuilder {
 
         this.generateClassHeader();
 
-        this.generateInvocationHandlerField();
-
         this.generateConstructor();
 
         List<IASProxyProxyBuilder.ProxyMethod> methods = this.generateProxyMethods();
@@ -122,12 +121,6 @@ public class IASProxyProxyBuilder {
         this.generateStaticInitializer(methods);
 
         return this.classWriter.toByteArray();
-    }
-
-    private void generateInvocationHandlerField() {
-        FieldVisitor fv = this.classWriter.visitField(Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL,
-                HANDLER_FIELD_NAME, Type.getType(InvocationHandler.class).getDescriptor(), null, null);
-        fv.visitEnd();
     }
 
     public static IASProxyProxyBuilder newBuilder(Class<?>[] interfaces, ClassLoader classLoader) {
@@ -180,7 +173,7 @@ public class IASProxyProxyBuilder {
         mv.visitLineNumber(++this.line, startLabel);
 
         mv.visitVarInsn(Opcodes.ALOAD, 0);
-        mv.visitFieldInsn(Opcodes.GETFIELD, this.name, HANDLER_FIELD_NAME, Type.getType(InvocationHandler.class).getDescriptor());
+        mv.visitFieldInsn(Opcodes.GETFIELD, PROXY_PROXY_NAME, HANDLER_FIELD_NAME, Type.getType(InvocationHandler.class).getDescriptor());
 
         mv.visitVarInsn(Opcodes.ALOAD, 0);
 
@@ -286,7 +279,7 @@ public class IASProxyProxyBuilder {
         mv.visitCode();
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitVarInsn(Opcodes.ALOAD, 1);
-        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Utils.getInternalName(IASProxyProxy.class), Constants.Init,
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, PROXY_PROXY_NAME, Constants.Init,
                 "(Ljava/lang/reflect/InvocationHandler;)V", false);
         mv.visitInsn(Opcodes.RETURN);
         mv.visitMaxs(Constants.MAX_STACK_DEFAULT, Constants.MAX_LOCALS_DEFAULT);
