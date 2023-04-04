@@ -55,7 +55,7 @@ public class IASProxyProxy {
 //            return invocationHandler;
 
             try {
-                Field f = proxy.getClass().getDeclaredField("h");
+                Field f = IASProxyProxy.class.getDeclaredField("h");
                 f.setAccessible(true);
                 return (InvocationHandler) f.get(proxy);
             } catch (IllegalAccessException | NoSuchFieldException e) {
