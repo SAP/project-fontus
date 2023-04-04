@@ -19,7 +19,7 @@ def parse(input, allowed_prefixes, blocked_prefixes, no_filter):
     meth_total_covered = 0
 
     forbidden_classes = ["EnhancerBySpring", "HibernateProxy", "FastClassBySpring", "_Accessor_"]
-    allowed_classes = ["org/isf"]
+    allowed_classes = allowed_prefixes
     
     for package in root.findall("package"):
         for clazz in package.findall("class"):
@@ -66,7 +66,7 @@ def parse(input, allowed_prefixes, blocked_prefixes, no_filter):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--keep', default=[], action="extend", nargs="+", type=str)
+    parser.add_argument('--keep', default=["org/isf"], action="extend", nargs="+", type=str)
     parser.add_argument('--block', default=[], action="extend", nargs="+", type=str)
     parser.add_argument('--input', type=pathlib.Path, required=True)
     parser.add_argument('--no-filter', action='store_true', default=False)
