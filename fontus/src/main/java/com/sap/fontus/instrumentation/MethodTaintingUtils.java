@@ -14,7 +14,7 @@ public final class MethodTaintingUtils {
     /**
      * Functional interfaces or packages with func interfaces which are JDK or excluded but should still not be uninstrumented as lmabda
      */
-    private static final String[] lambdaIncluded = {"java/util/function/", "java/lang/", "java/util/Comparator", "java/util/concurrent/"};
+    private static final String[] lambdaIncluded = {"java/util/function/", "java/util/Comparator", "java/util/concurrent/"};
 
     private MethodTaintingUtils() {
     }
@@ -85,10 +85,10 @@ public final class MethodTaintingUtils {
     public static boolean isFunctionalInterfaceJdkOrExcluded(String descriptor) {
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
         Type instance = Type.getType(desc.getReturnType());
-
-        boolean excluded = lookup.isPackageExcludedOrJdkOrAnnotation(instance.getInternalName());
+	String instanceName = instance.getInternalName();
+        boolean excluded = lookup.isPackageExcludedOrJdkOrAnnotation(instanceName);
         for (String clsOrPackage : lambdaIncluded) {
-            if (instance.getInternalName().startsWith(clsOrPackage)) {
+            if (instanceName.startsWith(clsOrPackage)) {
                 excluded = false;
                 break;
             }
