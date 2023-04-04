@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.Map;
 
@@ -38,6 +39,21 @@ public class IASProxyProxyTest {
         ClassLoader cl = this.getClass().getClassLoader();
         ABImpl ab = new ABImpl();
         Object abProxy = IASProxyProxy.newProxyInstance(cl, new Class[] { A.class, B.class },
+                (proxy, method, methodArgs) -> {
+                    return method.invoke(ab, methodArgs);
+                }
+        );
+        A a = (A)abProxy;
+        B b = (B)abProxy;
+        assertEquals(ab.getA(), a.getA());
+        assertEquals(ab.getB(), b.getB());
+    }
+
+    @Test
+    void testProxyWithLambda() throws NoSuchMethodException {
+        ClassLoader cl = this.getClass().getClassLoader();
+        ABImpl ab = new ABImpl();
+        Object abProxy = Proxy.newProxyInstance(cl, new Class[] { A.class, B.class },
                 (proxy, method, methodArgs) -> {
                     return method.invoke(ab, methodArgs);
                 }
