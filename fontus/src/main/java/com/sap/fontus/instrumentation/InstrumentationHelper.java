@@ -244,14 +244,13 @@ public final class InstrumentationHelper implements InstrumentationStrategy {
 
     @Override
     public Type instrumentStackTop(MethodVisitor mv, Type origType) {
-        Type returnType = origType;
         for (InstrumentationStrategy strategy : this.strategies) {
             Type r = strategy.instrumentStackTop(mv, origType);
             if(r != null) {
-                returnType = r;
+                return r;
             }
         }
-        return returnType;
+        return origType;
     }
 
     @Override
