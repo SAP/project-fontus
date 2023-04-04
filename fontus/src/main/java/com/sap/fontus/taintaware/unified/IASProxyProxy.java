@@ -99,7 +99,7 @@ public class IASProxyProxy {
 
     private static Class<?> loadClass(String name, byte[] bytes, ClassLoader classLoader) {
         ClassLoader loader = classLoader;
-        if(loader == null) {
+        if ((loader == null) || (loader == ClassLoader.getPlatformClassLoader())) {
             loader = IASProxyProxy.class.getClassLoader();
         }
         return UnsafeUtils.defineClass(Utils.slashToDot(name), bytes, loader);
