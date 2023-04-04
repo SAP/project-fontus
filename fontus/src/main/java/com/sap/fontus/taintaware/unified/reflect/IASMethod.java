@@ -15,6 +15,7 @@ import com.sap.fontus.taintaware.unified.IASTaintHandler;
 import com.sap.fontus.taintaware.unified.reflect.type.IASTypeVariableImpl;
 import com.sap.fontus.utils.ConversionUtils;
 import com.sap.fontus.utils.ReflectionUtils;
+import com.sap.fontus.utils.UnsafeUtils;
 import com.sap.fontus.utils.Utils;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import jdk.internal.reflect.CallerSensitive;
@@ -205,7 +206,8 @@ public class IASMethod extends IASExecutable<Method> {
                 returnObj = ConversionUtils.convertToInstrumented(result);
             }
         } else {
-            if ((!Modifier.isPublic(this.original.getModifiers()) && !Modifier.isProtected(this.original.getModifiers()) && !Modifier.isPrivate(this.original.getModifiers()))
+            int modifiers = this.original.getModifiers();
+            if ((!Modifier.isPublic(modifiers) && !Modifier.isProtected(modifiers) && !Modifier.isPrivate(modifiers))
                     || (!Modifier.isPublic(this.original.getDeclaringClass().getModifiers()) && !Modifier.isProtected(this.original.getDeclaringClass().getModifiers()) && !Modifier.isPrivate(this.original.getDeclaringClass().getModifiers()))) {
                 // This method is package private. Iff the declaring class is in the same package as the calling class we must set it accessible
                 // Otherwise the caller class (which is this class) is not in the same package as the declaring class an an IllegalAccessException is thrown
@@ -219,6 +221,8 @@ public class IASMethod extends IASExecutable<Method> {
                 if (this.original.getDeclaringClass().getPackage().equals(callerClass.getPackage())) {
                     this.original.setAccessible(true);
                 }
+            } else if(Modifier.isPrivate(modifiers) || Modifier.isProtected(modifiers)) {
+                UnsafeUtils.setAccessible(this.original);
             }
             returnObj = this.original.invoke(instance, parameters);
         }
