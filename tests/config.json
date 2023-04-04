@@ -365,6 +365,16 @@
       "safe": true
     },
     {
+      "name": "Regex Pattern Matching Nullability Test",
+      "source": "MatcherTest.java",
+      "safe": true
+    },
+    {
+      "name": "Crypto API Test",
+      "source": "CryptoTest.java",
+      "safe": true
+    },
+    {
       "name": "Large method test",
       "source": "LargeMethod.java"
     }
