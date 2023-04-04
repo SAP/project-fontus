@@ -28,6 +28,11 @@ public class IASMatchResultImpl implements IASMatchResult {
 
     @Override
     public IASString group(int group) {
+        int start = this.start(group);
+        int end = this.end(group);
+        if(start == -1 || end == -1) {
+            return null;
+        }
         return this.string.substring(this.start(group), this.end(group));
     }
 
@@ -44,5 +49,10 @@ public class IASMatchResultImpl implements IASMatchResult {
     @Override
     public int start(int group) {
         return this.matchResult.start(group);
+    }
+
+    @Override
+    public MatchResult toMatchResult() {
+        return this.matchResult;
     }
 }

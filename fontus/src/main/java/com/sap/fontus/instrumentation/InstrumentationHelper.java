@@ -5,6 +5,7 @@ import com.sap.fontus.TriConsumer;
 import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.instrumentation.strategies.*;
+import com.sap.fontus.taintaware.unified.IASMatchResult;
 import com.sap.fontus.taintaware.unified.IASStringJoiner;
 import com.sap.fontus.taintaware.unified.reflect.*;
 import org.objectweb.asm.ClassVisitor;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.StringJoiner;
+import java.util.regex.MatchResult;
 
 public final class InstrumentationHelper implements InstrumentationStrategy {
     private final Collection<InstrumentationStrategy> strategies = new ArrayList<>(20);
@@ -26,6 +28,8 @@ public final class InstrumentationHelper implements InstrumentationStrategy {
         this.strategies.add(new FormatterInstrumentation(this));
         this.strategies.add(new MatcherInstrumentation(this));
         this.strategies.add(new PatternInstrumentation(this));
+        this.strategies.add(new AbstractInstrumentation(Type.getType(MatchResult.class), Type.getType(IASMatchResult.class), this, "toMatchResult"));
+
         this.strategies.add(new StringInstrumentation(this));
         this.strategies.add(new StringBuilderInstrumentation(this));
         this.strategies.add(new StringBufferInstrumentation(this));

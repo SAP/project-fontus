@@ -1,5 +1,7 @@
 package com.sap.fontus.taintaware.unified;
 
+import java.util.regex.MatchResult;
+
 public interface IASMatchResult {
     int end();
     int end(int group);
@@ -8,4 +10,6 @@ public interface IASMatchResult {
     int groupCount();
     int start();
     int start(int group);
+
+    MatchResult toMatchResult();
 }
