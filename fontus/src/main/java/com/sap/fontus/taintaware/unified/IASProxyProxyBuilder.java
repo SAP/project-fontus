@@ -424,6 +424,8 @@ public class IASProxyProxyBuilder {
 
     private static String newProxyName(Class<?>[] interfaces) {
         String packageName = calculatePackage(interfaces);
+        // Remove leading dots
+        packageName = packageName.replaceAll("^\\.+", "");
         return packageName + ".$Proxy" + counter.getAndIncrement();
     }
 }
