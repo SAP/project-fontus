@@ -113,4 +113,25 @@ class ConfigurationTests {
         assertEquals(config.getExcludedClasses().size(), 1);
         assertEquals("WARN: Trying to add a/b/d as an excluded class. Classes should have the first letter capitalized and should not end with slashes!\n", outContent.toString());
     }
+
+
+    @Test
+    void testPropagateTaintsInsideFuncParsing() {
+        Configuration config = this.getConfiguration("configuration_propagate_inside_tests.xml");
+        assertEquals(1, config.getPropagateTaintInFunctions().size());
+    }
+    @Test
+    void testPropagateTaintsInsideFuncMatchingExisting() {
+        Configuration config = this.getConfiguration("configuration_propagate_inside_tests.xml");
+        MethodDeclaration md = new MethodDeclaration(1, "de/hs_mannheim/informatik/ct/util/AttributeEncryptor", "convertToDatabaseColumn", "(Ljava/lang/String;)Ljava/lang/String;");
+        int idx = config.shouldPropagateTaint(md.getAccess(), md.getOwner(), md.getName(), md.getDescriptor());
+        assertEquals(1, idx);
+    }
+    @Test
+    void testPropagateTaintsInsideFuncMatchingNotExisting() {
+        Configuration config = this.getConfiguration("configuration_propagate_inside_tests.xml");
+        MethodDeclaration md = new MethodDeclaration(1, "Base64Enc", "encode", "(Ljava/lang/String;)Ljava/lang/String;");
+        int idx = config.shouldPropagateTaint(md.getAccess(), md.getOwner(), md.getName(), md.getDescriptor());
+        assertEquals(-1, idx);
+    }
 }

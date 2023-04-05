@@ -744,6 +744,11 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         this.taintInformation = taint;
     }
 
+    public void setTaintLengthAdjusted(IASTaintInformationable taint) {
+        IASTaintInformationable adjusted = taint.resize(this.string.length());
+        this.taintInformation = adjusted;
+    }
+
     public boolean isUninitialized() {
         return this.taintInformation == null;
     }
