@@ -52,6 +52,7 @@ dependencies {
     // Higher version of the sql connector breaks liquidbase with OpenMRS
     implementation 'mysql:mysql-connector-java:8.0.22'
     implementation 'com.owlike:genson:1.6'
+    implementation 'com.h2database:h2:2.1.210'
 }
 
 apply plugin: 'java'
