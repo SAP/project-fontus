@@ -581,15 +581,14 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     @Override
     public void setTObject(int parameterIndex, Object x, int targetSqlType) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
-        this.delegate.setObject(assignment.getNewIndex(), x, targetSqlType);
         if(x instanceof IASString && (
                 targetSqlType == Types.VARCHAR ||
                 targetSqlType == Types.NVARCHAR ||
                 targetSqlType == Types.LONGNVARCHAR ||
                 targetSqlType == Types.LONGVARCHAR)) {
             IASString value = (IASString) x;
-            if(value.isTainted() && assignment.isHasTaint()) {
-
+            this.delegate.setObject(assignment.getNewIndex(), value.getString(), targetSqlType);
+            if (value.isTainted() && assignment.isHasTaint()) {
                 //System.out.printf("Setting String at idx %d: %s/%s%n", parameterIndex, x.getString(), "foo");
                 //System.out.println(Arrays.toString(this.setVariables));
                 //System.out.println(Arrays.toString(this.newIndex));
@@ -598,47 +597,54 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
             } else if( assignment.isHasTaint()) {
                 this.delegate.setString(assignment.getTaintIndex(), "0");
             }
+        } else {
+            this.delegate.setObject(assignment.getNewIndex(), x, targetSqlType);
         }
     }
 
     @Override
     public void setTObject(int parameterIndex, Object x, int targetSqlType, int scaleOrLength) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
-        this.delegate.setObject(assignment.getNewIndex(), x, targetSqlType, scaleOrLength);
-        if(x instanceof IASString && (
+        if (x instanceof IASString && (
                 targetSqlType == Types.VARCHAR ||
-                        targetSqlType == Types.NVARCHAR ||
-                        targetSqlType == Types.LONGNVARCHAR ||
-                        targetSqlType == Types.LONGVARCHAR)) {
+                targetSqlType == Types.NVARCHAR ||
+                targetSqlType == Types.LONGNVARCHAR ||
+                targetSqlType == Types.LONGVARCHAR)) {
             IASString value = (IASString) x;
-            if(value.isTainted() && assignment.isHasTaint()) {
+            this.delegate.setObject(assignment.getNewIndex(), value.getString(), targetSqlType, scaleOrLength);
+            if (value.isTainted() && assignment.isHasTaint()) {
                 //System.out.printf("Setting String at idx %d: %s/%s%n", parameterIndex, x.getString(), "foo");
                 //System.out.println(Arrays.toString(this.setVariables));
                 //System.out.println(Arrays.toString(this.newIndex));
                 String json = Utils.serializeTaints(value);
                 this.delegate.setString(assignment.getTaintIndex(), json);
-            }else if( assignment.isHasTaint()) {
+            } else if (assignment.isHasTaint()) {
                 this.delegate.setString(assignment.getTaintIndex(), "0");
             }
+        } else {
+            this.delegate.setObject(assignment.getNewIndex(), x, targetSqlType, scaleOrLength);
         }
     }
 
     @Override
     public void setTObject(int parameterIndex, Object x) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
-        this.delegate.setObject(assignment.getNewIndex(), x);
-        if(x instanceof IASString) {
+        if (x instanceof IASString) {
             IASString value = (IASString) x;
-            if(value.isTainted() && assignment.isHasTaint()) {
+            this.delegate.setObject(assignment.getNewIndex(), value.getString());
+            if (value.isTainted() && assignment.isHasTaint()) {
                 //System.out.printf("Setting String at idx %d: %s/%s%n", parameterIndex, x.getString(), "foo");
                 //System.out.println(Arrays.toString(this.setVariables));
                 //System.out.println(Arrays.toString(this.newIndex));
                 String json = Utils.serializeTaints(value);
                 this.delegate.setString(assignment.getTaintIndex(), json);
-            }else if( assignment.isHasTaint()) {
+            } else if (assignment.isHasTaint()) {
                 this.delegate.setString(assignment.getTaintIndex(), "0");
             }
+        } else {
+            this.delegate.setObject(assignment.getNewIndex(), x);
         }
+
     }
 }
 
