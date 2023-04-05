@@ -60,6 +60,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     private final List<DynamicCall> bootstrapMethods;
     private final SignatureInstrumenter signatureInstrumenter;
     private final com.sap.fontus.instrumentation.Method caller;
+    private final int passInsideIdx;
 
     /**
      * If a method which is part of an interface should be proxied, place it here
@@ -73,13 +74,17 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.resolver = resolver;
         this.owner = owner;
         this.isOwnerInterface = isOwnerInterface;
+        this.config = config;
         this.combinedExcludedLookup = combinedExcludedLookup;
         this.bootstrapMethods = bootstrapMethods;
         logger.info("Instrumenting method: {}{}", name, methodDescriptor);
         this.used = Type.getArgumentsAndReturnSizes(methodDescriptor) >> 2;
         this.usedAfterInjection = this.used;
+        int passIdx = this.config.shouldPropagateTaint(acc, owner, name, methodDescriptor);
         if ((acc & Opcodes.ACC_STATIC) != 0) {
-            this.used--; // Don't have a 'this' pointer
+            // Don't have a 'this' pointer
+            this.used--;
+            passIdx--;
         }
         this.name = name;
         this.methodDescriptor = methodDescriptor;
@@ -89,8 +94,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.jdkLambdaMethodProxies = jdkLambdaMethodProxies;
         this.loader = loader;
         this.ownerSuperClass = ownerSuperClass;
-        this.config = config;
         this.caller = caller;
+        this.passInsideIdx = passIdx;
+
     }
 
     static {
@@ -294,6 +300,15 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             super.visitVarInsn(Opcodes.ALOAD, 3); // Load args param
             String resultConverterDescriptor = String.format("(L%s;L%s;L%s;[L%s;)L%s;", Utils.dotToSlash(Object.class.getName()), Utils.dotToSlash(Object.class.getName()), Utils.dotToSlash(Method.class.getName()), Utils.dotToSlash(Object.class.getName()), Utils.dotToSlash(Object.class.getName()));
             super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASReflectionProxy.class), "handleInvocationProxyCall", resultConverterDescriptor, false);
+        }
+        if(opcode == Opcodes.ARETURN && this.passInsideIdx >= 0) {
+            // Assumption is stack looks like this: IASTaintInformationable, IASString
+            super.visitInsn(Opcodes.DUP_X1);
+            // Stack: IASString, IASTaintInformationable, IASString
+            super.visitInsn(Opcodes.SWAP);
+            // Stack: IASString, IASString, IASTaintInformationable
+            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(IASString.class), "setTaintLengthAdjusted", String.format("(L%s;)V", Type.getInternalName(IASTaintInformationable.class)), false);
+            // Stack: IASString
         }
         super.visitInsn(opcode);
     }
@@ -861,6 +876,10 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     @Override
     public void visitCode() {
         super.visitCode();
+        if(this.passInsideIdx >= 0) {
+            this.visitVarInsn(Opcodes.ALOAD, this.passInsideIdx);
+            super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(IASString.class), "getTaintInformationCopied", String.format("()L%s;", Type.getInternalName(IASTaintInformationable.class)), false);
+        }
     }
 
     @Override

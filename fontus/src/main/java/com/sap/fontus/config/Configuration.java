@@ -120,6 +120,10 @@ public class Configuration {
     @XmlElement(name = "passThroughTaint")
     private final List<FunctionCall> passThroughTaints;
 
+    @JacksonXmlElementWrapper(localName = "propagateTaintInFunctions")
+    @XmlElement(name = "propagateTaintInFunctions")
+    private final List<PropagateTaintInFunction> propagateTaintInFunctions;
+
     public Configuration() {
         this.verbose = false;
         this.sourceConfig = new SourceConfig();
@@ -134,6 +138,8 @@ public class Configuration {
         this.excludedClasses = new ArrayList<>();
         this.resourcesToInstrument = new ArrayList<>();
         this.passThroughTaints = new ArrayList<>();
+        this.propagateTaintInFunctions = new ArrayList<>();
+
     }
 
     public Configuration(boolean verbose,
@@ -148,7 +154,8 @@ public class Configuration {
                          List<String> excludedPackages,
                          List<String> excludedClasses,
                          List<String> resourcesToInstrument,
-                         List<FunctionCall> passThroughTaints) {
+                         List<FunctionCall> passThroughTaints,
+                         List<PropagateTaintInFunction> propagateTaintInFunctions) {
         this.verbose = verbose;
         this.sourceConfig = sourceConfig;
         this.sinkConfig = sinkConfig;
@@ -162,6 +169,7 @@ public class Configuration {
         this.excludedClasses = excludedClasses;
         this.resourcesToInstrument = resourcesToInstrument;
         this.passThroughTaints = passThroughTaints;
+        this.propagateTaintInFunctions = propagateTaintInFunctions;
     }
 
     public void append(Configuration other) {
@@ -180,6 +188,7 @@ public class Configuration {
             this.excludedClasses.addAll(other.excludedClasses);
             this.resourcesToInstrument.addAll(other.resourcesToInstrument);
             this.passThroughTaints.addAll(other.passThroughTaints);
+            this.propagateTaintInFunctions.addAll(other.propagateTaintInFunctions);
         }
     }
 
@@ -300,6 +309,19 @@ public class Configuration {
         return this.passThroughTaints;
     }
 
+    public List<PropagateTaintInFunction> getPropagateTaintInFunctions() {
+        return this.propagateTaintInFunctions;
+    }
+
+    public int shouldPropagateTaint(int acc, String owner, String name, String methodDescriptor) {
+        MethodDeclaration md = new MethodDeclaration(acc, owner, name, methodDescriptor);
+        for (PropagateTaintInFunction ptif : this.propagateTaintInFunctions) {
+            if (ptif.getMethod().equals(md)) {
+                return ptif.getArgIndex();
+            }
+        }
+        return -1;
+    }
     public boolean shouldPassThroughTaint(FunctionCall c) {
         for (FunctionCall fc : this.passThroughTaints) {
             if (fc.equals(c)) {
@@ -619,6 +641,7 @@ public class Configuration {
                 ", excludedClasses=" + this.excludedClasses +
                 ", resourcesToInstrument=" + this.resourcesToInstrument +
                 ", passThroughTaints=" + this.passThroughTaints +
+                ", propagateTaintInFunctions=" + this.propagateTaintInFunctions +
                 '}';
     }
 
