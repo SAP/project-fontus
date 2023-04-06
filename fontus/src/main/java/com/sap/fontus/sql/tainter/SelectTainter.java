@@ -1,10 +1,12 @@
 package com.sap.fontus.sql.tainter;
 
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.select.*;
 
 import java.util.ArrayList;
@@ -144,6 +146,16 @@ public class SelectTainter extends SelectVisitorAdapter {
 					}
 				}
 			}
+		}
+		FromItem from = plainSelect.getFromItem();
+		if(from instanceof SubSelect) {
+			SubSelect froms = (SubSelect) from;
+			SelectTainter selectTainter = new SelectTainter(this.parameters);
+			froms.getSelectBody().accept(selectTainter);
+			if(froms != null) {
+				System.out.println(froms);
+			}
+
 		}
 		Limit limit = plainSelect.getLimit();
 		if(limit != null) {
