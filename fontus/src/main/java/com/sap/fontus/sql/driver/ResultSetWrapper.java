@@ -26,6 +26,10 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
         this.delegate = delegate;
     }
 
+    private static int transformColumnIndex(int columnIndex) {
+        return (columnIndex * 2) - 1;
+    }
+
     @Override
     public boolean next() throws SQLException {
         return this.delegate.next();
@@ -43,98 +47,82 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public String getString(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2) - 1;
-        return this.delegate.getString(idx);
+        return this.delegate.getString(transformColumnIndex(columnIndex));
     }
 
     @Override
     public boolean getBoolean(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2) - 1;
-        return this.delegate.getBoolean(idx);
+        return this.delegate.getBoolean(transformColumnIndex(columnIndex));
     }
 
     @Override
     public byte getByte(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2) - 1;
-        return this.delegate.getByte(idx);
+        return this.delegate.getByte(transformColumnIndex(columnIndex));
     }
 
     @Override
     public short getShort(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2) - 1;
-        return this.delegate.getShort(idx);
+        return this.delegate.getShort(transformColumnIndex(columnIndex));
     }
 
     @Override
     public int getInt(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2) - 1;
-        return this.delegate.getInt(idx);
+        return this.delegate.getInt(transformColumnIndex(columnIndex));
     }
 
     @Override
     public long getLong(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2) - 1;
-        return this.delegate.getLong(idx);
+        return this.delegate.getLong(transformColumnIndex(columnIndex));
     }
 
     @Override
     public float getFloat(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2) - 1;
-        return this.delegate.getFloat(idx);
+        return this.delegate.getFloat(transformColumnIndex(columnIndex));
     }
 
     @Override
     public double getDouble(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2) - 1;
-        return this.delegate.getDouble(idx);
+        return this.delegate.getDouble(transformColumnIndex(columnIndex));
     }
 
     @Override
     public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
-        int idx = (columnIndex * 2) - 1;
-        return this.delegate.getBigDecimal(idx, scale);
+        return this.delegate.getBigDecimal(transformColumnIndex(columnIndex), scale);
     }
 
     @Override
     public byte[] getBytes(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2) - 1;
-        return this.delegate.getBytes(idx);
+        return this.delegate.getBytes(transformColumnIndex(columnIndex));
     }
 
     @Override
     public Date getDate(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2) - 1;
-        return this.delegate.getDate(idx);
+        return this.delegate.getDate(transformColumnIndex(columnIndex));
     }
 
     @Override
     public Time getTime(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2) - 1;
-        return this.delegate.getTime(idx);
+        return this.delegate.getTime(transformColumnIndex(columnIndex));
     }
 
     @Override
     public Timestamp getTimestamp(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2) - 1;
-        return this.delegate.getTimestamp(idx);
+        return this.delegate.getTimestamp(transformColumnIndex(columnIndex));
     }
 
     @Override
     public InputStream getAsciiStream(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2) - 1;
-        return this.delegate.getAsciiStream(idx);
+        return this.delegate.getAsciiStream(transformColumnIndex(columnIndex));
     }
 
     @Override
     public InputStream getUnicodeStream(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2) - 1;
-        return this.delegate.getUnicodeStream(idx);
+        return this.delegate.getUnicodeStream(transformColumnIndex(columnIndex));
     }
 
     @Override
     public InputStream getBinaryStream(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2) - 1;
-        return this.delegate.getBinaryStream(idx);
+        return this.delegate.getBinaryStream(transformColumnIndex(columnIndex));
     }
 
     @Override
@@ -239,8 +227,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public Object getObject(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2) - 1;
-        return this.delegate.getObject(idx);
+        return this.delegate.getObject(transformColumnIndex(columnIndex));
     }
 
     @Override
@@ -255,8 +242,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public Reader getCharacterStream(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2);
-        return this.delegate.getCharacterStream(idx);
+        return this.delegate.getCharacterStream(transformColumnIndex(columnIndex));
     }
 
     @Override
@@ -266,8 +252,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2) - 1;
-        return this.delegate.getBigDecimal(idx);
+        return this.delegate.getBigDecimal(transformColumnIndex(columnIndex));
     }
 
     @Override
@@ -384,115 +369,96 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public void updateNull(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateNull(idx);
+        this.delegate.updateNull(transformColumnIndex(columnIndex));
     }
 
     public void updateBoolean(int columnIndex, boolean x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateBoolean(idx, x);
+        this.delegate.updateBoolean(transformColumnIndex(columnIndex), x);
     }
 
     @Override
     public void updateByte(int columnIndex, byte x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateByte(idx, x);
+        this.delegate.updateByte(transformColumnIndex(columnIndex), x);
     }
 
     @Override
     public void updateShort(int columnIndex, short x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateShort(idx, x);
+        this.delegate.updateShort(transformColumnIndex(columnIndex), x);
     }
 
     @Override
     public void updateInt(int columnIndex, int x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateInt(idx, x);
+        this.delegate.updateInt(transformColumnIndex(columnIndex), x);
     }
 
     @Override
     public void updateLong(int columnIndex, long x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateLong(idx, x);
+        this.delegate.updateLong(transformColumnIndex(columnIndex), x);
     }
 
     @Override
     public void updateFloat(int columnIndex, float x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateFloat(idx, x);
+        this.delegate.updateFloat(transformColumnIndex(columnIndex), x);
     }
 
     @Override
     public void updateDouble(int columnIndex, double x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateDouble(idx, x);
+        this.delegate.updateDouble(transformColumnIndex(columnIndex), x);
     }
 
     @Override
     public void updateBigDecimal(int columnIndex, BigDecimal x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateBigDecimal(idx, x);
+        this.delegate.updateBigDecimal(transformColumnIndex(columnIndex), x);
     }
 
     @Override
     public void updateString(int columnIndex, String x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateString(idx, x);
+        this.delegate.updateString(transformColumnIndex(columnIndex), x);
     }
 
     @Override
     public void updateBytes(int columnIndex, byte[] x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateBytes(idx, x);
+        this.delegate.updateBytes(transformColumnIndex(columnIndex), x);
     }
 
     @Override
     public void updateDate(int columnIndex, Date x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateDate(idx, x);
+        this.delegate.updateDate(transformColumnIndex(columnIndex), x);
     }
 
     @Override
     public void updateTime(int columnIndex, Time x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateTime(idx, x);
+        this.delegate.updateTime(transformColumnIndex(columnIndex), x);
     }
 
     @Override
     public void updateTimestamp(int columnIndex, Timestamp x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateTimestamp(idx, x);
+        this.delegate.updateTimestamp(transformColumnIndex(columnIndex), x);
     }
 
     @Override
     public void updateAsciiStream(int columnIndex, InputStream x, int length) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateAsciiStream(idx, x, length);
+        this.delegate.updateAsciiStream(transformColumnIndex(columnIndex), x, length);
     }
 
     @Override
     public void updateBinaryStream(int columnIndex, InputStream x, int length) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateBinaryStream(idx, x, length);
+        this.delegate.updateBinaryStream(transformColumnIndex(columnIndex), x, length);
     }
 
     @Override
     public void updateCharacterStream(int columnIndex, Reader x, int length) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateCharacterStream(idx, x, length);
+        this.delegate.updateCharacterStream(transformColumnIndex(columnIndex), x, length);
     }
 
     @Override
     public void updateObject(int columnIndex, Object x, int scaleOrLength) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateObject(idx, x, scaleOrLength);
+        this.delegate.updateObject(transformColumnIndex(columnIndex), x, scaleOrLength);
     }
 
     @Override
     public void updateObject(int columnIndex, Object x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateObject(idx, x);
+        this.delegate.updateObject(transformColumnIndex(columnIndex), x);
     }
 
     @Override
@@ -632,32 +598,27 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public Object getObject(int columnIndex, Map<String, Class<?>> map) throws SQLException {
-        int idx = (columnIndex * 2);
-        return this.delegate.getObject(idx, map);
+        return this.delegate.getObject(transformColumnIndex(columnIndex), map);
     }
 
     @Override
     public Ref getRef(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2);
-        return this.delegate.getRef(idx);
+        return this.delegate.getRef(transformColumnIndex(columnIndex));
     }
 
     @Override
     public Blob getBlob(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2);
-        return this.delegate.getBlob(idx);
+        return this.delegate.getBlob(transformColumnIndex(columnIndex));
     }
 
     @Override
     public Clob getClob(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2);
-        return this.delegate.getClob(idx);
+        return this.delegate.getClob(transformColumnIndex(columnIndex));
     }
 
     @Override
     public Array getArray(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2);
-        return this.delegate.getArray(idx);
+        return this.delegate.getArray(transformColumnIndex(columnIndex));
     }
 
     @Override
@@ -687,8 +648,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public Date getDate(int columnIndex, Calendar cal) throws SQLException {
-        int idx = (columnIndex * 2);
-        return this.delegate.getDate(idx, cal);
+        return this.delegate.getDate(transformColumnIndex(columnIndex), cal);
     }
 
     @Override
@@ -698,8 +658,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public Time getTime(int columnIndex, Calendar cal) throws SQLException {
-        int idx = (columnIndex * 2);
-        return this.delegate.getTime(idx, cal);
+        return this.delegate.getTime(transformColumnIndex(columnIndex), cal);
     }
 
     @Override
@@ -709,8 +668,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {
-        int idx = (columnIndex * 2);
-        return this.delegate.getTimestamp(idx, cal);
+        return this.delegate.getTimestamp(transformColumnIndex(columnIndex), cal);
     }
 
     @Override
@@ -720,8 +678,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public URL getURL(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2);
-        return this.delegate.getURL(idx);
+        return this.delegate.getURL(transformColumnIndex(columnIndex));
     }
 
     @Override
@@ -731,8 +688,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public void updateRef(int columnIndex, Ref x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateRef(idx, x);
+        this.delegate.updateRef(transformColumnIndex(columnIndex), x);
     }
 
     @Override
@@ -742,8 +698,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public void updateBlob(int columnIndex, Blob x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateBlob(idx, x);
+        this.delegate.updateBlob(transformColumnIndex(columnIndex), x);
     }
 
     @Override
@@ -753,8 +708,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public void updateClob(int columnIndex, Clob x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateClob(idx, x);
+        this.delegate.updateClob(transformColumnIndex(columnIndex), x);
     }
 
     @Override
@@ -764,8 +718,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public void updateArray(int columnIndex, Array x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateArray(idx, x);
+        this.delegate.updateArray(transformColumnIndex(columnIndex), x);
     }
 
     @Override
@@ -775,8 +728,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public RowId getRowId(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2);
-        return this.delegate.getRowId(idx);
+        return this.delegate.getRowId(transformColumnIndex(columnIndex));
     }
 
     @Override
@@ -787,8 +739,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
     @Override
     public void updateRowId(int columnIndex, RowId x) throws SQLException {
         //TODO: do i have to change the RowId?
-        int idx = (columnIndex * 2);
-        this.delegate.updateRowId(idx, x);
+        this.delegate.updateRowId(transformColumnIndex(columnIndex), x);
     }
 
     @Override
@@ -809,8 +760,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public void updateNString(int columnIndex, String nString) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateNString(idx, nString);
+        this.delegate.updateNString(transformColumnIndex(columnIndex), nString);
     }
 
     @Override
@@ -820,8 +770,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public void updateNClob(int columnIndex, NClob nClob) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateNClob(idx, nClob);
+        this.delegate.updateNClob(transformColumnIndex(columnIndex), nClob);
     }
 
     @Override
@@ -831,8 +780,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public NClob getNClob(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2);
-        return this.delegate.getNClob(idx);
+        return this.delegate.getNClob(transformColumnIndex(columnIndex));
     }
 
     @Override
@@ -842,8 +790,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public SQLXML getSQLXML(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2);
-        return this.delegate.getSQLXML(idx);
+        return this.delegate.getSQLXML(transformColumnIndex(columnIndex));
     }
 
     @Override
@@ -853,8 +800,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public void updateSQLXML(int columnIndex, SQLXML xmlObject) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateSQLXML(idx, xmlObject);
+        this.delegate.updateSQLXML(transformColumnIndex(columnIndex), xmlObject);
     }
 
     @Override
@@ -864,8 +810,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public String getNString(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2);
-        return this.delegate.getNString(idx);
+        return this.delegate.getNString(transformColumnIndex(columnIndex));
     }
 
     @Override
@@ -875,8 +820,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public Reader getNCharacterStream(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2);
-        return this.delegate.getNCharacterStream(idx);
+        return this.delegate.getNCharacterStream(transformColumnIndex(columnIndex));
     }
 
     @Override
@@ -886,8 +830,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public void updateNCharacterStream(int columnIndex, Reader x, long length) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateNCharacterStream(idx, x, length);
+        this.delegate.updateNCharacterStream(transformColumnIndex(columnIndex), x, length);
     }
 
     @Override
@@ -897,20 +840,17 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public void updateAsciiStream(int columnIndex, InputStream x, long length) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateAsciiStream(idx, x, length);
+        this.delegate.updateAsciiStream(transformColumnIndex(columnIndex), x, length);
     }
 
     @Override
     public void updateBinaryStream(int columnIndex, InputStream x, long length) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateBinaryStream(idx, x, length);
+        this.delegate.updateBinaryStream(transformColumnIndex(columnIndex), x, length);
     }
 
     @Override
     public void updateCharacterStream(int columnIndex, Reader x, long length) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateCharacterStream(idx, x, length);
+        this.delegate.updateCharacterStream(transformColumnIndex(columnIndex), x, length);
     }
 
     @Override
@@ -930,8 +870,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public void updateBlob(int columnIndex, InputStream inputStream, long length) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateBlob(idx, inputStream, length);
+        this.delegate.updateBlob(transformColumnIndex(columnIndex), inputStream, length);
     }
 
     @Override
@@ -941,8 +880,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public void updateClob(int columnIndex, Reader reader, long length) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateClob(idx, reader, length);
+        this.delegate.updateClob(transformColumnIndex(columnIndex), reader, length);
     }
 
     @Override
@@ -952,8 +890,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public void updateNClob(int columnIndex, Reader reader, long length) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateNClob(idx, reader, length);
+        this.delegate.updateNClob(transformColumnIndex(columnIndex), reader, length);
     }
 
     @Override
@@ -963,8 +900,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public void updateNCharacterStream(int columnIndex, Reader x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateNCharacterStream(idx, x);
+        this.delegate.updateNCharacterStream(transformColumnIndex(columnIndex), x);
     }
 
     @Override
@@ -974,20 +910,17 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public void updateAsciiStream(int columnIndex, InputStream x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateAsciiStream(idx, x);
+        this.delegate.updateAsciiStream(transformColumnIndex(columnIndex), x);
     }
 
     @Override
     public void updateBinaryStream(int columnIndex, InputStream x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateBinaryStream(idx, x);
+        this.delegate.updateBinaryStream(transformColumnIndex(columnIndex), x);
     }
 
     @Override
     public void updateCharacterStream(int columnIndex, Reader x) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateCharacterStream(idx, x);
+        this.delegate.updateCharacterStream(transformColumnIndex(columnIndex), x);
     }
 
     @Override
@@ -1007,8 +940,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public void updateBlob(int columnIndex, InputStream inputStream) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateBlob(idx, inputStream);
+        this.delegate.updateBlob(transformColumnIndex(columnIndex), inputStream);
     }
 
     @Override
@@ -1018,8 +950,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public void updateClob(int columnIndex, Reader reader) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateClob(idx, reader);
+        this.delegate.updateClob(transformColumnIndex(columnIndex), reader);
     }
 
     @Override
@@ -1029,8 +960,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public void updateNClob(int columnIndex, Reader reader) throws SQLException {
-        int idx = (columnIndex * 2);
-        this.delegate.updateNClob(idx, reader);
+        this.delegate.updateNClob(transformColumnIndex(columnIndex), reader);
     }
 
     @Override
@@ -1040,8 +970,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
-        int idx = (columnIndex * 2);
-        return this.delegate.getObject(idx, type);
+        return this.delegate.getObject(transformColumnIndex(columnIndex), type);
     }
 
     @Override
@@ -1051,8 +980,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public IASString getTString(int columnIndex) throws SQLException {
-        int idx = (columnIndex * 2) - 1;
-        return this.getTStringHelper(idx);
+        return this.getTStringHelper(transformColumnIndex(columnIndex));
     }
 
     @Override
