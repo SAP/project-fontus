@@ -25,6 +25,14 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 		this.expressionReference = expressionReference;
 	}
 
+	private void checkBinaryExpressionForParameters(BinaryExpression exp) {
+		if(exp.getLeftExpression() instanceof JdbcParameter) {
+			this.parameters.addParameter(ParameterType.ASSIGNMENT_UNTAINTED);
+		}
+		if(exp.getRightExpression() instanceof JdbcParameter) {
+			this.parameters.addParameter(ParameterType.ASSIGNMENT_UNTAINTED);
+		}
+	}
 
 	@Override
 	public void visit(Column column) {
@@ -180,12 +188,7 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 
 	@Override
 	public void visit(Addition addition) {
-		if(addition.getLeftExpression() instanceof JdbcParameter) {
-			this.parameters.addParameter(ParameterType.ASSIGNMENT_UNTAINTED);
-		}
-		if(addition.getRightExpression() instanceof JdbcParameter) {
-			this.parameters.addParameter(ParameterType.ASSIGNMENT_UNTAINTED);
-		}
+		checkBinaryExpressionForParameters(addition);
 		// add '0' for correct column count
 		this.expressionReference.add(new StringValue("'0'"));
 	}
@@ -228,24 +231,14 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 
 	@Override
 	public void visit(EqualsTo arg0) {
-		if(arg0.getLeftExpression() instanceof JdbcParameter) {
-			this.parameters.addParameter(ParameterType.ASSIGNMENT_UNTAINTED);
-		}
-		if(arg0.getRightExpression() instanceof JdbcParameter) {
-			this.parameters.addParameter(ParameterType.ASSIGNMENT_UNTAINTED);
-		}
+		checkBinaryExpressionForParameters(arg0);
 		// add '0' for correct column count
 		this.expressionReference.add(new StringValue("'0'"));
 	}
 
 	@Override
 	public void visit(GreaterThan arg0) {
-		if(arg0.getLeftExpression() instanceof JdbcParameter) {
-			this.parameters.addParameter(ParameterType.ASSIGNMENT_UNTAINTED);
-		}
-		if(arg0.getRightExpression() instanceof JdbcParameter) {
-			this.parameters.addParameter(ParameterType.ASSIGNMENT_UNTAINTED);
-		}
+		checkBinaryExpressionForParameters(arg0);
 		// add '0' for correct column count
 		this.expressionReference.add(new StringValue("'0'"));
 	}
