@@ -275,13 +275,18 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 	}
 
 	@Override
-	public void visit(CaseExpression arg0) {
+	public void visit(CaseExpression caseExpression) {
+		for (WhenClause when : caseExpression.getWhenClauses()) {
+			when.accept(this);
+		}
 		// add '0' for correct column count
 		this.expressionReference.add(new StringValue("'0'"));
 	}
 
 	@Override
-	public void visit(WhenClause arg0) {
+	public void visit(WhenClause whenClause) {
+		whenClause.getWhenExpression().accept(this);
+		whenClause.getThenExpression().accept(this);
 		// add '0' for correct column count
 		this.expressionReference.add(new StringValue("'0'"));
 	}
