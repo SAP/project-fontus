@@ -574,7 +574,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
             //System.out.println(Arrays.toString(this.newIndex));
             String json = Utils.serializeTaints(value);
             this.delegate.setString(assignment.getTaintIndex(), json);
-        }else if( assignment.isHasTaint()) {
+        } else if( assignment.isHasTaint()) {
             this.delegate.setString(assignment.getTaintIndex(), "0");
         }
     }
@@ -594,11 +594,12 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
                 //System.out.println(Arrays.toString(this.newIndex));
                 String json = Utils.serializeTaints(value);
                 this.delegate.setString(assignment.getTaintIndex(), json);
-            } else if( assignment.isHasTaint()) {
+            } else if (assignment.isHasTaint()) {
                 this.delegate.setString(assignment.getTaintIndex(), "0");
             }
         } else {
             this.delegate.setObject(assignment.getNewIndex(), x, targetSqlType);
+            this.delegate.setString(assignment.getTaintIndex(), "0");
         }
     }
 
@@ -623,6 +624,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
             }
         } else {
             this.delegate.setObject(assignment.getNewIndex(), x, targetSqlType, scaleOrLength);
+            this.delegate.setString(assignment.getTaintIndex(), "0");
         }
     }
 
@@ -643,6 +645,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
             }
         } else {
             this.delegate.setObject(assignment.getNewIndex(), x);
+            this.delegate.setString(assignment.getTaintIndex(), "0");
         }
 
     }
