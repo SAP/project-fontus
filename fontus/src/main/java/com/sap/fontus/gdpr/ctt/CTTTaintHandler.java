@@ -1,5 +1,6 @@
 package com.sap.fontus.gdpr.ctt;
 
+import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.Source;
 import com.sap.fontus.gdpr.Utils;
@@ -14,23 +15,85 @@ import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASTaintMetadata;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
+import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
+import org.objectweb.asm.Opcodes;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.Method;
+import java.util.*;
 
 public class CTTTaintHandler extends IASTaintHandler {
 
-    private static final Map<String, Collection<AllowedPurpose>> allowedPurposes = new HashMap<>();
+    private static final FunctionCall getParameterFunctionCall = new FunctionCall(
+            Opcodes.INVOKEINTERFACE,
+            "javax/servlet/ServletRequest",
+            "getParameter",
+            "(Ljava/lang/String;)Ljava/lang/String;",
+            true);
+
+    private static final FunctionCall getHttpParameterFunctionCall = new FunctionCall(
+            Opcodes.INVOKEINTERFACE,
+            "javax/servlet/http/HttpServletRequest",
+            "getParameter",
+            "(Ljava/lang/String;)Ljava/lang/String;",
+            true);
+
+    private static final FunctionCall getParameterValuesFunctionCall = new FunctionCall(
+            Opcodes.INVOKEINTERFACE,
+            "javax/servlet/ServletRequest",
+            "getParameterValues",
+            "(Ljava/lang/String;)[Ljava/lang/String;",
+            true);
+
+    private static final FunctionCall getHttpParameterValuesFunctionCall = new FunctionCall(
+            Opcodes.INVOKEINTERFACE,
+            "javax/servlet/http/HttpServletRequest",
+            "getParameterValues",
+            "(Ljava/lang/String;)[Ljava/lang/String;",
+            true);
+
+    private static final FunctionCall getParameterMapFunctionCall = new FunctionCall(
+            Opcodes.INVOKEINTERFACE,
+            "javax/servlet/ServletRequest",
+            "getParameterMap",
+            "()Ljava/util/Map;",
+            true);
+
+    private static final Set<FunctionCall> allowedFunctionCalls = new HashSet<>(Arrays.asList(getParameterFunctionCall, getHttpParameterFunctionCall, getParameterValuesFunctionCall, getHttpParameterValuesFunctionCall, getParameterMapFunctionCall));
+
+    private static final IASString CSRF_TOKEN = IASString.fromString("_csrf");
+    private static final IASString ROOM_ID = IASString.fromString("roomId");
+    private static final IASString ROOM_PIN = IASString.fromString("roomPin");
 
 
     private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
+        if(parameters.length == 1 && (parameters[0].equals(CSRF_TOKEN) || parameters[0].equals(ROOM_ID) || parameters[0].equals(ROOM_PIN))) {
+            return taintAware;
+        }
+        // TODO: ensure this is sufficient?
+        if(!"org.springframework.security.web.context.HttpSessionSecurityContextRepository.SaveToSessionRequestWrapper".equals(parent.getClass().getCanonicalName())) {
+            return taintAware;
+        }
         // General debug info
         IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
-        IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
-        Source source = Configuration.getConfiguration().getSourceConfig().getSourceWithName(taintSource.getName());
-        IASTaintMetadata metaData = getBasicTaintMetaDataFromRequest(parent, sourceId);
+
+        ReflectedHttpServletRequest request = new ReflectedHttpServletRequest(parent);
+        IASString uri = request.getRequestURI();
+        if ("/r/checkIn".contentEquals(uri)) {
+            // Checkin Handler
+
+            return handleCheckinTaint(request, parameters, taintAware, sourceId);
+        }
+        String userId = getIdFromRequest(request);
+        IASTaintMetadata metaData = getBasicTaintMetaDataFromRequest(request, userId, sourceId);
+        taintAware.setTaint(metaData);
+
+        return taintAware;
+    }
+
+    private static IASTaintAware handleCheckinTaint(ReflectedHttpServletRequest request, Object[] parameters, IASTaintAware taintAware, int sourceId) {
+        String visitorEmail = request.getParameter("visitorEmail");
+        IASTaintMetadata metaData = getBasicTaintMetaDataFromRequest(request, visitorEmail, sourceId);
         taintAware.setTaint(metaData);
         return taintAware;
     }
@@ -45,22 +108,36 @@ public class CTTTaintHandler extends IASTaintHandler {
         }
         return null;
     }
-    private static IASTaintMetadata getBasicTaintMetaDataFromRequest(Object requestObject, int sourceId) {
-        IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
-        ReflectedHttpServletRequest request = new ReflectedHttpServletRequest(requestObject);
-        ReflectedSession session = request.getSession();
-        String cookieId = getCookieId(request);
-        // Alternative: SessionFacade.getUserSession().getUserId()
-        long sessionId = -1L;
-        String userId = String.valueOf(sessionId);
-        if(sessionId == -1L) {
-            // if userId == -1 -> not logged in -> give marker value that is hopefully more "special"
-            userId = "FONTUS_CHANGE_ME";
-        }
 
+    private static String getIdFromRequest(ReflectedHttpServletRequest request) {
+        try {
+            ReflectedSession session = request.getSession();
+            Object securityContext = session.getAttribute(new IASString("SPRING_SECURITY_CONTEXT"));
+            if(securityContext == null) {
+                return null;
+            }
+            Method getAuthentication = securityContext.getClass().getMethod("getAuthentication");
+            Object authentication = getAuthentication.invoke(securityContext);
+            Method getPrincipal = authentication.getClass().getMethod("getPrincipal");
+            //Method isAuthenticated = authentication.getClass().getMethod("isAuthenticated");
+            Object principal = getPrincipal.invoke(authentication);
+            //isAuthenticated.invoke(authentication);
+            //Method getId = principal.getClass().getMethod("getId");
+            Method getUsername = principal.getClass().getMethod("getUsername");
+            //Method getAuthorities = principal.getClass().getMethod("getAuthorities");
+            //String username = ((IASString) getUsername.invoke(principal)).getString();
+            //getAuthorities.invoke(principal);
+            IASString username =  (IASString) getUsername.invoke(principal);
+            return username.getString();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
+
+    private static IASTaintMetadata getBasicTaintMetaDataFromRequest(ReflectedHttpServletRequest request, String userId, int sourceId) {
         DataSubject ds = new SimpleDataSubject(userId);
         Collection<AllowedPurpose> allowed = Utils.getPurposesFromRequest(request);
-        allowedPurposes.put(userId, allowed);
         GdprMetadata metadata = new SimpleGdprMetadata(
                 allowed,
                 ProtectionLevel.Normal,
