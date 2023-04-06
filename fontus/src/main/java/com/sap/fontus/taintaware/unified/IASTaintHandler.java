@@ -29,7 +29,7 @@ public class IASTaintHandler {
 
         System.out.println("FONTUS: Source: " + source);
         System.out.println("        taintAware: " + taintAware);
-        System.out.println("        Caller Type:" + parent);
+        System.out.println("        Caller Type:" + parent + "(" + parent.getClass().getCanonicalName() + ")");
         System.out.println("        Input Parameters: " + Arrays.toString(parameters));
 
         if (parameters != null) {
