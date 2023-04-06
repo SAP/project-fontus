@@ -445,6 +445,26 @@ class PreparedStatementTests {
         ResultSet rss = ps.executeQuery();
     }
 
+    @Test
+    void testNestedSelectinFrom() throws Exception {
+        String query = "select a.first_name, a.last_name from (select id, first_name, last_name from contacts) a where a.id < ?";
+        Connection mc = new MockConnection(this.conn);
+        Connection c = ConnectionWrapper.wrap(mc);
+        PreparedStatement ps = c.prepareStatement(query);
+        PreparedStatementWrapper unwrapped = ps.unwrap(PreparedStatementWrapper.class);
+        QueryParameters parameters = unwrapped.getParameters();
+        TaintAssignment[] assignments = {
+                new TaintAssignment(1, 1, ParameterType.WHERE),
+        };
+        for(int i = 1; i <= parameters.getParameterCount(); i++) {
+            TaintAssignment expected = assignments[i-1];
+            TaintAssignment actual = parameters.computeAssignment(i);
+            assertEquals(expected, actual);
+        }
+        ps.setInt(1, 2);
+        ResultSet rss = ps.executeQuery();
+    }
+
     private void executeUpdate(String sql) throws SQLException {
         Connection mc = ConnectionWrapper.wrap(this.conn);
         Statement st = mc.createStatement();
