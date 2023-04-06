@@ -139,7 +139,17 @@ public class SelectTainter extends SelectVisitorAdapter {
 		List<Join> joins = plainSelect.getJoins();
 		if(joins != null) {
 			for (Join join : joins) {
-				Collection<Expression> expressions = join.getOnExpressions();
+				FromItem rhs = join.getRightItem();
+				if(rhs instanceof SubSelect) {
+					SubSelect from = (SubSelect) rhs;
+					SelectTainter selectTainter = new SelectTainter(this.parameters);
+					from.getSelectBody().accept(selectTainter);
+					/*if (from != null) {
+						System.out.println(from);
+					}*/
+				}
+
+					Collection<Expression> expressions = join.getOnExpressions();
 				if(expressions != null) {
 					for (Expression expression : expressions) {
 						expression.accept(new WhereExpressionTainter(this.parameters));
@@ -152,9 +162,9 @@ public class SelectTainter extends SelectVisitorAdapter {
 			SubSelect froms = (SubSelect) from;
 			SelectTainter selectTainter = new SelectTainter(this.parameters);
 			froms.getSelectBody().accept(selectTainter);
-			if(froms != null) {
+			/*if(froms != null) {
 				System.out.println(froms);
-			}
+			}*/
 
 		}
 		Limit limit = plainSelect.getLimit();

@@ -6,6 +6,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statements;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class StatementTainterTests {
@@ -32,6 +33,18 @@ class StatementTainterTests {
         stmts.accept(tainter);
         String taintedStatement = stmts.toString();
         assertEquals("SELECT 'a' AS foo, '0' AS `__taint__foo`, (SELECT b FROM bla WHERE id < 5) AS bar, (SELECT `__taint__b` FROM bla WHERE id < 5) AS `__taint__bar`;", taintedStatement.trim());
+    }
+
+    @Test
+    void h2iswtftest() throws Exception {
+        String query =
+                "SELECT T0.\"ID\" as \"ID\", T0.\"CREATEDBY\" as \"createdBy\", T0.\"MODIFIEDAT\" as \"modifiedAt\", T0.\"RATING\" as \"rating\", T0.\"TITLE\" as \"title\", T0.\"ISACTIVEENTITY\" as \"IsActiveEntity\", T0.\"HASACTIVEENTITY\" as \"HasActiveEntity\", T1.\"ID\" as \"book.ID\", T1.\"TITLE\" as \"book.title\", T2.\"ID\" as \"book.author.ID\", T2.\"NAME\" as \"book.author.name\", T2.\"ID\" as \"book.author.@audit:DS_ID\", T2.\"ID\" as \"book.author.@audit:ID\", T0.\"ISACTIVEENTITY\" as \"@IsActiveEntity\", T0.\"ID\" as \"@ID\" FROM (SELECT ACTIVE.*, true as IsActiveEntity, false as HasActiveEntity from \"REVIEWSERVICE_REVIEWS\" ACTIVE) T0 LEFT OUTER JOIN \"REVIEWSERVICE_BOOKS\" T1 ON T0.\"BOOK_ID\" = T1.\"ID\" LEFT OUTER JOIN \"REVIEWSERVICE_AUTHORS\" T2 ON T1.\"AUTHOR_ID\" = T2.\"ID\" LEFT OUTER JOIN \"REVIEWSERVICE_REVIEWS_DRAFTS\" T3 ON T3.\"ID\" = T0.\"ID\" and (T3.\"DRAFTADMINISTRATIVEDATA_DRAFTUUID\" IN (SELECT DraftUUID FROM DRAFT_DraftAdministrativeData where CreatedByUser is null or ? = CreatedByUser)) WHERE T0.\"ISACTIVEENTITY\" = FALSE and T0.\"ISACTIVEENTITY\" is not NULL or T3.\"ISACTIVEENTITY\" is NULL ORDER BY T0.\"MODIFIEDAT\" DESC NULLS LAST, T0.\"ID\" NULLS FIRST, T0.\"ISACTIVEENTITY\" NULLS FIRST LIMIT 30";
+        Statements stmts = CCJSqlParserUtil.parseStatements(query);
+        StatementTainter tainter = new StatementTainter();
+        stmts.accept(tainter);
+        String taintedStatement = stmts.toString();
+
+
     }
 
     @Test
