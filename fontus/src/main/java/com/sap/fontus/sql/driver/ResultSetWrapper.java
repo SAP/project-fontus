@@ -1066,7 +1066,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
         String taint = this.delegate.getString(idx + 1);
 
         IASString rv = IASString.fromString(value);
-        if (taint != null && !"0".equals(taint)) {
+        if (taint != null && !Constants.UNTAINTED.equals(taint)) {
             //System.out.printf("Restoring taint for '%s': %s%n", value, taint);
             Utils.restoreTaint(rv, taint);
         }

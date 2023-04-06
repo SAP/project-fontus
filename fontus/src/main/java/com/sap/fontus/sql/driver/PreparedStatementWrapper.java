@@ -56,7 +56,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         // System.out.printf("Set at idx %d to value null%n", parameterIndex);
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setNull(assignment.getNewIndex(), sqlType);
     }
@@ -66,7 +66,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         // System.out.printf("Set at idx %d to value %b%n", parameterIndex, x);
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setBoolean(assignment.getNewIndex(), x);
     }
@@ -76,7 +76,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         // System.out.printf("Set at idx %d to value %d%n", parameterIndex, x);
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setByte(assignment.getNewIndex(), x);
     }
@@ -86,7 +86,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         // System.out.printf("Set at idx %d to value %d%n", parameterIndex, x);
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setShort(assignment.getNewIndex(), x);
     }
@@ -96,7 +96,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         // System.out.printf("Set at idx %d to value %d%n", parameterIndex, x);
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setInt(assignment.getNewIndex(), x);
     }
@@ -106,7 +106,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         //System.out.printf("Set at idx %d to value %d%nQuery: %s (%s)", parameterIndex, x, this.taintedQuery, this.originalQuery);
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setLong(assignment.getNewIndex(), x);
     }
@@ -116,7 +116,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         // System.out.printf("Set at idx %d to value %f%n", parameterIndex, x);
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setFloat(assignment.getNewIndex(), x);
     }
@@ -126,7 +126,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         // System.out.printf("Set at idx %d to value %f%n", parameterIndex, x);
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setDouble(assignment.getNewIndex(), x);
     }
@@ -136,7 +136,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         // System.out.printf("Set at idx %d to value %s%n", parameterIndex, x);
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setBigDecimal(assignment.getNewIndex(), x);
     }
@@ -147,7 +147,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         //Utils.printCurrentStackTrace();
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setString(assignment.getNewIndex(), x);
     }
@@ -157,7 +157,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         // System.out.printf("Set at idx %d to value %s%n", parameterIndex, Arrays.toString(x));
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setBytes(assignment.getNewIndex(), x);
     }
@@ -167,7 +167,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         // System.out.printf("Set at idx %d to value %s%n", parameterIndex, x);
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setDate(assignment.getNewIndex(), x);
     }
@@ -177,7 +177,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         // System.out.printf("Set at idx %d to value %s%n", parameterIndex, x);
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setTime(assignment.getNewIndex(), x);
     }
@@ -187,7 +187,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         // System.out.printf("Set at idx %d to value %s%n", parameterIndex, x);
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setTimestamp(assignment.getNewIndex(), x);
     }
@@ -196,7 +196,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setAsciiStream(int parameterIndex, InputStream x, int length) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setAsciiStream(assignment.getNewIndex(), x, length);
     }
@@ -205,7 +205,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setUnicodeStream(int parameterIndex, InputStream x, int length) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         //noinspection deprecation
         this.delegate.setUnicodeStream(assignment.getNewIndex(), x, length);
@@ -215,7 +215,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setBinaryStream(int parameterIndex, InputStream x, int length) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setBinaryStream(assignment.getNewIndex(), x, length);
     }
@@ -230,7 +230,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         // System.out.printf("Set at idx %d to value %s%n", parameterIndex, x);
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setObject(assignment.getNewIndex(), x, targetSqlType);
     }
@@ -240,7 +240,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         // System.out.printf("Set at idx %d to value %s%n", parameterIndex, x);
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setObject(assignment.getNewIndex(), x);
     }
@@ -259,7 +259,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setCharacterStream(int parameterIndex, Reader reader, int length) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setCharacterStream(assignment.getNewIndex(), reader, length);
     }
@@ -268,7 +268,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setRef(int parameterIndex, Ref x) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setRef(assignment.getNewIndex(), x);
     }
@@ -277,7 +277,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setBlob(int parameterIndex, Blob x) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setBlob(assignment.getNewIndex(), x);
     }
@@ -286,7 +286,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setClob(int parameterIndex, Clob x) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setClob(assignment.getNewIndex(), x);
     }
@@ -295,7 +295,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setArray(int parameterIndex, Array x) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setArray(assignment.getNewIndex(), x);
     }
@@ -305,7 +305,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         // System.out.printf("Set at idx %d to value %s%n", parameterIndex, x);
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setDate(assignment.getNewIndex(), x, cal);
     }
@@ -315,7 +315,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         // System.out.printf("Set at idx %d to value %s%n", parameterIndex, x);
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setTime(assignment.getNewIndex(), x, cal);
     }
@@ -325,7 +325,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         // System.out.printf("Set at idx %d to value %s%n", parameterIndex, x);
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setTimestamp(assignment.getNewIndex(), x, cal);
     }
@@ -335,7 +335,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         // System.out.printf("Set at idx %d to value %s%n", parameterIndex, "null");
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setNull(assignment.getNewIndex(), sqlType, typeName);
     }
@@ -345,7 +345,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         // System.out.printf("Set at idx %d to value %s%n", parameterIndex, x);
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setURL(assignment.getNewIndex(), x);
     }
@@ -354,7 +354,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setRowId(int parameterIndex, RowId x) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setRowId(assignment.getNewIndex(), x);
     }
@@ -364,7 +364,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         // System.out.printf("Set at idx %d to value %s%n", parameterIndex, value);
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setNString(assignment.getNewIndex(), value);
     }
@@ -373,7 +373,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setNCharacterStream(int parameterIndex, Reader value, long length) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setNCharacterStream(assignment.getNewIndex(), value, length);
     }
@@ -382,7 +382,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setNClob(int parameterIndex, NClob value) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setNClob(assignment.getNewIndex(), value);
     }
@@ -391,7 +391,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setClob(int parameterIndex, Reader reader, long length) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setClob(assignment.getNewIndex(), reader, length);
     }
@@ -400,7 +400,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setBlob(int parameterIndex, InputStream inputStream, long length) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setBlob(assignment.getNewIndex(), inputStream, length);
     }
@@ -409,7 +409,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setNClob(int parameterIndex, Reader reader, long length) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setNClob(assignment.getNewIndex(), reader, length);
     }
@@ -418,7 +418,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setSQLXML(int parameterIndex, SQLXML xmlObject) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setSQLXML(assignment.getNewIndex(), xmlObject);
     }
@@ -427,7 +427,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setObject(int parameterIndex, Object x, int targetSqlType, int scaleOrLength) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setObject(assignment.getNewIndex(), x, targetSqlType, scaleOrLength);
     }
@@ -436,7 +436,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setAsciiStream(int parameterIndex, InputStream x, long length) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setAsciiStream(assignment.getNewIndex(), x, length);
     }
@@ -445,7 +445,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setBinaryStream(int parameterIndex, InputStream x, long length) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setBinaryStream(assignment.getNewIndex(), x, length);
     }
@@ -454,7 +454,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setCharacterStream(int parameterIndex, Reader reader, long length) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setCharacterStream(assignment.getNewIndex(), reader, length);
     }
@@ -463,7 +463,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setAsciiStream(int parameterIndex, InputStream x) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setAsciiStream(assignment.getNewIndex(), x);
     }
@@ -472,7 +472,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setBinaryStream(int parameterIndex, InputStream x) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setBinaryStream(assignment.getNewIndex(), x);
     }
@@ -481,7 +481,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setCharacterStream(int parameterIndex, Reader reader) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setCharacterStream(assignment.getNewIndex(), reader);
     }
@@ -490,7 +490,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setNCharacterStream(int parameterIndex, Reader value) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setNCharacterStream(assignment.getNewIndex(), value);
     }
@@ -499,7 +499,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setClob(int parameterIndex, Reader reader) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setClob(assignment.getNewIndex(), reader);
     }
@@ -508,7 +508,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setBlob(int parameterIndex, InputStream inputStream) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setBlob(assignment.getNewIndex(), inputStream);
     }
@@ -517,7 +517,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     public void setNClob(int parameterIndex, Reader reader) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
         if(assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
         this.delegate.setNClob(assignment.getNewIndex(), reader);
     }
@@ -547,7 +547,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
             String json = Utils.serializeTaints(x);
             this.delegate.setString(assignment.getTaintIndex(), json);
         }else if( assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
     }
 
@@ -562,7 +562,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
             String json = Utils.serializeTaints(value);
             this.delegate.setString(assignment.getTaintIndex(), json);
         }else if( assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
     }
 
@@ -575,7 +575,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
             String json = Utils.serializeTaints(value);
             this.delegate.setString(assignment.getTaintIndex(), json);
         } else if( assignment.isHasTaint()) {
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
         }
     }
     @Override
@@ -588,18 +588,14 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
                 targetSqlType == Types.LONGVARCHAR)) {
             IASString value = (IASString) x;
             this.delegate.setObject(assignment.getNewIndex(), value.getString(), targetSqlType);
-            if (value.isTainted() && assignment.isHasTaint()) {
-                //System.out.printf("Setting String at idx %d: %s/%s%n", parameterIndex, x.getString(), "foo");
-                //System.out.println(Arrays.toString(this.setVariables));
-                //System.out.println(Arrays.toString(this.newIndex));
-                String json = Utils.serializeTaints(value);
-                this.delegate.setString(assignment.getTaintIndex(), json);
-            } else if (assignment.isHasTaint()) {
-                this.delegate.setString(assignment.getTaintIndex(), "0");
+            if (assignment.isHasTaint()) {
+                this.delegate.setString(assignment.getTaintIndex(), value.isTainted() ? Utils.serializeTaints(value) : Constants.UNTAINTED);
             }
         } else {
             this.delegate.setObject(assignment.getNewIndex(), x, targetSqlType);
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            if (assignment.isHasTaint()) {
+                this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
+            }
         }
     }
 
@@ -613,18 +609,14 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
                 targetSqlType == Types.LONGVARCHAR)) {
             IASString value = (IASString) x;
             this.delegate.setObject(assignment.getNewIndex(), value.getString(), targetSqlType, scaleOrLength);
-            if (value.isTainted() && assignment.isHasTaint()) {
-                //System.out.printf("Setting String at idx %d: %s/%s%n", parameterIndex, x.getString(), "foo");
-                //System.out.println(Arrays.toString(this.setVariables));
-                //System.out.println(Arrays.toString(this.newIndex));
-                String json = Utils.serializeTaints(value);
-                this.delegate.setString(assignment.getTaintIndex(), json);
-            } else if (assignment.isHasTaint()) {
-                this.delegate.setString(assignment.getTaintIndex(), "0");
+            if (assignment.isHasTaint()) {
+                this.delegate.setString(assignment.getTaintIndex(), value.isTainted() ? Utils.serializeTaints(value) : Constants.UNTAINTED);
             }
         } else {
             this.delegate.setObject(assignment.getNewIndex(), x, targetSqlType, scaleOrLength);
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            if (assignment.isHasTaint()) {
+                this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
+            }
         }
     }
 
@@ -634,18 +626,14 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
         if (x instanceof IASString) {
             IASString value = (IASString) x;
             this.delegate.setObject(assignment.getNewIndex(), value.getString());
-            if (value.isTainted() && assignment.isHasTaint()) {
-                //System.out.printf("Setting String at idx %d: %s/%s%n", parameterIndex, x.getString(), "foo");
-                //System.out.println(Arrays.toString(this.setVariables));
-                //System.out.println(Arrays.toString(this.newIndex));
-                String json = Utils.serializeTaints(value);
-                this.delegate.setString(assignment.getTaintIndex(), json);
-            } else if (assignment.isHasTaint()) {
-                this.delegate.setString(assignment.getTaintIndex(), "0");
+            if (assignment.isHasTaint()) {
+               this.delegate.setString(assignment.getTaintIndex(), value.isTainted() ? Utils.serializeTaints(value) : Constants.UNTAINTED);
             }
         } else {
             this.delegate.setObject(assignment.getNewIndex(), x);
-            this.delegate.setString(assignment.getTaintIndex(), "0");
+            if (assignment.isHasTaint()) {
+                this.delegate.setString(assignment.getTaintIndex(), Constants.UNTAINTED);
+            }
         }
 
     }
