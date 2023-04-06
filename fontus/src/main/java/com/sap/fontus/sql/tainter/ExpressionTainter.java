@@ -234,6 +234,12 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 
 	@Override
 	public void visit(GreaterThan arg0) {
+		if(arg0.getLeftExpression() instanceof JdbcParameter) {
+			this.parameters.addParameter(ParameterType.ASSIGNMENT_UNTAINTED);
+		}
+		if(arg0.getRightExpression() instanceof JdbcParameter) {
+			this.parameters.addParameter(ParameterType.ASSIGNMENT_UNTAINTED);
+		}
 		// add '0' for correct column count
 		this.expressionReference.add(new StringValue("'0'"));
 	}
