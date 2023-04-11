@@ -81,21 +81,21 @@ public class Converter implements Callable<Void> {
             JSONObject sourceJson = (JSONObject) sourceJsonO;
             try {
                 FunctionCall call = this.parseFunctionCall(sourceJson);
-                boolean contained = false;
+                boolean missing = true;
                 for (Source source : fontusConfig.getSourceConfig().getSources()) {
                     if (call.equals(source.getFunction())) {
-                        contained = true;
+                        missing = false;
                         break;
                     }
                 }
-                if (!contained) {
+                if (missing) {
                     String sourceName = generateName(call);
                     sources.add(new Source(sourceName, call));
                 }
             } catch (Exception e) {
                 System.err.println("Some error occured with this:");
                 System.err.println(sourceJson.toString());
-                System.err.println(e + ": " + e.getMessage());
+                System.err.printf("%s: %s%n", e, e.getMessage());
             }
         }
         Configuration configuration = new Configuration();
@@ -109,14 +109,14 @@ public class Converter implements Callable<Void> {
             JSONObject sinkJson = (JSONObject) sinkJsonO;
             try {
                 FunctionCall call = this.parseFunctionCall(sinkJson);
-                boolean contained = false;
+                boolean missing = true;
                 for (Sink sink : fontusConfig.getSinkConfig().getSinks()) {
                     if (call.equals(sink.getFunction())) {
-                        contained = true;
+                        missing = false;
                         break;
                     }
                 }
-                if (!contained) {
+                if (missing) {
                     List<SinkParameter> sinkParameters = parseParameters(sinkJson);
                     List<String> categories = this.parseCategories(sinkJson);
                     List<Position> positions = parsePositions(sinkJson);
@@ -182,7 +182,7 @@ public class Converter implements Callable<Void> {
     }
 
     private static String generateName(FunctionCall call) {
-        String name = Utils.dotToSlash(call.getOwner()) + ".";
+        String name = String.format("%s.", Utils.dotToSlash(call.getOwner()));
         if (call.getName().equals(Constants.Init)) {
             name += call.getOwner().substring(call.getOwner().lastIndexOf('/'));
         } else {
@@ -263,7 +263,7 @@ public class Converter implements Callable<Void> {
             result = result.substring(0, result.indexOf('['));
             Class<?> cls = this.resolveClass(result);
             if (!cls.isPrimitive()) {
-                result = "L" + result + ";";
+                result = String.format("L%s;", result);
             } else {
                 result = Descriptor.classNameToDescriptorName(cls.getName());
             }

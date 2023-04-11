@@ -6,12 +6,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class SQLRewriter {
+public final class SQLRewriter {
 
 	//array of commands that should be taken into account when creating the new sql file
-	private static List<String> keyWords = Arrays.asList("ALTER", "CREATE", "DELETE", "INSERT",
+	private final List<String> keyWords = Arrays.asList("ALTER", "CREATE", "DELETE", "INSERT",
 			"UPDATE", "WITH", "DROP", "LOCK", "UNLOCK", "SELECT");
-	private static List<String> passThrough = Arrays.asList("LOCK", "UNLOCK");
+	private final List<String> passThrough = Arrays.asList("LOCK", "UNLOCK");
 
 	public static void main(String[] args) {
 		SQLRewriter rewriter = new SQLRewriter();
@@ -28,14 +28,14 @@ public class SQLRewriter {
 
 	private SQLRewriter() {}
 
-	private static String taintStatement(String statement) {
+	private String taintStatement(String statement) {
 		if (passThrough.stream().anyMatch(statement.substring(0, statement.indexOf(' '))::equalsIgnoreCase)) {
 			return statement;
 		}
 		try {
-			System.out.println("Tainting: " + statement);
+			System.out.printf("Tainting: '%s'%n", statement);
 			String taintedStatement = Utils.taintSqlStatement(statement);
-			System.out.println("Tainted: " + taintedStatement);
+			System.out.printf("Tainted: '%s'%n", taintedStatement);
 			return taintedStatement;
 		} catch (Exception e) {
 			System.out.printf("Error parsing '%s': %s%n", statement, e);
@@ -44,7 +44,6 @@ public class SQLRewriter {
 	}
 
 	private void readFile(String file) {
-		List<String> statements = new ArrayList<>();
 		try (BufferedReader br = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8)); PrintStream pr = new PrintStream("tainted_" + file)){
 			String line;
 			StringBuilder command = new StringBuilder(10);
@@ -55,15 +54,16 @@ public class SQLRewriter {
 					continue;
 				}
 				if (inCommand) {
-					command.append(line);
+					// Add whitespace to ensure the removal of line breaks we implicitly do here does not mess up statements
+					command.append(line).append(" ");
 				} else if (keyWords.stream().anyMatch(line.substring(0, line.indexOf(' '))::equalsIgnoreCase)) {
 					command.append(line);
 					inCommand = true;
 				}
-				if (line.endsWith(";")) {
+				if (line.stripTrailing().endsWith(";")) {
 					inCommand = false;
 					if (command.length() > 0) {
-						pr.println(taintStatement(command.toString()));
+						pr.println(this.taintStatement(command.toString()));
 						command = new StringBuilder(10);
 					}
 				}
