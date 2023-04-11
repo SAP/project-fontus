@@ -188,7 +188,7 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 
 	@Override
 	public void visit(Addition addition) {
-		checkBinaryExpressionForParameters(addition);
+		this.checkBinaryExpressionForParameters(addition);
 		// add '0' for correct column count
 		this.expressionReference.add(new StringValue("'0'"));
 	}
@@ -206,7 +206,8 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 	}
 
 	@Override
-	public void visit(Subtraction arg0) {
+	public void visit(Subtraction expr) {
+		this.checkBinaryExpressionForParameters(expr);
 		// add '0' for correct column count
 		this.expressionReference.add(new StringValue("'0'"));
 	}
@@ -231,14 +232,14 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 
 	@Override
 	public void visit(EqualsTo arg0) {
-		checkBinaryExpressionForParameters(arg0);
+		this.checkBinaryExpressionForParameters(arg0);
 		// add '0' for correct column count
 		this.expressionReference.add(new StringValue("'0'"));
 	}
 
 	@Override
 	public void visit(GreaterThan arg0) {
-		checkBinaryExpressionForParameters(arg0);
+		this.checkBinaryExpressionForParameters(arg0);
 		// add '0' for correct column count
 		this.expressionReference.add(new StringValue("'0'"));
 	}
