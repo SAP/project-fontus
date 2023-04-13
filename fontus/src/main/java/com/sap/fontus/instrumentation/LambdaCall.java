@@ -52,6 +52,8 @@ public class LambdaCall implements Serializable {
         return this.implementationHandle;
     }
 
+    public Type getInvokeDescriptor() { return this.invokeDescriptor; }
+
     private Type getConcreteOrOwnerImplementation() {
         return this.concreteImplementationType == null ? Type.getObjectType(this.implementation.getOwner()) : this.concreteImplementationType;
     }

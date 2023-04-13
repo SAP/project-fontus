@@ -410,9 +410,10 @@ class ClassTaintingVisitor extends ClassVisitor {
         FunctionCall proxied = this.methodProxies.shouldBeProxied(realFc);
         if (!realFc.equals(proxied)) {
             System.out.println(realFc + " != " + proxied);
-        }
-
-        if (this.combinedExcludedLookup.isPackageExcludedOrJdkOrAnnotation(call.getImplementationHandle().getOwner())) {
+            // Call proxied function instead
+            call = new LambdaCall(call.getFunctionalInterface(), FunctionCall.toHandle(proxied), call.getInvokeDescriptor());
+            this.generateProxyToInstrumented(mv, call.getImplementation().getName(), proxyDescriptor, proxied.getParsedDescriptor(), Optional.of(call));
+        } else if (this.combinedExcludedLookup.isPackageExcludedOrJdkOrAnnotation(call.getImplementationHandle().getOwner())) {
             Descriptor uninstrumentedDescriptor = Descriptor.parseDescriptor(this.instrumentationHelper.uninstrument(call.getImplementation().getDescriptor()));
             this.generateProxyToJdk(mv, call.getImplementation().getName(), proxyDescriptor, uninstrumentedDescriptor, call);
         } else {
