@@ -10,6 +10,28 @@ public final class IASResultSetUtils {
     private IASResultSetUtils() {
     }
 
+    public static Object getObject(ResultSet rs, int idx) throws SQLException {
+        if (rs instanceof IASResultSet) {
+            return ((IASResultSet) rs).getTString(idx);
+        } else if (rs.isWrapperFor(IASResultSet.class)) {
+            IASResultSet iasResultSet = rs.unwrap(IASResultSet.class);
+            return iasResultSet.getTObject(idx);
+        } else {
+            return rs.getObject(idx);
+        }
+    }
+
+    public static Object getObject(ResultSet rs, IASString label) throws SQLException {
+        if (rs instanceof IASResultSet) {
+            return ((IASResultSet) rs).getTString(label.getString());
+        } else if (rs.isWrapperFor(IASResultSet.class)) {
+            IASResultSet iasResultSet = rs.unwrap(IASResultSet.class);
+            return iasResultSet.getTObject(label.getString());
+        } else {
+            return rs.getObject(label.getString());
+        }
+    }
+
     public static IASString getString(ResultSet rs, int idx) throws SQLException {
         if (rs instanceof IASResultSet) {
             return ((IASResultSet) rs).getTString(idx);

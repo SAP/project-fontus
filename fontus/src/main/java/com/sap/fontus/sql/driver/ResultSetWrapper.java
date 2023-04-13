@@ -1000,5 +1000,28 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
         }
         return rv;
     }
+
+    @Override
+    public Object getTObject(String columnLabel) throws SQLException {
+        return getTObject(this.delegate.findColumn(columnLabel));
+    }
+
+    @Override
+    public Object getTObject(int columnIndex) throws SQLException {
+        int idx = transformColumnIndex(columnIndex);
+        Object o = this.delegate.getObject(idx);
+
+        if (o instanceof String) {
+            String s = (String) o;
+            String taint = this.delegate.getString(idx + 1);
+            IASString rv = IASString.fromString(s);
+            if (taint != null && !Constants.UNTAINTED.equals(taint) && !"0".equals(taint)) {
+                //System.out.printf("Restoring taint for '%s': %s%n", value, taint);
+                Utils.restoreTaint(rv, taint);
+            }
+            o = rv;
+        }
+        return o;
+    }
 }
 

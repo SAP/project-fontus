@@ -288,6 +288,10 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASResultSetUtils.class), "getString", String.format("(L%s;I)Lcom/sap/fontus/taintaware/unified/IASString;", Utils.dotToSlash(java.sql.ResultSet.class.getName())), false));
         methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/sql/ResultSet", "getString", "(Ljava/lang/String;)Ljava/lang/String;", true),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASResultSetUtils.class), "getString", String.format("(L%s;Lcom/sap/fontus/taintaware/unified/IASString;)Lcom/sap/fontus/taintaware/unified/IASString;", Utils.dotToSlash(java.sql.ResultSet.class.getName())), false));
+        methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/sql/ResultSet", "getObject", "(I)Ljava/lang/Object;", true),
+                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASResultSetUtils.class), "getObject", String.format("(L%s;I)Ljava/lang/Object;", Utils.dotToSlash(java.sql.ResultSet.class.getName())), false));
+        methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/sql/ResultSet", "getObject", "(Ljava/lang/String;)Ljava/lang/Object;", true),
+                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASResultSetUtils.class), "getObject", String.format("(L%s;Lcom/sap/fontus/taintaware/unified/IASString;)Ljava/lang/String;", Utils.dotToSlash(java.sql.ResultSet.class.getName())), false));
     }
 
 
