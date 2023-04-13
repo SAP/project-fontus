@@ -29,6 +29,10 @@ public interface StatisticsMXBean {
 
     long getTaintCheckTainted();
 
+    long getRewrittenSQLQueries();
+
+    long getTotalSQLQueries();
+
     Map<String, Long> getTaintlossHits();
 
     void saveClassBytecode(String qn);
