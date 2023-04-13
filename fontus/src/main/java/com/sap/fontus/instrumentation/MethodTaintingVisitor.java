@@ -752,7 +752,10 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             // Transform proxy calls if necessary
             FunctionCall realFc = FunctionCall.fromHandle(realFunction);
             FunctionCall proxied = shouldBeProxied(realFc);
-            realFunction = FunctionCall.toHandle(proxied);
+            if (!realFc.equals(proxied)) {
+                System.out.println(realFc + " != " + proxied);
+                realFunction = FunctionCall.toHandle(proxied);
+            }
 
             LambdaCall call = new LambdaCall(Type.getMethodType(descriptor).getReturnType(), realFunction, desc);
             if (call.isInstanceCall()) {
