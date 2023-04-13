@@ -749,6 +749,11 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             Handle realFunction = (Handle) bootstrapMethodArguments[1];
             Type desc = Type.getType(descriptor);
 
+            // Transform proxy calls if necessary
+            FunctionCall realFc = FunctionCall.fromHandle(realFunction);
+            FunctionCall proxied = shouldBeProxied(realFc);
+            realFunction = FunctionCall.toHandle(proxied);
+
             LambdaCall call = new LambdaCall(Type.getMethodType(descriptor).getReturnType(), realFunction, desc);
             if (call.isInstanceCall()) {
                 call.setConcreteImplementationType(desc.getArgumentTypes().length == 1 ? desc.getArgumentTypes()[0] : null);
