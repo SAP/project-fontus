@@ -29,87 +29,31 @@ public class SapCloudTaintHandler extends IASTaintHandler {
 
     private static final String dataSubjectAttributeName = SapCloudTaintHandler.class.getName() + ".DATASUBJECT";
 
-    private static Collection<AllowedPurpose> getPurposesFromRequest(ReflectedHttpServletRequest servlet) {
-        String header = servlet.getHeader(ConsentCookie.getConsentCookieName());
-        if (!header.isEmpty()) {
-            ConsentCookie consentCookie = ConsentCookie.parse(header);
-            return ConsentCookieMetadata.getAllowedPurposesFromConsentCookie(consentCookie);
+    private static Collection<AllowedPurpose> getPurposesFromParameterInfo(Object parameterInfo) {
+        try {
+            Method m = parameterInfo.getClass().getMethod("getHeader");
+            IASString s = (IASString) m.invoke(parameterInfo, new IASString(ConsentCookie.getConsentCookieName()));
+            String header = s.getString();
+            if (!header.isEmpty()) {
+                ConsentCookie consentCookie = ConsentCookie.parse(header);
+                return ConsentCookieMetadata.getAllowedPurposesFromConsentCookie(consentCookie);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         // Return empty consent if no header is found
         return new ArrayList<>();
     }
 
-    public static Integer getInteger(String strNum) {
-        Integer i = null;
-        if (strNum == null) {
-            return i;
-        }
-        try {
-            i = Integer.parseInt(strNum);
-        } catch (NumberFormatException nfe) {
-            return i;
-        }
-        return i;
+    private static DataSubject getOrCreateDataSubjectUuid(String name) {
+        return new SimpleDataSubject(name);
     }
 
-    private static DataSubject getOrCreateDataSubjectUuid(ReflectedHttpServletRequest request) {
-        DataSubject dataSubject = null;
-        // First try retrieving from cached attribute value
-        Object o = request.getAttribute(dataSubjectAttributeName);
-        if ((o instanceof DataSubject)) {
-            dataSubject = (DataSubject) o;
-        } else {
-            dataSubject = new SimpleDataSubject(UUID.randomUUID().toString());
-            request.setAttribute(dataSubjectAttributeName, dataSubject);
-        }
-        //System.out.println("FONTUS: got data subject uuid: " + dataSubject);
-        return dataSubject;
-    }
-
-    private static GdprMetadata createNewPatientMetadata(ReflectedHttpServletRequest request) {
-        DataSubject dataSubject = getOrCreateDataSubjectUuid(request);
-        return new SimpleGdprMetadata(getPurposesFromRequest(request), ProtectionLevel.Normal, dataSubject,
+    private static GdprMetadata createUserNameMetadata(String name, Object parameterInfo) {
+        DataSubject dataSubject = getOrCreateDataSubjectUuid(name);
+        return new SimpleGdprMetadata(getPurposesFromParameterInfo(parameterInfo), ProtectionLevel.Normal, dataSubject,
                 new SimpleDataId(), true, true, Identifiability.Explicit);
     }
-
-    private static ReflectedHttpServletRequest getRequestFromStreamParser(Object parser) {
-        ReflectedHttpServletRequest request = null;
-
-        try {
-            // DefaultDeserializationContext -> getParser()
-            // com.fasterxml.jackson.core.UTF8StreamJsonParser -> getInputSource()
-            // org.springframework.util.StreamUtils$NonClosingInputStream -> in
-            // org/eclipse/jetty/server/HttpInputOverHTTP
-            // org/eclipse/jetty/server/HttpChannelState
-
-            Method m = parser.getClass().getMethod("getInputSource");
-
-            Object inputStream = m.invoke(parser);
-            Field f = inputStream.getClass().getSuperclass().getDeclaredField("in");
-            f.setAccessible(true);
-
-            Object pushBackInputStream = f.get(inputStream);
-            Field f2 = pushBackInputStream.getClass().getSuperclass().getDeclaredField("in");
-            f2.setAccessible(true);
-
-            // org/eclipse/jetty/server/HttpInputOverHTTP
-            Object httpInputOverHTTP = f2.get(pushBackInputStream);
-            Field f3 = httpInputOverHTTP.getClass().getSuperclass().getDeclaredField("_channelState");
-            f3.setAccessible(true);
-
-
-            Object channelState = f3.get(httpInputOverHTTP);
-            Method m2 = channelState.getClass().getMethod("getBaseRequest");
-            Object requestObject = m2.invoke(channelState);
-
-            request = new ReflectedHttpServletRequest(requestObject);
-
-        } catch (Exception e) {
-            System.err.println("Exception trying to extract request: " + e.getMessage());
-        }
-        return request;
-    }
-
 
     /**
      * Sets Taint Information in OpenMrs according to request information.
@@ -132,7 +76,7 @@ public class SapCloudTaintHandler extends IASTaintHandler {
 
         // Check for ServletRequest getParameter function
         if ((parent != null) && (source != null)) {
-            GdprMetadata metadata = null;
+            GdprMetadata metadata = createUserNameMetadata(taintAware.toIASString().getString(), parameters[0]);
 
             // Add taint information if match was found
             if (metadata != null) {
