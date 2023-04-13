@@ -48,6 +48,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     private boolean isInterface = false;
     private boolean isFinal = false;
     private final CombinedExcludedLookup combinedExcludedLookup;
+    private final MethodProxies methodProxies;
     private final SignatureInstrumenter signatureInstrumenter;
     private final List<org.objectweb.asm.commons.Method> instrumentedMethods = new ArrayList<>();
     private boolean inEnd = false;
@@ -74,6 +75,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         this.fillBlacklist();
         this.signatureInstrumenter = new SignatureInstrumenter(this.api, this.instrumentationHelper);
         this.combinedExcludedLookup = excludedLookup;
+        this.methodProxies = new MethodProxies(this.combinedExcludedLookup);
     }
 
     private void fillBlacklist() {
@@ -402,6 +404,13 @@ class ClassTaintingVisitor extends ClassVisitor {
         Descriptor proxyDescriptor = call.getProxyDescriptor(this.loader, this.instrumentationHelper);
 
         MethodVisitor mv = super.visitMethod(access, call.getProxyMethodName(), proxyDescriptor.toDescriptor(), null, null);
+
+        // Transform proxy calls if necessary
+        FunctionCall realFc = call.getImplementation();
+        FunctionCall proxied = this.methodProxies.shouldBeProxied(realFc);
+        if (!realFc.equals(proxied)) {
+            System.out.println(realFc + " != " + proxied);
+        }
 
         if (this.combinedExcludedLookup.isPackageExcludedOrJdkOrAnnotation(call.getImplementationHandle().getOwner())) {
             Descriptor uninstrumentedDescriptor = Descriptor.parseDescriptor(this.instrumentationHelper.uninstrument(call.getImplementation().getDescriptor()));
