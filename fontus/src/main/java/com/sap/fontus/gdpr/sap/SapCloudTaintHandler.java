@@ -29,14 +29,25 @@ public class SapCloudTaintHandler extends IASTaintHandler {
 
     private static final String dataSubjectAttributeName = SapCloudTaintHandler.class.getName() + ".DATASUBJECT";
 
+    private static Method getMethod(Object o, String name) {
+        for (Method m : o.getClass().getMethods()) {
+            if (m.getName().equals(name)) {
+                return m;
+            }
+        }
+        return null;
+    }
+
     private static Collection<AllowedPurpose> getPurposesFromParameterInfo(Object parameterInfo) {
         try {
-            Method m = parameterInfo.getClass().getMethod("getHeader");
-            IASString s = (IASString) m.invoke(parameterInfo, new IASString(ConsentCookie.getConsentCookieName()));
-            String header = s.getString();
-            if (!header.isEmpty()) {
-                ConsentCookie consentCookie = ConsentCookie.parse(header);
-                return ConsentCookieMetadata.getAllowedPurposesFromConsentCookie(consentCookie);
+            Method m = getMethod(parameterInfo, "getHeader");
+            if (m != null) {
+                IASString s = (IASString) m.invoke(parameterInfo, new IASString(ConsentCookie.getConsentCookieName()));
+                String header = s.getString();
+                if (!header.isEmpty()) {
+                    ConsentCookie consentCookie = ConsentCookie.parse(header);
+                    return ConsentCookieMetadata.getAllowedPurposesFromConsentCookie(consentCookie);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
