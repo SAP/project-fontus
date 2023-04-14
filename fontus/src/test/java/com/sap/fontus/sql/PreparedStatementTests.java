@@ -465,6 +465,21 @@ class PreparedStatementTests {
         ResultSet rss = ps.executeQuery();
     }
 
+    @Test
+    void testRidiculousSqlStatement() throws SQLException {
+        // This crashes with earlier versions of the SQL Parser
+        String query = "SELECT T0.\"ID\" as \"ID\", T0.\"TITLE\" as \"title\", T0.\"STOCK\" as \"stock\", T0.\"PRICE\" as \"price\", T0.\"ISACTIVEENTITY\" as \"IsActiveEntity\", T0.\"HASACTIVEENTITY\" as \"HasActiveEntity\", T0.\"HASDRAFTENTITY\" as \"HasDraftEntity\", T1.\"DRAFTUUID\" as \"DraftAdministrativeData.DraftUUID\", T1.\"LASTCHANGEDBYUSER\" as \"DraftAdministrativeData.LastChangedByUser\", CASE WHEN T1.\"DRAFTUUID\" IS NULL THEN null WHEN T1.\"LASTCHANGEDATETIME\" > ? THEN\n" +
+                " T1.\"INPROCESSBYUSER\" ELSE '' END as \"DraftAdministrativeData.InProcessByUser\", T2.\"ID\" as \"author.ID\", T2.\"NAME\" as \"author.name\", T2.\"ID\" as \"author.@audit:ID\", T2.\"ID\" as \"author.@audit:DS_ID\", T3.\"CODE\" as \"currency.code\", T3.\"SYMBOL" +
+                "\" as \"currency.symbol\", T4.\"NAME\" as \"genre.name\", T4.\"ID\" as \"genre.ID\", T0.\"ID\" as \"@ID\" FROM \"ADMINSERVICE_BOOKS_DRAFTS\" T0 LEFT OUTER JOIN \"DRAFT_DRAFTADMINISTRATIVEDATA\" T1 ON T0.\"DRAFTADMINISTRATIVEDATA_DRAFTUUID\" = T1.\"DRAFTUUID\"" +
+                "LEFT OUTER JOIN \"ADMINSERVICE_AUTHORS\" T2 ON T0.\"AUTHOR_ID\" = T2.\"ID\" LEFT OUTER JOIN \"ADMINSERVICE_CURRENCIES\" T3 ON T0.\"CURRENCY_CODE\" = T3.\"CODE\" LEFT OUTER JOIN \"ADMINSERVICE_GENRES\" T4 ON T0.\"GENRE_ID\" = T4.\"ID\" LEFT OUTER JOIN (SEL" +
+                "ECT ACTIVE.*, true as IsActiveEntity from \"ADMINSERVICE_BOOKS\" ACTIVE) T5 ON T5.\"ID\" = T0.\"ID\" WHERE (T0.\"ISACTIVEENTITY\" = FALSE and T0.\"ISACTIVEENTITY\" is not NULL or T5.\"ISACTIVEENTITY\" is NULL) and (T0.\"DESCR\" is not NULL and (T0.\"DE" +
+                "SCR\" ILIKE ? ESCAPE '\\') or T0.\"TITLE\" is not NULL and (T0.\"TITLE\" ILIKE ? ESCAPE '\\')) and EXISTS (SELECT 1 FROM \"DRAFT_DRAFTADMINISTRATIVEDATA\" U0 WHERE U0.\"DRAFTUUID\" = T0.\"DRAFTADMINISTRATIVEDATA_DRAFTUUID\" and (U0.\"CREATEDBYUSER\" is" +
+                " NULL or U0.\"CREATEDBYUSER\" = ? or U0.\"CREATEDBYUSER\" = ?)) ORDER BY T0.\"ID\" NULLS FIRST, T0.\"ISACTIVEENTITY\" NULLS FIRST";
+        Connection mc = new MockConnection(this.conn);
+        Connection c = ConnectionWrapper.wrap(mc);
+        PreparedStatement ps = c.prepareStatement(query);
+    }
+
     private void executeUpdate(String sql) throws SQLException {
         Connection mc = ConnectionWrapper.wrap(this.conn);
         Statement st = mc.createStatement();

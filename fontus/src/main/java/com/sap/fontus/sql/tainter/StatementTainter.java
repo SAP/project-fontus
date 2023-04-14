@@ -199,15 +199,15 @@ public class StatementTainter extends StatementVisitorAdapter {
 		return newExpressions;
 	}
 
-	private List<SelectExpressionItem> taintReturningExpression(List<SelectExpressionItem> returningExpressionList) {
-		List<SelectExpressionItem> newReturningExpressionList = new ArrayList<>();
+	private List<SelectItem> taintReturningExpression(List<SelectItem> returningExpressionList) {
+		List<SelectItem> newReturningExpressionList = new ArrayList<>();
 		List<SelectItem> selectItemReference = new ArrayList<>(1);
 		SelectItemTainter selectItemTainter = new SelectItemTainter(this.parameters, selectItemReference);
-		for (SelectExpressionItem selectExpressionItem : returningExpressionList) {
+		for (SelectItem selectExpressionItem : returningExpressionList) {
 			newReturningExpressionList.add(selectExpressionItem);
 			selectExpressionItem.accept(selectItemTainter);
 			if (!selectItemReference.isEmpty()) {
-				newReturningExpressionList.add((SelectExpressionItem) selectItemReference.get(0));
+				newReturningExpressionList.add((SelectItem) selectItemReference.get(0));
 				selectItemReference.clear();
 			}
 		}
