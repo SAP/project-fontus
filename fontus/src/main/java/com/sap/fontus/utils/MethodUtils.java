@@ -55,6 +55,31 @@ public final class MethodUtils {
         }
     }
 
+    public static int opCodeToTag(int opcode) {
+        switch (opcode) {
+            case Opcodes.GETFIELD:
+                return Opcodes.H_GETFIELD;
+            case Opcodes.GETSTATIC:
+                return Opcodes.H_GETSTATIC;
+            case Opcodes.INVOKEINTERFACE:
+                return Opcodes.H_INVOKEINTERFACE;
+            case Opcodes.INVOKESPECIAL:
+                return Opcodes.H_INVOKESPECIAL;
+            case Opcodes.H_NEWINVOKESPECIAL:
+                return Opcodes.INVOKESPECIAL;
+            case Opcodes.INVOKESTATIC:
+                return Opcodes.H_INVOKESTATIC;
+            case Opcodes.INVOKEVIRTUAL:
+                return Opcodes.H_INVOKEVIRTUAL;
+            case Opcodes.PUTFIELD:
+                return Opcodes.H_PUTFIELD;
+            case Opcodes.PUTSTATIC:
+                return Opcodes.H_PUTSTATIC;
+            default:
+                return opcode;
+        }
+    }
+
     public static String[] getExceptionTypes(Method method) {
         AnnotatedType[] annotatedExceptionTypes = method.getAnnotatedExceptionTypes();
         String[] exceptions = new String[annotatedExceptionTypes.length];

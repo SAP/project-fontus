@@ -121,6 +121,10 @@ public class FunctionCall {
         return new FunctionCall(MethodUtils.tagToOpcode(handle.getTag()), handle.getOwner(), handle.getName(), handle.getDesc(), handle.isInterface());
     }
 
+    public static Handle toHandle(FunctionCall fc) {
+        return new Handle(MethodUtils.opCodeToTag(fc.getOpcode()), fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.isInterface());
+    }
+
     public static FunctionCall fromConstructor(Constructor<?> constructor) {
         String descriptor = Type.getType(constructor).getDescriptor();
         return new FunctionCall(Opcodes.INVOKESPECIAL, Utils.dotToSlash(constructor.getDeclaringClass().getName()), Constants.Init, descriptor, constructor.getDeclaringClass().isInterface());
