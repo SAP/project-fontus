@@ -48,11 +48,11 @@ dependencies {
     testImplementation('org.xerial:sqlite-jdbc:3.16.1')
     implementation 'org.owasp.encoder:encoder:1.2.3'
     implementation 'org.owasp.encoder:encoder-jsp:1.2.3'
-    implementation 'com.github.jsqlparser:jsqlparser:4.2'
+    implementation 'com.github.jsqlparser:jsqlparser:4.6'
     // Higher version of the sql connector breaks liquidbase with OpenMRS
     implementation 'mysql:mysql-connector-java:8.0.22'
     implementation 'com.owlike:genson:1.6'
-    implementation 'com.h2database:h2:2.1.210'
+    implementation 'com.h2database:h2:2.1.214'
 }
 
 apply plugin: 'java'
