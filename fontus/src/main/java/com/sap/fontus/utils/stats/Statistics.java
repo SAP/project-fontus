@@ -220,6 +220,16 @@ public enum Statistics implements StatisticsMXBean {
     }
 
     @Override
+    public double getAverageRewrittenSQLQueryLength() {
+        return this.rewrittenQueries.get() > 0 ? (double) this.rewrittenQueryLength.get() / (double) this.rewrittenQueries.get() : 0;
+    }
+
+    @Override
+    public double getAverageSQLQueryLength() {
+        return this.rewrittenQueries.get() > 0 ? (double) this.totalQueriesLength.get() / (double) this.rewrittenQueries.get() : 0;
+    }
+
+    @Override
     public Map<String, Long> getTaintlossHits() {
         return this.taintlossHits;
     }

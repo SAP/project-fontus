@@ -37,6 +37,10 @@ public interface StatisticsMXBean {
 
     long getTotalRewrittenSQLQueryLength();
 
+    double getAverageRewrittenSQLQueryLength();
+
+    double getAverageSQLQueryLength();
+
     Map<String, Long> getTaintlossHits();
 
     void saveClassBytecode(String qn);
