@@ -37,11 +37,16 @@ public enum QueryCache {
         }
         StatementTainter tainter = new StatementTainter();
         Statements stmts = null;
+        long stmtLength = 0;
         try {
             stmts = CCJSqlParserUtil.parseStatements(query);
             stmts.accept(tainter);
         } catch (JSQLParserException jsqlParserException) {
             jsqlParserException.printStackTrace();
+        }
+        if (this.collectStatistics) {
+            Statistics.INSTANCE.incrementTotalQueryLength(query.trim().length());
+            Statistics.INSTANCE.incrementRewrittenQueryLength(stmts.toString().trim().length());
         }
         Pair<String, QueryParameters> pair = new Pair<>(stmts.toString().trim(), tainter.getParameters());
         this.queryCache.put(query, pair);

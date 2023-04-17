@@ -26,6 +26,8 @@ public enum Statistics implements StatisticsMXBean {
 
     private final AtomicLong rewrittenQueries;
     private final AtomicLong totalQueries;
+    private final AtomicLong rewrittenQueryLength;
+    private final AtomicLong totalQueriesLength;
     private final Map<String, Long> taintlossHits = new ConcurrentHashMap<>();
 
     Statistics() {
@@ -40,6 +42,8 @@ public enum Statistics implements StatisticsMXBean {
         this.lazyThresholdExceededCount = new AtomicLong();
         this.rewrittenQueries = new AtomicLong();
         this.totalQueries = new AtomicLong();
+        this.rewrittenQueryLength = new AtomicLong();
+        this.totalQueriesLength = new AtomicLong();
         this.register();
     }
 
@@ -55,6 +59,8 @@ public enum Statistics implements StatisticsMXBean {
         this.initializedStrings.set(0L);
         this.rewrittenQueries.set(0L);
         this.totalQueries.set(0L);
+        this.totalQueriesLength.set(0L);
+        this.rewrittenQueryLength.set(0L);
         this.taintlossHits.clear();
     }
 
@@ -80,6 +86,14 @@ public enum Statistics implements StatisticsMXBean {
 
     public void incrementTotalQueries() {
         this.totalQueries.incrementAndGet();
+    }
+
+    public  void incrementRewrittenQueryLength(long x) {
+        this.rewrittenQueryLength.addAndGet(x);
+    }
+
+    public void incrementTotalQueryLength(long x) {
+        this.totalQueriesLength.addAndGet(x);
     }
 
     public  void addRangeCount(IASTaintInformationable taintInformationable) {
@@ -193,6 +207,16 @@ public enum Statistics implements StatisticsMXBean {
     @Override
     public long getTotalSQLQueries() {
         return this.totalQueries.get();
+    }
+
+    @Override
+    public long getTotalRewrittenSQLQueryLength() {
+        return this.rewrittenQueryLength.get();
+    }
+
+    @Override
+    public long getTotalSQLQueryLength() {
+        return this.totalQueriesLength.get();
     }
 
     @Override

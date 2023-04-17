@@ -33,6 +33,10 @@ public interface StatisticsMXBean {
 
     long getTotalSQLQueries();
 
+    long getTotalSQLQueryLength();
+
+    long getTotalRewrittenSQLQueryLength();
+
     Map<String, Long> getTaintlossHits();
 
     void saveClassBytecode(String qn);
