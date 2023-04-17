@@ -38,7 +38,8 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
     }
 
     public String getHeader(String name) {
-        return getHeader(new IASString(name)).getString();
+        IASString h = name == null ? null : getHeader(new IASString(name));
+        return h == null ? null : h.getString();
     }
 
     

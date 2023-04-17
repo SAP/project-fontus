@@ -31,7 +31,7 @@ public class OpenHospitalTaintHandler extends IASTaintHandler {
 
     private static Collection<AllowedPurpose> getPurposesFromRequest(ReflectedHttpServletRequest servlet) {
         String header = servlet.getHeader(ConsentCookie.getConsentCookieName());
-        if (!header.isEmpty()) {
+        if ((header != null) && !header.isEmpty()) {
             ConsentCookie consentCookie = ConsentCookie.parse(header);
             return ConsentCookieMetadata.getAllowedPurposesFromConsentCookie(consentCookie);
         }
