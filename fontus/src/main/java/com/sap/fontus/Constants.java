@@ -65,10 +65,10 @@ public final class Constants {
             ConversionUtilsToOrigName = ConversionUtils.class.getMethod("convertToUninstrumented", Object.class).getName();
             ConversionUtilsToOrigDesc = Descriptor.parseMethod(ConversionUtils.class.getMethod("convertToUninstrumented", Object.class)).toDescriptor();
             TaintHandlerQN = Utils.getInternalName(IASTaintHandler.class);
-            TaintHandlerTaintName = IASTaintHandler.class.getMethod("taint", Object.class, Object.class, Object[].class, int.class).getName();
-            TaintHandlerTaintDesc = Descriptor.parseMethod(IASTaintHandler.class.getMethod("taint", Object.class, Object.class, Object[].class, int.class)).toDescriptor();
-            TaintHandlerCheckTaintName = IASTaintHandler.class.getMethod("checkTaint", Object.class, Object.class, String.class, String.class).getName();
-            TaintHandlerCheckTaintDesc = Descriptor.parseMethod(IASTaintHandler.class.getMethod("checkTaint", Object.class, Object.class, String.class, String.class)).toDescriptor();
+            TaintHandlerTaintName = IASTaintHandler.class.getMethod("taint", Object.class, Object.class, Object[].class, int.class, String.class).getName();
+            TaintHandlerTaintDesc = Descriptor.parseMethod(IASTaintHandler.class.getMethod("taint", Object.class, Object.class, Object[].class, int.class, String.class)).toDescriptor();
+            TaintHandlerCheckTaintName = IASTaintHandler.class.getMethod("checkTaint", Object.class, Object.class, String.class, String.class, String.class).getName();
+            TaintHandlerCheckTaintDesc = Descriptor.parseMethod(IASTaintHandler.class.getMethod("checkTaint", Object.class, Object.class, String.class, String.class, String.class)).toDescriptor();
             CompareProxyEqualsDesc = Descriptor.parseMethod(IASCompareProxy.class.getMethod("compareRefEquals", Object.class, Object.class)).toDescriptor();
             MethodInvokeFqn = FunctionCall.fromMethod(Method.class.getMethod("invoke", Object.class, Object[].class)).getFqn();
 
