@@ -109,12 +109,13 @@ public class FunctionCall {
     public static Method toMethod(FunctionCall functionCall) throws ClassNotFoundException, NoSuchMethodException {
         Class<?> clazz = Class.forName(Utils.slashToDot(functionCall.owner));
         List<String> params = functionCall.getParsedDescriptor().getParameters();
-        List<Class<?>> paramClasses = new ArrayList<>(params.size());
+        Class<?>[] paramClasses = new Class[params.size()];
+        int i = 0;
         for (String s : params) {
-            paramClasses.add(getClazz(s));
+            paramClasses[i] = getClazz(s);
         }
 
-        return clazz.getMethod(functionCall.name, paramClasses.toArray(new Class[0]));
+        return clazz.getMethod(functionCall.name, paramClasses);
     }
 
     public static FunctionCall fromHandle(Handle handle) {
@@ -122,7 +123,7 @@ public class FunctionCall {
     }
 
     public static Handle toHandle(FunctionCall fc) {
-        return new Handle(MethodUtils.opCodeToTag(fc.getOpcode()), fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.isInterface());
+        return new Handle(MethodUtils.opCodeToTag(fc.opcode), fc.owner, fc.name, fc.descriptor, fc.isInterface);
     }
 
     public static FunctionCall fromConstructor(Constructor<?> constructor) {

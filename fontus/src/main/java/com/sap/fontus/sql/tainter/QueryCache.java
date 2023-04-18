@@ -28,39 +28,38 @@ public enum QueryCache {
         if (this.collectStatistics) {
             Statistics.INSTANCE.incrementTotalQueries();
         }
-        Pair<String, QueryParameters> parsed = this.queryCache.getIfPresent(query);
-        if (parsed != null) {
-            this.hits++;
+        return this.queryCache.get(query, (q) -> {
+            if (this.collectStatistics) {
+                Statistics.INSTANCE.incrementRewrittenQueries();
+            }
+
+            if (this.collectStatistics) {
+                Statistics.INSTANCE.incrementRewrittenQueries();
+            }
+            StatementTainter tainter = new StatementTainter();
+            Statements stmts = null;
+            try {
+                stmts = CCJSqlParserUtil.parseStatements(query);
+                stmts.accept(tainter);
+            } catch (JSQLParserException jsqlParserException) {
+                jsqlParserException.printStackTrace();
+            }
+            if (this.collectStatistics) {
+                // This uses a different SQL parser, probably not ideal
+                List<SqlLexerToken> tokens = SqlLexerToken.getLexerTokens(query);
+                Statistics.INSTANCE.incrementTotalQueryLength(tokens.size());
+                tokens = SqlLexerToken.getLexerTokens(stmts.toString());
+                Statistics.INSTANCE.incrementRewrittenQueryLength(tokens.size());
+            }
+            Pair<String, QueryParameters> pair = new Pair<>(stmts.toString().trim(), tainter.getParameters());
+            this.queryCache.put(query, pair);
+            this.misses++;
             if (this.hits + this.misses % 1000 == 0) {
                 System.out.printf("QueryCache: %d/%d h/m%n", this.hits, this.misses);
             }
-            return parsed;
-        }
-        if (this.collectStatistics) {
-            Statistics.INSTANCE.incrementRewrittenQueries();
-        }
-        StatementTainter tainter = new StatementTainter();
-        Statements stmts = null;
-        long stmtLength = 0;
-        try {
-            stmts = CCJSqlParserUtil.parseStatements(query);
-            stmts.accept(tainter);
-        } catch (JSQLParserException jsqlParserException) {
-            jsqlParserException.printStackTrace();
-        }
-        if (this.collectStatistics) {
-            // This uses a different SQL parser, probably not ideal
-            List<SqlLexerToken> tokens = SqlLexerToken.getLexerTokens(query);
-            Statistics.INSTANCE.incrementTotalQueryLength(tokens.size());
-            tokens = SqlLexerToken.getLexerTokens(stmts.toString());
-            Statistics.INSTANCE.incrementRewrittenQueryLength(tokens.size());
-        }
-        Pair<String, QueryParameters> pair = new Pair<>(stmts.toString().trim(), tainter.getParameters());
-        this.queryCache.put(query, pair);
-        this.misses++;
-        if (this.hits + this.misses % 1000 == 0) {
-            System.out.printf("QueryCache: %d/%d h/m%n", this.hits, this.misses);
-        }
-        return pair;
+
+            return pair;
+        });
     }
+
 }

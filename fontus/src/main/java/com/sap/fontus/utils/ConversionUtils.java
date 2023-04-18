@@ -16,6 +16,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,11 +76,11 @@ public final class ConversionUtils {
             new AlreadyUntaintedConverter()
     };
 
-    private static final Map<Class<?>, MethodHandle> toOrigMethods = new HashMap<>();
-    private static final Map<Class<?>, MethodHandle> toConcreteMethods = new HashMap<>();
-    private static final Map<Class<?>, Class<?>> toConcreteClass = new HashMap<>();
+    private static final Map<Class<?>, MethodHandle> toOrigMethods = new ConcurrentHashMap<>(15);
+    private static final Map<Class<?>, MethodHandle> toConcreteMethods = new ConcurrentHashMap<>(16);
+    private static final Map<Class<?>, Class<?>> toConcreteClass = new ConcurrentHashMap<>(14);
 
-    private static final Map<Class<?>, Class<?>> toOrigClass = new HashMap<>();
+    private static final Map<Class<?>, Class<?>> toOrigClass = new ConcurrentHashMap<>(14);
 
     static {
         toOrigClass.put(IASString.class, String.class);
