@@ -17,7 +17,7 @@ public class GdprTaintHandler extends IASTaintHandler {
 
 
 
-    private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
+    private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId, String callerFunction) {
         IASTaintSource source = IASTaintSourceRegistry.getInstance().get(sourceId);
 
         System.out.println("FONTUS: Source: " + source);
@@ -45,14 +45,18 @@ public class GdprTaintHandler extends IASTaintHandler {
         IASString euconsentName = IASString.fromString("euconsent");
         IASString euconsentV2Name = IASString.fromString("euconsent_v2");
         TCString vendorConsent = null;
-        for (ReflectedCookie cookie : cookies) {
-            // Make sure v2 is given priority
-            if (cookie.getName().equals(euconsentV2Name)) {
-                vendorConsent = TCString.decode(cookie.getValue().getString());
-                break;
-            } else if (cookie.getName().equals(euconsentName)) {
-                vendorConsent = TCString.decode(cookie.getValue().getString());
-                break;
+        if (cookies != null) {
+            for (ReflectedCookie cookie : cookies) {
+                if (cookie != null) {
+                    // Make sure v2 is given priority
+                    if (cookie.getName().equals(euconsentV2Name)) {
+                        vendorConsent = TCString.decode(cookie.getValue().getString());
+                        break;
+                    } else if (cookie.getName().equals(euconsentName)) {
+                        vendorConsent = TCString.decode(cookie.getValue().getString());
+                        break;
+                    }
+                }
             }
         }
         if (vendorConsent != null) {
@@ -87,10 +91,7 @@ public class GdprTaintHandler extends IASTaintHandler {
      * </pre>
      *
      */
-    public static Object taint(Object object, Object parent, Object[] parameters, int sourceId) {
-        if (object instanceof IASTaintAware) {
-            return setTaint((IASTaintAware) object, parent, parameters, sourceId);
-        }
-        return IASTaintHandler.traverseObject(object, taintAware -> setTaint(taintAware, parent, parameters, sourceId));
+    public static Object taint(Object object, Object parent, Object[] parameters, int sourceId, String callerFunction) {
+        return IASTaintHandler.taint(object, parent, parameters, sourceId, callerFunction, GdprTaintHandler::setTaint);
     }
 }

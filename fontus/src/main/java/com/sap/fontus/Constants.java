@@ -1,6 +1,7 @@
 package com.sap.fontus;
 
 import com.sap.fontus.asm.Descriptor;
+import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.taintaware.unified.IASCompareProxy;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
@@ -8,6 +9,7 @@ import com.sap.fontus.utils.ConversionUtils;
 import com.sap.fontus.utils.Utils;
 import org.objectweb.asm.Type;
 
+import java.lang.reflect.Method;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
@@ -54,6 +56,7 @@ public final class Constants {
     public static final String TFieldToField = "getField";
     public static final String TMemberToMember = "getMember";
     public static final String TJoinerToJoiner = "getStringJoiner";
+    public static final String MethodInvokeFqn;
 
     static {
         try {
@@ -67,6 +70,7 @@ public final class Constants {
             TaintHandlerCheckTaintName = IASTaintHandler.class.getMethod("checkTaint", Object.class, Object.class, String.class, String.class).getName();
             TaintHandlerCheckTaintDesc = Descriptor.parseMethod(IASTaintHandler.class.getMethod("checkTaint", Object.class, Object.class, String.class, String.class)).toDescriptor();
             CompareProxyEqualsDesc = Descriptor.parseMethod(IASCompareProxy.class.getMethod("compareRefEquals", Object.class, Object.class)).toDescriptor();
+            MethodInvokeFqn = FunctionCall.fromMethod(Method.class.getMethod("invoke", Object.class, Object[].class)).getFqn();
 
             PropertyDesc = Descriptor.classNameToDescriptorName(Properties.class.getName());
             PropertyQN = Utils.getInternalName(Properties.class);

@@ -3,6 +3,7 @@ package com.sap.fontus.taintaware.unified;
 import com.sap.fontus.Constants;
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.Configuration;
+import com.sap.fontus.config.Source;
 import com.sap.fontus.config.abort.Abort;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASBasicMetadata;
@@ -13,6 +14,7 @@ import com.sap.fontus.utils.stats.Statistics;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static com.sap.fontus.utils.ClassTraverser.getAllFields;
@@ -61,7 +63,7 @@ public class IASTaintHandler {
      * @param sinkName     The name of the sink
      * @return
      */
-    public static IASTaintAware handleTaint(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName) {
+    public static IASTaintAware handleTaint(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, String callerName) {
         boolean isTainted = taintAware.isTainted();
 //        System.out.println("isTainted : " + isTainted);
 //        System.out.println("taintaware : " + taintAware);
@@ -79,7 +81,7 @@ public class IASTaintHandler {
         return taintAware;
     }
 
-    private static IASTaintAware setTaint(IASTaintAware taintAware, int sourceId) {
+    private static IASTaintAware setTaint(IASTaintAware taintAware, Object parentObject, Object[] parameters, int sourceId, String callerFunction) {
         IASTaintSource source = IASTaintSourceRegistry.getInstance().get(sourceId);
         taintAware.setTaint(new IASBasicMetadata(source));
         return taintAware;
@@ -176,30 +178,66 @@ public class IASTaintHandler {
         return object;
     }
 
-    public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName) {
+    /**
+     * Hook function called at all taint sinks in the bytecode
+     *
+     * String object = parentObject.sourceCall(parameters);
+     *
+     * @param object The object to be tainted (can be a string, or something which needs traversing, like a list)
+     * @param instance this object on which the sink is being called
+     * @param sinkFunction The name of the sink function as in the configuration
+     * @param sinkName The name of the sink as in the configuration
+     * @return A possibly transformed string
+     */
+    public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName, String callerFunction) {
+        return checkTaint(object, instance, sinkFunction, sinkName, callerFunction, IASTaintHandler::handleTaint);
+    }
+
+    public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName, String callerFunction, IASAtomicTaintChecker checker) {
+        // Handle statistics
+        if (Configuration.getConfiguration().collectStats()) {
+            Statistics.INSTANCE.incrementSource(sinkFunction, callerFunction);
+        }
         if (object instanceof IASTaintAware) {
-            return handleTaint((IASTaintAware) object, instance, sinkFunction, sinkName);
+            return checker.checkTaint((IASTaintAware) object, instance, sinkFunction, sinkName, callerFunction);
         } else if (instance instanceof IASTaintAware) {
             // Things like String.toCharArray() can be handled here
-            return handleTaint((IASTaintAware) instance, object, sinkFunction, sinkName);
+            return checker.checkTaint((IASTaintAware) instance, object, sinkFunction, sinkName, callerFunction);
         }
 
-        return traverseObject(object, taintAware -> handleTaint(taintAware, instance, sinkFunction, sinkName));
+        return traverseObject(object, taintAware -> checker.checkTaint(taintAware, instance, sinkFunction, sinkName, callerFunction));
     }
 
     /**
      * Hook function called at all taint sources added to bytecode
      *
-     * @param object   The object to be tainted (can be a string, or something which needs traversing, like a list)
+     * String object = parentObject.callToSink(parameters);
+     *
+     * @param object The object to be tainted (can be a string, or something which needs traversing, like a list)
+     * @param parentObject this object on which the sink is being called
+     * @param parameters the parameters passed to the sink function
      * @param sourceId The source as an integer
      * @return A tainted version of the input object
      */
-    public static Object taint(Object object, Object parentObject, Object[] parameters, int sourceId) {
+    public static Object taint(Object object, Object parentObject, Object[] parameters, int sourceId, String callerFunction) {
+        return taint(object, parentObject, parameters, sourceId, callerFunction, IASTaintHandler::setTaint);
+    }
+
+    public static Object taint(Object object, Object parentObject, Object[] parameters, int sourceId, String callerFunction, IASAtomicTaintSetter setter) {
+        // Handle statistics
+        if (Configuration.getConfiguration().collectStats()) {
+            IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
+            Source source = null;
+            if (taintSource != null) {
+                source = Configuration.getConfiguration().getSourceConfig().getSourceWithName(taintSource.getName());
+                Statistics.INSTANCE.incrementSource(source.getFunction().getFqn(), callerFunction);
+            }
+        }
         if (object instanceof IASTaintAware) {
-            setTaint((IASTaintAware) object, sourceId);
+            setter.setTaint((IASTaintAware) object, parentObject, parameters, sourceId, callerFunction);
             return object;
         }
-        return traverseObject(object, taintAware -> setTaint(taintAware, sourceId));
+        return traverseObject(object, taintAware -> setter.setTaint(taintAware, parentObject, parameters, sourceId, callerFunction));
     }
 
     public static boolean isValidTaintHandler(FunctionCall function) {

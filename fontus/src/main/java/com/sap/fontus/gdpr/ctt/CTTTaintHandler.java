@@ -170,7 +170,7 @@ public class CTTTaintHandler extends IASTaintHandler {
      * }
      * </pre>
      */
-    public static Object taint(Object object, Object parent, Object[] parameters, int sourceId) {
+    public static Object taint(Object object, Object parent, Object[] parameters, int sourceId, String callerFunction) {
         if (object instanceof IASTaintAware) {
             return setTaint((IASTaintAware) object, parent, parameters, sourceId);
         }

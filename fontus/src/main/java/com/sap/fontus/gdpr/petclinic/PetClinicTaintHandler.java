@@ -8,6 +8,7 @@ import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.simple.SimpleDataId;
 import com.sap.fontus.gdpr.metadata.simple.SimpleDataSubject;
 import com.sap.fontus.gdpr.metadata.simple.SimpleGdprMetadata;
+import com.sap.fontus.gdpr.sap.SapCloudTaintHandler;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
@@ -122,7 +123,7 @@ public class PetClinicTaintHandler extends IASTaintHandler {
      * @param sourceId The ID of the source function (internal)
      * @return A possibly tainted version of the input object
      */
-    private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
+    private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId, String callerFunction) {
         // General debug info
         IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
 
@@ -222,10 +223,7 @@ public class PetClinicTaintHandler extends IASTaintHandler {
      * }
      * </pre>
      */
-    public static Object taint(Object object, Object parent, Object[] parameters, int sourceId) {
-        if (object instanceof IASTaintAware) {
-            return setTaint((IASTaintAware) object, parent, parameters, sourceId);
-        }
-        return IASTaintHandler.traverseObject(object, taintAware -> setTaint(taintAware, parent, parameters, sourceId));
+    public static Object taint(Object object, Object parent, Object[] parameters, int sourceId, String callerFunction) {
+        return IASTaintHandler.taint(object, parent, parameters, sourceId, callerFunction, PetClinicTaintHandler::setTaint);
     }
 }

@@ -44,4 +44,9 @@ public interface StatisticsMXBean {
     Map<String, Long> getTaintlossHits();
 
     void saveClassBytecode(String qn);
+
+    double getSourceCoverage();
+
+    double getSinkCoverage();
+
 }

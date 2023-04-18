@@ -17,9 +17,15 @@ import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 public abstract class SourceOrSinkTransformer {
 
     private final int usedLocalVars;
+    private final FunctionCall caller;
 
-    public SourceOrSinkTransformer(int usedLocalVars) {
+    public SourceOrSinkTransformer(int usedLocalVars, FunctionCall caller) {
         this.usedLocalVars = usedLocalVars;
+        this.caller = caller;
+    }
+
+    protected FunctionCall getCaller() {
+        return this.caller;
     }
 
     public static void visitBoxPrimitive(MethodVisitor mv, Type type) {

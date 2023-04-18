@@ -33,7 +33,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
      * @param sourceId The ID of the source function (internal)
      * @return A possibly tainted version of the input object
      */
-    private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
+    private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId, String callerFunction) {
 	   if(taintAware.toString().isEmpty() || parent == null || (parameters.length > 0 && parameters[0] instanceof IASString && parameters[0].equals(csrfTokenName))) {
             return taintAware;
 	   }
@@ -219,11 +219,8 @@ public class BroadleafTaintHandler extends IASTaintHandler {
          * }
          * </pre>
          */
-    public static Object taint(Object object, Object parent, Object[] parameters, int sourceId) {
-        if (object instanceof IASTaintAware) {
-            return setTaint((IASTaintAware) object, parent, parameters, sourceId);
-        }
-        return IASTaintHandler.traverseObject(object, taintAware -> setTaint(taintAware, parent, parameters, sourceId));
+    public static Object taint(Object object, Object parent, Object[] parameters, int sourceId, String callerFunction) {
+        return IASTaintHandler.taint(object, parent, parameters, sourceId, callerFunction, BroadleafTaintHandler::setTaint);
     }
 
     public static Object monitorOutgoingTraffic(Object object, Object instance, String sinkFunction, String sinkName) {
@@ -306,7 +303,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
         return object;
     }
 
-    public static Object checkCustomer(Object object, Object instance, String sinkFunction, String sinkName) {
+    public static Object checkCustomer(Object object, Object instance, String sinkFunction, String sinkName, String callerFunction) {
         // object is the customer
         // instance is the CustomerServiceImpl
         if ("org.broadleafcommerce.profile.core.domain.CustomerImpl".equals(object.getClass().getName())) {
@@ -348,11 +345,8 @@ public class BroadleafTaintHandler extends IASTaintHandler {
                 ex3.printStackTrace();
             }
             return null;
-        } else if (object instanceof IASTaintAware) {
-            return handleTaint((IASTaintAware)object, instance, sinkFunction, sinkName);
-        } else {
-            return traverseObject(object, (taintAware) -> handleTaint(taintAware, instance, sinkFunction, sinkName));
         }
+        return IASTaintHandler.checkTaint(object, instance, sinkFunction, sinkName, callerFunction, BroadleafTaintHandler::handleTaint);
     }
 
     /*

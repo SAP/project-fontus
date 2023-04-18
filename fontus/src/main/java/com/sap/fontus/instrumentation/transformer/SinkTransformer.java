@@ -1,7 +1,9 @@
 package com.sap.fontus.instrumentation.transformer;
 
+import com.alibaba.druid.support.spring.stat.annotation.Stat;
 import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.asm.FunctionCall;
+import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.Sink;
 import com.sap.fontus.Constants;
 import com.sap.fontus.instrumentation.MethodTaintingVisitor;
@@ -9,6 +11,7 @@ import com.sap.fontus.instrumentation.InstrumentationHelper;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
 import com.sap.fontus.utils.LogUtils;
 import com.sap.fontus.utils.Logger;
+import com.sap.fontus.utils.stats.Statistics;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -24,8 +27,8 @@ public class SinkTransformer extends SourceOrSinkTransformer implements Paramete
     private final Sink sink;
     private final InstrumentationHelper instrumentationHelper;
 
-    public SinkTransformer(Sink sink, InstrumentationHelper instrumentationHelper, int usedLocalVars) {
-        super(usedLocalVars);
+    public SinkTransformer(Sink sink, InstrumentationHelper instrumentationHelper, int usedLocalVars, FunctionCall caller) {
+        super(usedLocalVars, caller);
         this.sink = sink;
         this.instrumentationHelper = instrumentationHelper;
     }
@@ -52,6 +55,9 @@ public class SinkTransformer extends SourceOrSinkTransformer implements Paramete
             originalVisitor.visitLdcInsn(this.sink.getFunction().getFqn());
             originalVisitor.visitLdcInsn(this.sink.getName());
 
+            // Add the caller name
+            originalVisitor.visitLdcInsn(this.getCaller().getFqn());
+
             // Get the source taint handler from the configuration file
             FunctionCall taint = this.sink.getTaintHandler();
 
@@ -63,6 +69,11 @@ public class SinkTransformer extends SourceOrSinkTransformer implements Paramete
             }
             originalVisitor.visitMethodInsn(taint.getOpcode(), taint.getOwner(), taint.getName(), taint.getDescriptor(), taint.isInterface());
             originalVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(instrumentedType).getInternalName());
+
+            // Statistics
+            if (Configuration.getConfiguration().collectStats()) {
+                Statistics.INSTANCE.addNewSink(this.sink.getFunction().getFqn(), this.getCaller().getFqn());
+            }
         }
     }
 

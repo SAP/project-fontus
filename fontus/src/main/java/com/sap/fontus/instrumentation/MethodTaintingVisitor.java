@@ -441,7 +441,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         if (sink != null) {
 	    System.out.printf("Adding IASString sink: %s%s:%s%n", uninstrumentedCall.getOwner(), uninstrumentedCall.getName(), uninstrumentedCall.getDescriptor());
             logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(uninstrumentedCall.getOpcode()), uninstrumentedCall.getOwner(), uninstrumentedCall.getName(), uninstrumentedCall.getDescriptor());
-            SinkTransformer t = new SinkTransformer(sink, this.instrumentationHelper, this.used);
+            SinkTransformer t = new SinkTransformer(sink, this.instrumentationHelper, this.used, this.caller.toFunctionCall());
             transformer.addParameterTransformation(t);
             transformer.addReturnTransformation(t);
         }
@@ -498,7 +498,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         Source source = this.config.getSourceConfig().getSourceForFunction(call);
         if ((source != null) && (source.isAllowedCaller(this.caller.toFunctionCall()))) {
             logger.info("Adding source tainting for [{}] {}.{}{} for caller {}.{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor(), this.caller.getOwner(), this.caller.getName());
-            SourceTransformer t = new SourceTransformer(source, this.used);
+            SourceTransformer t = new SourceTransformer(source, this.used, this.caller.toFunctionCall());
             transformer.addReturnTransformation(t);
         }
 
@@ -506,7 +506,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         Sink sink = this.config.getSinkConfig().getSinkForFunction(call, new Position(this.owner, this.name, this.line));
         if (sink != null) {
             logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
-            SinkTransformer t = new SinkTransformer(sink, this.instrumentationHelper, this.used);
+            SinkTransformer t = new SinkTransformer(sink, this.instrumentationHelper, this.used, this.caller.toFunctionCall());
             transformer.addParameterTransformation(t);
             transformer.addReturnTransformation(t);
         }

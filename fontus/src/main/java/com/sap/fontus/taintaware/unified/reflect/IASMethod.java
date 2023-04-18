@@ -145,7 +145,7 @@ public class IASMethod extends IASExecutable<Method> {
     @ForceInline
     public Object invoke(Object instance, Object... parameters) throws IllegalAccessException, InvocationTargetException, ClassNotFoundException {
 
-        Object returnObj = null;
+        Object returnObj;
 
         // Handle Annotations, will always return
         if (this.original.getDeclaringClass().isAnnotation()) {
@@ -187,7 +187,7 @@ public class IASMethod extends IASExecutable<Method> {
                     if (taintCheckerMethod != null) {
                         parameters[i] = taintCheckerMethod.invoke(null, parameters[i], instance, sink.getFunction().getFqn(), sink.getName());
                     } else {
-                        parameters[i] = IASTaintHandler.checkTaint(parameters[i], instance, sink.getFunction().getFqn(), sink.getName());
+                        parameters[i] = IASTaintHandler.checkTaint(parameters[i], instance, sink.getFunction().getFqn(), sink.getName(), Constants.MethodInvokeFqn);
                     }
                 }
             }
@@ -238,7 +238,7 @@ public class IASMethod extends IASExecutable<Method> {
                     if (taintCheckerMethod != null) {
                         returnObj = taintCheckerMethod.invoke(null, returnObj, instance, sink.getFunction().getFqn(), sink.getName());
                     } else {
-                        returnObj = IASTaintHandler.checkTaint(returnObj, instance, sink.getFunction().getFqn(), sink.getName());
+                        returnObj = IASTaintHandler.checkTaint(returnObj, instance, sink.getFunction().getFqn(), sink.getName(), Constants.MethodInvokeFqn);
                     }
                 }
             }
@@ -259,12 +259,12 @@ public class IASMethod extends IASExecutable<Method> {
                 }
             }
             // TODO: Why are we we checking on taintCheckerMethod here and invoking taintHandlerMethod, seems like a bug?
-            if (taintCheckerMethod != null) {
+            if (taintHandlerMethod != null) {
                 returnObj = taintHandlerMethod.invoke(null, returnObj, instance, parameters,
                         IASTaintSourceRegistry.getInstance().get(source.getName()).getId());
             } else {
                 returnObj = IASTaintHandler.taint(returnObj, instance, parameters,
-                        IASTaintSourceRegistry.getInstance().get(source.getName()).getId());
+                        IASTaintSourceRegistry.getInstance().get(source.getName()).getId(), Constants.MethodInvokeFqn);
             }
         }
 

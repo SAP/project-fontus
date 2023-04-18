@@ -53,7 +53,7 @@ public class OpenHospitalTaintHandler extends IASTaintHandler {
     }
 
     private static DataSubject getOrCreateDataSubjectUuid(ReflectedHttpServletRequest request) {
-        DataSubject dataSubject = null;
+        DataSubject dataSubject;
         // First try retrieving from cached attribute value
         Object o = request.getAttribute(dataSubjectAttributeName);
         if ((o instanceof DataSubject)) {
@@ -119,7 +119,7 @@ public class OpenHospitalTaintHandler extends IASTaintHandler {
      * @param sourceId The ID of the source function (internal)
      * @return A possibly tainted version of the input object
      */
-    private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
+    private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId, String callerFunction) {
         // General debug info
         IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
         IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
@@ -169,11 +169,8 @@ public class OpenHospitalTaintHandler extends IASTaintHandler {
      * }
      * </pre>
      */
-    public static Object taint(Object object, Object parent, Object[] parameters, int sourceId) {
-        if (object instanceof IASTaintAware) {
-            return setTaint((IASTaintAware) object, parent, parameters, sourceId);
-        }
-        return IASTaintHandler.traverseObject(object, taintAware -> setTaint(taintAware, parent, parameters, sourceId));
+    public static Object taint(Object object, Object parent, Object[] parameters, int sourceId, String callerFunction) {
+        return IASTaintHandler.taint(object, parent, parameters, sourceId, callerFunction, OpenHospitalTaintHandler::setTaint);
     }
 
 }
