@@ -54,11 +54,11 @@ public class IASProperties extends Hashtable<Object, Object> implements External
         return previousString;
     }
 
-    public synchronized void load(Reader reader) throws IOException {
+    public void load(Reader reader) throws IOException {
         this.properties.load(reader);
     }
 
-    public synchronized void load(InputStream inStream) throws IOException {
+    public void load(InputStream inStream) throws IOException {
         this.properties.load(inStream);
     }
 
@@ -74,7 +74,7 @@ public class IASProperties extends Hashtable<Object, Object> implements External
         this.properties.store(out, comments == null ? null : comments.getString());
     }
 
-    public synchronized void loadFromXML(InputStream in) throws IOException {
+    public void loadFromXML(InputStream in) throws IOException {
         this.properties.loadFromXML(in);
     }
 
@@ -105,20 +105,21 @@ public class IASProperties extends Hashtable<Object, Object> implements External
     }
 
     public Enumeration<?> propertyNames() {
-        return Collections.enumeration(
-                Collections
-                        .list(this.properties.propertyNames())
-                        .stream()
-                        .map(ConversionUtils::convertToInstrumented)
-                        .collect(Collectors.toList())
-        );
+        Enumeration<?> original = this.properties.propertyNames();
+        List<IASString> names = new ArrayList<>(this.properties.size());
+        while(original.hasMoreElements()) {
+            names.add(IASString.valueOfInternal(original.nextElement()));
+        }
+        return (Enumeration<?>) names;
     }
 
     public Set<IASString> stringPropertyNames() {
-        return this.properties.stringPropertyNames()
-                .stream()
-                .map(IASString::valueOfInternal)
-                .collect(Collectors.toSet());
+        Set<String> original = this.properties.stringPropertyNames();
+        Set<IASString> names = new HashSet<>(original.size());
+        for(String o : original) {
+            names.add(IASString.valueOfInternal(o));
+        }
+        return names;
     }
 
     public void list(PrintStream out) {
@@ -198,7 +199,7 @@ public class IASProperties extends Hashtable<Object, Object> implements External
     }
 
     @Override
-    public synchronized Object remove(Object key) {
+    public Object remove(Object key) {
         return ConversionUtils.convertToInstrumented(this.properties.remove(ConversionUtils.convertToUninstrumented(key)));
     }
 
@@ -226,20 +227,22 @@ public class IASProperties extends Hashtable<Object, Object> implements External
 
     @Override
     public Set<Object> keySet() {
-        return this.properties
-                .keySet()
-                .stream()
-                .map(ConversionUtils::convertToInstrumented)
-                .collect(Collectors.toSet());
+        Set<Object> original = this.properties.keySet();
+        Set<Object> keys = new HashSet<>(original.size());
+        for(Object o : original) {
+            keys.add(ConversionUtils.convertToInstrumented(o));
+        }
+        return keys;
     }
 
     @Override
     public Collection<Object> values() {
-        return this.properties
-                .values()
-                .stream()
-                .map(ConversionUtils::convertToInstrumented)
-                .collect(Collectors.toSet());
+        Collection<Object> original = this.properties.values();
+        List<Object> values = new ArrayList<>(original.size());
+        for(Object o : original) {
+            values.add(ConversionUtils.convertToInstrumented(o));
+        }
+        return values;
     }
 
     @Override
@@ -267,7 +270,7 @@ public class IASProperties extends Hashtable<Object, Object> implements External
     }
 
     @Override
-    public synchronized boolean equals(Object o) {
+    public boolean equals(Object o) {
         if (o == null) {
             return false;
         } else if (o instanceof Properties) {
@@ -279,7 +282,7 @@ public class IASProperties extends Hashtable<Object, Object> implements External
     }
 
     @Override
-    public synchronized int hashCode() {
+    public int hashCode() {
         return this.properties.hashCode();
     }
 
@@ -294,32 +297,32 @@ public class IASProperties extends Hashtable<Object, Object> implements External
 
 
     @Override
-    public synchronized void forEach(BiConsumer<? super Object, ? super Object> action) {
+    public void forEach(BiConsumer<? super Object, ? super Object> action) {
         this.properties.forEach((o, o2) -> action.accept(ConversionUtils.convertToUninstrumented(o), ConversionUtils.convertToUninstrumented(o2)));
     }
 
     @Override
-    public synchronized void replaceAll(BiFunction<? super Object, ? super Object, ?> function) {
+    public void replaceAll(BiFunction<? super Object, ? super Object, ?> function) {
         this.properties.replaceAll((o, o2) -> ConversionUtils.convertToInstrumented(function.apply(ConversionUtils.convertToUninstrumented(o), ConversionUtils.convertToUninstrumented(o2))));
     }
 
     @Override
-    public synchronized Object putIfAbsent(Object key, Object value) {
+    public Object putIfAbsent(Object key, Object value) {
         return ConversionUtils.convertToInstrumented(this.properties.putIfAbsent(ConversionUtils.convertToUninstrumented(key), ConversionUtils.convertToUninstrumented(value)));
     }
 
     @Override
-    public synchronized boolean remove(Object key, Object value) {
+    public boolean remove(Object key, Object value) {
         return this.properties.remove(ConversionUtils.convertToUninstrumented(key), ConversionUtils.convertToUninstrumented(value));
     }
 
     @Override
-    public synchronized boolean replace(Object key, Object oldValue, Object newValue) {
+    public boolean replace(Object key, Object oldValue, Object newValue) {
         return this.properties.replace(ConversionUtils.convertToUninstrumented(key), ConversionUtils.convertToUninstrumented(oldValue), ConversionUtils.convertToUninstrumented(newValue));
     }
 
     @Override
-    public synchronized Object replace(Object key, Object value) {
+    public Object replace(Object key, Object value) {
         return this.properties.replace(ConversionUtils.convertToUninstrumented(key), ConversionUtils.convertToUninstrumented(value));
     }
 
@@ -329,21 +332,21 @@ public class IASProperties extends Hashtable<Object, Object> implements External
     }
 
     @Override
-    public synchronized Object computeIfPresent(Object key, BiFunction<? super Object, ? super Object, ?> remappingFunction) {
+    public Object computeIfPresent(Object key, BiFunction<? super Object, ? super Object, ?> remappingFunction) {
         return ConversionUtils.convertToInstrumented(
                 this.properties.computeIfPresent(ConversionUtils.convertToUninstrumented(key), (o, o2) -> ConversionUtils.convertToUninstrumented(remappingFunction.apply(ConversionUtils.convertToInstrumented(o), ConversionUtils.convertToInstrumented(o2))))
         );
     }
 
     @Override
-    public synchronized Object compute(Object key, BiFunction<? super Object, ? super Object, ?> remappingFunction) {
+    public Object compute(Object key, BiFunction<? super Object, ? super Object, ?> remappingFunction) {
         return ConversionUtils.convertToInstrumented(
                 this.properties.compute(ConversionUtils.convertToUninstrumented(key), (o, o2) -> ConversionUtils.convertToUninstrumented(remappingFunction.apply(ConversionUtils.convertToInstrumented(o), ConversionUtils.convertToInstrumented(o2))))
         );
     }
 
     @Override
-    public synchronized Object merge(Object key, Object value, BiFunction<? super Object, ? super Object, ?> remappingFunction) {
+    public Object merge(Object key, Object value, BiFunction<? super Object, ? super Object, ?> remappingFunction) {
         return ConversionUtils.convertToInstrumented(
                 this.properties.merge(
                         ConversionUtils.convertToUninstrumented(key),

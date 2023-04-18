@@ -20,7 +20,7 @@ public class VendorRegistry extends GenericRegistry<Vendor> {
     }
 
     @Override
-    protected synchronized Vendor getNewObject(String name, int id) {
+    protected Vendor getNewObject(String name, int id) {
         return new SimpleVendor(id, name);
     }
 
