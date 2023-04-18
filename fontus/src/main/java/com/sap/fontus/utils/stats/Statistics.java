@@ -248,7 +248,7 @@ public enum Statistics implements StatisticsMXBean {
     private void addNewMapping(String name, String caller, Map<String, Map<String, AtomicLong>> map) {
         if (map.containsKey(name)) {
             Map<String, AtomicLong> sourceMap = map.get(name);
-            if (sourceMap.containsKey(caller)) {
+            if (!sourceMap.containsKey(caller)) {
                 sourceMap.put(caller, new AtomicLong());
             }
         } else {
