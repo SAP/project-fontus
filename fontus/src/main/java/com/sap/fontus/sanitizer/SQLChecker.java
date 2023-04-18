@@ -70,7 +70,7 @@ public class SQLChecker {
                 taintEnd > token.begin && taintEnd <= token.end;
     }
 
-    private static List<SqlLexerToken> getLexerTokens(String sqlQuery) {
+    public static List<SqlLexerToken> getLexerTokens(String sqlQuery) {
         System.out.println("SQL Query : " + sqlQuery);
         List<SqlLexerToken> lexerTokens = new ArrayList<>();
         DbType dbType = DbType.postgresql;

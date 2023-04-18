@@ -3,11 +3,15 @@ package com.sap.fontus.sql.tainter;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.sap.fontus.config.Configuration;
+import com.sap.fontus.sanitizer.SQLChecker;
+import com.sap.fontus.sanitizer.SqlLexerToken;
 import com.sap.fontus.utils.Pair;
 import com.sap.fontus.utils.stats.Statistics;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statements;
+
+import java.util.List;
 
 public enum QueryCache {
     INSTANCE;
@@ -15,6 +19,7 @@ public enum QueryCache {
     private int misses = 0;
     private final Cache<String, Pair<String, QueryParameters>> queryCache;
     private boolean collectStatistics;
+
     QueryCache() {
         this.collectStatistics = Configuration.getConfiguration().collectStats();
         this.queryCache = Caffeine.newBuilder().build();
@@ -45,8 +50,14 @@ public enum QueryCache {
             jsqlParserException.printStackTrace();
         }
         if (this.collectStatistics) {
-            Statistics.INSTANCE.incrementTotalQueryLength(query.trim().length());
-            Statistics.INSTANCE.incrementRewrittenQueryLength(stmts.toString().trim().length());
+            try {
+                // This uses a different SQL parser, probably not ideal
+                List<SqlLexerToken> tokens = SQLChecker.getLexerTokens(query);
+                Statistics.INSTANCE.incrementTotalQueryLength(tokens.size());
+                Statistics.INSTANCE.incrementRewrittenQueryLength(stmts.toString().trim().length());
+            } catch (Exception e) {
+                System.out.println("Fontus: SQL parser error computing statistics: " + e.getMessage());
+            }
         }
         Pair<String, QueryParameters> pair = new Pair<>(stmts.toString().trim(), tainter.getParameters());
         this.queryCache.put(query, pair);
