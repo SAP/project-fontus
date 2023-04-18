@@ -52,7 +52,8 @@ public enum QueryCache {
             // This uses a different SQL parser, probably not ideal
             List<SqlLexerToken> tokens = SqlLexerToken.getLexerTokens(query);
             Statistics.INSTANCE.incrementTotalQueryLength(tokens.size());
-            Statistics.INSTANCE.incrementRewrittenQueryLength(stmts.toString().trim().length());
+            tokens = SqlLexerToken.getLexerTokens(stmts.toString());
+            Statistics.INSTANCE.incrementRewrittenQueryLength(tokens.size());
         }
         Pair<String, QueryParameters> pair = new Pair<>(stmts.toString().trim(), tainter.getParameters());
         this.queryCache.put(query, pair);
