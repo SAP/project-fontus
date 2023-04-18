@@ -110,7 +110,7 @@ public class IASProperties extends Hashtable<Object, Object> implements External
         while(original.hasMoreElements()) {
             names.add(IASString.valueOfInternal(original.nextElement()));
         }
-        return (Enumeration<?>) names;
+        return Collections.enumeration(names);
     }
 
     public Set<IASString> stringPropertyNames() {
