@@ -29,13 +29,8 @@ public enum QueryCache {
             Statistics.INSTANCE.incrementTotalQueries();
         }
         return this.queryCache.get(query, (q) -> {
-            if (this.collectStatistics) {
-                Statistics.INSTANCE.incrementRewrittenQueries();
-            }
 
-            if (this.collectStatistics) {
-                Statistics.INSTANCE.incrementRewrittenQueries();
-            }
+
             StatementTainter tainter = new StatementTainter();
             Statements stmts = null;
             try {
@@ -45,20 +40,15 @@ public enum QueryCache {
                 jsqlParserException.printStackTrace();
             }
             if (this.collectStatistics) {
+                Statistics.INSTANCE.incrementRewrittenQueries();
                 // This uses a different SQL parser, probably not ideal
                 List<SqlLexerToken> tokens = SqlLexerToken.getLexerTokens(query);
                 Statistics.INSTANCE.incrementTotalQueryLength(tokens.size());
                 tokens = SqlLexerToken.getLexerTokens(stmts.toString());
                 Statistics.INSTANCE.incrementRewrittenQueryLength(tokens.size());
             }
-            Pair<String, QueryParameters> pair = new Pair<>(stmts.toString().trim(), tainter.getParameters());
-            this.queryCache.put(query, pair);
-            this.misses++;
-            if (this.hits + this.misses % 1000 == 0) {
-                System.out.printf("QueryCache: %d/%d h/m%n", this.hits, this.misses);
-            }
 
-            return pair;
+            return new Pair<String, QueryParameters>(stmts.toString().trim(), tainter.getParameters());
         });
     }
 
