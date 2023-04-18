@@ -277,12 +277,10 @@ public enum Statistics implements StatisticsMXBean {
     }
 
     public void incrementSource(String source, String caller) {
-        addNewSource(source, caller);
         incrementMapping(source, caller, sourceCoverage);
     }
 
     public void incrementSink(String sink, String caller) {
-        addNewSink(sink, caller);
         incrementMapping(sink, caller, sinkCoverage);
     }
 

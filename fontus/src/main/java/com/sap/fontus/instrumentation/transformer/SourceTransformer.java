@@ -75,7 +75,7 @@ public class SourceTransformer extends SourceOrSinkTransformer implements Return
 
         // Statistics
         if (Configuration.getConfiguration().collectStats()) {
-            Statistics.INSTANCE.addNewSink(this.source.getFunction().getFqn(), this.getCaller().getFqn());
+            Statistics.INSTANCE.addNewSource(this.source.getFunction().getFqn(), this.getCaller().getFqn());
         }
     }
 
