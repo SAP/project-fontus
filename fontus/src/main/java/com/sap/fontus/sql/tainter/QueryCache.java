@@ -3,7 +3,6 @@ package com.sap.fontus.sql.tainter;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.sap.fontus.config.Configuration;
-import com.sap.fontus.sanitizer.SQLChecker;
 import com.sap.fontus.sanitizer.SqlLexerToken;
 import com.sap.fontus.utils.Pair;
 import com.sap.fontus.utils.stats.Statistics;
@@ -50,14 +49,10 @@ public enum QueryCache {
             jsqlParserException.printStackTrace();
         }
         if (this.collectStatistics) {
-            try {
-                // This uses a different SQL parser, probably not ideal
-                List<SqlLexerToken> tokens = SQLChecker.getLexerTokens(query);
-                Statistics.INSTANCE.incrementTotalQueryLength(tokens.size());
-                Statistics.INSTANCE.incrementRewrittenQueryLength(stmts.toString().trim().length());
-            } catch (Exception e) {
-                System.out.println("Fontus: SQL parser error computing statistics: " + e.getMessage());
-            }
+            // This uses a different SQL parser, probably not ideal
+            List<SqlLexerToken> tokens = SqlLexerToken.getLexerTokens(query);
+            Statistics.INSTANCE.incrementTotalQueryLength(tokens.size());
+            Statistics.INSTANCE.incrementRewrittenQueryLength(stmts.toString().trim().length());
         }
         Pair<String, QueryParameters> pair = new Pair<>(stmts.toString().trim(), tainter.getParameters());
         this.queryCache.put(query, pair);
