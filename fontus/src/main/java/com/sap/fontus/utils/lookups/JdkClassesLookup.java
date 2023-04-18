@@ -19,8 +19,7 @@ public final class JdkClassesLookup {
     private JdkClassesLookup(Collection<String> classes) {
         this.jdkClasses = new HashSet<>(classes.size());
         this.jdkClasses.addAll(classes);
-        this.blacklistedPrefixes = new ArrayList<>();
-        this.blacklistedPrefixes.addAll(Arrays.asList("sun/",
+        this.blacklistedPrefixes = new String[] {"sun/",
                 "com/sun/proxy",
                 "com/sun/crypto/",
                 "jdk/",
@@ -30,7 +29,7 @@ public final class JdkClassesLookup {
                 "org/objectweb/asm/",
                 "org/openjdk/jmh/",
                 "org/apache/commons/commons-math3/",
-                "org/jacoco"));
+                "org/jacoco" };
     }
 
     public static JdkClassesLookup getInstance() {
@@ -79,13 +78,10 @@ public final class JdkClassesLookup {
             return true;
         }
 
-        if (internalName.contains("module-info")) {
+        if (internalName.contains("-info")) {
             if (MODULE_INFO_PATTERN.matcher(internalName).matches()) {
                 return true;
             }
-        }
-
-        if (internalName.contains("package-info")) {
             if (PACKAGE_INFO_PATTERN.matcher(internalName).matches()) {
                 return true;
             }
@@ -103,6 +99,6 @@ public final class JdkClassesLookup {
         private static final JdkClassesLookup INSTANCE = initializeLookupTable("openjdk12_classes.list"); // TODO: Make configurable
     }
 
-    private final List<String> blacklistedPrefixes;
+    private final String[] blacklistedPrefixes;
 
 }

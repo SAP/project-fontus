@@ -1,14 +1,36 @@
 package com.sap.fontus.gdpr.metadata.registry;
 
 import com.sap.fontus.config.Configuration;
+import com.sap.fontus.gdpr.metadata.Purpose;
 import com.sap.fontus.gdpr.metadata.Vendor;
+import com.sap.fontus.gdpr.metadata.simple.SimplePurpose;
 import com.sap.fontus.gdpr.metadata.simple.SimpleVendor;
 import com.sap.fontus.utils.GenericRegistry;
 
-public class VendorRegistry extends GenericRegistry<Vendor> {
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+public class VendorRegistry  {
 
     private static VendorRegistry instance;
     private static boolean isPopulated = false;
+    private final Map<String, Vendor> vendors;
+    private int counter = 0;
+
+    public VendorRegistry() {
+        this.vendors = new ConcurrentHashMap<>(32);
+    }
+
+    public Vendor getOrRegisterObject(String name) {
+        return this.vendors.computeIfAbsent(name, (ignored) -> {
+            this.counter++;
+            return new SimpleVendor(this.counter, name);
+        });
+    }
+
+    public Vendor get(String name) {
+        return this.vendors.get(name);
+    }
 
     public synchronized void populateFromConfiguration(Configuration c) {
         if (!isPopulated) {
@@ -19,7 +41,6 @@ public class VendorRegistry extends GenericRegistry<Vendor> {
         }
     }
 
-    @Override
     protected Vendor getNewObject(String name, int id) {
         return new SimpleVendor(id, name);
     }
