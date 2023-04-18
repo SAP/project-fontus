@@ -10,6 +10,7 @@ import java.lang.management.ManagementFactory;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
 public enum Statistics implements StatisticsMXBean {
     INSTANCE;
@@ -30,6 +31,9 @@ public enum Statistics implements StatisticsMXBean {
     private final AtomicLong totalQueriesLength;
     private final Map<String, Long> taintlossHits = new ConcurrentHashMap<>();
 
+    private final Map<String, Map<String, AtomicLong>> sourceCoverage;
+    private final Map<String, Map<String, AtomicLong>> sinkCoverage;
+
     Statistics() {
         this.stringCount = new AtomicLong();
         this.taintRangeSum = new AtomicLong();
@@ -44,6 +48,8 @@ public enum Statistics implements StatisticsMXBean {
         this.totalQueries = new AtomicLong();
         this.rewrittenQueryLength = new AtomicLong();
         this.totalQueriesLength = new AtomicLong();
+        this.sourceCoverage = new ConcurrentHashMap<>();
+        this.sinkCoverage = new ConcurrentHashMap<>();
         this.register();
     }
 
@@ -238,4 +244,123 @@ public enum Statistics implements StatisticsMXBean {
     public void saveClassBytecode(String qn) {
         TaintAgent.logInstrumentedClass(qn);
     }
+
+    private void addNewMapping(String name, String caller, Map<String, Map<String, AtomicLong>> map) {
+        if (map.containsKey(name)) {
+            Map<String, AtomicLong> sourceMap = map.get(name);
+            if (!sourceMap.containsKey(caller)) {
+                sourceMap.put(caller, new AtomicLong());
+            }
+        } else {
+            Map<String, AtomicLong> sourceMap = new ConcurrentHashMap<>();
+            sourceMap.put(caller, new AtomicLong());
+            map.put(name, sourceMap);
+        }
+    }
+
+    public void addNewSource(String source, String caller) {
+        System.out.printf("FONTUS: Adding source: %s from %s%n", source, caller);
+        addNewMapping(source, caller, sourceCoverage);
+    }
+
+    public void addNewSink(String sink, String caller) {
+        System.out.printf("FONTUS: Adding sink: %s from %s%n", sink, caller);
+        addNewMapping(sink, caller, sinkCoverage);
+    }
+
+    private void incrementMapping(String name, String caller, Map<String, Map<String, AtomicLong>> map) {
+        if (map.containsKey(name)) {
+            if (map.get(name).containsKey(caller)) {
+                map.get(name).get(caller).incrementAndGet();
+            }
+        }
+    }
+
+    public void incrementSource(String source, String caller) {
+        System.out.printf("FONTUS: Hit source: %s from %s%n", source, caller);
+        incrementMapping(source, caller, sourceCoverage);
+    }
+
+    public void incrementSink(String sink, String caller) {
+        System.out.printf("FONTUS: Hit sink: %s from %s%n", sink, caller);
+        incrementMapping(sink, caller, sinkCoverage);
+    }
+
+    private double getCoverage(Map<String, Map<String, AtomicLong>> map) {
+        int nEntries = 0;
+        int nCovered = 0;
+        for (Map<String, AtomicLong> e : map.values()) {
+            for (AtomicLong l : e.values()) {
+                nEntries++;
+                if (l.get() > 0) {
+                    nCovered++;
+                }
+            }
+        }
+        return nEntries > 0 ? (double)nCovered / (double)nEntries : 0.0;
+    }
+
+    private double getUniqueCoverage(Map<String, Map<String, AtomicLong>> map) {
+        int nEntries = map.size();
+        int nCovered = 0;
+        for (Map<String, AtomicLong> e : map.values()) {
+            for (AtomicLong l : e.values()) {
+                if (l.get() > 0) {
+                    nCovered++;
+                    break;
+                }
+            }
+        }
+        return nEntries > 0 ? (double)nCovered / (double)nEntries : 0.0;
+    }
+
+    private long getCount(Map<String, Map<String, AtomicLong>> map) {
+        int nEntries = 0;
+        for (Map<String, AtomicLong> e : map.values()) {
+            nEntries += e.size();
+        }
+        return nEntries;
+    }
+
+    @Override
+    public double getSourceCoverage() {
+        return getCoverage(sourceCoverage);
+    }
+
+    @Override
+    public double getSinkCoverage() {
+        return getCoverage(sinkCoverage);
+    }
+
+    @Override
+    public double getUniqueSourceCoverage() {
+        return getUniqueCoverage(sourceCoverage);
+    }
+
+    @Override
+    public double getUniqueSinkCoverage() {
+        return getUniqueCoverage(sinkCoverage);
+    }
+
+    @Override
+    public long getSourceCount() {
+        return getCount(sourceCoverage);
+    }
+
+    @Override
+    public long getUniqueSourceCount() {
+        return sourceCoverage.size();
+    }
+
+    @Override
+    public long getSinkCount() {
+        return getCount(sinkCoverage);
+    }
+
+    @Override
+    public long getUniqueSinkCount() {
+        return sinkCoverage.size();
+    }
+
+
 }

@@ -1,5 +1,6 @@
 package com.sap.fontus.instrumentation.transformer;
 
+import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.Source;
 import com.sap.fontus.Constants;
 import com.sap.fontus.asm.Descriptor;
@@ -11,6 +12,8 @@ import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
 import com.sap.fontus.utils.Logger;
+import com.sap.fontus.utils.stats.Statistics;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.Opcodes;
 import com.sap.fontus.utils.LogUtils;
@@ -20,14 +23,13 @@ public class SourceTransformer extends SourceOrSinkTransformer implements Return
 
     private final Source source;
 
-
-    public SourceTransformer(Source source, int usedLocalVars) {
-        super(usedLocalVars);
+    public SourceTransformer(Source source, int usedLocalVars, FunctionCall caller) {
+        super(usedLocalVars, caller);
         this.source = source;
     }
 
     @Override
-    public void transformReturnValue(MethodTaintingVisitor visitor, Descriptor desc) {
+    public void transformReturnValue(MethodTaintingVisitor mv, Descriptor desc) {
         FunctionCall fc = this.source.getFunction();
         logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", fc.getOwner(), fc.getName(), fc.getDescriptor(), Type.getInternalName(IASString.class));
 
@@ -38,15 +40,19 @@ public class SourceTransformer extends SourceOrSinkTransformer implements Return
 
         // Now add the object on which the method was called
         // Stack: return obj --> return obj, method obj
-        this.addParentObjectToStack(visitor, fc);
+        this.addParentObjectToStack(mv, fc);
 
         // And create an array containing input parameters
         // Stack: return obj, method obj --> return obj, method obj, parameter array
-        this.pushParameterArrayOntoStack(visitor, fc.getParsedDescriptor(), this.source.getPassLocals());
+        this.pushParameterArrayOntoStack(mv, fc.getParsedDescriptor(), this.source.getPassLocals());
 
         // Now the source id
         // Stack: return obj, method obj, parameter array --> return obj, method obj, parameter array, int
-        MethodTaintingUtils.pushNumberOnTheStack(visitor, source.getId());
+        MethodTaintingUtils.pushNumberOnTheStack(mv, source.getId());
+
+        // Add the caller name
+        MethodVisitor originalVisitor = mv.getParent();
+        originalVisitor.visitLdcInsn(this.getCaller().getFqn());
 
         // Get the source taint handler from the configuration file
         FunctionCall taint = this.source.getTaintHandler();
@@ -64,8 +70,13 @@ public class SourceTransformer extends SourceOrSinkTransformer implements Return
 
         // Call the handler:
         // Stack: return obj, method obj, parameter array, int --> tainted return obj
-        visitor.visitMethodInsn(taint);
-        visitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(desc.getReturnType()).getInternalName());
+        mv.visitMethodInsn(taint);
+        mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getType(desc.getReturnType()).getInternalName());
+
+        // Statistics
+        if (Configuration.getConfiguration().collectStats()) {
+            Statistics.INSTANCE.addNewSource(this.source.getFunction().getFqn(), this.getCaller().getFqn());
+        }
     }
 
     @Override

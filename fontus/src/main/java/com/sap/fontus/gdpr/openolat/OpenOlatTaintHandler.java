@@ -120,21 +120,21 @@ public class OpenOlatTaintHandler extends IASTaintHandler {
      * }
      * </pre>
      */
-    public static Object taint(Object object, Object parent, Object[] parameters, int sourceId) {
+    public static Object taint(Object object, Object parent, Object[] parameters, int sourceId, String callerFunction) {
         if (object instanceof IASTaintAware) {
             return setTaint((IASTaintAware) object, parent, parameters, sourceId);
         }
         return IASTaintHandler.traverseObject(object, taintAware -> setTaint(taintAware, parent, parameters, sourceId));
     }
 
-    public static Object formTaint(Object object, Object parent, Object[] parameters, int sourceId) {
+    public static Object formTaint(Object object, Object parent, Object[] parameters, int sourceId, String callerFunction) {
         if (object instanceof IASTaintAware) {
             return setFormTaint((IASTaintAware) object, parent, parameters, sourceId);
         }
         return IASTaintHandler.traverseObject(object, taintAware -> setFormTaint(taintAware, parent, parameters, sourceId));
     }
 
-    public static Object contactTracingTaint(Object object, Object parent, Object[] parameters, int sourceId) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+    public static Object contactTracingTaint(Object object, Object parent, Object[] parameters, int sourceId, String callerFunction) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         IASTaintAware taintAware = (IASTaintAware) object;
         if (!taintAware.isTainted()) {
             System.err.printf("The string '%s' should be tainted but it isn't!!!!%n", taintAware);

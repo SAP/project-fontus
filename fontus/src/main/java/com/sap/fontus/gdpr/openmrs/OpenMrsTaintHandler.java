@@ -194,7 +194,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
      * @param sourceId The ID of the source function (internal)
      * @return A possibly tainted version of the input object
      */
-    private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
+    private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId, String CallerFunction) {
         // General debug info
         //IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
         IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
@@ -228,7 +228,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         return taintAware;
     }
 
-    private static IASTaintAware setDiagnosisTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
+    private static IASTaintAware setDiagnosisTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId, String CallerFunction) {
         // Instrument JsonNode.get("diagnosis").getTextValue(), ie
         // Source will be: org/codehaus/jackson/JsonNode/getTextValue()Ljava/lang/String;
         // parent = JsonNode
@@ -288,18 +288,12 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
      * }
      * </pre>
      */
-    public static Object taint(Object object, Object parent, Object[] parameters, int sourceId) {
-        if (object instanceof IASTaintAware) {
-            return setTaint((IASTaintAware) object, parent, parameters, sourceId);
-        }
-        return IASTaintHandler.traverseObject(object, taintAware -> setTaint(taintAware, parent, parameters, sourceId));
+    public static Object taint(Object object, Object parent, Object[] parameters, int sourceId, String callerFunction) {
+        return IASTaintHandler.taint(object, parent, parameters, sourceId, callerFunction, OpenMrsTaintHandler::setTaint);
     }
 
-    public static Object diagnosisTaint(Object object, Object parent, Object[] parameters, int sourceId) {
-        if (object instanceof IASTaintAware) {
-            return setDiagnosisTaint((IASTaintAware) object, parent, parameters, sourceId);
-        }
-        return IASTaintHandler.traverseObject(object, taintAware -> setDiagnosisTaint(taintAware, parent, parameters, sourceId));
+    public static Object diagnosisTaint(Object object, Object parent, Object[] parameters, int sourceId, String callerFunction) {
+        return IASTaintHandler.taint(object, parent, parameters, sourceId, callerFunction, OpenMrsTaintHandler::setDiagnosisTaint);
     }
 
     public static IASTaintAware applyPolicy(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, RequiredPurposes requiredPurposes) {
@@ -357,7 +351,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
      * @param sinkName
      * @return
      */
-    public static IASTaintAware handleTaint(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName) {
+    public static IASTaintAware handleTaint(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, String callerFunction) {
         boolean isTainted = taintAware.isTainted();
         // System.out.println("isTainted : " + isTainted);
         // System.out.println("taintaware : " + taintAware);
@@ -372,21 +366,19 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         return taintAware;
     }
 
-    public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName) {
-        if (object instanceof IASTaintAware) {
-            return handleTaint((IASTaintAware) object, instance, sinkFunction, sinkName);
-        } else if ("org.hl7.fhir.r4.model.HumanName".equals(object.getClass().getName())) {
+    public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName, String callerFunction) {
+        if ("org.hl7.fhir.r4.model.HumanName".equals(object.getClass().getName())) {
             try {
                 Method m = object.getClass().getMethod("getNameAsSingleString");
                 IASString s = (IASString) m.invoke(object);
                 // Actually should iterate over all names and replace them
-                handleTaint(s, instance, sinkFunction, sinkName);
+                IASTaintHandler.checkTaint(s, instance, sinkFunction, sinkName, callerFunction, OpenMrsTaintHandler::handleTaint);
             } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
                 System.err.println("Exception: " + e + " for object: " + object);
             }
             return object;
         }
-        return traverseObject(object, taintAware -> handleTaint(taintAware, instance, sinkFunction, sinkName));
+        return IASTaintHandler.checkTaint(object, instance, sinkFunction, sinkName, callerFunction, OpenMrsTaintHandler::handleTaint);
     }
 
     // Assume the purpose can be inferred by looking at which methods are calling the sink in question
@@ -416,7 +408,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         return new SimpleRequiredPurposes(purposes, vendors);
     }
 
-    public static IASTaintAware handleLoggedInUserTaint(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName) {
+    public static IASTaintAware handleLoggedInUserTaint(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, String callerFunction) {
         boolean isTainted = taintAware.isTainted();
 
         // System.out.println("isTainted : " + isTainted);
@@ -430,10 +422,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         return taintAware;
     }
 
-    public static Object checkLoggedInUserTaint(Object object, Object instance, String sinkFunction, String sinkName) {
-        if (object instanceof IASTaintAware) {
-            return handleLoggedInUserTaint((IASTaintAware) object, instance, sinkFunction, sinkName);
-        }
-        return traverseObject(object, taintAware -> handleLoggedInUserTaint(taintAware, instance, sinkFunction, sinkName));
+    public static Object checkLoggedInUserTaint(Object object, Object instance, String sinkFunction, String sinkName, String callerFunction) {
+        return IASTaintHandler.checkTaint(object, instance, sinkFunction, sinkName, callerFunction, OpenMrsTaintHandler::handleLoggedInUserTaint);
     }
 }
