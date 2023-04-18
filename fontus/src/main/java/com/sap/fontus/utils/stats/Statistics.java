@@ -259,10 +259,12 @@ public enum Statistics implements StatisticsMXBean {
     }
 
     public void addNewSource(String source, String caller) {
+        System.out.printf("FONTUS: Adding source: %s from %s%n", source, caller);
         addNewMapping(source, caller, sourceCoverage);
     }
 
     public void addNewSink(String sink, String caller) {
+        System.out.printf("FONTUS: Adding sink: %s from %s%n", sink, caller);
         addNewMapping(sink, caller, sinkCoverage);
     }
 
