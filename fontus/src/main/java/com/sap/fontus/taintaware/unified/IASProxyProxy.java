@@ -12,11 +12,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class IASProxyProxy {
     protected final InvocationHandler h;
-    private static final Map<byte[], Class<?>> proxyCache = new HashMap<>();
+    private static final Map<byte[], Class<?>> proxyCache = new ConcurrentHashMap<>(50);
 
+    private static final Class<?> nulll = NullSentinel.class;
 
     protected IASProxyProxy(InvocationHandler h) {
         Objects.requireNonNull(h);
@@ -27,6 +29,9 @@ public class IASProxyProxy {
     private IASProxyProxy() { h = null; }
 
     public static boolean isProxyClass(Class<?> cls) {
+        if(cls == null) {
+            return proxyCache.containsValue(nulll);
+        }
         return proxyCache.containsValue(cls);
     }
 
@@ -126,7 +131,6 @@ public class IASProxyProxy {
         IASProxyProxyBuilder builder = IASProxyProxyBuilder.newBuilder(interfaces, classLoader);
 
         byte[] bytes = builder.build();
-        proxyCache.put(bytes, null);
 
         VerboseLogger.saveIfVerbose(builder.getName(), bytes);
 
@@ -168,5 +172,9 @@ public class IASProxyProxy {
             ex.printStackTrace();
             throw ex;
         }
+    }
+
+    class NullSentinel {
+
     }
 }

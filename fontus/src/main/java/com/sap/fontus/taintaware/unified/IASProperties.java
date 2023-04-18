@@ -92,7 +92,7 @@ public class IASProperties extends Hashtable<Object, Object> implements External
     }
 
     public IASString getProperty(IASString key) {
-        Object orig = ConversionUtils.convertToInstrumented(this.properties.getProperty(key.getString()));
+        IASString orig = IASString.valueOfInternal(this.properties.getProperty(key.getString()));
         IASString taintaware = this.shadow.get(key);
         IASString ret = (IASString) this.chooseReturn(orig, taintaware);
         if(ret == null && this.defaults != null) {
@@ -102,11 +102,10 @@ public class IASProperties extends Hashtable<Object, Object> implements External
     }
 
     public IASString getProperty(IASString key, IASString defaultValue) {
-        IASString r = this.getProperty(key);
-        if(r == null) {
-            return defaultValue;
-        }
-        return r;
+        String defaultStringValue = defaultValue != null ? defaultValue.getString() : null;
+        Object orig = IASString.valueOfInternal(this.properties.getProperty(key.getString(), defaultStringValue));
+        IASString taintaware = this.shadow.get(key);
+        return (IASString) this.chooseReturn(orig, taintaware);
     }
 
     public Enumeration<?> propertyNames() {
@@ -293,8 +292,9 @@ public class IASProperties extends Hashtable<Object, Object> implements External
 
     @Override
     public Object getOrDefault(Object key, Object defaultValue) {
-        if (this.properties.containsKey(ConversionUtils.convertToUninstrumented(key))) {
-            return this.get(ConversionUtils.convertToUninstrumented(key));
+        Object k = ConversionUtils.convertToUninstrumented(key);
+        if (this.properties.containsKey(k)) {
+            return this.get(k);
         }
         return ConversionUtils.convertToInstrumented(defaultValue);
     }
