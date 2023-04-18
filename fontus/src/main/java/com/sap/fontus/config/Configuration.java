@@ -20,7 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @XmlRootElement(name = "configuration")
-public class Configuration {
+public final class Configuration {
     private static Configuration configuration;
 
     private static final Logger logger = LogUtils.getLogger();

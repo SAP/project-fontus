@@ -573,7 +573,6 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         if (/*this.shouldRewriteCheckCast &&*/ opcode == Opcodes.CHECKCAST && Constants.StringQN.equals(type)) {
             logger.info("Rewriting checkcast to call to TString.fromObject(Object obj)");
             super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASStringUtils.class), "fromObject", String.format("(%s)%s", Constants.ObjectDesc, Type.getDescriptor(IASString.class)), false);
-            super.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(IASString.class));
             return;
         }
         logger.info("Visiting type [{}] instruction: {}", type, opcode);
