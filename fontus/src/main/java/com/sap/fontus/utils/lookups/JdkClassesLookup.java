@@ -17,7 +17,7 @@ public final class JdkClassesLookup {
     private static final Pattern PACKAGE_INFO_PATTERN = Pattern.compile("^(.*/)?package-info(\\.class)?$");
 
     private JdkClassesLookup(Collection<String> classes) {
-        this.jdkClasses = new  HashSet<>(classes.size());
+        this.jdkClasses = new HashSet<>(classes.size());
         this.jdkClasses.addAll(classes);
         this.blacklistedPrefixes = new ArrayList<>();
         this.blacklistedPrefixes.addAll(Arrays.asList("sun/",

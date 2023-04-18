@@ -3,29 +3,28 @@ package com.sap.fontus.taintaware.unified.reflect;
 import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class IASReflectRegistry {
     private static final IASReflectRegistry INSTANCE = new IASReflectRegistry();
     // TODO: Replace with ConcurrentHashMap and get rid of synchronized
-    private final Map<Field, IASField> fields = new HashMap<>();
-    private final Map<Method, IASMethod> methods = new HashMap<>();
-    private final Map<Constructor<?>, IASConstructor<?>> constructors = new HashMap<>();
+    private final Map<Field, IASField> fields = new ConcurrentHashMap<>();
+    private final Map<Method, IASMethod> methods = new ConcurrentHashMap<>();
+    private final Map<Constructor<?>, IASConstructor<?>> constructors = new ConcurrentHashMap<>();
 
     public static IASReflectRegistry getInstance() {
         return INSTANCE;
     }
 
-    public synchronized IASField map(Field field) {
-        this.fields.computeIfAbsent(field, IASField::new);
-        return this.fields.get(field);
+    public IASField map(Field field) {
+        return this.fields.computeIfAbsent(field, IASField::new);
     }
 
-    public synchronized IASMethod map(Method method) {
-        this.methods.computeIfAbsent(method, IASMethod::new);
-        return this.methods.get(method);
+    public IASMethod map(Method method) {
+        return this.methods.computeIfAbsent(method, IASMethod::new);
     }
 
-    public synchronized <T> IASConstructor<T> map(Constructor<T> constructor) {
+    public <T> IASConstructor<T> map(Constructor<T> constructor) {
         return new IASConstructor<>(constructor);
         /* TODO: Figure out whether this was "just" an optimization or is required for something
         this.constructors.computeIfAbsent(constructor, IASConstructor<T>::new);
