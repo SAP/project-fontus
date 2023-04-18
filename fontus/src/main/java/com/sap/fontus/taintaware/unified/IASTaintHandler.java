@@ -196,7 +196,7 @@ public class IASTaintHandler {
     public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName, String callerFunction, IASAtomicTaintChecker checker) {
         // Handle statistics
         if (Configuration.getConfiguration().collectStats()) {
-            Statistics.INSTANCE.incrementSource(sinkFunction, callerFunction);
+            Statistics.INSTANCE.incrementSink(sinkFunction, callerFunction);
         }
         if (object instanceof IASTaintAware) {
             return checker.checkTaint((IASTaintAware) object, instance, sinkFunction, sinkName, callerFunction);

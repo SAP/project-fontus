@@ -300,6 +300,20 @@ public enum Statistics implements StatisticsMXBean {
         return nEntries > 0 ? (double)nCovered / (double)nEntries : 0.0;
     }
 
+    private double getUniqueCoverage(Map<String, Map<String, AtomicLong>> map) {
+        int nEntries = map.size();
+        int nCovered = 0;
+        for (Map<String, AtomicLong> e : map.values()) {
+            for (AtomicLong l : e.values()) {
+                if (l.get() > 0) {
+                    nCovered++;
+                    break;
+                }
+            }
+        }
+        return nEntries > 0 ? (double)nCovered / (double)nEntries : 0.0;
+    }
+
     private long getCount(Map<String, Map<String, AtomicLong>> map) {
         int nEntries = 0;
         for (Map<String, AtomicLong> e : map.values()) {
@@ -316,6 +330,16 @@ public enum Statistics implements StatisticsMXBean {
     @Override
     public double getSinkCoverage() {
         return getCoverage(sinkCoverage);
+    }
+
+    @Override
+    public double getUniqueSourceCoverage() {
+        return getUniqueCoverage(sourceCoverage);
+    }
+
+    @Override
+    public double getUniqueSinkCoverage() {
+        return getUniqueCoverage(sinkCoverage);
     }
 
     @Override

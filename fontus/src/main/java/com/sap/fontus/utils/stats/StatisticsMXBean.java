@@ -49,6 +49,10 @@ public interface StatisticsMXBean {
 
     double getSinkCoverage();
 
+    double getUniqueSourceCoverage();
+
+    double getUniqueSinkCoverage();
+
     long getSourceCount();
     long getUniqueSourceCount();
 

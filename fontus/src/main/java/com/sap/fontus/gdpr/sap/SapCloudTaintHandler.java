@@ -122,4 +122,8 @@ public class SapCloudTaintHandler extends IASTaintHandler {
         return IASTaintHandler.taint(object, parent, parameters, sourceId, callerFunction, SapCloudTaintHandler::setTaint);
     }
 
+    public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName, String callerFunction) {
+        return checkTaint(object, instance, sinkFunction, sinkName, callerFunction, IASTaintHandler::handleTaint);
+    }
+
 }
