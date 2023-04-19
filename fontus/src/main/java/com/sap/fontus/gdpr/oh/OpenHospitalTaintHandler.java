@@ -210,13 +210,19 @@ public class OpenHospitalTaintHandler extends IASTaintHandler {
         String loggedInUser = "UnknownUser";
 
         try {
-            Class<?> contextClass = Class.forName("org.openmrs.api.context.Context", false, Thread.currentThread().getContextClassLoader());
-            Object user = contextClass.getMethod("getAuthenticatedUser").invoke(null);
-            if (user != null) {
-                Object userName = user.getClass().getMethod("getUsername").invoke(user);
-                // Will be an IASString because it is tainted...
-                if (userName instanceof IASString) {
-                    loggedInUser = ((IASString) userName).getString();
+            // Spring framework call to get user name:
+            // org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName()
+            Class<?> contextClass = Class.forName("org.springframework.security.core.context.SecurityContextHolder", false, Thread.currentThread().getContextClassLoader());
+            Object context = contextClass.getMethod("getContext").invoke(null);
+
+            if (context != null) {
+                Object authentication = context.getClass().getMethod("getAuthentication").invoke(context);
+                if (authentication != null) {
+                    Object userName = authentication.getClass().getMethod("getName").invoke(authentication);
+                    // Will be an IASString because it is tainted...
+                    if (userName instanceof IASString) {
+                        loggedInUser = ((IASString) userName).getString();
+                    }
                 }
             }
         } catch (Exception e) {
