@@ -9,7 +9,7 @@ import com.sap.fontus.instrumentation.InstrumentationHelper;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import java.util.Set;
+import java.util.*;
 
 public class JdkMethodTransformer implements ParameterTransformation, ReturnTransformation {
 
@@ -25,6 +25,16 @@ public class JdkMethodTransformer implements ParameterTransformation, ReturnTran
             Type.getType(Short.class),
             Type.getType(Byte.class),
             Type.getType(Character.class)
+    );
+    private static final Set<Type> harmlessOwners = Set.of(
+            Type.getType(List.class),
+            Type.getType(Set.class),
+            Type.getType(Arrays.class),
+            Type.getType(Map.class),
+            Type.getType(Collections.class),
+            Type.getType(Collection.class),
+            Type.getType(Queue.class),
+            Type.getType(Deque.class)
     );
     private final FunctionCall call;
     private final InstrumentationHelper instrumentationHelper;
@@ -61,6 +71,7 @@ public class JdkMethodTransformer implements ParameterTransformation, ReturnTran
         int returnSort = returnType.getSort();
         if (!returnType.getClassName().startsWith(Constants.TAINTAWARE_PACKAGE_NAME) && ((returnSort == Type.ARRAY && (returnType.getElementType().getSort() >= Type.ARRAY && !neverConvert.contains(returnType.getElementType()))) || returnSort == Type.OBJECT && !neverConvert.contains(returnType))
             // TODO: evaluate soundness:        &&!(this.call.getOwner().equals("java/util/Iterator") && this.call.getName().equals("next"))
+                && !harmlessOwners.contains(returnType)
         ) {
             FunctionCall convert = new FunctionCall(Opcodes.INVOKESTATIC,
                     Constants.ConversionUtilsQN,
