@@ -173,4 +173,74 @@ public class OpenHospitalTaintHandler extends IASTaintHandler {
         return IASTaintHandler.taint(object, parent, parameters, sourceId, callerFunction, OpenHospitalTaintHandler::setTaint);
     }
 
+    public static IASTaintAware applyPolicy(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, RequiredPurposes requiredPurposes) {
+
+        Sink sink = Configuration.getConfiguration().getSinkConfig().getSinkForFqn(sinkFunction);
+
+        // Create a policy
+        PurposePolicy policy = new SimplePurposePolicy();
+
+        // Extract taint information
+        IASString taintedString = taintAware.toIASString();
+        if (taintedString.isTainted() && (taintedString.getTaintInformation() != null)) {
+            boolean policyViolation = false;
+            for (IASTaintRange range : taintedString.getTaintInformation().getTaintRanges(taintedString.getString().length())) {
+                // Check policy for each range
+                if (range.getMetadata() instanceof GdprTaintMetadata) {
+                    GdprTaintMetadata taintMetadata = (GdprTaintMetadata) range.getMetadata();
+                    GdprMetadata metadata = taintMetadata.getMetadata();
+                    if (!policy.areRequiredPurposesAllowed(requiredPurposes, metadata.getAllowedPurposes())) {
+                        policyViolation = true;
+                    }
+                }
+            }
+            // Block / Sanitize / etc...
+            if (policyViolation) {
+                Abort a = sink.getAbortFromSink();
+                taintAware = a.abort(taintAware, instance, sinkFunction, sinkName, Arrays.asList(Thread.currentThread().getStackTrace()));
+            }
+        }
+        return taintAware;
+    }
+
+    // Assume the purpose can be inferred by looking at which methods are calling the sink in question
+    public static RequiredPurposes getRequiredPurposesFromLoggedInUser() {
+        // Get user-based purpose from the logged in user: org.openmrs.api.context.Context.getAuthenticatedUser
+
+        String loggedInUser = "UnknownUser";
+
+        try {
+            Class<?> contextClass = Class.forName("org.openmrs.api.context.Context", false, Thread.currentThread().getContextClassLoader());
+            Object user = contextClass.getMethod("getAuthenticatedUser").invoke(null);
+            if (user != null) {
+                Object userName = user.getClass().getMethod("getUsername").invoke(user);
+                // Will be an IASString because it is tainted...
+                if (userName instanceof IASString) {
+                    loggedInUser = ((IASString) userName).getString();
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Exception getting logged in user: " + e);
+        }
+        //System.out.println("FONTUS: logged in user: " + loggedInUser);
+        Set<Purpose> purposes = new HashSet<>();
+        Set<Vendor> vendors = new HashSet<>();
+        purposes.add(PurposeRegistry.getInstance().get("processing"));
+        vendors.add(VendorRegistry.getInstance().get(loggedInUser));
+        return new SimpleRequiredPurposes(purposes, vendors);
+    }
+
+    public static IASTaintAware handleLoggedInUserTaint(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, String callerFunction) {
+        boolean isTainted = taintAware.isTainted();
+
+        if (isTainted) {
+            return applyPolicy(taintAware, instance, sinkFunction, sinkName, getRequiredPurposesFromLoggedInUser());
+        }
+        return taintAware;
+    }
+
+    public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName, String callerFunction) {
+        return checkTaint(object, instance, sinkFunction, sinkName, callerFunction, OpenHospitalTaintHandler::handleLoggedInUserTaint);
+    }
+
 }
