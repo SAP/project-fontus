@@ -217,7 +217,9 @@ public class MethodProxies {
      */
     public FunctionCall shouldBeProxied(FunctionCall pfe) {
         if (methodProxies.containsKey(pfe)) {
-            logger.info("Proxying call to {}.{}{}", pfe.getOwner(), pfe.getName(), pfe.getDescriptor());
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Proxying call to {}.{}{}", pfe.getOwner(), pfe.getName(), pfe.getDescriptor());
+            }
             return methodProxies.get(pfe);
         }
         if (pfe.getOpcode() == Opcodes.INVOKEVIRTUAL || pfe.getOpcode() == Opcodes.INVOKEINTERFACE) {
@@ -226,7 +228,9 @@ public class MethodProxies {
                     FunctionCall mip = entry.getKey();
                     if (pfe.getName().equals(mip.getName()) && pfe.getDescriptor().equals(mip.getDescriptor())) {
                         if (thisOrSuperQNEquals(pfe.getOwner(), mip.getOwner())) {
-                            logger.info("Proxying interface call to {}.{}{}", pfe.getOwner(), pfe.getName(), pfe.getDescriptor());
+                            if(LogUtils.LOGGING_ENABLED) {
+                                logger.info("Proxying interface call to {}.{}{}", pfe.getOwner(), pfe.getName(), pfe.getDescriptor());
+                            }
                             return entry.getValue();
                         }
                     }

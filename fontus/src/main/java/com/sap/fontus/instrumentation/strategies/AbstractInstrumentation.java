@@ -120,7 +120,9 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up
             String newName = this.methodsToRename.getOrDefault(functionCall.getName(), functionCall.getName());
 
-            logger.info("Rewriting {} invoke [{}] {}.{}{} to {}.{}{}", this.origInternalName, Utils.opcodeToString(functionCall.getOpcode()), functionCall.getOwner(), functionCall.getName(), functionCall.getName(), newOwner, newName, newDescriptor);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Rewriting {} invoke [{}] {}.{}{} to {}.{}{}", this.origInternalName, Utils.opcodeToString(functionCall.getOpcode()), functionCall.getOwner(), functionCall.getName(), functionCall.getName(), newOwner, newName, newDescriptor);
+            }
             return new FunctionCall(functionCall.getOpcode(), newOwner, newName, newDescriptor.toDescriptor(), functionCall.isInterface());
         }
         return null;
@@ -180,7 +182,9 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
         Matcher descMatcher = this.descPattern.matcher(descriptor);
         if (descMatcher.find()) {
             String newDescriptor = descMatcher.replaceAll(this.instrumentedDescriptor);
-            logger.info("Replacing {} field [{}]{}.{} with [{}]{}.{}", this.origInternalName, access, name, descriptor, access, name, newDescriptor);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Replacing {} field [{}]{}.{} with [{}]{}.{}", this.origInternalName, access, name, descriptor, access, name, newDescriptor);
+            }
             return Optional.of(classVisitor.visitField(access, name, newDescriptor, signature, value));
         }
         return Optional.empty();

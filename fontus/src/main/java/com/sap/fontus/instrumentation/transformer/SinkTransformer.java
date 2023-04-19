@@ -41,11 +41,15 @@ public class SinkTransformer extends SourceOrSinkTransformer implements Paramete
         }
 
         // Sink checks
-        logger.debug("Type: {}", type);
+        if(LogUtils.LOGGING_ENABLED) {
+            logger.debug("Type: {}", type);
+        }
         // Check whether this parameter needs to be checked for taint
         if (this.sink.findParameter(index) != null) {
             String instrumentedType = this.instrumentationHelper.instrumentQN(type);
-            logger.info("Adding taint check for sink {}, parameter {} ({})", this.sink.getName(), index, type);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Adding taint check for sink {}, parameter {} ({})", this.sink.getName(), index, type);
+            }
 
             // Put the owning object instance onto the stack
             MethodVisitor originalVisitor = mv.getParent();

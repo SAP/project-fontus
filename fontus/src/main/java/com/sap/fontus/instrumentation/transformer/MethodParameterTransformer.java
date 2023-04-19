@@ -154,7 +154,9 @@ public class MethodParameterTransformer {
 
             // Call the transformation callbacks in reverse order!
             for (int i = this.paramTransformations.size() - 1; i >= 0; i--) {
-                logger.info("Calling transformation: {} on parameter {} for {}", i, index, p);
+                if(LogUtils.LOGGING_ENABLED) {
+                    logger.info("Calling transformation: {} on parameter {} for {}", i, index, p);
+                }
                 this.paramTransformations.get(i).transformParameter(index, p, this.visitor);
             }
 
@@ -167,11 +169,15 @@ public class MethodParameterTransformer {
             // Store this parameter in local variable storage
             final int finalN = n;
             this.visitor.visitVarInsn(storeOpcode, finalN);
-            logger.info("Executing store: {}_{} for {}", storeOpcode, finalN, p);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Executing store: {}_{} for {}", storeOpcode, finalN, p);
+            }
 
             // Create an entry to re-load from local storage
             loadStack.push(() -> {
-                logger.info("Executing load {}_{} for {}", loadOpcode, finalN, p);
+                        if(LogUtils.LOGGING_ENABLED) {
+                            logger.info("Executing load {}_{} for {}", loadOpcode, finalN, p);
+                        }
                 this.visitor.visitVarInsn(loadOpcode, finalN);
             });
             n += Type.getType(p).getSize();
@@ -185,7 +191,9 @@ public class MethodParameterTransformer {
     }
 
     public void modifyReturnType() {
-        logger.info("Calling return type transformation");
+        if(LogUtils.LOGGING_ENABLED) {
+            logger.info("Calling return type transformation");
+        }
         // Call the transformation callbacks
         if (this.needsReturnTransformation()) {
             for (ReturnTransformation t : this.returnTransformations) {

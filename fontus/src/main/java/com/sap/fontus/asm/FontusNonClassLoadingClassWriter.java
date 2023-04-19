@@ -68,8 +68,10 @@ public class FontusNonClassLoadingClassWriter extends NonClassloadingClassWriter
             //                   result, resultInitial);
             return result;
         } catch(Exception e) {
-            logger.warn("Can't determine common superclass of %s and %s as one of them can't be loaded. Returning Object..", type1, type2);
-            Utils.logException(e);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.warn("Can't determine common superclass of %s and %s as one of them can't be loaded. Returning Object..", type1, type2);
+                Utils.logException(e);
+            }
             return "java/lang/Object";
         }
     }
