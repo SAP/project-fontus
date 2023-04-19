@@ -175,7 +175,7 @@ public class IASMethod extends IASExecutable<Method> {
                 try {
                     taintCheckerMethod = FunctionCall.toMethod(taintChecker);
                 } catch (Exception e) {
-                    System.err.println("Exception finding sink: " + taintChecker);
+                    System.err.printf("FONTUS: Exception finding taint handler %s for sink %s!%n", taintChecker, sink.getFunction());
                     e.printStackTrace();
                 }
             }
@@ -254,7 +254,7 @@ public class IASMethod extends IASExecutable<Method> {
                 try {
                     taintHandlerMethod = FunctionCall.toMethod(taintHandler);
                 } catch (Exception e) {
-                    System.err.println("Exception finding source: " + taintHandler);
+                    System.err.printf("FONTUS: Exception finding taint handler %s for source %s!%n", taintHandler, sink.getFunction());
                     e.printStackTrace();
                 }
             }
