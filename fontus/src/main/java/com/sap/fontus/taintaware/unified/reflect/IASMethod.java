@@ -185,7 +185,7 @@ public class IASMethod extends IASExecutable<Method> {
                 if ((i > 0) && (i < parameters.length)) {
                     // Call the taint handler by reflection
                     if (taintCheckerMethod != null) {
-                        parameters[i] = taintCheckerMethod.invoke(null, parameters[i], instance, sink.getFunction().getFqn(), sink.getName());
+                        parameters[i] = taintCheckerMethod.invoke(null, parameters[i], instance, sink.getFunction().getFqn(), sink.getName(), Constants.MethodInvokeFqn);
                     } else {
                         parameters[i] = IASTaintHandler.checkTaint(parameters[i], instance, sink.getFunction().getFqn(), sink.getName(), Constants.MethodInvokeFqn);
                     }
@@ -236,7 +236,7 @@ public class IASMethod extends IASExecutable<Method> {
                 if (i == -1) {
                     // Call the taint handler by reflection
                     if (taintCheckerMethod != null) {
-                        returnObj = taintCheckerMethod.invoke(null, returnObj, instance, sink.getFunction().getFqn(), sink.getName());
+                        returnObj = taintCheckerMethod.invoke(null, returnObj, instance, sink.getFunction().getFqn(), sink.getName(), Constants.MethodInvokeFqn);
                     } else {
                         returnObj = IASTaintHandler.checkTaint(returnObj, instance, sink.getFunction().getFqn(), sink.getName(), Constants.MethodInvokeFqn);
                     }
@@ -261,7 +261,7 @@ public class IASMethod extends IASExecutable<Method> {
             // TODO: Why are we we checking on taintCheckerMethod here and invoking taintHandlerMethod, seems like a bug?
             if (taintHandlerMethod != null) {
                 returnObj = taintHandlerMethod.invoke(null, returnObj, instance, parameters,
-                        IASTaintSourceRegistry.getInstance().get(source.getName()).getId());
+                        IASTaintSourceRegistry.getInstance().get(source.getName()).getId(), Constants.MethodInvokeFqn);
             } else {
                 returnObj = IASTaintHandler.taint(returnObj, instance, parameters,
                         IASTaintSourceRegistry.getInstance().get(source.getName()).getId(), Constants.MethodInvokeFqn);

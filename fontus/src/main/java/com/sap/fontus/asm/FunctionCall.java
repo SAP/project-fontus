@@ -113,6 +113,7 @@ public class FunctionCall {
         int i = 0;
         for (String s : params) {
             paramClasses[i] = getClazz(s);
+            i++;
         }
 
         return clazz.getMethod(functionCall.name, paramClasses);
