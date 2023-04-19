@@ -71,7 +71,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.combinedExcludedLookup = combinedExcludedLookup;
         this.methodProxies = new MethodProxies(this.combinedExcludedLookup, this.config);
         this.bootstrapMethods = bootstrapMethods;
-        logger.info("Instrumenting method: {}{}", name, methodDescriptor);
+        if(LogUtils.LOGGING_ENABLED) {
+            logger.info("Instrumenting method: {}{}", name, methodDescriptor);
+        }
         this.used = Type.getArgumentsAndReturnSizes(methodDescriptor) >> 2;
         this.usedAfterInjection = this.used;
         int passIdx = this.config.shouldPropagateTaint(acc, owner, name, methodDescriptor);
@@ -139,7 +141,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
     public void visitMethodInsn(FunctionCall fc) {
-        logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(fc.getOpcode()), fc.getOwner(), fc.getName(), fc.getDescriptor());
+        if(LogUtils.LOGGING_ENABLED) {
+            logger.info("Invoking [{}] {}.{}{}", Utils.opcodeToString(fc.getOpcode()), fc.getOwner(), fc.getName(), fc.getDescriptor());
+        }
         super.visitMethodInsn(fc.getOpcode(), fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.isInterface());
     }
 
@@ -265,11 +269,13 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             super.visitInsn(Opcodes.POP);
         }
         String desc = this.instrumentationHelper.instrumentForNormalCall(fc.getDescriptor());
-        // TODO: hack that we can't reset desc for fc here
-        if (desc.equals(fc.getDescriptor())) {
-            logger.info("Skipping invoke [{}] {}.{}{}", Utils.opcodeToString(fc.getOpcode()), fc.getOwner(), fc.getName(), fc.getDescriptor());
-        } else {
-            logger.info("Rewriting invoke containing String-like type [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(fc.getOpcode()), fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.getOwner(), fc.getName(), desc);
+        if(LogUtils.LOGGING_ENABLED) {
+            // TODO: hack that we can't reset desc for fc here
+            if (desc.equals(fc.getDescriptor())) {
+                logger.info("Skipping invoke [{}] {}.{}{}", Utils.opcodeToString(fc.getOpcode()), fc.getOwner(), fc.getName(), fc.getDescriptor());
+            } else {
+                logger.info("Rewriting invoke containing String-like type [{}] {}.{}{} to {}.{}{}", Utils.opcodeToString(fc.getOpcode()), fc.getOwner(), fc.getName(), fc.getDescriptor(), fc.getOwner(), fc.getName(), desc);
+            }
         }
         super.visitMethodInsn(fc.getOpcode(), fc.getOwner(), fc.getName(), desc, fc.isInterface());
         if(passThrough) {
@@ -440,7 +446,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         Sink sink = this.config.getSinkConfig().getSinkForFunction(uninstrumentedCall, new Position(this.owner, this.name, this.line));
         if (sink != null) {
 	    System.out.printf("Adding IASString sink: %s%s:%s%n", uninstrumentedCall.getOwner(), uninstrumentedCall.getName(), uninstrumentedCall.getDescriptor());
-            logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(uninstrumentedCall.getOpcode()), uninstrumentedCall.getOwner(), uninstrumentedCall.getName(), uninstrumentedCall.getDescriptor());
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(uninstrumentedCall.getOpcode()), uninstrumentedCall.getOwner(), uninstrumentedCall.getName(), uninstrumentedCall.getDescriptor());
+            }
             SinkTransformer t = new SinkTransformer(sink, this.instrumentationHelper, this.used, this.caller.toFunctionCall());
             transformer.addParameterTransformation(t);
             transformer.addReturnTransformation(t);
@@ -461,7 +469,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         // Modify Return parameters
         transformer.modifyReturnType();
 
-        logger.info("Finished transforming parameters for [{}] {}.{}{}", Utils.opcodeToString(uninstrumentedCall.getOpcode()), uninstrumentedCall.getOwner(), uninstrumentedCall.getName(), uninstrumentedCall.getDescriptor());
+        if(LogUtils.LOGGING_ENABLED) {
+            logger.info("Finished transforming parameters for [{}] {}.{}{}", Utils.opcodeToString(uninstrumentedCall.getOpcode()), uninstrumentedCall.getOwner(), uninstrumentedCall.getName(), uninstrumentedCall.getDescriptor());
+        }
         return true;
     }
 
@@ -488,7 +498,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
         // Add JDK transformations
         if (isExcluded) {
-            logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Transforming JDK method call for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+            }
             JdkMethodTransformer t = new JdkMethodTransformer(call, this.instrumentationHelper, this.config);
             transformer.addParameterTransformation(t);
             transformer.addReturnTransformation(t);
@@ -497,7 +509,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         // Add Source transformations
         Source source = this.config.getSourceConfig().getSourceForFunction(call);
         if ((source != null) && (source.isAllowedCaller(this.caller.toFunctionCall()))) {
-            logger.info("Adding source tainting for [{}] {}.{}{} for caller {}.{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor(), this.caller.getOwner(), this.caller.getName());
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Adding source tainting for [{}] {}.{}{} for caller {}.{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor(), this.caller.getOwner(), this.caller.getName());
+            }
             SourceTransformer t = new SourceTransformer(source, this.used, this.caller.toFunctionCall());
             transformer.addReturnTransformation(t);
         }
@@ -505,7 +519,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         // Add Sink transformations
         Sink sink = this.config.getSinkConfig().getSinkForFunction(call, new Position(this.owner, this.name, this.line));
         if (sink != null) {
-            logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Adding sink checks for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+            }
             SinkTransformer t = new SinkTransformer(sink, this.instrumentationHelper, this.used, this.caller.toFunctionCall());
             transformer.addParameterTransformation(t);
             transformer.addReturnTransformation(t);
@@ -530,7 +546,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         // Modify Return parameters
         transformer.modifyReturnType();
 
-        logger.info("Finished transforming parameters for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+        if(LogUtils.LOGGING_ENABLED) {
+            logger.info("Finished transforming parameters for [{}] {}.{}{}", Utils.opcodeToString(call.getOpcode()), call.getOwner(), call.getName(), call.getDescriptor());
+        }
         return true;
     }
 
@@ -571,11 +589,15 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     public void visitTypeInsn(final int opcode, final String type) {
         // TODO All instrumented classes not only strings
         if (/*this.shouldRewriteCheckCast &&*/ opcode == Opcodes.CHECKCAST && Constants.StringQN.equals(type)) {
-            logger.info("Rewriting checkcast to call to TString.fromObject(Object obj)");
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Rewriting checkcast to call to TString.fromObject(Object obj)");
+            }
             super.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(IASStringUtils.class), "fromObject", String.format("(%s)%s", Constants.ObjectDesc, Type.getDescriptor(IASString.class)), false);
             return;
         }
-        logger.info("Visiting type [{}] instruction: {}", type, opcode);
+        if(LogUtils.LOGGING_ENABLED) {
+            logger.info("Visiting type [{}] instruction: {}", type, opcode);
+        }
         String newType = this.instrumentationHelper.rewriteTypeIns(type);
         super.visitTypeInsn(opcode, newType);
     }
@@ -621,13 +643,17 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
             this.bootstrapMethods.add(dynamicCall);
 
-            logger.info("invokeDynamic {}{}", name, descriptor);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("invokeDynamic {}{}", name, descriptor);
+            }
             super.visitInvokeDynamicInsn(name, desc, proxyHandle, bootstrapMethodArguments);
         }
     }
 
     private void rewriteConcatWithConstants(String name, String descriptor, Object[] bootstrapMethodArguments) {
-        logger.info("Trying to rewrite invokeDynamic {}{} towards Concat!", name, descriptor);
+        if(LogUtils.LOGGING_ENABLED) {
+            logger.info("Trying to rewrite invokeDynamic {}{} towards Concat!", name, descriptor);
+        }
 
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
         assert bootstrapMethodArguments.length == 1;
@@ -673,7 +699,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     private static boolean shouldBeDynProxied(String name, String descriptor) {
         ProxiedDynamicFunctionEntry pdfe = new ProxiedDynamicFunctionEntry(name, descriptor);
         if (dynProxies.containsKey(pdfe)) {
-            logger.info("Proxying dynamic call to {}{}", name, descriptor);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Proxying dynamic call to {}{}", name, descriptor);
+            }
             Runnable pf = dynProxies.get(pdfe);
             pf.run();
             return true;

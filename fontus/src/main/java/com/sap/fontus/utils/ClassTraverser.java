@@ -105,7 +105,7 @@ public class ClassTraverser {
      * <p>
      * If a method is already contained is determined by the method name and descriptor (declaring class is NOT considered)
      */
-    private void addMethodIfNotContained(Method methodToAdd) {
+    void addMethodIfNotContained(Method methodToAdd) {
         if (MethodUtils.isPublicOrProtected(methodToAdd)) {
             boolean alreadyContained = this.methodList.stream().anyMatch(methodInMethods -> {
                 boolean nameEquals = methodToAdd.getName().equals(methodInMethods.getName());
@@ -151,9 +151,11 @@ public class ClassTraverser {
                 List<String> superInterfaces = typeHierarchyReader.hierarchyOf(Type.getObjectType(interfaceName)).getInterfaces().stream().map(Type::getInternalName).collect(Collectors.toList());
                 this.discoverAllJdkInterfaces(superInterfaces, result, typeHierarchyReader);
             } catch (Exception e) {
-                // Class might be an optional dependency, continuing
-                logger.debug("Skipped recursing further into {} due to Exception", interfaceName);
-                Utils.logException(e);
+                if(LogUtils.LOGGING_ENABLED) {
+                    // Class might be an optional dependency, continuing
+                    logger.debug("Skipped recursing further into {} due to Exception", interfaceName);
+                    Utils.logException(e);
+                }
             }
         }
     }
@@ -172,7 +174,7 @@ public class ClassTraverser {
         TypeHierarchyReaderWithLoaderSupport typeHierarchyReader = new TypeHierarchyReaderWithLoaderSupport(resolver);
 
         // Find all JDK interfaces directly implemented by the class
-        Set<String> jdkOnly = new HashSet<>();
+        Set<String> jdkOnly = new HashSet<>(directInheritedInterfaces.length);
         Set<String> directInheritedSet = new HashSet<>(Arrays.asList(directInheritedInterfaces));
         this.discoverAllJdkInterfaces(directInheritedSet, jdkOnly, typeHierarchyReader);
 
@@ -185,14 +187,18 @@ public class ClassTraverser {
                     superInterfaces.addAll(hierarchy.getInterfaces());
                 } catch (Exception e) {
                     // Class might be an optional dependency, continuing
-                    logger.debug("Skipped recursing further into {} due to Exception", cls.getClassName());
-                    Utils.logException(e);
+                    if(LogUtils.LOGGING_ENABLED) {
+                        logger.debug("Skipped recursing further into {} due to Exception", cls.getClassName());
+                        Utils.logException(e);
+                    }
                 }
             }
         } catch (Exception e) {
             // Class might be an optional dependency, continuing
-            logger.debug("Skipped superclass extraction for into {} due to Exception", className);
-            Utils.logException(e);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.debug("Skipped superclass extraction for into {} due to Exception", className);
+                Utils.logException(e);
+            }
         }
         // JDK Interfaces implemented by the super class
         Set<String> jdkSuperInterfaces = new HashSet<>();

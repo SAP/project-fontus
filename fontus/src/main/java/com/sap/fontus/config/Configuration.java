@@ -358,7 +358,10 @@ public final class Configuration {
                 if (conversion != null) {
                     String converterName = conversion.getConverter();
                     FunctionCall converter = this.getConverter(converterName);
-                    logger.info("Found converter for {} at index {}: {}", c, index, converter);
+                    if(this.loggingEnabled) {
+
+                        logger.info("Found converter for {} at index {}: {}", c, index, converter);
+                    }
                     return converter;
                 }
             }
@@ -376,7 +379,9 @@ public final class Configuration {
                 if (!(onlyAlwaysApply && !rg.isAlwaysApply())) {
                     String converterName = rg.getConverter();
                     FunctionCall converter = this.getConverter(converterName);
-                    logger.info("Found converter for rv of {}: {}", c, converter);
+                    if(this.loggingEnabled) {
+                        logger.info("Found converter for rv of {}: {}", c, converter);
+                    }
                     return converter;
                 }
             }
