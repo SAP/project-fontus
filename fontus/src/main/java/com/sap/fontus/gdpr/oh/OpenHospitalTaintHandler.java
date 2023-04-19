@@ -219,9 +219,11 @@ public class OpenHospitalTaintHandler extends IASTaintHandler {
                 Object authentication = context.getClass().getMethod("getAuthentication").invoke(context);
                 if (authentication != null) {
                     Object userName = authentication.getClass().getMethod("getName").invoke(authentication);
-                    // Will be an IASString because it is tainted...
+                    // Will be an IASString because it is tainted, or maybe not!
                     if (userName instanceof IASString) {
                         loggedInUser = ((IASString) userName).getString();
+                    } else if (userName instanceof String) {
+                        loggedInUser = (String) userName;
                     }
                 }
             }
