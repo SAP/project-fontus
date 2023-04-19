@@ -30,7 +30,7 @@ class IASTaintHandlerTest {
         IASString string = new IASString("test");
         A a = new A(string);
 
-        IASTaintHandler.taint(a, null, null, 1);
+        IASTaintHandler.taint(a, null, null, 1, "foo");
 
         assertTrue(string.isTainted());
     }
@@ -56,7 +56,7 @@ class IASTaintHandlerTest {
 
         map.put("key", types);
 
-        Object result = IASTaintHandler.taint(map, null, null, 1);
+        Object result = IASTaintHandler.taint(map, null, null, 1, "foo");
         assertTrue(result instanceof Map);
     }
 
@@ -71,7 +71,7 @@ class IASTaintHandlerTest {
 
         map.put("key", types);
 
-        Object result = IASTaintHandler.taint(map, null, null, 1);
+        Object result = IASTaintHandler.taint(map, null, null, 1, "foo");
         assertTrue(result instanceof Map);
         Map<String, List<IASString>> resultMap = (Map<String, List<IASString>>) result;
         assertEquals(map, resultMap);
@@ -87,7 +87,7 @@ class IASTaintHandlerTest {
         types.add("element2");
         types.add("element3");
 
-        Object result = IASTaintHandler.taint(types, null, null, 1);
+        Object result = IASTaintHandler.taint(types, null, null, 1, "foo");
         assertTrue(result instanceof List);
     }
 

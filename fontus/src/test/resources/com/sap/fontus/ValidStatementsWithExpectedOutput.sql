@@ -7,7 +7,7 @@ WITH users AS (SELECT name, `__taint__name`, vorname, `__taint__vorname` FROM us
 with a (name) as (select name from users) select name from a;
 WITH a (name, `__taint__name`) AS (SELECT name, `__taint__name` FROM users) SELECT name, `__taint__name` FROM a;
 
- Select vorname, (select name from customers) from users;
+Select vorname, (select name from customers) from users;
 SELECT vorname, `__taint__vorname`, (SELECT name FROM customers), (SELECT `__taint__name` FROM customers) FROM users;
 
 select name, NULL from users;

@@ -1,6 +1,10 @@
 package com.sap.fontus.asm;
 
+import com.sap.fontus.agent.InstrumentationConfiguration;
+import com.sap.fontus.config.Configuration;
+import com.sap.fontus.config.TaintMethod;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
@@ -9,6 +13,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 class FunctionCallTests {
+
+    @BeforeAll
+    static void init() {
+        InstrumentationConfiguration.init(null, null);
+        Configuration.setTestConfig(TaintMethod.defaultTaintMethod());
+    }
 
     @Test
     void testGetMethodFromFunctionCall() throws Exception {
@@ -45,7 +55,7 @@ class FunctionCallTests {
 
     @Test
     void testGetMethodFromTaintHandler() throws Exception {
-        Method m = IASTaintHandler.class.getMethod("taint", Object.class, Object.class, Object[].class, int.class);
+        Method m = IASTaintHandler.class.getMethod("taint", Object.class, Object.class, Object[].class, int.class, String.class);
         FunctionCall fc = FunctionCall.fromMethod(m);
         Method m2 = FunctionCall.toMethod(fc);
         assertEquals(m, m2);
@@ -53,7 +63,7 @@ class FunctionCallTests {
 
     @Test
     void testGetMethodFromTaintChecker() throws Exception {
-        Method m = IASTaintHandler.class.getMethod("checkTaint", Object.class, Object.class, String.class, String.class);
+        Method m = IASTaintHandler.class.getMethod("checkTaint", Object.class, Object.class, String.class, String.class, String.class);
         FunctionCall fc = FunctionCall.fromMethod(m);
         Method m2 = FunctionCall.toMethod(fc);
         assertEquals(m, m2);

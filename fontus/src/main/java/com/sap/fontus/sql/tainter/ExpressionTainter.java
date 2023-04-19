@@ -9,6 +9,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.sap.fontus.Constants.TAINT_PREFIX;
@@ -408,7 +409,17 @@ public class ExpressionTainter extends ExpressionVisitorAdapter {
 	@Override
 	public void visit(RowConstructor arg0) {
 		// add '0' for correct column count
-		this.expressionReference.add(new StringValue("'0'"));
+		//this.expressionReference.remove(arg0);
+		ExpressionList original = arg0.getExprList();
+		List<Expression> el = new ArrayList<>(original.getExpressions().size());
+
+		for(Expression e : original.getExpressions()) {
+			el.add(e);
+			el.add(new StringValue("'0'"));
+		}
+		ExpressionList ell = new ExpressionList();
+		ell.setExpressions(el);
+		arg0.setExprList(ell);
 	}
 
 	@Override

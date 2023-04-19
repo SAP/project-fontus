@@ -24,6 +24,30 @@ class StatementTainterTests {
     }
 
     @Test
+    void testInsert() throws JSQLParserException {
+        String query = "Insert into foo values (2, 1), (3, 2);";
+        Statements stmts = CCJSqlParserUtil.parseStatements(query);
+
+        StatementTainter tainter = new StatementTainter();
+        //System.out.println("Tainting: " + query);
+        stmts.accept(tainter);
+        String taintedStatement = stmts.toString();
+        assertEquals("INSERT INTO foo VALUES (2, '0', 1, '0'), (3, '0', 2, '0');", taintedStatement.trim());
+    }
+
+    @Test
+    void testInsert2() throws JSQLParserException {
+        String query = "INSERT INTO customers (name, vorname) VALUES ('Max', 'Mustermann'); insert into users VALUES ('peter') returning id;";
+        Statements stmts = CCJSqlParserUtil.parseStatements(query);
+
+        StatementTainter tainter = new StatementTainter();
+        //System.out.println("Tainting: " + query);
+        stmts.accept(tainter);
+        String taintedStatement = stmts.toString();
+        assertEquals("INSERT INTO customers (name, `__taint__name`, vorname, `__taint__vorname`) VALUES ('Max', '0', 'Mustermann', '0');\n" +
+                "INSERT INTO users VALUES ('peter', '0') RETURNING id, `__taint__id`;", taintedStatement.trim());
+    }
+    @Test
     void testNestedQueryWithWhere() throws JSQLParserException {
         String query = "select 'a' as foo, (select b from bla where id < 5) as bar";
         Statements stmts = CCJSqlParserUtil.parseStatements(query);
