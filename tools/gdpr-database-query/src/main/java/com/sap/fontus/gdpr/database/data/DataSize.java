@@ -6,7 +6,7 @@ import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
 
-@CommandLine.Command(name = "stats", description = "Collect Statistics")
+@CommandLine.Command(name = "size", description = "Collect Table Sizes")
 public class DataSize implements Callable<Void> {
 
     @Override

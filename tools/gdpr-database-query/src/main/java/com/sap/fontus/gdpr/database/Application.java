@@ -1,6 +1,7 @@
 package com.sap.fontus.gdpr.database;
 
 import com.sap.fontus.gdpr.database.contest.ContestWrongData;
+import com.sap.fontus.gdpr.database.data.DataSize;
 import com.sap.fontus.gdpr.database.defaults.DefaultValues;
 import com.sap.fontus.gdpr.database.expired.ExpiredData;
 import com.sap.fontus.gdpr.database.statistics.Statistics;
@@ -19,7 +20,8 @@ import java.util.concurrent.Callable;
             ExpiredData.class,
             Statistics.class,
             DefaultValues.class,
-            ContestWrongData.class
+            ContestWrongData.class,
+            DataSize.class
         }
 )
 public class Application implements Callable<Void> {
