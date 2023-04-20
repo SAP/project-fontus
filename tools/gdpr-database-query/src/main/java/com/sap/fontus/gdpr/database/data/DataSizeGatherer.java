@@ -46,11 +46,13 @@ class DataSizeGatherer extends AbstractInformationGatherer {
         int total = 0;
         for (String key: this.sizeMap.keySet()) {
             int rowSize = this.sizeMap.get(key);
-            System.out.println(key + ": " + rowSize);
+            // System.out.println(key + ": " + rowSize);
             if (rowSize > 0) {
                 total += rowSize;
             }
         }
-        System.out.println("Total: " + total);
+        System.out.println("Total DB Size ( B): " + (total));
+        System.out.println("Total DB Size (kB): " + (total / 1024));
+        System.out.println("Total DB Size (MB): " + (total / 1024 / 1024));
     }
 }
