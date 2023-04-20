@@ -5,6 +5,7 @@ import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 public class AbstractInformationGatherer implements InformationGatherer {
     protected String table = "";
     protected String catalog = "";
+    protected int size = 0;
     protected int row = 0;
 
     @Override
@@ -12,6 +13,11 @@ public class AbstractInformationGatherer implements InformationGatherer {
         this.row = 0;
         this.catalog = catalog;
         this.table = table;
+    }
+
+    @Override
+    public void tableSize(int size) {
+        this.size = size;
     }
 
     @Override

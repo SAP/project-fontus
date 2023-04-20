@@ -45,12 +45,29 @@ public class Processor {
                 String name = tables.getString(3);
                 String type = tables.getString(4);
                 //System.out.printf("%s.%s.%s - %s%n", cat, schema, name, type);
+                int size = getTableSize(conn, cat, name);
                 this.gatherer.beginTable(cat, name);
+                this.gatherer.tableSize(size);
                 this.processTable(conn, cat, name);
                 this.gatherer.endTable();
             }
             //System.out.println("done");
         }
+    }
+
+    private int getTableSize(Connection conn, String catalog, String table) {
+        int size = -1;
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT DATA_LENGTH from information_scheme.TABLES WHERE TABLE_SCHEMA=? AND TABLE_NAME=?");
+            ps.setString(0, catalog);
+            ps.setString(1, table);
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+            size = rs.getInt("DATA_LENGTH");
+        } catch (SQLException e) {
+            System.out.println("Exception computing table size: " + e.getMessage());
+        }
+        return size;
     }
 
     private void processTable(Connection conn, String catalog, String table) throws SQLException {
