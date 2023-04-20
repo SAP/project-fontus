@@ -10,6 +10,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import java.util.*;
+import java.util.logging.LogManager;
 
 public class JdkMethodTransformer implements ParameterTransformation, ReturnTransformation {
 
@@ -31,10 +32,14 @@ public class JdkMethodTransformer implements ParameterTransformation, ReturnTran
             Type.getType(Set.class),
             Type.getType(Arrays.class),
             Type.getType(Map.class),
+            Type.getType(ArrayList.class),
             Type.getType(Collections.class),
             Type.getType(Collection.class),
             Type.getType(Queue.class),
-            Type.getType(Deque.class)
+            Type.getType(Deque.class),
+            Type.getType(Hashtable.class),
+            Type.getType(LogManager.class),
+            Type.getType(Stack.class)
     );
     private final FunctionCall call;
     private final InstrumentationHelper instrumentationHelper;
