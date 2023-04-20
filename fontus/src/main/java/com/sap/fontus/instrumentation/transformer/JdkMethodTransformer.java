@@ -32,7 +32,7 @@ public class JdkMethodTransformer implements ParameterTransformation, ReturnTran
             Type.getType(Set.class),
             Type.getType(Arrays.class),
             Type.getType(Map.class),
-            Type.getType(ArrayList.class<),
+            Type.getType(ArrayList.class),
             Type.getType(Collections.class),
             Type.getType(Collection.class),
             Type.getType(Queue.class),
