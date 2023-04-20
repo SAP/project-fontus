@@ -18,14 +18,14 @@ class SqlParsingTest {
     void checkMultipleQueryParsing(){
         SQLStatementParser parser = SQLParserUtils.createSQLStatementParser("select * from table1; drop table table1", DbType.mysql);
         List<SQLStatement> statementList = parser.parseStatementList();
-        assertFalse(statementList.size() != 2, "sql string should parse as 2 statements");
+        assertEquals(2, statementList.size(), "sql string should parse as 2 statements");
     }
 
     @Test
     void checkTokenParsing(){
         SQLStatementParser parser = SQLParserUtils.createSQLStatementParser("select column1 from table1 where column2='data'", DbType.mysql);
         List<SQLStatement> statementList = parser.parseStatementList();
-        assertFalse(statementList.size() != 1, "sql string is a single statement");
+        assertEquals(1, statementList.size(), "sql string is a single statement");
         Lexer lexer = SQLParserUtils.createLexer("select column1 from table where column2='data'", DbType.mysql);
         lexer.nextToken();
         int count = 0;
@@ -33,6 +33,13 @@ class SqlParsingTest {
             count++;
             lexer.nextToken();
         }
-        assertFalse(count != 8, "incorrect no. of tokens while parsing");
+        assertEquals(8, count, "incorrect no. of tokens while parsing");
+    }
+
+    @Test
+    void testSimpleTokenParsing() {
+        String query = "SELECT * FROM table_name;";
+        List<SqlLexerToken> tokens = SqlLexerToken.getLexerTokens(query);
+        assertEquals(5, tokens.size());
     }
 }

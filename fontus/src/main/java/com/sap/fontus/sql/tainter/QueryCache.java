@@ -30,7 +30,6 @@ public enum QueryCache {
         }
         return this.queryCache.get(query, (q) -> {
 
-
             StatementTainter tainter = new StatementTainter();
             Statements stmts = null;
             try {
