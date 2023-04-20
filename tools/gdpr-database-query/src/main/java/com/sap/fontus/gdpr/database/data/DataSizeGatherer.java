@@ -47,7 +47,9 @@ class DataSizeGatherer extends AbstractInformationGatherer {
         for (String key: this.sizeMap.keySet()) {
             int rowSize = this.sizeMap.get(key);
             System.out.println(key + ": " + rowSize);
-            total += rowSize;
+            if (rowSize > 0) {
+                total += rowSize;
+            }
         }
         System.out.println("Total: " + total);
     }
