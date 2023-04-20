@@ -43,7 +43,7 @@ public final class Utils {
                 .useFields(true, VisibilityFilter.PRIVATE)
                 .create();
         IASTaintRanges ranges = genson.deserialize(json, IASTaintRanges.class);
-        return TaintInformationFactory.createTaintInformation(ranges.getLength(), ranges.getTaintRanges());
+        return ranges != null ? TaintInformationFactory.createTaintInformation(ranges.getLength(), ranges.getTaintRanges()) : null;
     }
 
     public static class InstantConverter implements Converter<Instant> {
