@@ -76,7 +76,7 @@ public class JdkMethodTransformer implements ParameterTransformation, ReturnTran
         int returnSort = returnType.getSort();
         if (!returnType.getClassName().startsWith(Constants.TAINTAWARE_PACKAGE_NAME) && ((returnSort == Type.ARRAY && (returnType.getElementType().getSort() >= Type.ARRAY && !neverConvert.contains(returnType.getElementType()))) || returnSort == Type.OBJECT && !neverConvert.contains(returnType))
             // TODO: evaluate soundness:        &&!(this.call.getOwner().equals("java/util/Iterator") && this.call.getName().equals("next"))
-                && !harmlessOwners.contains(returnType)
+            //    && !harmlessOwners.contains(returnType)
         ) {
             FunctionCall convert = new FunctionCall(Opcodes.INVOKESTATIC,
                     Constants.ConversionUtilsQN,
