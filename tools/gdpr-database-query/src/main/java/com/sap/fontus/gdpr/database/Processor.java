@@ -59,8 +59,8 @@ public class Processor {
         int size = -1;
         try {
             PreparedStatement ps = conn.prepareStatement("SELECT DATA_LENGTH from information_scheme.TABLES WHERE TABLE_SCHEMA=? AND TABLE_NAME=?");
-            ps.setString(0, catalog);
-            ps.setString(1, table);
+            ps.setString(1, catalog);
+            ps.setString(2, table);
             ResultSet rs = ps.executeQuery();
             rs.next();
             size = rs.getInt("DATA_LENGTH");
