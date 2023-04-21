@@ -262,14 +262,15 @@ public enum Statistics implements StatisticsMXBean {
     }
 
     public void addNewSource(String source, String caller) {
-        System.out.printf("FONTUS: Adding source: %s from %s%n", source, caller);
-        addNewMapping(source, caller, sourceCoverage);
+        //System.out.printf("FONTUS: Adding source: %s from %s%n", source, caller);
+        this.addNewMapping(source, caller, this.sourceCoverage);
     }
 
     public void addNewSink(String sink, String caller) {
-        System.out.printf("FONTUS: Adding sink: %s from %s%n", sink, caller);
-        addNewMapping(sink, caller, sinkCoverage);
-        addNewMapping(sink, caller, taintedSinkCoverage);
+//        System.out.printf("FONTUS: Adding sink: %s from %s%n", sink, caller);
+        this.addNewMapping(sink, caller, this.sinkCoverage);
+        this.addNewMapping(sink, caller, this.taintedSinkCoverage);
+
     }
 
     private void incrementMapping(String name, String caller, Map<String, Map<String, AtomicLong>> map) {
@@ -281,15 +282,15 @@ public enum Statistics implements StatisticsMXBean {
     }
 
     public void incrementSource(String source, String caller) {
-        System.out.printf("FONTUS: Hit source: %s from %s%n", source, caller);
-        incrementMapping(source, caller, sourceCoverage);
+        //System.out.printf("FONTUS: Hit source: %s from %s%n", source, caller);
+        this.incrementMapping(source, caller, this.sourceCoverage);
     }
 
     public void incrementSink(IASTaintAware taintAware, String sink, String caller) {
-        System.out.printf("FONTUS: Hit sink: %s from %s tainted: %s%n", sink, caller, taintAware.isTainted() ? "yes" : "no");
-        incrementMapping(sink, caller, sinkCoverage);
+        //System.out.printf("FONTUS: Hit sink: %s from %s tainted: %s%n", sink, caller, taintAware.isTainted() ? "yes" : "no");
+        this.incrementMapping(sink, caller, this.sinkCoverage);
         if (taintAware.isTainted()) {
-            incrementMapping(sink, caller, taintedSinkCoverage);
+            this.incrementMapping(sink, caller, this.taintedSinkCoverage);
         }
     }
 
@@ -331,27 +332,28 @@ public enum Statistics implements StatisticsMXBean {
 
     @Override
     public double getSourceCoverage() {
-        return getCoverage(sourceCoverage);
+        return this.getCoverage(this.sourceCoverage);
     }
 
     @Override
     public double getSinkCoverage() {
-        return getCoverage(sinkCoverage);
+        return this.getCoverage(this.sinkCoverage);
     }
 
     @Override
     public double getTaintedSinkCoverage() {
-        long nCovered = 0;
-        long nTainted = 0;
+        long nCovered = 0L;
+        long nTainted = 0L;
         // Loop over all sinks
-        for (String sink: sinkCoverage.keySet()) {
+        for (Map.Entry<String, Map<String, AtomicLong>> entry : this.sinkCoverage.entrySet()) {
+            String sink = entry.getKey();
             // Get total hits
-            for (AtomicLong l: sinkCoverage.get(sink).values()) {
+            for (AtomicLong l: entry.getValue().values()) {
                 nCovered += l.get();
             }
             // Get tainted hits
-            if (taintedSinkCoverage.containsKey(sink)) {
-                for (AtomicLong l : taintedSinkCoverage.get(sink).values()) {
+            if (this.taintedSinkCoverage.containsKey(sink)) {
+                for (AtomicLong l : this.taintedSinkCoverage.get(sink).values()) {
                     nTainted += l.get();
                 }
             }
@@ -361,32 +363,32 @@ public enum Statistics implements StatisticsMXBean {
 
     @Override
     public double getUniqueSourceCoverage() {
-        return getUniqueCoverage(sourceCoverage);
+        return this.getUniqueCoverage(this.sourceCoverage);
     }
 
     @Override
     public double getUniqueSinkCoverage() {
-        return getUniqueCoverage(sinkCoverage);
+        return this.getUniqueCoverage(this.sinkCoverage);
     }
 
     @Override
     public long getSourceCount() {
-        return getCount(sourceCoverage);
+        return this.getCount(this.sourceCoverage);
     }
 
     @Override
     public long getUniqueSourceCount() {
-        return sourceCoverage.size();
+        return this.sourceCoverage.size();
     }
 
     @Override
     public long getSinkCount() {
-        return getCount(sinkCoverage);
+        return this.getCount(this.sinkCoverage);
     }
 
     @Override
     public long getUniqueSinkCount() {
-        return sinkCoverage.size();
+        return this.sinkCoverage.size();
     }
 
 

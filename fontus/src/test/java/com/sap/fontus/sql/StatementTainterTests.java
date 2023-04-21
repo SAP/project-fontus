@@ -24,6 +24,32 @@ class StatementTainterTests {
     }
 
     @Test
+    void testOpenOlatFoobar() throws Exception {
+
+        String query =
+        "insert into o_stat_daily (businesspath, resid, day, value)\n" +
+                "                                                select\n" +
+                "                                                        delta.businesspath, delta.resid, delta.day, delta.cnt\n" +
+                "                                                from (select\n" +
+                "                                                                        businesspath,\n" +
+                "                                                                        substr(businesspath,locate(':',businesspath)+1,locate(']',businesspath)-locate(':',businesspath)-1) resid,\n" +
+                "                                                                        date(creationdate) day,\n" +
+                "                                                                        count(*) cnt\n" +
+                "                                                        from o_stat_temptable\n" +
+                "                                                        group by businesspath,day) delta\n" +
+                "                                                        left join o_stat_daily old on (delta.businesspath=old.businesspath and delta.day=old.day)\n" +
+                "                                                where old.businesspath is null;\n";
+        Statements stmts = CCJSqlParserUtil.parseStatements(query);
+
+        StatementTainter tainter = new StatementTainter();
+        //System.out.println("Tainting: " + query);
+        stmts.accept(tainter);
+        String taintedStatement = stmts.toString();
+        assertEquals("INSERT INTO o_stat_daily (businesspath, `__taint__businesspath`, resid, `__taint__resid`, day, `__taint__day`, value, `__taint__value`) SELECT delta.businesspath, delta.`__taint__businesspath`, delta.resid, delta.`__taint__resid`, delta.day, delta.`__taint__day`, delta.cnt, delta.`__taint__cnt` FROM (SELECT businesspath, `__taint__businesspath`, substr(businesspath, locate(':', businesspath) + 1, locate(']', businesspath) - locate(':', businesspath) - 1) resid, '0' AS `__taint__resid`, date(creationdate) day, '0', count(*) cnt, '0' AS `__taint__cnt` FROM o_stat_temptable GROUP BY businesspath, `__taint__businesspath`, day, `__taint__day`) delta LEFT JOIN o_stat_daily old ON (delta.businesspath = old.businesspath AND delta.day = old.day) WHERE old.businesspath IS NULL;", taintedStatement.trim());
+
+    }
+
+    @Test
     void testInsert() throws JSQLParserException {
         String query = "Insert into foo values (2, 1), (3, 2);";
         Statements stmts = CCJSqlParserUtil.parseStatements(query);
