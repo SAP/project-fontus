@@ -341,7 +341,6 @@ public enum Statistics implements StatisticsMXBean {
 
     @Override
     public double getTaintedSinkCoverage() {
-        int nEntries = sinkCoverage.size();
         long nCovered = 0;
         long nTainted = 0;
         // Loop over all sinks
@@ -357,7 +356,7 @@ public enum Statistics implements StatisticsMXBean {
                 }
             }
         }
-        return nEntries > 0 ? (double) nTainted / (double) nCovered : 0.0;
+        return nCovered > 0 ? (double) nTainted / (double) nCovered : 0.0;
     }
 
     @Override
