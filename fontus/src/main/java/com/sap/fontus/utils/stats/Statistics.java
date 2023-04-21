@@ -286,7 +286,7 @@ public enum Statistics implements StatisticsMXBean {
     }
 
     public void incrementSink(IASTaintAware taintAware, String sink, String caller) {
-        System.out.printf("FONTUS: Hit sink: %s from %s%n", sink, caller);
+        System.out.printf("FONTUS: Hit sink: %s from %s tainted: %s%n", sink, caller, taintAware.isTainted() ? "yes" : "no");
         incrementMapping(sink, caller, sinkCoverage);
         if (taintAware.isTainted()) {
             incrementMapping(sink, caller, taintedSinkCoverage);
