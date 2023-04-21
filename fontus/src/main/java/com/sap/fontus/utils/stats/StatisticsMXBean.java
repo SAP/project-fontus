@@ -49,6 +49,8 @@ public interface StatisticsMXBean {
 
     double getSinkCoverage();
 
+    double getTaintedSinkCoverage();
+
     double getUniqueSourceCoverage();
 
     double getUniqueSinkCoverage();

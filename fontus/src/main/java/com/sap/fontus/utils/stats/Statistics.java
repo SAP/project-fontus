@@ -2,6 +2,7 @@ package com.sap.fontus.utils.stats;
 
 import com.sap.fontus.Constants;
 import com.sap.fontus.agent.TaintAgent;
+import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.range.IASTaintInformation;
 import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 
@@ -33,6 +34,7 @@ public enum Statistics implements StatisticsMXBean {
 
     private final Map<String, Map<String, AtomicLong>> sourceCoverage;
     private final Map<String, Map<String, AtomicLong>> sinkCoverage;
+    private final Map<String, Map<String, AtomicLong>> taintedSinkCoverage;
 
     Statistics() {
         this.stringCount = new AtomicLong();
@@ -50,6 +52,7 @@ public enum Statistics implements StatisticsMXBean {
         this.totalQueriesLength = new AtomicLong();
         this.sourceCoverage = new ConcurrentHashMap<>();
         this.sinkCoverage = new ConcurrentHashMap<>();
+        this.taintedSinkCoverage = new ConcurrentHashMap<>();
         this.register();
     }
 
@@ -266,6 +269,7 @@ public enum Statistics implements StatisticsMXBean {
     public void addNewSink(String sink, String caller) {
         System.out.printf("FONTUS: Adding sink: %s from %s%n", sink, caller);
         addNewMapping(sink, caller, sinkCoverage);
+        addNewMapping(sink, caller, taintedSinkCoverage);
     }
 
     private void incrementMapping(String name, String caller, Map<String, Map<String, AtomicLong>> map) {
@@ -281,9 +285,12 @@ public enum Statistics implements StatisticsMXBean {
         incrementMapping(source, caller, sourceCoverage);
     }
 
-    public void incrementSink(String sink, String caller) {
+    public void incrementSink(IASTaintAware taintAware, String sink, String caller) {
         System.out.printf("FONTUS: Hit sink: %s from %s%n", sink, caller);
         incrementMapping(sink, caller, sinkCoverage);
+        if (taintAware.isTainted()) {
+            incrementMapping(sink, caller, taintedSinkCoverage);
+        }
     }
 
     private double getCoverage(Map<String, Map<String, AtomicLong>> map) {
@@ -330,6 +337,27 @@ public enum Statistics implements StatisticsMXBean {
     @Override
     public double getSinkCoverage() {
         return getCoverage(sinkCoverage);
+    }
+
+    @Override
+    public double getTaintedSinkCoverage() {
+        int nEntries = sinkCoverage.size();
+        long nCovered = 0;
+        long nTainted = 0;
+        // Loop over all sinks
+        for (String sink: sinkCoverage.keySet()) {
+            // Get total hits
+            for (AtomicLong l: sinkCoverage.get(sink).values()) {
+                nCovered += l.get();
+            }
+            // Get tainted hits
+            if (taintedSinkCoverage.containsKey(sink)) {
+                for (AtomicLong l : sinkCoverage.get(sink).values()) {
+                    nTainted += l.get();
+                }
+            }
+        }
+        return nEntries > 0 ? (double) nTainted / (double) nCovered : 0.0;
     }
 
     @Override

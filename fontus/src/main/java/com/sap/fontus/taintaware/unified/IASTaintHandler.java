@@ -193,19 +193,26 @@ public class IASTaintHandler {
         return checkTaint(object, instance, sinkFunction, sinkName, callerFunction, IASTaintHandler::handleTaint);
     }
 
-    public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName, String callerFunction, IASAtomicTaintChecker checker) {
+    protected static void recordSinkStatistics(IASTaintAware taintAware, String sinkFunction, String callerFunction) {
         // Handle statistics
         if (Configuration.getConfiguration().collectStats()) {
-            Statistics.INSTANCE.incrementSink(sinkFunction, callerFunction);
+            Statistics.INSTANCE.incrementSink(taintAware, sinkFunction, callerFunction);
         }
+    }
+
+    public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName, String callerFunction, IASAtomicTaintChecker checker) {
         if (object instanceof IASTaintAware) {
+            recordSinkStatistics((IASTaintAware) object, sinkFunction, callerFunction);
             return checker.checkTaint((IASTaintAware) object, instance, sinkFunction, sinkName, callerFunction);
         } else if (instance instanceof IASTaintAware) {
             // Things like String.toCharArray() can be handled here
             return checker.checkTaint((IASTaintAware) instance, object, sinkFunction, sinkName, callerFunction);
         }
 
-        return traverseObject(object, taintAware -> checker.checkTaint(taintAware, instance, sinkFunction, sinkName, callerFunction));
+        return traverseObject(object, taintAware -> {
+            recordSinkStatistics(taintAware, sinkFunction, callerFunction);
+            return checker.checkTaint(taintAware, instance, sinkFunction, sinkName, callerFunction);
+        });
     }
 
     /**
@@ -223,8 +230,7 @@ public class IASTaintHandler {
         return taint(object, parentObject, parameters, sourceId, callerFunction, IASTaintHandler::setTaint);
     }
 
-    public static Object taint(Object object, Object parentObject, Object[] parameters, int sourceId, String callerFunction, IASAtomicTaintSetter setter) {
-        // Handle statistics
+    private static void recordSourceStatistics(int sourceId, String callerFunction) {
         if (Configuration.getConfiguration().collectStats()) {
             IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
             Source source = null;
@@ -233,11 +239,19 @@ public class IASTaintHandler {
                 Statistics.INSTANCE.incrementSource(source.getFunction().getFqn(), callerFunction);
             }
         }
+    }
+
+    public static Object taint(Object object, Object parentObject, Object[] parameters, int sourceId, String callerFunction, IASAtomicTaintSetter setter) {
+        // Handle statistics
+        recordSourceStatistics(sourceId, callerFunction);
         if (object instanceof IASTaintAware) {
             setter.setTaint((IASTaintAware) object, parentObject, parameters, sourceId, callerFunction);
             return object;
         }
-        return traverseObject(object, taintAware -> setter.setTaint(taintAware, parentObject, parameters, sourceId, callerFunction));
+        return traverseObject(object, taintAware -> {
+            recordSourceStatistics(sourceId, callerFunction);
+            return setter.setTaint(taintAware, parentObject, parameters, sourceId, callerFunction);
+        });
     }
 
     public static boolean isValidTaintHandler(FunctionCall function) {
