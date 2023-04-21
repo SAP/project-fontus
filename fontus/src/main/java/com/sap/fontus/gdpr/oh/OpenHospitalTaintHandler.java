@@ -134,7 +134,7 @@ public class OpenHospitalTaintHandler extends IASTaintHandler {
 
             GdprMetadata metadata = null;
             ReflectedHttpServletRequest request = getRequestFromStreamParser(parameters[0]);
-            System.out.println("Request: " + request);
+            // System.out.println("Request: " + request);
 
             if (request.getMethodString().equals("POST") && request.getRequestURIString().endsWith("patients")) {
                 System.out.println("Creating new patient...");
