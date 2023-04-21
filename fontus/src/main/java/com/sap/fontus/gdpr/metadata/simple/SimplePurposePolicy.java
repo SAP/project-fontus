@@ -2,10 +2,11 @@ package com.sap.fontus.gdpr.metadata.simple;
 
 import com.sap.fontus.gdpr.metadata.*;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.Collection;
 
-public class SimplePurposePolicy implements PurposePolicy {
+public class SimplePurposePolicy implements PurposePolicy, Serializable {
 
     @Override
     public boolean areRequiredPurposesAllowed(RequiredPurposes required, Collection<AllowedPurpose> allowed) {

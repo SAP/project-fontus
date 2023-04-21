@@ -2,7 +2,9 @@ package com.sap.fontus.gdpr.metadata.simple;
 
 import com.sap.fontus.gdpr.metadata.VendorBase;
 
-public class SimpleVendor extends VendorBase {
+import java.io.Serializable;
+
+public class SimpleVendor extends VendorBase implements Serializable {
 
     private int id;
 

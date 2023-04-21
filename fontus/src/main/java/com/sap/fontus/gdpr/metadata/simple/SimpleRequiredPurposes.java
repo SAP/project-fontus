@@ -4,11 +4,12 @@ import com.sap.fontus.gdpr.metadata.Purpose;
 import com.sap.fontus.gdpr.metadata.RequiredPurposes;
 import com.sap.fontus.gdpr.metadata.Vendor;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 
-public class SimpleRequiredPurposes implements RequiredPurposes {
+public class SimpleRequiredPurposes implements RequiredPurposes, Serializable {
 
     private final Collection<Purpose> purposeCollection;
 

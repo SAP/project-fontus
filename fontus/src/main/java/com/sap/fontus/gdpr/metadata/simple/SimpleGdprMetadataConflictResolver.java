@@ -2,11 +2,12 @@ package com.sap.fontus.gdpr.metadata.simple;
 
 import com.sap.fontus.gdpr.metadata.*;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SimpleGdprMetadataConflictResolver implements GdprMetadataConflictResolverInterface {
+public class SimpleGdprMetadataConflictResolver implements GdprMetadataConflictResolverInterface, Serializable {
 
     public SimpleGdprMetadataConflictResolver() {
 

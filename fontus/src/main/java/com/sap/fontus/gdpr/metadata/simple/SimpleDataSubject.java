@@ -2,9 +2,10 @@ package com.sap.fontus.gdpr.metadata.simple;
 
 import com.sap.fontus.gdpr.metadata.DataSubject;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class SimpleDataSubject implements DataSubject {
+public class SimpleDataSubject implements DataSubject, Serializable {
 
     private final String id;
 

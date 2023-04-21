@@ -5,10 +5,11 @@ import com.sap.fontus.gdpr.metadata.ExpiryDate;
 import com.sap.fontus.gdpr.metadata.Purpose;
 import com.sap.fontus.gdpr.metadata.Vendor;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
 
-public class SimpleAllowedPurpose implements AllowedPurpose {
+public class SimpleAllowedPurpose implements AllowedPurpose , Serializable {
 
     private ExpiryDate expiryDate;
     private final Purpose purpose;

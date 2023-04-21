@@ -2,10 +2,11 @@ package com.sap.fontus.gdpr.metadata.simple;
 
 import com.sap.fontus.gdpr.metadata.DataId;
 
+import java.io.Serializable;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class SimpleDataId implements DataId {
+public class SimpleDataId implements DataId, Serializable {
 
     private final UUID uuid;
 

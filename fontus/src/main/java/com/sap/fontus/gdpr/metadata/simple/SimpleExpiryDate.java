@@ -2,10 +2,11 @@ package com.sap.fontus.gdpr.metadata.simple;
 
 import com.sap.fontus.gdpr.metadata.ExpiryDate;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
 
-public class SimpleExpiryDate implements ExpiryDate {
+public class SimpleExpiryDate implements ExpiryDate, Serializable {
 
     private final Instant expiry;
 

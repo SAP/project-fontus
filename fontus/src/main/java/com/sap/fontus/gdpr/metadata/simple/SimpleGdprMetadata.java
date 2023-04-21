@@ -2,11 +2,12 @@ package com.sap.fontus.gdpr.metadata.simple;
 
 import com.sap.fontus.gdpr.metadata.*;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
-public class SimpleGdprMetadata extends GdprMetadataBase {
+public class SimpleGdprMetadata extends GdprMetadataBase implements Serializable {
 
     // TODO(david): I have marked a bunch of them as final -- are there any more that can change values at runtime?
     private final Collection<AllowedPurpose> allowedPurposes;

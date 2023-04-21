@@ -2,7 +2,9 @@ package com.sap.fontus.gdpr.metadata.simple;
 
 import com.sap.fontus.gdpr.metadata.PurposeBase;
 
-public class SimplePurpose extends PurposeBase {
+import java.io.Serializable;
+
+public class SimplePurpose extends PurposeBase implements Serializable {
 
     private final int id;
     private final String name;
