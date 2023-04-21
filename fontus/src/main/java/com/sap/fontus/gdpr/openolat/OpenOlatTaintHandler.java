@@ -7,6 +7,7 @@ import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.simple.SimpleDataId;
 import com.sap.fontus.gdpr.metadata.simple.SimpleDataSubject;
 import com.sap.fontus.gdpr.metadata.simple.SimpleGdprMetadata;
+import com.sap.fontus.gdpr.openmrs.OpenMrsTaintHandler;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.gdpr.servlet.ReflectedSession;
 import com.sap.fontus.taintaware.IASTaintAware;
@@ -35,7 +36,7 @@ public class OpenOlatTaintHandler extends IASTaintHandler {
      * @param sourceId   The ID of the source function (internal)
      * @return A possibly tainted version of the input object
      */
-    private static IASTaintAware setFormTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
+    private static IASTaintAware setFormTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId, String callerName) {
         //IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
         assert (parameters.length == 4);
         try {
@@ -64,7 +65,7 @@ public class OpenOlatTaintHandler extends IASTaintHandler {
         return taintAware;
     }
 
-    private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
+    public static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId, String callerName) {
         // General debug info
         //IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
         IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
@@ -121,43 +122,49 @@ public class OpenOlatTaintHandler extends IASTaintHandler {
      * </pre>
      */
     public static Object taint(Object object, Object parent, Object[] parameters, int sourceId, String callerFunction) {
-        if (object instanceof IASTaintAware) {
-            return setTaint((IASTaintAware) object, parent, parameters, sourceId);
-        }
-        return IASTaintHandler.traverseObject(object, taintAware -> setTaint(taintAware, parent, parameters, sourceId));
+        return IASTaintHandler.taint(object, parent, parameters, sourceId, callerFunction, OpenOlatTaintHandler::setTaint);
     }
 
     public static Object formTaint(Object object, Object parent, Object[] parameters, int sourceId, String callerFunction) {
-        if (object instanceof IASTaintAware) {
-            return setFormTaint((IASTaintAware) object, parent, parameters, sourceId);
-        }
-        return IASTaintHandler.traverseObject(object, taintAware -> setFormTaint(taintAware, parent, parameters, sourceId));
+        return IASTaintHandler.taint(object, parent, parameters, sourceId, callerFunction, OpenOlatTaintHandler::setFormTaint);
+
     }
 
-    public static Object contactTracingTaint(Object object, Object parent, Object[] parameters, int sourceId, String callerFunction) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
-        IASTaintAware taintAware = (IASTaintAware) object;
-        if (!taintAware.isTainted()) {
-            System.err.printf("The string '%s' should be tainted but it isn't!!!!%n", taintAware);
-            Object identity = Utils.invokeGetter(parent, "getIdentity", 2);
-            long userId = (long) Utils.invokeGetter(identity, "getKey");
-            String id = String.valueOf(userId);
-            DataSubject ds = new SimpleDataSubject(id);
-            Collection<AllowedPurpose> allowed = allowedPurposes.getOrDefault(id, new ArrayList<>());
+    public static Object contactTracingTaint(Object object, Object parent, Object[] parameters, int sourceId, String callerFunction) {
+        return IASTaintHandler.taint(object, parent, parameters, sourceId, callerFunction, OpenOlatTaintHandler::setContactTracingTaint);
 
-            GdprMetadata metadata = new SimpleGdprMetadata(
-                    allowed,
-                    ProtectionLevel.Normal,
-                    ds,
-                    new SimpleDataId(),
-                    true,
-                    true,
-                    Identifiability.NotExplicit);
-            taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
+    }
+    public static IASTaintAware setContactTracingTaint(Object object, Object parent, Object[] parameters, int sourceId, String callerFunction) {
+        IASTaintAware taintAware = (IASTaintAware) object;
+
+        try {
+            if (!taintAware.isTainted()) {
+                System.err.printf("The string '%s' should be tainted but it isn't!!!!%n", taintAware);
+                Object identity = Utils.invokeGetter(parent, "getIdentity", 2);
+                long userId = (long) Utils.invokeGetter(identity, "getKey");
+                String id = String.valueOf(userId);
+                DataSubject ds = new SimpleDataSubject(id);
+                Collection<AllowedPurpose> allowed = allowedPurposes.getOrDefault(id, new ArrayList<>());
+
+                GdprMetadata metadata = new SimpleGdprMetadata(
+                        allowed,
+                        ProtectionLevel.Normal,
+                        ds,
+                        new SimpleDataId(),
+                        true,
+                        true,
+                        Identifiability.NotExplicit);
+                taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
+            }
+            // TODO: Adjust expiry date accordingly
+            boolean adjusted = Utils.updateExpiryDatesAndProtectionLevel(taintAware, 14L, ProtectionLevel.Sensitive);
+            System.out.printf("Adjusted the expiry date/protection level for String '%s' successfully: %b%n", taintAware, adjusted);
+            return taintAware;
+        } catch(Exception ex) {
+            com.sap.fontus.utils.Utils.logException(ex);
+            return taintAware;
+
         }
-        // TODO: Adjust expiry date accordingly
-        boolean adjusted = Utils.updateExpiryDatesAndProtectionLevel(taintAware, 14L, ProtectionLevel.Sensitive);
-        System.out.printf("Adjusted the expiry date/protection level for String '%s' successfully: %b%n", taintAware, adjusted);
-        return object;
     }
 
     private static Long getSessionUserId(ReflectedSession session) {
