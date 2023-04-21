@@ -352,7 +352,7 @@ public enum Statistics implements StatisticsMXBean {
             }
             // Get tainted hits
             if (taintedSinkCoverage.containsKey(sink)) {
-                for (AtomicLong l : sinkCoverage.get(sink).values()) {
+                for (AtomicLong l : taintedSinkCoverage.get(sink).values()) {
                     nTainted += l.get();
                 }
             }
