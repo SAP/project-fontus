@@ -39,7 +39,10 @@ public class ConsentCookie {
     }
     private static final Cache<String,ConsentCookie> cookieCache = Caffeine.newBuilder().build();;
 
-
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.purposes, this.created);
+    }
     @Override
     public String toString() {
         return String.format("ConsentCookie{purposes=%s, created=%d}", this.purposes, this.created);
@@ -49,7 +52,6 @@ public class ConsentCookie {
         return cookieCache.get(encoded, (ignored) -> {
             byte[] bs = Base64.getDecoder().decode(encoded);
             String value = new String(bs);
-
             return genson.deserialize(value, ConsentCookie.class);
         });
     }
