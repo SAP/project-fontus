@@ -67,7 +67,7 @@ public class CTTTaintHandler extends IASTaintHandler {
     private static final IASString ROOM_PIN = IASString.fromString("roomPin");
 
 
-    private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId) {
+    private static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId, String callerFunction) {
         if(parameters.length == 1 && (parameters[0].equals(CSRF_TOKEN) || parameters[0].equals(ROOM_ID) || parameters[0].equals(ROOM_PIN))) {
             return taintAware;
         }
@@ -172,10 +172,7 @@ public class CTTTaintHandler extends IASTaintHandler {
      * </pre>
      */
     public static Object taint(Object object, Object parent, Object[] parameters, int sourceId, String callerFunction) {
-        if (object instanceof IASTaintAware) {
-            return setTaint((IASTaintAware) object, parent, parameters, sourceId);
-        }
-        return IASTaintHandler.traverseObject(object, taintAware -> setTaint(taintAware, parent, parameters, sourceId));
+        return IASTaintHandler.taint(object, parent, parameters, sourceId, callerFunction, CTTTaintHandler::setTaint);
     }
 
     public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName, String callerFunction) {
