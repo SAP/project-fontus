@@ -8,6 +8,7 @@ import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.simple.SimpleDataId;
 import com.sap.fontus.gdpr.metadata.simple.SimpleDataSubject;
 import com.sap.fontus.gdpr.metadata.simple.SimpleGdprMetadata;
+import com.sap.fontus.gdpr.oh.OpenHospitalTaintHandler;
 import com.sap.fontus.gdpr.servlet.ReflectedCookie;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.gdpr.servlet.ReflectedSession;
@@ -175,5 +176,9 @@ public class CTTTaintHandler extends IASTaintHandler {
             return setTaint((IASTaintAware) object, parent, parameters, sourceId);
         }
         return IASTaintHandler.traverseObject(object, taintAware -> setTaint(taintAware, parent, parameters, sourceId));
+    }
+
+    public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName, String callerFunction) {
+        return checkTaint(object, instance, sinkFunction, sinkName, callerFunction, IASTaintHandler::handleTaint);
     }
 }
