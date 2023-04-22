@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlElement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DataProtection {
 
@@ -28,9 +29,9 @@ public class DataProtection {
     }
 
     public DataProtection(List<String> vendors, List<String> purposes, List<String> aborts) {
-        this.vendors = vendors;
-        this.purposes = purposes;
-        this.aborts = aborts;
+        this.vendors = vendors.stream().map(vendor -> vendor.trim()).collect(Collectors.toList());
+        this.purposes = purposes.stream().map(purpose -> purpose.trim()).collect(Collectors.toList());
+        this.aborts = aborts.stream().map(abort -> abort.trim()).collect(Collectors.toList());
     }
 
     public List<String> getVendors() {
