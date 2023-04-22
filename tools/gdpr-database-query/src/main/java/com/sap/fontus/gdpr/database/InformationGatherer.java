@@ -5,7 +5,7 @@ import com.sap.fontus.taintaware.unified.IASTaintInformationable;
 public interface InformationGatherer {
     void beginTable(String catalog, String table);
 
-    void tableSize(int size);
+    void tableSize(long size);
 
     void endTable();
 
