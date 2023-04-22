@@ -29,8 +29,6 @@ import java.util.*;
 
 public class JForum2TaintHandler extends IASTaintHandler {
 
-    private static final Map<String, Collection<AllowedPurpose>> allowedPurposes = new HashMap<>();
-
     private static RequiredPurposes getRequiredPurposesFromSink(String sinkFunction) {
         Sink sink = Configuration.getConfiguration().getSinkConfig().getSinkForFqn(sinkFunction);
         if(sink == null) return new RequiredPurposes.EmptyRequiredPurposes();
@@ -63,16 +61,11 @@ public class JForum2TaintHandler extends IASTaintHandler {
         ReflectedSession session = request.getSession();
         String cookieId = getCookieId(request);
         // Alternative: SessionFacade.getUserSession().getUserId()
-        long sessionId = -1L;
-        String userId = String.valueOf(sessionId);
-        if(sessionId == -1L) {
-            // if userId == -1 -> not logged in -> give marker value that is hopefully more "special"
-            userId = "FONTUS_CHANGE_ME";
-        }
 
-        DataSubject ds = new SimpleDataSubject(userId);
+
+
+        DataSubject ds = new SimpleDataSubject(cookieId);
         Collection<AllowedPurpose> allowed = Utils.getPurposesFromRequest(request);
-        allowedPurposes.put(userId, allowed);
         GdprMetadata metadata = new SimpleGdprMetadata(
                 allowed,
                 ProtectionLevel.Normal,
@@ -89,7 +82,6 @@ public class JForum2TaintHandler extends IASTaintHandler {
             RequiredPurposes rp = getRequiredPurposesFromSink(sinkFunction);
             PurposePolicy policy = new SimplePurposePolicy();
             IASString tainted = taintAware.toIASString();
-            boolean policyViolation = false;
             for (IASTaintRange range : tainted.getTaintInformation().getTaintRanges(tainted.length())) {
                 // Check policy for each range
                 if (range.getMetadata() instanceof GdprTaintMetadata) {
@@ -102,13 +94,9 @@ public class JForum2TaintHandler extends IASTaintHandler {
                             sb.append(", ");
                         }
                         System.out.printf("Policy violation for %s!%nRequired: %s, got %s", tainted.getString(), rp, sb.toString());
-                        policyViolation = true;
                         return null;
                     }
                 }
-            }
-            if (policyViolation) {
-                return taintAware;
             }
         }
         return taintAware;

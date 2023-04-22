@@ -4,6 +4,7 @@ import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.simple.SimpleExpiryDate;
 import com.sap.fontus.gdpr.cookie.ConsentCookie;
 import com.sap.fontus.gdpr.cookie.ConsentCookieMetadata;
+import com.sap.fontus.gdpr.metadata.simple.SimplePurposePolicy;
 import com.sap.fontus.gdpr.servlet.ReflectedCookie;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.taintaware.IASTaintAware;
@@ -59,6 +60,27 @@ public final class Utils {
             }
         }
         return accumulator;
+    }
+
+    public static boolean checkPolicyViolation(RequiredPurposes required, IASString tainted) {
+        if(tainted != null && tainted.isTainted()) {
+            IASTaintInformationable taints = tainted.getTaintInformation();
+            if(taints == null) {
+                return false;
+            }
+            PurposePolicy policy = new SimplePurposePolicy();
+            for (IASTaintRange range : tainted.getTaintInformation().getTaintRanges(tainted.getString().length())) {
+                // Check policy for each range
+                if (range.getMetadata() instanceof GdprTaintMetadata) {
+                    GdprTaintMetadata taintMetadata = (GdprTaintMetadata) range.getMetadata();
+                    GdprMetadata metadata = taintMetadata.getMetadata();
+                    if (!policy.areRequiredPurposesAllowed(required, metadata.getAllowedPurposes())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public static Collection<DataSubject> getDataSubjects(IASTaintInformationable taintInformation) {
