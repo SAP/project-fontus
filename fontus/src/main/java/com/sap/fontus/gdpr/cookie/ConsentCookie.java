@@ -1,9 +1,13 @@
 package com.sap.fontus.gdpr.cookie;
 
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.owlike.genson.Genson;
 import com.owlike.genson.GensonBuilder;
 import com.owlike.genson.reflect.VisibilityFilter;
+import com.sap.fontus.sql.tainter.QueryParameters;
+import com.sap.fontus.utils.Pair;
 
 
 import java.time.Instant;
@@ -31,7 +35,10 @@ public class ConsentCookie {
     public ConsentCookie() {
         this.purposes = new ArrayList<>(1);
         this.created = Instant.now().getEpochSecond();
+
     }
+    private static final Cache<String,ConsentCookie> cookieCache = Caffeine.newBuilder().build();;
+
 
     @Override
     public String toString() {
@@ -39,10 +46,12 @@ public class ConsentCookie {
     }
 
     public static ConsentCookie parse(String encoded) {
-        byte[] bs = Base64.getDecoder().decode(encoded);
-        String value = new String(bs);
+        return cookieCache.get(encoded, (ignored) -> {
+            byte[] bs = Base64.getDecoder().decode(encoded);
+            String value = new String(bs);
 
-        return genson.deserialize(value, ConsentCookie.class);
+            return genson.deserialize(value, ConsentCookie.class);
+        });
     }
 
     private static final String cookieName = "GDPRCONSENT";
