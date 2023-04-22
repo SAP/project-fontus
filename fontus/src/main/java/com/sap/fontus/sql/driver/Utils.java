@@ -15,19 +15,25 @@ import com.sap.fontus.taintaware.unified.TaintInformationFactory;
 import java.time.Instant;
 
 public final class Utils {
-
-    private Utils() {
-    }
-
-    public static String serializeTaints(IASString str) {
-        Genson genson = new GensonBuilder()
+    private static final Genson serializer = new GensonBuilder()
                 .withConverters(new Utils.InstantConverter())
-                .useClassMetadata(true)
+            .useClassMetadata(true)
                 .useRuntimeType(true)
                 .useFields(true, VisibilityFilter.PRIVATE)
                 .useMethods(false)
                 .create();
-        return genson.serialize(str.getTaintInformationInitialized().getTaintRanges(str.length()));
+    private static final Genson deserializer =new GensonBuilder()
+            .withConverters(new Utils.InstantConverter())
+            .useClassMetadata(true)
+            .useRuntimeType(true)
+            .useFields(true, VisibilityFilter.PRIVATE)
+            .create();
+    private Utils() {
+    }
+
+    public static String serializeTaints(IASString str) {
+
+        return serializer.serialize(str.getTaintInformationInitialized().getTaintRanges(str.length()));
     }
 
     public static void restoreTaint(IASString str, String json) {
@@ -36,13 +42,8 @@ public final class Utils {
     }
 
     public static IASTaintInformationable parseTaint(String json) {
-        Genson genson = new GensonBuilder()
-                .withConverters(new Utils.InstantConverter())
-                .useClassMetadata(true)
-                .useRuntimeType(true)
-                .useFields(true, VisibilityFilter.PRIVATE)
-                .create();
-        IASTaintRanges ranges = genson.deserialize(json, IASTaintRanges.class);
+
+        IASTaintRanges ranges = deserializer.deserialize(json, IASTaintRanges.class);
         return ranges != null ? TaintInformationFactory.createTaintInformation(ranges.getLength(), ranges.getTaintRanges()) : null;
     }
 
