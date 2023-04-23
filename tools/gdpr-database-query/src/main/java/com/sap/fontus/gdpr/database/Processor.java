@@ -81,7 +81,7 @@ public class Processor {
                 this.gatherer.nextRow();
                 for (int i = 2; i <= columnCount; i += 2) {
                     String columnName = metaData.getColumnName(i);
-                    if (!columnName.startsWith("__taint__")) {
+                    if (columnName.startsWith("__taint__")) {
 
 
                         int columnIndex = i - 1;
