@@ -404,6 +404,12 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         Set<Purpose> purposes = new HashSet<>();
         Set<Vendor> vendors = new HashSet<>();
         purposes.add(PurposeRegistry.getInstance().get("processing"));
+        // Cut suffix for bencmark
+        if(loggedInUser.startsWith("doctor")) {
+            loggedInUser = "doctor";
+        } else if(loggedInUser.startsWith("clerk")) {
+            loggedInUser = "clerk";
+        }
         vendors.add(VendorRegistry.getInstance().get(loggedInUser));
         return new SimpleRequiredPurposes(purposes, vendors);
     }
