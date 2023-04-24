@@ -223,7 +223,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
         return IASTaintHandler.taint(object, parent, parameters, sourceId, callerFunction, BroadleafTaintHandler::setTaint);
     }
 
-    public static Object monitorOutgoingTraffic(Object object, Object instance, String sinkFunction, String sinkName) {
+    public static Object monitorOutgoingTraffic(Object object, Object instance, String sinkFunction, String sinkName, String callerFunction) {
         Sink sink = Configuration.getConfiguration().getSinkConfig().getSinkForFqn(sinkFunction);
         //List<String> sinkPurposes = sink.getDataProtection().getPurposes();
         List<String> sinkVendors = sink.getDataProtection().getVendors();
