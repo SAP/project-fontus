@@ -157,6 +157,7 @@ public class MethodProxies {
         methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/util/Collection", "toArray", "()[Ljava/lang/Object;", true),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASToArrayProxy.class), "toArray", String.format("(L%s;)[Ljava/lang/Object;", Utils.dotToSlash(Collection.class.getName())), false));
 
+
     }
 
     private static void fillTaintPersistenceProxies() {
@@ -177,7 +178,8 @@ public class MethodProxies {
         methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/sql/ResultSet", "getObject", "(I)Ljava/lang/Object;", true),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASResultSetUtils.class), "getObject", String.format("(L%s;I)Ljava/lang/Object;", Utils.dotToSlash(java.sql.ResultSet.class.getName())), false));
         methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/sql/ResultSet", "getObject", "(Ljava/lang/String;)Ljava/lang/Object;", true),
-                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASResultSetUtils.class), "getObject", String.format("(L%s;Lcom/sap/fontus/taintaware/unified/IASString;)Ljava/lang/String;", Utils.dotToSlash(java.sql.ResultSet.class.getName())), false));
+                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASResultSetUtils.class), "getObject", String.format("(L%s;Lcom/sap/fontus/taintaware/unified/IASString;)Ljava/lang/Object;", Utils.dotToSlash(java.sql.ResultSet.class.getName())), false));
+
     }
 
     static {
