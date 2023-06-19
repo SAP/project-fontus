@@ -8,8 +8,7 @@ import com.sap.fontus.taintaware.unified.reflect.*;
 import com.sap.fontus.taintaware.unified.reflect.type.IASTypeVariableImpl;
 import com.sap.fontus.taintaware.unified.reflect.type.IASWildcardTypeImpl;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
-import sun.reflect.generics.reflectiveObjects.GenericArrayTypeImpl;
-import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
+
 
 import java.io.ObjectInputStream;
 import java.lang.invoke.MethodHandle;
@@ -244,10 +243,10 @@ public final class ConversionUtils {
         if (type instanceof Class) {
             return convertClassToOrig((Class<?>) type);
         } else if (type instanceof GenericArrayType) {
-            return GenericArrayTypeImpl.make(convertTypeToUninstrumented(((GenericArrayType) type).getGenericComponentType()));
+            return new GenericArrayTypeImpl(convertTypeToUninstrumented(((GenericArrayType) type).getGenericComponentType()));
         } else if (type instanceof ParameterizedType) {
             ParameterizedType pType = (ParameterizedType) type;
-            return ParameterizedTypeImpl.make(
+            return new ParameterizedTypeImpl(
                     (Class<?>) convertTypeToUninstrumented(pType.getRawType()),
                     Arrays.stream(pType.getActualTypeArguments()).map(ConversionUtils::convertTypeToUninstrumented).toArray(Type[]::new),
                     convertTypeToUninstrumented(pType.getOwnerType())
@@ -268,10 +267,10 @@ public final class ConversionUtils {
         } else if (type instanceof Class) {
             return convertClassToConcrete((Class<?>) type);
         } else if (type instanceof GenericArrayType) {
-            return GenericArrayTypeImpl.make(convertTypeToInstrumented(((GenericArrayType) type).getGenericComponentType()));
+            return new GenericArrayTypeImpl(convertTypeToInstrumented(((GenericArrayType) type).getGenericComponentType()));
         } else if (type instanceof ParameterizedType) {
             ParameterizedType pType = (ParameterizedType) type;
-            return ParameterizedTypeImpl.make(
+            return new ParameterizedTypeImpl(
                     (Class<?>) convertTypeToInstrumented(pType.getRawType()),
                     Arrays.stream(pType.getActualTypeArguments()).map(ConversionUtils::convertTypeToInstrumented).toArray(Type[]::new),
                     convertTypeToInstrumented(pType.getOwnerType())
