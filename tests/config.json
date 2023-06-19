@@ -426,7 +426,6 @@
       "name": "Using a lambda to create a proxy",
       "source": "ProxyLambdaTest.java",
       "failure_expected": true
-
     }
   ],
   "excluded_tests": [
