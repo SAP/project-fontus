@@ -6,8 +6,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.owlike.genson.Genson;
 import com.owlike.genson.GensonBuilder;
 import com.owlike.genson.reflect.VisibilityFilter;
-import com.sap.fontus.sql.tainter.QueryParameters;
-import com.sap.fontus.utils.Pair;
+import com.sap.fontus.utils.InstantConverter;
 
 
 import java.time.Instant;
@@ -28,7 +27,7 @@ public class ConsentCookie {
     public void setCreated(long created) {
         this.created = created;
     }
-    private static final Genson genson = new GensonBuilder().useFields(true, VisibilityFilter.PRIVATE).create();
+    private static final Genson genson = new GensonBuilder().withConverters(new InstantConverter()).useFields(true, VisibilityFilter.PRIVATE).create();
     private List<Purpose> purposes;
     private long created;
 
