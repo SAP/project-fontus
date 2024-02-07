@@ -1,0 +1,30 @@
+dist: bionic
+language: java
+
+jdk:
+  - openjdk11
+  - openjdk-ea
+
+matrix:
+  allow_failures:
+    - jdk: openjdk-ea
+
+before_install:
+- sudo apt-get update
+- sudo apt-get install python3
+
+install: true
+
+
+
+script:
+- java -version
+- ./gradlew -s assemble
+- ./gradlew -s check
+- ./gradlew publishToMavenLocal
+- cd tests
+- chmod +x run_system_tests.py
+- cd jars
+- bash build.sh
+- cd ..
+- python3 ./run_system_tests.py --build-first  --taint_type=boolean

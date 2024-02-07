@@ -1,0 +1,6 @@
+rootProject.name = 'fontus'
+include('fontus')
+include('tools:converter')
+include('tools:generator')
+include('tools:gdpr-database-query')
+include('tools:sql-tainter')

@@ -1,0 +1,44 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+compileJava {
+  dependsOn ':fontus:jar'
+  options.encoding = "UTF-8"
+}
+compileTestJava {options.encoding = "UTF-8"}
+
+dependencies {
+    implementation project(path: ':fontus', configuration: 'shadow')
+    implementation group: 'org.json', name: 'json', version: '20200518'
+    implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.3'
+    implementation 'info.picocli:picocli:4.6.3'
+    implementation 'org.ow2.asm:asm:9.2'
+    implementation 'org.ow2.asm:asm-commons:9.2'
+    implementation 'org.ow2.asm:asm-analysis:9.2'
+    implementation 'org.ow2.asm:asm-util:9.2'
+}
+
+application {
+    mainClass = 'com.sap.fontus.gdpr.database.Application'
+}
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'com.sap.fontus.gdpr.database.Application'
+        )
+    }
+    duplicatesStrategy = 'exclude'
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}

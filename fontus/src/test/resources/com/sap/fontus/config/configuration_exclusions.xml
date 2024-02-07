@@ -1,0 +1,11 @@
+<configuration>
+    <excludedClasses>
+        <excludedClass>org/apache/tomcat/jni/Foobar</excludedClass>
+    </excludedClasses>
+    <excludedPackages>
+        <excludedPackage>org/apache/tomcat/jni/</excludedPackage>
+        <excludedPackage>org/apache/logging/log4j/</excludedPackage>
+        <excludedPackage>org/bouncycastle/</excludedPackage>
+        <excludedPackage>javax/management/</excludedPackage>
+    </excludedPackages>
+</configuration>

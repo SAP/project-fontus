@@ -1,0 +1,22 @@
+.gradle
+.idea
+.vscode
+build
+out
+.DS_Store
+# Vim YCM files
+bin
+.settings
+.classpath
+.project
+
+*.log
+*.log.lck
+
+# Emacs files
+*~
+
+**/venv
+**/*.iml
+
+**/*.jps

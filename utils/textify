@@ -1,0 +1,17 @@
+#!/bin/bash
+shopt -s globstar
+
+SOURCE_DIR="${1:?Input directory required as first parameter}"
+TARGET_DIR="${2:?Output directory required as second parameter}"
+CUT_PREFIX="${3:?Part of input directory to cut as third parameter required}"
+
+for CLASS_FILE in "$SOURCE_DIR"/**/*.class; do
+  f=${CLASS_FILE#"$CUT_PREFIX"}
+  DIRNAME="$(dirname $f)"
+  BASENAME="$(basename $f)"
+  OUT_NAME="${BASENAME%.class}.bc"
+  echo "$DIRNAME -> $BASENAME -> $OUT_NAME"
+  TARGET_PKG_DIR="$TARGET_DIR/$DIRNAME"
+  mkdir -p "$TARGET_PKG_DIR"
+  javap -l -v -p -s "$CLASS_FILE" >> "$TARGET_PKG_DIR/$OUT_NAME"
+done

@@ -1,0 +1,432 @@
+{
+  "jar_tests": [
+    {
+      "name": "Deserialization",
+      "jar_file": "deserialize.jar",
+      "entry_point": "Main",
+      "copy_file": "deserialized.dat",
+      "arguments": ["./deserialized.dat"],
+      "failure_expected": true
+    },
+    {
+      "name": "Streams",
+      "jar_file": "streams.jar",
+      "entry_point": "Main",
+      "copy_file": "build.sh",
+      "arguments": ["./build.sh"]
+    },
+    {
+      "name": "Inheriting from Provider",
+      "jar_file": "provider_tests.jar",
+      "failure_expected": true
+    },
+    {
+      "name": "Very large <clinit>",
+      "jar_file": "nu-validator.jar"
+    },
+    {
+      "name": "logback",
+      "jar_file": "logback.jar",
+      "entry_point": "Example"
+    },
+    {
+      "name": "jul-config",
+      "jar_file": "jul-config.jar",
+      "failure_expected": true
+    },
+    {
+      "name": "log4j",
+      "jar_file": "log4j.jar",
+      "entry_point": "Example"
+    },
+    {
+      "name": "ical4j",
+      "jar_file": "ical4j.jar",
+      "entry_point": "Main"
+    },
+    {
+      "name": "Super Interfaces",
+      "jar_file": "super-interfaces.jar",
+      "entry_point": "Main"
+    },
+    {
+      "name": "objenesis",
+      "jar_file": "objenesis.jar",
+      "entry_point": "Example"
+    },
+    {
+      "name": "reflected_constructor",
+      "jar_file": "reflected_constructor.jar",
+      "entry_point": "Main"
+    },
+    {
+      "name": "Tic Tac Toe",
+      "jar_file": "tictactoe.jar",
+      "entry_point": "Main",
+      "input_file": "tictactoe.input"
+    },
+    {
+      "name": "Minesweeper",
+      "jar_file": "minesweeper.jar",
+      "input_file": "minesweeper.input"
+    },
+    {
+      "name": "Binary Search Tree",
+      "jar_file": "bst.jar"
+    },
+    {
+      "name": "Comparators",
+      "jar_file": "comparators.jar"
+    },
+    {
+      "name": "Static Final Initializer Tests",
+      "jar_file": "sit.jar"
+    },
+    {
+      "name": "Media Types Tests from Spring",
+      "jar_file": "media_types.jar"
+    },
+    {
+      "name": "AsciiBytes from Spring Boot",
+      "jar_file": "sbasciibytes.jar"
+    },
+    {
+      "name": "String Array Clone",
+      "jar_file": "str_array_clone.jar",
+      "input_file": "str_array_clone.input"
+    },
+    {
+      "name": "Annotation Special Handling",
+      "jar_file": "annotation_test.jar"
+    }
+  ],
+  "single_file_tests": [
+    {
+      "name": "Properties Serialization Roundtrip",
+      "source": "PropertiesSerializationRoundtrip.java",
+      "failure_expected": true
+    },
+    {
+      "name": "Cal",
+      "source": "Cal.java",
+      "arguments": ["nov", "2019"]
+    },
+    {
+      "name": "Command Line Argument Tests",
+      "source": "CommandLineArgumentTests.java",
+      "arguments": ["hallo", "welt!"]
+    },
+    {
+      "name": "Concat Tests",
+      "source": "ConcatTests.java"
+    },
+    {
+      "name": "Inheriting static methods",
+      "source": "MyTimeZone.java"
+    },
+    {
+      "name": "Argument Tests",
+      "source": "ArgumentTests.java"
+    },
+    {
+      "name": "PropertyTest",
+      "source": "PropertyTest.java"
+    },
+    {
+      "name": "TestString",
+      "source": "TestString.java"
+    },
+    {
+      "name": "Quadratic Equation Solver",
+      "source": "QuadraticEquation.java"
+    },
+    {
+      "name": "Mid-Square PRNG",
+      "source": "MidSquare.java"
+    },
+    {
+      "name": "max of sigma(n) where n >= 100 && <= 999",
+      "source": "SigmaMax.java"
+    },
+    {
+      "name": "ISBN13 validation",
+      "source": "ISBN.java"
+    },
+    {
+      "name": "Happy Numbers in [5..30]",
+      "source": "HappyNumbers.java"
+    },
+    {
+      "name": "Character Set",
+      "source": "CharSet.java"
+    },
+    {
+      "name": "Stack Overflow Test",
+      "source": "StackOverflow.java"
+    },
+    {
+      "name": "String Field Test",
+      "source": "StringFieldTest.java"
+    },
+    {
+      "name": "StringBuilder Field Test",
+      "source": "StringBuilderFieldTest.java",
+      "safe": true
+    },
+    {
+      "name": "StringBuilder Local Variable Test",
+      "source": "StringBuilderLocalVariableTest.java"
+    },
+    {
+      "name": "String Array Test",
+      "source": "StringArrayTest.java"
+    },
+    {
+      "name": "String Array Field Test",
+      "source": "StringArrayFieldTest.java"
+    },
+    {
+      "name": "Lambda Function Test",
+      "source": "LambdaTest.java"
+    },
+    {
+      "name": "Lambda Function with Attribute Access Test",
+      "source": "LambdaAttributeAccess.java"
+    },
+    {
+      "name": "Method Reference Test (i.e, String::length)",
+      "source": "MethodReferenceTest.java"
+    },
+    {
+      "name": "Main as a Varargs method Test",
+      "source": "VarArgsMainTest.java",
+      "arguments": ["hallo", "welt!"]
+    },
+    {
+      "name": "Main as a Varargs method Test",
+      "source": "VarArgsMainTest.java",
+      "arguments": ["hallo", "welt!"]
+    },
+    {
+      "name": "Reflection Test: creating an empty String",
+      "source": "ReflectionTest.java"
+    },
+    {
+      "name": "Reflection Test: forName -> happy path",
+      "source": "ReflectionTest1.java",
+      "arguments": ["java.lang.Integer"],
+      "safe": true
+    },
+    {
+      "name": "Reflection Test: forName alternate overload -> happy path",
+      "source": "ReflectionTest2.java",
+      "arguments": ["java.lang.Integer"],
+      "safe": true
+    },
+    {
+      "name": "Reflection Test: creating a String with constant value via reflected constructor",
+      "source": "ReflectionTestConstructor.java"
+    },
+    {
+      "name": "Reflection Test: Accessing a class via the String.class syntax",
+      "source": "ReflectionDirect.java"
+    },
+    {
+      "name": "String Switch Test",
+      "source": "StringSwitchTest.java"
+    },
+    {
+      "name": "String.toString test",
+      "source": "StringToStringTest.java"
+    },
+    {
+      "name": "StringBuffer field",
+      "source": "StringBuilderFieldTest.java"
+    },
+    {
+      "name": "StringBuffer local var",
+      "source": "StringBufferLocalVarTest.java"
+    },
+    {
+      "name": "StringBuffer return",
+      "source": "StringBufferReturnTest.java"
+    },
+    {
+      "name": "StringBuilder return",
+      "source": "StringBuilderReturnTest.java"
+    },
+    {
+      "name": "Lambda Supplier Test",
+      "source": "LambdaSupplierTest.java"
+    },
+    {
+      "name": "JDK Method returning a String Array",
+      "source": "FileStringArrayReturnTest.java",
+      "arguments": ["/etc"]
+    },
+    {
+      "name": "Test from MockServlet regarding String Array Issues",
+      "source": "ResourcePathsTest.java",
+      "arguments": ["/etc"]
+    },
+    {
+      "name": "Trying the Properties Parse Stuff failing in Maven",
+      "source": "PropertiesLoaderTest.java"
+    },
+    {
+      "name": "StringIndexOutOfBoundsException Test",
+      "source": "StringIndexOutOfBoundsExceptionTest.java"
+    },
+    {
+      "name": "Standard Library method Returning a StringBuffer instance",
+      "source": "StringBufferReturnedFromStdLibTest.java"
+    },
+    {
+      "name": "Method taking several String-like types",
+      "source": "StringAndBufferParamTest.java"
+    },
+    {
+      "name": "Lambda involving StringBuilder test",
+      "source": "MapAppendLambdaTest.java"
+    },
+    {
+      "name": "Calling String.valueOf on a taint-aware String should NOT lose the taint",
+      "source": "ValueOfTest.java"
+    },
+    {
+      "name": "Testing Null returning Functions",
+      "source": "NullReturned.java"
+    },
+    {
+      "name": "Testing Null assignment",
+      "source": "NullAssigned.java"
+    },
+    {
+      "name": "Testing Null returned from Stdlib",
+      "source": "NullReturnedFromStdLib.java"
+    },
+    {
+      "name": "FieldAccessTest",
+      "source": "FieldAccessTest.java"
+    },
+    {
+      "name": "String via StringBuffer",
+      "source": "StringViaStringBuffer.java"
+    },
+    {
+      "name": "Failing Assertions Issue",
+      "source": "AssertionTest.java"
+    },
+    {
+      "name": "Failing cast when called via .class.cast()",
+      "source": "ClassCastTest.java"
+    },
+    {
+      "name": "System.arraycopy proxy",
+      "source": "ArrayCopyTest.java"
+    },
+    {
+      "name": "JVM Args Test",
+      "source": "JvmArgsTest.java"
+    },
+    {
+      "name": "Process Builder Test",
+      "source": "ProcessBuilderTest.java"
+    },
+    {
+      "name": "Process Builder Env Test",
+      "source": "ProcessBuilderEnvTest.java"
+    },
+    {
+      "name": "ArrayCloneTest",
+      "source": "ArrayCloneTest.java",
+      "arguments": ["Sup", "son", "?"]
+    },
+    {
+      "name": "String Array Clone issue",
+      "source": "StringArrayCommons.java"
+    },
+    {
+      "name": "ComparatorTest",
+      "source": "ComparatorTest.java",
+      "arguments": ["Sup", "son", "?"]
+    },
+    {
+      "name": "InternTest",
+      "source": "InternTest.java"
+    },
+    {
+      "name": "UTF8 String Constant",
+      "source": "StringConstantUtf8.java"
+    },
+    {
+      "name": "String.valueOf(null) test",
+      "source": "StringValueOfNull.java",
+      "safe": true
+    },
+    {
+      "name": "Regex Pattern Matching Nullability Test",
+      "source": "MatcherTest.java",
+      "safe": true
+    },
+    {
+      "name": "Crypto API Test",
+      "source": "CryptoTest.java",
+      "safe": true
+    },
+    {
+      "name": "Large method test",
+      "source": "LargeMethod.java"
+    }
+  ],
+  "excluded_tests": [
+    {
+      "name": "SystemGetProperty",
+      "source": "SystemGetProperty.java"
+    },
+    {
+      "name": "checkcast/instanceof for String Arrays",
+      "source": "StrippedDownServletExample.java"
+    },
+    {
+      "name": "Static Final String instance variable",
+      "source": "TestStaticFinalString.java"
+    },
+    {
+      "name": "Static Initializer Test",
+      "source": "StaticInitializerTest.java"
+    },
+    {
+      "name": "Static Initializer Tests from Tom",
+      "source": "StaticInitializerTestsFromTom.java"
+    },
+    {
+      "name": "Multiple Static Initializer Tests",
+      "source": "MultipleStaticInitializers.java"
+    },
+    {
+      "name": "Anonymous Classes Test",
+      "source": "AnonymousClasses.java",
+      "safe": true
+    },
+    {
+      "name": "Inner Class Example Tests",
+      "source": "InnerClassExample.java",
+      "safe": true
+    },
+    {
+      "name": "Static Inner Class Test",
+      "source": "StaticInnerClassTest.java",
+      "safe": true
+    },
+    {
+      "name": "Forwarding Argument to Main via Reflection",
+      "jar_file": "forward_main.jar",
+      "input_file": "forward.input"
+    },
+    {
+      "name": "Using a lambda to create a proxy",
+      "source": "ProxyLambdaTest.java",
+    }
+  ]
+}
