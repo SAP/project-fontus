@@ -7,6 +7,31 @@ A modern framework for dynamic taint analysis with string-like classes in the JV
 ## About this project
 
 Dynamic tainting framework for Java applications leveraging on-the-fly bytecode rewriting.
+This framework was developed as part of a research project to test and prevent security and privacy issues in web applications.
+
+### Cite Us!
+The study was published at [ACM CCS 2023](https://www.sigsac.org/ccs/CCS2023/program.html), and the paper can be found [here](https://loxo.ias.cs.tu-bs.de/papers/2023_CCS_GDPR_tainting.pdf).
+You can cite our paper using the following bibtex entry:
+
+```
+@inproceedings{10.1145/3576915.3616604,
+author = {Klein, David and Rolle, Benny and Barber, Thomas and Karl, Manuel and Johns, Martin},
+title = {General Data Protection Runtime: Enforcing Transparent GDPR Compliance for Existing Applications},
+year = {2023},
+isbn = {9798400700507},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3576915.3616604},
+doi = {10.1145/3576915.3616604},
+booktitle = {Proceedings of the 2023 ACM SIGSAC Conference on Computer and Communications Security},
+pages = {3343–3357},
+numpages = {15},
+keywords = {data protection, gdpr enforcement, privacy, taint-tracking},
+location = {, Copenhagen, Denmark, },
+series = {CCS '23}
+}
+```
+
 
 ## Requirements and Setup
 
