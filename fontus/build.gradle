@@ -11,7 +11,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocatio
 
 apply plugin: 'idea'
 
-version '0.0.1-SNAPSHOT'
+version '1.0.0'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -128,7 +128,7 @@ publishing {
             project.shadow.component(publication)
             groupId = 'com.sap.fontus'
             artifactId = 'fontus'
-            version = '0.0.1-SNAPSHOT'
+            version = '1.0.0'
         }
     }
 }
