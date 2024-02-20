@@ -10,32 +10,23 @@ Dynamic tainting framework for Java applications leveraging on-the-fly bytecode 
 This framework was developed as part of a research project to test and prevent security and privacy issues in web applications.
 
 ### Cite Us!
-The study was published at [ACM CCS 2023](https://www.sigsac.org/ccs/CCS2023/program.html), and the paper can be found [here](https://loxo.ias.cs.tu-bs.de/papers/2023_CCS_GDPR_tainting.pdf).
+The study was published at [ACM CCS 2023](https://www.sigsac.org/ccs/CCS2023/), and the paper can be found [here](https://www.ias.cs.tu-bs.de/publications/gdpr_tainting.pdf).
 You can cite our paper using the following bibtex entry:
 
 ```
-@inproceedings{10.1145/3576915.3616604,
-author = {Klein, David and Rolle, Benny and Barber, Thomas and Karl, Manuel and Johns, Martin},
-title = {General Data Protection Runtime: Enforcing Transparent GDPR Compliance for Existing Applications},
-year = {2023},
-isbn = {9798400700507},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
-url = {https://doi.org/10.1145/3576915.3616604},
-doi = {10.1145/3576915.3616604},
-booktitle = {Proceedings of the 2023 ACM SIGSAC Conference on Computer and Communications Security},
-pages = {3343–3357},
-numpages = {15},
-keywords = {data protection, gdpr enforcement, privacy, taint-tracking},
-location = {, Copenhagen, Denmark, },
-series = {CCS '23}
+@inproceedings{KleRolBarKar+23,
+  title = {{General Data Protection Runtime: Enforcing Transparent GDPR Compliance for Existing Applications}},
+  author = {David Klein AND Benny Rolle AND Thomas Barber AND Manuel Karl AND Martin Johns},
+  booktitle = {Proc. of the ACM Conference on Computer and Communications Security (CCS)},
+  year = {2023},
+  doi = {10.1145/3576915.3616604},
 }
 ```
 
 
 ## Requirements and Setup
 
-For building the framework execute the gradle task ``shadowJar`` or ``publishToMavenLocal``. Afterwards you will find the Framework JAR in ``./fontus/build/libs``
+For building the framework execute the gradle task ``shadowJar`` or ``publishToMavenLocal``. Afterwards, you will find the Framework JAR in ``./fontus/build/libs``
 
 ## Building additional tools
 
@@ -85,14 +76,14 @@ It is also possible to pass multiple parameters to the agent
 - **config**: Specifies a path for a config file
 - **blacklisted_main_classes**: Specifies a filepath to a file which contains blacklisted main classes
 - **abort**: Specifies what happens if a tainted string reaches a sink. For all options see [Abort types](#Abort types). The default is *stderr_logging*
-- **taintloss_handler**: Specifies what happens if a method is called which potentially causes taintloss (e.g. String.toCharArray()). For all options see [Taintloss handler types](#Taintloss handler types). By default no taintloss handler is used 
+- **taintloss_handler**: Specifies what happens if a method is called which potentially causes taintloss (e.g. String.toCharArray()). For all options see [Taintloss handler types](#Taintloss handler types). By default, no taintloss handler is used 
 
-The arguments are appended to the agent path like this: ``-javaagent:jarpath[=options]``. Therefore options are defined as ``key=value`` pair and ``,`` is used as delimiter between key-value-pairs.
+The arguments are appended to the agent path like this: ``-javaagent:jarpath[=options]``. Therefore, options are defined as ``key=value`` pair and ``,`` is used as delimiter between key-value-pairs.
 
 An example for parameters passed to the agent ``-javaagent:"fontus-0.0.1-SNAPSHOT.jar=taintmethod=range,use_caching=false,verbose"``.
 
 ## Available Tainting Methods
-Currently there are 5 different tainting mechanisms available:
+Currently, there are 5 different tainting mechanisms available:
 - **boolean**: Only tainting per string. Differentiation which character is tainted is *not* possible. Very fast, little memory overhead, but more false positives
 - **array**: Naive tainting per character. Differentiation which character is tainted *is* possible. Linear overhead regarding length for CPU and memory (slow and expensive), nearly no false positives.
 - **range**: Optimized tainting per character. Differentiation which character is tainted *is* possible. Linear overhead regarding count of taints per string for CPU and memory (most times a lot more efficient than *array*). As precise as *array*.
@@ -101,16 +92,16 @@ Currently there are 5 different tainting mechanisms available:
 - **untainted**: An wrapper class is used to redirect all calls to the original classes. No taint calculation is performed! The taint is always "false"
 
 ## Abort types
-Currently there are four possibilities what can happen, if a tainted string reaches a sink:
+Currently, there are four possibilities what can happen, if a tainted string reaches a sink:
 
 - **exit**: Exits the application through System.exit(int). Beforehand the string is printed to stderr
 - **nothing**: Nothing happens if a tainted string reaches a sink
-- **stderr_logging**: Logs the tainted string to stderr as well as an stacktrace
+- **stderr_logging**: Logs the tainted string to stderr as well as a stacktrace
 - **json_logging**: Logs the tainted string to a JSON file in ``./fontus-results.json``
 
 ## Taintloss handler types
 - **stderr_logging**: Logs to stderr if a potentially taintlossy method is called
-- **file_logging**: Logs to file``./taintloss.log`` formatted in the same way we stderr_logging
+- **file_logging**: Logs to file``./taintloss.log`` formatted in the same way as stderr_logging
 - **statistics_logging**: Logs to the statistics MXBean in the format "Caller.method -> Taintloss.method: Hits"
 
 ## Inspect Bytecode of a class
@@ -119,7 +110,7 @@ To see the Bytecode for a class file, run ``javap -l -v -p -s TestString.class``
 
 ## Troubleshoot
 
-Have a look in the [docs folder](./docs)!
+Have a look in the [docs](./docs) folder, if anything is still unclear please open an issue.
 
 ## Support, Feedback, Contributing
 
