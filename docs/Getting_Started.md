@@ -2,7 +2,7 @@
 
 ## General Remarks
 
-If you have an issue with the documentation or there is a mistake, feel free to fix it or open [an issue](https://git.ias.cs.tu-bs.de/GDPR_Tainting/Fontus/issues) (tagged with documentation please)!
+If you have an issue with the documentation or there is a mistake, feel free to fix it or open [an issue](https://github.com/SAP/project-fontus/issues) (tagged with documentation please)!
 
 ## Preliminary Steps
 
@@ -17,7 +17,7 @@ We publish to Maven local as it simplifies the following steps.
 
 0. Ensure the application runs regularly.
 
-If there are issues in the first place, Fontus will be of little help to fix them ;) It will only get more annoying..
+If there are issues in the first place, Fontus will be of little help to fix them ;) It will only get more annoying...
 
 1. Prepare your configuration
 
@@ -39,7 +39,7 @@ I use the following shell script:
 #!/bin/bash
 
 APPNAME="$(pwd)/target/app.jar"
-FONTUS_PATH="$HOME/.m2/repository/com/sap/fontus/fontus/0.0.1-SNAPSHOT/fontus-0.0.1-SNAPSHOT.jar"
+FONTUS_PATH="$HOME/.m2/repository/com/sap/fontus/fontus/0.0.1-SNAPSHOT/fontus-1.0.0-SNAPSHOT.jar"
 CONFIG_PATH="$(pwd)/configuration.xml"
 
 ./mvnw clean package  -DskipTests
@@ -47,7 +47,7 @@ java -jar --add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.b
   -javaagent:"${FONTUS_PATH}=config=${CONFIG_PATH},abort=stderr_logging" "${APPNAME}"
 ```
 
-If you are really lucky, it just works..
+If you are really lucky, it just works...
 
 To add taint persistence, proceed to the [taint persistence](Taint_persistence.md) documentation.
 
@@ -77,18 +77,18 @@ I have aliased `javapp` to `javap -l -v -p -s` as that's (in my opinion, YMMV!) 
 To attach a debugger add the following to the run script:
 
 ```sh
--agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005 \
+-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
 ```
 
 The JVM will now suspend execution and wait for a remote debugger to be attached on port 5005 before running the application.
 
-Please be aware that your favorite IDE will probably show you the application's source code, which is not what the JVM executes! Fontus adds/changes methods so you have to be aware on how the instrumentation actually changes the code underneath.
+Please be aware that your favorite IDE will probably show you the application's source code, which is not what the JVM executes! Fontus adds/changes methods, so you have to be aware on how the instrumentation actually changes the code underneath.
 
-Example: IntelliJ allows for conditional break points and to evaluate expressions in the debugger. Assume you want to conditionally trigger a breakpoint if a string variable's (called `v`) value is equal to say `"java.lang.String"`. The straightforward approach (`v.equals("java.lang.String")` will always be false. Fontus has changed `v`to be of the type `IASString` and thus it can't be equal to a regular String literal. Instead you have to look for a method taking a `CharSequence` for the comparison to work. So the condition `v.conentEquals("java.lang.String")` should work.
+Example: IntelliJ allows for conditional break points and to evaluate expressions in the debugger. Assume you want to conditionally trigger a breakpoint if a string variable's (called `v`) value is equal to say `"java.lang.String"`. The straightforward approach (`v.equals("java.lang.String")` will always be false. Fontus has changed `v`to be of the type `IASString` and thus it can't be equal to a regular String literal. Instead, you have to look for a method taking a `CharSequence` for the comparison to work. So the condition `v.conentEquals("java.lang.String")` should work.
 
 7. I'm still stuck!
 
-Open a [Git Issue](https://git.ias.cs.tu-bs.de/GDPR_Tainting/Fontus/issues). The more detailed the input, the more likely we can help you. Important is a workable way to reproduce the bug on one of our machines!
+Open a [Git Issue](https://github.com/SAP/project-fontus/issues). The more detailed the input, the more likely we can help you. Important is a workable way to reproduce the bug on one of our machines!
 
 ## Debugging Tips
 

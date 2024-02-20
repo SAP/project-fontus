@@ -8,7 +8,7 @@ Adjust the configuration accordingly! In theory other DBMS are also supported, b
 
 2. Dump the Database
 
-With something like `mysqldump -u $USER -p "$DBNAME" >> "$DBNAME.sql"` you can dump the database to a SQL file. Before continuing ensure the dump contains both the creation of the schema (all DDL required to setup the tables) as well as the data (a bunch of insert statements).
+With something like `mysqldump -u $USER -p "$DBNAME" >> "$DBNAME.sql"` you can dump the database to a SQL file. Before continuing: Ensure the dump contains both the schema (all DDL required to set up the tables), as well as the data (a bunch of insert statements).
 
 To do this with a running docker container, you can run:
 ```
@@ -23,14 +23,14 @@ If this worked without errors (haha), go to step 5.
 
 4. There were a bunch of errors...
 
-Sadly this is somewhat expected too. The used parser does not understand every bit of weird SQL Syntax and does not support some normal statements either.. So try fixing up the `dump.sql` file before running the tainter again.
+Sadly this is somewhat expected too. The used parser does not understand every bit of weird SQL Syntax and does not support some normal statements either. So try fixing up the `dump.sql` file before running the tainter again.
 
 Some things I noticed:
 
 - `LOCK <FOO>` and `UNLOCK <FOO>` cause the tainter to crash. As you surely are not importing the dump while using the DB, just remove those statements.
 - Some DB specific index syntax. Remove and add back manually.
 
-Those are all crashes in the frontend (the SQL Parser). Sadly we can't do much here without rewriting it to work with a different/better parser. If you have suggestions on a better library or how to fix JSQLParser (The grammar is insane) this, please get in touch!
+Those are all crashes in the frontend (the SQL Parser). Sadly we can't do much here without rewriting it to work with a different/better parser. If you have suggestions on a better library or how to fix JSQLParser (The grammar is insane), please get in touch!
 
 5. Reimport the tainted SQL
 
@@ -38,8 +38,8 @@ Restore the dump via something like ``mysql -u $USER -p "$DBNAME" < "tainted_$DB
 
 If this fails, there are two options:
 
-- You missed something in step 4 and thus there are missing statements, e.g., you try to insert something into a table where the create statement is missing. Go directly back to to Step 4. Do not pass GO, do not collect 200 bucks.
-- The Tainter mangled something badly, please open [an issue](https://git.ias.cs.tu-bs.de/GDPR_Tainting/Fontus/issues?labels=123)
+- You missed something in step 4 and thus there are missing statements, e.g., you try to insert something into a table which does not exist (i.e., missing `CREATE` statement). Go back to Step 4 and repeat.
+- The Tainter mangled something badly, please check the open [issues](https://github.com/SAP/project-fontus/issues) and if this case is new: Please open an issue, we will look into it.
 
 6. Adjust the application to use taint persistence
 
@@ -98,7 +98,7 @@ Example for fixing a spring boot application using spring data-jpa:
 </dependency>
 ```
 
-Additionally please add the following to your `application.properties`:
+Additionally, please add the following to your `application.properties`:
 ```ini
 spring.datasource.tomcat.use-statement-facade=false
 ```
@@ -114,5 +114,5 @@ The taint driver has a weird issue with empty taint fields. I actually have no i
 
 9. It works but there are exceptions inside the taint driver
 
-Please check that the columns don't have empty values (see Step 8.). If that is not the case, please open [an issue](https://git.ias.cs.tu-bs.de/GDPR_Tainting/Fontus/issues?labels=123) with a minimal working example for us to reproduce. Just based on a stack trace it is impossible to fix.
+Please check that the columns don't have empty values (see Step 8.). If that is not the case, please open [an issue](https://github.com/SAP/project-fontus/issues) with a minimal working example for us to reproduce. Just based on a stack trace it is impossible to fix.
 

@@ -31,8 +31,7 @@ RUN wget https://repo1.maven.org/maven2/org/jacoco/jacoco/0.8.8/jacoco-0.8.8.zip
 RUN unzip jacoco-0.8.8.zip
 
 ```
-Ensure to 'reset' the working directory to not change where fontus logs
-classfiles.
+Ensure to 'reset' the working directory to not change where fontus logs class files.
 
 2. Add JaCoCo agent to your JVM invocation.
 
@@ -50,7 +49,7 @@ ports:
 ```
 
 Ensure to start Fontus with the `verbose` option and make the resulting
-classfiles accessible for the report later on.
+class files accessible for the report later on.
 
 #### Getting Coverage Statistics
 
@@ -68,9 +67,9 @@ java -jar jacococli.jar dump --destfile=jacoco.exec
 ```
 3. Generate the report
 
-To generate the report JaCoCo needs read access to the classfiles, so adjust their permissions accordingly.
+To generate the report JaCoCo needs read access to the class files, so adjust their permissions accordingly.
 
-Assume the classfiles are located in `temp/agent`, you can generate an HTML report in the folder `cov_report` as follows:
+Assume the class files are located in `temp/agent`, you can generate an HTML report in the folder `cov_report` as follows:
 ```bash
 java -jar jacococli.jar report jacoco.exec --classfiles temp/agent/ --html cov_report
 ```
