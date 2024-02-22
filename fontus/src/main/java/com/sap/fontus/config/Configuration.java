@@ -14,6 +14,8 @@ import com.sap.fontus.utils.Logger;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.File;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -139,7 +141,6 @@ public class Configuration {
         this.resourcesToInstrument = new ArrayList<>();
         this.passThroughTaints = new ArrayList<>();
         this.propagateTaintInFunctions = new ArrayList<>();
-
     }
 
     public Configuration(boolean verbose,
@@ -651,5 +652,18 @@ public class Configuration {
 
     public void setSpeculativeInstrumentation(boolean speculativeInstrumentation) {
         this.speculativeInstrumentation = speculativeInstrumentation;
+    }
+
+    public boolean validate() {
+        for(FunctionCall fc : this.converters) {
+            try {
+                Method m = FunctionCall.toMethod(fc);
+            } catch(ExceptionInInitializerError ex) {
+                System.out.printf("Converter '%s' is invalid due to: %s%n", fc.getName(), ex.getCause().getMessage());
+            } catch (ClassNotFoundException | NoSuchMethodException ex) {
+                System.out.printf("Converter '%s' is invalid due to: %s%n", fc.getName(), ex.getMessage());
+            }
+        }
+        return true;
     }
 }
