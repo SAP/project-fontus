@@ -14,6 +14,8 @@ public class TaintAgent {
         InstrumentationConfiguration.init(null, null);
         Configuration.parseAgent(args);
 
+        Configuration.getConfiguration().validate();
+
         if (Configuration.getConfiguration().isShowWelcomeMessage()) {
             System.out.println("Starting application with Fontus Tainting!");
             System.out.println("  * Loaded " + Configuration.getConfiguration().summary());
