@@ -19,6 +19,7 @@ public class IASProperties extends Hashtable<Object, Object> implements External
      * This is the single source of truth
      */
     private Properties properties;
+    protected IASProperties defaults;
 
     private Map<Object, IASString> shadow = new ConcurrentHashMap<>();
 
@@ -40,10 +41,9 @@ public class IASProperties extends Hashtable<Object, Object> implements External
 
     public IASProperties(IASProperties defaults) {
         if(defaults != null) {
-            this.properties = new Properties(defaults.properties);
-        } else {
-            this.properties = new Properties();
+            this.defaults = new IASProperties(defaults.properties);
         }
+        this.properties = new Properties();
     }
 
     public synchronized Object setProperty(IASString key, IASString value) {
@@ -94,14 +94,19 @@ public class IASProperties extends Hashtable<Object, Object> implements External
     public IASString getProperty(IASString key) {
         Object orig = ConversionUtils.convertToInstrumented(this.properties.getProperty(key.getString()));
         IASString taintaware = this.shadow.get(key);
-        return (IASString) this.chooseReturn(orig, taintaware);
+        IASString ret = (IASString) this.chooseReturn(orig, taintaware);
+        if(ret == null && this.defaults != null) {
+            return this.defaults.getProperty(key);
+        }
+        return ret;
     }
 
     public IASString getProperty(IASString key, IASString defaultValue) {
-        String defaultStringValue = defaultValue != null ? defaultValue.getString() : null;
-        Object orig = ConversionUtils.convertToInstrumented(this.properties.getProperty(key.getString(), defaultStringValue));
-        IASString taintaware = this.shadow.get(ConversionUtils.convertToInstrumented(key));
-        return (IASString) this.chooseReturn(orig, taintaware);
+        IASString r = this.getProperty(key);
+        if(r == null) {
+            return defaultValue;
+        }
+        return r;
     }
 
     public Enumeration<?> propertyNames() {
