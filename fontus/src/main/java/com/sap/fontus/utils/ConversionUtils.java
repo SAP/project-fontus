@@ -197,6 +197,9 @@ public final class ConversionUtils {
 
     // TODO: Can't we get the list of the classes based on the Maps above? This is super ugly and error prone (it seems to be missing entries, but that might be what we want?
     private static boolean isHandleable(Class<?> cls) {
+        while(cls.isArray()) {
+            cls = cls.getComponentType();
+        }
         return cls == String.class || cls == StringBuilder.class || cls == StringBuffer.class || cls == Formatter.class || cls == Pattern.class || cls == Matcher.class || cls == Properties.class || Type.class.isAssignableFrom(cls) || cls == Method.class || cls == Field.class;
     }
 
