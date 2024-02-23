@@ -132,6 +132,13 @@ def build_jars():
     )
     return build_result.returncode == 0
 
+async def gather_with_concurrency(n, *coros):
+    semaphore = asyncio.Semaphore(n)
+
+    async def sem_coro(coro):
+        async with semaphore:
+            return await coro
+    return await asyncio.gather(*(sem_coro(c) for c in coros))
 
 class ExecutionResult:
     def __init__(self, rv, stdout, stderr):
@@ -325,7 +332,7 @@ class Configuration:
         self._jar_test_cases = jar_test_cases
         self._verbose = False
         self._fontus_verbose = False
-        self._version = "0.0.1-SNAPSHOT"
+        self._version = "1.0.0"
 
     @property
     def test_cases(self):
@@ -549,10 +556,11 @@ class TestRunner:
         )
         return TestResult(test, regular_result, agent_result)
 
+
     async def _run_tests(self, base_dir):
         # run all the tests concurrently and then check their results once they're all finished
         all_tests = self._config.test_cases + self._config.jar_test_cases
-        test_results = await asyncio.gather(
+        test_results = await gather_with_concurrency(2,
             *(self._run_test(base_dir, test) for test in all_tests))
         for test_result in test_results:
             if not test_result.successful and not test_result.test_case.failure_expected:
@@ -615,7 +623,7 @@ if __name__ == "__main__":
     ARG_PARSER.add_argument("--build-first", action="store_true")
     ARG_PARSER.add_argument("--verbose", action="store_true")
     ARG_PARSER.add_argument("--fontus-verbose", action="store_true")
-    ARG_PARSER.add_argument("--version", default="0.0.1-SNAPSHOT")
+    ARG_PARSER.add_argument("--version", default="1.0.0")
     ARG_PARSER.add_argument("--safe", action="store_true",
                             help="Runs all tests in safe mode.")
     ARG_PARSER.add_argument("--config", default=CONFIG_FILE)

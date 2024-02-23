@@ -98,13 +98,17 @@
     {
       "name": "Annotation Special Handling",
       "jar_file": "annotation_test.jar"
+    },
+    {
+      "name": "Forwarding Argument to Main via Reflection",
+      "jar_file": "forward_main.jar",
+      "input_file": "forward.input"
     }
   ],
   "single_file_tests": [
     {
       "name": "Properties Serialization Roundtrip",
-      "source": "PropertiesSerializationRoundtrip.java",
-      "failure_expected": true
+      "source": "PropertiesSerializationRoundtrip.java"
     },
     {
       "name": "Cal",
@@ -377,9 +381,7 @@
     {
       "name": "Large method test",
       "source": "LargeMethod.java"
-    }
-  ],
-  "excluded_tests": [
+    },
     {
       "name": "SystemGetProperty",
       "source": "SystemGetProperty.java"
@@ -420,13 +422,11 @@
       "safe": true
     },
     {
-      "name": "Forwarding Argument to Main via Reflection",
-      "jar_file": "forward_main.jar",
-      "input_file": "forward.input"
-    },
-    {
       "name": "Using a lambda to create a proxy",
-      "source": "ProxyLambdaTest.java",
+      "source": "ProxyLambdaTest.java"
     }
+  ],
+  "excluded_tests": [
+
   ]
 }
