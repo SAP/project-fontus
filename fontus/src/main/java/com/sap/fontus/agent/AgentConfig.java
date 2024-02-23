@@ -88,7 +88,7 @@ public class AgentConfig {
             if ("verbose".equals(part)) {
                 verbose = true;
             }
-            if ("persistence".equals(part)) {
+            if ("taint_persistence".equals(part)) {
                 taintPersistence = true;
             }
             if ("persistent_cache".equals(part)) {
