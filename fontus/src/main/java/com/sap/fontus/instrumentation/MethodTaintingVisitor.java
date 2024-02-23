@@ -69,7 +69,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.isOwnerInterface = isOwnerInterface;
         this.config = config;
         this.combinedExcludedLookup = combinedExcludedLookup;
-        this.methodProxies = new MethodProxies(this.combinedExcludedLookup);
+        this.methodProxies = new MethodProxies(this.combinedExcludedLookup, this.config);
         this.bootstrapMethods = bootstrapMethods;
         logger.info("Instrumenting method: {}{}", name, methodDescriptor);
         this.used = Type.getArgumentsAndReturnSizes(methodDescriptor) >> 2;

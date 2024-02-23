@@ -1,6 +1,7 @@
 package com.sap.fontus.instrumentation;
 
 import com.sap.fontus.asm.FunctionCall;
+import com.sap.fontus.config.Configuration;
 import com.sap.fontus.taintaware.unified.*;
 import com.sap.fontus.taintaware.unified.reflect.*;
 import com.sap.fontus.utils.LogUtils;
@@ -155,6 +156,10 @@ public class MethodProxies {
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASToArrayProxy.class), "toArray", String.format("(L%s;[Ljava/lang/Object;)[Ljava/lang/Object;", Utils.dotToSlash(Collection.class.getName())), false));
         methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/util/Collection", "toArray", "()[Ljava/lang/Object;", true),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASToArrayProxy.class), "toArray", String.format("(L%s;)[Ljava/lang/Object;", Utils.dotToSlash(Collection.class.getName())), false));
+
+    }
+
+    private static void fillTaintPersistenceProxies() {
         methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/sql/PreparedStatement", "setString", "(ILjava/lang/String;)V", true),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASPreparedStatementUtils.class), "setString", String.format("(L%s;ILcom/sap/fontus/taintaware/unified/IASString;)V", Utils.dotToSlash(java.sql.PreparedStatement.class.getName())), false));
         methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/sql/PreparedStatement", "setNString", "(ILjava/lang/String;)V", true),
@@ -200,8 +205,11 @@ public class MethodProxies {
 
     CombinedExcludedLookup combinedExcludedLookup;
 
-    MethodProxies(CombinedExcludedLookup combinedExcludedLookup) {
+    MethodProxies(CombinedExcludedLookup combinedExcludedLookup, Configuration configuration) {
         this.combinedExcludedLookup = combinedExcludedLookup;
+        if(configuration.hasTaintPersistence()) {
+            fillTaintPersistenceProxies();
+        }
     }
 
     /**
