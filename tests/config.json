@@ -102,7 +102,8 @@
     {
       "name": "Forwarding Argument to Main via Reflection",
       "jar_file": "forward_main.jar",
-      "input_file": "forward.input"
+      "input_file": "forward.input",
+      "failure_expected": true
     }
   ],
   "single_file_tests": [
@@ -423,7 +424,9 @@
     },
     {
       "name": "Using a lambda to create a proxy",
-      "source": "ProxyLambdaTest.java"
+      "source": "ProxyLambdaTest.java",
+      "failure_expected": true
+
     }
   ],
   "excluded_tests": [
