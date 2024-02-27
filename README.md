@@ -70,7 +70,7 @@ It is also possible to pass multiple parameters to the agent
 - **verbose**: If this option is set, all instrumented classes are saved to ``./tmp/agent``
 - **taint_persistence**: If set, this flag enables applying the proxies for persisting taints.
 - **logging_enabled**: If this option is set, a log file of the instrumentation process will be created in the working dir named ``asm-{datetime}.log`` 
-- **taintmethod**: Specifying the used taint method. For all options see [Available Tainting Methods](#Available Tainting Methods). The default is *boolean*
+- **taintmethod**: Specifying the used taint method. For all options see [Available Tainting Methods](#available-tainting-methods). The default is *boolean*
 - **use_caching**: Possible values: *true* or *false*. Default is true. Enables/Disables caching of taint evaluation results for lazy tainting methods
 - **layer_threshold**: Specifies a maximum depth of layers for lazybasic tainting. If this threshold is exceeded the taint is calculated and new layers will be stacked on top again. Default value is *30*. If caching is disabled, the threshold is also disabled.
 - **collect_stats**: Possible values: *true* or *false*. Default is false. If this option is enabled, the stats about taints in strings will be collected. This only applies iff taintmethod *range* is used and can cause massive overhead.
