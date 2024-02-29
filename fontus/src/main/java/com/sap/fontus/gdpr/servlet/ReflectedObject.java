@@ -9,12 +9,15 @@ public abstract class ReflectedObject {
 
     protected final Object o;
 
+    /**
+     * Calls a static method via reflection.
+     */
     public static Object callMethodWithReflection(Class<?> c, Method m, Object... args) {
         Object result = null;
         try {
             Method originalMethod = c.getMethod(m.getName(), m.getParameterTypes());
             // TODO: check whether this is a bug with the missing instance parameter.
-            result = originalMethod.invoke(args);
+            result = originalMethod.invoke(null, args);
         } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
             System.err.println("FONTUS Exception with reflected call: " + c.getName() + "." + m.getName() + ": " + e.getMessage());
         }
