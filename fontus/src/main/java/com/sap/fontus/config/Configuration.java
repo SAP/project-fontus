@@ -20,7 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @XmlRootElement(name = "configuration")
-public class Configuration {
+public final class Configuration {
     private static Configuration configuration;
 
     private static final Logger logger = LogUtils.getLogger();
@@ -358,7 +358,10 @@ public class Configuration {
                 if (conversion != null) {
                     String converterName = conversion.getConverter();
                     FunctionCall converter = this.getConverter(converterName);
-                    logger.info("Found converter for {} at index {}: {}", c, index, converter);
+                    if(this.loggingEnabled) {
+
+                        logger.info("Found converter for {} at index {}: {}", c, index, converter);
+                    }
                     return converter;
                 }
             }
@@ -376,7 +379,9 @@ public class Configuration {
                 if (!(onlyAlwaysApply && !rg.isAlwaysApply())) {
                     String converterName = rg.getConverter();
                     FunctionCall converter = this.getConverter(converterName);
-                    logger.info("Found converter for rv of {}: {}", c, converter);
+                    if(this.loggingEnabled) {
+                        logger.info("Found converter for rv of {}: {}", c, converter);
+                    }
                     return converter;
                 }
             }

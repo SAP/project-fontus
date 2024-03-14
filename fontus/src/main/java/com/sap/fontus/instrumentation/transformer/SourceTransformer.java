@@ -31,7 +31,9 @@ public class SourceTransformer extends SourceOrSinkTransformer implements Return
     @Override
     public void transformReturnValue(MethodTaintingVisitor mv, Descriptor desc) {
         FunctionCall fc = this.source.getFunction();
-        logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", fc.getOwner(), fc.getName(), fc.getDescriptor(), Type.getInternalName(IASString.class));
+        if(LogUtils.LOGGING_ENABLED) {
+            logger.info("{}.{}{} is a source, so tainting String by calling {}.tainted!", fc.getOwner(), fc.getName(), fc.getDescriptor(), Type.getInternalName(IASString.class));
+        }
 
         IASTaintSource source = IASTaintSourceRegistry.getInstance().getOrRegisterObject(this.source.getName());
 

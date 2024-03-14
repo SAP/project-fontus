@@ -59,7 +59,9 @@ public class AgentClassResolver implements IClassResolver {
 
     private byte[] loadClassBytes(String className) throws IOException {
         String fixed = Utils.dotToSlash(className) + Constants.CLASS_FILE_SUFFIX;
-        logger.info("Trying to resolve {} from {}", fixed, className);
+        if(LogUtils.LOGGING_ENABLED) {
+            logger.info("Trying to resolve {} from {}", fixed, className);
+        }
 
         if (this.classLoader != null) {
             InputStream is = this.classLoader.getResourceAsStream(fixed);

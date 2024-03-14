@@ -2,13 +2,13 @@ package com.sap.fontus.utils;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.unified.*;
 import com.sap.fontus.taintaware.unified.reflect.*;
 import com.sap.fontus.taintaware.unified.reflect.type.IASTypeVariableImpl;
 import com.sap.fontus.taintaware.unified.reflect.type.IASWildcardTypeImpl;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
-import sun.reflect.generics.reflectiveObjects.GenericArrayTypeImpl;
-import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
+
 
 import java.io.ObjectInputStream;
 import java.lang.invoke.MethodHandle;
@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 public final class ConversionUtils {
     private ConversionUtils() {}
     private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
-    private static final CombinedExcludedLookup excludedLookup = new CombinedExcludedLookup();
+    static final CombinedExcludedLookup excludedLookup = new CombinedExcludedLookup();
     private static final Cache<Class<?>, Optional<Converter>> converterCache = Caffeine.newBuilder().build();
     private static final Cache<Class<?>, Optional<Converter>> unconverterCache = Caffeine.newBuilder().build();
 
@@ -243,10 +243,10 @@ public final class ConversionUtils {
         if (type instanceof Class) {
             return convertClassToOrig((Class<?>) type);
         } else if (type instanceof GenericArrayType) {
-            return GenericArrayTypeImpl.make(convertTypeToUninstrumented(((GenericArrayType) type).getGenericComponentType()));
+            return new GenericArrayTypeImpl(convertTypeToUninstrumented(((GenericArrayType) type).getGenericComponentType()));
         } else if (type instanceof ParameterizedType) {
             ParameterizedType pType = (ParameterizedType) type;
-            return ParameterizedTypeImpl.make(
+            return new ParameterizedTypeImpl(
                     (Class<?>) convertTypeToUninstrumented(pType.getRawType()),
                     Arrays.stream(pType.getActualTypeArguments()).map(ConversionUtils::convertTypeToUninstrumented).toArray(Type[]::new),
                     convertTypeToUninstrumented(pType.getOwnerType())
@@ -267,10 +267,10 @@ public final class ConversionUtils {
         } else if (type instanceof Class) {
             return convertClassToConcrete((Class<?>) type);
         } else if (type instanceof GenericArrayType) {
-            return GenericArrayTypeImpl.make(convertTypeToInstrumented(((GenericArrayType) type).getGenericComponentType()));
+            return new GenericArrayTypeImpl(convertTypeToInstrumented(((GenericArrayType) type).getGenericComponentType()));
         } else if (type instanceof ParameterizedType) {
             ParameterizedType pType = (ParameterizedType) type;
-            return ParameterizedTypeImpl.make(
+            return new ParameterizedTypeImpl(
                     (Class<?>) convertTypeToInstrumented(pType.getRawType()),
                     Arrays.stream(pType.getActualTypeArguments()).map(ConversionUtils::convertTypeToInstrumented).toArray(Type[]::new),
                     convertTypeToInstrumented(pType.getOwnerType())
@@ -433,6 +433,10 @@ public final class ConversionUtils {
                         if (entry == null) {
                             result.add(null);
                             continue;
+                        }
+                        // Assumption: No mixed Sets and bailing out right away
+                        if(entry instanceof IASTaintAware) {
+                            return set;
                         }
                         Object converted = this.atomicConverter.apply(entry);
                         result.add(converted);

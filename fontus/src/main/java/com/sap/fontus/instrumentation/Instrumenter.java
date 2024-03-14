@@ -60,8 +60,10 @@ public class Instrumenter implements InstrumenterInterface {
         String clazzName = cr.getClassName();
         String superName = cr.getSuperName();
         String[] interfaces = cr.getInterfaces();
-        String ifs = String.join(", ", interfaces);
-        logger.info("{} <- {} implements: {}", clazzName, superName, interfaces);
+        if(LogUtils.LOGGING_ENABLED) {
+            String ifs = String.join(", ", interfaces);
+            logger.info("{} <- {} implements: {}", clazzName, superName, ifs);
+        }
         return writer.toByteArray();
     }
 

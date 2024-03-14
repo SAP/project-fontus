@@ -113,7 +113,9 @@ class ClassTaintingVisitor extends ClassVisitor {
         // Is this class/interface an annotation or annotation proxy class? If yes, don't instrument it
         // Cf Java Language Specification 12 - 9.6.1 Annotation Types
         if (AnnotationLookup.getInstance().isAnnotation(name, superName, interfaces, this.resolver)) {
-            logger.info("{} is annotation or annotation proxy!", name);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("{} is annotation or annotation proxy!", name);
+            }
             this.isAnnotation = true;
             AnnotationLookup.getInstance().addAnnotation(name);
         }
@@ -197,7 +199,9 @@ class ClassTaintingVisitor extends ClassVisitor {
         int instrumentedAccess = access & ~Modifier.FINAL;
 
         if (this.recording == null && MethodUtils.isClInit(access, name, desc) && !this.inEnd) {
-            logger.info("Recording static initializer");
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Recording static initializer");
+            }
             RecordingMethodVisitor rmv = new RecordingMethodVisitor();
             this.recording = rmv.getRecording();
             this.hasClInit = true;
@@ -205,10 +209,14 @@ class ClassTaintingVisitor extends ClassVisitor {
         }
         // Create a new main method, wrapping the regular one and translating all Strings to IASStrings
         if (MethodUtils.isMain(access, name, descriptor) && !this.config.isClassMainBlacklisted(this.owner)) {
-            logger.info("Creating proxy main method");
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Creating proxy main method");
+            }
             MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, Constants.Main, Constants.MAIN_METHOD_DESC, null, exceptions);
             this.createMainWrapperMethod(v);
-            logger.info("Processing renamed main method.");
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Processing renamed main method.");
+            }
             mv = super.visitMethod(access, Constants.MainWrapper, this.newMainDescriptor, signature, exceptions);
             newName = Constants.MainWrapper;
             desc = this.newMainDescriptor;
@@ -238,7 +246,7 @@ class ClassTaintingVisitor extends ClassVisitor {
             return null;
         } else {
             desc = this.instrumentationHelper.instrumentForNormalCall(descriptor);
-            if (!desc.equals(descriptor)) {
+            if (LogUtils.LOGGING_ENABLED && !desc.equals(descriptor)) {
                 logger.info("Rewriting method signature {}{} to {}{}", name, descriptor, name, desc);
             }
             this.instrumentedMethods.add(new org.objectweb.asm.commons.Method(name, desc));
@@ -345,7 +353,9 @@ class ClassTaintingVisitor extends ClassVisitor {
      * @param mv The MethodVisitor for the static initialization block. Should be a Taint-aware MethodVisitor!
      */
     private void createStaticStringInitializer(MethodVisitor mv) {
-        logger.info("Creating a static initializer to initialize all static final String fields");
+        if(LogUtils.LOGGING_ENABLED) {
+            logger.info("Creating a static initializer to initialize all static final String fields");
+        }
         mv.visitCode();
         Utils.writeToStaticInitializer(mv, this.owner, this.staticFinalFields);
         mv.visitInsn(Opcodes.RETURN);
@@ -357,7 +367,9 @@ class ClassTaintingVisitor extends ClassVisitor {
     public void visitEnd() {
         this.inEnd = true;
         if (!this.isAnnotation) {
-            logger.info("Overriding not overridden JDK methods which have to be instrumented");
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Overriding not overridden JDK methods which have to be instrumented");
+            }
             if (this.isInterface) {
                 this.declareMissingJdkMethods();
             } else {
@@ -365,11 +377,15 @@ class ClassTaintingVisitor extends ClassVisitor {
             }
         }
         if (!this.hasClInit && !this.staticFinalFields.isEmpty()) {
-            logger.info("Adding a new static initializer to initialize static final String fields");
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Adding a new static initializer to initialize static final String fields");
+            }
             MethodVisitor mv = this.visitMethod(Opcodes.ACC_STATIC, Constants.ClInit, "()V", null, null);
             this.createStaticStringInitializer(mv);
         } else if (this.hasClInit) {
-            logger.info("Replaying static initializer and augmenting it");
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Replaying static initializer and augmenting it");
+            }
             MethodVisitor mv = this.visitMethod(Opcodes.ACC_STATIC, Constants.ClInit, "()V", null, null);
             ClassInitializerAugmentingVisitor augmentingVisitor = new ClassInitializerAugmentingVisitor(mv, this.owner, this.staticFinalFields);
             this.recording.replay(augmentingVisitor);
@@ -548,7 +564,9 @@ class ClassTaintingVisitor extends ClassVisitor {
                 }
             }
         }
-        logger.info("Creating proxy for inherited, but not overridden JDK method " + m);
+        if(LogUtils.LOGGING_ENABLED) {
+            logger.info("Creating proxy for inherited, but not overridden JDK method " + m);
+        }
         Descriptor originalDescriptor = Descriptor.parseDescriptor(m.getDescriptor());
         Descriptor instrumentedDescriptor = this.instrumentationHelper.instrument(originalDescriptor);
 
@@ -569,7 +587,9 @@ class ClassTaintingVisitor extends ClassVisitor {
             // If this class extends a JDK class (ie we could not add an instrumented method to the superclass),
             // then create a proxy with instrumented arguments to the non-instrumented super class.
             if(Modifier.isStatic(m.getAccess())) {
-                logger.info("Creating static proxy for inherited, but not overridden JDK method " + m);
+                if(LogUtils.LOGGING_ENABLED) {
+                    logger.info("Creating static proxy for inherited, but not overridden JDK method " + m);
+                }
                 this.generateInstrumentedStaticProxyToSuper(mv, m, originalDescriptor, instrumentedDescriptor);
             } else {
                 this.generateInstrumentedProxyToSuper(mv, m, originalDescriptor, instrumentedDescriptor);
@@ -587,7 +607,9 @@ class ClassTaintingVisitor extends ClassVisitor {
             MethodVisitor mv2 = super.visitMethod(modifiers, m.getName(), originalDescriptor.toDescriptor(), signature, exceptions);
             // Create an uninstrumented proxy to the instrumented method in this class
             if(Modifier.isStatic(m.getAccess())) {
-                logger.info("Creating static proxy for inherited, but not overridden JDK method " + m);
+                if(LogUtils.LOGGING_ENABLED) {
+                    logger.info("Creating static proxy for inherited, but not overridden JDK method " + m);
+                }
                 this.generateProxyToStaticInstrumented(mv2, m.getName(), originalDescriptor);
             } else {
                 this.generateProxyToInstrumented(mv2, m.getName(), originalDescriptor, null, Optional.empty());

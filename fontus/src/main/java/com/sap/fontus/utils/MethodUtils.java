@@ -95,7 +95,7 @@ public final class MethodUtils {
         // Hacky but better than generating it by hand
         try {
             Method getGenericSignature = Method.class.getDeclaredMethod("getGenericSignature");
-            getGenericSignature.setAccessible(true);
+            UnsafeUtils.setAccessible(getGenericSignature);
             return Optional.ofNullable((String) getGenericSignature.invoke(m));
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             e.printStackTrace();
