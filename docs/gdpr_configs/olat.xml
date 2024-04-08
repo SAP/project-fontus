@@ -1,0 +1,1063 @@
+<configuration>
+    <excludedPackages>
+        <!--<excludedPackage>org/apache/tomcat/jni/</excludedPackage>-->
+        <!--<excludedPackage>org/apache/logging/log4j/</excludedPackage>-->
+        <!--<excludedPackage>org/bouncycastle/</excludedPackage>-->
+        <!--<excludedPackage>javax/management/</excludedPackage>-->
+    </excludedPackages>
+    <vendors>
+        <vendor>
+            <name>acme</name>
+        </vendor>
+        <vendor>
+            <name>sap</name>
+        </vendor>
+    </vendors>
+
+    <purposes>
+        <purpose>
+            <name>logging</name>
+            <description>The data is used for logging information</description>
+            <legal></legal>
+        </purpose>
+        <purpose>
+            <name>publishing</name>
+            <description>The data is available to the public</description>
+            <legal></legal>
+        </purpose>
+        <purpose>
+            <name>processing</name>
+            <description>The data is processed</description>
+            <legal></legal>
+        </purpose>
+        <purpose>
+            <name>storage</name>
+            <description>The data is used stored offline</description>
+            <legal></legal>
+        </purpose>
+        <purpose>
+            <name>marketing</name>
+            <description>The data is used for marketing</description>
+            <legal></legal>
+        </purpose>
+    </purposes>
+
+    <sourceConfig>
+        <sources>
+            <!-- InterfaceMethod javax/servlet/http/HttpServletRequest.getHeader:(Lcom/sap/fontus/taintaware/unified/IASString;)Lcom/sap/fontus/taintaware/unified/IASString; -->
+            <!--<source>-->
+            <!--    <name>getHeader</name>-->
+            <!--    <function>-->
+            <!--        <opcode>185</opcode>-->
+            <!--        <owner>javax/servlet/http/HttpServletRequest</owner>-->
+            <!--        <name>getHeader</name>-->
+            <!--        <descriptor>(Ljava/lang/String;)Ljava/lang/String;</descriptor>-->
+            <!--        <interface>true</interface>-->
+            <!--    </function>-->
+            <!--    <tainthandler>-->
+            <!--        <opcode>184</opcode>-->
+            <!--        <owner>com/sap/fontus/gdpr/openolat/OpenOlatTaintHandler</owner>-->
+            <!--        <name>taint</name>-->
+            <!--        <descriptor>(Ljava/lang/Object;Ljava/lang/Object;[Ljava/lang/Object;ILjava/lang/String;)Ljava/lang/Object;</descriptor>-->
+            <!--        <interface>false</interface>-->
+            <!--    </tainthandler>-->
+            <!--</source>-->
+            <!--  // InterfaceMethod javax/servlet/http/HttpServletRequest.getParameterValues:(Lcom/sap/fontus/taintaware/unified/IASString;)[Lcom/sap/fontus/taintaware/unified/IASString; -->
+            <source>
+                <name>getParameterValues</name>
+                <function>
+                    <opcode>185</opcode>
+                    <owner>javax/servlet/http/HttpServletRequest</owner>
+                    <name>getParameterValues</name>
+                    <descriptor>(Ljava/lang/String;)[Ljava/lang/String;</descriptor>
+                    <interface>true</interface>
+                </function>
+                <tainthandler>
+                    <opcode>184</opcode>
+                    <owner>com/sap/fontus/gdpr/openolat/OpenOlatTaintHandler</owner>
+                    <name>taint</name>
+                    <descriptor>(Ljava/lang/Object;Ljava/lang/Object;[Ljava/lang/Object;ILjava/lang/String;)Ljava/lang/Object;</descriptor>
+                    <interface>false</interface>
+                </tainthandler>
+            </source>
+            <source>
+                <name>getParameter</name>
+                <function>
+                    <opcode>185</opcode>
+                    <owner>javax/servlet/ServletRequest</owner>
+                    <name>getParameter</name>
+                    <descriptor>(Ljava/lang/String;)Ljava/lang/String;</descriptor>
+                    <interface>true</interface>
+                </function>
+                <tainthandler>
+                    <opcode>184</opcode>
+                    <owner>com/sap/fontus/gdpr/openolat/OpenOlatTaintHandler</owner>
+                    <name>taint</name>
+                    <descriptor>(Ljava/lang/Object;Ljava/lang/Object;[Ljava/lang/Object;ILjava/lang/String;)Ljava/lang/Object;</descriptor>
+                    <interface>false</interface>
+                </tainthandler>
+            </source>
+            <source>
+                <name>getParameterValues</name>
+                <function>
+                    <opcode>185</opcode>
+                    <owner>javax/servlet/ServletRequest</owner>
+                    <name>getParameterValues</name>
+                    <descriptor>(Ljava/lang/String;)[Ljava/lang/String;</descriptor>
+                    <interface>true</interface>
+                </function>
+                <tainthandler>
+                    <opcode>184</opcode>
+                    <owner>com/sap/fontus/gdpr/openolat/OpenOlatTaintHandler</owner>
+                    <name>taint</name>
+                    <descriptor>(Ljava/lang/Object;Ljava/lang/Object;[Ljava/lang/Object;ILjava/lang/String;)Ljava/lang/Object;</descriptor>
+                    <interface>false</interface>
+                </tainthandler>
+            </source>
+            <source>
+                <name>getParameterMap</name>
+                <function>
+                    <opcode>185</opcode>
+                    <owner>javax/servlet/ServletRequest</owner>
+                    <name>getParameterMap</name>
+                    <descriptor>()Ljava/util/Map;</descriptor>
+                    <interface>true</interface>
+                </function>
+                <tainthandler>
+                    <opcode>184</opcode>
+                    <owner>com/sap/fontus/gdpr/openolat/OpenOlatTaintHandler</owner>
+                    <name>taint</name>
+                    <descriptor>(Ljava/lang/Object;Ljava/lang/Object;[Ljava/lang/Object;ILjava/lang/String;)Ljava/lang/Object;</descriptor>
+                    <interface>false</interface>
+                </tainthandler>
+            </source>
+            <source>
+                <name>contact-tracing getValue</name>
+                <function>
+                    <opcode>182</opcode>
+                    <owner>org/olat/modules/contacttracing/ui/ContactTracingRegistrationFormController</owner>
+                    <name>getValue</name>
+                    <descriptor>(Lorg/olat/core/gui/components/form/flexible/FormItem;)Ljava/lang/String;</descriptor>
+                    <interface>false</interface>
+                </function>
+                <tainthandler>
+                    <opcode>184</opcode>
+                    <owner>com/sap/fontus/gdpr/openolat/OpenOlatTaintHandler</owner>
+                    <name>contactTracingTaint</name>
+                    <descriptor>(Ljava/lang/Object;Ljava/lang/Object;[Ljava/lang/Object;ILjava/lang/String;)Ljava/lang/Object;</descriptor>
+                    <interface>false</interface>
+                </tainthandler>
+                <allowed_callers>
+                    <function>
+                        <opcode>182</opcode>
+                        <owner>org/olat/modules/contacttracing/ui/ContactTracingRegistrationFormController</owner>
+                        <name>formOK</name>
+                        <descriptor>(Lorg/olat/core/gui/UserRequest;)V</descriptor>
+                        <interface>false</interface>
+                    </function>
+                </allowed_callers>
+            </source>
+            <source>
+                <!-- invokestatic  #852                // Method org/apache/commons/io/IOUtils.toString:(Ljava/io/InputStream;Ljava/nio/charset/Charset;)Lcom/sap/fontus/taintaware/unified/IASString; -->
+                <name>ioutils-tostring</name>
+                <function>
+                    <opcode>184</opcode>
+                    <owner>org/apache/commons/io/IOUtils</owner>
+                    <name>toString</name>
+                    <descriptor>(Ljava/io/InputStream;Ljava/nio/charset/Charset;)Ljava/lang/String;</descriptor>
+                    <interface>false</interface>
+                </function>
+                <tainthandler>
+                    <opcode>184</opcode>
+                    <owner>com/sap/fontus/gdpr/openolat/OpenOlatTaintHandler</owner>
+                    <name>formTaint</name>
+                    <descriptor>(Ljava/lang/Object;Ljava/lang/Object;[Ljava/lang/Object;ILjava/lang/String;)Ljava/lang/Object;</descriptor>
+                    <interface>false</interface>
+                </tainthandler>
+                <pass_locals>
+                    <pass_locals>1</pass_locals>
+                    <pass_locals>5</pass_locals>
+                </pass_locals>
+                <allowed_callers>
+                <function>
+                    <opcode>183</opcode>
+                    <owner>org/olat/core/gui/components/form/flexible/impl/Form</owner>
+                    <name>doInitRequestMultipartDataParameter</name>
+                    <descriptor>(Lorg/olat/core/gui/UserRequest;)V</descriptor>
+                    <interface>false</interface>
+                </function>
+                </allowed_callers>
+            </source>
+        </sources>
+    </sourceConfig>
+    <sinkConfig>
+        <sinks>
+<!--            15: invokevirtual #260                // Method org/olat/user/UserImpl.getProperty:(Lcom/sap/fontus/taintaware/unified/IASString;)Lcom/sap/fontus/taintaware/unified/IASString;-->
+            <sink>
+                <name>getProperty</name>
+                <function>
+                    <opcode>182</opcode>
+                    <owner>org/olat/user/UserImpl</owner>
+                    <name>getProperty</name>
+                    <descriptor>(Ljava/lang/String;)Ljava/lang/String;</descriptor>
+                    <interface>false</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>-1</index>
+                    </parameter>
+                </parameters>
+                <dataProtection>
+                    <aborts>
+                        <!--<abort>censor</abort>-->
+                        <abort>stderr_logging</abort>
+                        <!--<abort>throw</abort>-->
+                    </aborts>
+                    <purposes>
+                        <purpose>processing</purpose>
+                    </purposes>
+                    <vendors>
+                        <vendor>sap</vendor>
+                    </vendors>
+                </dataProtection>
+            </sink>
+            <sink>
+                <name>getIdentityProp-i</name>
+                <function>
+                    <opcode>182</opcode>
+                    <owner>org/olat/basesecurity/model/IdentityPropertiesRow</owner>
+                    <name>getIdentityProp</name>
+                    <descriptor>(I)Ljava/lang/String;</descriptor>
+                    <interface>false</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>-1</index>
+                    </parameter>
+                </parameters>
+                <dataProtection>
+                    <aborts>
+                        <!--<abort>censor</abort>-->
+                        <abort>stderr_logging</abort>
+                        <!--<abort>throw</abort>-->
+                    </aborts>
+                    <purposes>
+                        <purpose>processing</purpose>
+                    </purposes>
+                    <vendors>
+                        <vendor>sap</vendor>
+                    </vendors>
+                </dataProtection>
+            </sink>
+            <sink>
+                <name>getIdentityProp</name>
+                <function>
+                    <opcode>182</opcode>
+                    <owner>org/olat/user/UserPropertiesRow</owner>
+                    <name>getIdentityProp</name>
+                    <descriptor>(I)Ljava/lang/String;</descriptor>
+                    <interface>false</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>-1</index>
+                    </parameter>
+                </parameters>
+                <dataProtection>
+                    <aborts>
+                        <!--<abort>censor</abort>-->
+                        <abort>stderr_logging</abort>
+                        <!--<abort>throw</abort>-->
+                    </aborts>
+                    <purposes>
+                        <purpose>processing</purpose>
+                    </purposes>
+                    <vendors>
+                        <vendor>sap</vendor>
+                    </vendors>
+                </dataProtection>
+            </sink>
+            <sink>
+                <name>getParameter</name>
+                <function>
+                    <opcode>185</opcode>
+                    <owner>javax/servlet/ServletRequest</owner>
+                    <name>getParameter</name>
+                    <descriptor>(Ljava/lang/String;)Ljava/lang/String;</descriptor>
+                    <interface>true</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>-1</index>
+                    </parameter>
+                </parameters>
+                <dataProtection>
+                    <aborts>
+                        <!--<abort>censor</abort>-->
+                        <abort>stderr_logging</abort>
+                        <!--<abort>throw</abort>-->
+                    </aborts>
+                    <purposes>
+                        <purpose>processing</purpose>
+                    </purposes>
+                    <vendors>
+                        <vendor>sap</vendor>
+                    </vendors>
+                </dataProtection>
+            </sink>
+
+            <sink>
+                <name>getParameter</name>
+                <function>
+                    <opcode>185</opcode>
+                    <owner>javax/servlet/ServletRequest</owner>
+                    <name>getParameter</name>
+                    <descriptor>(Ljava/lang/String;)Ljava/lang/String;</descriptor>
+                    <interface>true</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>-1</index>
+                    </parameter>
+                </parameters>
+                <dataProtection>
+                    <aborts>
+                        <abort>censor</abort>
+                        <abort>stderr_logging</abort>
+                        <abort>throw</abort>
+                    </aborts>
+                    <purposes>
+                        <purpose>processing</purpose>
+                    </purposes>
+                    <vendors>
+                        <vendor>sap</vendor>
+                    </vendors>
+                </dataProtection>
+            </sink>
+
+            <sink>
+                <name>tResultSet</name>
+                <function>
+                    <opcode>184</opcode>
+                    <owner>com/sap/fontus/taintaware/unified/IASResultSetUtils</owner>
+                    <name>getString</name>
+                    <descriptor>(Ljava/sql/ResultSet;I)Lcom/sap/fontus/taintaware/unified/IASString;</descriptor>
+                    <interface>false</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>-1</index>
+                    </parameter>
+                </parameters>
+                <dataProtection>
+                    <aborts>
+                        <abort>censor</abort>
+                        <abort>stderr_logging</abort>
+                    </aborts>
+                    <purposes>
+                        <purpose>processing</purpose>
+                    </purposes>
+                    <vendors>
+                        <vendor>sap</vendor>
+                    </vendors>
+                </dataProtection>
+            </sink>
+
+            <sink>
+                <name>tResultSet2</name>
+                <function>
+                    <opcode>184</opcode>
+                    <owner>com/sap/fontus/taintaware/unified/IASResultSetUtils</owner>
+                    <name>getString</name>
+                    <descriptor>
+                        (Ljava/sql/ResultSet;Lcom/sap/fontus/taintaware/unified/IASString;)Lcom/sap/fontus/taintaware/unified/IASString;
+                    </descriptor>
+                    <interface>false</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>-1</index>
+                    </parameter>
+                </parameters>
+                <dataProtection>
+                    <aborts>
+                        <abort>censor</abort>
+                        <abort>stderr_logging</abort>
+                    </aborts>
+                    <purposes>
+                        <purpose>processing</purpose>
+                    </purposes>
+                    <vendors>
+                        <vendor>sap</vendor>
+                    </vendors>
+                </dataProtection>
+            </sink>
+
+
+            <sink>
+                <name>tquerySetNString</name>
+                <function>
+                    <opcode>184</opcode>
+                    <owner>com/sap/fontus/taintaware/unified/IASPreparedStatementUtils</owner>
+                    <name>setNString</name>
+                    <descriptor>(Ljava/sql/PreparedStatement;ILcom/sap/fontus/taintaware/unified/IASString;)V
+                    </descriptor>
+                    <interface>false</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>2</index>
+                    </parameter>
+                </parameters>
+                <dataProtection>
+                    <aborts>
+                        <abort>censor</abort>
+                        <abort>stderr_logging</abort>
+                        <abort>throw</abort>
+                    </aborts>
+                    <purposes>
+                        <purpose>storage</purpose>
+                    </purposes>
+                    <vendors>
+                        <vendor>sap</vendor>
+                    </vendors>
+                </dataProtection>
+            </sink>
+
+            <sink>
+                <name>tquerySetObject</name>
+                <function>
+                    <opcode>184</opcode>
+                    <owner>com/sap/fontus/taintaware/unified/IASPreparedStatementUtils</owner>
+                    <name>setObject</name>
+                    <descriptor>(Ljava/sql/PreparedStatement;ILjava/lang/Object;)V</descriptor>
+                    <interface>false</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>2</index>
+                    </parameter>
+                </parameters>
+                <dataProtection>
+                    <aborts>
+                        <abort>censor</abort>
+                        <abort>stderr_logging</abort>
+                        <abort>throw</abort>
+                    </aborts>
+                    <purposes>
+                        <purpose>storage</purpose>
+                    </purposes>
+                    <vendors>
+                        <vendor>sap</vendor>
+                    </vendors>
+                </dataProtection>
+            </sink>
+
+            <sink>
+                <name>tquerySetObjectII</name>
+                <function>
+                    <opcode>184</opcode>
+                    <owner>com/sap/fontus/taintaware/unified/IASPreparedStatementUtils</owner>
+                    <name>setObject</name>
+                    <descriptor>(Ljava/sql/PreparedStatement;ILjava/lang/Object;I)V</descriptor>
+                    <interface>false</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>2</index>
+                    </parameter>
+                </parameters>
+                <dataProtection>
+                    <aborts>
+                        <abort>censor</abort>
+                        <abort>stderr_logging</abort>
+                        <abort>throw</abort>
+                    </aborts>
+                    <purposes>
+                        <purpose>storage</purpose>
+                    </purposes>
+                    <vendors>
+                        <vendor>sap</vendor>
+                    </vendors>
+                </dataProtection>
+            </sink>
+
+
+            <sink>
+                <name>tquerySetObjectII</name>
+                <function>
+                    <opcode>184</opcode>
+                    <owner>com/sap/fontus/taintaware/unified/IASPreparedStatementUtils</owner>
+                    <name>setObject</name>
+                    <descriptor>(Ljava/sql/PreparedStatement;ILjava/lang/Object;II)V</descriptor>
+                    <interface>false</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>2</index>
+                    </parameter>
+                </parameters>
+                <dataProtection>
+                    <aborts>
+                        <abort>censor</abort>
+                        <abort>stderr_logging</abort>
+                        <abort>throw</abort>
+                    </aborts>
+                    <purposes>
+                        <purpose>storage</purpose>
+                    </purposes>
+                    <vendors>
+                        <vendor>sap</vendor>
+                    </vendors>
+                </dataProtection>
+            </sink>
+
+            <sink>
+                <name>PrintStream.println</name>
+                <categories>
+                    <category>XSS</category>
+                </categories>
+                <function>
+                    <opcode>182</opcode>
+                    <owner>java/io/PrintStream</owner>
+                    <name>println</name>
+                    <descriptor>(Ljava/lang/String;)V</descriptor>
+                    <interface>false</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>0</index>
+                    </parameter>
+                </parameters>
+                <dataProtection>
+                    <aborts>
+                        <abort>censor</abort>
+                        <abort>stderr_logging</abort>
+                    </aborts>
+                    <purposes>
+                        <purpose>logging</purpose>
+                    </purposes>
+                    <vendors>
+                        <vendor>sap</vendor>
+                    </vendors>
+                </dataProtection>
+            </sink>
+
+            <sink>
+                <name>PrintWriter.println</name>
+                <categories>
+                    <category>XSS</category>
+                </categories>
+                <function>
+                    <opcode>185</opcode>
+                    <owner>java/io/PrintWriter</owner>
+                    <name>println</name>
+                    <descriptor>(Ljava/lang/String;)V</descriptor>
+                    <interface>true</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>0</index>
+                    </parameter>
+                </parameters>
+                <dataProtection>
+                    <aborts>
+                        <abort>censor</abort>
+                        <abort>stderr_logging</abort>
+                    </aborts>
+                    <purposes>
+                        <purpose>publishing</purpose>
+                    </purposes>
+                    <vendors>
+                        <vendor>sap</vendor>
+                    </vendors>
+                </dataProtection>
+            </sink>
+
+            <sink>
+                <name>PrintWriter.print</name>
+                <categories>
+                    <category>XSS</category>
+                </categories>
+                <function>
+                    <opcode>185</opcode>
+                    <owner>java/io/PrintWriter</owner>
+                    <name>print</name>
+                    <descriptor>(Ljava/lang/String;)V</descriptor>
+                    <interface>true</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>0</index>
+                    </parameter>
+                </parameters>
+                <dataProtection>
+                    <aborts>
+                        <abort>censor</abort>
+                        <abort>stderr_logging</abort>
+                    </aborts>
+                    <purposes>
+                        <purpose>publishing</purpose>
+                    </purposes>
+                    <vendors>
+                        <vendor>sap</vendor>
+                    </vendors>
+                </dataProtection>
+            </sink>
+
+            <sink>
+                <name>PrintWriter.write</name>
+                <categories>
+                    <category>XSS</category>
+                </categories>
+                <function>
+                    <opcode>185</opcode>
+                    <owner>java/io/PrintWriter</owner>
+                    <name>write</name>
+                    <descriptor>(Ljava/lang/String;)V</descriptor>
+                    <interface>true</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>0</index>
+                    </parameter>
+                </parameters>
+                <dataProtection>
+                    <aborts>
+                        <abort>censor</abort>
+                        <abort>stderr_logging</abort>
+                    </aborts>
+                    <purposes>
+                        <purpose>publishing</purpose>
+                    </purposes>
+                    <vendors>
+                        <vendor>sap</vendor>
+                    </vendors>
+                </dataProtection>
+            </sink>
+
+            <sink>
+                <name>PrintStream.println</name>
+                <categories>
+                    <category>XSS</category>
+                </categories>
+                <function>
+                    <opcode>182</opcode>
+                    <owner>java/io/PrintStream</owner>
+                    <name>println</name>
+                    <descriptor>(Ljava/lang/String;)V</descriptor>
+                    <interface>false</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>0</index>
+                    </parameter>
+                </parameters>
+                <dataProtection>
+                    <aborts>
+                        <abort>censor</abort>
+                        <abort>stderr_logging</abort>
+                    </aborts>
+                    <purposes>
+                        <purpose>logging</purpose>
+                    </purposes>
+                    <vendors>
+                        <vendor>sap</vendor>
+                    </vendors>
+                </dataProtection>
+
+            </sink>
+
+            <sink>
+                <name>frontend</name>
+                <categories>
+                    <category>Frontend</category>
+                </categories>
+                <function>
+                    <opcode>184</opcode>
+                    <owner>org/unbescape/html/HtmlEscapeUtil</owner>
+                    <name>escape</name>
+                    <descriptor>
+                        (Ljava/lang/String;Lorg/unbescape/html/HtmlEscapeType;Lorg/unbescape/html/HtmlEscapeLevel;)Ljava/lang/String;
+                    </descriptor>
+                    <interface>false</interface>
+                </function>
+                <parameters>
+                    <parameter>
+                        <index>0</index>
+                    </parameter>
+                </parameters>
+                <dataProtection>
+                    <aborts>
+                        <abort>censor</abort>
+                        <abort>stderr_logging</abort>
+                    </aborts>
+                    <purposes>
+                        <purpose>logging</purpose>
+                    </purposes>
+                    <vendors>
+                        <vendor>sap</vendor>
+                    </vendors>
+                </dataProtection>
+            </sink>
+
+        </sinks>
+    </sinkConfig>
+    <converters>
+        <converter>
+            <opcode>184</opcode>
+            <owner>com/sap/fontus/manual/spring/converters/XMLBeanClassNameConverter</owner>
+            <name>replaceStringClass</name>
+            <descriptor>(Lorg/w3c/dom/Document;)Lorg/w3c/dom/Document;</descriptor>
+            <interface>false</interface>
+        </converter>
+        <converter>
+            <opcode>182</opcode>
+            <owner>java/lang/String</owner>
+            <name>intern</name>
+            <descriptor>()Ljava/lang/String;</descriptor>
+            <interface>false</interface>
+        </converter>
+        <converter>
+            <opcode>184</opcode>
+            <owner>com/sap/fontus/manual/spring/converters/ObjectConverter</owner>
+            <name>convertToStringIfPossible</name>
+            <descriptor>(Ljava/lang/Object;)Ljava/lang/Object;</descriptor>
+            <interface>false</interface>
+        </converter>
+        <converter>
+            <opcode>184</opcode>
+            <owner>com/sap/fontus/manual/groovy/converters/DGMMethodConverter</owner>
+            <name>convertTypes</name>
+            <descriptor>(Ljava/util/List;)Ljava/util/List;</descriptor>
+            <interface>false</interface>
+        </converter>
+        <converter>
+            <opcode>184</opcode>
+            <owner>com/sap/fontus/taintaware/shared/IASStringUtils</owner>
+            <name>convertStringList</name>
+            <descriptor>(Ljava/util/List;)Ljava/util/List;</descriptor>
+            <interface>false</interface>
+        </converter>
+        <converter>
+            <opcode>184</opcode>
+            <owner>com/sap/fontus/taintaware/shared/IASStringUtils</owner>
+            <name>convertTStringList</name>
+            <descriptor>(Ljava/util/List;)Ljava/util/List;</descriptor>
+            <interface>false</interface>
+        </converter>
+        <converter>
+            <opcode>184</opcode>
+            <owner>com/sap/fontus/taintaware/shared/IASStringUtils</owner>
+            <name>convertTStringToTStringHashTable</name>
+            <descriptor>(Ljava/util/Hashtable;)Ljava/util/Hashtable;</descriptor>
+            <interface>false</interface>
+        </converter>
+        <converter>
+            <opcode>184</opcode>
+            <owner>com/sap/fontus/taintaware/shared/IASStringUtils</owner>
+            <name>convertStringMapToTStringMap</name>
+            <descriptor>(Ljava/util/Map;)Ljava/util/Map;</descriptor>
+            <interface>false</interface>
+        </converter>
+        <converter>
+            <opcode>184</opcode>
+            <owner>com/sap/fontus/taintaware/shared/IASStringUtils</owner>
+            <name>convertStringHashtableToTStringHashtable</name>
+            <descriptor>(Ljava/util/Hashtable;)Ljava/util/Hashtable;</descriptor>
+            <interface>false</interface>
+        </converter>
+        <converter>
+            <opcode>184</opcode>
+            <owner>com/sap/fontus/utils/ConversionUtils</owner>
+            <name>convertToUninstrumented</name>
+            <descriptor>(Ljava/lang/Object;)Ljava/lang/Object;</descriptor>
+            <interface>false</interface>
+        </converter>
+    </converters>
+    <returnGenerics>
+        <!--<returnGeneric>-->
+        <!--    <function>-->
+        <!--        <opcode>182</opcode>-->
+        <!--        <owner>org/springframework/beans/factory/xml/XmlBeanDefinitionReader</owner>-->
+        <!--        <name>doLoadDocument</name>-->
+        <!--        <descriptor>(Lorg/xml/sax/InputSource;Lorg/springframework/core/io/Resource;)Lorg/w3c/dom/Document;</descriptor>-->
+        <!--        <interface>false</interface>-->
+        <!--    </function>-->
+        <!--    <alwaysApply>true</alwaysApply>-->
+        <!--    <converter>replaceStringClass</converter>-->
+        <!--</returnGeneric>-->
+        <!--<returnGeneric>-->
+        <!--    <function>-->
+        <!--        <opcode>184</opcode>-->
+        <!--        <owner>org/codehaus/groovy/reflection/GeneratedMetaMethod$DgmMethodRecord</owner>-->
+        <!--        <name>loadDgmInfo</name>-->
+        <!--        <descriptor>()Ljava/util/List;</descriptor>-->
+        <!--        <interface>false</interface>-->
+        <!--    </function>-->
+        <!--    <alwaysApply>true</alwaysApply>-->
+        <!--    <converter>convertTypes</converter>-->
+        <!--</returnGeneric>-->
+        <returnGeneric>
+            <function>
+                <opcode>185</opcode>
+                <owner>java/lang/management/RuntimeMXBean</owner>
+                <name>getInputArguments</name>
+                <descriptor>()Ljava/util/List;</descriptor>
+                <interface>true</interface>
+            </function>
+            <converter>convertStringList</converter>
+        </returnGeneric>
+        <!--<returnGeneric>-->
+        <!--    <function>-->
+        <!--        <opcode>182</opcode>-->
+        <!--        <owner>javax/management/ObjectName</owner>-->
+        <!--        <name>getKeyPropertyList</name>-->
+        <!--        <descriptor>()Ljava/util/Hashtable;</descriptor>-->
+        <!--        <interface>false</interface>-->
+        <!--    </function>-->
+        <!--    <converter>convertStringHashtableToTStringHashtable</converter>-->
+        <!--</returnGeneric>-->
+    </returnGenerics>
+    <takeGenerics>
+      <!-- 131: invokevirtual #20                 // Method javax/xml/parsers/SAXParser.setProperty:(Ljava/lang/String;Ljava/lang/Object;)V -->
+        <takeGeneric>
+          <function>
+                <opcode>182</opcode>
+                <owner>javax/xml/parsers/SAXParser</owner>
+                <name>setProperty</name>
+                <descriptor>(Ljava/lang/String;Ljava/lang/Object;)V</descriptor>
+                <interface>false</interface>
+          </function>
+          <conversions>
+            <conversion>
+              <converter>convertToStringIfPossible</converter>
+              <index>1</index>
+            </conversion>
+          </conversions>
+          </takeGeneric>
+      <!-- 170: invokevirtual #14                 // Method javax/xml/transform/TransformerFactory.setAttribute:(Ljava/lang/String;Ljava/lang/Object;)V -->
+        <takeGeneric>
+          <function>
+                <opcode>182</opcode>
+                <owner>javax/xml/transform/TransformerFactory</owner>
+                <name>setAttribute</name>
+                <descriptor>(Ljava/lang/String;Ljava/lang/Object;)V</descriptor>
+                <interface>true</interface>
+          </function>
+          <conversions>
+            <conversion>
+              <converter>convertToStringIfPossible</converter>
+              <index>1</index>
+            </conversion>
+          </conversions>
+          </takeGeneric>
+      <!-- 95: invokevirtual #36                 // Method java/text/Collator.compare:(Ljava/lang/Object;Ljava/lang/Object;)I -->
+        <takeGeneric>
+          <function>
+                <opcode>182</opcode>
+                <owner>java/text/RuleBasedCollator</owner>
+                <name>compare</name>
+                <descriptor>(Ljava/lang/Object;Ljava/lang/Object;)I</descriptor>
+                <interface>false</interface>
+          </function>
+          <conversions>
+            <conversion>
+              <converter>convertToStringIfPossible</converter>
+              <index>0</index>
+            </conversion>
+          </conversions>
+          </takeGeneric>
+        <takeGeneric>
+          <function>
+                <opcode>182</opcode>
+                <owner>java/text/RuleBasedCollator</owner>
+                <name>compare</name>
+                <descriptor>(Ljava/lang/Object;Ljava/lang/Object;)I</descriptor>
+                <interface>false</interface>
+          </function>
+          <conversions>
+            <conversion>
+              <converter>convertToStringIfPossible</converter>
+              <index>1</index>
+            </conversion>
+          </conversions>
+          </takeGeneric>
+        <takeGeneric>
+          <function>
+                <opcode>182</opcode>
+                <owner>javax/xml/parsers/DocumentBuilderFactory</owner>
+                <name>setAttribute</name>
+                <descriptor>(Ljava/lang/String;Ljava/lang/Object;)V</descriptor>
+                <interface>false</interface>
+          </function>
+          <conversions>
+            <conversion>
+              <converter>convertToStringIfPossible</converter>
+              <index>1</index>
+            </conversion>
+          </conversions>
+        </takeGeneric>
+        <takeGeneric>
+          <function>
+                <opcode>182</opcode>
+                <owner>java/text/Collator</owner>
+                <name>compare</name>
+                <descriptor>(Ljava/lang/Object;Ljava/lang/Object;)I</descriptor>
+                <interface>false</interface>
+          </function>
+          <conversions>
+            <conversion>
+              <converter>convertToStringIfPossible</converter>
+              <index>0</index>
+            </conversion>
+          </conversions>
+          </takeGeneric>
+        <takeGeneric>
+          <function>
+                <opcode>182</opcode>
+                <owner>java/text/Collator</owner>
+                <name>compare</name>
+                <descriptor>(Ljava/lang/Object;Ljava/lang/Object;)I</descriptor>
+                <interface>false</interface>
+          </function>
+          <conversions>
+            <conversion>
+              <converter>convertToStringIfPossible</converter>
+              <index>1</index>
+            </conversion>
+          </conversions>
+          </takeGeneric>
+        <takeGeneric>
+          <function>
+                <opcode>182</opcode>
+                <owner>javax/xml/parsers/DocumentBuilderFactory</owner>
+                <name>setAttribute</name>
+                <descriptor>(Ljava/lang/String;Ljava/lang/Object;)V</descriptor>
+                <interface>false</interface>
+          </function>
+          <conversions>
+            <conversion>
+              <converter>convertToStringIfPossible</converter>
+              <index>1</index>
+            </conversion>
+          </conversions>
+          </takeGeneric>
+        <takeGeneric>
+            <function>
+                <opcode>183</opcode>
+                <owner>java/lang/ProcessBuilder</owner>
+                <name>&lt;init&gt;</name>
+                <descriptor>(Ljava/util/List;)V</descriptor>
+                <interface>false</interface>
+            </function>
+            <conversions>
+                <conversion>
+                    <converter>convertTStringList</converter>
+                    <index>0</index>
+                </conversion>
+            </conversions>
+        </takeGeneric>
+        <!--<takeGeneric>-->
+        <!--    <function>-->
+        <!--        <opcode>185</opcode>-->
+        <!--        <owner>javax/management/Descriptor</owner>-->
+        <!--        <name>setField</name>-->
+        <!--        <descriptor>(Ljava/lang/String;Ljava/lang/Object;)V</descriptor>-->
+        <!--        <interface>true</interface>-->
+        <!--    </function>-->
+        <!--    <conversions>-->
+        <!--        <conversion>-->
+        <!--            <converter>convertToStringIfPossible</converter>-->
+        <!--            <index>1</index>-->
+        <!--        </conversion>-->
+        <!--    </conversions>-->
+        <!--</takeGeneric>-->
+        <!--<takeGeneric>-->
+        <!--    <function>-->
+        <!--        <opcode>183</opcode>-->
+        <!--        <owner>java/lang/ProcessBuilder</owner>-->
+        <!--        <name>&lt;init&gt;</name>-->
+        <!--        <descriptor>(Ljava/util/List;)V</descriptor>-->
+        <!--        <interface>false</interface>-->
+        <!--    </function>-->
+        <!--    <conversions>-->
+        <!--        <conversion>-->
+        <!--            <converter>convertTStringList</converter>-->
+        <!--            <index>0</index>-->
+        <!--        </conversion>-->
+        <!--    </conversions>-->
+        <!--</takeGeneric>-->
+        <!--<takeGeneric>-->
+        <!--    <function>-->
+        <!--        <opcode>183</opcode>-->
+        <!--        <owner>javax/management/ObjectName</owner>-->
+        <!--        <name>&lt;init&gt;</name>-->
+        <!--        <descriptor>(Ljava/lang/String;Ljava/util/Hashtable;)V</descriptor>-->
+        <!--        <interface>false</interface>-->
+        <!--    </function>-->
+        <!--    <conversions>-->
+        <!--        <conversion>-->
+        <!--            <converter>convertTStringToTStringHashTable</converter>-->
+        <!--            <index>1</index>-->
+        <!--        </conversion>-->
+        <!--    </conversions>-->
+        <!--</takeGeneric>-->
+        <takeGeneric>
+            <function>
+                <opcode>183</opcode>
+                <owner>org/apache/naming/SelectorContext</owner>
+                <name>&lt;init&gt;</name>
+                <descriptor>(Ljava/util/Hashtable;)V</descriptor>
+                <interface>false</interface>
+            </function>
+            <conversions>
+                <conversion>
+                    <converter>convertStringHashtableToTStringHashtable</converter>
+                    <index>0</index>
+                </conversion>
+            </conversions>
+        </takeGeneric>
+        <takeGeneric>
+            <function>
+                <opcode>183</opcode>
+                <owner>org/apache/naming/SelectorContext</owner>
+                <name>&lt;init&gt;</name>
+                <descriptor>(Ljava/util/Hashtable;Z)V</descriptor>
+                <interface>false</interface>
+            </function>
+            <conversions>
+                <conversion>
+                    <converter>convertStringHashtableToTStringHashtable</converter>
+                    <index>0</index>
+                </conversion>
+            </conversions>
+        </takeGeneric>
+        <takeGeneric>
+            <function>
+                <opcode>184</opcode>
+                <owner>javax/management/ObjectName</owner>
+                <name>getInstance</name>
+                <descriptor>(Ljava/lang/String;Ljava/util/Hashtable;)Ljavax/management/ObjectName;</descriptor>
+                <interface>false</interface>
+            </function>
+            <conversions>
+                <conversion>
+                    <converter>convertTStringToTStringHashTable</converter>
+                    <index>1</index>
+                </conversion>
+            </conversions>
+        </takeGeneric>
+    </takeGenerics>
+    <passThroughTaints>
+        <passThroughTaint>
+            <opcode>185</opcode>
+            <owner>org/olat/core/util/filter/Filter</owner>
+            <name>filter</name>
+            <descriptor>(Ljava/lang/String;)Ljava/lang/String;</descriptor>
+            <interface>true</interface>
+        </passThroughTaint>
+    </passThroughTaints>
+
+</configuration>
+
