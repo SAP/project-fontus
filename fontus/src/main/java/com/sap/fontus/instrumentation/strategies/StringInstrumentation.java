@@ -4,6 +4,7 @@ import com.sap.fontus.Constants;
 import com.sap.fontus.TriConsumer;
 import com.sap.fontus.instrumentation.InstrumentationHelper;
 import com.sap.fontus.taintaware.unified.IASString;
+import com.sap.fontus.utils.LogUtils;
 import org.objectweb.asm.*;
 
 import java.util.Optional;
@@ -41,7 +42,9 @@ public class StringInstrumentation extends AbstractInstrumentation {
      * @param value The String value to load from the constant pool
      */
     private void handleLdcString(MethodVisitor mv, Object value) {
-        logger.info("Rewriting String LDC to IASString LDC instruction");
+        if(LogUtils.LOGGING_ENABLED) {
+            logger.info("Rewriting String LDC to IASString LDC instruction");
+        }
         //mv.visitTypeInsn(Opcodes.NEW, this.instrumentedType.getInternalName());
         //mv.visitInsn(Opcodes.DUP);
         mv.visitLdcInsn(value);
@@ -58,7 +61,9 @@ public class StringInstrumentation extends AbstractInstrumentation {
         Matcher descMatcher = this.descPattern.matcher(descriptor);
         if(descMatcher.find()) {
             String newDescriptor = descMatcher.replaceAll(this.instrumentedType.getDescriptor());
-            logger.info("Replacing String field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Replacing String field [{}]{}.{} with [{}]{}.{}", access, name, descriptor, access, name, newDescriptor);
+            }
             if (value != null && (access & Opcodes.ACC_FINAL) != 0 && (access & Opcodes.ACC_STATIC) != 0) {
                 tc.apply(name, descriptor, value);
             }

@@ -1,5 +1,7 @@
 package com.sap.fontus.gdpr;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.simple.SimpleExpiryDate;
 import com.sap.fontus.gdpr.cookie.ConsentCookie;
@@ -129,15 +131,19 @@ public final class Utils {
         });
     }
 
+    private static final Cache<String,Collection<AllowedPurpose>> cookieCache = Caffeine.newBuilder().build();;
 
     public static Collection<AllowedPurpose> getPurposesFromRequest(ReflectedHttpServletRequest servlet) {
         ReflectedCookie[] cookies = servlet.getCookies();
         if(cookies != null) {
             for (ReflectedCookie cookie : cookies) {
                 if (ConsentCookie.isConsentCookie(cookie.getName().getString())) {
-                    //System.out.println("Found Consent Cookie: " + cookie.getName().getString() + " = " + cookie.getValue().getString());
-                    ConsentCookie consentCookie = ConsentCookie.parse(cookie.getValue().getString());
-                    return ConsentCookieMetadata.getAllowedPurposesFromConsentCookie(consentCookie);
+                    String cookieValue = cookie.getValue().getString();
+                    return cookieCache.get(cookieValue, (cv) -> {
+                        //System.out.println("Found Consent Cookie: " + cookie.getName().getString() + " = " + cookie.getValue().getString());
+                        ConsentCookie consentCookie = ConsentCookie.parse(cv);
+                        return ConsentCookieMetadata.getAllowedPurposesFromConsentCookie(consentCookie);
+                    });
                 }
             }
         }

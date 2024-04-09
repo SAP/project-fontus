@@ -5,8 +5,8 @@ import jdk.internal.vm.annotation.ForceInline;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.*;
 import java.net.URL;
 import java.util.Collection;
 
@@ -26,13 +26,40 @@ public class UnsafeUtils {
         setAccessible = getSetAccessible();
     }
 
+
     private static Collection<AccessibleObject> getSetAccessible() {
         try(InputStream is = UnsafeUtils.class.getClassLoader().getResourceAsStream("SetAccessible.bytes")) {
             byte[] bytes = is.readAllBytes();
-            Class<Collection<AccessibleObject>> collectionClass = (Class<Collection<AccessibleObject>>) defineAnonymousClass(URL.class, bytes, null);
+            Class<Collection<AccessibleObject>> collectionClass = null;
+            try {
+                Method defineAnonymousClass = UNSAFE.getClass().getMethod("defineAnonymousClass", Class.class, byte[].class, //$NON-NLS-1$
+                        Object[].class);
+                @SuppressWarnings("unchecked")
+                Class<Collection<AccessibleObject>> unchecked = (Class<Collection<AccessibleObject>>) defineAnonymousClass
+                        .invoke(UNSAFE, URL.class, bytes, (Object[]) null);
+                collectionClass = unchecked;
+
+            } catch (NoSuchMethodException e) {
+                long offset = (long) UNSAFE.getClass().getMethod("staticFieldOffset", Field.class).invoke(UNSAFE, //$NON-NLS-1$
+                        MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP")); //$NON-NLS-1$
+                MethodHandles.Lookup lookup = (MethodHandles.Lookup) UNSAFE.getClass()
+                        .getMethod("getObject", Object.class, long.class) //$NON-NLS-1$
+                        .invoke(UNSAFE, MethodHandles.Lookup.class, offset);
+                lookup = lookup.in(URL.class);
+                Class<?> classOption = Class.forName("java.lang.invoke.MethodHandles$Lookup$ClassOption"); //$NON-NLS-1$
+                Object classOptions = Array.newInstance(classOption, 0);
+                Method defineHiddenClass = MethodHandles.Lookup.class.getMethod("defineHiddenClass", byte[].class, boolean.class, //$NON-NLS-1$
+                        classOptions.getClass());
+                lookup = (MethodHandles.Lookup) defineHiddenClass.invoke(lookup, bytes, Boolean.FALSE, classOptions);
+                @SuppressWarnings("unchecked")
+                Class<Collection<AccessibleObject>> unchecked = (Class<Collection<AccessibleObject>>) lookup
+                        .lookupClass();
+                collectionClass = unchecked;
+            }
+
             return collectionClass.getConstructor().newInstance();
         } catch (IOException | NoSuchMethodException | InstantiationException | IllegalAccessException |
-                 InvocationTargetException e) {
+                 InvocationTargetException | ClassNotFoundException | NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
     }
@@ -52,10 +79,10 @@ public class UnsafeUtils {
      * @param data      bytes of a class file
      * @param cpPatches where non-null entries exist, they replace corresponding CP entries in data
      */
-    @ForceInline
+    /*@ForceInline
     public static Class<?> defineAnonymousClass(Class<?> hostClass, byte[] data, Object[] cpPatches) {
         return UNSAFE.defineAnonymousClass(hostClass, data, cpPatches);
-    }
+    }*/
 
     @ForceInline
     public static Class<?> defineClass(String name, byte[] bytes, ClassLoader classLoader) {

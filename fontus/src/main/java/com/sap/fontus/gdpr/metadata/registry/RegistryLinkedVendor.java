@@ -3,7 +3,9 @@ package com.sap.fontus.gdpr.metadata.registry;
 import com.sap.fontus.gdpr.metadata.Vendor;
 import com.sap.fontus.gdpr.metadata.VendorBase;
 
-public class RegistryLinkedVendor extends VendorBase {
+import java.io.Serializable;
+
+public class RegistryLinkedVendor extends VendorBase  implements Serializable {
 
     private String name;
 
