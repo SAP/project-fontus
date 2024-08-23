@@ -7,8 +7,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.nio.charset.Charset;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.text.DateFormatSymbols;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -1157,10 +1155,7 @@ public class IASFormatter implements Closeable, Flushable {
             }
 
             if (null == lineSeparator) {
-                lineSeparator = AccessController
-                        .doPrivileged((PrivilegedAction<IASString>) () -> {
-                            return IASString.valueOfInternal(System.getProperty("line.separator")); //$NON-NLS-1$
-                        });
+                lineSeparator = IASString.valueOfInternal(System.getProperty("line.separator")); //$NON-NLS-1$
             }
             return lineSeparator;
         }
