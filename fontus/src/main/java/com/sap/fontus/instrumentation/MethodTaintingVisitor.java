@@ -38,7 +38,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     private int line;
 
     private MethodProxies methodProxies;
-
+    private final MethodTaintingUtils utils;
     /**
      * Some dynamic method invocations can't be handled generically. Add proxy functions here.
      */
@@ -69,6 +69,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         this.isOwnerInterface = isOwnerInterface;
         this.config = config;
         this.combinedExcludedLookup = combinedExcludedLookup;
+        this.utils = new MethodTaintingUtils(this.combinedExcludedLookup);
         this.methodProxies = new MethodProxies(this.combinedExcludedLookup, this.config);
         this.bootstrapMethods = bootstrapMethods;
         if(LogUtils.LOGGING_ENABLED) {
@@ -623,9 +624,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
                 call.setConcreteImplementationType(desc.getArgumentTypes().length == 1 ? desc.getArgumentTypes()[0] : null);
             }
 
-            MethodTaintingUtils.invokeVisitLambdaCall(this.getParentVisitor(), this.instrumentationHelper, call.getProxyDescriptor(this.loader, this.instrumentationHelper), call, this.owner, name, descriptor, this.isOwnerInterface, bootstrapMethodHandle, bootstrapMethodArguments);
+            this.utils.invokeVisitLambdaCall(this.getParentVisitor(), this.instrumentationHelper, call.getProxyDescriptor(this.loader, this.instrumentationHelper), call, this.owner, name, descriptor, this.isOwnerInterface, bootstrapMethodHandle, bootstrapMethodArguments);
 
-            if (MethodTaintingUtils.needsLambdaProxy(descriptor, realFunction, (Type) bootstrapMethodArguments[2], this.instrumentationHelper)) {
+            if (this.utils.needsLambdaProxy(descriptor, realFunction, (Type) bootstrapMethodArguments[2], this.instrumentationHelper)) {
                 this.jdkLambdaMethodProxies.add(call);
             }
         } else if ("makeConcatWithConstants".equals(name)) {

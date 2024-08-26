@@ -2,6 +2,7 @@ package com.sap.fontus.taintaware.unified;
 
 
 import com.sap.fontus.utils.ConversionUtils;
+import jdk.internal.org.jline.reader.LineReader;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -54,6 +55,9 @@ public class IASProperties extends Hashtable<Object, Object> implements External
         return previousString;
     }
 
+    private void load0(LineReader reader) {
+
+    }
     public void load(Reader reader) throws IOException {
         this.properties.load(reader);
     }

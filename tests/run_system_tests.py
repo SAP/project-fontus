@@ -646,6 +646,6 @@ if __name__ == "__main__":
     ARG_PARSER.add_argument("--config", default=CONFIG_FILE)
     ARG_PARSER.add_argument("--taint_type", choices=['boolean', 'range',
                                                      'array', 'lazybasic', 'lazycomplex'],
-                            default='boolean')
+                            default='range')
 
     asyncio.run(main(ARG_PARSER.parse_args()))

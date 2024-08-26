@@ -35,6 +35,8 @@ JAR_FOLDERS=(
     nu-validator
     streams
     jul-config
+    inheritance
+    properties_inheritance
 )
 
 main() {

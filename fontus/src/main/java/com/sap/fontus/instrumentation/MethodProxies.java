@@ -218,11 +218,11 @@ public class MethodProxies {
      * Is there a proxy defined? If so apply and return true.
      */
     public FunctionCall shouldBeProxied(FunctionCall pfe) {
-        if (methodProxies.containsKey(pfe)) {
-            if(LogUtils.LOGGING_ENABLED) {
-                logger.info("Proxying call to {}.{}{}", pfe.getOwner(), pfe.getName(), pfe.getDescriptor());
-            }
-            return methodProxies.get(pfe);
+
+        FunctionCall proxy = methodProxies.get(pfe);
+        if (proxy != null) {
+            logger.info("Proxying call to {}.{}{} to {}.{}{}", pfe.getOwner(), pfe.getName(), pfe.getDescriptor(), proxy.getOwner(), proxy.getName(), proxy.getDescriptor());
+            return proxy;
         }
         if (pfe.getOpcode() == Opcodes.INVOKEVIRTUAL || pfe.getOpcode() == Opcodes.INVOKEINTERFACE) {
             if (this.combinedExcludedLookup.isJdkClass(pfe.getOwner())) {

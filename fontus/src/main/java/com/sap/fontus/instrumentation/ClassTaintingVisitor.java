@@ -200,8 +200,9 @@ class ClassTaintingVisitor extends ClassVisitor {
 
         if (this.recording == null && MethodUtils.isClInit(access, name, desc) && !this.inEnd) {
             if(LogUtils.LOGGING_ENABLED) {
-                logger.info("Recording static initializer");
+                logger.info("Recording static initializer for: {}", this.owner);
             }
+
             RecordingMethodVisitor rmv = new RecordingMethodVisitor();
             this.recording = rmv.getRecording();
             this.hasClInit = true;
@@ -210,13 +211,15 @@ class ClassTaintingVisitor extends ClassVisitor {
         // Create a new main method, wrapping the regular one and translating all Strings to IASStrings
         if (MethodUtils.isMain(access, name, descriptor) && !this.config.isClassMainBlacklisted(this.owner)) {
             if(LogUtils.LOGGING_ENABLED) {
-                logger.info("Creating proxy main method");
+                logger.info("Creating proxy main method in: {}", this.owner);
             }
+
             MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, Constants.Main, Constants.MAIN_METHOD_DESC, null, exceptions);
             this.createMainWrapperMethod(v);
             if(LogUtils.LOGGING_ENABLED) {
-                logger.info("Processing renamed main method.");
+                logger.info("Processing renamed main method in {}", this.owner);
             }
+
             mv = super.visitMethod(access, Constants.MainWrapper, this.newMainDescriptor, signature, exceptions);
             newName = Constants.MainWrapper;
             desc = this.newMainDescriptor;
@@ -247,7 +250,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         } else {
             desc = this.instrumentationHelper.instrumentForNormalCall(descriptor);
             if (LogUtils.LOGGING_ENABLED && !desc.equals(descriptor)) {
-                logger.info("Rewriting method signature {}{} to {}{}", name, descriptor, name, desc);
+                logger.info("Rewriting method signature {}.{}{} to {}{}", this.owner, name, descriptor, name, desc);
             }
             this.instrumentedMethods.add(new org.objectweb.asm.commons.Method(name, desc));
             mv = super.visitMethod(instrumentedAccess, name, desc, instrumentedSignature, exceptions);
@@ -367,12 +370,16 @@ class ClassTaintingVisitor extends ClassVisitor {
     public void visitEnd() {
         this.inEnd = true;
         if (!this.isAnnotation) {
-            if(LogUtils.LOGGING_ENABLED) {
-                logger.info("Overriding not overridden JDK methods which have to be instrumented");
-            }
+
             if (this.isInterface) {
+                if(LogUtils.LOGGING_ENABLED) {
+                    logger.info("Declaring inherited but not overridden JDK methods which have to be instrumented in {}", this.owner);
+                }
                 this.declareMissingJdkMethods();
             } else {
+                if(LogUtils.LOGGING_ENABLED) {
+                    logger.info("Overriding inherited but not overridden JDK methods which have to be instrumented in {}", this.owner);
+                }
                 this.overrideMissingJdkMethods();
             }
         }

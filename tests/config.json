@@ -9,6 +9,12 @@
       "failure_expected": true
     },
     {
+      "name": "Properties Inheritance Issue",
+      "jar_file": "properties_inheritance.jar",
+      "entry_point": "Main",
+      "copy_file": "msgs.properties"
+    },
+    {
       "name": "Streams",
       "jar_file": "streams.jar",
       "entry_point": "Main",
@@ -98,6 +104,10 @@
     {
       "name": "Annotation Special Handling",
       "jar_file": "annotation_test.jar"
+    },
+    {
+      "name": "Final overrides of inherited JDK methods",
+      "jar_file": "inheritance.jar"
     },
     {
       "name": "Forwarding Argument to Main via Reflection",
