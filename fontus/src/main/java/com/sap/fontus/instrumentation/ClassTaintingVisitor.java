@@ -425,7 +425,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         FunctionCall realFc = call.getImplementation();
         FunctionCall proxied = this.methodProxies.shouldBeProxied(realFc);
         if (!realFc.equals(proxied)) {
-            System.out.println(realFc + " != " + proxied);
+           //System.out.println(realFc + " != " + proxied);
             // Call proxied function instead
             call = new LambdaCall(call.getFunctionalInterface(), FunctionCall.toHandle(proxied), call.getInvokeDescriptor());
             this.generateProxyToInstrumented(mv, call.getImplementation().getName(), proxyDescriptor, proxied.getParsedDescriptor(), Optional.of(call));
