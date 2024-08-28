@@ -37,6 +37,7 @@ JAR_FOLDERS=(
     jul-config
     inheritance
     properties_inheritance
+    simple_record
 )
 
 main() {
