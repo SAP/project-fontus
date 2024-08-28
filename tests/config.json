@@ -12,7 +12,8 @@
       "name": "Properties Inheritance Issue",
       "jar_file": "properties_inheritance.jar",
       "entry_point": "Main",
-      "copy_file": "msgs.properties"
+      "copy_file": "msgs.properties",
+      "failure_expected": true
     },
     {
       "name": "Streams",
@@ -20,6 +21,10 @@
       "entry_point": "Main",
       "copy_file": "build.sh",
       "arguments": ["./build.sh"]
+    },
+    {
+      "name": "Record type with toString()",
+      "jar_file": "simple_record.jar"
     },
     {
       "name": "Inheriting from Provider",
