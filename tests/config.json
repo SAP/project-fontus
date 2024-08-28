@@ -12,6 +12,7 @@
       "name": "Properties Inheritance Issue",
       "jar_file": "properties_inheritance.jar",
       "entry_point": "Main",
+      "arguments": ["./deserialized.dat"],
       "copy_file": "msgs.properties",
       "failure_expected": true
     },
