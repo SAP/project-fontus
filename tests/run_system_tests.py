@@ -1,5 +1,5 @@
 import shutil
-from os import path
+from os import path, sched_getaffinity
 import argparse
 import pprint
 import json
@@ -24,6 +24,8 @@ TMPDIR_OUTPUT_DIR_SUFFIX = "instrumented"
 JAR_BASE_NAMES = ["fontus"]
 
 async def gather_with_concurrency(n, *coros):
+    if n > os.sched_getaffinity(0):
+        n = os.sched_getaffinity(0)/2
     semaphore = asyncio.Semaphore(n)
 
     async def sem_coro(coro):
