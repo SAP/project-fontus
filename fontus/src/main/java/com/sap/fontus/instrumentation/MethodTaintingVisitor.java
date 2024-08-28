@@ -631,7 +631,21 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             }
         } else if ("makeConcatWithConstants".equals(name)) {
             this.rewriteConcatWithConstants(name, descriptor, bootstrapMethodArguments);
-        } else {
+        } else if (bootstrapMethodHandle.getOwner().equals("java/lang/runtime/ObjectMethods") && "bootstrap".equals(bootstrapMethodHandle.getName())) {
+
+            String desc = this.instrumentationHelper.instrumentForNormalCall(descriptor);
+
+
+            Handle instrumentedOriginalHandle = new Handle(bootstrapMethodHandle.getTag(), "com/sap/fontus/taintaware/unified/runtime/ObjectMethods", bootstrapMethodHandle.getName(), bootstrapMethodHandle.getDesc(), bootstrapMethodHandle.isInterface());
+
+            for(int i = 0; i < bootstrapMethodArguments.length; i++) {
+                Object o = bootstrapMethodArguments[i];
+                if (o instanceof Handle) {
+                    bootstrapMethodArguments[i] = Utils.instrumentHandle((Handle) o, instrumentationHelper);
+                }
+            }
+            super.visitInvokeDynamicInsn(name, desc, instrumentedOriginalHandle, bootstrapMethodArguments);
+        }  else {
             String desc = this.instrumentationHelper.instrumentForNormalCall(descriptor);
 
             String instrumentedBootstrapDesc = this.instrumentationHelper.instrumentForNormalCall(bootstrapMethodHandle.getDesc());

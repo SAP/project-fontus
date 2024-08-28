@@ -170,6 +170,11 @@ class ClassTaintingVisitor extends ClassVisitor {
         return this.instrumentationHelper.instrumentFieldInstruction(this.visitor, access, name, descriptor, signature, value, (n, d, v) -> this.staticFinalFields.add(FieldData.of(n, d, v))).orElse(null);
     }
 
+    @Override
+    public RecordComponentVisitor visitRecordComponent(String name, String descriptor, String signature) {
+        String desc = this.instrumentationHelper.instrument(descriptor);
+        return super.visitRecordComponent(name, desc, signature);
+    }
 
     @Override
     public MethodVisitor visitMethod(
