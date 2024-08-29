@@ -374,6 +374,7 @@ class ClassTaintingVisitor extends ClassVisitor {
     @Override
     public void visitEnd() {
         this.inEnd = true;
+        CompatHelper.getInstance().createCompatProxies(this.owner, super::visitMethod);
         if (!this.isAnnotation) {
 
             if (this.isInterface) {
