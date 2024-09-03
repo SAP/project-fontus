@@ -101,31 +101,31 @@ public class ObjectMethods {
     private static MethodHandle makeEquals(Class<?> receiverClass, List<MethodHandle> getters) {
         MethodType rr = MethodType.methodType(Boolean.TYPE, receiverClass, receiverClass);
         MethodType ro = MethodType.methodType(Boolean.TYPE, receiverClass, Object.class);
-        MethodHandle instanceFalse = MethodHandles.dropArguments(FALSE, 0, new Class[]{receiverClass, Object.class});
-        MethodHandle instanceTrue = MethodHandles.dropArguments(TRUE, 0, new Class[]{receiverClass, Object.class});
+        MethodHandle instanceFalse = MethodHandles.dropArguments(FALSE, 0, receiverClass, Object.class);
+        MethodHandle instanceTrue = MethodHandles.dropArguments(TRUE, 0, receiverClass, Object.class);
         MethodHandle isSameObject = OBJECT_EQ.asType(ro);
-        MethodHandle isInstance = MethodHandles.dropArguments(CLASS_IS_INSTANCE.bindTo(receiverClass), 0, new Class[]{receiverClass});
-        MethodHandle accumulator = MethodHandles.dropArguments(TRUE, 0, new Class[]{receiverClass, receiverClass});
+        MethodHandle isInstance = MethodHandles.dropArguments(CLASS_IS_INSTANCE.bindTo(receiverClass), 0, receiverClass);
+        MethodHandle accumulator = MethodHandles.dropArguments(TRUE, 0, receiverClass, receiverClass);
 
         MethodHandle thisFieldEqual;
         for(Iterator<MethodHandle> it = getters.iterator(); it.hasNext(); accumulator = MethodHandles.guardWithTest(thisFieldEqual, accumulator, instanceFalse.asType(rr))) {
             MethodHandle getter = it.next();
             MethodHandle equalator = equalator(getter.type().returnType());
-            thisFieldEqual = MethodHandles.filterArguments(equalator, 0, new MethodHandle[]{getter, getter});
+            thisFieldEqual = MethodHandles.filterArguments(equalator, 0, getter, getter);
         }
 
         return MethodHandles.guardWithTest(isSameObject, instanceTrue, MethodHandles.guardWithTest(isInstance, accumulator.asType(ro), instanceFalse));
     }
 
     private static MethodHandle makeHashCode(Class<?> receiverClass, List<MethodHandle> getters) {
-        MethodHandle accumulator = MethodHandles.dropArguments(ZERO, 0, new Class[]{receiverClass});
+        MethodHandle accumulator = MethodHandles.dropArguments(ZERO, 0, receiverClass);
 
         MethodHandle combineHashes;
-        for(Iterator<MethodHandle> it = getters.iterator(); it.hasNext(); accumulator = MethodHandles.permuteArguments(combineHashes, accumulator.type(), new int[]{0, 0})) {
+        for(Iterator<MethodHandle> it = getters.iterator(); it.hasNext(); accumulator = MethodHandles.permuteArguments(combineHashes, accumulator.type(), 0, 0)) {
             MethodHandle getter = it.next();
             MethodHandle hasher = hasher(getter.type().returnType());
-            MethodHandle hashThisField = MethodHandles.filterArguments(hasher, 0, new MethodHandle[]{getter});
-            combineHashes = MethodHandles.filterArguments(HASH_COMBINER, 0, new MethodHandle[]{accumulator, hashThisField});
+            MethodHandle hashThisField = MethodHandles.filterArguments(hasher, 0, getter);
+            combineHashes = MethodHandles.filterArguments(HASH_COMBINER, 0, accumulator, hashThisField);
         }
 
         return accumulator;
@@ -145,7 +145,7 @@ public class ObjectMethods {
         for(int i = 0; i < getters.size(); ++i) {
             formatter = getters.get(i);
             filtered = stringifier(formatter.type().returnType());
-            MethodHandle stringifyThisField = MethodHandles.filterArguments(filtered, 0, new MethodHandle[]{formatter});
+            MethodHandle stringifyThisField = MethodHandles.filterArguments(filtered, 0, formatter);
             filters[i] = stringifyThisField;
             sb.append(names.get(i)).append("=%s");
             if (i != getters.size() - 1) {
@@ -155,9 +155,9 @@ public class ObjectMethods {
 
         sb.append(']');
         String formatString = sb.toString();
-        formatter = MethodHandles.insertArguments(STRING_FORMAT, 0, new Object[]{formatString}).asCollector(String[].class, getters.size());
-        if (getters.size() == 0) {
-            formatter = MethodHandles.dropArguments(formatter, 0, new Class[]{receiverClass});
+        formatter = MethodHandles.insertArguments(STRING_FORMAT, 0, formatString).asCollector(String[].class, getters.size());
+        if (getters.isEmpty()) {
+            formatter = MethodHandles.dropArguments(formatter, 0, receiverClass);
         } else {
             filtered = MethodHandles.filterArguments(formatter, 0, filters);
             formatter = MethodHandles.permuteArguments(filtered, MethodType.methodType(String.class, receiverClass), invArgs);
@@ -180,7 +180,7 @@ public class ObjectMethods {
         for(int i = 0; i < getters.size(); ++i) {
             formatter = getters.get(i);
             filtered = tstringifier(formatter.type().returnType());
-            MethodHandle stringifyThisField = MethodHandles.filterArguments(filtered, 0, new MethodHandle[]{formatter});
+            MethodHandle stringifyThisField = MethodHandles.filterArguments(filtered, 0, formatter);
             filters[i] = stringifyThisField;
             sb.append(names.get(i)).append("=%s");
             if (i != getters.size() - 1) {
@@ -190,9 +190,9 @@ public class ObjectMethods {
 
         sb.append(']');
         IASString formatString = sb.toIASString();
-        formatter = MethodHandles.insertArguments(TSTRING_FORMAT, 0, new Object[]{formatString}).asCollector(IASString[].class, getters.size());
-        if (getters.size() == 0) {
-            formatter = MethodHandles.dropArguments(formatter, 0, new Class[]{receiverClass});
+        formatter = MethodHandles.insertArguments(TSTRING_FORMAT, 0, formatString).asCollector(IASString[].class, getters.size());
+        if (getters.isEmpty()) {
+            formatter = MethodHandles.dropArguments(formatter, 0, receiverClass);
         } else {
             filtered = MethodHandles.filterArguments(formatter, 0, filters);
             formatter = MethodHandles.permuteArguments(filtered, MethodType.methodType(IASString.class, receiverClass), invArgs);
@@ -206,7 +206,6 @@ public class ObjectMethods {
         if (type instanceof MethodType) {
             methodType = (MethodType) type;
         } else {
-            methodType = null;
             if (!MethodHandle.class.equals(type)) {
                 throw new IllegalArgumentException(type.toString());
             }
@@ -256,10 +255,10 @@ public class ObjectMethods {
         FALSE = MethodHandles.constant(Boolean.TYPE, false);
         TRUE = MethodHandles.constant(Boolean.TYPE, true);
         ZERO = MethodHandles.constant(Integer.TYPE, 0);
-        primitiveEquals = new HashMap();
-        primitiveHashers = new HashMap();
-        primitiveToString = new HashMap();
-        primitiveToTString = new HashMap();
+        primitiveEquals = new HashMap<>();
+        primitiveHashers = new HashMap<>();
+        primitiveToString = new HashMap<>();
+        primitiveToTString = new HashMap<>();
         try {
             Class<ObjectMethods> OBJECT_METHODS_CLASS = ObjectMethods.class;
             MethodHandles.Lookup publicLookup = MethodHandles.publicLookup();

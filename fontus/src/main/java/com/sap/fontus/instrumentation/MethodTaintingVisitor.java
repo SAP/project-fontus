@@ -37,7 +37,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
     private int line;
 
-    private MethodProxies methodProxies;
+    private final MethodProxies methodProxies;
     private final MethodTaintingUtils utils;
     /**
      * Some dynamic method invocations can't be handled generically. Add proxy functions here.
@@ -106,7 +106,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
     /**
-     * See https://stackoverflow.com/questions/47674972/getting-the-number-of-local-variables-in-a-method
+     * See <a href="https://stackoverflow.com/questions/47674972/getting-the-number-of-local-variables-in-a-method">...</a>
      * for keeping track of used locals..
      */
     @Override
@@ -565,8 +565,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             return;
         }
 
-        if (value instanceof Type) {
-            Type type = (Type) value;
+        if (value instanceof Type type) {
             int sort = type.getSort();
             if (sort == Type.OBJECT) {
                 if (this.instrumentationHelper.handleLdcType(this.mv, type)) {
@@ -640,8 +639,8 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
 
             for(int i = 0; i < bootstrapMethodArguments.length; i++) {
                 Object o = bootstrapMethodArguments[i];
-                if (o instanceof Handle) {
-                    bootstrapMethodArguments[i] = Utils.instrumentHandle((Handle) o, instrumentationHelper);
+                if (o instanceof Handle h) {
+                    bootstrapMethodArguments[i] = Utils.instrumentHandle(h, this.instrumentationHelper);
                 }
             }
             super.visitInvokeDynamicInsn(name, desc, instrumentedOriginalHandle, bootstrapMethodArguments);

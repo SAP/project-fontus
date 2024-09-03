@@ -101,7 +101,7 @@ public class PetClinicTaintHandler extends IASTaintHandler {
             // See if we can retrieve original the name using the PetClinic interface...
             String idMatch = m.group(1);
             // Let it throw...
-            int id = Integer.valueOf(idMatch);
+            int id = Integer.parseInt(idMatch);
             // Can we get the Owner object corresponding to this?
             metadata = new SimpleGdprMetadata(
                     Utils.getPurposesFromRequest(servlet),
@@ -208,7 +208,7 @@ public class PetClinicTaintHandler extends IASTaintHandler {
      * @param object The object to be tainted
      * @param sourceId The ID of the taint source function
      * @return The tainted object
-     *
+     * <p>
      * This snippet of XML can be added to the source:
      *
      * <pre>

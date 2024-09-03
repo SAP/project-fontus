@@ -14,12 +14,13 @@ public class SqliteDB implements CompatHelper.CompatImplementation {
 
     @Override
     public String getAffects() {
-        return affects;
+        return this.affects;
     }
 
     @Override
     public void apply(String owner, MethodVisitorCreator methodVisitorCreator) {
-        createOnUpdate(methodVisitorCreator, owner);
+        assert this.affects.equals(owner);
+        this.createOnUpdate(methodVisitorCreator, owner);
     }
 
     private void createOnUpdate(MethodVisitorCreator methodVisitorCreator, String owner) {

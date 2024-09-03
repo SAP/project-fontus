@@ -29,9 +29,9 @@ public class DataProtection {
     }
 
     public DataProtection(List<String> vendors, List<String> purposes, List<String> aborts) {
-        this.vendors = vendors.stream().map(vendor -> vendor.trim()).collect(Collectors.toList());
-        this.purposes = purposes.stream().map(purpose -> purpose.trim()).collect(Collectors.toList());
-        this.aborts = aborts.stream().map(abort -> abort.trim()).collect(Collectors.toList());
+        this.vendors = vendors.stream().map(String::trim).toList();
+        this.purposes = purposes.stream().map(String::trim).toList();
+        this.aborts = aborts.stream().map(String::trim).toList();
     }
 
     public List<String> getVendors() {

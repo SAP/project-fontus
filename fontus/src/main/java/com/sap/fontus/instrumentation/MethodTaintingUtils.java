@@ -114,18 +114,16 @@ public final class MethodTaintingUtils {
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
         Handle realFunction = (Handle) bootstrapMethodArguments[1];
 
-        boolean isExcludedOrJdk = needsLambdaProxy(descriptor, realFunction, (Type) bootstrapMethodArguments[2], instrumentationHelper);
+        boolean isExcludedOrJdk = this.needsLambdaProxy(descriptor, realFunction, (Type) bootstrapMethodArguments[2], instrumentationHelper);
 
         Object[] bsArgs;
         if (!isExcludedOrJdk) {
             bsArgs = new Object[bootstrapMethodArguments.length];
             for (int i = 0; i < bootstrapMethodArguments.length; i++) {
                 Object arg = bootstrapMethodArguments[i];
-                if (arg instanceof Handle) {
-                    Handle a = (Handle) arg;
+                if (arg instanceof Handle a) {
                     bsArgs[i] = Utils.instrumentHandle(a, instrumentationHelper);
-                } else if (arg instanceof Type) {
-                    Type a = (Type) arg;
+                } else if (arg instanceof Type a) {
                     if (a.getSort() == Type.OBJECT) {
                         bsArgs[i] = Type.getObjectType(instrumentationHelper.instrumentQN(a.getInternalName()));
                     } else {
@@ -137,7 +135,7 @@ public final class MethodTaintingUtils {
             }
         } else {
             bsArgs = bootstrapMethodArguments.clone();
-            if (lookup.isPackageExcludedOrJdk(lambdaCall.getImplementation().getOwner())) {
+            if (this.lookup.isPackageExcludedOrJdk(lambdaCall.getImplementation().getOwner())) {
                 bsArgs[0] = Utils.instrumentType((Type) bsArgs[0], instrumentationHelper);
                 bsArgs[2] = Utils.instrumentType((Type) bsArgs[2], instrumentationHelper);
             }
@@ -150,6 +148,6 @@ public final class MethodTaintingUtils {
     }
 
     public boolean needsLambdaProxy(String descriptor, Handle realFunction, Type concreteDescriptor, InstrumentationHelper instrumentationHelper) {
-        return isFunctionalInterfaceJdkOrExcluded(descriptor) || (!instrumentationHelper.canHandleType(Type.getObjectType(realFunction.getOwner()).getDescriptor()) && isMethodReferenceJdkOrExcluded(realFunction));
+        return this.isFunctionalInterfaceJdkOrExcluded(descriptor) || (!instrumentationHelper.canHandleType(Type.getObjectType(realFunction.getOwner()).getDescriptor()) && this.isMethodReferenceJdkOrExcluded(realFunction));
     }
 }

@@ -48,8 +48,8 @@ public class IASProperties extends Hashtable<Object, Object> implements External
 
     public synchronized Object setProperty(IASString key, IASString value) {
         Object previousString = this.properties.setProperty(key.getString(), value.getString());
-        if (previousString instanceof String) {
-            return IASString.fromString((String) previousString);
+        if (previousString instanceof String s) {
+            return IASString.fromString(s);
         }
         return previousString;
     }
@@ -148,7 +148,7 @@ public class IASProperties extends Hashtable<Object, Object> implements External
                         .list(this.properties.keys())
                         .stream()
                         .map(ConversionUtils::convertToInstrumented)
-                        .collect(Collectors.toList())
+                        .toList()
         );
     }
 
@@ -159,7 +159,7 @@ public class IASProperties extends Hashtable<Object, Object> implements External
                         .list(this.properties.elements())
                         .stream()
                         .map(ConversionUtils::convertToInstrumented)
-                        .collect(Collectors.toList())
+                        .toList()
         );
     }
 
@@ -279,8 +279,8 @@ public class IASProperties extends Hashtable<Object, Object> implements External
             return false;
         } else if (o instanceof Properties) {
             return this.properties.equals(o);
-        } else if (o instanceof IASProperties) {
-            return this.properties.equals(((IASProperties) o).properties);
+        } else if (o instanceof IASProperties p) {
+            return this.properties.equals(p.properties);
         }
         return false;
     }

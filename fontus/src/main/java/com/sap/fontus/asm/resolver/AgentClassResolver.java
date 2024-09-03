@@ -11,7 +11,7 @@ import java.util.Optional;
 
 /**
  * AgentClassResolvers have been split into the following hierarchy:
- *
+ * <p>
  * IClassResolver
  *  |-AgentClassResolver
  *     |-CachingAgentClassResolver
@@ -19,25 +19,25 @@ import java.util.Optional;
  *         |-BackgroundAgentClassResolver
  *             |-SingleThreadAgentClassResolver
  *             |-ParallelAgentClassResolver
- *
+ * <p>
  * The AgentClassResolver is simple and keeps a single cache to itself for resolvedClasses.
  * No pre-loading is performed.
- *
+ * <p>
  * The CachingAgentClassResolver attempts to pre-load classes from the classloader into
  * the BytecodeRegistry during the initialize() method. This can be performed either
  * on the calling thread or in the background.
- *
+ * <p>
  * The CallingThreadAgentClassResolver pre-caches all classes using the calling thread during
  * initialization, which may block execution if there are a lot of classes to load or some
  * are unreachable.
- *
+ * <p>
  * The BackgroundAgentClassResolver pre-caches classes using executors in two ways:
- *
+ * <p>
  * The SingleThreadAgentClassResolver pre-loads classes using a single thread in the background,
  * but then wait for the thread to terminate, with a timeout. The behaviour should be similar to
  * that of the CallingThreadAgentClassResolver, except with a timeout. This resolver in some cases
  * caused execution to hang (until the timeout) which needs invesitgation.
- *
+ * <p>
  * The ParallelAgentClassResolver loads classes using a thread pool, and does not wait for pre-caching
  * to complete before exiting the initialize method.
  */

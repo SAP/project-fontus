@@ -256,8 +256,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         if (jsonList.isTainted()) {
             IASTaintMetadata metadata = jsonList.getTaintInformation().getTaint(0);
             // As a diagnosis is sensitive information, set the appropriate bit:
-            if (metadata instanceof GdprTaintMetadata) {
-                GdprTaintMetadata gdprMetadata = (GdprTaintMetadata) metadata;
+            if (metadata instanceof GdprTaintMetadata gdprMetadata) {
                 gdprMetadata.getMetadata().setProtectionLevel(ProtectionLevel.Sensitive);
             } else {
                 System.err.println("Metadata is not of type GdprTaintMetadata! Actual type: " + metadata.getClass());
@@ -273,7 +272,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
      * @param object The object to be tainted
      * @param sourceId The ID of the taint source function
      * @return The tainted object
-     *
+     * <p>
      * This snippet of XML can be added to the source:
      *
      * <pre>
@@ -309,8 +308,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             boolean policyViolation = false;
             for (IASTaintRange range : taintedString.getTaintInformation().getTaintRanges(taintedString.getString().length())) {
                 // Check policy for each range
-                if (range.getMetadata() instanceof GdprTaintMetadata) {
-                    GdprTaintMetadata taintMetadata = (GdprTaintMetadata) range.getMetadata();
+                if (range.getMetadata() instanceof GdprTaintMetadata taintMetadata) {
                     GdprMetadata metadata = taintMetadata.getMetadata();
                     if (!policy.areRequiredPurposesAllowed(requiredPurposes, metadata.getAllowedPurposes())) {
                         policyViolation = true;
@@ -345,11 +343,6 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
 
     /**
      * This is called for sink functions
-     * @param taintAware
-     * @param instance
-     * @param sinkFunction
-     * @param sinkName
-     * @return
      */
     public static IASTaintAware handleTaint(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, String callerFunction) {
         boolean isTainted = taintAware.isTainted();

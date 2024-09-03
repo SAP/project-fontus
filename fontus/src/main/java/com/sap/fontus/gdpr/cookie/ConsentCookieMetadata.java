@@ -18,7 +18,7 @@ public final class ConsentCookieMetadata {
 
     private ConsentCookieMetadata() {
     }
-    private static final Cache<ConsentCookie,Collection<AllowedPurpose>> purposeCache = Caffeine.newBuilder().build();;
+    private static final Cache<ConsentCookie,Collection<AllowedPurpose>> purposeCache = Caffeine.newBuilder().build();
 
     public static Collection<AllowedPurpose> getAllowedPurposesFromConsentCookie(ConsentCookie cookie) {
         return purposeCache.get(cookie, (ignored)-> {

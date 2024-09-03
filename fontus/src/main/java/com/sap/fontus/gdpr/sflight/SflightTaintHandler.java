@@ -80,10 +80,8 @@ public class SflightTaintHandler extends IASTaintHandler {
             GdprMetadata metadata = createUserNameMetadata(taintAware.toIASString().getString(), parameters[0]);
 
             // Add taint information if match was found
-            if (metadata != null) {
-                System.out.println("Adding Taint metadata to string '" + taintAware.toString() + "': " + metadata);
-                taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
-            }
+            System.out.println("Adding Taint metadata to string '" + taintAware + "': " + metadata);
+            taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
         }
         return taintAware;
     }

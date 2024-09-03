@@ -26,7 +26,9 @@ public class IASProxyProxy {
     }
 
     // Prevent instantiation
-    private IASProxyProxy() { h = null; }
+    private IASProxyProxy() {
+        this.h = null;
+    }
 
     public static boolean isProxyClass(Class<?> cls) {
         if(cls == null) {
@@ -157,7 +159,7 @@ public class IASProxyProxy {
             Constructor<?> constructor = proxy.getConstructor(InvocationHandler.class);
 
             try {
-                return constructor.newInstance(new Object[]{h});
+                return constructor.newInstance(h);
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new InternalError(e.toString(), e);
             } catch (InvocationTargetException e) {

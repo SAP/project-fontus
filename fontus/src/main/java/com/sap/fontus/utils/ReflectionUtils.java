@@ -19,7 +19,7 @@ public final class ReflectionUtils {
     @SuppressWarnings("Since15")
     public static Class<?> getCallerClass() {
         if (Constants.JAVA_VERSION >= 9) {
-            return StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).walk((Function<Stream<StackWalker.StackFrame>, Class<?>>) stackFrameStream -> stackFrameStream.filter(new Predicate<StackWalker.StackFrame>() {
+            return StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).walk((Function<Stream<StackWalker.StackFrame>, Class<?>>) stackFrameStream -> stackFrameStream.filter(new Predicate<>() {
                 private int counter = 0;
 
                 @Override

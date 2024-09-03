@@ -36,7 +36,7 @@ public class ConsentCookie {
         this.created = Instant.now().getEpochSecond();
 
     }
-    private static final Cache<String,ConsentCookie> cookieCache = Caffeine.newBuilder().build();;
+    private static final Cache<String,ConsentCookie> cookieCache = Caffeine.newBuilder().build();
 
     @Override
     public int hashCode() {

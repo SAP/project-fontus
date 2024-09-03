@@ -1,19 +1,13 @@
 package com.sap.fontus.instrumentation;
 
-import com.sap.fontus.Constants;
 import com.sap.fontus.instrumentation.compat.SqliteCollation;
 import com.sap.fontus.instrumentation.compat.SqliteDB;
 import com.sap.fontus.instrumentation.compat.SqliteNativeDB;
-import com.sap.fontus.taintaware.unified.IASString;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 
-import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class CompatHelper {
-    private ConcurrentHashMap<String, CompatImplementation> implementations;
+public final class CompatHelper {
+    private final ConcurrentHashMap<String, CompatImplementation> implementations;
 
     private CompatHelper() {
         this.implementations = new ConcurrentHashMap<>();

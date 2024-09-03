@@ -64,7 +64,7 @@ public final class Utils {
 
     /**
      * For consumption by tools related to Fontus.
-     *
+     * <p>
      * This is factored out here, as it is very easy to get super confusing error messages iff one depends on the shadow
      * jar of the fontus module and have the JSQLParser stuff as a dependency yourself.
      * @param query original query

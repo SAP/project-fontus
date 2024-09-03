@@ -14,12 +14,12 @@ public class SqliteCollation implements CompatHelper.CompatImplementation {
 
     @Override
     public String getAffects() {
-        return affects;
+        return this.affects;
     }
 
     @Override
     public void apply(String owner, MethodVisitorCreator methodVisitorCreator) {
-        assert "org/sqlite/Collation".equals(owner);
+        assert this.affects.equals(owner);
         MethodVisitor mv = methodVisitorCreator.create(Opcodes.ACC_PUBLIC, "xCompare", Type.getMethodDescriptor(Type.INT_TYPE, Type.getType(String.class), Type.getType(String.class)), null, null);
         mv.visitCode();
         createSqliteXCompareProxy(mv, owner);

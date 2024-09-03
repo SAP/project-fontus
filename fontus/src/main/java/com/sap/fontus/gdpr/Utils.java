@@ -55,8 +55,7 @@ public final class Utils {
 
         for(IASTaintRange range: taintRanges) {
             IASTaintMetadata meta = range.getMetadata();
-            if(meta instanceof GdprTaintMetadata) {
-                GdprTaintMetadata gdprTaintMetadata = (GdprTaintMetadata) meta;
+            if(meta instanceof GdprTaintMetadata gdprTaintMetadata) {
                 GdprMetadata gdprMetadata = gdprTaintMetadata.getMetadata();
                 accumulator = function.apply(accumulator, gdprMetadata);
             }
@@ -73,8 +72,7 @@ public final class Utils {
             PurposePolicy policy = new SimplePurposePolicy();
             for (IASTaintRange range : tainted.getTaintInformation().getTaintRanges(tainted.getString().length())) {
                 // Check policy for each range
-                if (range.getMetadata() instanceof GdprTaintMetadata) {
-                    GdprTaintMetadata taintMetadata = (GdprTaintMetadata) range.getMetadata();
+                if (range.getMetadata() instanceof GdprTaintMetadata taintMetadata) {
                     GdprMetadata metadata = taintMetadata.getMetadata();
                     if (!policy.areRequiredPurposesAllowed(required, metadata.getAllowedPurposes())) {
                         return true;
@@ -125,13 +123,13 @@ public final class Utils {
             gdprData.setProtectionLevel(protectionLevel);
             for(AllowedPurpose purpose : gdprData.getAllowedPurposes()) {
                 purpose.setExpiryDate(expiryDate);
-                acc = true;
+
             }
-            return acc;
+            return true;
         });
     }
 
-    private static final Cache<String,Collection<AllowedPurpose>> cookieCache = Caffeine.newBuilder().build();;
+    private static final Cache<String,Collection<AllowedPurpose>> cookieCache = Caffeine.newBuilder().build();
 
     public static Collection<AllowedPurpose> getPurposesFromRequest(ReflectedHttpServletRequest servlet) {
         ReflectedCookie[] cookies = servlet.getCookies();
@@ -159,8 +157,8 @@ public final class Utils {
                 StringBuilder sb = new StringBuilder(s.getString());
                 for (IASTaintRange range : s.getTaintInformation().getTaintRanges(s.length())) {
                     IASTaintMetadata meta = range.getMetadata();
-                    if(meta instanceof GdprTaintMetadata) {
-                        GdprMetadata gdprMetadata = ((GdprTaintMetadata) meta).getMetadata();
+                    if(meta instanceof GdprTaintMetadata gdprTaintMetadata) {
+                        GdprMetadata gdprMetadata = gdprTaintMetadata.getMetadata();
                         if(!gdprMetadata.isProcessingUnrestricted()) {
                             contested = true;
                             for (int i = range.getStart(); i < range.getEnd(); i++) {

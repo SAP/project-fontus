@@ -91,7 +91,7 @@ public class SapCloudTaintHandler extends IASTaintHandler {
 
             // Add taint information if match was found
             if (metadata != null) {
-                System.out.println("Adding Taint metadata to string '" + taintAware.toString() + "': " + metadata);
+                System.out.println("Adding Taint metadata to string '" + taintAware + "': " + metadata);
                 taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
             }
         }
@@ -103,7 +103,7 @@ public class SapCloudTaintHandler extends IASTaintHandler {
      * @param object The object to be tainted
      * @param sourceId The ID of the taint source function
      * @return The tainted object
-     *
+     * <p>
      * This snippet of XML can be added to the source:
      *
      * <pre>

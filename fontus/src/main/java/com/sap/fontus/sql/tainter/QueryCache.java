@@ -11,13 +11,14 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statements;
 
 import java.util.List;
+import java.util.Objects;
 
 public enum QueryCache {
     INSTANCE;
     private int hits = 0;
     private int misses = 0;
     private final Cache<String, Pair<String, QueryParameters>> queryCache;
-    private boolean collectStatistics;
+    private final boolean collectStatistics;
 
     QueryCache() {
         this.collectStatistics = Configuration.getConfiguration().collectStats();
@@ -43,11 +44,11 @@ public enum QueryCache {
                 // This uses a different SQL parser, probably not ideal
                 List<SqlLexerToken> tokens = SqlLexerToken.getLexerTokens(query);
                 Statistics.INSTANCE.incrementTotalQueryLength(tokens.size());
-                tokens = SqlLexerToken.getLexerTokens(stmts.toString());
+                tokens = SqlLexerToken.getLexerTokens(Objects.requireNonNull(stmts).toString());
                 Statistics.INSTANCE.incrementRewrittenQueryLength(tokens.size());
             }
 
-            return new Pair<String, QueryParameters>(stmts.toString().trim(), tainter.getParameters());
+            return new Pair<>(Objects.requireNonNull(stmts).toString().trim(), tainter.getParameters());
         });
     }
 

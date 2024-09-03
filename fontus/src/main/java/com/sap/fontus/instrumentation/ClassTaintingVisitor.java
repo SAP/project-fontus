@@ -283,7 +283,7 @@ class ClassTaintingVisitor extends ClassVisitor {
         // TODO Handle lists
         int register = 0;
 
-        if (!lambdaCall.isPresent() || (!lambdaCall.get().isStaticCall() && !lambdaCall.get().isConstructorCall())) {
+        if (lambdaCall.isEmpty() || (!lambdaCall.get().isStaticCall() && !lambdaCall.get().isConstructorCall())) {
             mv.visitVarInsn(Opcodes.ALOAD, 0);
             register++;
         }
@@ -532,7 +532,7 @@ class ClassTaintingVisitor extends ClassVisitor {
                 .filter(method -> this.shouldBeInstrumented(method.getDescriptor()))
                 .filter(method -> !Modifier.isStatic(method.getAccess()))
                 .filter(method -> !MethodUtils.isToString(method.getName(), method.getDescriptor()))
-                .collect(Collectors.toList());
+                .toList();
         methods.forEach(this::createJdkDeclaring);
     }
 
@@ -563,7 +563,7 @@ class ClassTaintingVisitor extends ClassVisitor {
                 .filter(method -> !this.containsOverriddenJdkMethod(method))
                 .filter(method -> this.shouldBeInstrumented(method.getDescriptor()))
                 //.filter(method -> !Modifier.isStatic(method.getAccess()))
-                .collect(Collectors.toList());
+                .toList();
         methods.forEach(this::createInstrumentedJdkProxy);
     }
 

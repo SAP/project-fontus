@@ -6,13 +6,13 @@ import java.lang.reflect.Member;
 
 
 public interface IASMember {
-    public Class<?> getDeclaringClass();
+    Class<?> getDeclaringClass();
 
-    public IASString getName();
+    IASString getName();
 
-    public int getModifiers();
+    int getModifiers();
 
-    public boolean isSynthetic();
+    boolean isSynthetic();
 
-    public Member getMember();
+    Member getMember();
 }

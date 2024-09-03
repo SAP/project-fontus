@@ -61,7 +61,7 @@ public class SelectTainter extends SelectVisitorAdapter {
 					for (Expression e : plannedExpressions) {
 						expression.append(e.toString()).append(",");
 					}
-					if(expression.length() == 0) {
+					if(expression.isEmpty()) {
 						throw new IllegalStateException("Expression of length 0");
 					}
 					String expr = expression.substring(0, expression.length()-1);
@@ -140,8 +140,7 @@ public class SelectTainter extends SelectVisitorAdapter {
 		if(joins != null) {
 			for (Join join : joins) {
 				FromItem rhs = join.getRightItem();
-				if(rhs instanceof SubSelect) {
-					SubSelect from = (SubSelect) rhs;
+				if(rhs instanceof SubSelect from) {
 					SelectTainter selectTainter = new SelectTainter(this.parameters);
 					from.getSelectBody().accept(selectTainter);
 					/*if (from != null) {
@@ -158,8 +157,7 @@ public class SelectTainter extends SelectVisitorAdapter {
 			}
 		}
 		FromItem from = plainSelect.getFromItem();
-		if(from instanceof SubSelect) {
-			SubSelect froms = (SubSelect) from;
+		if(from instanceof SubSelect froms) {
 			SelectTainter selectTainter = new SelectTainter(this.parameters);
 			froms.getSelectBody().accept(selectTainter);
 			/*if(froms != null) {

@@ -154,7 +154,7 @@ public class OpenHospitalTaintHandler extends IASTaintHandler {
      * @param object The object to be tainted
      * @param sourceId The ID of the taint source function
      * @return The tainted object
-     *
+     * <p>
      * This snippet of XML can be added to the source:
      *
      * <pre>
@@ -186,8 +186,7 @@ public class OpenHospitalTaintHandler extends IASTaintHandler {
             boolean policyViolation = false;
             for (IASTaintRange range : taintedString.getTaintInformation().getTaintRanges(taintedString.getString().length())) {
                 // Check policy for each range
-                if (range.getMetadata() instanceof GdprTaintMetadata) {
-                    GdprTaintMetadata taintMetadata = (GdprTaintMetadata) range.getMetadata();
+                if (range.getMetadata() instanceof GdprTaintMetadata taintMetadata) {
                     GdprMetadata metadata = taintMetadata.getMetadata();
                     if (!policy.areRequiredPurposesAllowed(requiredPurposes, metadata.getAllowedPurposes())) {
                         policyViolation = true;

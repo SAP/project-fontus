@@ -61,7 +61,7 @@ public class IASTaintHandler {
      * @param instance     The specific instance of the object on which the method is called
      * @param sinkFunction The name of the function
      * @param sinkName     The name of the sink
-     * @return
+     * @return The tainted data after invoking the hook. This can be null even if a non-null value was passed to this function!
      */
     public static IASTaintAware handleTaint(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, String callerName) {
         boolean isTainted = taintAware.isTainted();
@@ -89,7 +89,7 @@ public class IASTaintHandler {
 
     protected static Object traverseObject(Object object, Function<IASTaintAware, IASTaintAware> atomicHandler) {
         List<Object> visited = new ArrayList<>();
-        return traverseObject(object, new Function<Object, Object>() {
+        return traverseObject(object, new Function<>() {
             @Override
             public Object apply(Object o) {
                 return traverseObject(o, this, visited, atomicHandler);
@@ -180,7 +180,7 @@ public class IASTaintHandler {
 
     /**
      * Hook function called at all taint sinks in the bytecode
-     *
+     * <p>
      * String object = parentObject.sourceCall(parameters);
      *
      * @param object The object to be tainted (can be a string, or something which needs traversing, like a list)
@@ -217,7 +217,7 @@ public class IASTaintHandler {
 
     /**
      * Hook function called at all taint sources added to bytecode
-     *
+     * <p>
      * String object = parentObject.callToSink(parameters);
      *
      * @param object The object to be tainted (can be a string, or something which needs traversing, like a list)

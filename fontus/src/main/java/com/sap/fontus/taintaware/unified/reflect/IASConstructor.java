@@ -70,8 +70,7 @@ public class IASConstructor<T> extends IASExecutable<Constructor<T>> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof IASConstructor) {
-            IASConstructor<?> other = (IASConstructor<?>)obj;
+        if (obj instanceof IASConstructor<?> other) {
             if (this.getDeclaringClass() == other.getDeclaringClass()) {
                 return Arrays.equals(this.getParameterTypes(), other.getParameterTypes());
             }
@@ -131,7 +130,7 @@ public class IASConstructor<T> extends IASExecutable<Constructor<T>> {
     }
 
     @Override
-    public Annotation getAnnotation(Class annotationClass) {
+    public <R extends Annotation> R getAnnotation(Class<R> annotationClass) {
         return super.getAnnotation(annotationClass);
     }
 

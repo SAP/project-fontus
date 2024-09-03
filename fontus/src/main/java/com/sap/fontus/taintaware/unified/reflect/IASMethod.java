@@ -119,8 +119,8 @@ public class IASMethod extends IASExecutable<Method> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof IASMethod) {
-            return this.original.equals(((IASMethod) obj).original);
+        if (obj instanceof IASMethod iasMethod) {
+            return this.original.equals(iasMethod.original);
         }
         return false;
     }

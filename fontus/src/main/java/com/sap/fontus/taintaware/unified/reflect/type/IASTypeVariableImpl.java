@@ -41,7 +41,7 @@ public class IASTypeVariableImpl<T extends GenericDeclaration> implements TypeVa
     }
 
     @Override
-    public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+    public <A extends Annotation> A getAnnotation(Class<A> annotationClass) {
         return this.original.getAnnotation(annotationClass);
     }
 

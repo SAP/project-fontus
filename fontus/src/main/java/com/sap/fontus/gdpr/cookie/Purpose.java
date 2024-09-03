@@ -3,7 +3,7 @@ package com.sap.fontus.gdpr.cookie;
 import java.util.ArrayList;
 import java.util.List;
 
-class Purpose {
+public class Purpose {
     private String id;
     private List<Vendor> vendors;
 

@@ -6,7 +6,6 @@ import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.asm.resolver.IClassResolver;
 import com.sap.fontus.utils.ClassTraverser;
 import com.sap.fontus.asm.resolver.ClassResolverFactory;
-import com.sap.fontus.utils.lookups.AnnotationLookup;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
@@ -17,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class LambdaCall implements Serializable {
     /**
@@ -74,7 +72,7 @@ public class LambdaCall implements Serializable {
                 .filter((m) -> (m.getAccess() & Opcodes.ACC_ABSTRACT) != 0)
                 .filter((m) -> !Constants.ObjectQN.equals(m.getOwner()))
                 .filter((m) -> objMethods.stream().noneMatch(om -> m.getName().equals(om.getName()) && m.getDescriptor().equals(om.getDescriptor())))
-                .collect(Collectors.toList());
+                .toList();
 
         int enclosedCount;
         if (methods.size() > 1) {
@@ -96,7 +94,7 @@ public class LambdaCall implements Serializable {
 
         // Type.getDescriptor will give a class name back like Ljava/lang/Integer; so need to convert it
         // Also check whether the class is an annotation, which we also do not instrument, and therefore need to proxy
-        String descriptor = Descriptor.removeLeadingLandTrailingSemiColon(getConcreteOrOwnerImplementation().getDescriptor());
+        String descriptor = Descriptor.removeLeadingLandTrailingSemiColon(this.getConcreteOrOwnerImplementation().getDescriptor());
         if (lookup.isPackageExcludedOrJdkOrAnnotation(descriptor)) {
             return this.generateProxyToJdkDescriptor(instrumentationHelper);
         } else {
@@ -111,7 +109,7 @@ public class LambdaCall implements Serializable {
         List<String> proxyParameters = new ArrayList<>(implementationDesc.parameterCount());
 
         if (this.isInstanceCall()) {
-            String concreteOwnerOrImplementation = getConcreteOrOwnerImplementation().getDescriptor();
+            String concreteOwnerOrImplementation = this.getConcreteOrOwnerImplementation().getDescriptor();
             String instrumentedConcreteOwnerOrImplementation = instrumentationHelper.instrument(concreteOwnerOrImplementation);
             proxyParameters.add(instrumentedConcreteOwnerOrImplementation);
         }
@@ -152,7 +150,7 @@ public class LambdaCall implements Serializable {
         List<String> mergedParameters = new ArrayList<>(implementationDesc.parameterCount());
 
         if (this.isInstanceCall()) {
-            String concreteOwnerOrImplementation = getConcreteOrOwnerImplementation().getDescriptor();
+            String concreteOwnerOrImplementation = this.getConcreteOrOwnerImplementation().getDescriptor();
             String instrumentedConcreteOwnerOrImplementation = instrumentationHelper.instrument(concreteOwnerOrImplementation);
             mergedParameters.add(instrumentedConcreteOwnerOrImplementation);
         }

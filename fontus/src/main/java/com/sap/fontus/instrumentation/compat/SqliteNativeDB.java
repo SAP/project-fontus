@@ -14,11 +14,12 @@ public class SqliteNativeDB implements CompatHelper.CompatImplementation {
 
     @Override
     public String getAffects() {
-        return affects;
+        return this.affects;
     }
 
     @Override
     public void apply(String owner, MethodVisitorCreator methodVisitorCreator) {
+        assert this.affects.equals(owner);
         createSqliteXThrowEx(methodVisitorCreator, owner);
         createSqliteStringToUtf8ByteArray(methodVisitorCreator, owner);
     }
