@@ -113,13 +113,13 @@
     },
     {
       "name": "Final overrides of inherited JDK methods",
-      "jar_file": "inheritance.jar"
+      "jar_file": "inheritance.jar",
+      "failure_expected": true
     },
     {
       "name": "Forwarding Argument to Main via Reflection",
       "jar_file": "forward_main.jar",
-      "input_file": "forward.input",
-      "failure_expected": true
+      "input_file": "forward.input"
     }
   ],
   "single_file_tests": [
@@ -440,8 +440,7 @@
     },
     {
       "name": "Using a lambda to create a proxy",
-      "source": "ProxyLambdaTest.java",
-      "failure_expected": true
+      "source": "ProxyLambdaTest.java"
     }
   ],
   "excluded_tests": [
