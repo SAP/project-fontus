@@ -189,8 +189,8 @@ public class IASProperties extends Hashtable<Object, Object> implements External
     public synchronized Object put(Object key, Object value) {
         Object orig = ConversionUtils.convertToInstrumented(this.properties.put(ConversionUtils.convertToUninstrumented(key), ConversionUtils.convertToUninstrumented(value)));
         IASString taintaware = null;
-        if (value instanceof IASString) {
-            taintaware = this.shadow.put(ConversionUtils.convertToInstrumented(key), (IASString) value);
+        if (value instanceof IASString s) {
+            taintaware = this.shadow.put(ConversionUtils.convertToInstrumented(key), s);
         }
         return this.chooseReturn(orig, taintaware);
     }

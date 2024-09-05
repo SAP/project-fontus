@@ -2,15 +2,12 @@ package com.sap.fontus.gdpr.sflight;
 
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.Source;
-import com.sap.fontus.gdpr.Utils;
-import com.sap.fontus.gdpr.broadleaf.BroadleafTaintHandler;
 import com.sap.fontus.gdpr.cookie.ConsentCookie;
 import com.sap.fontus.gdpr.cookie.ConsentCookieMetadata;
 import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.simple.SimpleDataId;
 import com.sap.fontus.gdpr.metadata.simple.SimpleDataSubject;
 import com.sap.fontus.gdpr.metadata.simple.SimpleGdprMetadata;
-import com.sap.fontus.gdpr.sap.SapCloudTaintHandler;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;

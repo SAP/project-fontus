@@ -1,6 +1,5 @@
 package com.sap.fontus.gdpr.oh;
 
-import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.Sink;
 import com.sap.fontus.config.Source;
@@ -11,17 +10,13 @@ import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.registry.PurposeRegistry;
 import com.sap.fontus.gdpr.metadata.registry.VendorRegistry;
 import com.sap.fontus.gdpr.metadata.simple.*;
-import com.sap.fontus.gdpr.openmrs.OpenMrsTaintHandler;
-import com.sap.fontus.gdpr.servlet.ReflectedCookie;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.*;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
-import org.objectweb.asm.Opcodes;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -56,8 +51,8 @@ public class OpenHospitalTaintHandler extends IASTaintHandler {
         DataSubject dataSubject;
         // First try retrieving from cached attribute value
         Object o = request.getAttribute(dataSubjectAttributeName);
-        if ((o instanceof DataSubject)) {
-            dataSubject = (DataSubject) o;
+        if (o instanceof DataSubject ds) {
+            dataSubject = ds;
         } else {
             dataSubject = new SimpleDataSubject(UUID.randomUUID().toString());
             request.setAttribute(dataSubjectAttributeName, dataSubject);
@@ -136,7 +131,7 @@ public class OpenHospitalTaintHandler extends IASTaintHandler {
             ReflectedHttpServletRequest request = getRequestFromStreamParser(parameters[0]);
             // System.out.println("Request: " + request);
 
-            if (request.getMethodString().equals("POST") && request.getRequestURIString().endsWith("patients")) {
+            if ("POST".equals(request.getMethodString()) && request.getRequestURIString().endsWith("patients")) {
                 System.out.println("Creating new patient...");
                 metadata = createNewPatientMetadata(request);
             }
@@ -209,7 +204,7 @@ public class OpenHospitalTaintHandler extends IASTaintHandler {
         String loggedInUser = "UnknownUser";
 
         try {
-            // Spring framework call to get user name:
+            // Spring framework call to get username:
             // org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName()
             Class<?> contextClass = Class.forName("org.springframework.security.core.context.SecurityContextHolder", false, Thread.currentThread().getContextClassLoader());
             Object context = contextClass.getMethod("getContext").invoke(null);
@@ -219,10 +214,10 @@ public class OpenHospitalTaintHandler extends IASTaintHandler {
                 if (authentication != null) {
                     Object userName = authentication.getClass().getMethod("getName").invoke(authentication);
                     // Will be an IASString because it is tainted, or maybe not!
-                    if (userName instanceof IASString) {
-                        loggedInUser = ((IASString) userName).getString();
-                    } else if (userName instanceof String) {
-                        loggedInUser = (String) userName;
+                    if (userName instanceof IASString s) {
+                        loggedInUser = s.getString();
+                    } else if (userName instanceof String s) {
+                        loggedInUser = s;
                     }
                 }
             }

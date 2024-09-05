@@ -94,7 +94,7 @@ public class LambdaCall implements Serializable {
 
         // Type.getDescriptor will give a class name back like Ljava/lang/Integer; so need to convert it
         // Also check whether the class is an annotation, which we also do not instrument, and therefore need to proxy
-        String descriptor = Descriptor.removeLeadingLandTrailingSemiColon(this.getConcreteOrOwnerImplementation().getDescriptor());
+        String descriptor = this.getConcreteOrOwnerImplementation().getInternalName();
         if (lookup.isPackageExcludedOrJdkOrAnnotation(descriptor)) {
             return this.generateProxyToJdkDescriptor(instrumentationHelper);
         } else {
@@ -113,11 +113,11 @@ public class LambdaCall implements Serializable {
             String instrumentedConcreteOwnerOrImplementation = instrumentationHelper.instrument(concreteOwnerOrImplementation);
             proxyParameters.add(instrumentedConcreteOwnerOrImplementation);
         }
+        String[] implementationParameters = implementationDesc.getParameters();
+        for (String implementationParameter : implementationParameters) {
+            Type implementationParam = Type.getType(implementationParameter);
 
-        for (int i = 0; i < instrumentedImplementationDesc.parameterCount(); i++) {
-            Type implementationParam = Type.getType(implementationDesc.getParameters().get(i));
-
-            if (instrumentationHelper.canHandleType(implementationParam.getDescriptor())) {
+            if (instrumentationHelper.canHandleType(implementationParam)) {
                 String instrumented = instrumentationHelper.instrumentQN(implementationParam.getDescriptor());
                 proxyParameters.add(instrumented);
             } else {
@@ -155,10 +155,10 @@ public class LambdaCall implements Serializable {
             mergedParameters.add(instrumentedConcreteOwnerOrImplementation);
         }
         for (int i = 0; i < enclosedCount; i++) {
-            mergedParameters.add(instrumentedImplementationDesc.getParameters().get(i));
+            mergedParameters.add(instrumentedImplementationDesc.getParameters()[i]);
         }
         for (int i = Math.max(enclosedCount, 0); i < instrumentedImplementationDesc.parameterCount(); i++) {
-            Type implementationParam = Type.getType(implementationDesc.getParameters().get(i));
+            Type implementationParam = Type.getType(implementationDesc.getParameters()[i]);
 
             if (instrumentationHelper.isInstrumented(implementationParam.getDescriptor())) {
                 String uninstrumented = instrumentationHelper.uninstrument(implementationParam.getDescriptor());

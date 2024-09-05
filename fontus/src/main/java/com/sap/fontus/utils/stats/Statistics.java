@@ -11,7 +11,6 @@ import java.lang.management.ManagementFactory;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
 
 public enum Statistics implements StatisticsMXBean {
     INSTANCE;
@@ -107,8 +106,8 @@ public enum Statistics implements StatisticsMXBean {
 
     public  void addRangeCount(IASTaintInformationable taintInformationable) {
         long rangeCount = 0L;
-        if (taintInformationable instanceof IASTaintInformation) {
-            rangeCount = ((IASTaintInformation) taintInformationable).getTaintRanges().getTaintRanges().size();
+        if (taintInformationable instanceof IASTaintInformation taintInformation) {
+            rangeCount = taintInformation.getTaintRanges().getTaintRanges().size();
         }
 
         this.taintRangeSum.addAndGet(rangeCount);

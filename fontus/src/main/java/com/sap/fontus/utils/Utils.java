@@ -96,7 +96,7 @@ public final class Utils {
             return new Handle(h.getTag(), h.getOwner(), h.getName(), instrumentationHelper.instrumentQN(h.getDesc()), h.isInterface());
 
         } else {
-            if (combinedExcludedLookup.isPackageExcludedOrJdk(h.getOwner()) && !instrumentationHelper.canHandleType(Type.getObjectType(h.getOwner()).getDescriptor())) {
+            if (combinedExcludedLookup.isPackageExcludedOrJdk(h.getOwner()) && !instrumentationHelper.canHandleType(Type.getObjectType(h.getOwner()))) {
                 return h;
             }
 

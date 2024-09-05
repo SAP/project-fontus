@@ -243,8 +243,8 @@ public final class IASMatcher {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof IASMatcher) {
-            return this.matcher.equals(((IASMatcher) obj).matcher);
+        if (obj instanceof IASMatcher matcherObj) {
+            return this.matcher.equals(matcherObj.matcher);
         } else if (obj instanceof Matcher) {
             return this.matcher.equals(obj);
         }

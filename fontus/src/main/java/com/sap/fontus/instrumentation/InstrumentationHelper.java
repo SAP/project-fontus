@@ -153,9 +153,28 @@ public final class InstrumentationHelper implements InstrumentationStrategy {
         return false;
     }
 
+    @Override
+    public boolean handlesType(Type type) {
+        for (InstrumentationStrategy s : this.strategies) {
+            if (s.handlesType(type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean canHandleType(String typeDescriptor) {
         for (InstrumentationStrategy is : this.strategies) {
             if (is.handlesType(typeDescriptor)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean canHandleType(Type type) {
+        for (InstrumentationStrategy is : this.strategies) {
+            if (is.handlesType(type)) {
                 return true;
             }
         }

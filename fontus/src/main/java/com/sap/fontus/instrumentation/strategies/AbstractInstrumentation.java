@@ -105,6 +105,11 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
+    public boolean handlesType(Type type) {
+        return this.origType.equals(type) || (type.getSort() == Type.ARRAY && type.getElementType().equals(this.origType));
+    }
+
+    @Override
     public boolean isInstrumented(String descriptor) {
         return descriptor.endsWith(this.instrumentedDescriptor);
     }

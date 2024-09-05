@@ -1,11 +1,8 @@
 package com.sap.fontus.gdpr.metadata.registry;
 
 import com.sap.fontus.config.Configuration;
-import com.sap.fontus.gdpr.metadata.Purpose;
 import com.sap.fontus.gdpr.metadata.Vendor;
-import com.sap.fontus.gdpr.metadata.simple.SimplePurpose;
 import com.sap.fontus.gdpr.metadata.simple.SimpleVendor;
-import com.sap.fontus.utils.GenericRegistry;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

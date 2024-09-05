@@ -1,9 +1,7 @@
 package com.sap.fontus.taintaware.unified;
 
-import com.sap.fontus.config.Configuration;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.*;
-import com.sap.fontus.utils.stats.Statistics;
 
 import java.io.*;
 import java.nio.charset.Charset;

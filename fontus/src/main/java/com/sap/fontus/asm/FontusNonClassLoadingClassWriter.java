@@ -48,7 +48,7 @@ public class FontusNonClassLoadingClassWriter extends NonClassloadingClassWriter
         // types.
         //
         // To get around this, we first *uninstrument* the input types (only if neither are JDK classes) and then find the
-        // common supertype. Finally re-instrument the result to give e.g. IASProperties at the output.
+        // common supertype. Finally, re-instrument the result to give e.g. IASProperties at the output.
         //
         // The bigger question is why the TypeHierarcyReader doesn't return the instrumented superclass...
         //

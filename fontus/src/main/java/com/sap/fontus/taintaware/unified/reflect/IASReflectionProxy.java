@@ -11,8 +11,8 @@ public final class IASReflectionProxy {
 
     public static Object handleInvocationProxyCall(Object result, Object proxy, Method method, Object[] args) {
         if (method.getReturnType().equals(String.class) || method.getReturnType().equals(String[].class)) {
-            if (result instanceof IASString) {
-                return ((IASString) result).getString();
+            if (result instanceof IASString s) {
+                return s.getString();
             } else if (result.getClass() == IASString[].class) {
                 return ConversionUtils.convertToUninstrumented(result);
             }

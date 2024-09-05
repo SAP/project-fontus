@@ -14,7 +14,6 @@ import com.sap.fontus.utils.Logger;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.File;
-import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -198,7 +197,7 @@ public final class Configuration {
     }
 
     public void transformConverters() {
-        List<FunctionCall> converted = this.converters.stream().map(functionCall -> new FunctionCall(functionCall.getOpcode(), functionCall.getOwner(), functionCall.getName(), functionCall.getDescriptor(), functionCall.isInterface())).collect(Collectors.toList());
+        List<FunctionCall> converted = this.converters.stream().map(functionCall -> new FunctionCall(functionCall.getOpcode(), functionCall.getOwner(), functionCall.getName(), functionCall.getDescriptor(), functionCall.isInterface())).toList();
 
         this.converters.clear();
         this.converters.addAll(converted);

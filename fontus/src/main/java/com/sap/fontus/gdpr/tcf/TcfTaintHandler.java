@@ -75,8 +75,8 @@ public class TcfTaintHandler extends IASTaintHandler {
      * </pre>
      */
     public static Object taint(Object object, Object parent, Object[] parameters, int sourceId) {
-        if (object instanceof IASTaintAware) {
-            return setTaint((IASTaintAware) object, parent, parameters, sourceId);
+        if (object instanceof IASTaintAware taintAware) {
+            return setTaint(taintAware, parent, parameters, sourceId);
         }
         return IASTaintHandler.traverseObject(object, taintAware -> setTaint(taintAware, parent, parameters, sourceId));
     }

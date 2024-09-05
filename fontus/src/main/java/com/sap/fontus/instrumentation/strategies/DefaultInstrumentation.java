@@ -73,6 +73,11 @@ public class DefaultInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
+    public boolean handlesType(Type type) {
+        return false;
+    }
+
+    @Override
     public boolean isInstrumented(String descriptor) {
         return false;
     }

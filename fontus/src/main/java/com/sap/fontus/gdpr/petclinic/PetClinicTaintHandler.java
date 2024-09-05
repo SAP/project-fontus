@@ -8,7 +8,6 @@ import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.simple.SimpleDataId;
 import com.sap.fontus.gdpr.metadata.simple.SimpleDataSubject;
 import com.sap.fontus.gdpr.metadata.simple.SimpleGdprMetadata;
-import com.sap.fontus.gdpr.sap.SapCloudTaintHandler;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
@@ -62,7 +61,7 @@ public class PetClinicTaintHandler extends IASTaintHandler {
         String name = null;
         try {
             // Spring stores the application context in the HttpRequest attributes
-            // Should be a org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext
+            // Should be an org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext
             Object obj = servlet.getAttribute(new IASString("org.springframework.web.servlet.DispatcherServlet.CONTEXT"));
             // Through this context we can access each of the Spring Beans
             Method m = obj.getClass().getMethod("getBean", IASString.class);
@@ -71,7 +70,7 @@ public class PetClinicTaintHandler extends IASTaintHandler {
 
             // This interface will be proxied by Fontus, but the method names are the samn
             Method m2 = bean.getClass().getMethod("findById", Integer.class);
-            Object owner = m2.invoke(bean, Integer.valueOf(id));
+            Object owner = m2.invoke(bean, id);
 
             // Now we can extract information about the to create the ID:
             Method m3 = owner.getClass().getMethod("getFirstName");

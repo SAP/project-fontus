@@ -27,7 +27,7 @@ public abstract class TaintlossHandler {
     /**
      * Parses the TaintlossHandler name and returns the corresponding TaintlossHandler object
      *
-     * @param name the TaintlossHandler name. case insensitive
+     * @param name the TaintlossHandler name. Comparison is case-insensitive
      * @return the TaintlossHandler object
      * @throws IllegalArgumentException If no corresponding Taintloss handler was found
      */

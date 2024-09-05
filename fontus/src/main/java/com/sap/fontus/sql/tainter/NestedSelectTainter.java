@@ -36,8 +36,8 @@ public class NestedSelectTainter extends SelectTainter {
                 this.where.add(plainSelect.getWhere());
             }
 
-            if (plainSelect.getFromItem() instanceof Table) {
-                this.tables.add((Table) plainSelect.getFromItem());
+            if (plainSelect.getFromItem() instanceof Table table) {
+                this.tables.add(table);
             }
 
             List<Join> js = plainSelect.getJoins();
@@ -53,11 +53,11 @@ public class NestedSelectTainter extends SelectTainter {
                     NestedSelectItemTainter nsit = new NestedSelectItemTainter(this.parameters, this.selectItemReference, this.plannedExpressions, this.tables, this.where, this.joins);
                     selectItem.accept(nsit);
                     this.hasAggregation |= nsit.hasAggregation();
-                    if (selectItem instanceof SelectExpressionItem) {
-                        SelectExpressionItem sei = new SelectExpressionItem(((SelectExpressionItem) selectItem).getExpression());
+                    if (selectItem instanceof SelectExpressionItem si) {
+                        SelectExpressionItem sei = new SelectExpressionItem(si.getExpression());
                         Alias al = sei.getAlias();
-                        if (sei.getExpression() instanceof SubSelect) {
-                            SelectBody selBody = ((SubSelect) sei.getExpression()).getSelectBody();
+                        if (sei.getExpression() instanceof SubSelect subSelect) {
+                            SelectBody selBody = subSelect.getSelectBody();
 
                         }
                     }

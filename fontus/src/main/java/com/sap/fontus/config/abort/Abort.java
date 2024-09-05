@@ -26,7 +26,7 @@ public abstract class Abort {
     /**
      * Parses the Abort name and returns the corresponding Abort object
      *
-     * @param name the Abort name. case insensitive
+     * @param name the Abort name. Comparison is case-insensitive
      * @return the Abort object or null if no corresponding one was found
      */
     public static Abort parse(String name) {

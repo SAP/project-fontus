@@ -1,27 +1,16 @@
 package com.sap.fontus.gdpr.sap;
 
-import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.Configuration;
-import com.sap.fontus.config.Sink;
 import com.sap.fontus.config.Source;
-import com.sap.fontus.config.abort.Abort;
 import com.sap.fontus.gdpr.cookie.ConsentCookie;
 import com.sap.fontus.gdpr.cookie.ConsentCookieMetadata;
 import com.sap.fontus.gdpr.metadata.*;
-import com.sap.fontus.gdpr.metadata.registry.PurposeRegistry;
-import com.sap.fontus.gdpr.metadata.registry.VendorRegistry;
 import com.sap.fontus.gdpr.metadata.simple.*;
-import com.sap.fontus.gdpr.openmrs.OpenMrsTaintHandler;
-import com.sap.fontus.gdpr.servlet.ReflectedCookie;
-import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.*;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
-import org.objectweb.asm.Opcodes;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 

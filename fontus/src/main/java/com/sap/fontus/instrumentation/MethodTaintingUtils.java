@@ -86,7 +86,7 @@ public final class MethodTaintingUtils {
     public boolean isFunctionalInterfaceJdkOrExcluded(String descriptor) {
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
         Type instance = Type.getType(desc.getReturnType());
-	String instanceName = instance.getInternalName();
+	    String instanceName = instance.getInternalName();
         boolean excluded = this.lookup.isPackageExcludedOrJdkOrAnnotation(instanceName);
         for (String clsOrPackage : lambdaIncluded) {
             if (instanceName.startsWith(clsOrPackage)) {
@@ -148,6 +148,6 @@ public final class MethodTaintingUtils {
     }
 
     public boolean needsLambdaProxy(String descriptor, Handle realFunction, Type concreteDescriptor, InstrumentationHelper instrumentationHelper) {
-        return this.isFunctionalInterfaceJdkOrExcluded(descriptor) || (!instrumentationHelper.canHandleType(Type.getObjectType(realFunction.getOwner()).getDescriptor()) && this.isMethodReferenceJdkOrExcluded(realFunction));
+        return this.isFunctionalInterfaceJdkOrExcluded(descriptor) || (!instrumentationHelper.canHandleType(Type.getObjectType(realFunction.getOwner())) && this.isMethodReferenceJdkOrExcluded(realFunction));
     }
 }

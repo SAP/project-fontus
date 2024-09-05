@@ -14,7 +14,6 @@ import com.sap.fontus.utils.stats.Statistics;
 
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static com.sap.fontus.utils.ClassTraverser.getAllFields;
@@ -201,12 +200,12 @@ public class IASTaintHandler {
     }
 
     public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName, String callerFunction, IASAtomicTaintChecker checker) {
-        if (object instanceof IASTaintAware) {
-            recordSinkStatistics((IASTaintAware) object, sinkFunction, callerFunction);
-            return checker.checkTaint((IASTaintAware) object, instance, sinkFunction, sinkName, callerFunction);
-        } else if (instance instanceof IASTaintAware) {
+        if (object instanceof IASTaintAware taintAware) {
+            recordSinkStatistics(taintAware, sinkFunction, callerFunction);
+            return checker.checkTaint(taintAware, instance, sinkFunction, sinkName, callerFunction);
+        } else if (instance instanceof IASTaintAware taintAware) {
             // Things like String.toCharArray() can be handled here
-            return checker.checkTaint((IASTaintAware) instance, object, sinkFunction, sinkName, callerFunction);
+            return checker.checkTaint(taintAware, object, sinkFunction, sinkName, callerFunction);
         }
 
         return traverseObject(object, taintAware -> {
@@ -244,8 +243,8 @@ public class IASTaintHandler {
     public static Object taint(Object object, Object parentObject, Object[] parameters, int sourceId, String callerFunction, IASAtomicTaintSetter setter) {
         // Handle statistics
         recordSourceStatistics(sourceId, callerFunction);
-        if (object instanceof IASTaintAware) {
-            setter.setTaint((IASTaintAware) object, parentObject, parameters, sourceId, callerFunction);
+        if (object instanceof IASTaintAware taintAware) {
+            setter.setTaint(taintAware, parentObject, parameters, sourceId, callerFunction);
             return object;
         }
         return traverseObject(object, taintAware -> {

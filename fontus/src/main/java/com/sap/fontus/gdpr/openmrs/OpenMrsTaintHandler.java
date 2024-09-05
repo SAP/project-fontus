@@ -104,7 +104,7 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         }
         try {
             // Spring stores the application context in the HttpRequest attributes
-            // Should be a org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext
+            // Should be an org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext
             Object obj = request.getAttribute(new IASString("org.springframework.web.servlet.DispatcherServlet.CONTEXT"));
 
             // According to applicationContext-service.xml from OpenMRS (https://github.com/openmrs/openmrs-core/blob/master/api/src/main/resources/applicationContext-service.xml)
@@ -143,8 +143,8 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             IASTaintRanges ranges = extracted.getTaintInformation().getTaintRanges(extracted.length());
             for (IASTaintRange range : ranges) {
                 IASTaintMetadata metadata = range.getMetadata();
-                if (metadata instanceof GdprTaintMetadata) {
-                    md = ((GdprTaintMetadata) metadata).getMetadata();
+                if (metadata instanceof GdprTaintMetadata gdprTaintMetadata) {
+                    md = gdprTaintMetadata.getMetadata();
                     // Take metadata from first tainted region
                     break;
                 }
@@ -170,8 +170,8 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
         DataSubject dataSubject = null;
         // First try retrieving from cached attribute value
         Object o = request.getAttribute(dataSubjectAttributeName);
-        if ((o instanceof DataSubject)) {
-            dataSubject = (DataSubject) o;
+        if (o instanceof DataSubject ds) {
+            dataSubject = ds;
         } else {
             dataSubject = new SimpleDataSubject(UUID.randomUUID().toString());
             request.setAttribute(dataSubjectAttributeName, dataSubject);
@@ -386,8 +386,8 @@ public class OpenMrsTaintHandler extends IASTaintHandler {
             if (user != null) {
                 Object userName = user.getClass().getMethod("getUsername").invoke(user);
                 // Will be an IASString because it is tainted...
-                if (userName instanceof IASString) {
-                    loggedInUser = ((IASString) userName).getString();
+                if (userName instanceof IASString s) {
+                    loggedInUser = s.getString();
                 }
             }
         } catch (Exception e) {

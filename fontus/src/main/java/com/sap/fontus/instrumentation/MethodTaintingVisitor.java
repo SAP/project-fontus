@@ -19,9 +19,7 @@ import org.objectweb.asm.Type;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
-import java.lang.reflect.*;
 import java.lang.reflect.Method;
-import java.security.ProtectionDomain;
 import java.util.*;
 
 
@@ -292,7 +290,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
     }
 
     private void storeArgumentsToLocals(FunctionCall call) {
-        Stack<String> params = call.getParsedDescriptor().getParameterStack();
+        Deque<String> params = call.getParsedDescriptor().getParameterStack();
 
         int i = Utils.getArgumentsStackSize(call.getDescriptor());
         while (!params.isEmpty()) {
@@ -680,9 +678,9 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
         int currRegister = this.used;
         super.visitVarInsn(Opcodes.ASTORE, currRegister);
         // newly created array is now stored in currRegister, concat operands on top
-        Stack<String> parameters = desc.getParameterStack();
+        Deque<String> parameters = desc.getParameterStack();
         int paramIndex = 0;
-        while (!parameters.empty()) {
+        while (!parameters.isEmpty()) {
             String parameter = parameters.pop();
             // Convert topmost value (if required)
             MethodTaintingUtils.invokeConversionFunction(this.getParentVisitor(), parameter);
@@ -694,7 +692,7 @@ public class MethodTaintingVisitor extends BasicMethodVisitor {
             MethodTaintingUtils.pushNumberOnTheStack(this.getParentVisitor(), paramIndex);
             // swap, this puts them into the order arrayref, index, value
             super.visitInsn(Opcodes.SWAP);
-            // store the value into arrayref at index, next parameter is on top now (if there are any more)
+            // store the value into arrayref at index, next parameter is on top now (if there are any remaining)
             super.visitInsn(Opcodes.AASTORE);
             paramIndex++;
         }

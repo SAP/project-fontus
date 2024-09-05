@@ -1,7 +1,6 @@
 package com.sap.fontus.utils;
 
 import com.sap.fontus.Constants;
-import com.sap.fontus.config.Configuration;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

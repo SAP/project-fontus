@@ -1,6 +1,5 @@
 package com.sap.fontus.instrumentation.transformer;
 
-import com.alibaba.druid.support.spring.stat.annotation.Stat;
 import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.Configuration;

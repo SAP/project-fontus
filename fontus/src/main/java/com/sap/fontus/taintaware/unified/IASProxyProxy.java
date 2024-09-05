@@ -9,7 +9,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -164,8 +163,8 @@ public class IASProxyProxy {
                 throw new InternalError(e.toString(), e);
             } catch (InvocationTargetException e) {
                 Throwable t = e.getCause();
-                if (t instanceof RuntimeException) {
-                    throw (RuntimeException) t;
+                if (t instanceof RuntimeException rt) {
+                    throw rt;
                 } else {
                     throw new InternalError(t.toString(), t);
                 }

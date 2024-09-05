@@ -16,7 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-public class ObjectMethods {
+public final class ObjectMethods {
     private static final MethodType DESCRIPTOR_MT = MethodType.methodType(MethodType.class);
     private static final MethodType NAMES_MT = MethodType.methodType(List.class);
     private static final MethodHandle FALSE;
@@ -203,8 +203,8 @@ public class ObjectMethods {
 
     public static Object bootstrap(MethodHandles.Lookup lookup, String methodName, TypeDescriptor type, Class<?> recordClass, String names, MethodHandle... getters) throws Throwable {
         MethodType methodType = null;
-        if (type instanceof MethodType) {
-            methodType = (MethodType) type;
+        if (type instanceof MethodType mt) {
+            methodType = mt;
         } else {
             if (!MethodHandle.class.equals(type)) {
                 throw new IllegalArgumentException(type.toString());

@@ -42,7 +42,7 @@ public enum ParameterType {
      */
     QUERY_SUBSELECT,
     /**
-     * An parameter assignment where the value is retrieved via a subselect
+     * A parameter assignment where the value is retrieved via a subselect
      * INSERT INTO a VALUES ('a', (select y from b where y = ?))
      *                                                       ^
      * <p>
