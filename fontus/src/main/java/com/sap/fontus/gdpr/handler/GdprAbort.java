@@ -57,4 +57,8 @@ public class GdprAbort extends Abort {
     public String getName() {
         return "gdpr";
     }
+
+    static {
+        Abort.add(new GdprAbort());
+    }
 }

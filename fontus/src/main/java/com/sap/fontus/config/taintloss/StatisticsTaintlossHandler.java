@@ -28,4 +28,8 @@ public class StatisticsTaintlossHandler extends TaintlossHandler {
     public String getName() {
         return "statistics_logging";
     }
+
+    static {
+        TaintlossHandler.add(new StatisticsTaintlossHandler());
+    }
 }

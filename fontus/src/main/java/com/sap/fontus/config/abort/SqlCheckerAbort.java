@@ -24,4 +24,8 @@ public class SqlCheckerAbort extends Abort{
     public String getName() {
         return "sql_checker";
     }
+
+    static {
+        Abort.add(new SqlCheckerAbort());
+    }
 }

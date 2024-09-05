@@ -16,4 +16,8 @@ public class StdErrLoggingAbort extends Abort {
     public String getName() {
         return "stderr_logging";
     }
+
+    static {
+        Abort.add(new StdErrLoggingAbort());
+    }
 }

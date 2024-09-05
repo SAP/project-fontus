@@ -19,4 +19,8 @@ public class ThrowingAbort extends Abort {
     public String getName() {
         return "throw";
     }
+
+    static {
+        Abort.add(new ThrowingAbort());
+    }
 }
