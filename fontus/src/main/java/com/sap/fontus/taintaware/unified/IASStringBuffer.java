@@ -5,7 +5,6 @@ import com.sap.fontus.taintaware.shared.*;
 
 import java.util.stream.IntStream;
 
-@SuppressWarnings("Since15")
 public final class IASStringBuffer extends IASAbstractStringBuilder {
 
     public IASStringBuffer(StringBuffer sb, IASTaintInformationable taintInformation) {

@@ -140,7 +140,6 @@ public class IASMethod extends IASExecutable<Method> {
         return IASString.fromString(this.original.toGenericString());
     }
 
-    @SuppressWarnings("Since15")
     @CallerSensitive
     @ForceInline
     public Object invoke(Object instance, Object... parameters) throws IllegalAccessException, InvocationTargetException, ClassNotFoundException {

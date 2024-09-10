@@ -86,7 +86,6 @@ public class IASProperties extends Hashtable<Object, Object> implements External
         this.properties.storeToXML(os, comment == null ? null : comment.getString(), encoding.getString());
     }
 
-    @SuppressWarnings("Since15")
     public void storeToXML(OutputStream os, IASString comment, Charset charset) throws IOException {
         this.properties.storeToXML(os, comment == null ? null : comment.getString(), charset);
     }
@@ -367,7 +366,6 @@ public class IASProperties extends Hashtable<Object, Object> implements External
         );
     }
 
-    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public synchronized Object clone() {
         return fromProperties((Properties) this.properties.clone());

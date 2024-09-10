@@ -11,7 +11,6 @@ public final class LogUtils {
 
     public static boolean LOGGING_ENABLED = false;
 
-    @SuppressWarnings("Since15")
     public static synchronized Logger getLogger() {
         Class<?> callerClass;
         if (Constants.JAVA_VERSION >= 9) {
