@@ -1003,7 +1003,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
 
     @Override
     public Object getTObject(String columnLabel) throws SQLException {
-        return getTObject(this.delegate.findColumn(columnLabel));
+        return this.getTObject(this.delegate.findColumn(columnLabel));
     }
 
     @Override
@@ -1011,8 +1011,7 @@ public class ResultSetWrapper extends AbstractWrapper implements IASResultSet {
         int idx = transformColumnIndex(columnIndex);
         Object o = this.delegate.getObject(idx);
 
-        if (o instanceof String) {
-            String s = (String) o;
+        if (o instanceof String s) {
             String taint = this.delegate.getString(idx + 1);
             IASString rv = IASString.fromString(s);
             if (taint != null && !Constants.UNTAINTED.equals(taint) && !"0".equals(taint)) {

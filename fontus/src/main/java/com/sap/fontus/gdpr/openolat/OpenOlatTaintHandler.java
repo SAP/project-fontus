@@ -1,23 +1,17 @@
 package com.sap.fontus.gdpr.openolat;
 
-import com.sap.fontus.config.Configuration;
-import com.sap.fontus.config.Source;
 import com.sap.fontus.gdpr.Utils;
 import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.simple.SimpleDataId;
 import com.sap.fontus.gdpr.metadata.simple.SimpleDataSubject;
 import com.sap.fontus.gdpr.metadata.simple.SimpleGdprMetadata;
-import com.sap.fontus.gdpr.openmrs.OpenMrsTaintHandler;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.gdpr.servlet.ReflectedSession;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASTaintMetadata;
-import com.sap.fontus.taintaware.shared.IASTaintSource;
-import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,7 +31,7 @@ public class OpenOlatTaintHandler extends IASTaintHandler {
      * @return A possibly tainted version of the input object
      */
     private static IASTaintAware setFormTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId, String callerName) {
-        //IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
+        IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
         assert (parameters.length == 4);
         try {
             Object ureq = parameters[2];
@@ -67,16 +61,13 @@ public class OpenOlatTaintHandler extends IASTaintHandler {
 
     public static IASTaintAware setTaint(IASTaintAware taintAware, Object parent, Object[] parameters, int sourceId, String callerName) {
         // General debug info
-        //IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
-        IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
-        Source source = Configuration.getConfiguration().getSourceConfig().getSourceWithName(taintSource.getName());
+        IASTaintHandler.printObjectInfo(taintAware, parent, parameters, sourceId);
         IASTaintMetadata metaData = getBasicTaintMetaDataFromRequest(parent, sourceId);
         taintAware.setTaint(metaData);
         return taintAware;
     }
 
     private static IASTaintMetadata getBasicTaintMetaDataFromRequest(Object requestObject, int sourceId) {
-        IASTaintSource taintSource = IASTaintSourceRegistry.getInstance().get(sourceId);
         ReflectedHttpServletRequest request = new ReflectedHttpServletRequest(requestObject);
         ReflectedSession session = request.getSession();
         long sessionId = getSessionUserId(session);

@@ -49,8 +49,8 @@ public class IASField extends IASAccessibleObject<Field> implements IASMember {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof IASField) {
-            return this.original.equals(((IASField) obj).original);
+        if (obj instanceof IASField field) {
+            return this.original.equals(field.original);
         }
         return false;
     }

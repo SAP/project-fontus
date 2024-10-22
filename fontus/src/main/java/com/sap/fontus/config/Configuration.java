@@ -14,13 +14,12 @@ import com.sap.fontus.utils.Logger;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.File;
-import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @XmlRootElement(name = "configuration")
-public class Configuration {
+public final class Configuration {
     private static Configuration configuration;
 
     private static final Logger logger = LogUtils.getLogger();
@@ -198,7 +197,7 @@ public class Configuration {
     }
 
     public void transformConverters() {
-        List<FunctionCall> converted = this.converters.stream().map(functionCall -> new FunctionCall(functionCall.getOpcode(), functionCall.getOwner(), functionCall.getName(), functionCall.getDescriptor(), functionCall.isInterface())).collect(Collectors.toList());
+        List<FunctionCall> converted = this.converters.stream().map(functionCall -> new FunctionCall(functionCall.getOpcode(), functionCall.getOwner(), functionCall.getName(), functionCall.getDescriptor(), functionCall.isInterface())).toList();
 
         this.converters.clear();
         this.converters.addAll(converted);
@@ -358,7 +357,10 @@ public class Configuration {
                 if (conversion != null) {
                     String converterName = conversion.getConverter();
                     FunctionCall converter = this.getConverter(converterName);
-                    logger.info("Found converter for {} at index {}: {}", c, index, converter);
+                    if(this.loggingEnabled) {
+
+                        logger.info("Found converter for {} at index {}: {}", c, index, converter);
+                    }
                     return converter;
                 }
             }
@@ -376,7 +378,9 @@ public class Configuration {
                 if (!(onlyAlwaysApply && !rg.isAlwaysApply())) {
                     String converterName = rg.getConverter();
                     FunctionCall converter = this.getConverter(converterName);
-                    logger.info("Found converter for rv of {}: {}", c, converter);
+                    if(this.loggingEnabled) {
+                        logger.info("Found converter for rv of {}: {}", c, converter);
+                    }
                     return converter;
                 }
             }

@@ -5,11 +5,11 @@ import java.util.Collections;
 
 public interface RequiredPurposes {
 
-    public Collection<Purpose> getPurposes();
+    Collection<Purpose> getPurposes();
 
-    public Collection<Vendor> getVendors();
+    Collection<Vendor> getVendors();
 
-    public static class EmptyRequiredPurposes implements RequiredPurposes {
+    class EmptyRequiredPurposes implements RequiredPurposes {
         @Override
         public Collection<Purpose> getPurposes() {
             return Collections.emptyList();

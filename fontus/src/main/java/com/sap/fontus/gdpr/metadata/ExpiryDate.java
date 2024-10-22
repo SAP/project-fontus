@@ -4,8 +4,8 @@ import java.time.Instant;
 
 public interface ExpiryDate extends Comparable<ExpiryDate> {
 
-    public Instant getDate();
+    Instant getDate();
 
-    public boolean hasExpiry();
+    boolean hasExpiry();
 
 }

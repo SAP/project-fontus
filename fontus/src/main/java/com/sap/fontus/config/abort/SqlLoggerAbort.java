@@ -26,4 +26,7 @@ public class SqlLoggerAbort extends Abort{
         return "sql_checker";
     }
 
+    static {
+        Abort.add(new SqlLoggerAbort());
+    }
 }

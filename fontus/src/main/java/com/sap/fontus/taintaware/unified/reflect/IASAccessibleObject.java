@@ -16,7 +16,7 @@ public abstract class IASAccessibleObject<T extends AccessibleObject> implements
     }
 
     @Override
-    public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+    public <A extends Annotation> A getAnnotation(Class<A> annotationClass) {
         return this.original.getAnnotation(annotationClass);
     }
 
@@ -41,6 +41,7 @@ public abstract class IASAccessibleObject<T extends AccessibleObject> implements
         UnsafeUtils.setAccessible(this.original);
     }
 
+    @SuppressWarnings("deprecation")
     public boolean isAccessible() {
         return this.original.isAccessible();
     }
@@ -51,17 +52,17 @@ public abstract class IASAccessibleObject<T extends AccessibleObject> implements
     }
 
     @Override
-    public <T extends Annotation> T[] getAnnotationsByType(Class<T> annotationClass) {
+    public <A extends Annotation> A[] getAnnotationsByType(Class<A> annotationClass) {
         return this.original.getAnnotationsByType(annotationClass);
     }
 
     @Override
-    public <T extends Annotation> T getDeclaredAnnotation(Class<T> annotationClass) {
+    public <A extends Annotation> A getDeclaredAnnotation(Class<A> annotationClass) {
         return this.original.getDeclaredAnnotation(annotationClass);
     }
 
     @Override
-    public <T extends Annotation> T[] getDeclaredAnnotationsByType(Class<T> annotationClass) {
+    public <A extends Annotation> A[] getDeclaredAnnotationsByType(Class<A> annotationClass) {
         return this.original.getDeclaredAnnotationsByType(annotationClass);
     }
 

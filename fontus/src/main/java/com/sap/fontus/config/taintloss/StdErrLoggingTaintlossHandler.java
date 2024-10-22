@@ -14,4 +14,8 @@ public class StdErrLoggingTaintlossHandler extends LoggingTaintlossHandler {
     public String getName() {
         return "stderr_logging";
     }
+
+    static {
+        TaintlossHandler.add(new StdErrLoggingTaintlossHandler());
+    }
 }

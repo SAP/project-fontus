@@ -45,4 +45,8 @@ public class SanitizationAbort extends Abort {
     public String getName() {
         return "sanitization";
     }
+
+    static {
+        Abort.add(new SanitizationAbort());
+    }
 }

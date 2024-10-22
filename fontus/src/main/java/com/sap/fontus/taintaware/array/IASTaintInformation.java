@@ -130,7 +130,6 @@ public class IASTaintInformation implements IASTaintInformationable {
         return this.replaceTaint(offset, offset, taintInformation);
     }
 
-    @SuppressWarnings("MethodDoesntCallSuperMethod")
     public IASTaintInformation copy() {
         return new IASTaintInformation(this.taints.clone());
     }

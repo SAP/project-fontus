@@ -15,4 +15,8 @@ public class NothingAbort extends Abort {
     public String getName() {
         return "nothing";
     }
+
+    static {
+        Abort.add(new NothingAbort());
+    }
 }

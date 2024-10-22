@@ -28,7 +28,11 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     protected final Pattern qnInstrumentedMatcher;
     protected final Pattern qnMatcherWithDotsInsteadOfSlashes;
     protected final Type origType;
+    protected final String origInternalName;
+    protected final String origDescriptor;
     protected final Type instrumentedType;
+    protected final String instrumentedInternalName;
+    protected final String instrumentedDescriptor;
     protected final Pattern descPattern;
     protected final InstrumentationHelper instrumentationHelper;
     protected final HashMap<String, String> methodsToRename = new HashMap<>(1);
@@ -38,45 +42,49 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     public AbstractInstrumentation(Type origType, Type instrumentedType, InstrumentationHelper instrumentationHelper, String taintedToOrig) {
         this.origType = origType;
         this.instrumentedType = instrumentedType;
-        this.qnMatcher = literalPatternCache.get(this.origType.getInternalName());
-        this.qnInstrumentedMatcher = literalPatternCache.get(this.instrumentedType.getInternalName());
+        this.origInternalName = this.origType.getInternalName();
+        this.origDescriptor = this.origType.getDescriptor();
+        this.instrumentedInternalName = this.instrumentedType.getInternalName();
+        this.instrumentedDescriptor = this.instrumentedType.getDescriptor();
+        this.qnMatcher = literalPatternCache.get(this.origInternalName);
+        this.qnInstrumentedMatcher = literalPatternCache.get(this.instrumentedInternalName);
         // This one is to match against the public class name with dots, e.g. "java.lang.String"
-        this.qnMatcherWithDotsInsteadOfSlashes = literalPatternCache.get(Utils.slashToDot(this.origType.getInternalName()));
-        this.descPattern = patternCache.get(this.origType.getDescriptor());
+        this.qnMatcherWithDotsInsteadOfSlashes = literalPatternCache.get(Utils.slashToDot(this.origInternalName));
+        this.descPattern = patternCache.get(this.origDescriptor);
         this.instrumentationHelper = instrumentationHelper;
         this.taintedToOrig = taintedToOrig;
         this.methodsToRename.put(Constants.ToString, Constants.TO_TSTRING);
-        this.instrumentedTypeNameWithDots = Utils.slashToDot(this.instrumentedType.getInternalName());
+        this.instrumentedTypeNameWithDots = Utils.slashToDot(this.instrumentedInternalName);
     }
 
     @Override
     public Descriptor instrument(Descriptor desc) {
-        return desc.replaceType(this.origType.getDescriptor(), this.instrumentedType.getDescriptor());
+        return desc.replaceType(this.origDescriptor, this.instrumentedDescriptor);
     }
 
     @Override
     public String instrument(String typeDescriptor) {
-        return replaceSuffix(typeDescriptor, this.origType.getDescriptor(), this.instrumentedType.getDescriptor());
+        return replaceSuffix(typeDescriptor, this.origDescriptor, this.instrumentedDescriptor);
     }
 
     @Override
     public String uninstrument(String typeDescriptor) {
-        return replaceSuffix(typeDescriptor, this.instrumentedType.getDescriptor(), this.origType.getDescriptor());
+        return replaceSuffix(typeDescriptor, this.instrumentedDescriptor, this.origDescriptor);
     }
 
     @Override
     public Descriptor uninstrumentForJdkCall(Descriptor descriptor) {
-        return descriptor.replaceType(this.instrumentedType.getDescriptor(), this.origType.getDescriptor());
+        return descriptor.replaceType(this.instrumentedDescriptor, this.origDescriptor);
     }
 
     @Override
     public String instrumentQN(String qn) {
-        return this.qnMatcher.matcher(qn).replaceAll(Matcher.quoteReplacement(this.instrumentedType.getInternalName()));
+        return this.qnMatcher.matcher(qn).replaceAll(Matcher.quoteReplacement(this.instrumentedInternalName));
     }
 
     @Override
     public String uninstrumentQN(String qn) {
-        return this.qnInstrumentedMatcher.matcher(qn).replaceAll(Matcher.quoteReplacement(this.origType.getInternalName()));
+        return this.qnInstrumentedMatcher.matcher(qn).replaceAll(Matcher.quoteReplacement(this.origInternalName));
     }
 
     @Override
@@ -93,12 +101,17 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
 
     @Override
     public boolean handlesType(String descriptor) {
-        return descriptor.endsWith(this.origType.getDescriptor());
+        return descriptor.endsWith(this.origDescriptor);
+    }
+
+    @Override
+    public boolean handlesType(Type type) {
+        return this.origType.equals(type) || (type.getSort() == Type.ARRAY && type.getElementType().equals(this.origType));
     }
 
     @Override
     public boolean isInstrumented(String descriptor) {
-        return descriptor.endsWith(this.instrumentedType.getDescriptor());
+        return descriptor.endsWith(this.instrumentedDescriptor);
     }
 
     @Override
@@ -108,11 +121,13 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
         boolean isArrayInstrumentable = Type.getObjectType(functionCall.getOwner()).getSort() == Type.ARRAY && Type.getObjectType(functionCall.getOwner()).getElementType().equals(this.origType);
         if (isInstrumentable || isArrayInstrumentable) {
             Descriptor newDescriptor = this.instrumentationHelper.instrument(functionCall.getParsedDescriptor());
-            String newOwner = isArrayInstrumentable ? this.getInstrumentedArrayType(Type.getObjectType(functionCall.getOwner()).getDimensions()).getInternalName() : this.instrumentedType.getInternalName();
+            String newOwner = isArrayInstrumentable ? this.getInstrumentedArrayType(Type.getObjectType(functionCall.getOwner()).getDimensions()).getInternalName() : this.instrumentedInternalName;
             // Some methods names (e.g., toString) need to be replaced to not break things, look those up
             String newName = this.methodsToRename.getOrDefault(functionCall.getName(), functionCall.getName());
 
-            logger.info("Rewriting {} invoke [{}] {}.{}{} to {}.{}{}", this.origType.getInternalName(), Utils.opcodeToString(functionCall.getOpcode()), functionCall.getOwner(), functionCall.getName(), functionCall.getName(), newOwner, newName, newDescriptor);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Rewriting {} invoke [{}] {}.{}{} to {}.{}{}", this.origInternalName, Utils.opcodeToString(functionCall.getOpcode()), functionCall.getOwner(), functionCall.getName(), functionCall.getName(), newOwner, newName, newDescriptor);
+            }
             return new FunctionCall(functionCall.getOpcode(), newOwner, newName, newDescriptor.toDescriptor(), functionCall.isInterface());
         }
         return null;
@@ -147,7 +162,7 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     @Override
     public boolean handleLdcType(MethodVisitor mv, Type type) {
         if (this.origType.equals(type)) {
-            mv.visitLdcInsn(Type.getObjectType(this.instrumentedType.getInternalName()));
+            mv.visitLdcInsn(Type.getObjectType(this.instrumentedInternalName));
             return true;
         }
         return false;
@@ -161,7 +176,7 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     @Override
     public String rewriteTypeIns(String type) {
         boolean isArray = type.startsWith("[");
-        if (Type.getObjectType(type).equals(this.origType) || (isArray && type.endsWith(this.origType.getDescriptor()))) {
+        if (Type.getObjectType(type).equals(this.origType) || (isArray && type.endsWith(this.origDescriptor))) {
             return this.instrumentQN(type);
         }
         return type;
@@ -171,8 +186,10 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     public Optional<FieldVisitor> instrumentFieldInstruction(ClassVisitor classVisitor, int access, String name, String descriptor, String signature, Object value, TriConsumer tc) {
         Matcher descMatcher = this.descPattern.matcher(descriptor);
         if (descMatcher.find()) {
-            String newDescriptor = descMatcher.replaceAll(this.instrumentedType.getDescriptor());
-            logger.info("Replacing {} field [{}]{}.{} with [{}]{}.{}", this.origType.getInternalName(), access, name, descriptor, access, name, newDescriptor);
+            String newDescriptor = descMatcher.replaceAll(this.instrumentedDescriptor);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Replacing {} field [{}]{}.{} with [{}]{}.{}", this.origInternalName, access, name, descriptor, access, name, newDescriptor);
+            }
             return Optional.of(classVisitor.visitField(access, name, newDescriptor, signature, value));
         }
         return Optional.empty();
@@ -183,15 +200,15 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
     public boolean instrumentFieldIns(MethodVisitor mv, int opcode, String owner, String name, String descriptor) {
         String newOwner = owner;
         if (this.origType.equals(Type.getObjectType(owner))) {
-            newOwner = this.instrumentedType.getInternalName();
+            newOwner = this.instrumentedInternalName;
         }
-        Matcher matcher = patternCache.get(this.origType.getDescriptor()).matcher(descriptor);
+        Matcher matcher = patternCache.get(this.origDescriptor).matcher(descriptor);
         if (matcher.find()) {
             if (this.combinedExcludedLookup.isPackageExcludedOrJdk(newOwner)) {
                 mv.visitFieldInsn(opcode, newOwner, name, descriptor);
                 this.origToTainted(mv);
             } else {
-                String newDescriptor = matcher.replaceAll(this.instrumentedType.getDescriptor());
+                String newDescriptor = matcher.replaceAll(this.instrumentedDescriptor);
                 mv.visitFieldInsn(opcode, newOwner, name, newDescriptor);
             }
             return true;
@@ -225,7 +242,7 @@ public class AbstractInstrumentation implements InstrumentationStrategy {
         }
         if (this.origType.equals(parameter)) {
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, Constants.ConversionUtilsQN, Constants.ConversionUtilsToOrigName, Constants.ConversionUtilsToOrigDesc, false);
-            mv.visitTypeInsn(Opcodes.CHECKCAST, this.origType.getInternalName());
+            mv.visitTypeInsn(Opcodes.CHECKCAST, this.origInternalName);
             return true;
         }
         if (this.getOrigArrayType().equals(parameter)) {

@@ -157,6 +157,7 @@ public class MethodProxies {
         methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/util/Collection", "toArray", "()[Ljava/lang/Object;", true),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASToArrayProxy.class), "toArray", String.format("(L%s;)[Ljava/lang/Object;", Utils.dotToSlash(Collection.class.getName())), false));
 
+
     }
 
     private static void fillTaintPersistenceProxies() {
@@ -177,7 +178,8 @@ public class MethodProxies {
         methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/sql/ResultSet", "getObject", "(I)Ljava/lang/Object;", true),
                 new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASResultSetUtils.class), "getObject", String.format("(L%s;I)Ljava/lang/Object;", Utils.dotToSlash(java.sql.ResultSet.class.getName())), false));
         methodInterfaceProxies.put(new FunctionCall(Opcodes.INVOKEVIRTUAL, "java/sql/ResultSet", "getObject", "(Ljava/lang/String;)Ljava/lang/Object;", true),
-                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASResultSetUtils.class), "getObject", String.format("(L%s;Lcom/sap/fontus/taintaware/unified/IASString;)Ljava/lang/String;", Utils.dotToSlash(java.sql.ResultSet.class.getName())), false));
+                new FunctionCall(Opcodes.INVOKESTATIC, Type.getInternalName(IASResultSetUtils.class), "getObject", String.format("(L%s;Lcom/sap/fontus/taintaware/unified/IASString;)Ljava/lang/Object;", Utils.dotToSlash(java.sql.ResultSet.class.getName())), false));
+
     }
 
     static {
@@ -216,9 +218,11 @@ public class MethodProxies {
      * Is there a proxy defined? If so apply and return true.
      */
     public FunctionCall shouldBeProxied(FunctionCall pfe) {
-        if (methodProxies.containsKey(pfe)) {
-            logger.info("Proxying call to {}.{}{}", pfe.getOwner(), pfe.getName(), pfe.getDescriptor());
-            return methodProxies.get(pfe);
+
+        FunctionCall proxy = methodProxies.get(pfe);
+        if (proxy != null) {
+            logger.info("Proxying call to {}.{}{} to {}.{}{}", pfe.getOwner(), pfe.getName(), pfe.getDescriptor(), proxy.getOwner(), proxy.getName(), proxy.getDescriptor());
+            return proxy;
         }
         if (pfe.getOpcode() == Opcodes.INVOKEVIRTUAL || pfe.getOpcode() == Opcodes.INVOKEINTERFACE) {
             if (this.combinedExcludedLookup.isJdkClass(pfe.getOwner())) {
@@ -226,7 +230,9 @@ public class MethodProxies {
                     FunctionCall mip = entry.getKey();
                     if (pfe.getName().equals(mip.getName()) && pfe.getDescriptor().equals(mip.getDescriptor())) {
                         if (thisOrSuperQNEquals(pfe.getOwner(), mip.getOwner())) {
-                            logger.info("Proxying interface call to {}.{}{}", pfe.getOwner(), pfe.getName(), pfe.getDescriptor());
+                            if(LogUtils.LOGGING_ENABLED) {
+                                logger.info("Proxying interface call to {}.{}{}", pfe.getOwner(), pfe.getName(), pfe.getDescriptor());
+                            }
                             return entry.getValue();
                         }
                     }

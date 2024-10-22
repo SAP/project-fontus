@@ -38,7 +38,7 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
     }
 
     public String getHeader(String name) {
-        IASString h = name == null ? null : getHeader(new IASString(name));
+        IASString h = name == null ? null : this.getHeader(new IASString(name));
         return h == null ? null : h.getString();
     }
 
@@ -62,7 +62,7 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
     }
 
     public String getMethodString() {
-        return getMethod().getString();
+        return this.getMethod().getString();
     }
     
     public IASString getPathInfo() {
@@ -319,17 +319,17 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
 	    sb.append("Object is null!");
 	} else {
 	    sb.append("URL: " + this.getRequestURL());
-	    sb.append(System.getProperty("line.separator"));
+	    sb.append(System.lineSeparator());
 
 	    sb.append("PathInfo: " + this.getPathInfo());
-	    sb.append(System.getProperty("line.separator"));
+	    sb.append(System.lineSeparator());
 
 	    sb.append("URI: " + this.getRequestURI());
-	    sb.append(System.getProperty("line.separator"));
+	    sb.append(System.lineSeparator());
 
 	    Enumeration<?> e = this.getParameterNames();
 	    sb.append("Query Parameters:");
-        sb.append(System.getProperty("line.separator"));
+        sb.append(System.lineSeparator());
         if (e == null) {
             sb.append("NULL");
         } else {
@@ -339,46 +339,46 @@ public class ReflectedHttpServletRequest extends ReflectedObject {
                 for (IASString value : this.getParameterValues(s)) {
                     sb.append(value.getString() + ", ");
                 }
-                sb.append(System.getProperty("line.separator"));
+                sb.append(System.lineSeparator());
             }
         }
-        sb.append(System.getProperty("line.separator"));
+        sb.append(System.lineSeparator());
 
         Enumeration<?> h = this.getHeaderNames();
         sb.append("Headers:");
-        sb.append(System.getProperty("line.separator"));
+        sb.append(System.lineSeparator());
         if (h == null) {
             sb.append("NULL");
         } else {
             while (h.hasMoreElements()) {
                 IASString s = (IASString) h.nextElement();
                 sb.append(s.getString() + " = ");
-                IASString header = getHeader(s);
+                IASString header = this.getHeader(s);
                 sb.append(header.getString() + ", ");
-                sb.append(System.getProperty("line.separator"));
+                sb.append(System.lineSeparator());
             }
         }
-        sb.append(System.getProperty("line.separator"));
+        sb.append(System.lineSeparator());
 
         Enumeration<?> a = this.getAttributeNames();
 	    sb.append("Attributes:");
-	    sb.append(System.getProperty("line.separator"));
+	    sb.append(System.lineSeparator());
 	    if (a == null) {
 		sb.append("NULL");
 	    } else {
 		while (a.hasMoreElements()) {
 		    IASString s = (IASString) a.nextElement();
 		    sb.append(s.getString() + " = " + this.getAttribute(s));
-		    sb.append(System.getProperty("line.separator"));
+		    sb.append(System.lineSeparator());
 		}
 	    }
 	    ReflectedCookie[] cookies = this.getCookies();
 	    sb.append("Cookies: " + Arrays.toString(cookies));
-	    sb.append(System.getProperty("line.separator"));
+	    sb.append(System.lineSeparator());
 	    if (cookies != null) {
 		for (ReflectedCookie cookie : cookies) {
 		    sb.append(cookie.toString());
-		    sb.append(System.getProperty("line.separator"));
+		    sb.append(System.lineSeparator());
 		}
 	    }
 	}

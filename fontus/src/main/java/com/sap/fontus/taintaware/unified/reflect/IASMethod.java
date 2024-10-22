@@ -119,8 +119,8 @@ public class IASMethod extends IASExecutable<Method> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof IASMethod) {
-            return this.original.equals(((IASMethod) obj).original);
+        if (obj instanceof IASMethod iasMethod) {
+            return this.original.equals(iasMethod.original);
         }
         return false;
     }
@@ -140,7 +140,6 @@ public class IASMethod extends IASExecutable<Method> {
         return IASString.fromString(this.original.toGenericString());
     }
 
-    @SuppressWarnings("Since15")
     @CallerSensitive
     @ForceInline
     public Object invoke(Object instance, Object... parameters) throws IllegalAccessException, InvocationTargetException, ClassNotFoundException {
@@ -210,7 +209,7 @@ public class IASMethod extends IASExecutable<Method> {
             if ((!Modifier.isPublic(modifiers) && !Modifier.isProtected(modifiers) && !Modifier.isPrivate(modifiers))
                     || (!Modifier.isPublic(this.original.getDeclaringClass().getModifiers()) && !Modifier.isProtected(this.original.getDeclaringClass().getModifiers()) && !Modifier.isPrivate(this.original.getDeclaringClass().getModifiers()))) {
                 // This method is package private. Iff the declaring class is in the same package as the calling class we must set it accessible
-                // Otherwise the caller class (which is this class) is not in the same package as the declaring class an an IllegalAccessException is thrown
+                // Otherwise the caller class (which is this class) is not in the same package as the declaring class an IllegalAccessException is thrown
                 Class<?> callerClass;
                 if (Constants.JAVA_VERSION >= 9) {
                     callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
@@ -219,7 +218,7 @@ public class IASMethod extends IASExecutable<Method> {
                     callerClass = ReflectionUtils.getCallerClass();
                 }
                 if (this.original.getDeclaringClass().getPackage().equals(callerClass.getPackage())) {
-                    this.original.setAccessible(true);
+                    UnsafeUtils.setAccessible(this.original);
                 }
             } else if(Modifier.isPrivate(modifiers) || Modifier.isProtected(modifiers)) {
                 UnsafeUtils.setAccessible(this.original);

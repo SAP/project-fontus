@@ -2,15 +2,12 @@ package com.sap.fontus.gdpr.sflight;
 
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.config.Source;
-import com.sap.fontus.gdpr.Utils;
-import com.sap.fontus.gdpr.broadleaf.BroadleafTaintHandler;
 import com.sap.fontus.gdpr.cookie.ConsentCookie;
 import com.sap.fontus.gdpr.cookie.ConsentCookieMetadata;
 import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.simple.SimpleDataId;
 import com.sap.fontus.gdpr.metadata.simple.SimpleDataSubject;
 import com.sap.fontus.gdpr.metadata.simple.SimpleGdprMetadata;
-import com.sap.fontus.gdpr.sap.SapCloudTaintHandler;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASTaintSource;
 import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
@@ -80,10 +77,8 @@ public class SflightTaintHandler extends IASTaintHandler {
             GdprMetadata metadata = createUserNameMetadata(taintAware.toIASString().getString(), parameters[0]);
 
             // Add taint information if match was found
-            if (metadata != null) {
-                System.out.println("Adding Taint metadata to string '" + taintAware.toString() + "': " + metadata);
-                taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
-            }
+            System.out.println("Adding Taint metadata to string '" + taintAware + "': " + metadata);
+            taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
         }
         return taintAware;
     }

@@ -13,8 +13,8 @@ import org.objectweb.asm.ClassReader;
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 class TaintingTransformer implements ClassFileTransformer {
     private static final Logger logger = LogUtils.getLogger();
@@ -23,7 +23,7 @@ class TaintingTransformer implements ClassFileTransformer {
     private final InstrumenterInterface instrumenter;
     private final ClassFinder classFinder;
 
-    private final Map<String, byte[]> classCache = new HashMap<>();
+    private final Map<String, byte[]> classCache = new ConcurrentHashMap<>(32000);
 
     private int nClasses;
     private int nInstrumented;
@@ -60,27 +60,37 @@ class TaintingTransformer implements ClassFileTransformer {
         CombinedExcludedLookup combinedExcludedLookup = new CombinedExcludedLookup(loader);
 
         if (this.config.isHybridMode() && combinedExcludedLookup.isClassAlreadyInstrumentedForHybrid(className)) {
-            logger.info("Skipping already instrumented class in hybrid mode: {}", className);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Skipping already instrumented class in hybrid mode: {}", className);
+            }
             return classfileBuffer;
         }
 
         if (combinedExcludedLookup.isJdkClass(className)) {
-            logger.info("Skipping JDK class: {}", className);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Skipping JDK class: {}", className);
+            }
             return classfileBuffer;
         }
 
         if (combinedExcludedLookup.isExcluded(className)) {
-            logger.info("Skipping excluded class: {}", className);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Skipping excluded class: {}", className);
+            }
             return classfileBuffer;
         }
 
         if (combinedExcludedLookup.isFontusClass(className)) {
-            logger.info("Skipping Tainting Framework class: {}", className);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Skipping Tainting Framework class: {}", className);
+            }
             return classfileBuffer;
         }
 
         if (combinedExcludedLookup.isProxyClass(className, classfileBuffer)) {
-            logger.info("Skipping self generated proxy class: {}", className);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Skipping self generated proxy class: {}", className);
+            }
             return classfileBuffer;
         }
 
@@ -88,10 +98,14 @@ class TaintingTransformer implements ClassFileTransformer {
             int hash = Arrays.hashCode(classfileBuffer);
             byte[] outArray = null;
             if (this.config.usePersistentCache() && CacheHandler.get().isCached(hash)) {
-                logger.info("Fetching class {} from cache", className);
+                if(LogUtils.LOGGING_ENABLED) {
+                    logger.info("Fetching class {} from cache", className);
+                }
                 outArray = CacheHandler.get().fetchFromCache(hash, className);
             } else {
-                logger.info("Tainting class: {}", className);
+                if(LogUtils.LOGGING_ENABLED) {
+                    logger.info("Tainting class: {}", className);
+                }
                 outArray = this.instrumenter.instrumentClassByteArray(classfileBuffer, loader, className);
                 if (this.config.usePersistentCache()) {
                     CacheHandler.get().put(hash, outArray, className);

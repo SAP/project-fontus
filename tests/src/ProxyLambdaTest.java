@@ -27,7 +27,7 @@ class ProxyLambdaTest {
 						);
 	A a = (A)abProxy;
 	B b = (B)abProxy;
-	System.out.println("Hello " + a.getA()); // Display the string.
+	System.out.println("Hello " + a.getA() + " and " + b.getB()); // Display the string.
     }
 
 }

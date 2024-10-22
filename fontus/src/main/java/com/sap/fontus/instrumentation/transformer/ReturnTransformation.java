@@ -24,11 +24,11 @@ public interface ReturnTransformation {
      * Does the transformation require the input parameters to the method as local variables?
      * This is the case with a taint source, which requires the input parameters to have been added
      * in order to add them to the taint handler.
-     *
+     * <p>
      * In most cases this will be false. It only needs to be true if the transformer exepects
      * additional local variables to be present.
      *
-     * @return
+     * @return  Does the transformation require the input parameters to the method as local variables?
      */
     boolean requireParameterVariableLocals();
 

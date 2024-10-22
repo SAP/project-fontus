@@ -17,7 +17,7 @@ public final class TaintingUtils {
 
     /**
      * Converts a potentially untainted type on the stack to its untainted version.
-     *
+     * <p>
      * We try to insert "correct" conversion calls instead of calling the generic ConversionUtils here.
      *
      * @param sourceType The target type
@@ -32,7 +32,7 @@ public final class TaintingUtils {
 
     /**
      * Converts a potentially tainted type on the stack to its untainted version.
-     *
+     * <p>
      * We try to insert "correct" conversion calls instead of calling the generic ConversionUtils here.
      *
      * @param source The target type
@@ -50,7 +50,7 @@ public final class TaintingUtils {
 
     /**
      * Converts a potentially untainted type on the stack to its tainted version.
-     *
+     * <p>
      * We try to insert "correct" conversion calls instead of calling the generic ConversionUtils here.
      *
      * @param source The target type

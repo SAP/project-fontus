@@ -73,6 +73,11 @@ public class DefaultInstrumentation implements InstrumentationStrategy {
     }
 
     @Override
+    public boolean handlesType(Type type) {
+        return false;
+    }
+
+    @Override
     public boolean isInstrumented(String descriptor) {
         return false;
     }
@@ -118,8 +123,9 @@ public class DefaultInstrumentation implements InstrumentationStrategy {
             String newOwner = Type.getType(IASString.class).getInternalName();
             String newDescriptor = "(" + Constants.ObjectDesc + ")" + Type.getType(IASString.class).getDescriptor();
             String newName = Constants.TO_STRING_OF;
-            boolean newIsInterface = false;
-            logger.info("Rewriting toString invoke [{}] {}.{}{} to valueOf call {}.{}{}", Utils.opcodeToString(functionCall.getOpcode()), functionCall.getOwner(), functionCall.getName(), functionCall.getDescriptor(), newOwner, newName, newDescriptor);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Rewriting toString invoke [{}] {}.{}{} to valueOf call {}.{}{}", Utils.opcodeToString(functionCall.getOpcode()), functionCall.getOwner(), functionCall.getName(), functionCall.getDescriptor(), newOwner, newName, newDescriptor);
+            }
             return new FunctionCall(newOpcode, newOwner, newName, newDescriptor, false);
         }
         return null;

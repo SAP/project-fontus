@@ -18,8 +18,7 @@ public final class IASStringUtils {
              int destPos,
              int length) {
         Object source = src;
-        if(src instanceof String[]) {
-            String[] strSrc = (String[]) src;
+        if(src instanceof String[] strSrc) {
             source = convertStringArray(strSrc);
         }
         System.arraycopy(source, srcPos, dest, destPos, length);
@@ -29,13 +28,12 @@ public final class IASStringUtils {
         if(obj == null) {
             return null;
         }
-        if(obj instanceof String) {
-            return IASString.fromString((String)obj);
-        } else if(obj instanceof IASString) {
-            return (IASString) obj;
-        } else if(obj instanceof IASAbstractStringBuilder) {
-            IASAbstractStringBuilder b = (IASAbstractStringBuilder) obj;
-            return b.toIASString();
+        if(obj instanceof String s) {
+            return IASString.fromString(s);
+        } else if(obj instanceof IASString s) {
+            return s;
+        } else if(obj instanceof IASAbstractStringBuilder sb) {
+            return sb.toIASString();
         } else {
             throw new IllegalArgumentException(String.format("Obj is of type %s, but only String or TString are allowed!", obj.getClass().getName()));
         }
@@ -48,8 +46,8 @@ public final class IASStringUtils {
     public static Object convertObject(Object obj) {
         if (obj == null) {
             return null;
-        } else if (obj instanceof String) {
-            return IASString.fromString((String)obj);
+        } else if (obj instanceof String s) {
+            return IASString.fromString(s);
         } else {
             return obj;
         }
@@ -62,8 +60,8 @@ public final class IASStringUtils {
     public static Object convertTObject(Object obj) {
         if (obj == null) {
             return null;
-        } else if (obj instanceof IASString) {
-            return ((IASString) obj).getString();
+        } else if (obj instanceof IASString s) {
+            return s.getString();
         } else {
             return obj;
         }
@@ -207,6 +205,38 @@ public final class IASStringUtils {
     public static IASString getStringFromResourceBundle(ResourceBundle rb, IASString key) {
         Object val = rb.getObject(key.getString());
         return fromObject(val);
+    }
+
+    public static IASString byteToString(byte b) {
+        return IASString.fromString(Byte.toString(b));
+    }
+
+    public static IASString shortToString(short s) {
+        return IASString.fromString(Short.toString(s));
+    }
+
+    public static IASString characterToString(char c) {
+        return IASString.fromString(Character.toString(c));
+    }
+
+    public static IASString intToString(int i) {
+        return IASString.fromString(Integer.toString(i));
+    }
+
+    public static IASString longToString(long l) {
+        return IASString.fromString(Long.toString(l));
+    }
+
+    public static IASString floatToString(float f) {
+        return IASString.fromString(Float.toString(f));
+    }
+
+    public static IASString doubleToString(double d) {
+        return IASString.fromString(Double.toString(d));
+    }
+
+    public static IASString booleanToString(boolean b) {
+        return IASString.fromString(Boolean.toString(b));
     }
 
     private IASStringUtils() {

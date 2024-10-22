@@ -1,9 +1,7 @@
 package com.sap.fontus.taintaware.unified;
 
-import com.sap.fontus.config.Configuration;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.*;
-import com.sap.fontus.utils.stats.Statistics;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -21,9 +19,9 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
 
     public IASString() {
         this.string = "";
-        if (Configuration.getConfiguration().collectStats()) {
+/*        if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.addRangeCount(null);
-        }
+        }*/
     }
 
     //Breakpoint with condition, content.equals oder contains
@@ -31,9 +29,9 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
     public IASString(byte bytes[], int offset, int length, IASString charsetName)
             throws UnsupportedEncodingException {
         this.string = new String(bytes, offset, length, charsetName.getString());
-        if (Configuration.getConfiguration().collectStats()) {
+        /*if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.addRangeCount(null);
-        }
+        }*/
     }
 
     public IASString(String s) {
@@ -41,43 +39,43 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
             throw new IllegalArgumentException("String cannot be null");
         }
         this.string = s;
-        if (Configuration.getConfiguration().collectStats()) {
+        /*if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.addRangeCount(null);
-        }
+        }*/
     }
 
     public IASString(String s, boolean tainted) {
         this(s);
         setTaint(tainted);
-        if (Configuration.getConfiguration().collectStats()) {
+        /*if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.addRangeCount(this.taintInformation);
-        }
+        }*/
     }
 
     public IASString(IASAbstractStringBuilder strb) {
         IASString s = strb.toIASString();
         this.string = s.getString();
         this.taintInformation = s.getTaintInformationCopied();
-        if (Configuration.getConfiguration().collectStats()) {
+        /*if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.addRangeCount(this.taintInformation);
             Statistics.INSTANCE.incrementInitialized();
-        }
+        }*/
     }
 
     public IASString(String s, IASTaintInformationable taintInformation) {
         this(s);
         this.taintInformation = taintInformation == null ? null : taintInformation.copy();
-        if (Configuration.getConfiguration().collectStats()) {
+        /*if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.addRangeCount(taintInformation);
-        }
+        }*/
     }
 
     public IASString(CharSequence sequence, IASTaintInformationable taintInformation) {
         this(sequence.toString());
         this.taintInformation = taintInformation == null ? null : taintInformation.copy();
-        if (Configuration.getConfiguration().collectStats()) {
+        /*if (Configuration.getConfiguration().collectStats()) {
             Statistics.INSTANCE.addRangeCount(this.taintInformation);
-        }
+        }*/
     }
 
     @Override
@@ -121,9 +119,9 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         }
         if (data != null) {
             if (isUninitialized()) {
-                if (Configuration.getConfiguration().collectStats()) {
+                /*if (Configuration.getConfiguration().collectStats()) {
                     Statistics.INSTANCE.incrementInitialized();
-                }
+                }*/
                 this.taintInformation = TaintInformationFactory.createTaintInformation(this.length());
             }
             this.taintInformation = this.taintInformation.addRange(0, this.string.length(), data);
@@ -142,9 +140,9 @@ public final class IASString implements IASTaintAware, Comparable<IASString>, Ch
         if (isUninitialized()) {
             this.taintInformation = TaintInformationFactory.createTaintInformation(this.length());
 
-            if (Configuration.getConfiguration().collectStats() && isUninitialized()) {
+            /*if (Configuration.getConfiguration().collectStats() && isUninitialized()) {
                 Statistics.INSTANCE.incrementInitialized();
-            }
+            }*/
         }
     }
 

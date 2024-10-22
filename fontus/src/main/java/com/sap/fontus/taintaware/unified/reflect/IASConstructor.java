@@ -70,8 +70,7 @@ public class IASConstructor<T> extends IASExecutable<Constructor<T>> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof IASConstructor) {
-            IASConstructor<?> other = (IASConstructor<?>)obj;
+        if (obj instanceof IASConstructor<?> other) {
             if (this.getDeclaringClass() == other.getDeclaringClass()) {
                 return Arrays.equals(this.getParameterTypes(), other.getParameterTypes());
             }
@@ -94,7 +93,6 @@ public class IASConstructor<T> extends IASExecutable<Constructor<T>> {
         return new IASString(this.original.toGenericString());
     }
 
-    @SuppressWarnings("Since15")
 //    @CallerSensitive
 //    @ForceInline
     public Object newInstance(Object... parameters) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -105,7 +103,7 @@ public class IASConstructor<T> extends IASExecutable<Constructor<T>> {
         if ((!Modifier.isPublic(this.original.getModifiers()) && !Modifier.isProtected(this.original.getModifiers()) && !Modifier.isPrivate(this.original.getModifiers()))
                 || (!Modifier.isPublic(this.original.getDeclaringClass().getModifiers()) && !Modifier.isProtected(this.original.getDeclaringClass().getModifiers()) && !Modifier.isPrivate(this.original.getDeclaringClass().getModifiers()))) {
             // This method is package private. If the declaring class is in the same package as the calling class we must set it accessible
-            // Otherwise the caller class (which is this class) is not in the same package as the declaring class an an IllegalAccessException is thrown
+            // Otherwise the caller class (which is this class) is not in the same package as the declaring class an IllegalAccessException is thrown
             Class<?> callerClass;
             if (Constants.JAVA_VERSION >= 9) {
                 callerClass = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
@@ -131,7 +129,7 @@ public class IASConstructor<T> extends IASExecutable<Constructor<T>> {
     }
 
     @Override
-    public Annotation getAnnotation(Class annotationClass) {
+    public <R extends Annotation> R getAnnotation(Class<R> annotationClass) {
         return super.getAnnotation(annotationClass);
     }
 

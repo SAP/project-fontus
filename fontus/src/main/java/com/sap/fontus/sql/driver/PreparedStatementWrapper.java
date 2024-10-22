@@ -581,12 +581,11 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     @Override
     public void setTObject(int parameterIndex, Object x, int targetSqlType) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
-        if(x instanceof IASString && (
+        if(x instanceof IASString value && (
                 targetSqlType == Types.VARCHAR ||
                 targetSqlType == Types.NVARCHAR ||
                 targetSqlType == Types.LONGNVARCHAR ||
                 targetSqlType == Types.LONGVARCHAR)) {
-            IASString value = (IASString) x;
             this.delegate.setObject(assignment.getNewIndex(), value.getString(), targetSqlType);
             if (assignment.isHasTaint()) {
                 this.delegate.setString(assignment.getTaintIndex(), value.isTainted() ? Utils.serializeTaints(value) : Constants.UNTAINTED);
@@ -602,12 +601,11 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     @Override
     public void setTObject(int parameterIndex, Object x, int targetSqlType, int scaleOrLength) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
-        if (x instanceof IASString && (
+        if (x instanceof IASString value && (
                 targetSqlType == Types.VARCHAR ||
                 targetSqlType == Types.NVARCHAR ||
                 targetSqlType == Types.LONGNVARCHAR ||
                 targetSqlType == Types.LONGVARCHAR)) {
-            IASString value = (IASString) x;
             this.delegate.setObject(assignment.getNewIndex(), value.getString(), targetSqlType, scaleOrLength);
             if (assignment.isHasTaint()) {
                 this.delegate.setString(assignment.getTaintIndex(), value.isTainted() ? Utils.serializeTaints(value) : Constants.UNTAINTED);
@@ -623,8 +621,7 @@ public class PreparedStatementWrapper extends StatementWrapper implements IASPre
     @Override
     public void setTObject(int parameterIndex, Object x) throws SQLException {
         TaintAssignment assignment = this.parameters.computeAssignment(parameterIndex);
-        if (x instanceof IASString) {
-            IASString value = (IASString) x;
+        if (x instanceof IASString value) {
             this.delegate.setObject(assignment.getNewIndex(), value.getString());
             if (assignment.isHasTaint()) {
                this.delegate.setString(assignment.getTaintIndex(), value.isTainted() ? Utils.serializeTaints(value) : Constants.UNTAINTED);

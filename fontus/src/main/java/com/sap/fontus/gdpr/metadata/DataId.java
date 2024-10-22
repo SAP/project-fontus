@@ -4,6 +4,6 @@ import java.util.UUID;
 
 public interface DataId {
 
-    public UUID getUUID();
+    UUID getUUID();
 
 }

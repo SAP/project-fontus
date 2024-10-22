@@ -10,9 +10,7 @@ import com.sap.fontus.utils.Utils;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 public class MethodParameterTransformer {
     private static final Logger logger = LogUtils.getLogger();
@@ -58,9 +56,9 @@ public class MethodParameterTransformer {
 
     public boolean needsParameterTransformation() {
         for (ParameterTransformation p : this.paramTransformations) {
-            List<String> paramList = new ArrayList<>(this.descriptor.getParameters());
-            for (int i = 0; i < paramList.size(); i++) {
-                String pName = paramList.get(i);
+            String[] paramList = this.descriptor.getParameters();
+            for (int i = 0; i < paramList.length; i++) {
+                String pName = paramList[i];
                 if (p.requireParameterTransformation(i, pName)) {
                     return true;
                 }
@@ -96,8 +94,8 @@ public class MethodParameterTransformer {
      * stack is populated with method parameters.
      * <p>
      * The callback is made on each parameter, before moving the stack varable into
-     * local variable storage. Once each parameter is transformed (as necessary), the
-     * stack is recreated from local variables.
+     * local variable storage. Once each parameter is transformed (as necessary), recreates
+     * the stack from local variables.
      * <p>
      * Note the caller still needs to invoke the actual method!
      *
@@ -110,8 +108,8 @@ public class MethodParameterTransformer {
             return;
         }
 
-        Stack<Runnable> loadStack = new Stack<>();
-        Stack<String> params = this.descriptor.getParameterStack();
+        Deque<String> params = this.descriptor.getParameterStack();
+        Deque<Runnable> loadStack = new ArrayDeque<>(params.size());
 
         int n = nUsedLocalVariables;
 
@@ -147,14 +145,16 @@ public class MethodParameterTransformer {
         // The current method parameter, starting at the end (on top of the stack)
         int index = params.size() - 1;
         // With zero parameters, the loop is skipped
-        while (!params.empty()) {
+        while (!params.isEmpty()) {
             String p = params.pop();
             int storeOpcode = Type.getType(p).getOpcode(Opcodes.ISTORE);
             int loadOpcode = Type.getType(p).getOpcode(Opcodes.ILOAD);
 
             // Call the transformation callbacks in reverse order!
             for (int i = this.paramTransformations.size() - 1; i >= 0; i--) {
-                logger.info("Calling transformation: {} on parameter {} for {}", i, index, p);
+                if(LogUtils.LOGGING_ENABLED) {
+                    logger.info("Calling transformation: {} on parameter {} for {}", i, index, p);
+                }
                 this.paramTransformations.get(i).transformParameter(index, p, this.visitor);
             }
 
@@ -167,25 +167,31 @@ public class MethodParameterTransformer {
             // Store this parameter in local variable storage
             final int finalN = n;
             this.visitor.visitVarInsn(storeOpcode, finalN);
-            logger.info("Executing store: {}_{} for {}", storeOpcode, finalN, p);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Executing store: {}_{} for {}", storeOpcode, finalN, p);
+            }
 
             // Create an entry to re-load from local storage
             loadStack.push(() -> {
-                logger.info("Executing load {}_{} for {}", loadOpcode, finalN, p);
+                        if(LogUtils.LOGGING_ENABLED) {
+                            logger.info("Executing load {}_{} for {}", loadOpcode, finalN, p);
+                        }
                 this.visitor.visitVarInsn(loadOpcode, finalN);
             });
             n += Type.getType(p).getSize();
         }
 
         // Load the parameters out of local storage
-        while (!loadStack.empty()) {
+        while (!loadStack.isEmpty()) {
             Runnable l = loadStack.pop();
             l.run();
         }
     }
 
     public void modifyReturnType() {
-        logger.info("Calling return type transformation");
+        if(LogUtils.LOGGING_ENABLED) {
+            logger.info("Calling return type transformation");
+        }
         // Call the transformation callbacks
         if (this.needsReturnTransformation()) {
             for (ReturnTransformation t : this.returnTransformations) {

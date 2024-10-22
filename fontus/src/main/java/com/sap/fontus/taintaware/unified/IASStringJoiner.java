@@ -107,8 +107,8 @@ public class IASStringJoiner {
 
     private IASTaintInformationable getOrCreateTaintInformation(CharSequence cs) {
         IASTaintInformationable taintInfo = null;
-        if (cs instanceof IASTaintAware) {
-            taintInfo = ((IASTaintAware) cs).getTaintInformation();
+        if (cs instanceof IASTaintAware taintAware) {
+            taintInfo = taintAware.getTaintInformation();
         }
         if (taintInfo == null) {
             // Create empty (non-null entry) if original info is null or not taint-aware

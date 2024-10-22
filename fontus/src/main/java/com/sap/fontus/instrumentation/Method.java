@@ -63,7 +63,7 @@ public class Method {
     }
 
     public String[] getParameterTypes() {
-        return Descriptor.parseDescriptor(this.descriptor).getParameters().toArray(new String[0]);
+        return Descriptor.parseDescriptor(this.descriptor).getParameters();
     }
 
     public boolean isDefault() {

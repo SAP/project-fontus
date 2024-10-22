@@ -10,13 +10,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class MethodTaintingUtils {
-    private static final CombinedExcludedLookup lookup = new CombinedExcludedLookup(null);
+    private final CombinedExcludedLookup lookup;
     /**
      * Functional interfaces or packages with func interfaces which are JDK or excluded but should still not be uninstrumented as lmabda
      */
     private static final String[] lambdaIncluded = {"java/util/function/", "java/util/Comparator", "java/util/concurrent/"};
 
-    private MethodTaintingUtils() {
+    MethodTaintingUtils(CombinedExcludedLookup lookup) {
+        this.lookup = lookup;
     }
 
     /**
@@ -78,15 +79,15 @@ public final class MethodTaintingUtils {
         mv.visitMethodInsn(Opcodes.INVOKESTATIC, owner, Constants.VALUE_OF, desc, false);
     }
 
-    public static boolean isMethodReferenceJdkOrExcluded(Handle realFunction) {
-        return lookup.isPackageExcludedOrJdkOrAnnotation(realFunction.getOwner());
+    public boolean isMethodReferenceJdkOrExcluded(Handle realFunction) {
+        return this.lookup.isPackageExcludedOrJdkOrAnnotation(realFunction.getOwner());
     }
 
-    public static boolean isFunctionalInterfaceJdkOrExcluded(String descriptor) {
+    public boolean isFunctionalInterfaceJdkOrExcluded(String descriptor) {
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
         Type instance = Type.getType(desc.getReturnType());
-	String instanceName = instance.getInternalName();
-        boolean excluded = lookup.isPackageExcludedOrJdkOrAnnotation(instanceName);
+	    String instanceName = instance.getInternalName();
+        boolean excluded = this.lookup.isPackageExcludedOrJdkOrAnnotation(instanceName);
         for (String clsOrPackage : lambdaIncluded) {
             if (instanceName.startsWith(clsOrPackage)) {
                 excluded = false;
@@ -100,7 +101,7 @@ public final class MethodTaintingUtils {
     /**
      * Translates the call to a lambda function
      */
-    static void invokeVisitLambdaCall(MethodVisitor mv,
+    void invokeVisitLambdaCall(MethodVisitor mv,
                                       InstrumentationHelper instrumentationHelper,
                                       Descriptor instrumentedProxyDescriptor,
                                       final LambdaCall lambdaCall,
@@ -113,18 +114,16 @@ public final class MethodTaintingUtils {
         Descriptor desc = Descriptor.parseDescriptor(descriptor);
         Handle realFunction = (Handle) bootstrapMethodArguments[1];
 
-        boolean isExcludedOrJdk = needsLambdaProxy(descriptor, realFunction, (Type) bootstrapMethodArguments[2], instrumentationHelper);
+        boolean isExcludedOrJdk = this.needsLambdaProxy(descriptor, realFunction, (Type) bootstrapMethodArguments[2], instrumentationHelper);
 
         Object[] bsArgs;
         if (!isExcludedOrJdk) {
             bsArgs = new Object[bootstrapMethodArguments.length];
             for (int i = 0; i < bootstrapMethodArguments.length; i++) {
                 Object arg = bootstrapMethodArguments[i];
-                if (arg instanceof Handle) {
-                    Handle a = (Handle) arg;
+                if (arg instanceof Handle a) {
                     bsArgs[i] = Utils.instrumentHandle(a, instrumentationHelper);
-                } else if (arg instanceof Type) {
-                    Type a = (Type) arg;
+                } else if (arg instanceof Type a) {
                     if (a.getSort() == Type.OBJECT) {
                         bsArgs[i] = Type.getObjectType(instrumentationHelper.instrumentQN(a.getInternalName()));
                     } else {
@@ -136,7 +135,7 @@ public final class MethodTaintingUtils {
             }
         } else {
             bsArgs = bootstrapMethodArguments.clone();
-            if (lookup.isPackageExcludedOrJdk(lambdaCall.getImplementation().getOwner())) {
+            if (this.lookup.isPackageExcludedOrJdk(lambdaCall.getImplementation().getOwner())) {
                 bsArgs[0] = Utils.instrumentType((Type) bsArgs[0], instrumentationHelper);
                 bsArgs[2] = Utils.instrumentType((Type) bsArgs[2], instrumentationHelper);
             }
@@ -148,7 +147,7 @@ public final class MethodTaintingUtils {
         mv.visitInvokeDynamicInsn(name, descr, bootstrapMethodHandle, bsArgs);
     }
 
-    public static boolean needsLambdaProxy(String descriptor, Handle realFunction, Type concreteDescriptor, InstrumentationHelper instrumentationHelper) {
-        return isFunctionalInterfaceJdkOrExcluded(descriptor) || (!instrumentationHelper.canHandleType(Type.getObjectType(realFunction.getOwner()).getDescriptor()) && isMethodReferenceJdkOrExcluded(realFunction));
+    public boolean needsLambdaProxy(String descriptor, Handle realFunction, Type concreteDescriptor, InstrumentationHelper instrumentationHelper) {
+        return this.isFunctionalInterfaceJdkOrExcluded(descriptor) || (!instrumentationHelper.canHandleType(Type.getObjectType(realFunction.getOwner())) && this.isMethodReferenceJdkOrExcluded(realFunction));
     }
 }

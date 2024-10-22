@@ -7,8 +7,8 @@ public final class IASCompareProxy {
     @SuppressWarnings("StringEquality")
     public static boolean compareRefEquals(Object a, Object b) {
         if (a != null && b != null) {
-            if (a instanceof IASString && b instanceof IASString) {
-                return ((IASString) a).getString() == ((IASString) b).getString();
+            if (a instanceof IASString sa && b instanceof IASString sb) {
+                return sa.getString() == sb.getString();
             }
         }
         return a == b;

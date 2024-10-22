@@ -48,7 +48,7 @@ public class FontusNonClassLoadingClassWriter extends NonClassloadingClassWriter
         // types.
         //
         // To get around this, we first *uninstrument* the input types (only if neither are JDK classes) and then find the
-        // common supertype. Finally re-instrument the result to give e.g. IASProperties at the output.
+        // common supertype. Finally, re-instrument the result to give e.g. IASProperties at the output.
         //
         // The bigger question is why the TypeHierarcyReader doesn't return the instrumented superclass...
         //
@@ -68,8 +68,10 @@ public class FontusNonClassLoadingClassWriter extends NonClassloadingClassWriter
             //                   result, resultInitial);
             return result;
         } catch(Exception e) {
-            logger.warn("Can't determine common superclass of %s and %s as one of them can't be loaded. Returning Object..", type1, type2);
-            Utils.logException(e);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.warn("Can't determine common superclass of %s and %s as one of them can't be loaded. Returning Object..", type1, type2);
+                Utils.logException(e);
+            }
             return "java/lang/Object";
         }
     }

@@ -25,4 +25,8 @@ public class FileLoggingTaintlossHandler extends LoggingTaintlossHandler {
     public String getName() {
         return "file_logging";
     }
+
+    static {
+        TaintlossHandler.add(new FileLoggingTaintlossHandler());
+    }
 }

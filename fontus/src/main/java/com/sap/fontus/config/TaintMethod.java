@@ -10,7 +10,7 @@ public enum TaintMethod {
     ARRAY(Constants.ARRAY_METHOD_NAME, Constants.ARRAY_METHOD_PATH),
     UNTAINTED(Constants.UNTAINTED_METHOD_NAME, Constants.UNTAINTED_METHOD_PATH);
 
-    public static final String defaultTaintMethodName = Constants.BOOLEAN_METHOD_NAME;
+    public static final String defaultTaintMethodName = Constants.RANGE_METHOD_NAME;
 
     private final String path;
     private final String name;

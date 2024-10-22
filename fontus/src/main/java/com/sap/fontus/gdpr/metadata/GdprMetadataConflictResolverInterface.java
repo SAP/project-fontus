@@ -6,6 +6,6 @@ package com.sap.fontus.gdpr.metadata;
  */
 public interface GdprMetadataConflictResolverInterface {
 
-    public GdprMetadata resolveConflicts(GdprMetadata first, GdprMetadata second);
+    GdprMetadata resolveConflicts(GdprMetadata first, GdprMetadata second);
 
 }

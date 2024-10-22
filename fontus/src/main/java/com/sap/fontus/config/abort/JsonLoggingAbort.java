@@ -39,4 +39,8 @@ public class JsonLoggingAbort extends Abort {
     public String getName() {
         return "json_logging";
     }
+
+    static {
+        Abort.add(new JsonLoggingAbort());
+    }
 }

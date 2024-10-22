@@ -9,14 +9,15 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class IASProxyProxy {
     protected final InvocationHandler h;
-    private static final Map<byte[], Class<?>> proxyCache = new HashMap<>();
+    private static final Map<byte[], Class<?>> proxyCache = new ConcurrentHashMap<>(50);
 
+    private static final Class<?> nulll = NullSentinel.class;
 
     protected IASProxyProxy(InvocationHandler h) {
         Objects.requireNonNull(h);
@@ -24,9 +25,14 @@ public class IASProxyProxy {
     }
 
     // Prevent instantiation
-    private IASProxyProxy() { h = null; }
+    private IASProxyProxy() {
+        this.h = null;
+    }
 
     public static boolean isProxyClass(Class<?> cls) {
+        if(cls == null) {
+            return proxyCache.containsValue(nulll);
+        }
         return proxyCache.containsValue(cls);
     }
 
@@ -126,7 +132,6 @@ public class IASProxyProxy {
         IASProxyProxyBuilder builder = IASProxyProxyBuilder.newBuilder(interfaces, classLoader);
 
         byte[] bytes = builder.build();
-        proxyCache.put(bytes, null);
 
         VerboseLogger.saveIfVerbose(builder.getName(), bytes);
 
@@ -153,13 +158,13 @@ public class IASProxyProxy {
             Constructor<?> constructor = proxy.getConstructor(InvocationHandler.class);
 
             try {
-                return constructor.newInstance(new Object[]{h});
+                return constructor.newInstance(h);
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new InternalError(e.toString(), e);
             } catch (InvocationTargetException e) {
                 Throwable t = e.getCause();
-                if (t instanceof RuntimeException) {
-                    throw (RuntimeException) t;
+                if (t instanceof RuntimeException rt) {
+                    throw rt;
                 } else {
                     throw new InternalError(t.toString(), t);
                 }
@@ -168,5 +173,9 @@ public class IASProxyProxy {
             ex.printStackTrace();
             throw ex;
         }
+    }
+
+    class NullSentinel {
+
     }
 }

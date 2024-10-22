@@ -10,7 +10,7 @@ public enum ParameterType {
      *                      ^
      * Update a set x = ?;
      *                  ^
-     *
+     * <p>
      * Handling:
      * Taint column follows directly (idx+1)
      */
@@ -19,7 +19,7 @@ public enum ParameterType {
      * Inside a regular where clause
      * select * from a where id = ?;
      *                            ^
-     *
+     * <p>
      * Handling:
      * No taint column
      */
@@ -28,7 +28,7 @@ public enum ParameterType {
      * Inside a where clause in a subselect
      * select * from a where id = (select id from b where x = ?);
      *                                                        ^
-     *
+     * <p>
      * Handling:
      * No taint column
      */
@@ -42,10 +42,10 @@ public enum ParameterType {
      */
     QUERY_SUBSELECT,
     /**
-     * An parameter assignment where the value is retrieved via a subselect
+     * A parameter assignment where the value is retrieved via a subselect
      * INSERT INTO a VALUES ('a', (select y from b where y = ?))
      *                                                       ^
-     *
+     * <p>
      * Handling:
      * We need to duplicate the subselect, one for the insert of the regular value and one for the tainted value
      * The tainted value thus can move further to the back, as the select might have several parameters in its where clause

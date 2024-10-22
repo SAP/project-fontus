@@ -3,7 +3,9 @@ package com.sap.fontus.gdpr.metadata.registry;
 import com.sap.fontus.gdpr.metadata.Purpose;
 import com.sap.fontus.gdpr.metadata.PurposeBase;
 
-public class RegistryLinkedPurpose extends PurposeBase {
+import java.io.Serializable;
+
+public class RegistryLinkedPurpose extends PurposeBase  implements Serializable {
 
     private String name;
 

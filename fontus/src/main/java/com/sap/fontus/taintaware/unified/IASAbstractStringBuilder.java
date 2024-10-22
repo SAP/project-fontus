@@ -8,7 +8,7 @@ import jdk.internal.vm.annotation.ForceInline;
 import java.io.Serializable;
 import java.util.stream.IntStream;
 
-@SuppressWarnings({"unused", "Since15", "StringBufferField"})
+@SuppressWarnings({"unused", "StringBufferField"})
 public abstract class IASAbstractStringBuilder implements Serializable, Comparable<IASAbstractStringBuilder>, Appendable, CharSequence, IASTaintAware {
     protected StringBuilder stringBuilder;
     private IASTaintInformationable taintInformation;

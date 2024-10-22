@@ -30,4 +30,8 @@ public class CensoringAbort extends Abort {
         return "censor";
     }
 
+    static {
+        Abort.add(new CensoringAbort());
+    }
+
 }

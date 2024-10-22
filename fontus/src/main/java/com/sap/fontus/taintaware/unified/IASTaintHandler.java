@@ -14,7 +14,6 @@ import com.sap.fontus.utils.stats.Statistics;
 
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static com.sap.fontus.utils.ClassTraverser.getAllFields;
@@ -31,7 +30,7 @@ public class IASTaintHandler {
 
         System.out.println("FONTUS: Source: " + source);
         System.out.println("        taintAware: " + taintAware);
-        System.out.println("        Caller Type:" + parent + "(" + parent.getClass().getCanonicalName() + ")");
+        System.out.println("        Caller Type:" + parent + "(" + (parent != null ? parent.getClass().getCanonicalName() : "null") + ")");
         System.out.println("        Input Parameters: " + Arrays.toString(parameters));
 
         if (parameters != null) {
@@ -61,7 +60,7 @@ public class IASTaintHandler {
      * @param instance     The specific instance of the object on which the method is called
      * @param sinkFunction The name of the function
      * @param sinkName     The name of the sink
-     * @return
+     * @return The tainted data after invoking the hook. This can be null even if a non-null value was passed to this function!
      */
     public static IASTaintAware handleTaint(IASTaintAware taintAware, Object instance, String sinkFunction, String sinkName, String callerName) {
         boolean isTainted = taintAware.isTainted();
@@ -89,7 +88,7 @@ public class IASTaintHandler {
 
     protected static Object traverseObject(Object object, Function<IASTaintAware, IASTaintAware> atomicHandler) {
         List<Object> visited = new ArrayList<>();
-        return traverseObject(object, new Function<Object, Object>() {
+        return traverseObject(object, new Function<>() {
             @Override
             public Object apply(Object o) {
                 return traverseObject(o, this, visited, atomicHandler);
@@ -180,7 +179,7 @@ public class IASTaintHandler {
 
     /**
      * Hook function called at all taint sinks in the bytecode
-     *
+     * <p>
      * String object = parentObject.sourceCall(parameters);
      *
      * @param object The object to be tainted (can be a string, or something which needs traversing, like a list)
@@ -201,12 +200,12 @@ public class IASTaintHandler {
     }
 
     public static Object checkTaint(Object object, Object instance, String sinkFunction, String sinkName, String callerFunction, IASAtomicTaintChecker checker) {
-        if (object instanceof IASTaintAware) {
-            recordSinkStatistics((IASTaintAware) object, sinkFunction, callerFunction);
-            return checker.checkTaint((IASTaintAware) object, instance, sinkFunction, sinkName, callerFunction);
-        } else if (instance instanceof IASTaintAware) {
+        if (object instanceof IASTaintAware taintAware) {
+            recordSinkStatistics(taintAware, sinkFunction, callerFunction);
+            return checker.checkTaint(taintAware, instance, sinkFunction, sinkName, callerFunction);
+        } else if (instance instanceof IASTaintAware taintAware) {
             // Things like String.toCharArray() can be handled here
-            return checker.checkTaint((IASTaintAware) instance, object, sinkFunction, sinkName, callerFunction);
+            return checker.checkTaint(taintAware, object, sinkFunction, sinkName, callerFunction);
         }
 
         return traverseObject(object, taintAware -> {
@@ -217,7 +216,7 @@ public class IASTaintHandler {
 
     /**
      * Hook function called at all taint sources added to bytecode
-     *
+     * <p>
      * String object = parentObject.callToSink(parameters);
      *
      * @param object The object to be tainted (can be a string, or something which needs traversing, like a list)
@@ -244,8 +243,8 @@ public class IASTaintHandler {
     public static Object taint(Object object, Object parentObject, Object[] parameters, int sourceId, String callerFunction, IASAtomicTaintSetter setter) {
         // Handle statistics
         recordSourceStatistics(sourceId, callerFunction);
-        if (object instanceof IASTaintAware) {
-            setter.setTaint((IASTaintAware) object, parentObject, parameters, sourceId, callerFunction);
+        if (object instanceof IASTaintAware taintAware) {
+            setter.setTaint(taintAware, parentObject, parameters, sourceId, callerFunction);
             return object;
         }
         return traverseObject(object, taintAware -> {

@@ -16,12 +16,10 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 /**
- * Holds the information required for a 'invoke' bytecode instruction.
+ * Holds the information required for an 'invoke' bytecode instruction.
  */
 @XmlRootElement
 public class FunctionCall {
@@ -108,8 +106,8 @@ public class FunctionCall {
 
     public static Method toMethod(FunctionCall functionCall) throws ClassNotFoundException, NoSuchMethodException {
         Class<?> clazz = Class.forName(Utils.slashToDot(functionCall.owner));
-        List<String> params = functionCall.getParsedDescriptor().getParameters();
-        Class<?>[] paramClasses = new Class[params.size()];
+        String[] params = functionCall.getParsedDescriptor().getParameters();
+        Class<?>[] paramClasses = new Class[params.length];
         int i = 0;
         for (String s : params) {
             paramClasses[i] = getClazz(s);

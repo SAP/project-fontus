@@ -59,7 +59,7 @@ public class TcfTaintHandler extends IASTaintHandler {
      * @param object The object to be tainted
      * @param sourceId The ID of the taint source function
      * @return The tainted object
-     *
+     * <p>
      * This snippet of XML can be added to the source:
      *
      * <pre>
@@ -75,8 +75,8 @@ public class TcfTaintHandler extends IASTaintHandler {
      * </pre>
      */
     public static Object taint(Object object, Object parent, Object[] parameters, int sourceId) {
-        if (object instanceof IASTaintAware) {
-            return setTaint((IASTaintAware) object, parent, parameters, sourceId);
+        if (object instanceof IASTaintAware taintAware) {
+            return setTaint(taintAware, parent, parameters, sourceId);
         }
         return IASTaintHandler.traverseObject(object, taintAware -> setTaint(taintAware, parent, parameters, sourceId));
     }

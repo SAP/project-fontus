@@ -205,7 +205,7 @@ public class BroadleafTaintHandler extends IASTaintHandler {
          * @param object The object to be tainted
          * @param sourceId The ID of the taint source function
          * @return The tainted object
-         *
+         * <p>
          * This snippet of XML can be added to the source:
          * <pre>
          * {@code
@@ -318,8 +318,8 @@ public class BroadleafTaintHandler extends IASTaintHandler {
 
                 if (lastname.isTainted() && (lastname.getTaintInformation() != null)) {
                     for (IASTaintRange range : lastname.getTaintInformation().getTaintRanges(lastname.getString().length())) {
-                        if (range.getMetadata() instanceof GdprTaintMetadata) {
-                            md = ((GdprTaintMetadata) range.getMetadata()).getMetadata();
+                        if (range.getMetadata() instanceof GdprTaintMetadata gdprTaintMetadata) {
+                            md = gdprTaintMetadata.getMetadata();
                             break;
                         }
                     }
@@ -513,8 +513,8 @@ public class BroadleafTaintHandler extends IASTaintHandler {
     private static UUID getDataId(IASString iasString) {
         if (iasString.isTainted() && (iasString.getTaintInformation() != null)) {
             for (IASTaintRange range : iasString.getTaintInformation().getTaintRanges(iasString.getString().length())) {
-                if (range.getMetadata() instanceof GdprTaintMetadata) {
-                    return ((GdprTaintMetadata) range.getMetadata()).getMetadata().getId().getUUID();
+                if (range.getMetadata() instanceof GdprTaintMetadata metadata) {
+                    return metadata.getMetadata().getId().getUUID();
                 }
             }
         }
