@@ -1,8 +1,9 @@
 package com.sap.fontus.gdpr.metadata;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public abstract class VendorBase implements Vendor {
+public abstract class VendorBase implements Vendor, Serializable {
 
     @Override
     public boolean equals(Object o) {

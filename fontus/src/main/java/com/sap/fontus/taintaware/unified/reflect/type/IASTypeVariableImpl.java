@@ -41,7 +41,7 @@ public class IASTypeVariableImpl<T extends GenericDeclaration> implements TypeVa
     }
 
     @Override
-    public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+    public <A extends Annotation> A getAnnotation(Class<A> annotationClass) {
         return this.original.getAnnotation(annotationClass);
     }
 
@@ -57,8 +57,8 @@ public class IASTypeVariableImpl<T extends GenericDeclaration> implements TypeVa
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof IASTypeVariableImpl) {
-            return this.original.equals(((IASTypeVariableImpl<?>) obj).original);
+        if (obj instanceof IASTypeVariableImpl<?> tvi) {
+            return this.original.equals(tvi.original);
         }
         return false;
     }

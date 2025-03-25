@@ -1,27 +1,16 @@
 package com.sap.fontus.gdpr.sap;
 
-import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.Configuration;
-import com.sap.fontus.config.Sink;
 import com.sap.fontus.config.Source;
-import com.sap.fontus.config.abort.Abort;
 import com.sap.fontus.gdpr.cookie.ConsentCookie;
 import com.sap.fontus.gdpr.cookie.ConsentCookieMetadata;
 import com.sap.fontus.gdpr.metadata.*;
-import com.sap.fontus.gdpr.metadata.registry.PurposeRegistry;
-import com.sap.fontus.gdpr.metadata.registry.VendorRegistry;
 import com.sap.fontus.gdpr.metadata.simple.*;
-import com.sap.fontus.gdpr.openmrs.OpenMrsTaintHandler;
-import com.sap.fontus.gdpr.servlet.ReflectedCookie;
-import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.*;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
-import org.objectweb.asm.Opcodes;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -91,7 +80,7 @@ public class SapCloudTaintHandler extends IASTaintHandler {
 
             // Add taint information if match was found
             if (metadata != null) {
-                System.out.println("Adding Taint metadata to string '" + taintAware.toString() + "': " + metadata);
+                System.out.println("Adding Taint metadata to string '" + taintAware + "': " + metadata);
                 taintAware.setTaint(new GdprTaintMetadata(sourceId, metadata));
             }
         }
@@ -103,7 +92,7 @@ public class SapCloudTaintHandler extends IASTaintHandler {
      * @param object The object to be tainted
      * @param sourceId The ID of the taint source function
      * @return The tainted object
-     *
+     * <p>
      * This snippet of XML can be added to the source:
      *
      * <pre>

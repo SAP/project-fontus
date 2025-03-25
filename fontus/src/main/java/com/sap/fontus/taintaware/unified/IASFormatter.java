@@ -7,8 +7,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.nio.charset.Charset;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.text.DateFormatSymbols;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -169,8 +167,8 @@ public class IASFormatter implements Closeable, Flushable {
 
     @Override
     public void flush() throws IOException {
-        if (this.output instanceof Flushable) {
-            ((Flushable) this.output).flush();
+        if (this.output instanceof Flushable flushable) {
+            flushable.flush();
         }
     }
 
@@ -364,6 +362,7 @@ public class IASFormatter implements Closeable, Flushable {
         private void process_FlAGS_STATE() {
             if (this.token.setFlag(this.currentChar)) {
                 // remains in FLAGS_STATE
+                return;
             } else if (Character.isDigit(this.currentChar)) {
                 this.token.setWidth(this.parseInt(this.format));
                 this.state = WIDTH_STATE;
@@ -992,7 +991,8 @@ public class IASFormatter implements Closeable, Flushable {
             } else {
                 String hexString = Integer.toHexString(this.arg.hashCode());
                 IASString taintedHexString = new IASString(hexString);
-                if (this.arg instanceof IASTaintAware && ((IASTaintAware) this.arg).isTainted()) {
+                if (this.arg instanceof IASTaintAware taintAware && taintAware.isTainted()) {
+                    // TODO: This seems suspiciously wrong, as we convert taints to boolean taints?
                     taintedHexString.setTaint(true);
                 }
                 result.append(taintedHexString);
@@ -1014,7 +1014,7 @@ public class IASFormatter implements Closeable, Flushable {
                         + this.formatToken.getConversionType());
             }
 
-            if (this.arg instanceof Formattable) {
+            if (this.arg instanceof Formattable formattable) {
                 int flag = 0;
                 // only minus and sharp flag is valid
                 if (IASFormatter.FormatToken.FLAGS_UNSET != (flags & ~IASFormatter.FormatToken.FLAG_MINUS & ~IASFormatter.FormatToken.FLAG_SHARP)) {
@@ -1030,7 +1030,7 @@ public class IASFormatter implements Closeable, Flushable {
                 if (Character.isUpperCase(this.formatToken.getConversionType())) {
                     flag |= FormattableFlags.UPPERCASE;
                 }
-                ((Formattable) this.arg).formatTo(this.formatter.getFormatter(), flag, this.formatToken
+                formattable.formatTo(this.formatter.getFormatter(), flag, this.formatToken
                         .getWidth(), this.formatToken.getPrecision());
                 // all actions have been taken out in the
                 // Formattable.formatTo, thus there is nothing to do, just
@@ -1082,20 +1082,19 @@ public class IASFormatter implements Closeable, Flushable {
             } else {
                 if (this.arg instanceof Character) {
                     result.append(this.arg);
-                } else if (this.arg instanceof Byte) {
-                    byte b = ((Byte) this.arg).byteValue();
+                } else if (this.arg instanceof Byte b) {
                     if (!Character.isValidCodePoint(b)) {
                         throw new IllegalFormatCodePointException(b);
                     }
-                    result.append((char) b);
-                } else if (this.arg instanceof Short) {
-                    short s = ((Short) this.arg).shortValue();
+                    result.append((char) b.byteValue());
+                } else if (this.arg instanceof Short s) {
+
                     if (!Character.isValidCodePoint(s)) {
                         throw new IllegalFormatCodePointException(s);
                     }
-                    result.append((char) s);
-                } else if (this.arg instanceof Integer) {
-                    int codePoint = ((Integer) this.arg).intValue();
+                    result.append((char) s.shortValue());
+                } else if (this.arg instanceof Integer i) {
+                    int codePoint = i;
                     if (!Character.isValidCodePoint(codePoint)) {
                         throw new IllegalFormatCodePointException(codePoint);
                     }
@@ -1157,10 +1156,7 @@ public class IASFormatter implements Closeable, Flushable {
             }
 
             if (null == lineSeparator) {
-                lineSeparator = AccessController
-                        .doPrivileged((PrivilegedAction<IASString>) () -> {
-                            return IASString.valueOfInternal(System.getProperty("line.separator")); //$NON-NLS-1$
-                        });
+                lineSeparator = IASString.valueOfInternal(System.lineSeparator()); //$NON-NLS-1$
             }
             return lineSeparator;
         }
@@ -1237,14 +1233,14 @@ public class IASFormatter implements Closeable, Flushable {
                 throw new IllegalFormatPrecisionException(this.formatToken
                         .getPrecision());
             }
-            if (this.arg instanceof Long) {
-                value = ((Long) this.arg).longValue();
-            } else if (this.arg instanceof Integer) {
-                value = ((Integer) this.arg).longValue();
-            } else if (this.arg instanceof Short) {
-                value = ((Short) this.arg).longValue();
-            } else if (this.arg instanceof Byte) {
-                value = ((Byte) this.arg).longValue();
+            if (this.arg instanceof Long l) {
+                value = l;
+            } else if (this.arg instanceof Integer i) {
+                value = i.longValue();
+            } else if (this.arg instanceof Short s) {
+                value = s.longValue();
+            } else if (this.arg instanceof Byte b) {
+                value = b.longValue();
             } else {
                 throw new IllegalFormatConversionException(this.formatToken
                         .getConversionType(), this.arg.getClass());
@@ -1630,14 +1626,14 @@ public class IASFormatter implements Closeable, Flushable {
             }
 
             Calendar calendar;
-            if (this.arg instanceof Calendar) {
-                calendar = (Calendar) this.arg;
+            if (this.arg instanceof Calendar cal) {
+                calendar = cal;
             } else {
                 Date date = null;
-                if (this.arg instanceof Long) {
-                    date = new Date(((Long) this.arg).longValue());
-                } else if (this.arg instanceof Date) {
-                    date = (Date) this.arg;
+                if (this.arg instanceof Long l) {
+                    date = new Date(l);
+                } else if (this.arg instanceof Date d) {
+                    date = d;
                 } else {
                     throw new IllegalFormatConversionException(
                             currentConversionType, this.arg.getClass());
@@ -1843,13 +1839,11 @@ public class IASFormatter implements Closeable, Flushable {
         void transform_a() {
             char currentConversionType = this.formatToken.getConversionType();
 
-            if (this.argument instanceof Float) {
-                Float F = (Float) this.argument;
-                this.result.append(Float.toHexString(F.floatValue()));
+            if (this.argument instanceof Float F) {
+                this.result.append(Float.toHexString(F));
 
-            } else if (this.argument instanceof Double) {
-                Double D = (Double) this.argument;
-                this.result.append(Double.toHexString(D.doubleValue()));
+            } else if (this.argument instanceof Double D) {
+                this.result.append(Double.toHexString(D));
             } else {
                 // BigInteger is not supported.
                 throw new IllegalFormatConversionException(
@@ -2065,7 +2059,7 @@ public class IASFormatter implements Closeable, Flushable {
     private Object getArgument(Object[] args, int index, IASFormatter.FormatToken token,
                                Object lastArgument, boolean hasLastArgumentSet) {
         if (index == IASFormatter.FormatToken.LAST_ARGUMENT_INDEX && !hasLastArgumentSet) {
-            throw new MissingFormatArgumentException("<"); //$NON-NLS-1$
+            throw new MissingFormatArgumentException("<");
         }
 
         if (null == args) {

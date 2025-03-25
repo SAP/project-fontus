@@ -1,8 +1,9 @@
 package com.sap.fontus.gdpr.metadata;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public abstract class PurposeBase implements Purpose {
+public abstract class PurposeBase implements Purpose, Serializable {
 
     @Override
     public boolean equals(Object o) {

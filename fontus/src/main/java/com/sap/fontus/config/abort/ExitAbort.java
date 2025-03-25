@@ -17,4 +17,8 @@ public class ExitAbort extends Abort {
     public String getName() {
         return "exit";
     }
+
+    static {
+        Abort.add(new ExitAbort());
+    }
 }

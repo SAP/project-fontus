@@ -29,12 +29,12 @@ public final class IASMatcherReplacement {
         for (Object key : this.groups.keySet()) {
             int start;
             int end;
-            if (key instanceof String) {
-                start = m.start((String) key);
-                end = m.end((String) key);
-            } else if (key instanceof Integer) {
-                start = m.start((Integer) key);
-                end = m.end((Integer) key);
+            if (key instanceof String s) {
+                start = m.start(s);
+                end = m.end(s);
+            } else if (key instanceof Integer i) {
+                start = m.start(i);
+                end = m.end(i);
             } else {
                 throw new IllegalStateException("Group map must not contain something else as strinngs and ints");
             }

@@ -2,13 +2,13 @@ package com.sap.fontus.utils;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.unified.*;
 import com.sap.fontus.taintaware.unified.reflect.*;
 import com.sap.fontus.taintaware.unified.reflect.type.IASTypeVariableImpl;
 import com.sap.fontus.taintaware.unified.reflect.type.IASWildcardTypeImpl;
 import com.sap.fontus.utils.lookups.CombinedExcludedLookup;
-import sun.reflect.generics.reflectiveObjects.GenericArrayTypeImpl;
-import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
+
 
 import java.io.ObjectInputStream;
 import java.lang.invoke.MethodHandle;
@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 public final class ConversionUtils {
     private ConversionUtils() {}
     private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
-    private static final CombinedExcludedLookup excludedLookup = new CombinedExcludedLookup();
+    static final CombinedExcludedLookup excludedLookup = new CombinedExcludedLookup();
     private static final Cache<Class<?>, Optional<Converter>> converterCache = Caffeine.newBuilder().build();
     private static final Cache<Class<?>, Optional<Converter>> unconverterCache = Caffeine.newBuilder().build();
 
@@ -240,21 +240,20 @@ public final class ConversionUtils {
     }
 
     public static Type convertTypeToUninstrumented(Type type) {
-        if (type instanceof Class) {
-            return convertClassToOrig((Class<?>) type);
-        } else if (type instanceof GenericArrayType) {
-            return GenericArrayTypeImpl.make(convertTypeToUninstrumented(((GenericArrayType) type).getGenericComponentType()));
-        } else if (type instanceof ParameterizedType) {
-            ParameterizedType pType = (ParameterizedType) type;
-            return ParameterizedTypeImpl.make(
+        if (type instanceof Class<?> cls) {
+            return convertClassToOrig(cls);
+        } else if (type instanceof GenericArrayType genericArray) {
+            return new GenericArrayTypeImpl(convertTypeToUninstrumented(genericArray.getGenericComponentType()));
+        } else if (type instanceof ParameterizedType pType) {
+            return new ParameterizedTypeImpl(
                     (Class<?>) convertTypeToUninstrumented(pType.getRawType()),
                     Arrays.stream(pType.getActualTypeArguments()).map(ConversionUtils::convertTypeToUninstrumented).toArray(Type[]::new),
                     convertTypeToUninstrumented(pType.getOwnerType())
             );
-        } else if (type instanceof IASTypeVariableImpl) {
-            return ((IASTypeVariableImpl<?>) type).getType();
-        } else if (type instanceof IASWildcardTypeImpl) {
-            return ((IASWildcardTypeImpl) type).getType();
+        } else if (type instanceof IASTypeVariableImpl<?> typeVar) {
+            return typeVar.getType();
+        } else if (type instanceof IASWildcardTypeImpl wildcardType) {
+            return wildcardType.getType();
         }
         return type;
     }
@@ -264,21 +263,20 @@ public final class ConversionUtils {
             return null;
         } else if (excludedLookup.isFontusClass(type.getClass())) {
             return type;
-        } else if (type instanceof Class) {
-            return convertClassToConcrete((Class<?>) type);
-        } else if (type instanceof GenericArrayType) {
-            return GenericArrayTypeImpl.make(convertTypeToInstrumented(((GenericArrayType) type).getGenericComponentType()));
-        } else if (type instanceof ParameterizedType) {
-            ParameterizedType pType = (ParameterizedType) type;
-            return ParameterizedTypeImpl.make(
-                    (Class<?>) convertTypeToInstrumented(pType.getRawType()),
-                    Arrays.stream(pType.getActualTypeArguments()).map(ConversionUtils::convertTypeToInstrumented).toArray(Type[]::new),
-                    convertTypeToInstrumented(pType.getOwnerType())
+        } else if (type instanceof Class<?> cls) {
+            return convertClassToConcrete(cls);
+        } else if (type instanceof GenericArrayType genericArray) {
+            return new GenericArrayTypeImpl(convertTypeToInstrumented(genericArray.getGenericComponentType()));
+        } else if (type instanceof ParameterizedType parameterizedType) {
+            return new ParameterizedTypeImpl(
+                    (Class<?>) convertTypeToInstrumented(parameterizedType.getRawType()),
+                    Arrays.stream(parameterizedType.getActualTypeArguments()).map(ConversionUtils::convertTypeToInstrumented).toArray(Type[]::new),
+                    convertTypeToInstrumented(parameterizedType.getOwnerType())
             );
-        } else if (type instanceof TypeVariable) {
-            return new IASTypeVariableImpl<>((TypeVariable<T>) type);
-        } else if (type instanceof WildcardType) {
-            return new IASWildcardTypeImpl((WildcardType) type);
+        } else if (type instanceof TypeVariable<?> tv) {
+            return new IASTypeVariableImpl<>(tv);
+        } else if (type instanceof WildcardType wildcardType) {
+            return new IASWildcardTypeImpl(wildcardType);
         }
         return type;
     }
@@ -314,7 +312,7 @@ public final class ConversionUtils {
         }
     }
 
-    private static class TypeConverter implements Converter {
+    private static final class TypeConverter implements Converter {
         private final Function<Type, Type> atomicConverter;
 
         private TypeConverter(Function<Type, Type> atomicConverter) {
@@ -332,7 +330,7 @@ public final class ConversionUtils {
         }
     }
 
-    private static class ClassConverter implements Converter {
+    private static final class ClassConverter implements Converter {
         private final Function<Class<?>, Class<?>> atomicConverter;
 
         private ClassConverter(Function<Class<?>, Class<?>> atomicConverter) {
@@ -351,7 +349,7 @@ public final class ConversionUtils {
         }
     }
 
-    private static class ArrayConverter implements Converter {
+    private static final class ArrayConverter implements Converter {
         private final Function<Object, Object> atomicConverter;
         private final Function<Class<?>, Class<?>> classConverter;
 
@@ -401,7 +399,7 @@ public final class ConversionUtils {
         }
     }
 
-    private static class SetConverter implements Converter {
+    private static final class SetConverter implements Converter {
         private final Function<Object, Object> atomicConverter;
 
         private SetConverter(Function<Object, Object> atomicConverter) {
@@ -416,9 +414,8 @@ public final class ConversionUtils {
 
         @Override
         public Object convert(Object o) {
-            if (o instanceof Set) {
+            if (o instanceof Set<?> set) {
                 try {
-                    Set<Object> set = (Set<Object>) o;
                     if (set.isEmpty()) {
                         return o;
                     }
@@ -433,6 +430,10 @@ public final class ConversionUtils {
                         if (entry == null) {
                             result.add(null);
                             continue;
+                        }
+                        // Assumption: No mixed Sets and bailing out right away
+                        if(entry instanceof IASTaintAware) {
+                            return set;
                         }
                         Object converted = this.atomicConverter.apply(entry);
                         result.add(converted);
@@ -460,7 +461,7 @@ public final class ConversionUtils {
 
     }
 
-    private static class ListConverter implements Converter {
+    private static final class ListConverter implements Converter {
         private final Function<Object, Object> atomicConverter;
 
         private ListConverter(Function<Object, Object> atomicConverter) {

@@ -48,8 +48,8 @@ public class IASProperties extends Hashtable<Object, Object> implements External
 
     public synchronized Object setProperty(IASString key, IASString value) {
         Object previousString = this.properties.setProperty(key.getString(), value.getString());
-        if (previousString instanceof String) {
-            return IASString.fromString((String) previousString);
+        if (previousString instanceof String s) {
+            return IASString.fromString(s);
         }
         return previousString;
     }
@@ -86,13 +86,12 @@ public class IASProperties extends Hashtable<Object, Object> implements External
         this.properties.storeToXML(os, comment == null ? null : comment.getString(), encoding.getString());
     }
 
-    @SuppressWarnings("Since15")
     public void storeToXML(OutputStream os, IASString comment, Charset charset) throws IOException {
         this.properties.storeToXML(os, comment == null ? null : comment.getString(), charset);
     }
 
     public IASString getProperty(IASString key) {
-        Object orig = ConversionUtils.convertToInstrumented(this.properties.getProperty(key.getString()));
+        IASString orig = IASString.valueOfInternal(this.properties.getProperty(key.getString()));
         IASString taintaware = this.shadow.get(key);
         IASString ret = (IASString) this.chooseReturn(orig, taintaware);
         if(ret == null && this.defaults != null) {
@@ -102,11 +101,10 @@ public class IASProperties extends Hashtable<Object, Object> implements External
     }
 
     public IASString getProperty(IASString key, IASString defaultValue) {
-        IASString r = this.getProperty(key);
-        if(r == null) {
-            return defaultValue;
-        }
-        return r;
+        String defaultStringValue = defaultValue != null ? defaultValue.getString() : null;
+        Object orig = IASString.valueOfInternal(this.properties.getProperty(key.getString(), defaultStringValue));
+        IASString taintaware = this.shadow.get(key);
+        return (IASString) this.chooseReturn(orig, taintaware);
     }
 
     public Enumeration<?> propertyNames() {
@@ -149,7 +147,7 @@ public class IASProperties extends Hashtable<Object, Object> implements External
                         .list(this.properties.keys())
                         .stream()
                         .map(ConversionUtils::convertToInstrumented)
-                        .collect(Collectors.toList())
+                        .toList()
         );
     }
 
@@ -160,7 +158,7 @@ public class IASProperties extends Hashtable<Object, Object> implements External
                         .list(this.properties.elements())
                         .stream()
                         .map(ConversionUtils::convertToInstrumented)
-                        .collect(Collectors.toList())
+                        .toList()
         );
     }
 
@@ -190,8 +188,8 @@ public class IASProperties extends Hashtable<Object, Object> implements External
     public synchronized Object put(Object key, Object value) {
         Object orig = ConversionUtils.convertToInstrumented(this.properties.put(ConversionUtils.convertToUninstrumented(key), ConversionUtils.convertToUninstrumented(value)));
         IASString taintaware = null;
-        if (value instanceof IASString) {
-            taintaware = this.shadow.put(ConversionUtils.convertToInstrumented(key), (IASString) value);
+        if (value instanceof IASString s) {
+            taintaware = this.shadow.put(ConversionUtils.convertToInstrumented(key), s);
         }
         return this.chooseReturn(orig, taintaware);
     }
@@ -280,8 +278,8 @@ public class IASProperties extends Hashtable<Object, Object> implements External
             return false;
         } else if (o instanceof Properties) {
             return this.properties.equals(o);
-        } else if (o instanceof IASProperties) {
-            return this.properties.equals(((IASProperties) o).properties);
+        } else if (o instanceof IASProperties p) {
+            return this.properties.equals(p.properties);
         }
         return false;
     }
@@ -293,8 +291,9 @@ public class IASProperties extends Hashtable<Object, Object> implements External
 
     @Override
     public Object getOrDefault(Object key, Object defaultValue) {
-        if (this.properties.containsKey(ConversionUtils.convertToUninstrumented(key))) {
-            return this.get(ConversionUtils.convertToUninstrumented(key));
+        Object k = ConversionUtils.convertToUninstrumented(key);
+        if (this.properties.containsKey(k)) {
+            return this.get(k);
         }
         return ConversionUtils.convertToInstrumented(defaultValue);
     }
@@ -367,7 +366,6 @@ public class IASProperties extends Hashtable<Object, Object> implements External
         );
     }
 
-    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public synchronized Object clone() {
         return fromProperties((Properties) this.properties.clone());

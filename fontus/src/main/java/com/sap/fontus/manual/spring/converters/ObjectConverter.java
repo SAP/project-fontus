@@ -11,8 +11,8 @@ public final class ObjectConverter {
             return null;
         }
 
-        if (o instanceof IASString) {
-            return ((IASString) o).getString();
+        if (o instanceof IASString s) {
+            return s.getString();
         }
 
         return o;

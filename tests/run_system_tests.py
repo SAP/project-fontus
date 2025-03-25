@@ -1,5 +1,5 @@
 import shutil
-from os import path
+from os import path, sched_getaffinity
 import argparse
 import pprint
 import json
@@ -22,6 +22,16 @@ TESTS_SOURCE_DIR = path.join(TESTS_DIR, "src")
 CONFIG_FILE = path.join(TESTS_DIR, "config.json")
 TMPDIR_OUTPUT_DIR_SUFFIX = "instrumented"
 JAR_BASE_NAMES = ["fontus"]
+
+async def gather_with_concurrency(n, *coros):
+    if n > os.sched_getaffinity(0):
+        n = os.sched_getaffinity(0)/2
+    semaphore = asyncio.Semaphore(n)
+
+    async def sem_coro(coro):
+        async with semaphore:
+            return await coro
+    return await asyncio.gather(*(sem_coro(c) for c in coros))
 
 
 def check_return_value(func):
@@ -81,6 +91,7 @@ def run_command_sync(cwd, arguments, input_file=None):
 
 @check_return_value
 async def run_command(cwd, arguments, input_file=None):
+    #print(" ".join(arguments))
     # exec_result = subprocess.run(
     proc = await asyncio.create_subprocess_shell(
         " ".join(arguments),
@@ -456,7 +467,11 @@ class TestRunner:
         arguments = ["java",
                      "--add-opens",
                      "java.base/jdk.internal.misc=ALL-UNNAMED",
-                     "--illegal-access=permit",
+                     "--add-opens",
+                     "java.base/java.lang.reflect=ALL-UNNAMED",
+                     "--add-opens",
+                     "java.base/jdk.internal.vm.annotation=ALL-UNNAMED",
+#                     "--illegal-access=permit",
                      "-classpath",
                      '.',
                      f'-javaagent:{fontus_jar}=taintmethod={self._config.taintmethod}{verbose}',
@@ -476,6 +491,10 @@ class TestRunner:
                         "java",
                         "--add-opens",
                         "java.base/jdk.internal.misc=ALL-UNNAMED",
+                        "--add-opens",
+                        "java.base/java.lang.reflect=ALL-UNNAMED",
+                        "--add-opens",
+                        "java.base/jdk.internal.vm.annotation=ALL-UNNAMED",
                         f'-javaagent:{fontus_jar}=taintmethod={self._config.taintmethod}{verbose}',
                         '-jar',
                         name
@@ -560,14 +579,14 @@ class TestRunner:
     async def _run_tests(self, base_dir):
         # run all the tests concurrently and then check their results once they're all finished
         all_tests = self._config.test_cases + self._config.jar_test_cases
-        test_results = await gather_with_concurrency(2,
+        test_results = await gather_with_concurrency(4,
             *(self._run_test(base_dir, test) for test in all_tests))
         for test_result in test_results:
             if not test_result.successful and not test_result.test_case.failure_expected:
                 print(
                     (f'Test "{test_result.test_case.name}" failed:\n'
                      f'Regular result: "{test_result.regular_result}",\n'
-                     f'Agent Result: "{test_result.agent_result}"')                )
+                     f'Agent Result: "{test_result.agent_result}"'))
             elif self._config.verbose:
                 print(test_result)
 
@@ -602,7 +621,7 @@ async def main(args):
     config.verbose = args.verbose
     config.fontus_verbose = args.fontus_verbose
     config.taintmethod = args.taint_type
-    # pprint.pprint(config)
+    #pprint.pprint(config)
     runner = TestRunner(config, args.safe)
     await check_java_version()
     result = await runner.run_tests()
@@ -629,6 +648,6 @@ if __name__ == "__main__":
     ARG_PARSER.add_argument("--config", default=CONFIG_FILE)
     ARG_PARSER.add_argument("--taint_type", choices=['boolean', 'range',
                                                      'array', 'lazybasic', 'lazycomplex'],
-                            default='boolean')
+                            default='range')
 
     asyncio.run(main(ARG_PARSER.parse_args()))

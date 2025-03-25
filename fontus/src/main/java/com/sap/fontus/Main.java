@@ -39,12 +39,7 @@ public final class Main implements Callable<Void> {
     )
     private File outputFile;
 
-    @CommandLine.Option(
-            names = {"--instrumented-classes"},
-            required = true,
-            paramLabel = "Instrumented Classes",
-            description = "Output file which contains a list of all instrumented classes"
-    )
+    @CommandLine.Option(names = "--instrumented-classes", required = true, paramLabel = "Instrumented Classes", description = "Output file which contains a list of all instrumented classes")
     private File instrumentedClasses;
 
     @CommandLine.Option(

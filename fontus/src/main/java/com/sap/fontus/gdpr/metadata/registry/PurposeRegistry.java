@@ -3,11 +3,18 @@ package com.sap.fontus.gdpr.metadata.registry;
 import com.sap.fontus.config.Configuration;
 import com.sap.fontus.gdpr.metadata.Purpose;
 import com.sap.fontus.gdpr.metadata.simple.SimplePurpose;
-import com.sap.fontus.utils.GenericRegistry;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class PurposeRegistry extends GenericRegistry<Purpose> {
+public class PurposeRegistry {
 
     private static PurposeRegistry instance;
+    private final Map<String, Purpose> purposes;
+    private int counter = 0;
+
+    public PurposeRegistry() {
+        this.purposes = new ConcurrentHashMap<>(32);
+    }
     private static boolean isPopulated;
 
     private synchronized void populateFromConfiguration(Configuration c) {
@@ -19,19 +26,24 @@ public class PurposeRegistry extends GenericRegistry<Purpose> {
         }
     }
 
-    public synchronized Purpose getOrRegisterObject(String name, String description, String legal) {
-        for (Purpose o : this.objects) {
-            if (o.getName().equals(name)) {
-                return o;
-            }
-        }
-        this.counter++;
-        Purpose o = new SimplePurpose(this.counter, name, description, legal);
-        this.objects.add(o);
-        return o;
+    public Purpose getOrRegisterObject(String name, String description, String legal) {
+        return this.purposes.computeIfAbsent(name, (ignored) -> {
+            this.counter++;
+            return new SimplePurpose(this.counter, name, description, legal);
+        });
     }
 
-    @Override
+    public Purpose getOrRegisterObject(String name) {
+        return this.purposes.computeIfAbsent(name, (ignored) -> {
+            this.counter++;
+            return new SimplePurpose(this.counter, name);
+        });
+    }
+
+    public Purpose get(String name) {
+        return this.purposes.get(name);
+    }
+
     protected Purpose getNewObject(String name, int id) {
         return new SimplePurpose(id, name);
     }

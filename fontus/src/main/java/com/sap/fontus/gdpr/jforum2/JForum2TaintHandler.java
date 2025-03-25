@@ -1,10 +1,8 @@
 package com.sap.fontus.gdpr.jforum2;
 
 import com.sap.fontus.config.Configuration;
-import com.sap.fontus.config.DataProtection;
 import com.sap.fontus.config.Sink;
 import com.sap.fontus.config.Source;
-import com.sap.fontus.config.abort.Abort;
 import com.sap.fontus.gdpr.Utils;
 import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.registry.RequiredPurposeRegistry;
@@ -12,7 +10,6 @@ import com.sap.fontus.gdpr.metadata.simple.SimpleDataId;
 import com.sap.fontus.gdpr.metadata.simple.SimpleDataSubject;
 import com.sap.fontus.gdpr.metadata.simple.SimpleGdprMetadata;
 import com.sap.fontus.gdpr.metadata.simple.SimplePurposePolicy;
-import com.sap.fontus.gdpr.openmrs.OpenMrsTaintHandler;
 import com.sap.fontus.gdpr.servlet.ReflectedCookie;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.gdpr.servlet.ReflectedSession;
@@ -24,7 +21,6 @@ import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class JForum2TaintHandler extends IASTaintHandler {
@@ -84,8 +80,7 @@ public class JForum2TaintHandler extends IASTaintHandler {
             IASString tainted = taintAware.toIASString();
             for (IASTaintRange range : tainted.getTaintInformation().getTaintRanges(tainted.length())) {
                 // Check policy for each range
-                if (range.getMetadata() instanceof GdprTaintMetadata) {
-                    GdprTaintMetadata taintMetadata = (GdprTaintMetadata) range.getMetadata();
+                if (range.getMetadata() instanceof GdprTaintMetadata taintMetadata) {
                     GdprMetadata metadata = taintMetadata.getMetadata();
                     if (!policy.areRequiredPurposesAllowed(rp, metadata.getAllowedPurposes())) {
                         StringBuilder sb = new StringBuilder(50);
@@ -93,7 +88,7 @@ public class JForum2TaintHandler extends IASTaintHandler {
                             sb.append(ap);
                             sb.append(", ");
                         }
-                        System.out.printf("Policy violation for %s!%nRequired: %s, got %s", tainted.getString(), rp, sb.toString());
+                        System.out.printf("Policy violation for %s!%nRequired: %s, got %s", tainted.getString(), rp, sb);
                         return null;
                     }
                 }

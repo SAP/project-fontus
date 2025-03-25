@@ -43,6 +43,8 @@ public interface InstrumentationStrategy {
 
     boolean handlesType(String descriptor);
 
+    boolean handlesType(Type type);
+
     boolean isInstrumented(String descriptor);
 
     Optional<FieldVisitor> instrumentFieldInstruction(ClassVisitor classVisitor, int access, String name, String descriptor,
@@ -78,7 +80,7 @@ public interface InstrumentationStrategy {
      * <p>
      * For an explanation of the parameters see {@link org.objectweb.asm.MethodVisitor#visitMethodInsn(int, String, String, String, boolean)}.
      *
-     * @return An instrumented FunctionCall the owner matches the strategy. Otherwise null.
+     * @return An instrumented FunctionCall if the owner matches the strategy. Otherwise, it returns null.
      */
     FunctionCall rewriteOwnerMethod(final FunctionCall functionCall);
 

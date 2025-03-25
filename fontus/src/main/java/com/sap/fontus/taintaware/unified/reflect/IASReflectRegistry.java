@@ -1,7 +1,6 @@
 package com.sap.fontus.taintaware.unified.reflect;
 
 import java.lang.reflect.*;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -33,21 +32,21 @@ public class IASReflectRegistry {
     }
 
     public IASExecutable<?> mapExecutable(Executable executable) {
-        if (executable instanceof Method) {
-            return this.map((Method) executable);
-        } else if (executable instanceof Constructor) {
-            return this.map((Constructor<?>) executable);
+        if (executable instanceof Method m) {
+            return this.map(m);
+        } else if (executable instanceof Constructor<?> c) {
+            return this.map(c);
         }
         throw new IllegalArgumentException("Executable is not a method or constructor");
     }
 
     public IASAccessibleObject<?> mapAccessibleObject(AccessibleObject accessibleObject) {
-        if (accessibleObject instanceof Method) {
-            return this.map((Method) accessibleObject);
-        } else if (accessibleObject instanceof Constructor) {
-            return this.map((Constructor<?>) accessibleObject);
-        } else if (accessibleObject instanceof Field) {
-            return this.map((Field) accessibleObject);
+        if (accessibleObject instanceof Method m) {
+            return this.map(m);
+        } else if (accessibleObject instanceof Constructor<?> c) {
+            return this.map(c);
+        } else if (accessibleObject instanceof Field f) {
+            return this.map(f);
         }
         throw new IllegalArgumentException("Executable is not a method or constructor");
     }

@@ -20,7 +20,9 @@ public class SignatureInstrumenter {
         if (signature == null) {
             return null;
         }
-        logger.info("Instrumenting signature {}", signature);
+        if(LogUtils.LOGGING_ENABLED) {
+            logger.info("Instrumenting signature {}", signature);
+        }
         SignatureWriter sw = new SignatureWriter();
         SignatureVisitor sv = new SignatureTaintingVisitor(this.api, this.instrumentationHelper, sw);
         SignatureReader sr = new SignatureReader(signature);

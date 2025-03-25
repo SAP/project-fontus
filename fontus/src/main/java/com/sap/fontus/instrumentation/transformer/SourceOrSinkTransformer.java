@@ -60,12 +60,12 @@ public abstract class SourceOrSinkTransformer {
         visitor.visitTypeInsn(Opcodes.ANEWARRAY, Constants.ObjectQN);
 
         // Now set array values
-        List<String> paramList = desc.getParameters();
+        String[] paramList = desc.getParameters();
         int n = this.usedLocalVars + desc.getParameterTotalSize();
         // Loop over parameters
         int i = 0;
-        for (; i < paramList.size(); i++) {
-            String p = paramList.get(i);
+        for (; i < paramList.length; i++) {
+            String p = paramList[i];
             Type t = Type.getType(p);
             // Offset of parameter in local variables
             n -= t.getSize();

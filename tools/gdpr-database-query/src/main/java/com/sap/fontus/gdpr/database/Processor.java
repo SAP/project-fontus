@@ -81,18 +81,19 @@ public class Processor {
                 this.gatherer.nextRow();
                 for (int i = 2; i <= columnCount; i += 2) {
                     String columnName = metaData.getColumnName(i);
-                    if (!columnName.startsWith("__taint__")) {
-                        throw new IllegalStateException(String.format("In %s.%s the column %s at index %d is not a taint column!%n", catalog, table, columnName, i));
-                    }
-                    int columnIndex = i - 1;
-                    String originalColumnName = metaData.getColumnName(columnIndex);
-                    String taintValue = rs.getString(i);
-                    String columnType = metaData.getColumnTypeName(columnIndex);
-                    if (taintValue == null || "0".equals(taintValue)) {
-                        this.gatherer.untaintedColumn(columnIndex, originalColumnName, columnType,  rs.getObject(columnIndex));
-                    } else {
-                        IASTaintInformationable tis = Utils.parseTaint(taintValue);
-                        this.gatherer.taintedColumn(columnIndex, originalColumnName, columnType, rs.getString(columnIndex), tis);
+                    if (columnName.startsWith("__taint__")) {
+
+
+                        int columnIndex = i - 1;
+                        String originalColumnName = metaData.getColumnName(columnIndex);
+                        String taintValue = rs.getString(i);
+                        String columnType = metaData.getColumnTypeName(columnIndex);
+                        if (taintValue == null || "0".equals(taintValue)) {
+                            this.gatherer.untaintedColumn(columnIndex, originalColumnName, columnType, rs.getObject(columnIndex));
+                        } else {
+                            IASTaintInformationable tis = Utils.parseTaint(taintValue);
+                            this.gatherer.taintedColumn(columnIndex, originalColumnName, columnType, rs.getString(columnIndex), tis);
+                        }
                     }
                 }
             }

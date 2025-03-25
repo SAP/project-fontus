@@ -91,21 +91,27 @@ public final class Utils {
     }
 
     public static Handle instrumentHandle(Handle h, InstrumentationHelper instrumentationHelper) {
-        if (combinedExcludedLookup.isPackageExcludedOrJdk(h.getOwner()) && !instrumentationHelper.canHandleType(Type.getObjectType(h.getOwner()).getDescriptor())) {
-            return h;
+        // Handle is references a field
+        if(h.getTag() < Opcodes.H_INVOKEVIRTUAL) {
+            return new Handle(h.getTag(), h.getOwner(), h.getName(), instrumentationHelper.instrumentQN(h.getDesc()), h.isInterface());
+
+        } else {
+            if (combinedExcludedLookup.isPackageExcludedOrJdk(h.getOwner()) && !instrumentationHelper.canHandleType(Type.getObjectType(h.getOwner()))) {
+                return h;
+            }
+
+            // If the Class is a taintaware one it should be handled by rewriteOwnerMethod, e.g. for toString => toIASString
+
+            FunctionCall instrumented = instrumentationHelper.rewriteOwnerMethod(new FunctionCall(h.getTag(), h.getOwner(), h.getName(), h.getDesc(), h.isInterface()));
+            if (instrumented != null) {
+                return new Handle(instrumented.getOpcode(), instrumented.getOwner(), instrumented.getName(), instrumented.getDescriptor(), instrumented.isInterface());
+            }
+
+            Descriptor desc = Descriptor.parseDescriptor(h.getDesc());
+            desc = instrumentationHelper.instrument(desc);
+            String owner = instrumentationHelper.instrumentQN(h.getOwner());
+            return new Handle(h.getTag(), owner, h.getName(), desc.toDescriptor(), h.isInterface());
         }
-
-        // If the Class is a taintaware one it should be handled by rewriteOwnerMethod, e.g. for toString => toIASString
-
-        FunctionCall instrumented = instrumentationHelper.rewriteOwnerMethod(new FunctionCall(h.getTag(), h.getOwner(), h.getName(), h.getDesc(), h.isInterface()));
-        if (instrumented != null) {
-            return new Handle(instrumented.getOpcode(), instrumented.getOwner(), instrumented.getName(), instrumented.getDescriptor(), instrumented.isInterface());
-        }
-
-        Descriptor desc = Descriptor.parseDescriptor(h.getDesc());
-        desc = instrumentationHelper.instrument(desc);
-        String owner = instrumentationHelper.instrumentQN(h.getOwner());
-        return new Handle(h.getTag(), owner, h.getName(), desc.toDescriptor(), h.isInterface());
     }
 
     public static String getInternalName(Class<?> cls) {

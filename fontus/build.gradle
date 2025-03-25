@@ -13,8 +13,14 @@ apply plugin: 'idea'
 
 version '1.0.0'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+
 
 repositories {
     mavenCentral()
@@ -57,9 +63,23 @@ dependencies {
 
 apply plugin: 'java'
 compileJava {
+    options.compilerArgs << '--add-exports' <<
+    'java.base/jdk.internal.misc=ALL-UNNAMED' <<
+    '--add-exports' << 'java.base/jdk.internal.reflect=ALL-UNNAMED' <<
+    '--add-exports' <<
+    'java.base/java.lang.reflect=ALL-UNNAMED' <<
+    '--add-exports' <<
+    'java.base/jdk.internal.vm.annotation=ALL-UNNAMED'
     options.encoding = "UTF-8"
 }
 compileTestJava {
+    options.compilerArgs << '--add-exports' <<
+            'java.base/jdk.internal.misc=ALL-UNNAMED' <<
+            '--add-exports' << 'java.base/jdk.internal.reflect=ALL-UNNAMED' <<
+            '--add-exports' <<
+            'java.base/java.lang.reflect=ALL-UNNAMED' <<
+            '--add-exports' <<
+            'java.base/jdk.internal.vm.annotation=ALL-UNNAMED'
     options.encoding = "UTF-8"
 }
 
@@ -119,7 +139,13 @@ shadowJar {
 
 //shadowJar.finalizedBy sourcesJar
 test {
-    jvmArgs('--add-opens', 'java.base/jdk.internal.misc=ALL-UNNAMED', '--add-opens', 'java.base/java.lang.reflect=ALL-UNNAMED', '--add-opens', 'java.base/jdk.internal.vm.annotation=ALL-UNNAMED')
+    jvmArgs('--add-opens',
+            'java.base/jdk.internal.misc=ALL-UNNAMED',
+            '--add-opens',
+            'java.base/java.lang.reflect=ALL-UNNAMED',
+            '--add-opens',
+            'java.base/jdk.internal.vm.annotation=ALL-UNNAMED')
+
 }
 
 publishing {

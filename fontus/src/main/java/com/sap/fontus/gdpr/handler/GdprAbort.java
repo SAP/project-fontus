@@ -38,9 +38,8 @@ public class GdprAbort extends Abort {
         boolean policyViolation = false;
         for (IASTaintRange range : taintedString.getTaintInformation().getTaintRanges(taintedString.getString().length())) {
             // Check policy for each range
-            if (range.getMetadata() instanceof GdprTaintMetadata) {
-                GdprTaintMetadata taintMetadata = (GdprTaintMetadata) range.getMetadata();
-                GdprMetadata metadata = taintMetadata.getMetadata();
+            if (range.getMetadata() instanceof GdprTaintMetadata gdprTaintMetadata) {
+                GdprMetadata metadata = gdprTaintMetadata.getMetadata();
                 if (!policy.areRequiredPurposesAllowed(requiredPurposes, metadata.getAllowedPurposes())) {
                     policyViolation = true;
                 }
@@ -57,5 +56,9 @@ public class GdprAbort extends Abort {
     @Override
     public String getName() {
         return "gdpr";
+    }
+
+    static {
+        Abort.add(new GdprAbort());
     }
 }

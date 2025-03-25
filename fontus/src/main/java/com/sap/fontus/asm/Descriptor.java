@@ -5,6 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.sap.fontus.utils.Utils;
 import org.objectweb.asm.Type;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -12,18 +13,12 @@ import java.util.regex.Pattern;
 
 public class Descriptor {
     private static final Pattern PRIMITIVE_DATA_TYPES = Pattern.compile("[ZBCSIFDJ]");
-    private final List<String> parameters;
+    private final String[] parameters;
     private final String returnType;
     private final String descriptor;
 
-    private Descriptor(List<String> parameters, String returnType) {
-        this.parameters = parameters;
-        this.returnType = returnType;
-        this.descriptor = this.toDescriptor();
-    }
-
     public Descriptor(String[] parameters, String returnType) {
-        this.parameters = Arrays.asList(parameters);
+        this.parameters = parameters;
         this.returnType = returnType;
         this.descriptor = this.toDescriptor();
     }
@@ -31,18 +26,19 @@ public class Descriptor {
     public Descriptor(Type returnType, Type... arguments) {
         // Stopped using streams because it took 7% of total performance
         // this.parameters = Arrays.stream(arguments).map(Type::getDescriptor).collect(Collectors.toList());
-        this.parameters = convertTypeArrayToStringList(arguments);
+        this.parameters = convertTypeArrayToStringArray(arguments);
         this.returnType = returnType.getDescriptor();
         this.descriptor = this.toDescriptor();
     }
 
-    private static List<String> convertTypeArrayToStringList(Type[] arguments) {
+    private static String[] convertTypeArrayToStringArray(Type[] arguments) {
         if (arguments == null) {
-            return new ArrayList<>(0);
+            return new String[0];
         }
-        List<String> argumentStrings = new ArrayList<>(arguments.length);
+        String[] argumentStrings = new String[arguments.length];
+        int i = 0;
         for (Type t : arguments) {
-            argumentStrings.add(t.getDescriptor());
+            argumentStrings[i++] = t.getDescriptor();
         }
         return argumentStrings;
     }
@@ -60,9 +56,10 @@ public class Descriptor {
         // Stopped using streams because it took 7% of total performance
         // List<String> replaced = this.parameters.stream().map(str -> replaceSuffix(str, from, to)).collect(Collectors.toList());
         // This method still takes ~3% of performance
-        List<String> replaced = new ArrayList<>(this.parameters.size());
+        String[] replaced = new String[this.parameters.length];
+        int i = 0;
         for (String param : this.parameters) {
-            replaced.add(replaceSuffix(param, from, to));
+            replaced[i++] = replaceSuffix(param, from, to);
         }
         String ret = replaceSuffix(this.returnType, from, to);
         return new Descriptor(replaced, ret);
@@ -76,7 +73,7 @@ public class Descriptor {
     }
 
     public int parameterCount() {
-        return this.parameters.size();
+        return this.parameters.length;
     }
 
     public int getParameterTotalSize() {
@@ -88,14 +85,15 @@ public class Descriptor {
         return size;
     }
 
-    public Stack<String> getParameterStack() {
-        Stack<String> pStack = new Stack<>();
-        pStack.addAll(this.parameters);
-        return pStack;
+    public Deque<String> getParameterStack() {
+        ArrayDeque<String> stack = new ArrayDeque<>();
+        for(String p : this.parameters) {
+            stack.push(p);
+        }
+        return stack;
     }
-
-    public List<String> getParameters() {
-        return Collections.unmodifiableList(this.parameters);
+    public String[] getParameters() {
+        return this.parameters;
     }
 
     public String getReturnType() {
@@ -110,7 +108,7 @@ public class Descriptor {
     }
 
     public Type toAsmMethodType() {
-        Type[] parameterTypes = new Type[ this.parameters.size()];
+        Type[] parameterTypes = new Type[this.parameters.length];
         int i = 0;
         for(String param : this.parameters) {
             parameterTypes[i] = Type.getType(param);
@@ -133,13 +131,13 @@ public class Descriptor {
             return false;
         }
         Descriptor that = (Descriptor) obj;
-        return this.parameters.equals(that.parameters) &&
+        return Arrays.equals(this.parameters, that.parameters) &&
                 this.returnType.equals(that.returnType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.parameters, this.returnType);
+        return Objects.hash(Arrays.hashCode(this.parameters), this.returnType);
     }
 
     // Cache class name conversions as this is called a lot at runtime
@@ -182,13 +180,6 @@ public class Descriptor {
         });
     }
 
-    public static String removeLeadingLandTrailingSemiColon(String descriptor) {
-        if (descriptor.startsWith("L") && descriptor.endsWith(";")) {
-            descriptor = descriptor.substring(1, descriptor.length() - 1);
-        }
-        return descriptor;
-    }
-
     /**
      * Parses a textual Descriptor and disassembles it into its types
      */
@@ -198,21 +189,28 @@ public class Descriptor {
     }
 
     public static Descriptor parseMethod(Method m) {
-        List<String> parameters = new ArrayList<>(m.getParameterCount());
-        for (Class<?> param : m.getParameterTypes()) {
-            parameters.add(classNameToDescriptorName(param.getName()));
-        }
-        String returnType = classNameToDescriptorName(m.getReturnType().getName());
-        return new Descriptor(parameters, returnType);
+        Type method = Type.getType(m);
+        return new Descriptor(method.getReturnType(), method.getArgumentTypes());
     }
 
-    public static Descriptor parseExecutable(Executable m) {
-        if (m instanceof Method) {
-            return parseMethod((Method) m);
+    public static Descriptor parseConstructor(Constructor<?> c) {
+        Type method = Type.getType(c);
+        return new Descriptor(method.getReturnType(), method.getArgumentTypes());
+    }
+
+
+    public static Descriptor parseExecutable(Executable exe) {
+        if (exe instanceof Method m) {
+            return parseMethod(m);
+        } else if (exe instanceof Constructor<?> c) {
+            return parseConstructor(c);
+
         } else {
-            List<String> parameters = new ArrayList<>(m.getParameterCount());
-            for (Class<?> param : m.getParameterTypes()) {
-                parameters.add(classNameToDescriptorName(param.getName()));
+            // TODO: Dead code?
+            String[] parameters = new String[exe.getParameterCount()];
+            int i = 0;
+            for (Class<?> param : exe.getParameterTypes()) {
+                parameters[i++] = classNameToDescriptorName(param.getName());
             }
             return new Descriptor(parameters, "V");
         }

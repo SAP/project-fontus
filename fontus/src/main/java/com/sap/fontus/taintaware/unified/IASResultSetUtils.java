@@ -11,8 +11,8 @@ public final class IASResultSetUtils {
     }
 
     public static Object getObject(ResultSet rs, int idx) throws SQLException {
-        if (rs instanceof IASResultSet) {
-            return ((IASResultSet) rs).getTString(idx);
+        if (rs instanceof IASResultSet trs) {
+            return trs.getTString(idx);
         } else if (rs.isWrapperFor(IASResultSet.class)) {
             IASResultSet iasResultSet = rs.unwrap(IASResultSet.class);
             return iasResultSet.getTObject(idx);
@@ -22,8 +22,8 @@ public final class IASResultSetUtils {
     }
 
     public static Object getObject(ResultSet rs, IASString label) throws SQLException {
-        if (rs instanceof IASResultSet) {
-            return ((IASResultSet) rs).getTString(label.getString());
+        if (rs instanceof IASResultSet trs) {
+            return trs.getTString(label.getString());
         } else if (rs.isWrapperFor(IASResultSet.class)) {
             IASResultSet iasResultSet = rs.unwrap(IASResultSet.class);
             return iasResultSet.getTObject(label.getString());
@@ -33,8 +33,8 @@ public final class IASResultSetUtils {
     }
 
     public static IASString getString(ResultSet rs, int idx) throws SQLException {
-        if (rs instanceof IASResultSet) {
-            return ((IASResultSet) rs).getTString(idx);
+        if (rs instanceof IASResultSet trs) {
+            return trs.getTString(idx);
         } else if (rs.isWrapperFor(IASResultSet.class)) {
             IASResultSet iasResultSet = rs.unwrap(IASResultSet.class);
             return iasResultSet.getTString(idx);
@@ -45,8 +45,8 @@ public final class IASResultSetUtils {
     }
 
     public static IASString getString(ResultSet rs, IASString label) throws SQLException {
-        if (rs instanceof IASResultSet) {
-            return ((IASResultSet) rs).getTString(label.getString());
+        if (rs instanceof IASResultSet trs) {
+            return trs.getTString(label.getString());
         } else if (rs.isWrapperFor(IASResultSet.class)) {
             IASResultSet iasResultSet = rs.unwrap(IASResultSet.class);
             return iasResultSet.getTString(label.getString());

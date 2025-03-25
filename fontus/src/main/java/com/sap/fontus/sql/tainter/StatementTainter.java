@@ -207,7 +207,7 @@ public class StatementTainter extends StatementVisitorAdapter {
 			newReturningExpressionList.add(selectExpressionItem);
 			selectExpressionItem.accept(selectItemTainter);
 			if (!selectItemReference.isEmpty()) {
-				newReturningExpressionList.add((SelectItem) selectItemReference.get(0));
+				newReturningExpressionList.add(selectItemReference.get(0));
 				selectItemReference.clear();
 			}
 		}

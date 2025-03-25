@@ -1,5 +1,7 @@
 package com.sap.fontus.gdpr.cookie;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.sap.fontus.gdpr.metadata.AllowedPurpose;
 import com.sap.fontus.gdpr.metadata.Purpose;
 import com.sap.fontus.gdpr.metadata.Vendor;
@@ -16,22 +18,25 @@ public final class ConsentCookieMetadata {
 
     private ConsentCookieMetadata() {
     }
+    private static final Cache<ConsentCookie,Collection<AllowedPurpose>> purposeCache = Caffeine.newBuilder().build();
 
     public static Collection<AllowedPurpose> getAllowedPurposesFromConsentCookie(ConsentCookie cookie) {
-        Collection<AllowedPurpose> purposes = new ArrayList<>();
+        return purposeCache.get(cookie, (ignored)-> {
+            Collection<AllowedPurpose> purposes = new ArrayList<>(10);
 
-        for (com.sap.fontus.gdpr.cookie.Purpose p : cookie.getPurposes()) {
-            Purpose purpose = new RegistryLinkedPurpose(p.getId());
-            Set<Vendor> vendors = new HashSet<>();
-            for (com.sap.fontus.gdpr.cookie.Vendor v : p.getVendors()) {
-                Vendor vendor = new RegistryLinkedVendor(v.getId());
-                if (v.isChecked()) {
-                    vendors.add(vendor);
+            for (com.sap.fontus.gdpr.cookie.Purpose p : cookie.getPurposes()) {
+                Purpose purpose = new RegistryLinkedPurpose(p.getId());
+                Set<Vendor> vendors = new HashSet<>(5);
+                for (com.sap.fontus.gdpr.cookie.Vendor v : p.getVendors()) {
+                    Vendor vendor = new RegistryLinkedVendor(v.getId());
+                    if (v.isChecked()) {
+                        vendors.add(vendor);
+                    }
                 }
+                purposes.add(new SimpleAllowedPurpose(purpose, vendors));
             }
-            purposes.add(new SimpleAllowedPurpose(purpose, vendors));
-        }
-        return purposes;
+            return purposes;
+        });
     }
 
 }

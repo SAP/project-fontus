@@ -176,7 +176,7 @@ public final class Sanitization {
                     }
                 } else {
                     // attribute value IS a text set in quotes
-                    // find closest quote to left and right of taintrange und use this as new
+                    // find the closest quote to left and right of taintrange und use this as new
                     // "range" to set the value
                     startTaintIndex = taintRangeStart;
                     endTaintIndex = preparedString.length() - 1;

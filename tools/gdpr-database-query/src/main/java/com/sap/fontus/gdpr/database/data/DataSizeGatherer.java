@@ -11,7 +11,7 @@ import java.util.Map;
 
 class DataSizeGatherer extends AbstractInformationGatherer {
 
-    private Map<String, Integer> sizeMap = new HashMap<>();
+    private Map<String, Long> sizeMap = new HashMap<>();
 
     @Override
     public void beginTable(String catalog, String table) {
@@ -24,7 +24,7 @@ class DataSizeGatherer extends AbstractInformationGatherer {
     }
 
     @Override
-    public void tableSize(int size) {
+    public void tableSize(long size) {
         super.tableSize(size);
         this.sizeMap.put(this.table, this.size);
     }
@@ -43,16 +43,16 @@ class DataSizeGatherer extends AbstractInformationGatherer {
     }
 
     public void printStatistics() {
-        int total = 0;
+        long total = 0L;
         for (String key: this.sizeMap.keySet()) {
-            int rowSize = this.sizeMap.get(key);
+            long rowSize = this.sizeMap.get(key);
             // System.out.println(key + ": " + rowSize);
-            if (rowSize > 0) {
+            if (rowSize > 0L) {
                 total += rowSize;
             }
         }
         System.out.println("Total DB Size ( B): " + (total));
-        System.out.println("Total DB Size (kB): " + (total / 1024));
-        System.out.println("Total DB Size (MB): " + (total / 1024 / 1024));
+        System.out.println("Total DB Size (kB): " + (total / 1024L));
+        System.out.println("Total DB Size (MB): " + (total / 1024L / 1024L));
     }
 }

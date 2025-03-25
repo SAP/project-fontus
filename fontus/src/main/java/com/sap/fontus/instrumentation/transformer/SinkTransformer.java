@@ -1,6 +1,5 @@
 package com.sap.fontus.instrumentation.transformer;
 
-import com.alibaba.druid.support.spring.stat.annotation.Stat;
 import com.sap.fontus.asm.Descriptor;
 import com.sap.fontus.asm.FunctionCall;
 import com.sap.fontus.config.Configuration;
@@ -41,11 +40,15 @@ public class SinkTransformer extends SourceOrSinkTransformer implements Paramete
         }
 
         // Sink checks
-        logger.debug("Type: {}", type);
+        if(LogUtils.LOGGING_ENABLED) {
+            logger.debug("Type: {}", type);
+        }
         // Check whether this parameter needs to be checked for taint
         if (this.sink.findParameter(index) != null) {
             String instrumentedType = this.instrumentationHelper.instrumentQN(type);
-            logger.info("Adding taint check for sink {}, parameter {} ({})", this.sink.getName(), index, type);
+            if(LogUtils.LOGGING_ENABLED) {
+                logger.info("Adding taint check for sink {}, parameter {} ({})", this.sink.getName(), index, type);
+            }
 
             // Put the owning object instance onto the stack
             MethodVisitor originalVisitor = mv.getParent();

@@ -1,21 +1,16 @@
 package com.sap.fontus.gdpr.ctt;
 
 import com.sap.fontus.asm.FunctionCall;
-import com.sap.fontus.config.Configuration;
-import com.sap.fontus.config.Source;
 import com.sap.fontus.gdpr.Utils;
 import com.sap.fontus.gdpr.metadata.*;
 import com.sap.fontus.gdpr.metadata.simple.SimpleDataId;
 import com.sap.fontus.gdpr.metadata.simple.SimpleDataSubject;
 import com.sap.fontus.gdpr.metadata.simple.SimpleGdprMetadata;
-import com.sap.fontus.gdpr.oh.OpenHospitalTaintHandler;
 import com.sap.fontus.gdpr.servlet.ReflectedCookie;
 import com.sap.fontus.gdpr.servlet.ReflectedHttpServletRequest;
 import com.sap.fontus.gdpr.servlet.ReflectedSession;
 import com.sap.fontus.taintaware.IASTaintAware;
 import com.sap.fontus.taintaware.shared.IASTaintMetadata;
-import com.sap.fontus.taintaware.shared.IASTaintSource;
-import com.sap.fontus.taintaware.shared.IASTaintSourceRegistry;
 import com.sap.fontus.taintaware.unified.IASString;
 import com.sap.fontus.taintaware.unified.IASTaintHandler;
 import org.objectweb.asm.Opcodes;
@@ -81,7 +76,7 @@ public class CTTTaintHandler extends IASTaintHandler {
         ReflectedHttpServletRequest request = new ReflectedHttpServletRequest(parent);
         IASString uri = request.getRequestURI();
         if ("/r/checkIn".contentEquals(uri)) {
-            // Checkin Handler
+            // Check-in Handler
 
             return handleCheckinTaint(request, parameters, taintAware, sourceId);
         }

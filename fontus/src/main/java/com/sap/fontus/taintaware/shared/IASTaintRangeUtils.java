@@ -27,7 +27,7 @@ public final class IASTaintRangeUtils {
 
         IASTaintRange first = ranges.get(0);
 
-        // Special handling for ranges.size == 1, because its faster and it avoids problems of touching the same range twice when using the > 1 logic
+        // Special handling for ranges.size == 1, because its faster, and it avoids problems of touching the same range twice when using the > 1 logic
         if (ranges.size() == 1) {
             ranges.set(0, new IASTaintRange(Math.max(first.getStart(), startIndex) - leftShift, Math.min(first.getEnd(), endIndex) - leftShift, first.getMetadata()));
             return;

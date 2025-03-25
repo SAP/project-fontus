@@ -26,4 +26,5 @@ public class MultiAbort extends Abort {
     public String getName() {
         return "multi";
     }
+
 }
